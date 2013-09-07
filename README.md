@@ -1,13 +1,21 @@
 npm-check-updates
 =================
 
-npm-check-updates is a tool that allows you to **instantly find any updates to all of the dependencies** in your Node.js project, regardless of the version constraints you've applied in your package.json file (unlike npm itself).
+npm-check-updates is a tool that allows you to **instantly find any updates to
+all dependencies** in your Node.js project, regardless of the version
+constraints you've specified in your package.json file (unlike npm itself).
 
-Optionally, npm-check-updates will also upgrade your package.json file to satisfy the latest available versions, all while **maintaining your existing semantic versioning policies**.
+Optionally, npm-check-updates will also upgrade your package.json file to
+satisfy the latest available versions, all while **maintaining your
+existing semantic versioning policies**.
 
-Put plainly, it will upgrade your "express": "3.3.x" dependency to "express": "3.4.x" when express 3.4.0 hits the scene.
+Put plainly, it will upgrade your "express": "3.3.x" dependency to
+"express": "3.4.x" when express 3.4.0 hits the scene.
 
-Finally you can stick to [package.json best practices](http://blog.nodejitsu.com/package-dependencies-done-right) and [semantic versioning](http://semver.org/), without having to track individual new package releases. In case you do pin the exact versions, it'll update those dependencies to the latest versions as well.
+Finally you can stick to [package.json best practices](http://blog.nodejitsu.com/package-dependencies-done-right)
+and [semantic versioning](http://semver.org/), without having to track
+individual package releases. In case you do pin the exact versions, it'll
+update those too.
 
 Installation
 --------------
@@ -19,7 +27,7 @@ npm install -g npm-check-updates
 Example
 --------------
 
-Show the new dependencies available:
+Show any new dependencies for the project in the current directory:
 ```
 $ npm-check-updates
 
@@ -30,7 +38,7 @@ Run 'npm-check-updates -u' to upgrade your package.json automatically
 
 ```
 
-Upgrade a project's pacakge.json:
+Upgrade another project's package.json:
 ```
 $ npm-check-updates -u another-project/
 
@@ -40,7 +48,8 @@ package.json upgraded
 
 ```
 
-Now you just verify that your project works with the upgraded versions, commit, push, job 
+Now simply perform the usual "npm update" and verify that your project
+works with the upgraded versions.
 
 How new versions are determined
 --------------
@@ -63,4 +72,5 @@ How new versions are determined
 Problems?
 --------------
 
-Please [file an issue on github](https://github.com/tjunnone/npm-check-updates/issues). Pull requests are welcome :)
+Please [file an issue on github](https://github.com/tjunnone/npm-check-updates/issues).
+Pull requests are welcome :)
