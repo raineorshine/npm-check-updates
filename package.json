@@ -1,6 +1,6 @@
 {
     "name": "npm-check-updates",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "Tomas Junnonen <tomas1@gmail.com>",
     "description": "Find newer versions of dependencies than what your package.json allows",
     "keywords": ["npm", "check", "find", "discover", "updates", "upgrades", "dependencies", "package.json", "updater", "version", "management"],
