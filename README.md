@@ -80,7 +80,7 @@ History
 - 1.0
   - Find and upgrade dependencies maintaining existing versioning policy in package.json
 
-How new package dependency updates are determined
+How dependency updates are determined
 --------------
 
 - Direct dependencies will be increased to the latest available version:
