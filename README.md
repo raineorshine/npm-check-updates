@@ -1,21 +1,36 @@
 npm-check-updates
 =================
 
-npm-check-updates is a tool that allows you to **instantly find any updates to
-all dependencies** in your Node.js project, regardless of the version
-constraints you've specified in your package.json file (unlike npm itself).
+npm-check-updates is a tool that allows you to **find all updates to
+dependencies** in your Node.js project, regardless of any version
+constraints in your package.json file (unlike npm itself).
 
-Optionally, npm-check-updates will also upgrade your package.json file to
+Optionally, npm-check-updates can also upgrade your package.json file to
 satisfy the latest available versions, all while **maintaining your
 existing semantic versioning policies**.
 
 Put plainly, it will upgrade your "express": "3.3.x" dependency to
 "express": "3.4.x" when express 3.4.0 hits the scene.
 
-Finally you can stick to [package.json best practices](http://blog.nodejitsu.com/package-dependencies-done-right)
-and [semantic versioning](http://semver.org/), without having to track
-individual package releases. In case you do pin the exact versions, it'll
-update those too.
+npm-check-updates can also show you all available **updates to your globally
+installed packages**.
+
+Motivation
+--------------
+
+[Package.json best practices](http://blog.nodejitsu.com/package-dependencies-done-right)
+recommends maintaining dependencies using a [semantic versioning](http://semver.org/)
+policy. In practice you do this by specifying a "1.2.x" style dependency
+in your package.json, whereby patch-level updates are automatically allowed
+but major and minor releases require manual verification.
+
+Unfortunately, it then becomes your responsibility to find out about new
+package releases, for example by using "npm info" command one package at a time,
+or by visiting project pages.
+
+Whatever your versioning policy, npm-check-updates will make keeping your
+dependencies up to date a breeze.
+
 
 Installation
 --------------
@@ -24,34 +39,48 @@ Installation
 npm install -g npm-check-updates
 ```
 
-Example
+Examples
 --------------
 
 Show any new dependencies for the project in the current directory:
 ```
 $ npm-check-updates
 
-Dependency "connect" could be updated to "2.8.x" (latest is 2.8.8)
-Dependency "commander" could be updated to "2.0.x" (latest is 2.0.0)
+Dependency "connect" could be updated to 2.8.x
+Dependency "commander" could be updated to 2.0.0
 
 Run 'npm-check-updates -u' to upgrade your package.json automatically
-
 ```
 
-Upgrade another project's package.json:
+Check global npm packages for updates:
 ```
-$ npm-check-updates -u another-project/
+$ npm-check-updates -g
 
-Dependency "request" could be updated to "2.27.x" (latest is 2.27.0)
+Package "mocha" could be updated to version 1.12.1
+```
+
+Upgrade a project's package.json:
+```
+$ npm-check-updates -u
+
+Dependency "request" could be updated to 2.27.x
 
 package.json upgraded
-
 ```
 
 Now simply perform the usual "npm update" and verify that your project
 works with the upgraded versions.
 
-How new versions are determined
+History
+--------------
+
+- 1.1
+  - Added option to check global packages for updates: -g switch
+  - Now also checks and upgrades devDependencies in package.json
+- 1.0
+  - Find and upgrade dependencies maintaining existing versioning policy in package.json
+
+How new package dependency updates are determined
 --------------
 
 - Direct dependencies will be increased to the latest available version:
