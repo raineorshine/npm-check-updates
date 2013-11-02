@@ -9,7 +9,7 @@
         "commander": "2.0.x",
         "async": "0.2.x",
         "read-package-json": "1.1.x",
-        "semver": "2.1.x"
+        "semver": "2.2.x"
     },
     "main": "./lib/npm-check-updates",
     "bin": {
