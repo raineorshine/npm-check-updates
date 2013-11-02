@@ -46,8 +46,8 @@ Show any new dependencies for the project in the current directory:
 ```
 $ npm-check-updates
 
-Dependency "connect" could be updated to 2.8.x
-Dependency "commander" could be updated to 2.0.0
+"connect" can be updated from 2.8.x to 2.11.x  (Installed: 2.8.8, Latest: 2.11.0)
+"commander" can be updated from 1.3.x to 2.0.x (Installed: 1.3.2, Latest: 2.0.0)
 
 Run 'npm-check-updates -u' to upgrade your package.json automatically
 ```
@@ -56,14 +56,14 @@ Check global npm packages for updates:
 ```
 $ npm-check-updates -g
 
-Package "mocha" could be updated to version 1.12.1
+"mocha" can be updated to version 1.12.1
 ```
 
 Upgrade a project's package.json:
 ```
 $ npm-check-updates -u
 
-Dependency "request" could be updated to 2.27.x
+"request" can be updated from 2.20.x to 2.27.x (Installed: 2.20.0, Latest: 2.27.1)
 
 package.json upgraded
 ```
@@ -74,6 +74,9 @@ works with the upgraded versions.
 History
 --------------
 
+- 1.2
+  - Print currently installed and latest package version in addition to semantic versions
+  - Fixed bug where extra whitespace in package.json may prevent automatic upgrade
 - 1.1
   - Added option to check global packages for updates: -g switch
   - Now also checks and upgrades devDependencies in package.json
