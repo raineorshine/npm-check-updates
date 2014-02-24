@@ -29,6 +29,11 @@
   "bin": {
     "npm-check-updates": "./bin/npm-check-updates"
   },
+  "files": [
+    "bin",
+    "lib",
+    "LICENCE"
+  ],
   "dependencies": {
     "async": "0.2.x",
     "commander": "2.0.x",
