@@ -34,11 +34,18 @@
     "lib",
     "LICENCE"
   ],
+  "scripts": {
+    "lint": "jshint .",
+    "test": "npm run lint"
+  },
   "dependencies": {
     "async": "0.9.x",
     "commander": "2.2.x",
     "npm": "1.4.x",
     "read-package-json": "1.1.x",
     "semver": "2.3.x"
+  },
+  "devDependencies": {
+    "jshint": "2.5.x"
   }
 }
