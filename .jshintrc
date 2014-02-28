@@ -11,7 +11,7 @@
   "node":      true,
   "quotmark":  "single",
   "shadow":    true,
-  "strict":    false,
+  "strict":    true,
   "sub":       true,
   "undef":     true,
   "unused":    true
