@@ -1,6 +1,8 @@
 npm-check-updates
 =================
 
+[![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg)](https://travis-ci.org/tjunnone/npm-check-updates)
+
 npm-check-updates is a tool that allows you to **find all updates to
 dependencies** in your Node.js project, regardless of any version
 constraints in your package.json file (unlike npm itself).
