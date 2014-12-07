@@ -74,6 +74,10 @@ works with the upgraded versions.
 History
 --------------
 
+- 1.3
+  - Handle private packages and NPM errors
+  - Added Mocha tests
+  - Bugfixes
 - 1.2
   - Print currently installed and latest package version in addition to semantic versions
   - Fixed bug where extra whitespace in package.json may prevent automatic upgrade
