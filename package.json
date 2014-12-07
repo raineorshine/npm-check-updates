@@ -11,6 +11,9 @@
         "read-package-json": "1.1.x",
         "semver": "2.2.x"
     },
+    "devDependencies": {
+        "should": "3.3.x"
+    },
     "main": "./lib/npm-check-updates",
     "bin": {
         "npm-check-updates": "./bin/npm-check-updates"
