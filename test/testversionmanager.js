@@ -1,10 +1,10 @@
-var assert = require("should");
+var should = require("should");
 var vm = require("../lib/versionmanager");
 
 describe('Version manager', function () {
-    //before(function(){
-    //    vm.initialize();
-    //});
+    before(function(done){
+        vm.initialize(false, done);
+    });
 
     describe('upgradeDependencyDeclaration', function () {
         it('numeric upgrades', function () {
@@ -51,6 +51,40 @@ describe('Version manager', function () {
             vm.upgradeDependencyDeclaration("v1.0", "1.1").should.equal("v1.1");
             vm.upgradeDependencyDeclaration("=v1.0", "1.1").should.equal("=v1.1");
             vm.upgradeDependencyDeclaration(" =v1.0", "1.1").should.equal(" =v1.1");
+        });
+
+        it('maintain "unclean" semantic versions', function () {
+            vm.upgradeDependencyDeclaration("v1.0", "1.1").should.equal("v1.1");
+            vm.upgradeDependencyDeclaration("=v1.0", "1.1").should.equal("=v1.1");
+            vm.upgradeDependencyDeclaration(" =v1.0", "1.1").should.equal(" =v1.1");
+        });
+
+        it('maintain existing version if new version is unknown', function () {
+            vm.upgradeDependencyDeclaration("1.0", "").should.equal("1.0");
+            vm.upgradeDependencyDeclaration("1.0", null).should.equal("1.0");
+        });
+    });
+
+    describe('getLatestVersions', function () {
+        it('valid single package', function (done) {
+            vm.getLatestVersions(["async"], function (error, latestVersions) {
+                should.exist(latestVersions["async"]);
+                done();
+            });
+        });
+
+        it('valid packages', function (done) {
+            vm.getLatestVersions(["async", "npm"], function (error, latestVersions) {
+                should.exist(latestVersions["async"]);
+                should.exist(latestVersions["npm"]);
+                done();
+            });
+        });
+
+        it('unavailable packages should not blow up', function (done) {
+            vm.getLatestVersions(["sudoMakeMeASandwitch"], function (error, latestVersions) {
+                done();
+            });
         });
     });
 });
