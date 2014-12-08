@@ -17,9 +17,11 @@
     "management"
   ],
   "dependencies": {
-    "npm": "2.1.x",
-    "commander": "2.5.x",
     "async": "0.9.x",
+    "cint": "^8.0.1",
+    "commander": "2.5.x",
+    "lodash": "^2.4.1",
+    "npm": "2.1.x",
     "read-package-json": "1.2.x",
     "semver": "4.1.x"
   },
