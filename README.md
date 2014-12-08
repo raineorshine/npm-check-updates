@@ -71,9 +71,18 @@ package.json upgraded
 Now simply perform the usual "npm update" and verify that your project
 works with the upgraded versions.
 
+Filter the packages that are searched with a list or regex:
+```
+$ npm-check-updates -f mocha,should
+$ npm-check-updates -f /^((?!gulp-).)*$/
+```
+
 History
 --------------
 
+- 1.4
+  - Add package filtering option
+  - Add mocha as npm test script
 - 1.3
   - Handle private packages and NPM errors
   - Added Mocha tests
