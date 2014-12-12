@@ -29,7 +29,7 @@ dependencies up to date a breeze.
 Installation
 --------------
 
-```
+```sh
 npm install -g npm-check-updates
 ```
 
@@ -65,12 +65,11 @@ Options
 --------------
     -d, --dev                check only devDependencies
     -h, --help               output usage information
-    -f, --filter <packages>  list or regex of package names to search 
-                             (all others will be ignored)
-    -g, --global             check global packages instead of in the current 
-                             project
-    -p, --prod               check only dependencies (not devDependencies)
-    -s, --silent             don't output anything
+    -f, --filter <packages>  list or regex of package names to search (all others
+                             will be ignored)
+    -g, --global             check global packages instead of in the current project
+    -p, --prod               check only dependencies (not devDependencies) don't
+    -s, --silent             output anything
     -u, --upgrade            upgrade package.json dependencies to match latest 
                              versions (maintaining existing policy)
     -V, --version            output the version number
@@ -119,4 +118,5 @@ Problems?
 --------------
 
 Please [file an issue on github](https://github.com/tjunnone/npm-check-updates/issues).
+
 Pull requests are welcome :)
