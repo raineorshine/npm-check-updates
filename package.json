@@ -16,6 +16,19 @@
     "version",
     "management"
   ],
+  "preferglobal": true,
+  "main": "./lib/npm-check-updates",
+  "scripts": {
+    "test": "mocha"
+  },
+  "bin": {
+    "npm-check-updates": "./bin/npm-check-updates"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tjunnone/npm-check-updates.git"
+  },
+  "homepage": "https://github.com/tjunnone/npm-check-updates",
   "dependencies": {
     "async": "0.9.x",
     "cint": "^8.0.1",
@@ -28,17 +41,5 @@
   "devDependencies": {
     "mocha": "^2.0.1",
     "should": "4.3.x"
-  },
-  "main": "./lib/npm-check-updates",
-  "scripts": {
-    "test": "mocha"
-  },
-  "bin": {
-    "npm-check-updates": "./bin/npm-check-updates"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/tjunnone/npm-check-updates.git"
-  },
-  "homepage": "https://github.com/tjunnone/npm-check-updates"
+  }
 }
