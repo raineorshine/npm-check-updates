@@ -68,6 +68,20 @@ $ npm-check-updates -u
 package.json upgraded
 ```
 
+Check only devDependencies packages for updates:
+```
+$ npm-check-updates -d
+
+"mocha" can be updated to version 1.12.1
+```
+
+Check only production dependencies packages for updates:
+```
+$ npm-check-updates -p
+
+"request" can be updated from 2.20.x to 2.27.x (Installed: 2.20.0, Latest: 2.27.1)
+```
+
 Now simply perform the usual "npm update" and verify that your project
 works with the upgraded versions.
 
@@ -80,6 +94,8 @@ $ npm-check-updates -f /^((?!gulp-).)*$/
 History
 --------------
 
+- 1.5
+  - Add prod and dev only options
 - 1.4
   - Add package filtering option
   - Add mocha as npm test script
