@@ -1,32 +1,26 @@
 npm-check-updates
 =================
 
-npm-check-updates is a tool that allows you to **find all updates to
-dependencies** in your Node.js project, regardless of any version
+npm-check-updates is a tool that allows you to **find the latest versions of
+dependencies**, regardless of any version
 constraints in your package.json file (unlike npm itself).
 
-Optionally, npm-check-updates can also upgrade your package.json file to
-satisfy the latest available versions, all while **maintaining your
+npm-check-updates can optionally upgrade your package.json file to
+use the latest available versions, all while **maintaining your
 existing semantic versioning policies**.
 
 Put plainly, it will upgrade your "express": "3.3.x" dependency to
 "express": "3.4.x" when express 3.4.0 hits the scene.
 
-npm-check-updates can also show you all available **updates to your globally
-installed packages**.
+View the [options](#options) for global, dev-only, prod-only, or filtering by package name.
 
 Motivation
 --------------
 
-[Package.json best practices](http://blog.nodejitsu.com/package-dependencies-done-right)
-recommends maintaining dependencies using a [semantic versioning](http://semver.org/)
-policy. In practice you do this by specifying a "1.2.x" style dependency
-in your package.json, whereby patch-level updates are automatically allowed
-but major and minor releases require manual verification.
+[Package.json best practices](http://blog.nodejitsu.com/package-dependencies-done-right) recommends maintaining dependencies using a [semantic versioning](http://semver.org/) policy. In practice you do this by specifying a "1.2.x" style dependency in your package.json, whereby patch-level updates are automatically allowed but major and minor releases require manual verification.
 
 Unfortunately, it then becomes your responsibility to find out about new
-package releases, for example by using "npm info" command one package at a time,
-or by visiting project pages.
+package releases, for example by using "npm info" command one package at a time, or by visiting project pages.
 
 Whatever your versioning policy, npm-check-updates will make keeping your
 dependencies up to date a breeze.
@@ -43,24 +37,17 @@ Examples
 --------------
 
 Show any new dependencies for the project in the current directory:
-```
+```sh
 $ npm-check-updates
 
 "connect" can be updated from 2.8.x to 2.11.x  (Installed: 2.8.8, Latest: 2.11.0)
 "commander" can be updated from 1.3.x to 2.0.x (Installed: 1.3.2, Latest: 2.0.0)
 
-Run 'npm-check-updates -u' to upgrade your package.json automatically
-```
-
-Check global npm packages for updates:
-```
-$ npm-check-updates -g
-
-"mocha" can be updated to version 1.12.1
+Run with '-u' to upgrade your package.json
 ```
 
 Upgrade a project's package.json:
-```
+```sh
 $ npm-check-updates -u
 
 "request" can be updated from 2.20.x to 2.27.x (Installed: 2.20.0, Latest: 2.27.1)
@@ -68,28 +55,26 @@ $ npm-check-updates -u
 package.json upgraded
 ```
 
-Check only devDependencies packages for updates:
-```
-$ npm-check-updates -d
-
-"mocha" can be updated to version 1.12.1
-```
-
-Check only production dependencies packages for updates:
-```
-$ npm-check-updates -p
-
-"request" can be updated from 2.20.x to 2.27.x (Installed: 2.20.0, Latest: 2.27.1)
+Filter by package name:
+```sh
+$ npm-check-updates -f mocha,should         # string
+$ npm-check-updates -f /^((?!gulp-).)*$/    # regex
 ```
 
-Now simply perform the usual "npm update" and verify that your project
-works with the upgraded versions.
+Options
+--------------
+    -d, --dev                check only devDependencies
+    -h, --help               output usage information
+    -f, --filter <packages>  list or regex of package names to search 
+                             (all others will be ignored)
+    -g, --global             check global packages instead of in the current 
+                             project
+    -p, --prod               check only dependencies (not devDependencies)
+    -s, --silent             don't output anything
+    -u, --upgrade            upgrade package.json dependencies to match latest 
+                             versions (maintaining existing policy)
+    -V, --version            output the version number
 
-Filter the packages that are searched with a list or regex:
-```
-$ npm-check-updates -f mocha,should
-$ npm-check-updates -f /^((?!gulp-).)*$/
-```
 
 History
 --------------
