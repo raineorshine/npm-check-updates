@@ -78,6 +78,8 @@ Options
 History
 --------------
 
+- 1.5.1
+  - Fix bug where package names got truncated (grunt-concurrent -> grunt)
 - 1.5
   - Add prod and dev only options
 - 1.4
