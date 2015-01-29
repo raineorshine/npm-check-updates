@@ -16,7 +16,7 @@
     "version",
     "management"
   ],
-  "preferglobal": true,
+  "preferGlobal": true,
   "main": "./lib/npm-check-updates",
   "scripts": {
     "test": "mocha"
