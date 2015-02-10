@@ -57,8 +57,15 @@ package.json upgraded
 
 Filter by package name:
 ```sh
-$ npm-check-updates -f mocha,should         # string
-$ npm-check-updates -f /^((?!gulp-).)*$/    # regex
+# match mocha and should packages exactly
+$ npm-check-updates -f mocha,should         
+
+# match packages that start with "gulp-" using regex
+$ npm-check-updates -f /^gulp-/             
+
+# match packages that do not start with "gulp-". Note: single quotes are required 
+# here to avoid inadvertant bash parsing
+$ npm-check-updates -f '/^(?!gulp-).*$/'    
 ```
 
 Options
@@ -66,7 +73,8 @@ Options
     -d, --dev                check only devDependencies
     -h, --help               output usage information
     -f, --filter <packages>  list or regex of package names to search (all others
-                             will be ignored)
+                             will be ignored). Note: single quotes may be required 
+                             to avoid inadvertant bash parsing.
     -g, --global             check global packages instead of in the current project
     -p, --prod               check only dependencies (not devDependencies)
     -s, --silent             don't output anything
