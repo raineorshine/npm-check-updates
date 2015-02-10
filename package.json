@@ -19,7 +19,7 @@
   "preferGlobal": true,
   "main": "./lib/npm-check-updates",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha -t 10000"
   },
   "bin": {
     "npm-check-updates": "./bin/npm-check-updates"
