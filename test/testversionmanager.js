@@ -65,6 +65,15 @@ describe('Version manager', function () {
         });
     });
 
+    describe('upgradeDependencies', function() {
+        it('return upgraded dependencies object', function() {
+            vm.upgradeDependencies({ mongodb: '^1.4.29' }, { mongodb: '1.4.30' }).should.eql({ mongodb: '^1.4.30' });
+        })
+        it('do not downgrade', function() {
+            vm.upgradeDependencies({ mongodb: '^2.0.7' }, { mongodb: '1.4.30' }).should.eql({ });
+        })
+    });
+
     describe('getLatestVersions', function () {
         it('valid single package', function (done) {
             vm.getLatestVersions(["async"], function (error, latestVersions) {
