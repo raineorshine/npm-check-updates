@@ -74,6 +74,26 @@ describe('Version manager', function () {
         })
     });
 
+    describe('getLatestPackageVersion', function () {
+        it('valid package info', function (done) {
+            vm.getLatestPackageVersion("async", function (error, version) {
+                should.exist(version);
+                version.should.be.type('string');
+                done();
+            });
+        });
+    });
+
+    describe('getGreatestPackageVersion', function () {
+        it('valid package info', function (done) {
+            vm.getGreatestPackageVersion("async", function (error, version) {
+                should.exist(version);
+                version.should.be.type('string');
+                done();
+            });
+        });
+    });
+
     describe('getLatestVersions', function () {
         it('valid single package', function (done) {
             vm.getLatestVersions(["async"], function (error, latestVersions) {
