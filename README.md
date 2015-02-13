@@ -98,6 +98,8 @@ Options
 History
 --------------
 
+- *2.0.0-alpha5*
+  - Add -e/--error-level option
 - *2.0.0-alpha4*
   - Add -t/--greatest option to search for the highest versions instead of the default latest stable versions.
 - *2.0.0-alpha3*
