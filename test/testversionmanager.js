@@ -97,14 +97,14 @@ describe('Version manager', function () {
     describe('getLatestVersions', function () {
         it('valid single package', function (done) {
             vm.getLatestVersions(["async"], function (error, latestVersions) {
-                should.exist(latestVersions["async"]);
+                should.exist(latestVersions.async);
                 done();
             });
         });
 
         it('valid packages', function (done) {
             vm.getLatestVersions(["async", "npm"], function (error, latestVersions) {
-                should.exist(latestVersions["async"]);
+                should.exist(latestVersions.async);
                 should.exist(latestVersions["npm"]);
                 done();
             });
@@ -115,5 +115,35 @@ describe('Version manager', function () {
                 done();
             });
         });
+
+        it('optional options object', function (done) {
+            vm.getLatestVersions(["async"], {}, function (error, latestVersions) {
+                should.exist(latestVersions.async);
+                done();
+            });
+        });
+
+        it('set the versionTarget explicitly to latest', function (done) {
+            vm.getLatestVersions(["async"], { versionTarget: 'latest' }, function (error, latestVersions) {
+                should.exist(latestVersions.async);
+                done();
+            });
+        });
+
+        it('set the versionTarget to greatest', function (done) {
+            vm.getLatestVersions(["async"], { versionTarget: 'greatest' }, function (error, latestVersions) {
+                should.exist(latestVersions.async);
+                done();
+            });
+        });
+
+        it('should return an error for an unsupported versionTarget', function (done) {
+            vm.getLatestVersions(["async"], { versionTarget: 'foo' }, function (error, latestVersions) {
+                should.exist(error);
+                error.should.match(/unsupported/i);
+                done();
+            });
+        });
+
     });
 });

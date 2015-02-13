@@ -78,6 +78,8 @@ Options
     -g, --global             check global packages instead of in the current project
     -p, --prod               check only dependencies (not devDependencies)
     -s, --silent             don't output anything
+    -t, --greatest           find the highest versions available instead of the 
+                             latest stable versions
     -u, --upgrade            upgrade package.json dependencies to match latest 
                              versions (maintaining existing policy)
     -V, --version            output the version number
@@ -86,6 +88,12 @@ Options
 History
 --------------
 
+- 2.0.0-alpha4
+  - Add -t/--greatest option to search for the highest versions instead of the default latest stable versions.
+- 2.0.0-alpha3
+  - Automatically look for the closest descendant package.json if not found in current directory
+- 2.0.0-alpha1
+  - Do not downgrade packages
 - 1.5.1
   - Fix bug where package names got truncated (grunt-concurrent -> grunt)
 - 1.5
@@ -109,7 +117,7 @@ History
 How dependency updates are determined
 --------------
 
-- Direct dependencies will be increased to the latest available version:
+- Direct dependencies will be increased to the latest stable version:
   - 2.0.1 => 2.2.0
   - 1.2 => 1.3
 -  Semantic versioning policies for levels are maintained while satisfying the latest version:
@@ -120,9 +128,6 @@ How dependency updates are determined
 - Version constraints are maintained:
   - \>0.2.x => \> 0.3.x
   - \>=1.0.0 => >=1.1.0
-- Dependencies newer than the latest available version are suggested to be downgraded, as it's likely a mistake:
-  - 2.0.x => 1.7.x, when 1.7.10 is the latest available version
-  - 1.1.0 => 1.0.1, when 1.0.1 is the latest available version
 
 Problems?
 --------------
