@@ -33,6 +33,12 @@ Installation
 npm install -g npm-check-updates
 ```
 
+Please consider installing the unstable version to help test pre-release features. You may even find [some features](#history) you needed that are not yet in the stable version. 
+
+```sh
+npm install -g npm-check-updates@unstable
+```
+
 Examples
 --------------
 
@@ -88,11 +94,11 @@ Options
 History
 --------------
 
-- 2.0.0-alpha4
+- *2.0.0-alpha4*
   - Add -t/--greatest option to search for the highest versions instead of the default latest stable versions.
-- 2.0.0-alpha3
+- *2.0.0-alpha3*
   - Automatically look for the closest descendant package.json if not found in current directory
-- 2.0.0-alpha1
+- *2.0.0-alpha1*
   - Do not downgrade packages
 - 1.5.1
   - Fix bug where package names got truncated (grunt-concurrent -> grunt)
