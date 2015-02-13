@@ -9,15 +9,15 @@ npm-check-updates can optionally upgrade your package.json file to
 use the latest available versions, all while **maintaining your
 existing semantic versioning policies**.
 
-Put plainly, it will upgrade your "express": "3.3.x" dependency to
-"express": "3.4.x" when express 3.4.0 hits the scene.
+Put plainly, it will upgrade your "express": "^4.11.2" dependency to
+"express": "^5.0.0" when express 5.0.0 hits the scene.
 
 View the [options](#options) for global, dev-only, prod-only, or filtering by package name.
 
 Motivation
 --------------
 
-[Package.json best practices](http://blog.nodejitsu.com/package-dependencies-done-right) recommends maintaining dependencies using a [semantic versioning](http://semver.org/) policy. In practice you do this by specifying a "1.2.x" style dependency in your package.json, whereby patch-level updates are automatically allowed but major and minor releases require manual verification.
+[Package.json best practices](http://blog.nodejitsu.com/package-dependencies-done-right) recommends maintaining dependencies using a [semantic versioning](http://semver.org/) policy. In practice you do this by specifying a "^1.2.0" style dependency in your package.json, whereby patch-level updates are automatically allowed but major and minor releases require manual verification.
 
 Unfortunately, it then becomes your responsibility to find out about new
 package releases, for example by using "npm info" command one package at a time, or by visiting project pages.
@@ -46,8 +46,8 @@ Show any new dependencies for the project in the current directory:
 ```sh
 $ npm-check-updates
 
-"connect" can be updated from 2.8.x to 2.11.x  (Installed: 2.8.8, Latest: 2.11.0)
-"commander" can be updated from 1.3.x to 2.0.x (Installed: 1.3.2, Latest: 2.0.0)
+"connect" can be updated from ^2.8.0 to ^2.11.0  (Installed: 2.8.8, Latest: 2.11.0)
+"commander" can be updated from ^1.3.0 to ^2.0.0 (Installed: 1.3.2, Latest: 2.0.0)
 
 Run with '-u' to upgrade your package.json
 ```
@@ -56,7 +56,7 @@ Upgrade a project's package.json:
 ```sh
 $ npm-check-updates -u
 
-"request" can be updated from 2.20.x to 2.27.x (Installed: 2.20.0, Latest: 2.27.1)
+"request" can be updated from ^2.20.0 to ^2.27.0 (Installed: 2.20.0, Latest: 2.27.1)
 
 package.json upgraded
 ```
@@ -127,12 +127,12 @@ How dependency updates are determined
   - 2.0.1 => 2.2.0
   - 1.2 => 1.3
 -  Semantic versioning policies for levels are maintained while satisfying the latest version:
-  - 1.2.x => 1.3.x
+  - ^1.2.0 => ^1.3.0
   - 1.x => 2.x
 - "Any version" is maintained:
   - \* => \*
 - Version constraints are maintained:
-  - \>0.2.x => \> 0.3.x
+  - \>0.2.0 => \> 0.3.0
   - \>=1.0.0 => >=1.1.0
 
 Problems?
