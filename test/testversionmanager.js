@@ -146,4 +146,21 @@ describe('Version manager', function () {
         });
 
     });
+
+    describe("isUpgradeable", function() {
+
+        it("should upgrade versions that do not satisfy latest versions", function() {
+            vm.isUpgradeable("0.1.x", "0.5.1").should.equal(true);
+        });
+
+        it("should not upgrade invalid versions", function() {
+            vm.isUpgradeable("https://github.com/strongloop/express", "4.11.2").should.equal(false);
+        });
+
+        it("should not upgrade versions beyond the latest", function() {
+            vm.isUpgradeable("5.0.0", "4.11.2").should.equal(false);
+        });
+
+    })
+
 });
