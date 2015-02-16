@@ -98,6 +98,8 @@ Options
 History
 --------------
 
+- *2.0.0-alpha7*
+  - Bug fixes and refactoring
 - *2.0.0-alpha5*
   - Add -e/--error-level option
 - *2.0.0-alpha4*
