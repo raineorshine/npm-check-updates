@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/tjunnone/npm-check-updates.png?label=ready&title=Ready)](https://waffle.io/tjunnone/npm-check-updates)
 npm-check-updates
 =================
 
