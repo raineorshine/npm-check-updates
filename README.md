@@ -1,8 +1,7 @@
 npm-check-updates
 =================
 
-npm-check-updates is a tool that allows you to **find the latest versions of
-dependencies**, regardless of any version
+npm-check-updates is a command-line tool that allows you to **find the latest versions of dependencies**, regardless of any version
 constraints in your package.json file (unlike npm itself).
 
 npm-check-updates can optionally upgrade your package.json file to
@@ -11,20 +10,6 @@ existing semantic versioning policies**.
 
 Put plainly, it will upgrade your "express": "^4.11.2" dependency to
 "express": "^5.0.0" when express 5.0.0 hits the scene.
-
-View the [options](#options) for global, dev-only, prod-only, or filtering by package name.
-
-Motivation
---------------
-
-[Package.json best practices](http://blog.nodejitsu.com/package-dependencies-done-right) recommends maintaining dependencies using a [semantic versioning](http://semver.org/) policy. In practice you do this by specifying a "^1.2.0" style dependency in your package.json, whereby patch-level updates are automatically allowed but major and minor releases require manual verification.
-
-Unfortunately, it then becomes your responsibility to find out about new
-package releases, for example by using "npm info" command one package at a time, or by visiting project pages.
-
-Whatever your versioning policy, npm-check-updates will make keeping your
-dependencies up to date a breeze.
-
 
 Installation
 --------------
@@ -39,7 +24,7 @@ Please consider installing the unstable version to help test pre-release feature
 npm install -g npm-check-updates@unstable
 ```
 
-Examples
+Usage
 --------------
 
 Show any new dependencies for the project in the current directory:
@@ -95,10 +80,19 @@ Options
     -V, --version            output the version number
 
 
+Motivation
+--------------
+
+[Package.json best practices](http://blog.nodejitsu.com/package-dependencies-done-right) recommends maintaining dependencies using a [semantic versioning](http://semver.org/) policy. In practice you do this by specifying a "^1.2.0" style dependency in your package.json, whereby patch- and minor-level updates are automatically allowed but major releases require manual verification.
+
+Unfortunately, it then becomes your responsibility to find out about new
+package releases, for example by using "npm info" command one package at a time, or by visiting project pages.
+
+
 History
 --------------
 
-- *2.0.0-alpha7*
+- *2.0.0-alpha.7*
   - Bug fixes and refactoring
 - *2.0.0-alpha5*
   - Add -e/--error-level option
