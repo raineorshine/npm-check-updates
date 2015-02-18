@@ -1,6 +1,5 @@
-[![Stories in Ready](https://badge.waffle.io/tjunnone/npm-check-updates.png?label=ready&title=Ready)](https://waffle.io/tjunnone/npm-check-updates)
-npm-check-updates
-=================
+[![Stories in Ready](https://badge.waffle.io/tjunnone/npm-check-updates.png?label=ready&title=waffle.io)](https://waffle.io/tjunnone/npm-check-updates) 
+[![NPM version](https://badge.fury.io/js/cint.svg)](http://badge.fury.io/js/cint) 
 
 npm-check-updates is a command-line tool that allows you to **find the latest versions of dependencies**, regardless of any version
 constraints in your package.json file (unlike npm itself).
