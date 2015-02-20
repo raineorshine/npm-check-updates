@@ -1,4 +1,4 @@
-[![npm stable version](https://img.shields.io/npm/v/npm.svg)](https://npmjs.org/package/npm-check-updates) 
+[![npm stable version](https://img.shields.io/npm/v/npm-check-updates.svg)](https://npmjs.org/package/npm-check-updates) 
 [![npm unstable version](https://img.shields.io/github/tag/tjunnone/npm-check-updates.svg?label=unstable)](https://github.com/tjunnone/npm-check-updates/tags) 
 [![waffle.io issues](https://badge.waffle.io/tjunnone/npm-check-updates.png?label=ready&title=waffle.io)](https://waffle.io/tjunnone/npm-check-updates) 
 
