@@ -1,4 +1,4 @@
-[![NPM version](https://badge.fury.io/js/cint.svg)](http://badge.fury.io/js/cint) 
+[![NPM version](https://badge.fury.io/js/npm-check-updates.svg)](http://badge.fury.io/js/npm-check-updates) 
 [![Stories in Ready](https://badge.waffle.io/tjunnone/npm-check-updates.png?label=ready&title=waffle.io)](https://waffle.io/tjunnone/npm-check-updates) 
 
 npm-check-updates is a command-line tool that allows you to **find the latest versions of dependencies**, regardless of any version
