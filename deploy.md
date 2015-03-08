@@ -4,16 +4,15 @@
 Add tests
 Update README
 Add and commit all changes
+Update HISTORY
 
 ## stable
-Update HISTORY
 npm version minor
 git push
 git push --tags
 npm publish
 
 ## unstable
-Update HISTORY
 Manually bump version number in package.json
 git add -A
 git commit -m "vX.X.X"
