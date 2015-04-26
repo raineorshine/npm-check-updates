@@ -11,8 +11,8 @@ npm-check-updates can optionally upgrade your package.json file to
 use the latest available versions, all while **maintaining your
 existing semantic versioning policies**.
 
-Put plainly, it will upgrade your "express": "^4.11.2" dependency to
-"express": "^5.0.0" when express 5.0.0 hits the scene.
+Put plainly, it will upgrade your `"express": "^4.11.2"` dependency to
+`"express": "^5.0.0"` when express 5.0.0 is released.
 
 Installation
 --------------
