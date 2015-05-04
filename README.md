@@ -73,6 +73,7 @@ Options
                              integration) (alpha release only)
     -g, --global             check global packages instead of in the current project
     -p, --prod               check only dependencies (not devDependencies)
+    --registry               specify third-party NPM registry
     -s, --silent             don't output anything
     -t, --greatest           find the highest versions available instead of the 
                              latest stable versions (alpha release only)
