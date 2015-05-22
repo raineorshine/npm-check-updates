@@ -2,7 +2,6 @@
 [![npm unstable version](https://img.shields.io/github/tag/tjunnone/npm-check-updates.svg?label=unstable)](https://github.com/tjunnone/npm-check-updates/tags) 
 [![Dependency Status](https://david-dm.org/tjunnone/npm-check-updates.svg)](https://david-dm.org/tjunnone/npm-check-updates) 
 [![devDependency Status](https://david-dm.org/tjunnone/npm-check-updates/dev-status.svg)](https://david-dm.org/tjunnone/npm-check-updates#info=devDependencies) 
-[![waffle.io issues](https://badge.waffle.io/tjunnone/npm-check-updates.png?label=ready&title=waffle.io)](https://waffle.io/tjunnone/npm-check-updates) 
 
 npm-check-updates is a command-line tool that allows you to **find the latest versions of dependencies**, regardless of any version
 constraints in your package.json file (unlike npm itself).
