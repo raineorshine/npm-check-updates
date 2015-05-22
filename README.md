@@ -41,6 +41,9 @@ Run with '-u' to upgrade your package.json
 ```
 
 Upgrade a project's package.json:
+
+> **Make sure your package.json is in version control and all changes have been committed. This *will* overwrite your package.json.**
+
 ```sh
 $ npm-check-updates -u
 
