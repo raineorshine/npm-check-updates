@@ -32,6 +32,7 @@
   "homepage": "https://github.com/tjunnone/npm-check-updates",
   "dependencies": {
     "async": "^0.9.0",
+    "bluebird": "^2.9.27",
     "cint": "^8.2.1",
     "closest-package": "^1.0.0",
     "commander": "^2.8.1",
