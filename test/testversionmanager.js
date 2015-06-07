@@ -94,34 +94,28 @@ describe('Version manager', function () {
         })
     });
 
-    // describe.only('getInstalledPackages', function () {
-    //     it('should execute npm ls', function () {
-    //         var packages = vm.getInstalledPackages();
-    //         packages.then(function(results) {
-    //             console.log(results);
-    //         })
-    //         return packages.should.eventually.equal('test');
-    //     });
-    // });
+    describe('getInstalledPackages', function () {
+        it('should execute npm ls', function () {
+            return vm.getInstalledPackages()
+                .should.be.resolved;
+        });
+    });
 
     describe('getLatestPackageVersion', function () {
-        it('valid package info', function (done) {
-            version = vm.getLatestPackageVersion("async");
-            return version.should.eventually.be.type('string');
+        return it('valid package info', function () {
+            return vm.getLatestPackageVersion("async")
+                .should.eventually.be.a('string');
         });
     });
 
     describe('getGreatestPackageVersion', function () {
-        it('valid package info', function (done) {
-            vm.getGreatestPackageVersion("async", function (error, version) {
-                should.exist(version);
-                version.should.be.type('string');
-                done();
-            });
+        it('valid package info', function () {
+            return vm.getGreatestPackageVersion("async")
+                .should.eventually.be.a('string');
         });
     });
 
-    describe.only('getLatestVersions', function () {
+    describe('getLatestVersions', function () {
         it('valid single package', function () {
             var latestVersions = vm.getLatestVersions(["async"]);
             return latestVersions.should.eventually.have.property('async');
