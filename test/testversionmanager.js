@@ -1,9 +1,14 @@
-var should = require("should");
 var vm = require("../lib/versionmanager");
+var chai = require("chai");
+var should = chai.should();
+var chaiAsPromised = require("chai-as-promised");
+
+chai.use(chaiAsPromised);
 
 describe('Version manager', function () {
-    before(function(done){
-        vm.initialize(false, done);
+
+    before(function() {
+        return vm.initialize(false);
     });
 
     describe('upgradeDependencyDeclaration', function () {
@@ -89,13 +94,20 @@ describe('Version manager', function () {
         })
     });
 
+    // describe.only('getInstalledPackages', function () {
+    //     it('should execute npm ls', function () {
+    //         var packages = vm.getInstalledPackages();
+    //         packages.then(function(results) {
+    //             console.log(results);
+    //         })
+    //         return packages.should.eventually.equal('test');
+    //     });
+    // });
+
     describe('getLatestPackageVersion', function () {
         it('valid package info', function (done) {
-            vm.getLatestPackageVersion("async", function (error, version) {
-                should.exist(version);
-                version.should.be.type('string');
-                done();
-            });
+            version = vm.getLatestPackageVersion("async");
+            return version.should.eventually.be.type('string');
         });
     });
 
@@ -109,55 +121,37 @@ describe('Version manager', function () {
         });
     });
 
-    describe('getLatestVersions', function () {
-        it('valid single package', function (done) {
-            vm.getLatestVersions(["async"], function (error, latestVersions) {
-                should.exist(latestVersions.async);
-                done();
-            });
+    describe.only('getLatestVersions', function () {
+        it('valid single package', function () {
+            var latestVersions = vm.getLatestVersions(["async"]);
+            return latestVersions.should.eventually.have.property('async');
         });
 
-        it('valid packages', function (done) {
-            vm.getLatestVersions(["async", "npm"], function (error, latestVersions) {
-                should.exist(latestVersions.async);
-                should.exist(latestVersions["npm"]);
-                done();
-            });
+        it('valid packages', function () {
+            var latestVersions = vm.getLatestVersions(["async", "npm"])
+            latestVersions.should.eventually.have.property('async')
+            latestVersions.should.eventually.have.property('npm');
+            return latestVersions;
         });
 
-        it('unavailable packages should not blow up', function (done) {
-            vm.getLatestVersions(["sudoMakeMeASandwitch"], function (error, latestVersions) {
-                done();
-            });
+        it('unavailable packages should not blow up', function () {
+            return vm.getLatestVersions(["sudoMakeMeASandwitch"])
+                .should.be.rejected;
         });
 
-        it('optional options object', function (done) {
-            vm.getLatestVersions(["async"], {}, function (error, latestVersions) {
-                should.exist(latestVersions.async);
-                done();
-            });
+        it('set the versionTarget explicitly to latest', function () {
+            return vm.getLatestVersions(["async"], { versionTarget: 'latest' })
+                .should.eventually.have.property('async');
         });
 
-        it('set the versionTarget explicitly to latest', function (done) {
-            vm.getLatestVersions(["async"], { versionTarget: 'latest' }, function (error, latestVersions) {
-                should.exist(latestVersions.async);
-                done();
-            });
+        it('set the versionTarget to greatest', function () {
+            return vm.getLatestVersions(["async"], { versionTarget: 'greatest' })
+                .should.eventually.have.property('async');
         });
 
-        it('set the versionTarget to greatest', function (done) {
-            vm.getLatestVersions(["async"], { versionTarget: 'greatest' }, function (error, latestVersions) {
-                should.exist(latestVersions.async);
-                done();
-            });
-        });
-
-        it('should return an error for an unsupported versionTarget', function (done) {
-            vm.getLatestVersions(["async"], { versionTarget: 'foo' }, function (error, latestVersions) {
-                should.exist(error);
-                error.should.match(/unsupported/i);
-                done();
-            });
+        it('should return an error for an unsupported versionTarget', function () {
+            var a = vm.getLatestVersions(["async"], { versionTarget: 'foo' })
+            return a.should.be.rejected;
         });
 
     });
