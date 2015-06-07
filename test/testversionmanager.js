@@ -171,6 +171,53 @@ describe('Version manager', function () {
             vm.isUpgradeable("5.0.0", "4.11.2").should.equal(false);
         });
 
+    });
+
+    describe('getPreferredWildcard', function() {
+
+        it('should identify ^ when it is preferred', function() {
+            var deps = {
+                async: '^0.9.0',
+                bluebird: '^2.9.27',
+                cint: '^8.2.1',
+                commander: '~2.8.1',
+                lodash: '^3.2.0',
+            };
+            vm.getPreferredWildcard(deps).should.equal('^');
+        });
+
+        it('should identify ~ when it is preferred', function() {
+            var deps = {
+                async: '~0.9.0',
+                bluebird: '~2.9.27',
+                cint: '^8.2.1',
+                commander: '~2.8.1',
+                lodash: '^3.2.0',
+            };
+            vm.getPreferredWildcard(deps).should.equal('~');
+        });
+
+        it('should identify .x when it is preferred', function() {
+            var deps = {
+                async: '0.9.x',
+                bluebird: '2.9.x',
+                cint: '^8.2.1',
+                commander: '~2.8.1',
+                lodash: '3.x',
+            };
+            vm.getPreferredWildcard(deps).should.equal('.x');
+        });
+
+        it('should identify .* when it is preferred', function() {
+            var deps = {
+                async: '0.9.*',
+                bluebird: '2.9.*',
+                cint: '^8.2.1',
+                commander: '~2.8.1',
+                lodash: '3.*',
+            };
+            vm.getPreferredWildcard(deps).should.equal('.*');
+        });
     })
 
 });
