@@ -35,18 +35,25 @@ describe('Version manager', function () {
             vm.upgradeDependencyDeclaration("1.*", "2.0.1").should.equal("2.*");
         });
 
-        it('constrained numeric upgrades', function () {
-            vm.upgradeDependencyDeclaration("<1.0", "1.1.0").should.equal("<1.1");
-            vm.upgradeDependencyDeclaration("<1.0", "1.1.1").should.equal("<1.1");
+        it('should convert < to ^', function () {
+            vm.upgradeDependencyDeclaration("<1.0", "1.1.0").should.equal("^1.1");
+        })
+
+        it('should preserve > and >=', function () {
+            vm.upgradeDependencyDeclaration(">1.0", "2.0.0").should.equal(">2.0");
             vm.upgradeDependencyDeclaration(">=1.0", "2.0.0").should.equal(">=2.0");
+        })
+
+        it('should preserve ^ and ~', function () {
             vm.upgradeDependencyDeclaration("^1.2.3", "1.2.4").should.equal("^1.2.4");
+            vm.upgradeDependencyDeclaration("~1.2.3", "1.2.4").should.equal("~1.2.4");
         });
 
         it('should replace closed ranges with ^', function () {
             vm.upgradeDependencyDeclaration("1.0.0 < 1.2.0", "3.1.0").should.equal("^3.1.0");
         });
         
-        it('should replace multiple ranges with ^ while preserving number of components', function () {
+        it('should replace multiple ranges with ^', function () {
             vm.upgradeDependencyDeclaration(">1.0 >2.0 < 3.0", "3.1.0").should.equal("^3.1");
         });
 
