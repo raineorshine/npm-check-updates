@@ -31,7 +31,7 @@ Usage
 
 Show any new dependencies for the project in the current directory:
 ```sh
-$ npm-check-updates
+$ ncu
 
 "connect" can be updated from ^2.8.0 to ^2.11.0  (Installed: 2.8.8, Latest: 2.11.0)
 "commander" can be updated from ^1.3.0 to ^2.0.0 (Installed: 1.3.2, Latest: 2.0.0)
@@ -44,7 +44,7 @@ Upgrade a project's package.json:
 > **Make sure your package.json is in version control and all changes have been committed. This *will* overwrite your package.json.**
 
 ```sh
-$ npm-check-updates -u
+$ ncu -u
 
 "request" can be updated from ^2.20.0 to ^2.27.0 (Installed: 2.20.0, Latest: 2.27.1)
 
@@ -54,14 +54,14 @@ package.json upgraded
 Filter by package name:
 ```sh
 # match mocha and should packages exactly
-$ npm-check-updates -f mocha,should         
+$ ncu -f mocha,should         
 
 # match packages that start with "gulp-" using regex
-$ npm-check-updates -f /^gulp-/             
+$ ncu -f /^gulp-/             
 
 # match packages that do not start with "gulp-". Note: single quotes are required 
 # here to avoid inadvertant bash parsing
-$ npm-check-updates -f '/^(?!gulp-).*$/'    
+$ ncu -f '/^(?!gulp-).*$/'    
 ```
 
 Options
@@ -76,10 +76,9 @@ Options
                              packages need updating (useful for continuous 
                              integration) (alpha release only)
     -g, --global             check global packages instead of in the current project
-    -j, --json               output upgraded dependencies in json instead of human-
-                             readable message
-    --jsonFlat               output upgraded dependencies in flat json (deps and 
-                             devDeps not separated)
+    -j, --jsonAll            output new package.json instead of human-readable
+                             message
+    --jsonUpgraded           output upgraded dependencies in json
     -p, --prod               check only dependencies (not devDependencies)
     --registry               specify third-party NPM registry
     -s, --silent             don't output anything
@@ -143,9 +142,10 @@ How dependency updates are determined
   - 1.x => 2.x
 - "Any version" is maintained:
   - \* => \*
-- Version constraints are maintained:
-  - \>0.2.0 => \> 0.3.0
-  - \>=1.0.0 => >=1.1.0
+- "Greater than" is maintained:
+  - \>0.2.0 => \>0.3.0
+- Closed ranges are replaced with a wildcard:
+  - 1.0.0 \< 2.0.0 => ^3.0.0
 
 Problems?
 --------------
