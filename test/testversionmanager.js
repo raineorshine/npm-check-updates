@@ -135,9 +135,9 @@ describe('Version manager', function () {
             return latestVersions;
         });
 
-        it('unavailable packages should not blow up', function () {
+        it('unavailable packages should be ignored', function () {
             return vm.getLatestVersions(["sudoMakeMeASandwitch"])
-                .should.be.rejected;
+                .should.eventually.deep.equal({})
         });
 
         it('set the versionTarget explicitly to latest', function () {
