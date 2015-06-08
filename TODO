@@ -1,0 +1,3 @@
+ ☐ Use getPreferredWildcard
+ ☐ Refactor and generalize versionmanager.js#365
+ ☐ Refactor for loop in analyzeGlobalPackages
