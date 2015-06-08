@@ -76,6 +76,10 @@ Options
                              packages need updating (useful for continuous 
                              integration) (alpha release only)
     -g, --global             check global packages instead of in the current project
+    -j, --json               output upgraded dependencies in json instead of human-
+                             readable message
+    --jsonFlat               output upgraded dependencies in flat json (deps and 
+                             devDeps not separated)
     -p, --prod               check only dependencies (not devDependencies)
     --registry               specify third-party NPM registry
     -s, --silent             don't output anything
