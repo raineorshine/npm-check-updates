@@ -1,3 +1,4 @@
  ☐ Use getPreferredWildcard
  ☐ Refactor and generalize versionmanager.js#365
  ☐ Refactor for loop in analyzeGlobalPackages
+ ☐ Create Promise waterfall/aggregate function that appends results at each stage to be used in analyzeGlobalPackages
