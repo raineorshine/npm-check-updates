@@ -29,6 +29,8 @@ npm install -g npm-check-updates@unstable
 Usage
 --------------
 
+> **This documentation is for the upcoming v2 release, available on the `unstable` tag. It is recommended that you install the unstable branch in preparation for v2. For documentation for the `stable` tag, please see [v1.5.1](https://github.com/tjunnone/npm-check-updates/tree/a7373782cb9623d44395eabf6382d6791749b16e). **
+
 Show any new dependencies for the project in the current directory:
 ```sh
 $ ncu
