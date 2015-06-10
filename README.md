@@ -56,23 +56,20 @@ package.json upgraded
 Filter by package name:
 ```sh
 # match mocha and should packages exactly
-$ ncu -f mocha,should         
+$ ncu f mocha,should         
 
 # match packages that start with "gulp-" using regex
-$ ncu -f /^gulp-/             
+$ ncu /^gulp-/             
 
 # match packages that do not start with "gulp-". Note: single quotes are required 
 # here to avoid inadvertant bash parsing
-$ ncu -f '/^(?!gulp-).*$/'    
+$ ncu '/^(?!gulp-).*$/'    
 ```
 
 Options
 --------------
     -d, --dev                check only devDependencies
     -h, --help               output usage information
-    -f, --filter <packages>  list or regex of package names to search (all others
-                             will be ignored). Note: single quotes may be required 
-                             to avoid inadvertant bash parsing.
     -e, --error-level        set the error-level. 1: exits with error code 0 if no  
                              errors occur. 2: exits with error code 0 if no 
                              packages need updating (useful for continuous 
