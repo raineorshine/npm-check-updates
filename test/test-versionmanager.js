@@ -93,13 +93,17 @@ describe('versionmanager', function () {
     });
 
     describe('upgradeDependencies', function() {
-        it('should return upgraded dependencies object', function() {
-            vm.upgradeDependencies({ mongodb: '^1.4.29' }, { mongodb: '1.4.30' }).should.eql({ mongodb: '^1.4.30' });
-        })
+        it('should upgrade simple versions', function() {
+            vm.upgradeDependencies({ mongodb: '0.5' }, { mongodb: '1.4.30' }).should.eql({ mongodb: '1.4' });
+        });
+        it('should not upgrade latest versions that already satisfy the specified version', function() {
+            vm.upgradeDependencies({ mongodb: '^1.0.0' }, { mongodb: '1.4.30' }).should.eql({});
+        });
         it('should not downgrade', function() {
-            vm.upgradeDependencies({ mongodb: '^2.0.7' }, { mongodb: '1.4.30' }).should.eql({ });
-        })
+            vm.upgradeDependencies({ mongodb: '^2.0.7' }, { mongodb: '1.4.30' }).should.eql({});
+        });
         it('should use the preferred wildcard when converting <, closed, or mixed ranges', function() {
+            vm.upgradeDependencies({ passport: '>0.1 <0.2' }, { passport: '0.2.2' }).should.eql({ passport: '^0.2.2' });
             vm.upgradeDependencies({ a: '1.*', mongodb: '<1.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '3.*' });
             vm.upgradeDependencies({ a: '1.x', mongodb: '<1.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '3.x' });
             vm.upgradeDependencies({ a: '~1', mongodb: '<1.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '~3.0' });
@@ -107,10 +111,10 @@ describe('versionmanager', function () {
 
             vm.upgradeDependencies({ a: '1.*', mongodb: '>1.0 <2.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '3.*' });
             vm.upgradeDependencies({ mongodb: '>1.0 <2.*' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '3.*' });
-        })
+        });
         it('should convert closed ranges to caret (^) when preferred wildcard is unknown', function() {
             vm.upgradeDependencies({ mongodb: '>1.0 <2.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '^3.0' });
-        })
+        });
     });
 
     describe('getInstalledPackages', function () {
@@ -181,6 +185,12 @@ describe('versionmanager', function () {
 
         it("should not upgrade versions beyond the latest", function() {
             vm.isUpgradeable("5.0.0", "4.11.2").should.equal(false);
+        });
+
+        it("should handle comparison constraints", function() {
+            vm.isUpgradeable(">1.0", "0.5.1").should.equal(false);
+            vm.isUpgradeable("<3.0 >0.1", "0.5.1").should.equal(false);
+            vm.isUpgradeable(">0.1.x", "0.5.1").should.equal(false);
         });
 
     });
