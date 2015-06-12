@@ -8,7 +8,7 @@ chai.use(chaiAsPromised);
 describe('versionmanager', function () {
 
     before(function() {
-        return vm.initialize(false);
+        return vm.initialize(false).should.be.resolved;
     });
 
     describe('upgradeDependencyDeclaration', function () {
@@ -86,6 +86,83 @@ describe('versionmanager', function () {
             vm.upgradeDependencyDeclaration("1.0", "").should.equal("1.0");
             vm.upgradeDependencyDeclaration("1.0", null).should.equal("1.0");
         });
+    });
+
+    describe('getCurrentDependencies', function() {
+
+        var deps;
+        beforeEach(function() {
+            deps = {
+                dependencies: {
+                    mocha: '1.2' 
+                },
+                devDependencies: {
+                    lodash: '^3.9.3'
+                }
+            };
+        })
+
+        it('should return an empty object for an empty package.json and handle default options', function() {
+            vm.getCurrentDependencies().should.eql({});
+            vm.getCurrentDependencies({}).should.eql({});
+            vm.getCurrentDependencies({}, {}).should.eql({});
+        });
+
+        it('should get dependencies and devDependencies by default', function() {
+            vm.getCurrentDependencies(deps).should.eql({
+                mocha: '1.2',
+                lodash: '^3.9.3'
+            });
+        });
+
+        it('should only get dependencies when the prod option is true', function() {
+            vm.getCurrentDependencies(deps, { prod: true }).should.eql({
+                mocha: '1.2'
+            });
+        });
+
+        it('should only get devDependencies when the dev option is true', function() {
+            vm.getCurrentDependencies(deps, { dev: true }).should.eql({
+                lodash: '^3.9.3'
+            });
+        });
+
+        it('should filter dependencies by package name', function() {
+            vm.getCurrentDependencies(deps, { filter: 'mocha' }).should.eql({
+                mocha: '1.2' 
+            });
+        });
+
+        it('should not filter out dependencies with a partial package name', function() {
+            vm.getCurrentDependencies(deps, { filter: 'o' }).should.eql({});
+        });
+
+        it('should filter dependencies by multiple packages', function() {
+            vm.getCurrentDependencies(deps, { filter: 'mocha lodash' }).should.eql({
+                mocha: '1.2',
+                lodash: '^3.9.3'
+            });
+            vm.getCurrentDependencies(deps, { filter: 'mocha,lodash' }).should.eql({
+                mocha: '1.2',
+                lodash: '^3.9.3'
+            });
+            vm.getCurrentDependencies(deps, { filter: ['mocha', 'lodash'] }).should.eql({
+                mocha: '1.2',
+                lodash: '^3.9.3'
+            });
+        });
+
+        it('should filter dependencies by regex', function() {
+            vm.getCurrentDependencies(deps, { filter: /o/ }).should.eql({
+                mocha: '1.2',
+                lodash: '^3.9.3'
+            });
+            vm.getCurrentDependencies(deps, { filter: '/o/' }).should.eql({
+                mocha: '1.2',
+                lodash: '^3.9.3'
+            });
+        });
+
     });
 
     describe('upgradeDependencies', function() {
