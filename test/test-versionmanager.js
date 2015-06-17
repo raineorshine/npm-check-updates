@@ -56,16 +56,16 @@ describe('versionmanager', function () {
         it('should handle ||', function () {
             vm.upgradeDependencyDeclaration("~1.0 || ~1.2", "3.1.0").should.equal("~3.1");
         });
-        
+
         it('should use the range with the fewest parts if there are multiple ranges', function () {
             vm.upgradeDependencyDeclaration("1.1 || 1.2.0", "3.1.0").should.equal("3.1");
             vm.upgradeDependencyDeclaration("1.2.0 || 1.1", "3.1.0").should.equal("3.1");
         });
-        
+
         it('should preserve wildcards in comparisons', function () {
             vm.upgradeDependencyDeclaration("1.x < 1.2.0", "3.1.0").should.equal("3.x");
         });
-        
+
         it('should use the first operator if a comparison has mixed operators', function () {
             vm.upgradeDependencyDeclaration("1.x < 1.*", "3.1.0").should.equal("3.x");
         });
@@ -88,13 +88,45 @@ describe('versionmanager', function () {
         });
     });
 
+    describe('updatePackageData', function() {
+        it('should upgrade the dependencies in the given package data', function() {
+            var pkgData = JSON.stringify({
+              "name": "npm-check-updates",
+              "dependencies": {
+                "bluebird": "<2.0"
+              },
+              "devDependencies": {
+                "mocha": "^1"
+              }
+            });
+            var oldDependencies = {
+                "bluebird": "<2.0",
+                "mocha": "^1"
+            };
+            var newDependencies = {
+                "bluebird": "^2.9",
+                "mocha": "^2"
+            };
+            JSON.parse(vm.updatePackageData(pkgData, oldDependencies, newDependencies))
+            .should.eql({
+              "name": "npm-check-updates",
+              "dependencies": {
+                "bluebird": "^2.9"
+              },
+              "devDependencies": {
+                "mocha": "^2"
+              }
+            })
+        });
+    });
+
     describe('getCurrentDependencies', function() {
 
         var deps;
         beforeEach(function() {
             deps = {
                 dependencies: {
-                    mocha: '1.2' 
+                    mocha: '1.2'
                 },
                 devDependencies: {
                     lodash: '^3.9.3'
@@ -129,7 +161,7 @@ describe('versionmanager', function () {
 
         it('should filter dependencies by package name', function() {
             vm.getCurrentDependencies(deps, { filter: 'mocha' }).should.eql({
-                mocha: '1.2' 
+                mocha: '1.2'
             });
         });
 
