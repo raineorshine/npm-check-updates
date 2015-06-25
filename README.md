@@ -56,7 +56,7 @@ package.json upgraded
 Filter by package name:
 ```sh
 # match mocha and should packages exactly
-$ ncu f mocha,should
+$ ncu mocha,should
 
 # match packages that start with "gulp-" using regex
 $ ncu /^gulp-/
