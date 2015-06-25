@@ -198,15 +198,25 @@ describe('versionmanager', function () {
     });
 
     describe('upgradeDependencies', function() {
+
         it('should upgrade simple versions', function() {
             vm.upgradeDependencies({ mongodb: '0.5' }, { mongodb: '1.4.30' }).should.eql({ mongodb: '1.4' });
         });
+
         it('should not upgrade latest versions that already satisfy the specified version', function() {
             vm.upgradeDependencies({ mongodb: '^1.0.0' }, { mongodb: '1.4.30' }).should.eql({});
         });
+
+        it('should upgrade latest versions that already satisfy the specified version if force option is specified', function() {
+            vm.upgradeDependencies({ mongodb: '^1.0.0' }, { mongodb: '1.4.30' }, { force: true }).should.eql({
+                mongodb: '^1.4.30'
+            });
+        });
+
         it('should not downgrade', function() {
             vm.upgradeDependencies({ mongodb: '^2.0.7' }, { mongodb: '1.4.30' }).should.eql({});
         });
+
         it('should use the preferred wildcard when converting <, closed, or mixed ranges', function() {
             vm.upgradeDependencies({ a: '1.*', mongodb: '<1.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '3.*' });
             vm.upgradeDependencies({ a: '1.x', mongodb: '<1.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '3.x' });

@@ -1,7 +1,7 @@
-[![npm stable version](https://img.shields.io/npm/v/npm-check-updates.svg?label=stable)](https://npmjs.org/package/npm-check-updates) 
-[![npm unstable version](https://img.shields.io/github/tag/tjunnone/npm-check-updates.svg?label=unstable)](https://github.com/tjunnone/npm-check-updates/tags) 
-[![Dependency Status](https://david-dm.org/tjunnone/npm-check-updates.svg)](https://david-dm.org/tjunnone/npm-check-updates) 
-[![devDependency Status](https://david-dm.org/tjunnone/npm-check-updates/dev-status.svg)](https://david-dm.org/tjunnone/npm-check-updates#info=devDependencies) 
+[![npm stable version](https://img.shields.io/npm/v/npm-check-updates.svg?label=stable)](https://npmjs.org/package/npm-check-updates)
+[![npm unstable version](https://img.shields.io/github/tag/tjunnone/npm-check-updates.svg?label=unstable)](https://github.com/tjunnone/npm-check-updates/tags)
+[![Dependency Status](https://david-dm.org/tjunnone/npm-check-updates.svg)](https://david-dm.org/tjunnone/npm-check-updates)
+[![devDependency Status](https://david-dm.org/tjunnone/npm-check-updates/dev-status.svg)](https://david-dm.org/tjunnone/npm-check-updates#info=devDependencies)
 
 npm-check-updates is a command-line tool that allows you to **find the latest versions of dependencies**, regardless of any version
 constraints in your package.json file (unlike npm itself).
@@ -20,7 +20,7 @@ Installation
 npm install -g npm-check-updates
 ```
 
-Please consider installing the unstable version to help test pre-release features. You may even find [some features](#history) you needed that are not yet in the stable version. 
+Please consider installing the unstable version to help test pre-release features. You may even find [some features](#history) you needed that are not yet in the stable version.
 
 ```sh
 npm install -g npm-check-updates@unstable
@@ -56,24 +56,26 @@ package.json upgraded
 Filter by package name:
 ```sh
 # match mocha and should packages exactly
-$ ncu f mocha,should         
+$ ncu f mocha,should
 
 # match packages that start with "gulp-" using regex
-$ ncu /^gulp-/             
+$ ncu /^gulp-/
 
-# match packages that do not start with "gulp-". Note: single quotes are required 
+# match packages that do not start with "gulp-". Note: single quotes are required
 # here to avoid inadvertant bash parsing
-$ ncu '/^(?!gulp-).*$/'    
+$ ncu '/^(?!gulp-).*$/'
 ```
 
 Options
 --------------
     -d, --dev                check only devDependencies
     -h, --help               output usage information
-    -e, --error-level        set the error-level. 1: exits with error code 0 if no  
-                             errors occur. 2: exits with error code 0 if no 
-                             packages need updating (useful for continuous 
+    -e, --error-level        set the error-level. 1: exits with error code 0 if no
+                             errors occur. 2: exits with error code 0 if no
+                             packages need updating (useful for continuous
                              integration) (alpha release only)
+    -f, --force              force upgrade even when the latest version satisfies
+                             the declared semver dependency
     -g, --global             check global packages instead of in the current project
     -j, --jsonAll            output new package.json instead of human-readable
                              message
@@ -81,9 +83,9 @@ Options
     -p, --prod               check only dependencies (not devDependencies)
     --registry               specify third-party NPM registry
     -s, --silent             don't output anything
-    -t, --greatest           find the highest versions available instead of the 
+    -t, --greatest           find the highest versions available instead of the
                              latest stable versions (alpha release only)
-    -u, --upgrade            upgrade package.json dependencies to match latest 
+    -u, --upgrade            upgrade package.json dependencies to match latest
                              versions (maintaining existing policy)
     -V, --version            output the version number
 
