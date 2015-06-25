@@ -1,7 +1,10 @@
 {
   "name": "npm-check-updates",
-  "version": "2.0.0-alpha.9",
+  "version": "2.0.0-alpha.10",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
+  "contributors": [
+    "Raine Lourie (http://github.com/metaraine)"
+  ],
   "description": "Find newer versions of dependencies than what your package.json allows",
   "keywords": [
     "npm",
