@@ -89,7 +89,6 @@ Options
                              versions (maintaining existing policy)
     -V, --version            output the version number
 
-
 Motivation
 --------------
 
@@ -98,6 +97,21 @@ Motivation
 Unfortunately, it then becomes your responsibility to find out about new
 package releases, for example by using "npm info" command one package at a time, or by visiting project pages.
 
+How dependency updates are determined
+--------------
+
+- Direct dependencies will be increased to the latest stable version:
+  - 2.0.1 => 2.2.0
+  - 1.2 => 1.3
+-  Semantic versioning policies for levels are maintained while satisfying the latest version:
+  - ^1.2.0 => ^1.3.0
+  - 1.x => 2.x
+- "Any version" is maintained:
+  - \* => \*
+- "Greater than" is maintained:
+  - \>0.2.0 => \>0.3.0
+- Closed ranges are replaced with a wildcard:
+  - 1.0.0 \< 2.0.0 => ^3.0.0
 
 History
 --------------
@@ -143,22 +157,6 @@ History
   - Now also checks and upgrades devDependencies in package.json
 - 1.0
   - Find and upgrade dependencies maintaining existing versioning policy in package.json
-
-How dependency updates are determined
---------------
-
-- Direct dependencies will be increased to the latest stable version:
-  - 2.0.1 => 2.2.0
-  - 1.2 => 1.3
--  Semantic versioning policies for levels are maintained while satisfying the latest version:
-  - ^1.2.0 => ^1.3.0
-  - 1.x => 2.x
-- "Any version" is maintained:
-  - \* => \*
-- "Greater than" is maintained:
-  - \>0.2.0 => \>0.3.0
-- Closed ranges are replaced with a wildcard:
-  - 1.0.0 \< 2.0.0 => ^3.0.0
 
 Problems?
 --------------
