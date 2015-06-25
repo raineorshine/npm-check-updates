@@ -102,6 +102,18 @@ package releases, for example by using "npm info" command one package at a time,
 History
 --------------
 
+- *2.0.0-alpha.10*
+  - Move filter from command-line option to argument
+  - Add -f/--force option to force upgrades even when the latest version satisfies the declared semver dependency
+- *2.0.0-alpha.9*
+  - Refactoring
+- *2.0.0-alpha.8*
+  - Add ncu alias
+  - Allow specifying third-party registry with -r/--registry flag
+  - Replace callbacks with promises
+  - Replace < and <= with ^
+  - Add -j/--json and --jsonFlat flags for json output
+  - Full unit test coverage!
 - *2.0.0-alpha.7*
   - Bug fixes and refactoring
 - *2.0.0-alpha5*
