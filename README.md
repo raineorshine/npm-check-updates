@@ -91,14 +91,14 @@ Options
 
 Integration
 --------------
-The tool allows integration with 3-rd party code:
+The tool allows integration with 3rd party code:
 
 ```javascript
 var checkUpdates = require('npm-check-updates');
 
 checkUpdates.run({
-    upgrade: true, // see available options above 
-    force: true 
+    upgrade: true, // see available options above
+    force: true
 }).then(function() {
     console.log('done upgrading dependencies');
 });
@@ -131,6 +131,8 @@ How dependency updates are determined
 History
 --------------
 
+- *2.0.0-alpha.11*
+  - Export functionality to allow for programmatic use
 - *2.0.0-alpha.10*
   - Move filter from command-line option to argument
   - Add -f/--force option to force upgrades even when the latest version satisfies the declared semver dependency
