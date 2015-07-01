@@ -89,6 +89,21 @@ Options
                              versions (maintaining existing policy)
     -V, --version            output the version number
 
+Integration
+--------------
+The tool allows integration with 3-rd party code:
+
+```javascript
+var checkUpdates = require('npm-check-updates');
+
+checkUpdates.run({
+    upgrade: true, // see available options above 
+    force: true 
+}).then(function() {
+    console.log('done upgrading dependencies');
+});
+```
+
 Motivation
 --------------
 

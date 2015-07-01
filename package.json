@@ -2,6 +2,7 @@
   "name": "npm-check-updates",
   "version": "2.0.0-alpha.10",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
+  "license": "MIT",
   "contributors": [
     "Raine Lourie (http://github.com/metaraine)"
   ],
