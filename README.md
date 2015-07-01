@@ -99,6 +99,8 @@ var checkUpdates = require('npm-check-updates');
 checkUpdates.run({
     upgrade: true, // see available options above 
     force: true 
+}).then(function() {
+    console.log('done upgrading dependencies');
 });
 ```
 
