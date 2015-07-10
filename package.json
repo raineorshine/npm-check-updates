@@ -42,7 +42,7 @@
     "commander": "^2.8.1",
     "get-stdin-promise": "^0.1.1",
     "lodash": "^3.9.3",
-    "npm": "^2.11.1",
+    "npm": "^2.12.1",
     "semver": "^4.3.6",
     "semver-utils": "metaraine/semver-utils.git#ff978"
   },

@@ -3,15 +3,9 @@
 [![Dependency Status](https://david-dm.org/tjunnone/npm-check-updates.svg)](https://david-dm.org/tjunnone/npm-check-updates)
 [![devDependency Status](https://david-dm.org/tjunnone/npm-check-updates/dev-status.svg)](https://david-dm.org/tjunnone/npm-check-updates#info=devDependencies)
 
-npm-check-updates is a command-line tool that allows you to **find the latest versions of dependencies**, regardless of any version
-constraints in your package.json file (unlike npm itself).
+npm-check-updates is a command-line tool that allows you to find and save the *latest* versions of dependencies, regardless of any version constraints in your package.json file (unlike npm itself).
 
-npm-check-updates can optionally upgrade your package.json file to
-use the latest available versions, all while **maintaining your
-existing semantic versioning policies**.
-
-Put plainly, it will upgrade your `"express": "^4.11.2"` dependency to
-`"express": "^5.0.0"` when express 5.0.0 is released.
+npm-check-updates *maintains your existing semantic versioning policies*, i.e., it will upgrade your `"express": "^4.11.2"` dependency to `"express": "^5.0.0"` when express 5.0.0 is released.
 
 Installation
 --------------
@@ -26,16 +20,23 @@ Please consider installing the unstable version to help test pre-release feature
 npm install -g npm-check-updates@unstable
 ```
 
+Important Notes about v2
+--------------
+> *This documentation is for the upcoming v2 release, available on the `unstable` tag. It is recommended that you install the unstable branch using `npm install -g npm-check-updates@unstable` in preparation for v2. For documentation for the `stable` tag, please see [v1.5.1](https://github.com/tjunnone/npm-check-updates/tree/a7373782cb9623d44395eabf6382d6791749b16e). npm-check-updates v2 has a few important differences from v1:*
+
+- Newer published versions that satisfy the specified range are *not* upgraded by default (e.g. `1.0.0` to `1.1.0`). This change was made because `npm update` handles upgrades within the satisfied range just fine, and npm-check-updates is primarily intended to provide functionality not otherwise provided by npm itself. **For the old behavior, use the -f/--force option. Even better, [let me know](https://github.com/tjunnone/npm-check-updates/issues/94), with reasons, why you think the old behavior is better.**
+- Dependencies with less-than relations (e.g. `<1.0.0` or `<=1.2`) are converted to semantic wildcard relations (e.g. `^2.0.0` or `^2.0`). This change was made because if you are going to upgrade these to backwards-incompatible versions, the less-than contraint will no longer be relevant.
+- The command-line argument now specifies a package name filter (e.g. `ncu /^gulp-/`). For the old behavior (specifying an alternative package.json), you can pipe the package.json through stdin.
+- Use the easier-to-type `ncu` instead of `npm-check-updates`. `npm-check-updates` is preserved for backwards-compatibility.
+
 Usage
 --------------
-
-> *This documentation is for the upcoming v2 release, available on the `unstable` tag. It is recommended that you install the unstable branch using `npm install -g npm-check-updates@unstable` in preparation for v2. For documentation for the `stable` tag, please see [v1.5.1](https://github.com/tjunnone/npm-check-updates/tree/a7373782cb9623d44395eabf6382d6791749b16e).*
 
 Show any new dependencies for the project in the current directory:
 ```sh
 $ ncu
 
-"connect" can be updated from ^2.8.0 to ^2.11.0  (Installed: 2.8.8, Latest: 2.11.0)
+"connect" can be updated from ^2.8.0 to ^3.4.0  (Installed: 2.8.8, Latest: 3.4.0)
 "commander" can be updated from ^1.3.0 to ^2.0.0 (Installed: 1.3.2, Latest: 2.0.0)
 
 Run with '-u' to upgrade your package.json
@@ -48,7 +49,7 @@ Upgrade a project's package.json:
 ```sh
 $ ncu -u
 
-"request" can be updated from ^2.20.0 to ^2.27.0 (Installed: 2.20.0, Latest: 2.27.1)
+"request" can be updated from ^1.0.0 to ^2.58.0 (Installed: 1.0.0, Latest: 2.58.0)
 
 package.json upgraded
 ```
@@ -73,7 +74,7 @@ Options
     -e, --error-level        set the error-level. 1: exits with error code 0 if no
                              errors occur. 2: exits with error code 0 if no
                              packages need updating (useful for continuous
-                             integration) (alpha release only)
+                             integration)
     -f, --force              force upgrade even when the latest version satisfies
                              the declared semver dependency
     -g, --global             check global packages instead of in the current project
@@ -104,14 +105,6 @@ checkUpdates.run({
 });
 ```
 
-Motivation
---------------
-
-[Package.json best practices](http://blog.nodejitsu.com/package-dependencies-done-right) recommends maintaining dependencies using a [semantic versioning](http://semver.org/) policy. In practice you do this by specifying a "^1.2.0" style dependency in your package.json, whereby patch- and minor-level updates are automatically allowed but major releases require manual verification.
-
-Unfortunately, it then becomes your responsibility to find out about new
-package releases, for example by using "npm info" command one package at a time, or by visiting project pages.
-
 How dependency updates are determined
 --------------
 
@@ -119,7 +112,7 @@ How dependency updates are determined
   - 2.0.1 => 2.2.0
   - 1.2 => 1.3
 -  Semantic versioning policies for levels are maintained while satisfying the latest version:
-  - ^1.2.0 => ^1.3.0
+  - ^1.2.0 => ^2.0.0
   - 1.x => 2.x
 - "Any version" is maintained:
   - \* => \*
