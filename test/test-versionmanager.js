@@ -107,7 +107,11 @@ describe('versionmanager', function () {
                 "bluebird": "^2.9",
                 "mocha": "^2"
             };
-            JSON.parse(vm.updatePackageData(pkgData, oldDependencies, newDependencies))
+            var newVersions = {
+                "bluebird": "2.9.0",
+                "mocha": "2.2.5"
+            };
+            JSON.parse(vm.updatePackageData(pkgData, oldDependencies, newDependencies, newVersions))
             .should.eql({
               "name": "npm-check-updates",
               "dependencies": {
@@ -203,12 +207,8 @@ describe('versionmanager', function () {
             vm.upgradeDependencies({ mongodb: '0.5' }, { mongodb: '1.4.30' }).should.eql({ mongodb: '1.4' });
         });
 
-        it('should not upgrade latest versions that already satisfy the specified version', function() {
-            vm.upgradeDependencies({ mongodb: '^1.0.0' }, { mongodb: '1.4.30' }).should.eql({});
-        });
-
-        it('should upgrade latest versions that already satisfy the specified version if force option is specified', function() {
-            vm.upgradeDependencies({ mongodb: '^1.0.0' }, { mongodb: '1.4.30' }, { force: true }).should.eql({
+        it('should upgrade latest versions that already satisfy the specified version', function() {
+            vm.upgradeDependencies({ mongodb: '^1.0.0' }, { mongodb: '1.4.30' }).should.eql({
                 mongodb: '^1.4.30'
             });
         });
@@ -253,6 +253,9 @@ describe('versionmanager', function () {
     });
 
     describe('getLatestVersions', function () {
+        // We increase the timeout to allow for more time to retrieve the version information
+        this.timeout(30000);
+
         it('valid single package', function () {
             var latestVersions = vm.getLatestVersions(["async"]);
             return latestVersions.should.eventually.have.property('async');
@@ -304,7 +307,7 @@ describe('versionmanager', function () {
         it("should handle comparison constraints", function() {
             vm.isUpgradeable(">1.0", "0.5.1").should.equal(false);
             vm.isUpgradeable("<3.0 >0.1", "0.5.1").should.equal(false);
-            vm.isUpgradeable(">0.1.x", "0.5.1").should.equal(false);
+            vm.isUpgradeable(">0.1.x", "0.5.1").should.equal(true);
         });
 
     });
