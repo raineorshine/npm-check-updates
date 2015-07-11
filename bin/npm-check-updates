@@ -9,7 +9,6 @@ program
     .usage('[options] [filter]')
     .option('-d, --dev', 'check only devDependencies')
     .option('-e, --error-level <n>', 'set the error-level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). Default is 1.', cint.partialAt(parseInt, 1, 10), 1)
-    .option('-f, --force', 'force upgrade even when the latest version satisfies the declared semver dependency')
     .option('-g, --global', 'check global packages instead of in the current project')
     // program.json is set to true in programInit if any options that begin with 'json' are true
     .option('-j, --jsonAll', 'output new package.json instead of human-readable message')
@@ -19,6 +18,7 @@ program
     .option('-s, --silent', "don't output anything")
     .option('-t, --greatest', "find the highest versions available instead of the latest stable versions")
     .option('-u, --upgrade', 'upgrade package.json dependencies to match latest versions (maintaining existing policy)')
+    .option('-a, --upgradeAll', 'upgrade package.json dependencies even when the latest version satisfies the declared semver dependency')
 
 program.parse(process.argv);
 
