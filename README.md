@@ -98,8 +98,7 @@ The tool allows integration with 3rd party code:
 var checkUpdates = require('npm-check-updates');
 
 checkUpdates.run({
-    upgrade: true, // see available options above
-    force: true
+    upgrade: true // see available options above
 }).then(function() {
     console.log('done upgrading dependencies');
 });
