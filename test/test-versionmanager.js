@@ -89,38 +89,58 @@ describe('versionmanager', function () {
     });
 
     describe('updatePackageData', function() {
-        it('should upgrade the dependencies in the given package data', function() {
-            var pkgData = JSON.stringify({
-              "name": "npm-check-updates",
-              "dependencies": {
-                "bluebird": "<2.0"
-              },
-              "devDependencies": {
-                "mocha": "^1"
-              }
-            });
-            var oldDependencies = {
+        var pkgData = JSON.stringify({
+            "name": "npm-check-updates",
+            "dependencies": {
                 "bluebird": "<2.0",
+                "bindings": "^1.1.0"
+            },
+            "devDependencies": {
                 "mocha": "^1"
-            };
-            var newDependencies = {
-                "bluebird": "^2.9",
-                "mocha": "^2"
-            };
-            var newVersions = {
-                "bluebird": "2.9.0",
-                "mocha": "2.2.5"
-            };
+            }
+        });
+        var oldDependencies = {
+            "bluebird": "<2.0",
+            "bindings": "^1.1.0",
+            "mocha": "^1"
+        };
+        var newDependencies = {
+            "bluebird": "^2.9",
+            "bindings": "^1.2.1",
+            "mocha": "^2"
+        };
+        var newVersions = {
+            "bluebird": "2.9.0",
+            "bindings": "1.2.1",
+            "mocha": "2.2.5"
+        };
+
+        it('should upgrade the dependencies in the given package data (except for satisfied)', function() {
             JSON.parse(vm.updatePackageData(pkgData, oldDependencies, newDependencies, newVersions))
             .should.eql({
               "name": "npm-check-updates",
               "dependencies": {
-                "bluebird": "^2.9"
+                "bluebird": "^2.9",
+                "bindings": "^1.1.0"
               },
               "devDependencies": {
                 "mocha": "^2"
               }
             })
+        });
+
+        it('should upgrade the dependencies in the given package data (including satisfied)', function() {
+            JSON.parse(vm.updatePackageData(pkgData, oldDependencies, newDependencies, newVersions, { upgradeAll: true }))
+                .should.eql({
+                    "name": "npm-check-updates",
+                    "dependencies": {
+                        "bluebird": "^2.9",
+                        "bindings": "^1.2.1"
+                    },
+                    "devDependencies": {
+                        "mocha": "^2"
+                    }
+                })
         });
     });
 
