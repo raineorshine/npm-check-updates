@@ -48,6 +48,10 @@ describe('versionmanager', function () {
             vm.upgradeDependencyDeclaration("~1.2.3", "1.2.4").should.equal("~1.2.4");
         });
 
+        it('should preserve prerelease versons', function () {
+            vm.upgradeDependencyDeclaration("^0.15.7", "0.16.0-beta.3").should.equal("^0.16.0-beta.3");
+        });
+
         it('should replace multiple ranges with ^', function () {
             vm.upgradeDependencyDeclaration(">1.0 >2.0 < 3.0", "3.1.0").should.equal("^3.1");
         });
