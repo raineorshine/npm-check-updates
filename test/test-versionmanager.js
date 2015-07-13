@@ -315,6 +315,10 @@ describe('versionmanager', function () {
 
     describe("isUpgradeable", function () {
 
+        it("should not upgrade pure wildcards", function () {
+            vm.isUpgradeable("*", "0.5.1").should.equal(false);
+        });
+
         it("should upgrade versions that do not satisfy latest versions", function () {
             vm.isUpgradeable("0.1.x", "0.5.1").should.equal(true);
         });

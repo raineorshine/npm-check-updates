@@ -75,7 +75,7 @@ describe('version-util', function () {
         });
 
         it('should pad the version with an optional precison argument', function() {
-            
+
             versionUtil.stringify({major: '1'}, 'minor').should.equal('1.0');
             versionUtil.stringify({major: '1'}, 'patch').should.equal('1.0.0');
         });
@@ -186,6 +186,38 @@ describe('version-util', function () {
             versionUtil.addWildCard('1.2.3', '.x').should.equal('1.x');
             versionUtil.addWildCard('1.2.3-alpha.1', '.x').should.equal('1.x');
             versionUtil.addWildCard('1.2.3+build12345', '.x').should.equal('1.x');
+        });
+    });
+
+    describe('isWildCard', function() {
+        it('should return true for ~', function() {
+            versionUtil.isWildCard('~').should.equal(true);
+        });
+        it('should return true for ^', function() {
+            versionUtil.isWildCard('^').should.equal(true);
+        });
+        it('should return true for *', function() {
+            versionUtil.isWildCard('*').should.equal(true);
+        });
+        it('should return false for strings that more than a wildcard', function() {
+            versionUtil.isWildCard('^0.15.0').should.equal(false);
+            versionUtil.isWildCard('1.*').should.equal(false);
+        });
+    });
+
+    describe('isWildPart', function() {
+        it('should return true for *', function() {
+            versionUtil.isWildPart('*').should.equal(true);
+        });
+        it('should return true for x', function() {
+            versionUtil.isWildPart('x').should.equal(true);
+        });
+        it('should return false for anything other than * or x', function() {
+            versionUtil.isWildPart('^').should.equal(false);
+            versionUtil.isWildPart('~').should.equal(false);
+            versionUtil.isWildPart('1.*').should.equal(false);
+            versionUtil.isWildPart('1.x').should.equal(false);
+            versionUtil.isWildPart('^0.15.0').should.equal(false);
         });
     });
 
