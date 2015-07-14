@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-process.env.ncu_old_alias = 'true';
+console.log('You can now use "ncu" for less typing!');
 
 require('./npm-check-updates');
