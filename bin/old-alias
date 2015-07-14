@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+process.env.ncu_old_alias = 'true';
+
+require('./npm-check-updates');

@@ -26,7 +26,7 @@
     "test": "mocha -t 10000"
   },
   "bin": {
-    "npm-check-updates": "./bin/npm-check-updates",
+    "npm-check-updates": "./bin/old-alias",
     "ncu": "./bin/npm-check-updates"
   },
   "repository": {
