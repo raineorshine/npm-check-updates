@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+console.log('You can now use "ncu" for less typing!');
+
+require('./npm-check-updates');
