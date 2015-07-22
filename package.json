@@ -42,6 +42,7 @@
     "cli-table": "^0.3.1",
     "closest-package": "^1.0.0",
     "commander": "^2.8.1",
+    "fast-diff": "^1.0.1",
     "get-stdin-promise": "^0.1.1",
     "lodash": "^3.9.3",
     "npm": "^2.12.1",
