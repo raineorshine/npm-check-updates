@@ -123,6 +123,8 @@ How dependency updates are determined
 History
 --------------
 
+- *2.0.0-alpha.15*
+  - Fix wildcard bug #101.
 - *2.0.0-alpha.14*
   - Colored table output
 - *2.0.0-alpha.13*
