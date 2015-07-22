@@ -123,6 +123,8 @@ How dependency updates are determined
 History
 --------------
 
+- *2.0.0-alpha.14*
+  - Colored table output
 - *2.0.0-alpha.13*
   - Squished some bugs
 - *2.0.0-alpha.12*
