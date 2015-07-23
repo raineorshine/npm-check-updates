@@ -133,6 +133,8 @@ npm-check-updates v2 has a few important differences from v1:
 History
 --------------
 
+- *2.0.0-alpha.16*
+  - minor
 - *2.0.0-alpha.15*
   - Fix wildcard bug #101.
 - *2.0.0-alpha.14*
