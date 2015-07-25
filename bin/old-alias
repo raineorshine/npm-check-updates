@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
-console.log('You can now use "ncu" for less typing!');
+var chalk = require('chalk');
+console.log('You can now use ' + chalk.blue('ncu') + ' for less typing!');
 
 require('./npm-check-updates');
