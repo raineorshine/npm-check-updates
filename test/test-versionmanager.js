@@ -1,6 +1,7 @@
 var vm = require("../lib/versionmanager");
 var chai = require("chai");
 var chaiAsPromised = require("chai-as-promised");
+var should = chai.should();
 
 chai.use(chaiAsPromised);
 
@@ -393,13 +394,14 @@ describe('versionmanager', function () {
             vm.getPreferredWildcard(deps).should.equal('.x');
         });
 
-        it('should default to caret (^) when cannot be determined from other dependencies', function () {
+        it('should return null when it cannot be determined from other dependencies', function () {
             var deps = {
                 async: '0.9.0',
                 commander: '2.8.1',
                 lodash: '3.2.0'
             };
-            vm.getPreferredWildcard(deps).should.equal('^');
+            should.equal(vm.getPreferredWildcard(deps), null);
+            should.equal(vm.getPreferredWildcard({}), null);
         });
     });
 

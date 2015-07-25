@@ -1,45 +1,45 @@
 [![npm stable version](https://img.shields.io/npm/v/npm-check-updates.svg?label=stable)](https://npmjs.org/package/npm-check-updates)
-<!-- [![npm unstable version](https://img.shields.io/github/tag/tjunnone/npm-check-updates.svg?label=unstable)](https://github.com/tjunnone/npm-check-updates/tags) -->
 [![Dependency Status](https://david-dm.org/tjunnone/npm-check-updates.svg)](https://david-dm.org/tjunnone/npm-check-updates)
 [![devDependency Status](https://david-dm.org/tjunnone/npm-check-updates/dev-status.svg)](https://david-dm.org/tjunnone/npm-check-updates#info=devDependencies)
+<!-- [![npm unstable version](https://img.shields.io/github/tag/tjunnone/npm-check-updates.svg?label=unstable)](https://github.com/tjunnone/npm-check-updates/tags) -->
 
-npm-check-updates is a command-line tool that allows you to find and save the *latest* versions of dependencies, regardless of any version constraints in your package.json file (unlike npm itself).
+npm-check-updates is a command-line tool that allows you to find and save the latest versions of dependencies, regardless of any version constraints in your package.json file (unlike npm itself).
 
-npm-check-updates *maintains your existing semantic versioning policies*, i.e., it will upgrade your `"express": "^4.11.2"` dependency to `"express": "^5.0.0"` when express 5.0.0 is released.
+npm-check-updates maintains your existing semantic versioning policies, i.e., it will upgrade your `"express": "^4.11.2"` dependency to `"express": "^5.0.0"` when express 5.0.0 is released.
+
+![npm-check-updates-screenshot](https://cloud.githubusercontent.com/assets/750276/8864534/0788a4d8-3171-11e5-9881-8f7dcf634d14.png)
 
 Installation
 --------------
 
 ```sh
+# install v1.5.1
 npm install -g npm-check-updates
 ```
 
-Please consider installing the unstable version to help test pre-release features. You may even find [some features](#history) you needed that are not yet in the stable version.
+v2.0.0 will be released on the stable tag within a few days! If you are seeing this message, you should probably install v2.0.0-alpha.16 in preparation.
 
 ```sh
+# install v2.0.0-alpha.16
 npm install -g npm-check-updates@unstable
 ```
 
-Important Notes about v2
---------------
-> *This documentation is for the upcoming v2 release, available on the `unstable` tag. It is recommended that you install the unstable branch using `npm install -g npm-check-updates@unstable` in preparation for v2. For documentation for the `stable` tag, please see [v1.5.1](https://github.com/tjunnone/npm-check-updates/tree/a7373782cb9623d44395eabf6382d6791749b16e). npm-check-updates v2 has a few important differences from v1:*
-
-- Newer published versions that satisfy the specified range are *not* upgraded by default (e.g. `1.0.0` to `1.1.0`). This change was made because `npm update` handles upgrades within the satisfied range just fine, and npm-check-updates is primarily intended to provide functionality not otherwise provided by npm itself. **For the old behavior, add the -a/--upgradeAll option.**
-- Dependencies with less-than relations (e.g. `<1.0.0` or `<=1.2`) are converted to semantic wildcard relations (e.g. `^2.0.0` or `^2.0`). This change was made because if you are going to upgrade these to backwards-incompatible versions, the less-than contraint will no longer be relevant.
-- The command-line argument now specifies a package name filter (e.g. `ncu /^gulp-/`). For the old behavior (specifying an alternative package.json), you can pipe the package.json through stdin.
-- Use the easier-to-type `ncu` instead of `npm-check-updates`. `npm-check-updates` is preserved for backwards-compatibility.
-
 Usage
 --------------
+> *All documentation is for the upcoming v2 release, available on the `unstable` tag. For documentation of the `stable` tag, please see [v1.5.1](https://github.com/tjunnone/npm-check-updates/tree/a7373782cb9623d44395eabf6382d6791749b16e).
 
 Show any new dependencies for the project in the current directory:
+
 ```sh
 $ ncu
 
-"connect" can be updated from ^2.8.0 to ^3.4.0  (Installed: 2.8.8, Latest: 3.4.0)
-"commander" can be updated from ^1.3.0 to ^2.0.0 (Installed: 1.3.2, Latest: 2.0.0)
+ express           4.12.x  →   4.13.x
+ multer            ^0.1.8  →   ^1.0.1
+ react-bootstrap  ^0.22.6  →  ^0.24.0
+ react-a11y        ^0.1.1  →   ^0.2.6
+ webpack          ~1.9.10  →  ~1.10.5
 
-Run with '-u' to upgrade your package.json
+Run with -u to upgrade your package.json
 ```
 
 Upgrade a project's package.json:
@@ -49,12 +49,12 @@ Upgrade a project's package.json:
 ```sh
 $ ncu -u
 
-"request" can be updated from ^1.0.0 to ^2.58.0 (Installed: 1.0.0, Latest: 2.58.0)
+ express           4.12.x  →   4.13.x
 
 package.json upgraded
 ```
 
-Filter by package name:
+Include or exclude specific packages:
 ```sh
 # match mocha and should packages exactly
 $ ncu mocha,should
@@ -120,9 +120,25 @@ How dependency updates are determined
 - Closed ranges are replaced with a wildcard:
   - 1.0.0 \< 2.0.0 => ^3.0.0
 
+Migrating from v1 to v2
+--------------
+npm-check-updates v2 has a few important differences from v1:
+
+- Newer published versions that satisfy the specified range are *not* upgraded by default (e.g. `1.0.0` to `1.1.0`). This change was made because `npm update` handles upgrades within the satisfied range just fine, and npm-check-updates is primarily intended to provide functionality not otherwise provided by npm itself. These satisfied dependencies will bestill be shown to you when you run npm-check-updates, albeit with a short explanation. **For the old behavior, add the -ua/--upgradeAll option.**
+- Dependencies with less-than relations (e.g. `<1.0.0` or `<=1.2`) are converted to semantic wildcard relations (e.g. `^2.0.0` or `^2.0`). This change was made because if you are going to upgrade these to backwards-incompatible versions, the less-than contraint will no longer be relevant.
+- The command-line argument now specifies a package name filter (e.g. `ncu /^gulp-/`). For the old behavior (specifying an alternative package.json), you can pipe the package.json through stdin.
+- Use the easier-to-type `ncu` instead of `npm-check-updates`. `npm-check-updates` is preserved for backwards-compatibility.
+
+
 History
 --------------
 
+- *2.0.0-alpha.16*
+  - minor
+- *2.0.0-alpha.15*
+  - Fix wildcard bug #101.
+- *2.0.0-alpha.14*
+  - Colored table output
 - *2.0.0-alpha.13*
   - Squished some bugs
 - *2.0.0-alpha.12*
@@ -170,6 +186,6 @@ History
 Problems?
 --------------
 
-Please [file an issue on github](https://github.com/tjunnone/npm-check-updates/issues).
+Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on github! Committers are responsive and happy to assist.
 
-Pull requests are welcome :)
+Pull requests are also welcome :)
