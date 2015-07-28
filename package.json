@@ -23,7 +23,7 @@
   "preferGlobal": true,
   "main": "./lib/npm-check-updates",
   "scripts": {
-    "test": "mocha -t 10000"
+    "test": "mocha"
   },
   "bin": {
     "npm-check-updates": "./bin/old-alias",

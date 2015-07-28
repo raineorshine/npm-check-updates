@@ -95,12 +95,16 @@ Integration
 The tool allows integration with 3rd party code:
 
 ```javascript
-var checkUpdates = require('npm-check-updates');
+var ncu = require('npm-check-updates');
 
-checkUpdates.run({
-    upgrade: true // see available options above
-}).then(function() {
-    console.log('done upgrading dependencies');
+ncu.run({
+    packageData: fs.readFileSync('./some/project/package.json', 'utf-8'),
+    // Any command-line option can be specified here.
+    // These are set by default:
+    // silent: true,
+    // jsonUpgraded: true
+}).then(function(upgraded) {
+    console.log('dependencies to upgrade:', upgraded);
 });
 ```
 
@@ -133,6 +137,9 @@ npm-check-updates v2 has a few important differences from v1:
 History
 --------------
 
+- *2.0.0-alpha.17*
+  - Return dependencies from programRun
+  - Allow packageData to be specified as an option
 - *2.0.0-alpha.16*
   - minor
 - *2.0.0-alpha.15*
