@@ -126,7 +126,7 @@ npm-check-updates v2 has a few important differences from v1:
 History
 --------------
 
-- *2.0.0*
+- 2.0.0
   - Finally! Includes all the previous alpha features. :)
 - *2.0.0-alpha.17*
   - Return dependencies from programRun
