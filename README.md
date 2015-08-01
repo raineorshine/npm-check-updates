@@ -13,21 +13,11 @@ Installation
 --------------
 
 ```sh
-# install v1.5.1
 npm install -g npm-check-updates
-```
-
-v2.0.0 will be released on the stable tag within a few days! If you are seeing this message, you should probably install v2.0.0-alpha.16 in preparation.
-
-```sh
-# install v2.0.0-alpha.16
-npm install -g npm-check-updates@unstable
 ```
 
 Usage
 --------------
-> *All documentation is for the upcoming v2 release, available on the `unstable` tag. For documentation of the `stable` tag, please see [v1.5.1](https://github.com/tjunnone/npm-check-updates/tree/a7373782cb9623d44395eabf6382d6791749b16e).
-
 Show any new dependencies for the project in the current directory:
 
 ```sh
@@ -95,12 +85,16 @@ Integration
 The tool allows integration with 3rd party code:
 
 ```javascript
-var checkUpdates = require('npm-check-updates');
+var ncu = require('npm-check-updates');
 
-checkUpdates.run({
-    upgrade: true // see available options above
-}).then(function() {
-    console.log('done upgrading dependencies');
+ncu.run({
+    packageData: fs.readFileSync('./some/project/package.json', 'utf-8'),
+    // Any command-line option can be specified here.
+    // These are set by default:
+    // silent: true,
+    // jsonUpgraded: true
+}).then(function(upgraded) {
+    console.log('dependencies to upgrade:', upgraded);
 });
 ```
 
@@ -124,15 +118,21 @@ Migrating from v1 to v2
 --------------
 npm-check-updates v2 has a few important differences from v1:
 
-- Newer published versions that satisfy the specified range are *not* upgraded by default (e.g. `1.0.0` to `1.1.0`). This change was made because `npm update` handles upgrades within the satisfied range just fine, and npm-check-updates is primarily intended to provide functionality not otherwise provided by npm itself. These satisfied dependencies will bestill be shown to you when you run npm-check-updates, albeit with a short explanation. **For the old behavior, add the -ua/--upgradeAll option.**
-- Dependencies with less-than relations (e.g. `<1.0.0` or `<=1.2`) are converted to semantic wildcard relations (e.g. `^2.0.0` or `^2.0`). This change was made because if you are going to upgrade these to backwards-incompatible versions, the less-than contraint will no longer be relevant.
-- The command-line argument now specifies a package name filter (e.g. `ncu /^gulp-/`). For the old behavior (specifying an alternative package.json), you can pipe the package.json through stdin.
+- Newer published versions that satisfy the specified range are *not* upgraded by default (e.g. `1.0.0` to `1.1.0`). This change was made because `npm update` handles upgrades within the satisfied range just fine, and npm-check-updates is primarily intended to provide functionality not otherwise provided by npm itself. These satisfied dependencies will still be shown when you run npm-check-updates, albeit with a short explanation. **For the old behavior, add the -ua/--upgradeAll option.**
+- The command-line argument now specifies a package name filter (e.g. `ncu /^gulp-/`). For the old behavior (specifying an alternative package.json), pipe the package.json through stdin.
 - Use the easier-to-type `ncu` instead of `npm-check-updates`. `npm-check-updates` is preserved for backwards-compatibility.
 
 
 History
 --------------
 
+- 2.0.1
+  - Fix silence
+- 2.0.0
+  - Finally! Includes all the previous alpha features. :)
+- *2.0.0-alpha.17*
+  - Return dependencies from programRun
+  - Allow packageData to be specified as an option
 - *2.0.0-alpha.16*
   - minor
 - *2.0.0-alpha.15*
@@ -165,27 +165,27 @@ History
   - Do not downgrade packages
 - 1.5.1
   - Fix bug where package names got truncated (grunt-concurrent -> grunt)
-- 1.5
+- 1.5.0
   - Add prod and dev only options
-- 1.4
+- 1.4.0
   - Add package filtering option
   - Add mocha as npm test script
-- 1.3
+- 1.3.0
   - Handle private packages and NPM errors
   - Added Mocha tests
   - Bugfixes
-- 1.2
+- 1.2.0
   - Print currently installed and latest package version in addition to semantic versions
   - Fixed bug where extra whitespace in package.json may prevent automatic upgrade
-- 1.1
+- 1.1.0
   - Added option to check global packages for updates: -g switch
   - Now also checks and upgrades devDependencies in package.json
-- 1.0
+- 1.0.0
   - Find and upgrade dependencies maintaining existing versioning policy in package.json
 
 Problems?
 --------------
 
-Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on github! Committers are responsive and happy to assist.
+Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on github! [Contributors](https://github.com/metaraine/) are responsive and happy to assist.
 
 Pull requests are also welcome :)

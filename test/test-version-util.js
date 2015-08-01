@@ -222,7 +222,7 @@ describe('version-util', function () {
         });
     });
 
-    describe.only('colorizeDiff', function () {
+    describe('colorizeDiff', function () {
         it('should not colorize unchanged versions', function () {
             versionUtil.colorizeDiff('1.0.0', '1.0.0').should.equal('1.0.0');
         });

@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "2.0.0-alpha.16",
+  "version": "2.0.1",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "MIT",
   "contributors": [
@@ -23,7 +23,7 @@
   "preferGlobal": true,
   "main": "./lib/npm-check-updates",
   "scripts": {
-    "test": "mocha -t 10000"
+    "test": "mocha"
   },
   "bin": {
     "npm-check-updates": "./bin/old-alias",

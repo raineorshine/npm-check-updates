@@ -263,13 +263,15 @@ describe('versionmanager', function () {
     });
 
     describe('getLatestPackageVersion', function () {
-        return it('valid package info', function () {
+        this.timeout(30000);
+        it('valid package info', function () {
             return vm.getLatestPackageVersion("async")
                 .should.eventually.be.a('string');
         });
     });
 
     describe('getGreatestPackageVersion', function () {
+        this.timeout(30000);
         it('valid package info', function () {
             return vm.getGreatestPackageVersion("async")
                 .should.eventually.be.a('string');
