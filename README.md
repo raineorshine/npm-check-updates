@@ -188,4 +188,6 @@ Problems?
 
 Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on github! [Contributors](https://github.com/metaraine/) are responsive and happy to assist.
 
-Pull requests are also welcome :)
+Always include your package.json when reporting a bug!
+
+Pull requests are welcome, and will not collect dust :)
