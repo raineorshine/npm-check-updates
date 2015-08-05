@@ -158,6 +158,9 @@ describe('versionmanager', function () {
                 },
                 devDependencies: {
                     lodash: '^3.9.3'
+                },
+                optionalDependencies: {
+                    chalk: '^1.1.0'
                 }
             };
         });
@@ -168,10 +171,11 @@ describe('versionmanager', function () {
             vm.getCurrentDependencies({}, {}).should.eql({});
         });
 
-        it('should get dependencies and devDependencies by default', function () {
+        it('should get dependencies, devDependencies, and optionalDependencies by default', function () {
             vm.getCurrentDependencies(deps).should.eql({
                 mocha: '1.2',
-                lodash: '^3.9.3'
+                lodash: '^3.9.3',
+                chalk: '^1.1.0'
             });
         });
 
@@ -184,6 +188,12 @@ describe('versionmanager', function () {
         it('should only get devDependencies when the dev option is true', function () {
             vm.getCurrentDependencies(deps, {dev: true}).should.eql({
                 lodash: '^3.9.3'
+            });
+        });
+
+        it('should only get optionalDependencies when the optional option is true', function () {
+            vm.getCurrentDependencies(deps, {optional: true}).should.eql({
+                chalk: '^1.1.0'
             });
         });
 
