@@ -60,15 +60,17 @@ $ ncu '/^(?!gulp-).*$/'
 Options
 --------------
     -d, --dev                check only devDependencies
-    -h, --help               output usage information
     -e, --error-level        set the error-level. 1: exits with error code 0 if no
                              errors occur. 2: exits with error code 0 if no
                              packages need updating (useful for continuous
                              integration)
     -g, --global             check global packages instead of in the current project
+    -h, --help               output usage information
     -j, --jsonAll            output new package.json instead of human-readable
                              message
     --jsonUpgraded           output upgraded dependencies in json
+    --packageData            include stringified package.json (use stdin instead)
+    -o, --optional           check only optionalDependencies
     -p, --prod               check only dependencies (not devDependencies)
     -r, --registry           specify third-party NPM registry
     -s, --silent             don't output anything
@@ -126,43 +128,23 @@ npm-check-updates v2 has a few important differences from v1:
 History
 --------------
 
-- 2.0.1
-  - Fix silence
+- 2.1.0
+  - Add -o/--optional to check only optionalDependencies
 - 2.0.0
-  - Finally! Includes all the previous alpha features. :)
-- *2.0.0-alpha.17*
-  - Return dependencies from programRun
   - Allow packageData to be specified as an option
-- *2.0.0-alpha.16*
-  - minor
-- *2.0.0-alpha.15*
-  - Fix wildcard bug #101.
-- *2.0.0-alpha.14*
   - Colored table output
-- *2.0.0-alpha.13*
-  - Squished some bugs
-- *2.0.0-alpha.12*
   - Add -a/--upgradeAll
-- *2.0.0-alpha.11*
-  - Export functionality to allow for programmatic use
-- *2.0.0-alpha.10*
-  - Move filter from command-line option to argument
-  - Add -f/--force option to force upgrades even when the latest version satisfies the declared semver dependency
-- *2.0.0-alpha.9*
-  - Refactoring
-- *2.0.0-alpha.8*
-  - Add ncu alias
-  - Allow specifying third-party registry with -r/--registry flag
-  - Replace callbacks with promises
-  - Replace < and <= with ^
-  - Add -j/--json and --jsonFlat flags for json output
-  - Full unit test coverage!
-- *2.0.0-alpha.7*
-  - Bug fixes and refactoring
   - Add -e/--error-level option
+  - Add -j/--json and --jsonFlat flags for json output
+  - Add -r/--registry option for specifying third-party npm registry
   - Add -t/--greatest option to search for the highest versions instead of the default latest stable versions.
+  - Remove -f/--filter option and move to command-line argument
+  - Replace < and <= with ^
   - Automatically look for the closest descendant package.json if not found in current directory
-  - Do not downgrade packages
+  - Add ncu alias
+  - Export functionality to allow for programmatic use
+  - Bug fixes and refactoring
+  - Full unit test coverage!
 - 1.5.1
   - Fix bug where package names got truncated (grunt-concurrent -> grunt)
 - 1.5.0
