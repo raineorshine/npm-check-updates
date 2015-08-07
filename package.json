@@ -50,9 +50,12 @@
     "semver-utils": "metaraine/semver-utils.git#86ea225"
   },
   "devDependencies": {
+    "bluebird": "^2.9.34",
     "chai": "^3.2.0",
     "chai-as-promised": "^5.1.0",
+    "chai-string": "^1.1.2",
     "mocha": "^2.2.5",
-    "should": "^7.0.2"
+    "should": "^7.0.2",
+    "spawn-please": "^0.1.0"
   }
 }
