@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "MIT",
   "contributors": [
@@ -47,7 +47,7 @@
     "lodash": "^3.10.0",
     "npm": "^2.13.1",
     "semver": "^5.0.1",
-    "semver-utils": "metaraine/semver-utils.git#ff978"
+    "semver-utils": "metaraine/semver-utils.git#86ea225"
   },
   "devDependencies": {
     "chai": "^3.2.0",

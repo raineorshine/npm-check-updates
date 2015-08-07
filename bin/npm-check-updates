@@ -13,12 +13,14 @@ program
     // program.json is set to true in programInit if any options that begin with 'json' are true
     .option('-j, --jsonAll', 'output new package.json instead of human-readable message')
     .option('--jsonUpgraded', 'output upgraded dependencies in json')
+    .option('-o, --optional', 'check only optionalDependencies')
+    .option('--packageData', 'include stringified package.json (use stdin instead)')
     .option('-p, --prod', 'check only dependencies (not devDependencies)')
     .option('-r, --registry <url>', 'specify third-party npm registry')
     .option('-s, --silent', "don't output anything")
     .option('-t, --greatest', "find the highest versions available instead of the latest stable versions")
     .option('-u, --upgrade', 'upgrade package.json dependencies to match latest versions (maintaining existing policy)')
-    .option('-a, --upgradeAll', 'upgrade package.json dependencies even when the latest version satisfies the declared semver dependency')
+    .option('-a, --upgradeAll', 'upgrade package.json dependencies even when the latest version satisfies the declared semver dependency');
 
 program.parse(process.argv);
 
