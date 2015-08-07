@@ -23,7 +23,7 @@
   "preferGlobal": true,
   "main": "./lib/npm-check-updates",
   "scripts": {
-    "test": "mocha"
+    "test": "node ./node_modules/eslint/bin/eslint.js bin lib && mocha"
   },
   "bin": {
     "npm-check-updates": "./bin/old-alias",
