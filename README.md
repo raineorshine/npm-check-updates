@@ -165,6 +165,11 @@ History
 - 1.0.0
   - Find and upgrade dependencies maintaining existing versioning policy in package.json
 
+Compatibility Issues
+--------------
+
+- There is an issue with [grunt-shell](https://github.com/sindresorhus/grunt-shell) described in [#119](https://github.com/tjunnone/npm-check-updates/issues/119). TLDR: You have to explicitly pipe your package.json into ncu with `cat package.json | ncu`. 
+
 Problems?
 --------------
 
