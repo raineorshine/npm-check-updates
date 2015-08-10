@@ -50,7 +50,7 @@ describe('npm-check-updates', function () {
 
         it('should read --packageFile', function() {
             var tempFile = 'test/temp_package.json';
-            fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'Utf-8')
+            fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
             return spawn('ncu', ['--jsonUpgraded', '--packageFile', tempFile])
                 .then(JSON.parse)
                 .then(function (pkgData) {
@@ -63,10 +63,10 @@ describe('npm-check-updates', function () {
 
         it('should write to --packageFile', function() {
             var tempFile = 'test/temp_package.json';
-            fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'Utf-8')
+            fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
             return spawn('ncu', ['-u', '--packageFile', tempFile])
                 .then(function (output) {
-                    var ugradedPkg = JSON.parse(fs.readFileSync(tempFile, 'Utf-8'));
+                    var ugradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
                     ugradedPkg.should.have.property('dependencies');
                     ugradedPkg.dependencies.should.have.property('express');
                     ugradedPkg.dependencies.express.should.not.equal('1')
@@ -78,10 +78,10 @@ describe('npm-check-updates', function () {
 
         it('should ignore stdin if --packageFile is specified', function() {
             var tempFile = 'test/temp_package.json';
-            fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'Utf-8')
+            fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
             return spawn('ncu', ['-u', '--packageFile', tempFile], '{ "dependencies": {}}')
                 .then(function (output) {
-                    var ugradedPkg = JSON.parse(fs.readFileSync(tempFile, 'Utf-8'));
+                    var ugradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
                     ugradedPkg.should.have.property('dependencies');
                     ugradedPkg.dependencies.should.have.property('express');
                     ugradedPkg.dependencies.express.should.not.equal('1')
