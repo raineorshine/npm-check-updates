@@ -70,6 +70,7 @@ Options
                              message
     --jsonUpgraded           output upgraded dependencies in json
     --packageData            include stringified package.json (use stdin instead)
+    --packageFile            package.json location (default: ./package.json)
     -o, --optional           check only optionalDependencies
     -p, --prod               check only dependencies (not devDependencies)
     -r, --registry           specify third-party NPM registry
@@ -168,7 +169,7 @@ History
 Compatibility Issues
 --------------
 
-- There is an issue with [grunt-shell](https://github.com/sindresorhus/grunt-shell) described in [#119](https://github.com/tjunnone/npm-check-updates/issues/119). TLDR: You have to explicitly pipe your package.json into ncu with `cat package.json | ncu`. 
+- There is an issue with [grunt-shell](https://github.com/sindresorhus/grunt-shell) described in [#119](https://github.com/tjunnone/npm-check-updates/issues/119). TLDR; You have to explicitly specify your package.json with `ncu --packageFile package.json`. 
 
 Problems?
 --------------
