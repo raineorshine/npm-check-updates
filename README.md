@@ -112,11 +112,11 @@ How dependency updates are determined
   - `^1.2.0` → `^2.0.0`
   - `1.x` → `2.x`
 - "Any version" is maintained:
-  - `\*` → `\*`
+  - `*` → `*`
 - "Greater than" is maintained:
-  - `\>0.2.0` → `\>0.3.0`
+  - `>0.2.0` → `>0.3.0`
 - Closed ranges are replaced with a wildcard:
-  - `1.0.0 \< 2.0.0` → `^3.0.0`
+  - `1.0.0 < 2.0.0` → `^3.0.0`
 
 Why is it not updating ^1.0.0 to ^1.0.1 when 1.0.1 is the latest?
 --------------
