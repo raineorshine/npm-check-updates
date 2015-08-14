@@ -183,6 +183,6 @@ Problems?
 
 Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on github! [Contributors](https://github.com/metaraine/) are responsive and happy to assist.
 
-Always include your package.json when reporting a bug!
+When filing an issue, always include the dependencies from your package.json (or the output from `npm -g ls --depth=0` if using global mode)!
 
 Pull requests are welcome, and will not collect dust :)
