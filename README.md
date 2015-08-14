@@ -118,6 +118,10 @@ How dependency updates are determined
 - Closed ranges are replaced with a wildcard:
   - 1.0.0 \< 2.0.0 => ^3.0.0
 
+Why is it not updating ^1.0.0 to ^1.0.1 when 1.0.1 is the latest?
+--------------
+`^1.0.0` is a *range* that will includes all non-major updates. If you run `npm update`, it will install `1.0.1` without changing the dependency listed in your package.json. You don't need to update your package.json if the latest version is satisfied by the specified dependency range. If you *really* want to upgrade your package.json (even though it's not necessary), you can run `ncu --upgradeAll`. 
+
 Migrating from v1 to v2
 --------------
 npm-check-updates v2 has a few important differences from v1:
