@@ -80,7 +80,7 @@ Options
                              latest stable versions (alpha release only)
     -u, --upgrade            upgrade package.json dependencies to match latest
                              versions (maintaining existing policy)
-    -ua, --upgradeAll        upgrade package.json dependencies even when the latest
+    -a, --upgradeAll         upgrade package.json dependencies even when the latest
                              version satisfies the declared semver dependency
     -V, --version            output the version number
 
