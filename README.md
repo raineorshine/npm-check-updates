@@ -125,7 +125,7 @@ Why is it not updating ^1.0.0 to ^1.0.1 when 1.0.1 is the latest?
 History
 --------------
 
-Using github [releases](https://github.com/tjunnone/npm-check-updates/releases).
+See the github [releases](https://github.com/tjunnone/npm-check-updates/releases).
 
 For help migrating from v1 to v2, see the [v2 release notes](https://github.com/tjunnone/npm-check-updates/releases/tag/v2.0.0).
 
