@@ -1,6 +1,7 @@
 [![npm stable version](https://img.shields.io/npm/v/npm-check-updates.svg?label=stable)](https://npmjs.org/package/npm-check-updates)
 [![Dependency Status](https://david-dm.org/tjunnone/npm-check-updates.svg)](https://david-dm.org/tjunnone/npm-check-updates)
 [![devDependency Status](https://david-dm.org/tjunnone/npm-check-updates/dev-status.svg)](https://david-dm.org/tjunnone/npm-check-updates#info=devDependencies)
+[![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg)](https://travis-ci.org/tjunnone/npm-check-updates)
 <!-- [![npm unstable version](https://img.shields.io/github/tag/tjunnone/npm-check-updates.svg?label=unstable)](https://github.com/tjunnone/npm-check-updates/tags) -->
 
 npm-check-updates is a command-line tool that allows you to find and save the latest versions of dependencies, regardless of any version constraints in your package.json file (unlike npm itself).
@@ -79,7 +80,7 @@ Options
                              latest stable versions (alpha release only)
     -u, --upgrade            upgrade package.json dependencies to match latest
                              versions (maintaining existing policy)
-    -ua, --upgradeAll        upgrade package.json dependencies even when the latest
+    -a, --upgradeAll         upgrade package.json dependencies even when the latest
                              version satisfies the declared semver dependency
     -V, --version            output the version number
 

@@ -25,14 +25,14 @@ describe('npm-check-updates', function () {
     describe('cli', function() {
 
         it('should accept stdin', function() {
-            return spawn('ncu', [], '{ "dependencies": { "express": "1" } }')
+            return spawn('node', ['bin/npm-check-updates'], '{ "dependencies": { "express": "1" } }')
                 .then(function (output) {
                     output.trim().should.startWith('express')
                 });
         });
 
         it('should output json with --jsonAll', function() {
-            return spawn('ncu', ['--jsonAll'], '{ "dependencies": { "express": "1" } }')
+            return spawn('node', ['bin/npm-check-updates', '--jsonAll'], '{ "dependencies": { "express": "1" } }')
                 .then(JSON.parse)
                 .then(function (pkgData) {
                     pkgData.should.have.property('dependencies');
@@ -41,7 +41,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should output only upgraded with --jsonUpgraded', function() {
-            return spawn('ncu', ['--jsonUpgraded'], '{ "dependencies": { "express": "1" } }')
+            return spawn('node', ['bin/npm-check-updates', '--jsonUpgraded'], '{ "dependencies": { "express": "1" } }')
                 .then(JSON.parse)
                 .then(function (pkgData) {
                   pkgData.should.have.property('express');
@@ -51,7 +51,7 @@ describe('npm-check-updates', function () {
         it('should read --packageFile', function() {
             var tempFile = 'test/temp_package.json';
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
-            return spawn('ncu', ['--jsonUpgraded', '--packageFile', tempFile])
+            return spawn('node', ['bin/npm-check-updates', '--jsonUpgraded', '--packageFile', tempFile])
                 .then(JSON.parse)
                 .then(function (pkgData) {
                     pkgData.should.have.property('express');
@@ -64,7 +64,7 @@ describe('npm-check-updates', function () {
         it('should write to --packageFile', function() {
             var tempFile = 'test/temp_package.json';
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
-            return spawn('ncu', ['-u', '--packageFile', tempFile])
+            return spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile])
                 .then(function (output) {
                     var ugradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
                     ugradedPkg.should.have.property('dependencies');
@@ -79,7 +79,7 @@ describe('npm-check-updates', function () {
         it('should ignore stdin if --packageFile is specified', function() {
             var tempFile = 'test/temp_package.json';
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
-            return spawn('ncu', ['-u', '--packageFile', tempFile], '{ "dependencies": {}}')
+            return spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile], '{ "dependencies": {}}')
                 .then(function (output) {
                     var ugradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
                     ugradedPkg.should.have.property('dependencies');
