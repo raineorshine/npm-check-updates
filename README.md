@@ -122,56 +122,12 @@ Why is it not updating ^1.0.0 to ^1.0.1 when 1.0.1 is the latest?
 --------------
 `^1.0.0` is a *range* that will includes all non-major updates. If you run `npm update`, it will install `1.0.1` without changing the dependency listed in your package.json. You don't need to update your package.json if the latest version is satisfied by the specified dependency range. If you *really* want to upgrade your package.json (even though it's not necessary), you can run `ncu --upgradeAll`. 
 
-Migrating from v1 to v2
---------------
-npm-check-updates v2 has a few important differences from v1:
-
-- Newer published versions that satisfy the specified range are *not* upgraded by default (e.g. `1.0.0` to `1.1.0`). This change was made because `npm update` handles upgrades within the satisfied range just fine, and npm-check-updates is primarily intended to provide functionality not otherwise provided by npm itself. These satisfied dependencies will still be shown when you run npm-check-updates, albeit with a short explanation. **For the old behavior, add the -ua/--upgradeAll option.**
-- The command-line argument now specifies a package name filter (e.g. `ncu /^gulp-/`). For the old behavior (specifying an alternative package.json), pipe the package.json through stdin.
-- Use the easier-to-type `ncu` instead of `npm-check-updates`. `npm-check-updates` is preserved for backwards-compatibility.
-
-
 History
 --------------
 
-- 2.2.0
-  - Add --packageFile option to specify alternative package.json
-- 2.1.0
-  - Add -o/--optional to check only optionalDependencies
-- 2.0.0
-  - Allow packageData to be specified as an option
-  - Colored table output
-  - Add -a/--upgradeAll
-  - Add -e/--error-level option
-  - Add -j/--json and --jsonFlat flags for json output
-  - Add -r/--registry option for specifying third-party npm registry
-  - Add -t/--greatest option to search for the highest versions instead of the default latest stable versions.
-  - Remove -f/--filter option and move to command-line argument
-  - Replace < and <= with ^
-  - Automatically look for the closest descendant package.json if not found in current directory
-  - Add ncu alias
-  - Export functionality to allow for programmatic use
-  - Bug fixes and refactoring
-  - Full unit test coverage!
-- 1.5.1
-  - Fix bug where package names got truncated (grunt-concurrent -> grunt)
-- 1.5.0
-  - Add prod and dev only options
-- 1.4.0
-  - Add package filtering option
-  - Add mocha as npm test script
-- 1.3.0
-  - Handle private packages and NPM errors
-  - Added Mocha tests
-  - Bugfixes
-- 1.2.0
-  - Print currently installed and latest package version in addition to semantic versions
-  - Fixed bug where extra whitespace in package.json may prevent automatic upgrade
-- 1.1.0
-  - Added option to check global packages for updates: -g switch
-  - Now also checks and upgrades devDependencies in package.json
-- 1.0.0
-  - Find and upgrade dependencies maintaining existing versioning policy in package.json
+Using github [releases](https://github.com/tjunnone/npm-check-updates/releases).
+
+For help migrating from v1 to v2, see the [v2 release notes](https://github.com/tjunnone/npm-check-updates/releases/tag/v2.0.0).
 
 Compatibility Issues
 --------------
