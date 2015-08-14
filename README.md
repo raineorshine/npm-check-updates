@@ -130,6 +130,8 @@ npm-check-updates v2 has a few important differences from v1:
 History
 --------------
 
+- 2.2.0
+  - Add --packageFile option to specify alternative package.json
 - 2.1.0
   - Add -o/--optional to check only optionalDependencies
 - 2.0.0
