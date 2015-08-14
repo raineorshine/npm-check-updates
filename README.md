@@ -92,7 +92,7 @@ The tool allows integration with 3rd party code:
 var ncu = require('npm-check-updates');
 
 ncu.run({
-    packageData: fs.readFileSync('./some/project/package.json', 'utf-8'),
+    packageFile: 'package.json',
     // Any command-line option can be specified here.
     // These are set by default:
     // silent: true,
