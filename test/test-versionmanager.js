@@ -260,8 +260,16 @@ describe('versionmanager', function () {
             vm.upgradeDependencies({a: '1.*', mongodb: '1.0 < 2.0'}, {mongodb: '3.0.0'}).should.eql({mongodb: '3.*'});
             vm.upgradeDependencies({mongodb: '1.0 < 2.*'}, {mongodb: '3.0.0'}).should.eql({mongodb: '3.*'});
         });
+
         it('should convert closed ranges to caret (^) when preferred wildcard is unknown', function () {
             vm.upgradeDependencies({mongodb: '1.0 < 2.0'}, {mongodb: '3.0.0'}).should.eql({mongodb: '^3.0'});
+        });
+
+        it('should ignore packages with empty values', function() {
+            vm.upgradeDependencies({mongodb: null }, {mongodb: '1.4.30'})
+            .should.eql({});
+            vm.upgradeDependencies({mongodb: '' }, {mongodb: '1.4.30'})
+            .should.eql({});
         });
     });
 
