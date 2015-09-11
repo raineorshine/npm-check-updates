@@ -1,0 +1,118 @@
+{
+    "rules": {
+        "indent": [
+            2,
+            4,
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "quotes": [
+            2,
+            "single",
+            "avoid-escape"
+        ],
+        "linebreak-style": [
+            2,
+            "unix"
+        ],
+        "semi": [
+            2,
+            "always"
+        ],
+        "no-multiple-empty-lines": [
+            2,
+            {
+                "max": 2
+            }
+        ],
+        "new-cap": [
+            2,
+            {
+                "newIsCap": true,
+                "capIsNew": true
+            }
+        ],
+        "one-var": [
+            2,
+            "never"
+        ],
+        "object-curly-spacing": [
+            2,
+            "never"
+        ],
+        "array-bracket-spacing": [
+            2,
+            "never"
+        ],
+        "space-before-function-paren": [
+            2,
+            {
+                "anonymous": "always",
+                "named": "never"
+            }
+        ],
+        "space-after-keywords": [
+            2,
+            "always"
+        ],
+        "operator-linebreak": [
+            2,
+            "after"
+        ],
+        "space-in-parens": [
+            2,
+            "never"
+        ],
+        "space-before-blocks": [
+            2,
+            "always"
+        ],
+        "yoda": [
+            2,
+            "never"
+        ],
+        "eqeqeq": [
+            2,
+            "smart"
+        ],
+        "space-unary-ops": [
+            2,
+            {
+                "words": true,
+                "nonwords": false
+            }
+        ],
+        "no-implicit-coercion": [
+            2,
+            {
+                "boolean": true,
+                "number": true,
+                "string": true
+            }
+        ],
+        "spaced-comment": [
+            2,
+            "always"
+        ],
+        "no-throw-literal": 2,
+        "no-eval": 2,
+        "no-unneeded-ternary": 2,
+        "no-with": 2,
+        "curly": 2,
+        "brace-style": 2,
+        "no-spaced-func": 2,
+        "comma-style": 2,
+        "semi-spacing": 2,
+        "key-spacing": 2,
+        "new-parens": 2,
+        "no-console": 0,
+        "eol-last": 2,
+        "no-trailing-spaces": 2,
+        "camelcase": 2
+    },
+    "env": {
+        "node": true
+    },
+    "extends": "eslint:recommended"
+}

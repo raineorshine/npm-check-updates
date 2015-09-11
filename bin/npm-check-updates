@@ -15,6 +15,7 @@ program
     .option('--jsonUpgraded', 'output upgraded dependencies in json')
     .option('-o, --optional', 'check only optionalDependencies')
     .option('--packageData', 'include stringified package.json (use stdin instead)')
+    .option('--packageFile <filename>', 'package.json location (default: ./package.json)')
     .option('-p, --prod', 'check only dependencies (not devDependencies)')
     .option('-r, --registry <url>', 'specify third-party npm registry')
     .option('-s, --silent', "don't output anything")

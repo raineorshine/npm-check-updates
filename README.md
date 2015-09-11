@@ -1,6 +1,7 @@
 [![npm stable version](https://img.shields.io/npm/v/npm-check-updates.svg?label=stable)](https://npmjs.org/package/npm-check-updates)
 [![Dependency Status](https://david-dm.org/tjunnone/npm-check-updates.svg)](https://david-dm.org/tjunnone/npm-check-updates)
 [![devDependency Status](https://david-dm.org/tjunnone/npm-check-updates/dev-status.svg)](https://david-dm.org/tjunnone/npm-check-updates#info=devDependencies)
+[![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg)](https://travis-ci.org/tjunnone/npm-check-updates)
 <!-- [![npm unstable version](https://img.shields.io/github/tag/tjunnone/npm-check-updates.svg?label=unstable)](https://github.com/tjunnone/npm-check-updates/tags) -->
 
 npm-check-updates is a command-line tool that allows you to find and save the latest versions of dependencies, regardless of any version constraints in your package.json file (unlike npm itself).
@@ -70,6 +71,7 @@ Options
                              message
     --jsonUpgraded           output upgraded dependencies in json
     --packageData            include stringified package.json (use stdin instead)
+    --packageFile            package.json location (default: ./package.json)
     -o, --optional           check only optionalDependencies
     -p, --prod               check only dependencies (not devDependencies)
     -r, --registry           specify third-party NPM registry
@@ -78,7 +80,7 @@ Options
                              latest stable versions (alpha release only)
     -u, --upgrade            upgrade package.json dependencies to match latest
                              versions (maintaining existing policy)
-    -ua, --upgradeAll        upgrade package.json dependencies even when the latest
+    -a, --upgradeAll         upgrade package.json dependencies even when the latest
                              version satisfies the declared semver dependency
     -V, --version            output the version number
 
@@ -90,7 +92,7 @@ The tool allows integration with 3rd party code:
 var ncu = require('npm-check-updates');
 
 ncu.run({
-    packageData: fs.readFileSync('./some/project/package.json', 'utf-8'),
+    packageFile: 'package.json',
     // Any command-line option can be specified here.
     // These are set by default:
     // silent: true,
@@ -104,72 +106,39 @@ How dependency updates are determined
 --------------
 
 - Direct dependencies will be increased to the latest stable version:
-  - 2.0.1 => 2.2.0
-  - 1.2 => 1.3
+  - `2.0.1` → `2.2.0`
+  - `1.2` → `1.3`
 -  Semantic versioning policies for levels are maintained while satisfying the latest version:
-  - ^1.2.0 => ^2.0.0
-  - 1.x => 2.x
+  - `^1.2.0` → `^2.0.0`
+  - `1.x` → `2.x`
 - "Any version" is maintained:
-  - \* => \*
+  - `*` → `*`
 - "Greater than" is maintained:
-  - \>0.2.0 => \>0.3.0
+  - `>0.2.0` → `>0.3.0`
 - Closed ranges are replaced with a wildcard:
-  - 1.0.0 \< 2.0.0 => ^3.0.0
+  - `1.0.0 < 2.0.0` → `^3.0.0`
 
-Migrating from v1 to v2
+Why is it not updating ^1.0.0 to ^1.0.1 when 1.0.1 is the latest?
 --------------
-npm-check-updates v2 has a few important differences from v1:
-
-- Newer published versions that satisfy the specified range are *not* upgraded by default (e.g. `1.0.0` to `1.1.0`). This change was made because `npm update` handles upgrades within the satisfied range just fine, and npm-check-updates is primarily intended to provide functionality not otherwise provided by npm itself. These satisfied dependencies will still be shown when you run npm-check-updates, albeit with a short explanation. **For the old behavior, add the -ua/--upgradeAll option.**
-- The command-line argument now specifies a package name filter (e.g. `ncu /^gulp-/`). For the old behavior (specifying an alternative package.json), pipe the package.json through stdin.
-- Use the easier-to-type `ncu` instead of `npm-check-updates`. `npm-check-updates` is preserved for backwards-compatibility.
-
+`^1.0.0` is a *range* that will includes all non-major updates. If you run `npm update`, it will install `1.0.1` without changing the dependency listed in your package.json. You don't need to update your package.json if the latest version is satisfied by the specified dependency range. If you *really* want to upgrade your package.json (even though it's not necessary), you can run `ncu --upgradeAll`. 
 
 History
 --------------
 
-- 2.1.0
-  - Add -o/--optional to check only optionalDependencies
-- 2.0.0
-  - Allow packageData to be specified as an option
-  - Colored table output
-  - Add -a/--upgradeAll
-  - Add -e/--error-level option
-  - Add -j/--json and --jsonFlat flags for json output
-  - Add -r/--registry option for specifying third-party npm registry
-  - Add -t/--greatest option to search for the highest versions instead of the default latest stable versions.
-  - Remove -f/--filter option and move to command-line argument
-  - Replace < and <= with ^
-  - Automatically look for the closest descendant package.json if not found in current directory
-  - Add ncu alias
-  - Export functionality to allow for programmatic use
-  - Bug fixes and refactoring
-  - Full unit test coverage!
-- 1.5.1
-  - Fix bug where package names got truncated (grunt-concurrent -> grunt)
-- 1.5.0
-  - Add prod and dev only options
-- 1.4.0
-  - Add package filtering option
-  - Add mocha as npm test script
-- 1.3.0
-  - Handle private packages and NPM errors
-  - Added Mocha tests
-  - Bugfixes
-- 1.2.0
-  - Print currently installed and latest package version in addition to semantic versions
-  - Fixed bug where extra whitespace in package.json may prevent automatic upgrade
-- 1.1.0
-  - Added option to check global packages for updates: -g switch
-  - Now also checks and upgrades devDependencies in package.json
-- 1.0.0
-  - Find and upgrade dependencies maintaining existing versioning policy in package.json
+See the github [releases](https://github.com/tjunnone/npm-check-updates/releases).
+
+For help migrating from v1 to v2, see the [v2 release notes](https://github.com/tjunnone/npm-check-updates/releases/tag/v2.0.0).
+
+Compatibility Issues
+--------------
+
+- There is an issue with [grunt-shell](https://github.com/sindresorhus/grunt-shell) described in [#119](https://github.com/tjunnone/npm-check-updates/issues/119). TLDR; You have to explicitly specify your package.json with `ncu --packageFile package.json`. 
 
 Problems?
 --------------
 
 Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on github! [Contributors](https://github.com/metaraine/) are responsive and happy to assist.
 
-Always include your package.json when reporting a bug!
+When filing an issue, always include the dependencies from your package.json (or the output from `npm -g ls --depth=0` if using global mode)!
 
 Pull requests are welcome, and will not collect dust :)
