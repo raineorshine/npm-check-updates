@@ -45,6 +45,7 @@
     "commander": "^2.8.1",
     "fast-diff": "^1.0.1",
     "get-stdin-promise": "^0.1.1",
+    "json-parse-helpfulerror": "^1.0.3",
     "lodash": "^3.10.1",
     "npm": "^2.13.4",
     "semver": "^5.0.1",
