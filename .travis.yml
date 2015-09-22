@@ -8,3 +8,4 @@ node_js:
   - 'iojs-v3'
 notifications:
   email: false
+sudo: false
