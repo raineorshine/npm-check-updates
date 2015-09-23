@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
-var program = require('commander'),
-    ncu = require('../lib/npm-check-updates');
+var program = require('commander');
+var updateNotifier = require('update-notifier');
+var ncu = require('../lib/npm-check-updates');
+var pkg = require('../package.json');
+
+updateNotifier({pkg: pkg}).notify();
 
 program
     .version(require('../package').version)
