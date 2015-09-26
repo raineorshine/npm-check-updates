@@ -49,7 +49,8 @@
     "npm": "^3.3.3",
     "pkg-up": "^1.0.0",
     "semver": "^5.0.1",
-    "semver-utils": "metaraine/semver-utils.git#86ea225"
+    "semver-utils": "metaraine/semver-utils.git#86ea225",
+    "update-notifier": "^0.5.0"
   },
   "devDependencies": {
     "chai": "^3.2.0",

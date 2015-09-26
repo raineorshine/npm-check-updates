@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 
-var program = require('commander'),
-    ncu = require('../lib/npm-check-updates');
+var program = require('commander');
+var updateNotifier = require('update-notifier');
+var ncu = require('../lib/npm-check-updates');
+var pkg = require('../package.json');
+
+// check if a new version of ncu is available and print an update notification
+updateNotifier({pkg: pkg})
+    .notify({defer: false});
 
 program
     .version(require('../package').version)
