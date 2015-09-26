@@ -5,7 +5,9 @@ var updateNotifier = require('update-notifier');
 var ncu = require('../lib/npm-check-updates');
 var pkg = require('../package.json');
 
-updateNotifier({pkg: pkg}).notify();
+// check if a new version of ncu is available and print an update notification
+updateNotifier({pkg: pkg})
+    .notify({defer: false});
 
 program
     .version(require('../package').version)
