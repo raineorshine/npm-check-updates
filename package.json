@@ -6,7 +6,7 @@
   "contributors": [
     "Raine Lourie (http://github.com/metaraine)"
   ],
-  "description": "Find newer versions of dependencies than what your package.json allows",
+  "description": "Find newer versions of dependencies than what your package.json or bower.json allows",
   "keywords": [
     "npm",
     "check",
@@ -38,16 +38,18 @@
   "dependencies": {
     "async": "^1.4.1",
     "bluebird": "^2.9.34",
+    "bower": "^1.5.3",
     "chalk": "^1.1.0",
     "cint": "^8.2.1",
     "cli-table": "^0.3.1",
     "commander": "^2.8.1",
     "fast-diff": "^1.0.1",
+    "find-up": "^1.0.0",
     "get-stdin-promise": "^0.1.1",
     "json-parse-helpfulerror": "^1.0.3",
     "lodash": "^3.10.1",
     "npm": "^3.3.3",
-    "pkg-up": "^1.0.0",
+    "require-dir": "^0.3.0",
     "semver": "^5.0.1",
     "semver-utils": "metaraine/semver-utils.git#86ea225",
     "update-notifier": "^0.5.0"

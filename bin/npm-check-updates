@@ -17,17 +17,18 @@ program
     .option('-e, --error-level <n>', 'set the error-level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). Default is 1.', cint.partialAt(parseInt, 1, 10), 1)
     .option('-g, --global', 'check global packages instead of in the current project')
     // program.json is set to true in programInit if any options that begin with 'json' are true
-    .option('-j, --jsonAll', 'output new package.json instead of human-readable message')
+    .option('-j, --jsonAll', 'output new package file instead of human-readable message')
     .option('--jsonUpgraded', 'output upgraded dependencies in json')
+    .option('-m, --packageManager <name>', 'npm (default) or bower', 'npm')
     .option('-o, --optional', 'check only optionalDependencies')
-    .option('--packageData', 'include stringified package.json (use stdin instead)')
-    .option('--packageFile <filename>', 'package.json location (default: ./package.json)')
+    .option('--packageData', 'include stringified package file (use stdin instead)')
+    .option('--packageFile <filename>', 'package file location (default: ./package.json)')
     .option('-p, --prod', 'check only dependencies (not devDependencies)')
     .option('-r, --registry <url>', 'specify third-party npm registry')
     .option('-s, --silent', "don't output anything")
     .option('-t, --greatest', "find the highest versions available instead of the latest stable versions")
-    .option('-u, --upgrade', 'upgrade package.json dependencies to match latest versions (maintaining existing policy)')
-    .option('-a, --upgradeAll', 'upgrade package.json dependencies even when the latest version satisfies the declared semver dependency');
+    .option('-u, --upgrade', 'overwrite package file')
+    .option('-a, --upgradeAll', 'include even those dependencies whose latest version satisfies the declared semver dependency');
 
 program.parse(process.argv);
 

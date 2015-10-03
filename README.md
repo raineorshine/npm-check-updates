@@ -4,9 +4,9 @@
 [![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg)](https://travis-ci.org/tjunnone/npm-check-updates)
 <!-- [![npm unstable version](https://img.shields.io/github/tag/tjunnone/npm-check-updates.svg?label=unstable)](https://github.com/tjunnone/npm-check-updates/tags) -->
 
-npm-check-updates is a command-line tool that allows you to find and save the latest versions of dependencies, regardless of any version constraints in your package.json file (unlike npm itself).
+npm-check-updates is a command-line tool that allows you to upgrade your package.json or bower.json dependencies to the latest versions, regardless of existing version constraints.
 
-npm-check-updates maintains your existing semantic versioning policies, i.e., it will upgrade your `"express": "^4.11.2"` dependency to `"express": "^5.0.0"` when express 5.0.0 is released.
+npm-check-updates maintains your existing semantic versioning *policies*, i.e., it will upgrade your `"express": "^4.11.2"` dependency to `"express": "^5.0.0"` when express 5.0.0 is released.
 
 ![npm-check-updates-screenshot](https://cloud.githubusercontent.com/assets/750276/8864534/0788a4d8-3171-11e5-9881-8f7dcf634d14.png)
 
@@ -33,9 +33,9 @@ $ ncu
 Run with -u to upgrade your package.json
 ```
 
-Upgrade a project's package.json:
+Upgrade a project's package file:
 
-> **Make sure your package.json is in version control and all changes have been committed. This *will* overwrite your package.json.**
+> **Make sure your package file is in version control and all changes have been committed. This *will* overwrite your package file.**
 
 ```sh
 $ ncu -u
@@ -67,20 +67,20 @@ Options
                              integration)
     -g, --global             check global packages instead of in the current project
     -h, --help               output usage information
-    -j, --jsonAll            output new package.json instead of human-readable
+    -j, --jsonAll            output new package file instead of human-readable
                              message
     --jsonUpgraded           output upgraded dependencies in json
-    --packageData            include stringified package.json (use stdin instead)
-    --packageFile            package.json location (default: ./package.json)
+    --packageData            include stringified package file (use stdin instead)
+    --packageFile            package file location (default: ./package.json)
+    -m, --packageManager     npm or bower (default: npm)
     -o, --optional           check only optionalDependencies
     -p, --prod               check only dependencies (not devDependencies)
     -r, --registry           specify third-party NPM registry
     -s, --silent             don't output anything
     -t, --greatest           find the highest versions available instead of the
                              latest stable versions (alpha release only)
-    -u, --upgrade            upgrade package.json dependencies to match latest
-                             versions (maintaining existing policy)
-    -a, --upgradeAll         upgrade package.json dependencies even when the latest
+    -u, --upgrade            overwrite package file
+    -a, --upgradeAll         include even those dependencies whose latest
                              version satisfies the declared semver dependency
     -V, --version            output the version number
 
@@ -120,7 +120,7 @@ How dependency updates are determined
 
 Why is it not updating ^1.0.0 to ^1.0.1 when 1.0.1 is the latest?
 --------------
-`^1.0.0` is a *range* that will includes all non-major updates. If you run `npm update`, it will install `1.0.1` without changing the dependency listed in your package.json. You don't need to update your package.json if the latest version is satisfied by the specified dependency range. If you *really* want to upgrade your package.json (even though it's not necessary), you can run `ncu --upgradeAll`. 
+`^1.0.0` is a *range* that will includes all non-major updates. If you run `npm update`, it will install `1.0.1` without changing the dependency listed in your package file. You don't need to update your package file if the latest version is satisfied by the specified dependency range. If you *really* want to upgrade your package file (even though it's not necessary), you can run `ncu --upgradeAll`. 
 
 History
 --------------
@@ -132,13 +132,13 @@ For help migrating from v1 to v2, see the [v2 release notes](https://github.com/
 Compatibility Issues
 --------------
 
-- There is an issue with [grunt-shell](https://github.com/sindresorhus/grunt-shell) described in [#119](https://github.com/tjunnone/npm-check-updates/issues/119). TLDR; You have to explicitly specify your package.json with `ncu --packageFile package.json`. 
+- There is an issue with [grunt-shell](https://github.com/sindresorhus/grunt-shell) described in [#119](https://github.com/tjunnone/npm-check-updates/issues/119). TLDR; You have to explicitly specify your package file with `ncu --packageFile package.json`. 
 
 Problems?
 --------------
 
 Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on github! [Contributors](https://github.com/metaraine/) are responsive and happy to assist.
 
-When filing an issue, always include the dependencies from your package.json (or the output from `npm -g ls --depth=0` if using global mode)!
+When filing an issue, always include the dependencies from your package file (or the output from `npm -g ls --depth=0` if using global mode)!
 
 Pull requests are welcome, and will not collect dust :)
