@@ -45,6 +45,11 @@ $ ncu -u
 package.json upgraded
 ```
 
+Works with bower:
+```sh
+$ ncu -m bower     # will use bower.json and check versions in bower
+```
+
 Include or exclude specific packages:
 ```sh
 # match mocha and should packages exactly
