@@ -9,3 +9,6 @@ node_js:
 notifications:
   email: false
 sudo: false
+branches:
+  only:
+    - master
