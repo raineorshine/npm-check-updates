@@ -9,6 +9,7 @@
   "description": "Find newer versions of dependencies than what your package.json or bower.json allows",
   "keywords": [
     "npm",
+    "bower",
     "check",
     "find",
     "discover",
@@ -16,6 +17,7 @@
     "upgrades",
     "dependencies",
     "package.json",
+    "bower.json",
     "updater",
     "version",
     "management"
