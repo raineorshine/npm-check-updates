@@ -10,6 +10,8 @@ npm-check-updates maintains your existing semantic versioning *policies*, i.e., 
 
 ![npm-check-updates-screenshot](https://cloud.githubusercontent.com/assets/750276/8864534/0788a4d8-3171-11e5-9881-8f7dcf634d14.png)
 
+**![Question](http://www.virginmobileusa.com/_img/2012/icon-questionmark-small.gif) Do you think bower support should be part of npm-check-updates, or a separate package? [We need your input!](https://github.com/tjunnone/npm-check-updates/issues/148)**
+
 Installation
 --------------
 
