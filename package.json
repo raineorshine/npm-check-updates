@@ -53,7 +53,7 @@
     "npm": "^3.3.3",
     "require-dir": "^0.3.0",
     "semver": "^5.0.1",
-    "semver-utils": "metaraine/semver-utils.git#86ea225",
+    "semver-utils": "^1.1.1",
     "update-notifier": "^0.5.0"
   },
   "devDependencies": {
