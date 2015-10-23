@@ -3,6 +3,7 @@ To add support for another package manager, drop in a module with the following 
 ```
 {
     init: (PACKAGE_MANAGER_SPECIFIC_ARGS) => Promise<Boolean> success
+
     list: () => Promise<{
         dependencies: {
             NAME: {
@@ -15,3 +16,5 @@ To add support for another package manager, drop in a module with the following 
     greatest: (String packageName) => Promise<String> version
 }
 ```
+
+* latest and greatest are expected to throw `new Error(404)` if the package is not found
