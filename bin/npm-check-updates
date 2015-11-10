@@ -19,13 +19,14 @@ program
     // program.json is set to true in programInit if any options that begin with 'json' are true
     .option('-j, --jsonAll', 'output new package file instead of human-readable message')
     .option('--jsonUpgraded', 'output upgraded dependencies in json')
+    .option('-l, --loglevel <n>', 'what level of logs to report: silent, error, warn, info, verbose, silly (default: warn)')
     .option('-m, --packageManager <name>', 'npm (default) or bower', 'npm')
     .option('-o, --optional', 'check only optionalDependencies')
     .option('--packageData', 'include stringified package file (use stdin instead)')
     .option('--packageFile <filename>', 'package file location (default: ./package.json)')
     .option('-p, --prod', 'check only dependencies (not devDependencies)')
     .option('-r, --registry <url>', 'specify third-party npm registry')
-    .option('-s, --silent', "don't output anything")
+    .option('-s, --silent', "don't output anything (--loglevel silent)")
     .option('-t, --greatest', "find the highest versions available instead of the latest stable versions")
     .option('-u, --upgrade', 'overwrite package file')
     .option('-a, --upgradeAll', 'include even those dependencies whose latest version satisfies the declared semver dependency');

@@ -77,13 +77,15 @@ Options
     -j, --jsonAll            output new package file instead of human-readable
                              message
     --jsonUpgraded           output upgraded dependencies in json
+    -l, --loglevel           what level of logs to report: silent, error, warn, info, 
+                             verbose, silly (default: warn)
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
     -m, --packageManager     npm or bower (default: npm)
     -o, --optional           check only optionalDependencies
     -p, --prod               check only dependencies (not devDependencies)
     -r, --registry           specify third-party NPM registry
-    -s, --silent             don't output anything
+    -s, --silent             don't output anything (--loglevel silent)
     -t, --greatest           find the highest versions available instead of the
                              latest stable versions (alpha release only)
     -u, --upgrade            overwrite package file
