@@ -1,0 +1,9 @@
+ignore: {}
+patch:
+  'npm:uglify-js:20150824':
+    - 'bower@1.6.5 > handlebars@2.0.0 > uglify-js@2.3.6':
+        patched: '2015-11-10T15:35:00.526Z'
+  'npm:semver:20150403':
+    - 'bower@1.6.5 > semver@2.3.2':
+        patched: '2015-11-10T15:39:00.803Z'
+version: v1
