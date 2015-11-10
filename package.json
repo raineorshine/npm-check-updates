@@ -26,9 +26,7 @@
   "main": "./lib/npm-check-updates",
   "scripts": {
     "lint": "eslint bin lib",
-    "test": "snyk test && npm run lint && mocha",
-    "snyk-protect": "snyk protect",
-    "postinstall": "npm run snyk-protect"
+    "test": "npm run lint && mocha"
   },
   "bin": {
     "npm-check-updates": "./bin/old-alias",
@@ -56,8 +54,7 @@
     "require-dir": "^0.3.0",
     "semver": "^5.0.1",
     "semver-utils": "^1.1.1",
-    "update-notifier": "^0.5.0",
-    "snyk": "^1.1.1"
+    "update-notifier": "^0.5.0"
   },
   "devDependencies": {
     "chai": "^3.2.0",
@@ -67,6 +64,5 @@
     "mocha": "^2.2.5",
     "should": "^7.0.2",
     "spawn-please": "^0.1.0"
-  },
-  "snyk": true
+  }
 }
