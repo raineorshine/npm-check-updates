@@ -10,7 +10,9 @@ npm-check-updates maintains your existing semantic versioning *policies*, i.e., 
 
 ![npm-check-updates-screenshot](https://cloud.githubusercontent.com/assets/750276/8864534/0788a4d8-3171-11e5-9881-8f7dcf634d14.png)
 
-**![Question](http://www.virginmobileusa.com/_img/2012/icon-questionmark-small.gif) Do you think bower support should be part of npm-check-updates, or a separate package? [We need your input!](https://github.com/tjunnone/npm-check-updates/issues/148)**
+**![Question](http://www.virginmobileusa.com/_img/2012/icon-questionmark-small.gif) Having issues? Check out [known issues](#known-issues) first. Then check the [issues page](https://github.com/tjunnone/npm-check-updates/issues).**
+
+**![Question](http://www.virginmobileusa.com/_img/2012/icon-questionmark-small.gif) Should bower support be part of npm-check-updates or a separate package? [We need your input!](https://github.com/tjunnone/npm-check-updates/issues/148)**
 
 Installation
 --------------
@@ -140,6 +142,10 @@ For help migrating from v1 to v2, see the [v2 release notes](https://github.com/
 
 Known Issues
 --------------
+
+- In some environments (Windows?) npm-check-updates may hang. Run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu -g --packageFile package.json`. See [#136](https://github.com/tjunnone/npm-check-updates/issues/136#issuecomment-155721102)
+
+- If you installed node via brew, `ncu -g` may incorrectly report that all packages are up-to-date. Try `PREFIX="/usr/local/" ncu -g`. See [#146](https://github.com/tjunnone/npm-check-updates/issues/146#issuecomment-155758303).
 
 - There is an issue with [grunt-shell](https://github.com/sindresorhus/grunt-shell) described in [#119](https://github.com/tjunnone/npm-check-updates/issues/119). TLDR; You have to explicitly specify your package file with `ncu --packageFile package.json`. 
 
