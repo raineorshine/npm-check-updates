@@ -3,9 +3,6 @@ node_js:
   - '0.12'
   - '4'
   - '5'
-  - 'iojs-v1'
-  - 'iojs-v2'
-  - 'iojs-v3'
 notifications:
   email: false
 sudo: false

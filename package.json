@@ -23,6 +23,9 @@
     "management"
   ],
   "preferGlobal": true,
+  "engines": {
+    "node": ">=0.12"
+  },
   "main": "./lib/npm-check-updates",
   "scripts": {
     "lint": "eslint bin lib",
