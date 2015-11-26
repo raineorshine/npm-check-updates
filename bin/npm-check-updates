@@ -20,7 +20,6 @@ program
     .option('-j, --jsonAll', 'output new package file instead of human-readable message')
     .option('--jsonUpgraded', 'output upgraded dependencies in json')
     .option('-l, --loglevel <n>', 'what level of logs to report: silent, error, warn, info, verbose, silly (default: warn)')
-    .option('--logstyle <style>', 'static or dynamic (can obscure errors)', 'dynamic')
     .option('-m, --packageManager <name>', 'npm (default) or bower', 'npm')
     .option('-o, --optional', 'check only optionalDependencies')
     .option('--packageData', 'include stringified package file (use stdin instead)')
