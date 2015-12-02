@@ -54,7 +54,7 @@
     "get-stdin": "^5.0.1",
     "json-parse-helpfulerror": "^1.0.3",
     "lodash": "^3.10.1",
-    "npm": "^3.4.1",
+    "npm": "^3.5.1",
     "npmi": "^1.0.1",
     "require-dir": "^0.3.0",
     "semver": "^5.1.0",
