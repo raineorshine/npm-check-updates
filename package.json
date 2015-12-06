@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "2.5.3",
+  "version": "2.5.3-spawnglobal",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "MIT",
   "contributors": [
