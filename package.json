@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "2.5.3-spawnglobal",
+  "version": "2.5.4-spawnglobal",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "MIT",
   "contributors": [
@@ -59,6 +59,7 @@
     "require-dir": "^0.3.0",
     "semver": "^5.1.0",
     "semver-utils": "^1.1.1",
+    "spawn-please": "^0.1.0",
     "update-notifier": "^0.5.0"
   },
   "devDependencies": {
@@ -67,7 +68,6 @@
     "chai-string": "^1.1.4",
     "eslint": "^1.9.0",
     "mocha": "^2.3.4",
-    "should": "^7.1.1",
-    "spawn-please": "^0.1.0"
+    "should": "^7.1.1"
   }
 }
