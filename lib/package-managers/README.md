@@ -2,7 +2,7 @@ To add support for another package manager, drop in a module with the following 
 
 ```
 {
-    init: (PACKAGE_MANAGER_SPECIFIC_ARGS) => Promise<Boolean> success
+    init: (PACKAGE_MANAGER_SPECIFIC_ARGS) => Promise<null> fulfilled if successful
 
     list: () => Promise<{
         dependencies: {

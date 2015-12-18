@@ -8,7 +8,7 @@ chai.use(chaiAsPromised);
 describe('versionmanager', function () {
 
     before(function () {
-        return vm.initialize(false).should.be.resolved;
+        return vm.initialize(false).should.be.fulfilled;
     });
 
     describe('upgradeDependencyDeclaration', function () {
@@ -276,7 +276,7 @@ describe('versionmanager', function () {
     describe('getInstalledPackages', function () {
         it('should execute npm ls', function () {
             return vm.getInstalledPackages()
-                .should.be.resolved;
+                .should.be.fulfilled;
         });
     });
 
