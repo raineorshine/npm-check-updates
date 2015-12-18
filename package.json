@@ -29,7 +29,7 @@
   "main": "./lib/npm-check-updates",
   "scripts": {
     "lint": "eslint bin lib",
-    "test": "npm run lint && mocha"
+    "test": "npm run lint && mocha && mocha test/individual"
   },
   "bin": {
     "npm-check-updates": "./bin/old-alias",

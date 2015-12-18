@@ -1,5 +1,5 @@
 var requireDir = require('require-dir');
-var packageManagers = requireDir('../lib/package-managers');
+var packageManagers = requireDir('../../lib/package-managers');
 var chai = require("chai");
 var chaiAsPromised = require("chai-as-promised");
 var should = chai.should();
@@ -7,7 +7,7 @@ var should = chai.should();
 chai.use(chaiAsPromised);
 
 // the directory with the test package.json
-var testDir = __dirname + '/ncu';
+var testDir = __dirname + '/../ncu';
 
 describe('package-managers', function () {
 
@@ -15,6 +15,7 @@ describe('package-managers', function () {
     //     describe(name, function () {
 
     describe('npm', function () {
+        this.timeout(30000);
 
         var pkgManager = packageManagers.npm;
 

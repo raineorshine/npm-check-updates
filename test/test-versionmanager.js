@@ -274,6 +274,7 @@ describe('versionmanager', function () {
     });
 
     describe('getInstalledPackages', function () {
+        this.timeout(30000);
         it('should execute npm ls', function () {
             return vm.getInstalledPackages()
                 .should.be.fulfilled;
