@@ -32,8 +32,8 @@
     "test": "npm run lint && mocha && mocha test/individual"
   },
   "bin": {
-    "npm-check-updates": "./bin/old-alias",
-    "ncu": "./bin/npm-check-updates"
+    "npm-check-updates": "./bin/npm-check-updates",
+    "ncu": "./bin/ncu"
   },
   "repository": {
     "type": "git",
@@ -54,6 +54,7 @@
     "get-stdin": "^5.0.1",
     "json-parse-helpfulerror": "^1.0.3",
     "lodash": "^3.10.1",
+    "node-alias": "^1.0.3",
     "npm": "^3.5.1",
     "npmi": "^1.0.1",
     "require-dir": "^0.3.0",
