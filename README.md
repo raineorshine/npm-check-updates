@@ -61,7 +61,7 @@ $ ncu mocha,should
 $ ncu /^gulp-/
 
 # match packages that do not start with "gulp-". Note: single quotes are required
-# here to avoid inadvertant bash parsing
+# here to avoid inadvertent bash parsing
 $ ncu '/^(?!gulp-).*$/'
 ```
 
