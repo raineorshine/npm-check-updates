@@ -56,10 +56,11 @@ You can include or exclude specific packages using the `--filter` and `--reject`
 
 ```sh
 # match mocha and should packages exactly
-$ ncu mocha,should      # shorthand for ncu -f mocha,should (or --filter)
+$ ncu mocha             # shorthand for ncu -f mocha (or --filter)
+$ ncu one, two, three
 
 # exclude packages
-$ ncu -x nodemon        # shorthand for ncu -x nodemon (or --reject)
+$ ncu -x nodemon        # shorthand for ncu --reject nodemon
 
 # match packages that start with "gulp-" using regex
 $ ncu /^gulp-/
