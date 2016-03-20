@@ -61,6 +61,10 @@ describe('versionmanager', function () {
             vm.upgradeDependencyDeclaration("~1.0 || ~1.2", "3.1.0").should.equal("~3.1");
         });
 
+        it('should hyphen (-) range', function () {
+            vm.upgradeDependencyDeclaration("1.0 - 2.0", "3.1.0").should.equal("3.1");
+        });
+
         it('should use the range with the fewest parts if there are multiple ranges', function () {
             vm.upgradeDependencyDeclaration("1.1 || 1.2.0", "3.1.0").should.equal("3.1");
             vm.upgradeDependencyDeclaration("1.2.0 || 1.1", "3.1.0").should.equal("3.1");
