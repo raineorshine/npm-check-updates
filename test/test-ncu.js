@@ -66,10 +66,10 @@ describe('npm-check-updates', function () {
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
             return spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile])
                 .then(function (output) {
-                    var ugradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
-                    ugradedPkg.should.have.property('dependencies');
-                    ugradedPkg.dependencies.should.have.property('express');
-                    ugradedPkg.dependencies.express.should.not.equal('1')
+                    var upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                    upgradedPkg.should.have.property('dependencies');
+                    upgradedPkg.dependencies.should.have.property('express');
+                    upgradedPkg.dependencies.express.should.not.equal('1')
                 })
                 .finally(function () {
                     fs.unlinkSync(tempFile);
@@ -81,13 +81,49 @@ describe('npm-check-updates', function () {
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
             return spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile], '{ "dependencies": {}}')
                 .then(function (output) {
-                    var ugradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
-                    ugradedPkg.should.have.property('dependencies');
-                    ugradedPkg.dependencies.should.have.property('express');
-                    ugradedPkg.dependencies.express.should.not.equal('1')
+                    var upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                    upgradedPkg.should.have.property('dependencies');
+                    upgradedPkg.dependencies.should.have.property('express');
+                    upgradedPkg.dependencies.express.should.not.equal('1')
                 })
                 .finally(function () {
                     fs.unlinkSync(tempFile);
+                });
+        });
+
+        it('should filter by package name with --filter', function () {
+            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--filter', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+                .then(JSON.parse)
+                .then(function (pkgData) {
+                    pkgData.should.have.property('express');
+                    pkgData.should.not.have.property('chalk');
+                });
+        });
+
+        it('should filter by package name with -f', function () {
+            return spawn('node', ['bin/ncu', '--jsonUpgraded', '-f', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+                .then(JSON.parse)
+                .then(function (pkgData) {
+                    pkgData.should.have.property('express');
+                    pkgData.should.not.have.property('chalk');
+                });
+        });
+
+        it('should reject by package name with --reject', function () {
+            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--reject', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+                .then(JSON.parse)
+                .then(function (pkgData) {
+                    pkgData.should.have.property('express');
+                    pkgData.should.not.have.property('chalk');
+                });
+        });
+
+        it('should reject by package name with -x', function () {
+            return spawn('node', ['bin/ncu', '--jsonUpgraded', '-x', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+                .then(JSON.parse)
+                .then(function (pkgData) {
+                    pkgData.should.have.property('express');
+                    pkgData.should.not.have.property('chalk');
                 });
         });
     });

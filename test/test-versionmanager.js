@@ -197,41 +197,89 @@ describe('versionmanager', function () {
             });
         });
 
-        it('should filter dependencies by package name', function () {
-            vm.getCurrentDependencies(deps, {filter: 'mocha'}).should.eql({
-                mocha: '1.2'
-            });
-        });
+        describe('filter', function () {
 
-        it('should not filter out dependencies with a partial package name', function () {
-            vm.getCurrentDependencies(deps, {filter: 'o'}).should.eql({});
-        });
+            it('should filter dependencies by package name', function () {
+                vm.getCurrentDependencies(deps, {filter: 'mocha'}).should.eql({
+                    mocha: '1.2'
+                });
+            });
 
-        it('should filter dependencies by multiple packages', function () {
-            vm.getCurrentDependencies(deps, {filter: 'mocha lodash'}).should.eql({
-                mocha: '1.2',
-                lodash: '^3.9.3'
+            it('should not filter out dependencies with a partial package name', function () {
+                vm.getCurrentDependencies(deps, {filter: 'o'}).should.eql({});
             });
-            vm.getCurrentDependencies(deps, {filter: 'mocha,lodash'}).should.eql({
-                mocha: '1.2',
-                lodash: '^3.9.3'
-            });
-            vm.getCurrentDependencies(deps, {filter: ['mocha', 'lodash']}).should.eql({
-                mocha: '1.2',
-                lodash: '^3.9.3'
-            });
-        });
 
-        it('should filter dependencies by regex', function () {
-            vm.getCurrentDependencies(deps, {filter: /o/}).should.eql({
-                mocha: '1.2',
-                lodash: '^3.9.3'
+            it('should filter dependencies by multiple packages', function () {
+                vm.getCurrentDependencies(deps, {filter: 'mocha lodash'}).should.eql({
+                    mocha: '1.2',
+                    lodash: '^3.9.3'
+                });
+                vm.getCurrentDependencies(deps, {filter: 'mocha,lodash'}).should.eql({
+                    mocha: '1.2',
+                    lodash: '^3.9.3'
+                });
+                vm.getCurrentDependencies(deps, {filter: ['mocha', 'lodash']}).should.eql({
+                    mocha: '1.2',
+                    lodash: '^3.9.3'
+                });
             });
-            vm.getCurrentDependencies(deps, {filter: '/o/'}).should.eql({
-                mocha: '1.2',
-                lodash: '^3.9.3'
+
+            it('should filter dependencies by regex', function () {
+                vm.getCurrentDependencies(deps, {filter: /o/}).should.eql({
+                    mocha: '1.2',
+                    lodash: '^3.9.3'
+                });
+                vm.getCurrentDependencies(deps, {filter: '/o/'}).should.eql({
+                    mocha: '1.2',
+                    lodash: '^3.9.3'
+                });
             });
-        });
+        })
+
+        describe('reject', function () {
+
+            it('should reject dependencies by package name', function () {
+                vm.getCurrentDependencies(deps, {reject: 'chalk'}).should.eql({
+                    mocha: '1.2',
+                    lodash: '^3.9.3'
+                });
+            });
+
+            it('should not reject dependencies with a partial package name', function () {
+                vm.getCurrentDependencies(deps, {reject: 'o'}).should.eql({
+                    mocha: '1.2',
+                    lodash: '^3.9.3',
+                    chalk: '^1.1.0'
+                });
+            });
+
+            it('should reject dependencies by multiple packages', function () {
+                vm.getCurrentDependencies(deps, {reject: 'mocha lodash'}).should.eql({
+                    chalk: '^1.1.0'
+                });
+                vm.getCurrentDependencies(deps, {reject: 'mocha,lodash'}).should.eql({
+                    chalk: '^1.1.0'
+                });
+                vm.getCurrentDependencies(deps, {reject: ['mocha', 'lodash']}).should.eql({
+                    chalk: '^1.1.0'
+                });
+            });
+
+            it('should filter dependencies by regex', function () {
+                vm.getCurrentDependencies(deps, {reject: /o/}).should.eql({
+                    chalk: '^1.1.0'
+                });
+                vm.getCurrentDependencies(deps, {reject: '/o/'}).should.eql({
+                    chalk: '^1.1.0'
+                });
+            });
+
+            it('should filter and reject', function () {
+                vm.getCurrentDependencies(deps, {filter: 'mocha chalk', reject: 'chalk'}).should.eql({
+                    mocha: '1.2'
+                });
+            });
+        })
 
     });
 
