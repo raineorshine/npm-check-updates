@@ -52,10 +52,14 @@ Works with bower:
 $ ncu -m bower     # will use bower.json and check versions in bower
 ```
 
-Include or exclude specific packages:
+You can include or exclude specific packages using the `--filter` and `--reject` options. They accept strings, comma-delimited lists, or regular expressions:
+
 ```sh
 # match mocha and should packages exactly
-$ ncu mocha,should
+$ ncu mocha,should      # shorthand for ncu -f mocha,should (or --filter)
+
+# exclude packages
+$ ncu -x nodemon        # shorthand for ncu -x nodemon (or --reject)
 
 # match packages that start with "gulp-" using regex
 $ ncu /^gulp-/
@@ -72,6 +76,8 @@ Options
                              errors occur. 2: exits with error code 0 if no
                              packages need updating (useful for continuous
                              integration)
+    -f, --filter             include only package names matching the given string, 
+                             comma-delimited list, or regex
     -g, --global             check global packages instead of in the current project
     -h, --help               output usage information
     -j, --jsonAll            output new package file instead of human-readable
@@ -91,6 +97,8 @@ Options
     -u, --upgrade            overwrite package file
     -a, --upgradeAll         include even those dependencies whose latest
                              version satisfies the declared semver dependency
+    -x, --reject             exclude packages matching the given string, comma-
+                             delimited list, or regex
     -V, --version            output the version number
 
 Integration
@@ -106,8 +114,7 @@ ncu.run({
     // Any command-line option can be specified here.
     // These are set by default:
     silent: true,
-    jsonUpgraded: true,
-    args: [] // same as CLI args, i.e. filter by package name
+    jsonUpgraded: true
 }).then(function(upgraded) {
     console.log('dependencies to upgrade:', upgraded);
 });
