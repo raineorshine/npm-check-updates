@@ -4,7 +4,7 @@
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "MIT",
   "contributors": [
-    "Raine Lourie (http://github.com/metaraine)"
+    "Raine Lourie (https://github.com/metaraine)"
   ],
   "description": "Find newer versions of dependencies than what your package.json or bower.json allows",
   "keywords": [
@@ -70,5 +70,9 @@
     "eslint": "^1.9.0",
     "mocha": "^2.3.4",
     "should": "^7.1.1"
-  }
+  },
+  "files": [
+    "bin",
+    "lib"
+  ]
 }
