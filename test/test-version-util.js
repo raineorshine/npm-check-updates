@@ -200,6 +200,15 @@ describe('version-util', function () {
         it('should return true for *', function() {
             versionUtil.isWildCard('*').should.equal(true);
         });
+        it('should return true for x', function() {
+            versionUtil.isWildCard('x').should.equal(true);
+        });
+        it('should return true for x.x', function() {
+            versionUtil.isWildCard('x.x').should.equal(true);
+        });
+        it('should return true for x.x.x', function() {
+            versionUtil.isWildCard('x.x.x').should.equal(true);
+        });
         it('should return false for strings that more than a wildcard', function() {
             versionUtil.isWildCard('^0.15.0').should.equal(false);
             versionUtil.isWildCard('1.*').should.equal(false);
