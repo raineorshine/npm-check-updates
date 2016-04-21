@@ -56,7 +56,7 @@
     "lodash": "^3.10.1",
     "node-alias": "^1.0.3",
     "npm": "^3.5.1",
-    "npmi": "^1.0.1",
+    "npmi": "^2.0.1-alpha",
     "require-dir": "^0.3.0",
     "semver": "^5.1.0",
     "semver-utils": "^1.1.1",
