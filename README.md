@@ -141,6 +141,15 @@ Why is it not updating ^1.0.0 to ^1.0.1 when 1.0.1 is the latest?
 --------------
 `^1.0.0` is a *range* that will includes all non-major updates. If you run `npm update`, it will install `1.0.1` without changing the dependency listed in your package file. You don't need to update your package file if the latest version is satisfied by the specified dependency range. If you *really* want to upgrade your package file (even though it's not necessary), you can run `ncu --upgradeAll`. 
 
+Docker
+------
+
+Docker volumes can be used to easily update a package:
+
+```bash
+docker run -it --rm -v $(pwd)/package.json:/app/package.json creack/ncu -u -a
+```
+
 History
 --------------
 
@@ -167,12 +176,3 @@ Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on 
 When filing an issue, always include the dependencies from your package file (or the output from `npm -g ls --depth=0` if using global mode)!
 
 Pull requests are welcome, and will not collect dust :)
-
-Docker
-------
-
-Docker volumes can be used to easily update a package:
-
-```bash
-docker run -it --rm -v $(pwd)/package.json:/app/package.json creack/ncu -u -a
-```
