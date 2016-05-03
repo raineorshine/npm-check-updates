@@ -167,3 +167,12 @@ Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on 
 When filing an issue, always include the dependencies from your package file (or the output from `npm -g ls --depth=0` if using global mode)!
 
 Pull requests are welcome, and will not collect dust :)
+
+Docker
+------
+
+Docker volumes can be used to easily update a package:
+
+```bash
+docker run -it --rm -v $(pwd)/package.json:/app/package.json creack/ncu -u -a
+```
