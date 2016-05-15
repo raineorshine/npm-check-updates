@@ -36,5 +36,6 @@ program
 program.parse(process.argv);
 
 program.cli = true;
+program.filter = program.args[0] || program.filter
 
 ncu.run(program);
