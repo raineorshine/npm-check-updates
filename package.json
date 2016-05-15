@@ -4,7 +4,7 @@
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "MIT",
   "contributors": [
-    "Raine Lourie (https://github.com/metaraine)"
+    "Raine Revere (https://github.com/raineorshine)"
   ],
   "description": "Find newer versions of dependencies than what your package.json or bower.json allows",
   "keywords": [
