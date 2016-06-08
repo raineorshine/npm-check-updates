@@ -1,8 +1,5 @@
-[![npm stable version](https://img.shields.io/npm/v/npm-check-updates.svg?label=npm)](https://npmjs.org/package/npm-check-updates)
+[![npm version](https://badge.fury.io/js/npm-check-updates.svg)](https://badge.fury.io/js/npm-check-updates)
 [![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg)](https://travis-ci.org/tjunnone/npm-check-updates)
-<!--[![Dependency Status](https://david-dm.org/tjunnone/npm-check-updates.svg)](https://david-dm.org/tjunnone/npm-check-updates)-->
-<!--[![devDependency Status](https://david-dm.org/tjunnone/npm-check-updates/dev-status.svg)](https://david-dm.org/tjunnone/npm-check-updates#info=devDependencies)-->
-<!-- [![npm unstable version](https://img.shields.io/github/tag/tjunnone/npm-check-updates.svg?label=unstable)](https://github.com/tjunnone/npm-check-updates/tags) -->
 
 npm-check-updates is a command-line tool that allows you to upgrade your package.json or bower.json dependencies to the latest versions, regardless of existing version constraints.
 
@@ -150,13 +147,6 @@ Docker volumes can be used to easily update a package:
 docker run -it --rm -v $(pwd)/package.json:/app/package.json creack/ncu -u -a
 ```
 
-History
---------------
-
-See the github [releases](https://github.com/tjunnone/npm-check-updates/releases).
-
-For help migrating from v1 to v2, see the [v2 release notes](https://github.com/tjunnone/npm-check-updates/releases/tag/v2.0.0).
-
 Known Issues
 --------------
 
@@ -171,8 +161,11 @@ Known Issues
 Problems?
 --------------
 
-Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on github! [Contributors](https://github.com/metaraine/) are responsive and happy to assist.
+Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on github! [Contributors](https://github.com/raineorshine/) are responsive and happy to assist.
 
-When filing an issue, always include the dependencies from your package file (or the output from `npm -g ls --depth=0` if using global mode)!
+When filing an issue, please include the dependencies from your package file (or the output from `npm -g ls --depth=0` if using global mode).
 
-Pull requests are welcome, and will not collect dust :)
+Contributing
+--------------
+
+npm-check-updates is a great project to contribute to! This is a newbie-friendly project, so don't hesitate to dive in and ask questions! Pick an issue that that you would like to work on and then look at the source code to see if you can figure out what to change. There are several outstanding [bugs](https://github.com/tjunnone/npm-check-updates/issues). There are also many enhancements labeled as [revive-me](https://github.com/tjunnone/npm-check-updates/issues?utf8=%E2%9C%93&q=label%3Arevive-me) that can be re-opened if someone is interested in working on them. 
