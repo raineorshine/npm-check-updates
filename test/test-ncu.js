@@ -20,6 +20,29 @@ describe('npm-check-updates', function () {
                 })
                 .should.eventually.have.property('express');
         });
+
+        it('should filter by package name with one arg', function () {
+            const upgraded = ncu.run({
+                packageData: fs.readFileSync(__dirname + '/ncu/package2.json', 'utf-8'),
+                args: ['lodash.map']
+            });
+            return BluebirdPromise.all([
+                upgraded.should.eventually.have.property('lodash.map'),
+                upgraded.should.eventually.not.have.property('lodash.filter')
+            ]);
+        });
+
+        it('should filter by package name with multiple args', function () {
+            const upgraded = ncu.run({
+                packageData: fs.readFileSync(__dirname + '/ncu/package2.json', 'utf-8'),
+                args: ['lodash.map', 'lodash.filter']
+            });
+            return BluebirdPromise.all([
+                upgraded.should.eventually.have.property('lodash.map'),
+                upgraded.should.eventually.have.property('lodash.filter')
+            ]);
+        });
+
     });
 
     describe('cli', function() {

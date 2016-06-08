@@ -1,0 +1,6 @@
+{
+    "dependencies": {
+        "lodash.map": "2.0.0",
+        "lodash.filter": "2.0.0"
+    }
+}
