@@ -197,6 +197,9 @@ describe('version-util', function () {
         it('should return true for ^', function() {
             versionUtil.isWildCard('^').should.equal(true);
         });
+        it('should return true for ^*', function() {
+            versionUtil.isWildCard('^*').should.equal(true);
+        });
         it('should return true for *', function() {
             versionUtil.isWildCard('*').should.equal(true);
         });

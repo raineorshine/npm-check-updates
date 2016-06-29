@@ -34,6 +34,8 @@ describe('versionmanager', function () {
             vm.upgradeDependencyDeclaration("*", "1.0.0").should.equal("*");
             vm.upgradeDependencyDeclaration("1.*", "2.0.1").should.equal("2.*");
 
+            vm.upgradeDependencyDeclaration("^*", "1.0.0").should.equal("^*");
+
             vm.upgradeDependencyDeclaration("x", "1.0.0").should.equal("x");
             vm.upgradeDependencyDeclaration("x.x", "1.0.0").should.equal("x.x");
             vm.upgradeDependencyDeclaration("x.x.x", "1.0.0").should.equal("x.x.x");
