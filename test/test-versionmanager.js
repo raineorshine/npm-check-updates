@@ -360,34 +360,34 @@ describe('versionmanager', function () {
         this.timeout(30000);
 
         it('valid single package', function () {
-            var latestVersions = vm.getLatestVersions(["async"]);
+            var latestVersions = vm.getLatestVersions({"async": "1.5.1"});
             return latestVersions.should.eventually.have.property('async');
         });
 
         it('valid packages', function () {
-            var latestVersions = vm.getLatestVersions(["async", "npm"]);
+            var latestVersions = vm.getLatestVersions({'async': '1.5.1', 'npm': '3.10.3'});
             latestVersions.should.eventually.have.property('async');
             latestVersions.should.eventually.have.property('npm');
             return latestVersions;
         });
 
         it('unavailable packages should be ignored', function () {
-            return vm.getLatestVersions(["sudoMakeMeASandwitch"])
+            return vm.getLatestVersions({"sudoMakeMeASandwitch": '1.2.3'})
                 .should.eventually.deep.equal({})
         });
 
         it('set the versionTarget explicitly to latest', function () {
-            return vm.getLatestVersions(["async"], {versionTarget: 'latest'})
+            return vm.getLatestVersions({"async": '1.5.1'}, {versionTarget: 'latest'})
                 .should.eventually.have.property('async');
         });
 
         it('set the versionTarget to greatest', function () {
-            return vm.getLatestVersions(["async"], {versionTarget: 'greatest'})
+            return vm.getLatestVersions({"async": '1.5.1'}, {versionTarget: 'greatest'})
                 .should.eventually.have.property('async');
         });
 
         it('should return an error for an unsupported versionTarget', function () {
-            var a = vm.getLatestVersions(["async"], {versionTarget: 'foo'});
+            var a = vm.getLatestVersions({"async": '1.5.1'}, {versionTarget: 'foo'});
             return a.should.be.rejected;
         });
 

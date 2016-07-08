@@ -31,7 +31,8 @@ program
     .option('-t, --greatest', "find the highest versions available instead of the latest stable versions")
     .option('-u, --upgrade', 'overwrite package file')
     .option('-x, --reject <matches>', 'exclude packages matching the given string, comma-delimited list, or regex')
-    .option('-a, --upgradeAll', 'include even those dependencies whose latest version satisfies the declared semver dependency');
+    .option('-a, --upgradeAll', 'include even those dependencies whose latest version satisfies the declared semver dependency')
+    .option('--semverLevel <level>', 'find the highest version within "major" or "minor"');
 
 program.parse(process.argv);
 
