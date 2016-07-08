@@ -14,6 +14,8 @@ To add support for another package manager, drop in a module with the following 
     }>
     latest: (String packageName) => Promise<String> version
     greatest: (String packageName) => Promise<String> version
+    greatestMajor: (String packageName, String currentVersion) => Promise<String> version
+    greatestMinor: (String packageName, String currentVersion) => Promise<String> version
 }
 ```
 

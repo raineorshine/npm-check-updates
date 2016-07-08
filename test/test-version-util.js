@@ -256,4 +256,21 @@ describe('version-util', function () {
         });
     });
 
+    describe('findGreatestByLevel', function () {
+
+        it('should find the greatest version within the given semantic versioning level', function () {
+            var versions = ['0.1.0', '1.0.0', '1.0.1', '1.1.0', '2.0.1'];
+            versionUtil.findGreatestByLevel(versions, '1.0.0', 'major').should.equal('1.1.0');
+            versionUtil.findGreatestByLevel(versions, '1.1.0', 'major').should.equal('1.1.0');
+            versionUtil.findGreatestByLevel(versions, '1.0.0', 'minor').should.equal('1.0.1');
+            versionUtil.findGreatestByLevel(versions, '1.0.1', 'minor').should.equal('1.0.1');
+
+            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '^1.0.1', 'major'), null);
+            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '1.*', 'major'), null);
+            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '1.1', 'major'), null);
+            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '1.x', 'major'), null);
+            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '>1.1', 'major'), null);
+        });
+    });
+
 });

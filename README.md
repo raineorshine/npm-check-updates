@@ -98,6 +98,7 @@ Options
     -x, --reject             exclude packages matching the given string, comma-
                              delimited list, or regex
     -V, --version            output the version number
+    --semverLevel            find the highest version within "major" or "minor"
 
 Integration
 --------------
@@ -124,6 +125,11 @@ How dependency updates are determined
 - Direct dependencies will be increased to the latest stable version:
   - `2.0.1` → `2.2.0`
   - `1.2` → `1.3`
+  - `0.1.0` → `1.0.1`
+  - with `--semverLevel major`
+    - `0.1.0` → `0.2.1`
+  - with `--semverLevel minor`
+    - `0.1.0` → `0.1.2`
 -  Semantic versioning policies for levels are maintained while satisfying the latest version:
   - `^1.2.0` → `^2.0.0`
   - `1.x` → `2.x`
