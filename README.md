@@ -86,6 +86,8 @@ Options
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
     -m, --packageManager     npm or bower (default: npm)
+    -n, --newest             find the newest versions available instead of the
+                             latest stable versions (alpha release only)
     -o, --optional           check only optionalDependencies
     -p, --prod               check only dependencies (not devDependencies)
     -r, --registry           specify third-party NPM registry
