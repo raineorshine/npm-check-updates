@@ -45,33 +45,33 @@
     "bower": "^1.6.5"
   },
   "dependencies": {
-    "bluebird": "^3.0.5",
-    "chalk": "^1.1.1",
+    "bluebird": "^3.4.3",
+    "chalk": "^1.1.3",
     "cint": "^8.2.1",
     "cli-table": "^0.3.1",
     "commander": "^2.9.0",
     "fast-diff": "^1.0.1",
-    "find-up": "^1.1.0",
+    "find-up": "^1.1.2",
     "get-stdin": "^5.0.1",
     "json-parse-helpfulerror": "^1.0.3",
-    "lodash": "^3.10.1",
-    "node-alias": "^1.0.3",
-    "npm": "^3.5.1",
-    "npmi": "^2.0.1-alpha",
+    "lodash": "^4.15.0",
+    "node-alias": "^1.0.4",
+    "npm": "^3.10.6",
+    "npmi": "^2.0.1",
     "require-dir": "^0.3.0",
-    "semver": "^5.1.0",
+    "semver": "^5.3.0",
     "semver-utils": "^1.1.1",
     "spawn-please": "^0.1.0",
-    "update-notifier": "^0.5.0"
+    "update-notifier": "^1.0.2"
   },
   "devDependencies": {
-    "chai": "^3.4.1",
-    "chai-as-promised": "^5.1.0",
-    "chai-string": "^1.1.4",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.3.0",
+    "chai-string": "^1.2.0",
     "chokidar-cli": "^1.2.0",
-    "eslint": "^1.9.0",
-    "mocha": "^2.3.4",
-    "should": "^7.1.1"
+    "eslint": "^3.4.0",
+    "mocha": "^3.0.2",
+    "should": "^11.1.0"
   },
   "files": [
     "bin",
