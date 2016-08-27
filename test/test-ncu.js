@@ -151,21 +151,19 @@ describe('npm-check-updates', function () {
         });
 
         it('should update only packages which have new minor/patch versions', function () {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "express": "2.4.1", "chalk": "^0.1.0", "npm": "2.15.9" } }')
+            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "express": "2.4.1", "chalk": "^0.1.0" } }')
                 .then(JSON.parse)
                 .then(function (pkgData) {
                     pkgData.express.should.equal('2.5.11');
                     pkgData.should.not.have.property('chalk');
-                    pkgData.should.not.have.property('npm');
                 });
         });
         it('should update only packages which have new patch versions', function () {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "express": "2.4.1", "chalk": "^0.1.0", "npm": "2.15.9" } }')
+            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "express": "2.4.1", "chalk": "^0.1.0" } }')
                 .then(JSON.parse)
                 .then(function (pkgData) {
                     pkgData.express.should.equal('2.4.7');
                     pkgData.should.not.have.property('chalk');
-                    pkgData.should.not.have.property('npm');
                 });
         });
     });
