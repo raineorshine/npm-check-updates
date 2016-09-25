@@ -1,5 +1,9 @@
-[![npm version](https://badge.fury.io/js/npm-check-updates.svg)](https://badge.fury.io/js/npm-check-updates)
-[![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg)](https://travis-ci.org/tjunnone/npm-check-updates)
+[![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg?branch=master)](https://travis-ci.org/tjunnone/npm-check-updates)
+[![NPM version](https://badge.fury.io/js/npm-check-updates.svg)](http://badge.fury.io/js/npm-check-updates)
+[![Dependency Status](https://img.shields.io/david/tjunnone/npm-check-updates.svg)](https://david-dm.org/tjunnone/npm-check-updates)
+[![npm](https://img.shields.io/npm/dm/npm-check-updates.svg?maxAge=2592000)]()
+
+
 
 npm-check-updates is a command-line tool that allows you to upgrade your package.json or bower.json dependencies to the latest versions, regardless of existing version constraints.
 
