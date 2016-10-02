@@ -88,11 +88,26 @@ describe('npm-check-updates', function () {
             var tempFile = 'test/temp_package.json';
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
             return spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile])
-                .then(function (output) {
+                .then(function () {
                     var upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
                     upgradedPkg.should.have.property('dependencies');
                     upgradedPkg.dependencies.should.have.property('express');
                     upgradedPkg.dependencies.express.should.not.equal('1')
+                })
+                .finally(function () {
+                    fs.unlinkSync(tempFile);
+                });
+        });
+
+        it('should not write to --packageFile if error-level=2 and upgrades', function() {
+            var tempFile = 'test/temp_package.json';
+            fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+            return spawn('node', ['bin/npm-check-updates', '-u', '--error-level', '2', '--packageFile', tempFile])
+                .catch(function() {
+                    var upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                    upgradedPkg.should.have.property('dependencies');
+                    upgradedPkg.dependencies.should.have.property('express');
+                    upgradedPkg.dependencies.express.should.equal('1')
                 })
                 .finally(function () {
                     fs.unlinkSync(tempFile);
