@@ -1,12 +1,15 @@
+sudo: false
+
 language: node_js
+
 node_js:
-  - '0.12'
-  - '4'
-  - '5'
-  - '6'
+  - 6
+  - 5
+  - 4
+
 notifications:
   email: false
-sudo: false
+
 branches:
   only:
     - master
