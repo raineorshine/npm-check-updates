@@ -51,7 +51,7 @@
     "cli-table": "^0.3.1",
     "commander": "^2.9.0",
     "fast-diff": "^1.0.1",
-    "find-up": "^1.1.2",
+    "find-up": "^2.0.0",
     "get-stdin": "^5.0.1",
     "json-parse-helpfulerror": "^1.0.3",
     "lodash": "^4.15.0",
@@ -66,7 +66,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "chai-as-promised": "^5.3.0",
+    "chai-as-promised": "^6.0.0",
     "chai-string": "^1.2.0",
     "chokidar-cli": "^1.2.0",
     "eslint": "^3.4.0",
