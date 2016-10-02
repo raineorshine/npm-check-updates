@@ -106,8 +106,8 @@ Integration
 --------------
 The tool allows integration with 3rd party code:
 
-```javascript
-var ncu = require('npm-check-updates');
+```js
+const ncu = require('npm-check-updates');
 
 ncu.run({
     // Always specify the path to the package file
@@ -116,7 +116,7 @@ ncu.run({
     // These are set by default:
     silent: true,
     jsonUpgraded: true
-}).then(function(upgraded) {
+}).then((upgraded) => {
     console.log('dependencies to upgrade:', upgraded);
 });
 ```
