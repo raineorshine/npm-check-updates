@@ -6,6 +6,7 @@ node_js:
   - 6
   - 5
   - 4
+  - 0.12
 
 notifications:
   email: false
