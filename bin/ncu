@@ -20,7 +20,7 @@ program
     // program.json is set to true in programInit if any options that begin with 'json' are true
     .option('-j, --jsonAll', 'output new package file instead of human-readable message')
     .option('--jsonUpgraded', 'output upgraded dependencies in json')
-    .option('-l, --loglevel <n>', 'what level of logs to report: silent, error, minimal, warn, info, verbose, silly (default: warn)')
+    .option('-l, --loglevel <n>', 'what level of logs to report: silent, error, minimal, warn, info, verbose, silly (default: warn)', 'warn')
     .option('-m, --packageManager <name>', 'npm (default) or bower', 'npm')
     .option('-n, --newest', "find the newest versions available instead of the latest stable versions")
     .option('-o, --optional', 'check only optionalDependencies')
