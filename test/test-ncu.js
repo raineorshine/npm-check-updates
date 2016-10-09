@@ -43,6 +43,32 @@ describe('npm-check-updates', function () {
             ]);
         });
 
+        it('should suggest upgrades to versions within the specified version range if jsonUpraded is true and upgradeAll is not given (backwards compatible behavior until next version)', function() {
+            const upgraded = ncu.run({
+                // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
+                packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
+                jsonUpgraded: true
+            });
+
+            return BluebirdPromise.all([
+                upgraded.should.eventually.have.property('juggernaut'),
+                upgraded.then(function (data) {
+                    return data.should.eql({ juggernaut: "^2.1.1" })
+                })
+            ])
+        })
+
+        it('should not suggest upgrades to versions within the specified version range if jsonUpraded is true and upgradeAll is explicitly set to false', function() {
+            const upgraded = ncu.run({
+                // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
+                packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
+                jsonUpgraded: true,
+                upgradeAll: false
+            });
+
+            return upgraded.should.eventually.not.have.property('juggernaut')
+        })
+
     });
 
     describe('cli', function() {
