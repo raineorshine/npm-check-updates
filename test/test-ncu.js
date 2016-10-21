@@ -69,6 +69,19 @@ describe('npm-check-updates', function () {
             return upgraded.should.eventually.not.have.property('juggernaut')
         })
 
+        it('should ignore newer packages that satisfy the declared version range if they are installed in node_modules', function() {
+
+            const upgraded = ncu.run({
+                // { "dependencies": { "escape-string-regexp": "^1.0.4" } }
+                // latest is 1.0.5
+                packageFile: 'test/test-modules/package.json',
+                packageFileDir: true, // appears to be redundant with upgradeAll in this test case, but it's already built so I give up :(. Too much effort to satisfy an edge case (#201).
+                jsonUpgraded: true,
+                upgradeAll: false
+            });
+
+            return upgraded.should.eventually.not.have.property('escape-string-regexp')
+        })
     });
 
     describe('cli', function() {

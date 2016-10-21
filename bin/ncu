@@ -26,6 +26,7 @@ program
     .option('-o, --optional', 'check only optionalDependencies')
     .option('--packageData', 'include stringified package file (use stdin instead)')
     .option('--packageFile <filename>', 'package file location (default: ./package.json)')
+    .option('--packageFileDir', 'use same directory as packageFile to compare against installed modules. See #201.')
     .option('-p, --prod', 'check only dependencies (not devDependencies)')
     .option('-r, --registry <url>', 'specify third-party npm registry')
     .option('-s, --silent', "don't output anything (--loglevel silent)")

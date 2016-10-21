@@ -61,7 +61,7 @@
     "require-dir": "^0.3.0",
     "semver": "^5.3.0",
     "semver-utils": "^1.1.1",
-    "spawn-please": "^0.1.0",
+    "spawn-please": "^0.2.0",
     "update-notifier": "^1.0.2"
   },
   "devDependencies": {

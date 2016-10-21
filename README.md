@@ -86,6 +86,8 @@ Options
                              verbose, silly (default: warn)
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
+    --packageFileDir         use same directory as packageFile to compare against 
+                             installed modules. See #201.
     -m, --packageManager     npm or bower (default: npm)
     -n, --newest             find the newest versions available instead of the
                              latest stable versions (alpha release only)
