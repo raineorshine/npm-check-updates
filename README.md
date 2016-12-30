@@ -177,11 +177,4 @@ Known Issues
 Problems?
 --------------
 
-Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on github! [Contributors](https://github.com/raineorshine/) are responsive and happy to assist.
-
-When filing an issue, please include the dependencies from your package file (or the output from `npm -g ls --depth=0` if using global mode).
-
-Contributing
---------------
-
-npm-check-updates is a great project to contribute to! This is a newbie-friendly project, so don't hesitate to dive in and ask questions! Pick an issue that that you would like to work on and then look at the source code to see if you can figure out what to change. There are several outstanding [bugs](https://github.com/tjunnone/npm-check-updates/issues). There are also many enhancements labeled as [revive-me](https://github.com/tjunnone/npm-check-updates/issues?utf8=%E2%9C%93&q=label%3Arevive-me) that can be re-opened if someone is interested in working on them. 
+Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on github!
