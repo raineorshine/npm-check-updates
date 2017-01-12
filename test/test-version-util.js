@@ -273,4 +273,13 @@ describe('version-util', function () {
         });
     });
 
+    describe('filterOutPrereleaseVersions', function () {
+
+        it('should filter out prerelease versions', function () {
+            var versions = ['0.1.0', '2.6.0-beta.1', '1.0.0-rc.2', '0.15.0-alpha.1', '2.0.1'];
+            var expectedVersions = ['0.1.0', '2.0.1'];
+            versionUtil.filterOutPrereleaseVersions(versions).should.deep.equal(expectedVersions);
+        });
+    });
+
 });
