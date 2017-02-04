@@ -100,6 +100,11 @@ describe('versionmanager', function () {
             vm.upgradeDependencyDeclaration("1.0", "").should.equal("1.0");
             vm.upgradeDependencyDeclaration("1.0", null).should.equal("1.0");
         });
+
+        it('should remove semver range if removeRange option is specified', function () {
+            vm.upgradeDependencyDeclaration("^1.0.0", "1.0.1", { removeRange: true }).should.equal("1.0.1");
+            vm.upgradeDependencyDeclaration("2.2.*", "3.1.1", { removeRange: true }).should.equal("3.1.1");
+        });
     });
 
     describe('updatePackageData', function () {
