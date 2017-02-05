@@ -35,7 +35,7 @@ program
     .option('-x, --reject <matches>', 'exclude packages matching the given string, comma-delimited list, or regex')
     .option('-a, --upgradeAll', 'include even those dependencies whose latest version satisfies the declared semver dependency')
     .option('--semverLevel <level>', 'find the highest version within "major" or "minor"')
-    .option('--pre', 'include prereleases')
+    .option('--pre', 'include versions that look like prereleases')
     .option('--removeRange', 'remove version ranges from the final package version')
     .option('-v, --version', pkg.version, function() { console.log(pkg.version); process.exit(0); })
     .option('-V', '', function() { console.log(pkg.version); process.exit(0); });
