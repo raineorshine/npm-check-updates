@@ -109,6 +109,7 @@ Do not use these unless you know what you are doing! Not needed for typical usag
                              latest stable versions
     -a, --upgradeAll         include even those dependencies whose latest
                              version satisfies the declared semver dependency
+    --pre                    include prereleases
     --removeRange            remove version ranges from the final package version
 
 Integration
