@@ -12,6 +12,8 @@ npm-check-updates maintains your existing semantic versioning *policies*, i.e., 
 Installation
 --------------
 
+[![Join the chat at https://gitter.im/npm-check-updates/Lobby](https://badges.gitter.im/npm-check-updates/Lobby.svg)](https://gitter.im/npm-check-updates/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ```sh
 npm install -g npm-check-updates
 ```
