@@ -212,12 +212,20 @@ describe('npm-check-updates', function () {
                     pkgData.should.not.have.property('chalk');
                 });
         });
+
         it('should update only packages which have new patch versions', function () {
             return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "express": "2.4.1", "chalk": "^0.1.0" } }')
                 .then(JSON.parse)
                 .then(function (pkgData) {
                     pkgData.express.should.equal('2.4.7');
                     pkgData.should.not.have.property('chalk');
+                });
+        });
+
+        it('should suppress stdout when --silent is provided', function() {
+            return spawn('node', ['bin/ncu', '--silent'], '{ "dependencies": { "express": "1" } }')
+                .then(function (output) {
+                    output.trim().should.equal('')
                 });
         });
     });
