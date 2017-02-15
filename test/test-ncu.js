@@ -3,6 +3,7 @@ var chai            = require("chai");
 var fs              = require('fs');
 var spawn           = require('spawn-please')
 var BluebirdPromise = require('bluebird')
+var child           = require('child_process')
 
 chai.use(require("chai-as-promised"));
 chai.use(require('chai-string'))
@@ -91,6 +92,17 @@ describe('npm-check-updates', function () {
                 .then(function (output) {
                     output.trim().should.startWith('express')
                 });
+        });
+
+        it('should fall back to package.json search when receiving empty content on stdin', function (done) {
+            var childProcess = child.exec('node bin/ncu', function (error, stdout) {
+                if (error) {
+                    throw new Error(error);
+                }
+                stdout.toString().trim().should.match(/^Using .+package.json/);
+                done();
+            });
+            childProcess.stdin.end();
         });
 
         it('should output json with --jsonAll', function() {
