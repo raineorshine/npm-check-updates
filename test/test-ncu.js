@@ -97,7 +97,7 @@ describe('npm-check-updates', function () {
         it('should fall back to package.json search when receiving empty content on stdin', function (done) {
             var childProcess = child.exec('node bin/ncu', function (error, stdout) {
                 if (error) {
-                    throw new Error(error);
+                    done(error);
                 }
                 stdout.toString().trim().should.match(/^Using .+package.json/);
                 done();
