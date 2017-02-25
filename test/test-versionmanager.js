@@ -107,7 +107,7 @@ describe('versionmanager', function () {
         });
     });
 
-    describe('updatePackageData', function () {
+    describe('upgradePackageData', function () {
         var pkgData = JSON.stringify({
             "name": "npm-check-updates",
             "dependencies": {
@@ -135,7 +135,7 @@ describe('versionmanager', function () {
         };
 
         it('should upgrade the dependencies in the given package data (except for satisfied)', function () {
-            JSON.parse(vm.updatePackageData(pkgData, oldDependencies, newDependencies, newVersions))
+            JSON.parse(vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions))
                 .should.eql({
                     "name": "npm-check-updates",
                     "dependencies": {
@@ -149,7 +149,7 @@ describe('versionmanager', function () {
         });
 
         it('should upgrade the dependencies in the given package data (including satisfied)', function () {
-            JSON.parse(vm.updatePackageData(pkgData, oldDependencies, newDependencies, newVersions, {upgradeAll: true}))
+            JSON.parse(vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions, {upgradeAll: true}))
                 .should.eql({
                     "name": "npm-check-updates",
                     "dependencies": {
@@ -360,39 +360,39 @@ describe('versionmanager', function () {
         });
     });
 
-    describe('getLatestVersions', function () {
+    describe('queryVersions', function () {
         // We increase the timeout to allow for more time to retrieve the version information
         this.timeout(30000);
 
         it('valid single package', function () {
-            var latestVersions = vm.getLatestVersions({"async": "1.5.1"});
+            var latestVersions = vm.queryVersions({"async": "1.5.1"});
             return latestVersions.should.eventually.have.property('async');
         });
 
         it('valid packages', function () {
-            var latestVersions = vm.getLatestVersions({'async': '1.5.1', 'npm': '3.10.3'});
+            var latestVersions = vm.queryVersions({'async': '1.5.1', 'npm': '3.10.3'});
             latestVersions.should.eventually.have.property('async');
             latestVersions.should.eventually.have.property('npm');
             return latestVersions;
         });
 
         it('unavailable packages should be ignored', function () {
-            return vm.getLatestVersions({"sudoMakeMeASandwitch": '1.2.3'})
+            return vm.queryVersions({"sudoMakeMeASandwitch": '1.2.3'})
                 .should.eventually.deep.equal({})
         });
 
         it('set the versionTarget explicitly to latest', function () {
-            return vm.getLatestVersions({"async": '1.5.1'}, {versionTarget: 'latest'})
+            return vm.queryVersions({"async": '1.5.1'}, {versionTarget: 'latest'})
                 .should.eventually.have.property('async');
         });
 
         it('set the versionTarget to greatest', function () {
-            return vm.getLatestVersions({"async": '1.5.1'}, {versionTarget: 'greatest'})
+            return vm.queryVersions({"async": '1.5.1'}, {versionTarget: 'greatest'})
                 .should.eventually.have.property('async');
         });
 
         it('should return an error for an unsupported versionTarget', function () {
-            var a = vm.getLatestVersions({"async": '1.5.1'}, {versionTarget: 'foo'});
+            var a = vm.queryVersions({"async": '1.5.1'}, {versionTarget: 'foo'});
             return a.should.be.rejected;
         });
 
