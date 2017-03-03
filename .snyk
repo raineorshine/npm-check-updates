@@ -1,0 +1,24 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.7.0
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  'npm:qs:20170213':
+    - npm > request > qs:
+        reason: None given
+        expires: '2017-04-02T15:55:36.448Z'
+    - npmi > npm > request > qs:
+        reason: None given
+        expires: '2017-04-02T15:55:36.448Z'
+    - npm > npm-registry-client > request > qs:
+        reason: None given
+        expires: '2017-04-02T15:55:36.448Z'
+    - npmi > npm > npm-registry-client > request > qs:
+        reason: None given
+        expires: '2017-04-02T15:55:36.449Z'
+    - npm > node-gyp > request > qs:
+        reason: None given
+        expires: '2017-04-02T15:55:36.449Z'
+    - npmi > npm > node-gyp > request > qs:
+        reason: None given
+        expires: '2017-04-02T15:55:36.451Z'
+patch: {}
