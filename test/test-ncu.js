@@ -105,7 +105,7 @@ describe('npm-check-updates', function () {
             childProcess.stdin.end();
         });
 
-        it.only('should handle no package.json to analyze when receiving empty content on stdin', function (done) {
+        it('should handle no package.json to analyze when receiving empty content on stdin', function (done) {
             var pwd = String(child.execSync('pwd')).replace(/(\n|\r)+$/, '')
             var childProcess = child.exec('node ' + pwd + '/bin/ncu', { cwd: '/' }, function (error, stdout, stderr) {
                 stderr.toString().trim().should.not.contain('Path must be a string');
