@@ -105,6 +105,16 @@ describe('npm-check-updates', function () {
             childProcess.stdin.end();
         });
 
+        it.only('should handle no package.json to analyze when receiving empty content on stdin', function (done) {
+            var pwd = String(child.execSync('pwd')).replace(/(\n|\r)+$/, '')
+            var childProcess = child.exec('node ' + pwd + '/bin/ncu', { cwd: '/' }, function (error, stdout, stderr) {
+                stderr.toString().trim().should.not.contain('Path must be a string');
+                stderr.toString().trim().should.contain('package.json not found');
+                done();
+            });
+            childProcess.stdin.end();
+        });
+
         it('should output json with --jsonAll', function() {
             return spawn('node', ['bin/ncu', '--jsonAll'], '{ "dependencies": { "express": "1" } }')
                 .then(JSON.parse)
