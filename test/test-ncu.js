@@ -3,7 +3,6 @@ var chai            = require("chai");
 var fs              = require('fs');
 var spawn           = require('spawn-please')
 var BluebirdPromise = require('bluebird')
-var child           = require('child_process')
 
 chai.use(require("chai-as-promised"));
 chai.use(require('chai-string'))
@@ -95,24 +94,21 @@ describe('npm-check-updates', function () {
         });
 
         it('should fall back to package.json search when receiving empty content on stdin', function (done) {
-            var childProcess = child.exec('node bin/ncu', function (error, stdout) {
-                if (error) {
-                    done(error);
-                }
+            spawn('node', ['bin/ncu']).then(function (stdout) {
                 stdout.toString().trim().should.match(/^Using .+package.json/);
                 done();
             });
-            childProcess.stdin.end();
         });
 
         it('should handle no package.json to analyze when receiving empty content on stdin', function (done) {
-            var pwd = String(child.execSync('pwd')).replace(/(\n|\r)+$/, '')
-            var childProcess = child.exec('node ' + pwd + '/bin/ncu', { cwd: '/' }, function (error, stdout, stderr) {
-                stderr.toString().trim().should.not.contain('Path must be a string');
-                stderr.toString().trim().should.contain('package.json not found');
-                done();
-            });
-            childProcess.stdin.end();
+            spawn('pwd').then(function (pwd) {
+                spawn('node', [pwd.replace(/(\n|\r)+$/, '') + '/bin/ncu'], { cwd: '/' })
+                    .catch(function (stderr) {
+                        stderr.toString().trim().should.not.contain('Path must be a string');
+                        stderr.toString().trim().should.contain('package.json not found');
+                        done();
+                    })
+            })
         });
 
         it('should output json with --jsonAll', function() {
