@@ -3,6 +3,7 @@ var chai            = require("chai");
 var fs              = require('fs');
 var spawn           = require('spawn-please')
 var BluebirdPromise = require('bluebird')
+var tmp             = require('tmp');
 
 chai.use(require("chai-as-promised"));
 chai.use(require('chai-string'))
@@ -102,7 +103,9 @@ describe('npm-check-updates', function () {
 
         it('should handle no package.json to analyze when receiving empty content on stdin', function (done) {
             spawn('pwd').then(function (pwd) {
-                spawn('node', [pwd.replace(/(\n|\r)+$/, '') + '/bin/ncu'], { cwd: '/' })
+                // run from tmp dir to avoid ncu analyzing the project's package.json
+                var tmpDirPath = tmp.dirSync().name;
+                spawn('node', [pwd.replace(/(\n|\r)+$/, '') + '/bin/ncu'], { cwd: tmpDirPath })
                     .catch(function (stderr) {
                         stderr.toString().trim().should.not.contain('Path must be a string');
                         stderr.toString().trim().should.contain('package.json not found');
