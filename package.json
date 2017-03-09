@@ -28,7 +28,7 @@
   },
   "main": "./lib/npm-check-updates",
   "scripts": {
-    "lint": "eslint bin lib",
+    "lint": "eslint bin lib test",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
     "test": "npm run lint ; mocha && mocha test/individual"
   },
@@ -71,6 +71,7 @@
     "chai-string": "^1.2.0",
     "chokidar-cli": "^1.2.0",
     "eslint": "^3.4.0",
+    "eslint-plugin-jasmine": "^2.2.0",
     "mocha": "^3.0.2",
     "should": "^11.1.0",
     "tmp": "0.0.31"

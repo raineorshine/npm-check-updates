@@ -1,9 +1,9 @@
 var requireDir = require('require-dir');
 var packageManagers = requireDir('../../lib/package-managers');
-var chai = require("chai");
-var chaiAsPromised = require("chai-as-promised");
-var should = chai.should();
+var chai = require('chai');
+var chaiAsPromised = require('chai-as-promised');
 
+chai.should();
 chai.use(chaiAsPromised);
 
 // the directory with the test package.json
@@ -20,8 +20,8 @@ describe('package-managers', function () {
         var pkgManager = packageManagers.npm;
 
         before(function () {
-            return pkgManager.init({ prefix: testDir });
-        })
+            return pkgManager.init({prefix: testDir});
+        });
 
         it('list', function () {
             return pkgManager.list().should.eventually.have.deep.property('dependencies.express');
@@ -36,7 +36,5 @@ describe('package-managers', function () {
         });
 
     });
-
-    // }
 
 });
