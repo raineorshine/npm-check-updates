@@ -93,24 +93,18 @@ describe('npm-check-updates', function () {
                 });
         });
 
-        it('should fall back to package.json search when receiving empty content on stdin', function (done) {
-            spawn('node', ['bin/ncu']).then(function (stdout) {
+        it('should fall back to package.json search when receiving empty content on stdin', function () {
+            return spawn('node', ['bin/ncu']).then(function (stdout) {
                 stdout.toString().trim().should.match(/^Using .+package.json/);
-                done();
             });
         });
 
-        it('should handle no package.json to analyze when receiving empty content on stdin', function (done) {
-            spawn('pwd').then(function (pwd) {
-                // run from tmp dir to avoid ncu analyzing the project's package.json
-                var tmpDirPath = tmp.dirSync().name;
-                spawn('node', [pwd.replace(/(\n|\r)+$/, '') + '/bin/ncu'], {cwd: tmpDirPath})
-                    .catch(function (stderr) {
-                        stderr.toString().trim().should.not.contain('Path must be a string');
-                        stderr.toString().trim().should.contain('package.json not found');
-                        done();
-                    });
-            });
+        it('should handle no package.json to analyze when receiving empty content on stdin', function () {
+            // run from tmp dir to avoid ncu analyzing the project's package.json
+            return spawn('node', [process.cwd() + '/bin/ncu'], {cwd: tmp.dirSync().name})
+                .catch(function (stderr) {
+                    stderr.toString().trim().should.startWith('No package.json');
+                });
         });
 
         it('should output json with --jsonAll', function () {
