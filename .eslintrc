@@ -112,7 +112,8 @@
         "no-console": 0,
         "eol-last": 2,
         "no-trailing-spaces": 2,
-        "camelcase": 2
+        "camelcase": 2,
+        "no-undef": 2
     },
     "env": {
         "node": true,
