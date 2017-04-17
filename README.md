@@ -110,6 +110,7 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     -a, --upgradeAll         include even those dependencies whose latest
                              version satisfies the declared semver dependency
     --removeRange            remove version ranges from the final package version
+    --timeout                a global timeout in ms
 
 Integration
 --------------
