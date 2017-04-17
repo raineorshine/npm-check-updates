@@ -242,6 +242,23 @@ describe('npm-check-updates', function () {
                     output.trim().should.equal('');
                 });
         });
+
+        describe('with timeout option', function () {
+
+            it('should exit with error when timeout exceeded', function (done) {
+                spawn('node', ['bin/ncu', '--timeout', '1'], '{ "dependencies": { "express": "1" } }')
+                    .then(function () {
+                        done(new Error('should not resolve'));
+                    }).catch(function (stderr) {
+                        stderr.should.contain('Exceeded global timeout of 1ms');
+                        done();
+                    });
+            });
+
+            it('completes successfully with timeout', function () {
+                return spawn('node', ['bin/ncu', '--timeout', '100000'], '{ "dependencies": { "express": "1" } }');
+            });
+        });
     });
 
 });
