@@ -7,7 +7,6 @@
 				"SwitchCase": 1
 			}
 		],
-		"extends": "eslint:recommended",
 		"quotes": [
 			2,
 			"single",
@@ -117,6 +116,7 @@
 		"no-undef": 2
 	},
 	"env": {
+		"es6": true,
 		"node": true,
 		"mocha": true
 	},
