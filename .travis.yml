@@ -9,7 +9,6 @@ node_js:
 
 script:
   - npm run lint
-  - npm run watch
   - npm test
   
 
