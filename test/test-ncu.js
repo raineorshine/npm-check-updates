@@ -43,7 +43,7 @@ describe('npm-check-updates', function () {
             ]);
         });
 
-        it('should suggest upgrades to versions within the specified version range if jsonUpraded is true and upgradeAll is not given (backwards compatible behavior until next version)', function () {
+        it('should suggest upgrades to versions within the specified version range if jsonUpraded is true', function () {
             var upgraded = ncu.run({
                 // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
                 packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
@@ -58,29 +58,15 @@ describe('npm-check-updates', function () {
             ]);
         });
 
-        it('should not suggest upgrades to versions within the specified version range if jsonUpraded is true and upgradeAll is explicitly set to false', function () {
+        it('should not suggest upgrades to versions within the specified version range if jsonUpraded is true and minimial is true', function () {
             var upgraded = ncu.run({
                 // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
                 packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
                 jsonUpgraded: true,
-                upgradeAll: false
+                minimal: true
             });
 
             return upgraded.should.eventually.not.have.property('juggernaut');
-        });
-
-        it('should ignore newer packages that satisfy the declared version range if they are installed in node_modules', function () {
-
-            var upgraded = ncu.run({
-                // { "dependencies": { "escape-string-regexp": "^1.0.4" } }
-                // latest is 1.0.5
-                packageFile: 'test/test-modules/package.json',
-                packageFileDir: true, // appears to be redundant with upgradeAll in this test case, but it's already built so I give up :(. Too much effort to satisfy an edge case (#201).
-                jsonUpgraded: true,
-                upgradeAll: false
-            });
-
-            return upgraded.should.eventually.not.have.property('escape-string-regexp');
         });
     });
 

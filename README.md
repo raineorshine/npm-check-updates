@@ -96,19 +96,19 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     --jsonUpgraded           output upgraded dependencies in json
     -l, --loglevel           what level of logs to report: silent, error, warn, 
                              info, verbose, silly (default: warn)
+    --minimal                do not upgrade newer versions that are already 
+                             satisfied by the version range according to semver.
+    -n, --newest             find the newest published versions available instead 
+                             of the latest stable versions
+    -o, --optional           check only optionalDependencies
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
     --packageFileDir         use same directory as packageFile to compare against 
                              installed modules. See #201.
-    -n, --newest             find the newest published versions available instead 
-                             of the latest stable versions
-    -o, --optional           check only optionalDependencies
     -s, --silent             don't output anything (--loglevel silent)
     --semverLevel            find the highest version within "major" or "minor"
     -t, --greatest           find the highest versions available instead of the
                              latest stable versions
-    -a, --upgradeAll         include even those dependencies whose latest
-                             version satisfies the declared semver dependency
     --removeRange            remove version ranges from the final package version
     --timeout                a global timeout in ms
 
@@ -151,10 +151,6 @@ How dependency updates are determined
   - `>0.2.0` → `>0.3.0`
 - Closed ranges are replaced with a wildcard:
   - `1.0.0 < 2.0.0` → `^3.0.0`
-
-Why is it not updating ^1.0.0 to ^1.0.1 when 1.0.1 is the latest?
---------------
-`^1.0.0` is a *range* that will includes all non-major updates. If you run `npm update`, it will install `1.0.1` without changing the dependency listed in your package file. You don't need to update your package file if the latest version is satisfied by the specified dependency range. If you *really* want to upgrade your package file (even though it's not necessary), you can run `ncu --upgradeAll`. 
 
 Docker
 ------

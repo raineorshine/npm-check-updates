@@ -134,13 +134,13 @@ describe('versionmanager', function () {
             'mocha': '2.2.5'
         };
 
-        it('should upgrade the dependencies in the given package data (except for satisfied)', function () {
+        it('should upgrade the dependencies in the given package data (including satisfied)', function () {
             JSON.parse(vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions))
                 .should.eql({
                     'name': 'npm-check-updates',
                     'dependencies': {
                         'bluebird': '^2.9',
-                        'bindings': '^1.1.0'
+                        'bindings': '^1.2.1'
                     },
                     'devDependencies': {
                         'mocha': '^2'
@@ -148,13 +148,13 @@ describe('versionmanager', function () {
                 });
         });
 
-        it('should upgrade the dependencies in the given package data (including satisfied)', function () {
-            JSON.parse(vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions, {upgradeAll: true}))
+        it('should upgrade the dependencies in the given package data (except for satisfied)', function () {
+            JSON.parse(vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions, {minimal: true}))
                 .should.eql({
                     'name': 'npm-check-updates',
                     'dependencies': {
                         'bluebird': '^2.9',
-                        'bindings': '^1.2.1'
+                        'bindings': '^1.1.0'
                     },
                     'devDependencies': {
                         'mocha': '^2'
