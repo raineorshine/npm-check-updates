@@ -68,6 +68,10 @@ describe('npm-check-updates', function () {
 
             return upgraded.should.eventually.not.have.property('juggernaut');
         });
+
+        it('should use package.json in cwd by default', function () {
+            return ncu.run({});
+        });
     });
 
     describe('cli', function () {
