@@ -111,6 +111,7 @@ Do not use these unless you know what you are doing! Not needed for typical usag
                              latest stable versions
     --removeRange            remove version ranges from the final package version
     --timeout                a global timeout in ms
+    --pre                    include prereleases
 
 Integration
 --------------
