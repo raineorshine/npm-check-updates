@@ -2,15 +2,10 @@ var vm = require('../lib/versionmanager');
 var chai = require('chai');
 var chaiAsPromised = require('chai-as-promised');
 var should = chai.should();
-var Bluebird = require('bluebird');
 
 chai.use(chaiAsPromised);
 
 describe('versionmanager', function () {
-
-    before(function () {
-        return vm.initialize(false).should.be.fulfilled;
-    });
 
     describe('upgradeDependencyDeclaration', function () {
         it('numeric upgrades', function () {
@@ -342,39 +337,6 @@ describe('versionmanager', function () {
         it('should execute npm ls', function () {
             return vm.getInstalledPackages()
                 .should.be.fulfilled;
-        });
-    });
-
-    describe('getLatestPackageVersion', function () {
-        this.timeout(30000);
-        it('valid package info', function () {
-            return vm.getLatestPackageVersion('async')
-                .should.eventually.be.a('string');
-        });
-
-        it('should use a mock packageManager', function () {
-            return vm.initialize({packageManager: {
-                init: function () {
-                    return Bluebird.resolve(null);
-                },
-                latest: function () {
-                    return Bluebird.resolve('100.0.0');
-                }
-            }}).then(function () {
-                return vm.getLatestPackageVersion('async')
-                    .should.eventually.equal('100.0.0');
-            }).finally(function () {
-                // reset vm since initialize has global side effects
-                vm.initialize();
-            });
-        });
-    });
-
-    describe('getGreatestPackageVersion', function () {
-        this.timeout(30000);
-        it('valid package info', function () {
-            return vm.getGreatestPackageVersion('async')
-                .should.eventually.be.a('string');
         });
     });
 

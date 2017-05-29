@@ -2,12 +2,13 @@ var requireDir = require('require-dir');
 var packageManagers = requireDir('../../lib/package-managers');
 var chai = require('chai');
 var chaiAsPromised = require('chai-as-promised');
+var path = require('path');
 
 chai.should();
 chai.use(chaiAsPromised);
 
 // the directory with the test package.json
-var testDir = __dirname + '/../ncu';
+var testDir = path.resolve(__dirname, '../ncu');
 
 describe('package-managers', function () {
 
@@ -17,22 +18,16 @@ describe('package-managers', function () {
     describe('npm', function () {
         this.timeout(30000);
 
-        var pkgManager = packageManagers.npm;
-
-        before(function () {
-            return pkgManager.init({prefix: testDir});
-        });
-
         it('list', function () {
-            return pkgManager.list().should.eventually.have.deep.property('dependencies.express');
+            return packageManagers.npm.list({prefix: testDir}).should.eventually.have.property('express');
         });
 
         it('latest', function () {
-            return pkgManager.latest('express').then(parseInt).should.eventually.be.above(1);
+            return packageManagers.npm.latest('express', null, {prefix: testDir}).then(parseInt).should.eventually.be.above(1);
         });
 
         it('greatest', function () {
-            return pkgManager.greatest('express').then(parseInt).should.eventually.be.above(1);
+            return packageManagers.npm.greatest('express', null, {prefix: testDir}).then(parseInt).should.eventually.be.above(1);
         });
 
     });

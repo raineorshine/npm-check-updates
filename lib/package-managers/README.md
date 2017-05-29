@@ -4,13 +4,8 @@ To add support for another package manager, drop in a module with the following 
 {
     init: (PACKAGE_MANAGER_SPECIFIC_ARGS) => Promise<null> fulfilled if successful
 
-    list: () => Promise<{
-        dependencies: {
-            NAME: {
-                name: NAME,
-                version: VERSION
-            }
-        }
+    list: (npmOptions) => Promise<{
+        NAME: VERSION
     }>
     latest: (String packageName) => Promise<String> version
     newest: (String packageName) => Promise<String> version
