@@ -28,6 +28,7 @@ program
     .option('--packageFile <filename>', 'package file location (default: ./package.json)')
     .option('--packageFileDir', 'use same directory as packageFile to compare against installed modules. See #201.')
     .option('-p, --prod', 'check only dependencies (not devDependencies)')
+    .option('--peer', 'check only peerDependencies')
     .option('-r, --registry <url>', 'specify third-party npm registry')
     .option('-s, --silent', "don't output anything (--loglevel silent)")
     .option('-t, --greatest', 'find the highest versions available instead of the latest stable versions')

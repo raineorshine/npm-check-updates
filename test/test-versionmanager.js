@@ -174,6 +174,9 @@ describe('versionmanager', function () {
                 devDependencies: {
                     lodash: '^3.9.3'
                 },
+                peerDependencies: {
+                    moment: '^1.0.0'
+                },
                 optionalDependencies: {
                     chalk: '^1.1.0'
                 }
@@ -209,6 +212,12 @@ describe('versionmanager', function () {
         it('should only get optionalDependencies when the optional option is true', function () {
             vm.getCurrentDependencies(deps, {optional: true}).should.eql({
                 chalk: '^1.1.0'
+            });
+        });
+
+        it('should only get peerDependencies when the peer option is true', function () {
+            vm.getCurrentDependencies(deps, {peer: true}).should.eql({
+                moment: '^1.0.0'
             });
         });
 

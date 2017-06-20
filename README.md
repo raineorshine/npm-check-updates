@@ -69,13 +69,11 @@ $ ncu '/^(?!gulp-).*$/'
 
 Options
 --------------
-    -d, --dev                check only devDependencies
     -f, --filter             include only package names matching the given string, 
                              comma-delimited list, or regex
     -g, --global             check global packages instead of in the current project
     -h, --help               output usage information
     -m, --packageManager     npm or bower (default: npm)
-    -p, --prod               check only dependencies (not devDependencies)
     -r, --registry           specify third-party NPM registry
     -u, --upgrade            overwrite package file
     -x, --reject             exclude packages matching the given string, comma-
@@ -87,6 +85,7 @@ Advanced Options
 
 Do not use these unless you know what you are doing! Not needed for typical usage.
 
+    -d, --dev                check only devDependencies
     -e, --error-level        set the error-level. 1: exits with error code 0 if no
                              errors occur. 2: exits with error code 0 if no
                              packages need updating (useful for continuous
@@ -96,6 +95,7 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     --jsonUpgraded           output upgraded dependencies in json
     -l, --loglevel           what level of logs to report: silent, error, warn, 
                              info, verbose, silly (default: warn)
+    -p, --prod               check only dependencies (not devDependencies)
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
     --packageFileDir         use same directory as packageFile to compare against 
@@ -103,6 +103,7 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     -n, --newest             find the newest published versions available instead 
                              of the latest stable versions
     -o, --optional           check only optionalDependencies
+    --peer                   check only peerDependencies
     -s, --silent             don't output anything (--loglevel silent)
     --semverLevel            find the highest version within "major" or "minor"
     -t, --greatest           find the highest versions available instead of the
