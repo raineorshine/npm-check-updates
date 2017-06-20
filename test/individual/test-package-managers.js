@@ -24,6 +24,7 @@ describe('package-managers', function () {
         });
 
         it('list', function () {
+            // eventual deep properties broken in chai-as-promised 7.0.0
             return pkgManager.list().should.eventually.have.deep.property('dependencies.express');
         });
 

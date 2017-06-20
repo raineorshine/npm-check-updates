@@ -177,6 +177,16 @@ Known Issues
 
 - `Cannot find module 'proto-list'`. This error is occurring for many people, yet it cannot be consistently reproduced. It seems to be fixed by fresh installs of node and npm: "I reinstalled node 4.2.1 and npm 2.14.7. Installed ncu, and it worked fine. So I'm afraid I'm not able to reproduce the issue anymore." See [#144](https://github.com/tjunnone/npm-check-updates/issues/144#issuecomment-148499121).
 
+Development Notes
+--------------
+
+The following of dependencies should *not* be upgraded as they have breaking changes that are currently untenable to fix. This is internal to npm-check-updates. You are welcome to use and upgrade these dependencies in your project.
+
+- `"find-up": "1.1.2"`
+- `"chai": "^3.5.0"`
+- `"chai-as-promised": "^6.0.0"`
+
+
 Problems?
 --------------
 
