@@ -339,9 +339,9 @@ describe('versionmanager', function () {
 
         it('should ignore packages with empty values', function () {
             vm.upgradeDependencies({mongodb: null}, {mongodb: '1.4.30'})
-            .should.eql({});
+                .should.eql({});
             vm.upgradeDependencies({mongodb: ''}, {mongodb: '1.4.30'})
-            .should.eql({});
+                .should.eql({});
         });
     });
 
