@@ -3,9 +3,15 @@ sudo: false
 language: node_js
 
 node_js:
+  - stable
   - 6
   - 5
   - 4
+
+script:
+  - npm run lint
+  - npm test
+  
 
 notifications:
   email: false

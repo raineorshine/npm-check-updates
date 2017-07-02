@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-var program = require('commander');
-var updateNotifier = require('update-notifier');
-var cint = require('cint');
-var ncu = require('../lib/npm-check-updates');
-var pkg = require('../package.json');
+const program = require('commander');
+const updateNotifier = require('update-notifier');
+const cint = require('cint');
+const ncu = require('../lib/npm-check-updates');
+const pkg = require('../package.json');
 
 // check if a new version of ncu is available and print an update notification
 updateNotifier({pkg: pkg})
