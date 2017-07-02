@@ -20,7 +20,8 @@
     "bower.json",
     "updater",
     "version",
-    "management"
+    "management",
+    "ncu"
   ],
   "preferGlobal": true,
   "engines": {
