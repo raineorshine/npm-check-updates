@@ -6,7 +6,7 @@ var chaiAsPromised = require('chai-as-promised');
 chai.should();
 chai.use(chaiAsPromised);
 
-// the directory with the test package.json
+// the directory with the test bower.json/package.json
 var testDir = __dirname + '/../ncu';
 
 describe('package-managers', function () {
@@ -38,4 +38,25 @@ describe('package-managers', function () {
 
     });
 
+    describe('bower', function () {
+        this.timeout(30000);
+
+        var pkgManager = packageManagers.bower;
+
+        before(function () {
+            return pkgManager.init({prefix: testDir});
+        });
+
+        it('list', function () {
+            return pkgManager.list().should.eventually.have.deep.property('dependencies.lodash');
+        });
+
+        it('latest', function () {
+            return pkgManager.latest('lodash').then(parseInt).should.eventually.be.above(3);
+        });
+
+        it('greatest', function () {
+            return pkgManager.greatest('lodash').then(parseInt).should.eventually.be.above(3);
+        });
+    });
 });
