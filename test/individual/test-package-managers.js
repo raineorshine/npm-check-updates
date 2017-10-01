@@ -1,5 +1,4 @@
-var requireDir = require('require-dir');
-var packageManagers = requireDir('../../lib/package-managers');
+var packageManagers = require('../../lib/package-managers');
 var chai = require('chai');
 var chaiAsPromised = require('chai-as-promised');
 
