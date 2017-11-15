@@ -38,6 +38,7 @@ program
     .option('-a, --upgradeAll', 'include even those dependencies whose latest version satisfies the declared semver dependency')
     .option('--semverLevel <level>', 'find the highest version within "major" or "minor"')
     .option('--removeRange', 'remove version ranges from the final package version')
+    .option('--keep-semver', 'Finds updates that are only updatable that satisfy semver')
     .option('-v, --version', pkg.version, function() { console.log(pkg.version); process.exit(0); })
     .option('-V', '', function() { console.log(pkg.version); process.exit(0); });
 
