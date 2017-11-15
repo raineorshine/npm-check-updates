@@ -1,5 +1,4 @@
-var requireDir = require('require-dir');
-var packageManagers = requireDir('../../lib/package-managers');
+var packageManagers = require('../../lib/package-managers');
 var chai = require('chai');
 var chaiAsPromised = require('chai-as-promised');
 
@@ -24,6 +23,7 @@ describe('package-managers', function () {
         });
 
         it('list', function () {
+            // eventual deep properties broken in chai-as-promised 7.0.0
             return pkgManager.list().should.eventually.have.deep.property('dependencies.express');
         });
 

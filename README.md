@@ -69,13 +69,11 @@ $ ncu '/^(?!gulp-).*$/'
 
 Options
 --------------
-    -d, --dev                check only devDependencies
     -f, --filter             include only package names matching the given string, 
                              comma-delimited list, or regex
     -g, --global             check global packages instead of in the current project
     -h, --help               output usage information
     -m, --packageManager     npm or bower (default: npm)
-    -p, --prod               check only dependencies (not devDependencies)
     -r, --registry           specify third-party NPM registry
     -u, --upgrade            overwrite package file
     -x, --reject             exclude packages matching the given string, comma-
@@ -87,6 +85,7 @@ Advanced Options
 
 Do not use these unless you know what you are doing! Not needed for typical usage.
 
+    -d, --dev                check only devDependencies
     -e, --error-level        set the error-level. 1: exits with error code 0 if no
                              errors occur. 2: exits with error code 0 if no
                              packages need updating (useful for continuous
@@ -96,6 +95,7 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     --jsonUpgraded           output upgraded dependencies in json
     -l, --loglevel           what level of logs to report: silent, error, warn, 
                              info, verbose, silly (default: warn)
+    -p, --prod               check only dependencies (not devDependencies)
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
     --packageFileDir         use same directory as packageFile to compare against 
@@ -103,6 +103,7 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     -n, --newest             find the newest published versions available instead 
                              of the latest stable versions
     -o, --optional           check only optionalDependencies
+    --peer                   check only peerDependencies
     -s, --silent             don't output anything (--loglevel silent)
     --semverLevel            find the highest version within "major" or "minor"
     -t, --greatest           find the highest versions available instead of the
@@ -175,6 +176,16 @@ Known Issues
 - There is an issue with [grunt-shell](https://github.com/sindresorhus/grunt-shell) described in [#119](https://github.com/tjunnone/npm-check-updates/issues/119). TLDR; You have to explicitly specify your package file with `ncu --packageFile package.json`. 
 
 - `Cannot find module 'proto-list'`. This error is occurring for many people, yet it cannot be consistently reproduced. It seems to be fixed by fresh installs of node and npm: "I reinstalled node 4.2.1 and npm 2.14.7. Installed ncu, and it worked fine. So I'm afraid I'm not able to reproduce the issue anymore." See [#144](https://github.com/tjunnone/npm-check-updates/issues/144#issuecomment-148499121).
+
+Development Notes
+--------------
+
+The following of dependencies should *not* be upgraded as they have breaking changes that are currently untenable to fix. This is internal to npm-check-updates. You are welcome to use and upgrade these dependencies in your project.
+
+- `"find-up": "1.1.2"`
+- `"chai": "^3.5.0"`
+- `"chai-as-promised": "^6.0.0"`
+
 
 Problems?
 --------------
