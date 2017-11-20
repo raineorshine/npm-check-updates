@@ -58,7 +58,7 @@
     "json-parse-helpfulerror": "^1.0.3",
     "lodash": "^4.15.0",
     "node-alias": "^1.0.4",
-    "npmi": "^2.0.1",
+    "npmi": "^4.0.0",
     "semver": "^5.3.0",
     "semver-utils": "^1.1.1",
     "snyk": "^1.25.1",
