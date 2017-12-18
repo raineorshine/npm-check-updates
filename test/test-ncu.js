@@ -243,6 +243,51 @@ describe('npm-check-updates', function () {
                 });
         });
 
+        it('should read --configFilePath', function () {
+            var tempFilePath = './test/';
+            var tempFileName = '.ncurc.json';
+            fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8');
+            return spawn('node', ['bin/ncu', '--configFilePath', tempFilePath], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+                .then(JSON.parse)
+                .then(function (pkgData) {
+                    pkgData.should.have.property('express');
+                    pkgData.should.not.have.property('chalk');
+                })
+                .finally(function () {
+                    fs.unlinkSync(tempFilePath + tempFileName);
+                });
+        });
+
+        it('should read --configFileName', function () {
+            var tempFilePath = './test/';
+            var tempFileName = '.rctemp.json';
+            fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8');
+            return spawn('node', ['bin/ncu', '--configFilePath', tempFilePath, '--configFileName', tempFileName], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+                .then(JSON.parse)
+                .then(function (pkgData) {
+                    pkgData.should.have.property('express');
+                    pkgData.should.not.have.property('chalk');
+                })
+                .finally(function () {
+                    fs.unlinkSync(tempFilePath + tempFileName);
+                });
+        });
+
+        it('should override config with arguments', function () {
+            var tempFilePath = './test/';
+            var tempFileName = '.ncurc.json';
+            fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8');
+            return spawn('node', ['bin/ncu', '--configFilePath', tempFilePath, '--filter', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+                .then(JSON.parse)
+                .then(function (pkgData) {
+                    pkgData.should.have.property('chalk');
+                    pkgData.should.not.have.property('express');
+                })
+                .finally(function () {
+                    fs.unlinkSync(tempFilePath + tempFileName);
+                });
+        });
+
         describe('with timeout option', function () {
 
             it('should exit with error when timeout exceeded', function (done) {

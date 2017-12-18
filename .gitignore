@@ -18,3 +18,4 @@ node_modules
 .idea
 *.iml
 yarn.lock
+.DS_store
