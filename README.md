@@ -69,7 +69,7 @@ $ ncu '/^(?!gulp-).*$/'
 
 Options
 --------------
-    -f, --filter             include only package names matching the given string, 
+    -f, --filter             include only package names matching the given string,
                              comma-delimited list, or regex
     -g, --global             check global packages instead of in the current project
     -h, --help               output usage information
@@ -93,14 +93,16 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     -j, --jsonAll            output new package file instead of human-readable
                              message
     --jsonUpgraded           output upgraded dependencies in json
-    -l, --loglevel           what level of logs to report: silent, error, warn, 
+    -l, --loglevel           what level of logs to report: silent, error, warn,
                              info, verbose, silly (default: warn)
     -p, --prod               check only dependencies (not devDependencies)
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
-    --packageFileDir         use same directory as packageFile to compare against 
+    --packageFileDir         use same directory as packageFile to compare against
                              installed modules. See #201.
-    -n, --newest             find the newest published versions available instead 
+    --configFilePath         rc config file path (default: ./)
+    --configFileName         rc config file name (default: .ncurc.{json,yml,js})                             
+    -n, --newest             find the newest published versions available instead
                              of the latest stable versions
     -o, --optional           check only optionalDependencies
     --peer                   check only peerDependencies
@@ -112,6 +114,12 @@ Do not use these unless you know what you are doing! Not needed for typical usag
                              version satisfies the declared semver dependency
     --removeRange            remove version ranges from the final package version
     --timeout                a global timeout in ms
+
+Configuration Files
+--------------
+Use a `.ncurc.{json,yml,js}` file to specify configuration information.
+You can specify file name and path using `--configFilePath` and `--configFilePath`
+command line options.
 
 Integration
 --------------
@@ -155,7 +163,7 @@ How dependency updates are determined
 
 Why is it not updating ^1.0.0 to ^1.0.1 when 1.0.1 is the latest?
 --------------
-`^1.0.0` is a *range* that will includes all non-major updates. If you run `npm update`, it will install `1.0.1` without changing the dependency listed in your package file. You don't need to update your package file if the latest version is satisfied by the specified dependency range. If you *really* want to upgrade your package file (even though it's not necessary), you can run `ncu --upgradeAll`. 
+`^1.0.0` is a *range* that will includes all non-major updates. If you run `npm update`, it will install `1.0.1` without changing the dependency listed in your package file. You don't need to update your package file if the latest version is satisfied by the specified dependency range. If you *really* want to upgrade your package file (even though it's not necessary), you can run `ncu --upgradeAll`.
 
 Docker
 ------
@@ -173,7 +181,7 @@ Known Issues
 
 - In some environments (Windows) npm-check-updates may hang. Run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu -g --packageFile package.json`. See [#136](https://github.com/tjunnone/npm-check-updates/issues/136#issuecomment-155721102).
 
-- There is an issue with [grunt-shell](https://github.com/sindresorhus/grunt-shell) described in [#119](https://github.com/tjunnone/npm-check-updates/issues/119). TLDR; You have to explicitly specify your package file with `ncu --packageFile package.json`. 
+- There is an issue with [grunt-shell](https://github.com/sindresorhus/grunt-shell) described in [#119](https://github.com/tjunnone/npm-check-updates/issues/119). TLDR; You have to explicitly specify your package file with `ncu --packageFile package.json`.
 
 - `Cannot find module 'proto-list'`. This error is occurring for many people, yet it cannot be consistently reproduced. It seems to be fixed by fresh installs of node and npm: "I reinstalled node 4.2.1 and npm 2.14.7. Installed ncu, and it worked fine. So I'm afraid I'm not able to reproduce the issue anymore." See [#144](https://github.com/tjunnone/npm-check-updates/issues/144#issuecomment-148499121).
 
