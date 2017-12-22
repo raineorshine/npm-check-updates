@@ -118,7 +118,7 @@ Do not use these unless you know what you are doing! Not needed for typical usag
 Configuration Files
 --------------
 Use a `.ncurc.{json,yml,js}` file to specify configuration information.
-You can specify file name and path using `--configFilePath` and `--configFilePath`
+You can specify file name and path using `--configFileName` and `--configFilePath`
 command line options.
 
 Integration
