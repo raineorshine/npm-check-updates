@@ -229,6 +229,19 @@ describe('versionmanager', function () {
                 });
             });
 
+            it('should filter dependencies by @org/package name', function () {
+                var deps = {
+                    'dependencies': {
+                        '@ngrx/store': '4.0.0',
+                        'mocha': '1.0.0'
+                    }
+                }
+
+                vm.getCurrentDependencies(deps, {filter: '@ngrx/store'}).should.eql({
+                    '@ngrx/store': '4.0.0'
+                });
+            });
+
             it('should not filter out dependencies with a partial package name', function () {
                 vm.getCurrentDependencies(deps, {filter: 'o'}).should.eql({});
             });
@@ -256,6 +269,12 @@ describe('versionmanager', function () {
                 vm.getCurrentDependencies(deps, {filter: '/o/'}).should.eql({
                     mocha: '1.2',
                     lodash: '^3.9.3'
+                });
+            });
+
+            it('should filter org dependencies by regex', function () {
+                vm.getCurrentDependencies(deps, {filter: /store/}).should.eql({
+                    '@ngrx/store': '4.0.0'
                 });
             });
         });
