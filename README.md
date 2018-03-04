@@ -1,9 +1,10 @@
-[![NPM version](https://badge.fury.io/js/npm-check-updates.svg)](http://badge.fury.io/js/npm-check-updates)
+[![npm](https://badge.fury.io/js/npm-check-updates.svg)](http://badge.fury.io/js/npm-check-updates)
 [![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg?branch=master)](https://travis-ci.org/tjunnone/npm-check-updates)
+![npm (@next)](https://img.shields.io/npm/v/npm-check-updates/next.svg)
 
-npm-check-updates is a command-line tool that allows you to upgrade your package.json or bower.json dependencies to the latest versions, regardless of existing version constraints.
+npm-check-updates allows you to upgrade your package.json dependencies to the latest versions, regardless of existing version constraints.
 
-npm-check-updates maintains your existing semantic versioning *policies*, i.e., it will upgrade your `"express": "^4.11.2"` dependency to `"express": "^5.0.0"` when express 5.0.0 is released.
+npm-check-updates maintains your existing semantic versioning *policies*, i.e., it will upgrade your `"express": "^4.0.0"` dependency to `"express": "^5.0.0"` (which npm will).
 
 ![npm-check-updates-screenshot](https://cloud.githubusercontent.com/assets/750276/8864534/0788a4d8-3171-11e5-9881-8f7dcf634d14.png)
 
@@ -177,18 +178,18 @@ docker run -it --rm -v $(pwd)/package.json:/app/package.json creack/ncu -u -a
 Known Issues
 --------------
 
-- `ncu -g` incorrectly report that all packages are up-to-date. This is due to an [issue in npm v3](npm/npm#9564) in which dead symlinks break `npm ls -g`. See [#235](https://github.com/tjunnone/npm-check-updates/issues/235#issuecomment-219314327) for a workaround (TLDR; Delete the dead symlinks). For others, it was an issue with the npm prefix path. Try `PREFIX="/usr/local/" ncu -g` ([#146](https://github.com/tjunnone/npm-check-updates/issues/146#issuecomment-155758303)).
+Below you will find the most common known issues. Otherwise search the [issues page](https://github.com/tjunnone/npm-check-updates/issues).
 
-- In some environments (Windows) npm-check-updates may hang. Run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu -g --packageFile package.json`. See [#136](https://github.com/tjunnone/npm-check-updates/issues/136#issuecomment-155721102).
+- `no such file or directory, rename`. `ncu` is awaiting a major version upgrade for it to be compatible with the latest version of `npm`. See [#420](https://github.com/tjunnone/npm-check-updates/issues/420). TLDR; `npm uninstall -g npm-check-updates && npm install -g npm-check-updates@next`
 
-- There is an issue with [grunt-shell](https://github.com/sindresorhus/grunt-shell) described in [#119](https://github.com/tjunnone/npm-check-updates/issues/119). TLDR; You have to explicitly specify your package file with `ncu --packageFile package.json`.
+- `Cannot find module 'X'`. Cannot reproduce. TLDR; Seems to be fixed by fresh installs of node and npm. See [#144](https://github.com/tjunnone/npm-check-updates/issues/144#issuecomment-148499121).
 
-- `Cannot find module 'proto-list'`. This error is occurring for many people, yet it cannot be consistently reproduced. It seems to be fixed by fresh installs of node and npm: "I reinstalled node 4.2.1 and npm 2.14.7. Installed ncu, and it worked fine. So I'm afraid I'm not able to reproduce the issue anymore." See [#144](https://github.com/tjunnone/npm-check-updates/issues/144#issuecomment-148499121).
+- Windows: If npm-check-updates hangs, run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu -g --packageFile package.json`. See [#136](https://github.com/tjunnone/npm-check-updates/issues/136#issuecomment-155721102).
 
 Development Notes
 --------------
 
-The following of dependencies should *not* be upgraded as they have breaking changes that are currently untenable to fix. This is internal to npm-check-updates. You are welcome to use and upgrade these dependencies in your project.
+Running `ncu` on `ncu` itself is admittedly appealing, but the following dependencies should *not* be upgraded as they have breaking changes that are currently untenable to fix. This is internal to npm-check-updates. You are welcome to use and upgrade these dependencies in your project.
 
 - `"find-up": "1.1.2"`
 - `"chai": "^3.5.0"`
@@ -198,4 +199,4 @@ The following of dependencies should *not* be upgraded as they have breaking cha
 Problems?
 --------------
 
-Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on github!
+Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues)! But always [search existing issues](https://github.com/tjunnone/npm-check-updates/issues?utf8=%E2%9C%93&q=is%3Aissue) first!
