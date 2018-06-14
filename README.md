@@ -122,6 +122,15 @@ Use a `.ncurc.{json,yml,js}` file to specify configuration information.
 You can specify file name and path using `--configFileName` and `--configFilePath`
 command line options.
 
+For example, `.ncurc.json`:
+
+```json
+{
+  "upgrade": true, 
+  "filter": "express"
+}
+```
+
 Integration
 --------------
 The tool allows integration with 3rd party code:
