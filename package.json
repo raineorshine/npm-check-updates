@@ -66,7 +66,7 @@
     "update-notifier": "^2.5.0"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
+    "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "chai-string": "^1.4.0",
     "chokidar-cli": "^1.2.0",
