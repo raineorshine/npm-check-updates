@@ -13,3 +13,9 @@ notifications:
 branches:
   only:
     - master
+
+before_install:
+  - "npm i -g npm@latest"
+
+install:
+  - "npm ci"
