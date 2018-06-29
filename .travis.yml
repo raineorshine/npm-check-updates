@@ -13,3 +13,7 @@ notifications:
 branches:
   only:
     - master
+
+cache:
+  directories:
+    - "$HOME/.npm"
