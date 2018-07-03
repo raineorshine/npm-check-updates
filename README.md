@@ -1,9 +1,10 @@
-[![NPM version](https://badge.fury.io/js/npm-check-updates.svg)](http://badge.fury.io/js/npm-check-updates)
+[![npm](https://badge.fury.io/js/npm-check-updates.svg)](http://badge.fury.io/js/npm-check-updates)
 [![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg?branch=master)](https://travis-ci.org/tjunnone/npm-check-updates)
+![npm (@next)](https://img.shields.io/npm/v/npm-check-updates/next.svg)
 
-npm-check-updates is a command-line tool that allows you to upgrade your package.json or bower.json dependencies to the latest versions, regardless of existing version constraints.
+npm-check-updates allows you to upgrade your package.json dependencies to the latest versions, regardless of existing version constraints.
 
-npm-check-updates maintains your existing semantic versioning *policies*, i.e., it will upgrade your `"express": "^4.11.2"` dependency to `"express": "^5.0.0"` when express 5.0.0 is released.
+npm-check-updates maintains your existing semantic versioning *policies*, i.e., it will upgrade your `"express": "^4.0.0"` dependency to `"express": "^5.0.0"` (which npm will).
 
 ![npm-check-updates-screenshot](https://cloud.githubusercontent.com/assets/750276/8864534/0788a4d8-3171-11e5-9881-8f7dcf634d14.png)
 
@@ -69,13 +70,11 @@ $ ncu '/^(?!gulp-).*$/'
 
 Options
 --------------
-    -d, --dev                check only devDependencies
-    -f, --filter             include only package names matching the given string, 
+    -f, --filter             include only package names matching the given string,
                              comma-delimited list, or regex
     -g, --global             check global packages instead of in the current project
     -h, --help               output usage information
     -m, --packageManager     npm or bower (default: npm)
-    -p, --prod               check only dependencies (not devDependencies)
     -r, --registry           specify third-party NPM registry
     -u, --upgrade            overwrite package file
     -x, --reject             exclude packages matching the given string, comma-
@@ -87,6 +86,9 @@ Advanced Options
 
 Do not use these unless you know what you are doing! Not needed for typical usage.
 
+    --configFilePath         rc config file path (default: ./)
+    --configFileName         rc config file name (default: .ncurc.{json,yml,js})                             
+    -d, --dev                check only devDependencies
     -e, --error-level        set the error-level. 1: exits with error code 0 if no
                              errors occur. 2: exits with error code 0 if no
                              packages need updating (useful for continuous
@@ -94,24 +96,41 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     -j, --jsonAll            output new package file instead of human-readable
                              message
     --jsonUpgraded           output upgraded dependencies in json
-    -l, --loglevel           what level of logs to report: silent, error, warn, 
+    -l, --loglevel           what level of logs to report: silent, error, warn,
                              info, verbose, silly (default: warn)
     --minimal                do not upgrade newer versions that are already 
                              satisfied by the version range according to semver.
     -n, --newest             find the newest published versions available instead 
                              of the latest stable versions
     -o, --optional           check only optionalDependencies
+    -p, --prod               check only dependencies (not devDependencies)
+    --peer                   check only peerDependencies
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
-    --packageFileDir         use same directory as packageFile to compare against 
+    --packageFileDir         use same directory as packageFile to compare against
                              installed modules. See #201.
+    --pre                    include prereleases
     -s, --silent             don't output anything (--loglevel silent)
     --semverLevel            find the highest version within "major" or "minor"
     -t, --greatest           find the highest versions available instead of the
                              latest stable versions
     --removeRange            remove version ranges from the final package version
     --timeout                a global timeout in ms
-    --pre                    include prereleases
+
+Configuration Files
+--------------
+Use a `.ncurc.{json,yml,js}` file to specify configuration information.
+You can specify file name and path using `--configFileName` and `--configFilePath`
+command line options.
+
+For example, `.ncurc.json`:
+
+```json
+{
+  "upgrade": true, 
+  "filter": "express"
+}
+```
 
 Integration
 --------------
@@ -164,15 +183,25 @@ docker run -it --rm -v $(pwd)/package.json:/app/package.json creack/ncu -u -a
 Known Issues
 --------------
 
-- `ncu -g` incorrectly report that all packages are up-to-date. This is due to an [issue in npm v3](npm/npm#9564) in which dead symlinks break `npm ls -g`. See [#235](https://github.com/tjunnone/npm-check-updates/issues/235#issuecomment-219314327) for a workaround (TLDR; Delete the dead symlinks). For others, it was an issue with the npm prefix path. Try `PREFIX="/usr/local/" ncu -g` ([#146](https://github.com/tjunnone/npm-check-updates/issues/146#issuecomment-155758303)).
+Below you will find the most common known issues. Otherwise search the [issues page](https://github.com/tjunnone/npm-check-updates/issues).
 
-- In some environments (Windows) npm-check-updates may hang. Run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu -g --packageFile package.json`. See [#136](https://github.com/tjunnone/npm-check-updates/issues/136#issuecomment-155721102).
+- `no such file or directory, rename`. `ncu` is awaiting a major version upgrade for it to be compatible with the latest version of `npm`. See [#420](https://github.com/tjunnone/npm-check-updates/issues/420). TLDR; `npm uninstall -g npm-check-updates && npm install -g npm-check-updates@next`
 
-- There is an issue with [grunt-shell](https://github.com/sindresorhus/grunt-shell) described in [#119](https://github.com/tjunnone/npm-check-updates/issues/119). TLDR; You have to explicitly specify your package file with `ncu --packageFile package.json`. 
+- `Cannot find module 'X'`. Cannot reproduce. TLDR; Seems to be fixed by fresh installs of node and npm. See [#144](https://github.com/tjunnone/npm-check-updates/issues/144#issuecomment-148499121).
 
-- `Cannot find module 'proto-list'`. This error is occurring for many people, yet it cannot be consistently reproduced. It seems to be fixed by fresh installs of node and npm: "I reinstalled node 4.2.1 and npm 2.14.7. Installed ncu, and it worked fine. So I'm afraid I'm not able to reproduce the issue anymore." See [#144](https://github.com/tjunnone/npm-check-updates/issues/144#issuecomment-148499121).
+- Windows: If npm-check-updates hangs, run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu -g --packageFile package.json`. See [#136](https://github.com/tjunnone/npm-check-updates/issues/136#issuecomment-155721102).
+
+Development Notes
+--------------
+
+Running `ncu` on `ncu` itself is admittedly appealing, but the following dependencies should *not* be upgraded as they have breaking changes that are currently untenable to fix. This is internal to npm-check-updates. You are welcome to use and upgrade these dependencies in your project.
+
+- `"find-up": "1.1.2"`
+- `"chai": "^3.5.0"`
+- `"chai-as-promised": "^6.0.0"`
+
 
 Problems?
 --------------
 
-Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues) on github!
+Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues)! But always [search existing issues](https://github.com/tjunnone/npm-check-updates/issues?utf8=%E2%9C%93&q=is%3Aissue) first!

@@ -3,6 +3,8 @@
 var program = require('commander');
 var updateNotifier = require('update-notifier');
 var cint = require('cint');
+var _ = require('lodash');
+var rcLoader = require('rc-config-loader');
 var ncu = require('../lib/npm-check-updates');
 var pkg = require('../package.json');
 
@@ -29,7 +31,10 @@ program
     .option('--packageFile <filename>', 'package file location (default: ./package.json)')
     .option('--packageFileDir', 'use same directory as packageFile to compare against installed modules. See #201.')
     .option('-p, --prod', 'check only dependencies (not devDependencies)')
+    .option('--peer', 'check only peerDependencies')
     .option('-r, --registry <url>', 'specify third-party npm registry')
+    .option('--configFilePath <path>', 'rc config file path (default: ./)')
+    .option('--configFileName <path>', 'rc config file name (default: .ncurc.{json,yml,js})')
     .option('-s, --silent', "don't output anything (--loglevel silent)")
     .option('-t, --greatest', 'find the highest versions available instead of the latest stable versions')
     .option('--timeout <ms>', 'a global timeout in ms')
@@ -42,6 +47,21 @@ program
     .option('-V', '', function() { console.log(pkg.version); process.exit(0); });
 
 program.parse(process.argv);
+
+var rcFile = rcLoader('ncurc', {
+    configFileName: program.configFileName || '.ncurc',
+    defaultExtension: ['.json', '.yml', '.js'],
+    cwd: program.configFilePath || undefined
+});
+
+var rcArguments = rcFile && rcFile.config ?
+    _.flatten(_.map(rcFile.config, function (value, name) {
+        return value === true ? ['--' + name] : ['--' + name, value];
+    })) : [];
+
+var combinedArguments = process.argv.slice(0,2).concat(rcArguments).concat(process.argv.slice(2));
+
+program.parse(combinedArguments);
 
 program.cli = true;
 program.filter = program.args.join(' ') || program.filter;

@@ -1,5 +1,4 @@
-var requireDir = require('require-dir');
-var packageManagers = requireDir('../../lib/package-managers');
+var packageManagers = require('../../lib/package-managers');
 var chai = require('chai');
 var chaiAsPromised = require('chai-as-promised');
 var path = require('path');
@@ -12,14 +11,11 @@ var testDir = path.resolve(__dirname, '../ncu');
 
 describe('package-managers', function () {
 
-    // for(var name in packageManagers) {
-    //     describe(name, function () {
-
     describe('npm', function () {
         this.timeout(30000);
 
         it('list', function () {
-            return packageManagers.npm.list({prefix: testDir}).should.eventually.have.property('express');
+            return packageManagers.npm.list({ prefix: testDir }).should.eventually.have.property('express');
         });
 
         it('latest', function () {
