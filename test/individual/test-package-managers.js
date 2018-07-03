@@ -15,7 +15,7 @@ describe('package-managers', function () {
         this.timeout(30000);
 
         it('list', function () {
-            return packageManagers.npm.list({ prefix: testDir }).should.eventually.have.property('express');
+            return packageManagers.npm.list({prefix: testDir}).should.eventually.have.property('express');
         });
 
         it('latest', function () {
