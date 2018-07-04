@@ -2,8 +2,6 @@ To add support for another package manager, drop in a module with the following 
 
 ```
 {
-    init: (PACKAGE_MANAGER_SPECIFIC_ARGS) => Promise<null> fulfilled if successful
-
     list: (npmOptions) => Promise<{
         NAME: VERSION
     }>
@@ -15,4 +13,4 @@ To add support for another package manager, drop in a module with the following 
 }
 ```
 
-* latest and greatest are expected to throw `new Error(404)` if the package is not found
+* latest and greatest are expected to reject with `'404 Not Found'` if the package is not found

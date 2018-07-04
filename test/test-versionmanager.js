@@ -366,7 +366,7 @@ describe('versionmanager', function () {
         });
 
         it('unavailable packages should be ignored', function () {
-            return vm.queryVersions({'sudoMakeMeASandwitch': '1.2.3'})
+            return vm.queryVersions({'abchdefntofknacuifnt': '1.2.3'})
                 .should.eventually.deep.equal({});
         });
 
