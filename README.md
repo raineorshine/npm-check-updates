@@ -127,7 +127,11 @@ For example, `.ncurc.json`:
 ```json
 {
   "upgrade": true, 
-  "filter": "express"
+  "filter": "express",
+  "reject": [
+    "@types/estree",
+    "ts-node"
+  ]
 }
 ```
 
