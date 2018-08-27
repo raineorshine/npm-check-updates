@@ -105,41 +105,41 @@ describe('versionmanager', function () {
 
     describe('upgradePackageData', function () {
         const pkgData = JSON.stringify({
-            'name': 'npm-check-updates',
-            'dependencies': {
-                'bluebird': '<2.0',
-                'bindings': '^1.1.0'
+            name: 'npm-check-updates',
+            dependencies: {
+                bluebird: '<2.0',
+                bindings: '^1.1.0'
             },
-            'devDependencies': {
-                'mocha': '^1'
+            devDependencies: {
+                mocha: '^1'
             }
         });
         const oldDependencies = {
-            'bluebird': '<2.0',
-            'bindings': '^1.1.0',
-            'mocha': '^1'
+            bluebird: '<2.0',
+            bindings: '^1.1.0',
+            mocha: '^1'
         };
         const newDependencies = {
-            'bluebird': '^2.9',
-            'bindings': '^1.2.1',
-            'mocha': '^2'
+            bluebird: '^2.9',
+            bindings: '^1.2.1',
+            mocha: '^2'
         };
         const newVersions = {
-            'bluebird': '2.9.0',
-            'bindings': '1.2.1',
-            'mocha': '2.2.5'
+            bluebird: '2.9.0',
+            bindings: '1.2.1',
+            mocha: '2.2.5'
         };
 
         it('should upgrade the dependencies in the given package data (including satisfied)', function () {
             JSON.parse(vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions))
                 .should.eql({
-                    'name': 'npm-check-updates',
-                    'dependencies': {
-                        'bluebird': '^2.9',
-                        'bindings': '^1.2.1'
+                    name: 'npm-check-updates',
+                    dependencies: {
+                        bluebird: '^2.9',
+                        bindings: '^1.2.1'
                     },
-                    'devDependencies': {
-                        'mocha': '^2'
+                    devDependencies: {
+                        mocha: '^2'
                     }
                 });
         });
@@ -147,13 +147,13 @@ describe('versionmanager', function () {
         it('should upgrade the dependencies in the given package data (except for satisfied)', function () {
             JSON.parse(vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions, {minimal: true}))
                 .should.eql({
-                    'name': 'npm-check-updates',
-                    'dependencies': {
-                        'bluebird': '^2.9',
-                        'bindings': '^1.1.0'
+                    name: 'npm-check-updates',
+                    dependencies: {
+                        bluebird: '^2.9',
+                        bindings: '^1.1.0'
                     },
-                    'devDependencies': {
-                        'mocha': '^2'
+                    devDependencies: {
+                        mocha: '^2'
                     }
                 });
         });
@@ -354,34 +354,34 @@ describe('versionmanager', function () {
         this.timeout(30000);
 
         it('valid single package', function () {
-            const latestVersions = vm.queryVersions({'async': '1.5.1'});
+            const latestVersions = vm.queryVersions({async: '1.5.1'});
             return latestVersions.should.eventually.have.property('async');
         });
 
         it('valid packages', function () {
-            const latestVersions = vm.queryVersions({'async': '1.5.1', 'npm': '3.10.3'});
+            const latestVersions = vm.queryVersions({async: '1.5.1', npm: '3.10.3'});
             latestVersions.should.eventually.have.property('async');
             latestVersions.should.eventually.have.property('npm');
             return latestVersions;
         });
 
         it('unavailable packages should be ignored', function () {
-            return vm.queryVersions({'abchdefntofknacuifnt': '1.2.3'})
+            return vm.queryVersions({abchdefntofknacuifnt: '1.2.3'})
                 .should.eventually.deep.equal({});
         });
 
         it('set the versionTarget explicitly to latest', function () {
-            return vm.queryVersions({'async': '1.5.1'}, {versionTarget: 'latest'})
+            return vm.queryVersions({async: '1.5.1'}, {versionTarget: 'latest'})
                 .should.eventually.have.property('async');
         });
 
         it('set the versionTarget to greatest', function () {
-            return vm.queryVersions({'async': '1.5.1'}, {versionTarget: 'greatest'})
+            return vm.queryVersions({async: '1.5.1'}, {versionTarget: 'greatest'})
                 .should.eventually.have.property('async');
         });
 
         it('should return an error for an unsupported versionTarget', function () {
-            const a = vm.queryVersions({'async': '1.5.1'}, {versionTarget: 'foo'});
+            const a = vm.queryVersions({async: '1.5.1'}, {versionTarget: 'foo'});
             return a.should.be.rejected;
         });
 
