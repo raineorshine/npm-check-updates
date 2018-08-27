@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+'use strict';
+
 const program = require('commander');
 const updateNotifier = require('update-notifier');
 const cint = require('cint');

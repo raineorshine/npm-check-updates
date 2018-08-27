@@ -1,3 +1,4 @@
+'use strict';
 const ncu             = require('../lib/npm-check-updates.js');
 const chai            = require('chai');
 const fs              = require('fs');

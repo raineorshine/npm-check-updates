@@ -1,3 +1,4 @@
+'use strict';
 const packageManagers = require('../../lib/package-managers');
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');

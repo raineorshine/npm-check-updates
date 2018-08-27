@@ -1,3 +1,4 @@
+'use strict';
 const versionUtil = require('../lib/version-util');
 const chai = require('chai');
 const chalk = require('chalk');
