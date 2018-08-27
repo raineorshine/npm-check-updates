@@ -17,13 +17,13 @@ describe('npm-check-updates', function () {
     describe('run', function () {
         it('should return promised jsonUpgraded', function () {
             return ncu.run({
-                packageData: fs.readFileSync(__dirname + '/ncu/package.json', 'utf-8')
+                packageData: fs.readFileSync(`${__dirname}/ncu/package.json`, 'utf-8')
             }).should.eventually.have.property('express');
         });
 
         it('should filter by package name with one arg', function () {
             const upgraded = ncu.run({
-                packageData: fs.readFileSync(__dirname + '/ncu/package2.json', 'utf-8'),
+                packageData: fs.readFileSync(`${__dirname}/ncu/package2.json`, 'utf-8'),
                 args: ['lodash.map']
             });
             return BluebirdPromise.all([
@@ -34,7 +34,7 @@ describe('npm-check-updates', function () {
 
         it('should filter by package name with multiple args', function () {
             const upgraded = ncu.run({
-                packageData: fs.readFileSync(__dirname + '/ncu/package2.json', 'utf-8'),
+                packageData: fs.readFileSync(`${__dirname}/ncu/package2.json`, 'utf-8'),
                 args: ['lodash.map', 'lodash.filter']
             });
             return BluebirdPromise.all([
@@ -91,7 +91,7 @@ describe('npm-check-updates', function () {
 
         it('should handle no package.json to analyze when receiving empty content on stdin', function () {
             // run from tmp dir to avoid ncu analyzing the project's package.json
-            return spawn('node', [process.cwd() + '/bin/ncu'], {cwd: tmp.dirSync().name})
+            return spawn('node', [`${process.cwd()}/bin/ncu`], {cwd: tmp.dirSync().name})
                 .catch(function (stderr) {
                     stderr.toString().trim().should.startWith('No package.json');
                 });
