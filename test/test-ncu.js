@@ -1,9 +1,9 @@
-var ncu             = require('../lib/npm-check-updates.js');
-var chai            = require('chai');
-var fs              = require('fs');
-var spawn           = require('spawn-please');
-var BluebirdPromise = require('bluebird');
-var tmp             = require('tmp');
+const ncu             = require('../lib/npm-check-updates.js');
+const chai            = require('chai');
+const fs              = require('fs');
+const spawn           = require('spawn-please');
+const BluebirdPromise = require('bluebird');
+const tmp             = require('tmp');
 
 chai.use(require('chai-as-promised'));
 chai.use(require('chai-string'));
@@ -22,7 +22,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should filter by package name with one arg', function () {
-            var upgraded = ncu.run({
+            const upgraded = ncu.run({
                 packageData: fs.readFileSync(__dirname + '/ncu/package2.json', 'utf-8'),
                 args: ['lodash.map']
             });
@@ -33,7 +33,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should filter by package name with multiple args', function () {
-            var upgraded = ncu.run({
+            const upgraded = ncu.run({
                 packageData: fs.readFileSync(__dirname + '/ncu/package2.json', 'utf-8'),
                 args: ['lodash.map', 'lodash.filter']
             });
@@ -44,7 +44,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should suggest upgrades to versions within the specified version range if jsonUpraded is true', function () {
-            var upgraded = ncu.run({
+            const upgraded = ncu.run({
                 // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
                 packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
                 jsonUpgraded: true
@@ -59,7 +59,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should not suggest upgrades to versions within the specified version range if jsonUpraded is true and minimial is true', function () {
-            var upgraded = ncu.run({
+            const upgraded = ncu.run({
                 // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
                 packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
                 jsonUpgraded: true,
@@ -115,7 +115,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should read --packageFile', function () {
-            var tempFile = 'test/temp_package.json';
+            const tempFile = 'test/temp_package.json';
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             return spawn('node', ['bin/ncu', '--jsonUpgraded', '--packageFile', tempFile])
                 .then(JSON.parse)
@@ -128,11 +128,11 @@ describe('npm-check-updates', function () {
         });
 
         it('should write to --packageFile', function () {
-            var tempFile = 'test/temp_package.json';
+            const tempFile = 'test/temp_package.json';
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             return spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile])
                 .then(function () {
-                    var upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                    const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
                     upgradedPkg.should.have.property('dependencies');
                     upgradedPkg.dependencies.should.have.property('express');
                     upgradedPkg.dependencies.express.should.not.equal('1');
@@ -143,11 +143,11 @@ describe('npm-check-updates', function () {
         });
 
         it('should not write to --packageFile if error-level=2 and upgrades', function () {
-            var tempFile = 'test/temp_package.json';
+            const tempFile = 'test/temp_package.json';
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             return spawn('node', ['bin/npm-check-updates', '-u', '--error-level', '2', '--packageFile', tempFile])
                 .catch(function () {
-                    var upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                    const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
                     upgradedPkg.should.have.property('dependencies');
                     upgradedPkg.dependencies.should.have.property('express');
                     upgradedPkg.dependencies.express.should.equal('1');
@@ -158,11 +158,11 @@ describe('npm-check-updates', function () {
         });
 
         it('should ignore stdin if --packageFile is specified', function () {
-            var tempFile = 'test/temp_package.json';
+            const tempFile = 'test/temp_package.json';
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             return spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile], '{ "dependencies": {}}')
                 .then(function () {
-                    var upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                    const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
                     upgradedPkg.should.have.property('dependencies');
                     upgradedPkg.dependencies.should.have.property('express');
                     upgradedPkg.dependencies.express.should.not.equal('1');
@@ -234,8 +234,8 @@ describe('npm-check-updates', function () {
         });
 
         it('should read --configFilePath', function () {
-            var tempFilePath = './test/';
-            var tempFileName = '.ncurc.json';
+            const tempFilePath = './test/';
+            const tempFileName = '.ncurc.json';
             fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8');
             return spawn('node', ['bin/ncu', '--configFilePath', tempFilePath], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
                 .then(JSON.parse)
@@ -249,8 +249,8 @@ describe('npm-check-updates', function () {
         });
 
         it('should read --configFileName', function () {
-            var tempFilePath = './test/';
-            var tempFileName = '.rctemp.json';
+            const tempFilePath = './test/';
+            const tempFileName = '.rctemp.json';
             fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8');
             return spawn('node', ['bin/ncu', '--configFilePath', tempFilePath, '--configFileName', tempFileName], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
                 .then(JSON.parse)
@@ -264,8 +264,8 @@ describe('npm-check-updates', function () {
         });
 
         it('should override config with arguments', function () {
-            var tempFilePath = './test/';
-            var tempFileName = '.ncurc.json';
+            const tempFilePath = './test/';
+            const tempFileName = '.ncurc.json';
             fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8');
             return spawn('node', ['bin/ncu', '--configFilePath', tempFilePath, '--filter', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
                 .then(JSON.parse)

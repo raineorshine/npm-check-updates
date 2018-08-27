@@ -1,8 +1,8 @@
-var versionUtil = require('../lib/version-util');
-var chai = require('chai');
-var chalk = require('chalk');
-var should = chai.should();
-var chaiAsPromised = require('chai-as-promised');
+const versionUtil = require('../lib/version-util');
+const chai = require('chai');
+const chalk = require('chalk');
+const should = chai.should();
+const chaiAsPromised = require('chai-as-promised');
 
 chai.use(chaiAsPromised);
 
@@ -259,7 +259,7 @@ describe('version-util', function () {
     describe('findGreatestByLevel', function () {
 
         it('should find the greatest version within the given semantic versioning level', function () {
-            var versions = ['0.1.0', '1.0.0', '1.0.1', '1.1.0', '2.0.1'];
+            const versions = ['0.1.0', '1.0.0', '1.0.1', '1.1.0', '2.0.1'];
             versionUtil.findGreatestByLevel(versions, '1.0.0', 'major').should.equal('1.1.0');
             versionUtil.findGreatestByLevel(versions, '1.1.0', 'major').should.equal('1.1.0');
             versionUtil.findGreatestByLevel(versions, '1.0.0', 'minor').should.equal('1.0.1');

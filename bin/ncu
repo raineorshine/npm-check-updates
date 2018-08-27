@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-var program = require('commander');
-var updateNotifier = require('update-notifier');
-var cint = require('cint');
-var _ = require('lodash');
-var rcLoader = require('rc-config-loader');
-var ncu = require('../lib/npm-check-updates');
-var pkg = require('../package.json');
+const program = require('commander');
+const updateNotifier = require('update-notifier');
+const cint = require('cint');
+const _ = require('lodash');
+const rcLoader = require('rc-config-loader');
+const ncu = require('../lib/npm-check-updates');
+const pkg = require('../package.json');
 
 // check if a new version of ncu is available and print an update notification
 updateNotifier({pkg: pkg})
@@ -48,18 +48,18 @@ program
 
 program.parse(process.argv);
 
-var rcFile = rcLoader('ncurc', {
+const rcFile = rcLoader('ncurc', {
     configFileName: program.configFileName || '.ncurc',
     defaultExtension: ['.json', '.yml', '.js'],
     cwd: program.configFilePath || undefined
 });
 
-var rcArguments = rcFile && rcFile.config ?
+const rcArguments = rcFile && rcFile.config ?
     _.flatten(_.map(rcFile.config, function (value, name) {
         return value === true ? ['--' + name] : ['--' + name, value];
     })) : [];
 
-var combinedArguments = process.argv.slice(0,2).concat(rcArguments).concat(process.argv.slice(2));
+const combinedArguments = process.argv.slice(0,2).concat(rcArguments).concat(process.argv.slice(2));
 
 program.parse(combinedArguments);
 

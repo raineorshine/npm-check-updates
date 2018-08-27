@@ -1,7 +1,7 @@
-var vm = require('../lib/versionmanager');
-var chai = require('chai');
-var chaiAsPromised = require('chai-as-promised');
-var should = chai.should();
+const vm = require('../lib/versionmanager');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+const should = chai.should();
 
 chai.use(chaiAsPromised);
 
@@ -104,7 +104,7 @@ describe('versionmanager', function () {
     });
 
     describe('upgradePackageData', function () {
-        var pkgData = JSON.stringify({
+        const pkgData = JSON.stringify({
             'name': 'npm-check-updates',
             'dependencies': {
                 'bluebird': '<2.0',
@@ -114,17 +114,17 @@ describe('versionmanager', function () {
                 'mocha': '^1'
             }
         });
-        var oldDependencies = {
+        const oldDependencies = {
             'bluebird': '<2.0',
             'bindings': '^1.1.0',
             'mocha': '^1'
         };
-        var newDependencies = {
+        const newDependencies = {
             'bluebird': '^2.9',
             'bindings': '^1.2.1',
             'mocha': '^2'
         };
-        var newVersions = {
+        const newVersions = {
             'bluebird': '2.9.0',
             'bindings': '1.2.1',
             'mocha': '2.2.5'
@@ -161,7 +161,7 @@ describe('versionmanager', function () {
 
     describe('getCurrentDependencies', function () {
 
-        var deps;
+        let deps;
         beforeEach(function () {
             deps = {
                 dependencies: {
@@ -354,12 +354,12 @@ describe('versionmanager', function () {
         this.timeout(30000);
 
         it('valid single package', function () {
-            var latestVersions = vm.queryVersions({'async': '1.5.1'});
+            const latestVersions = vm.queryVersions({'async': '1.5.1'});
             return latestVersions.should.eventually.have.property('async');
         });
 
         it('valid packages', function () {
-            var latestVersions = vm.queryVersions({'async': '1.5.1', 'npm': '3.10.3'});
+            const latestVersions = vm.queryVersions({'async': '1.5.1', 'npm': '3.10.3'});
             latestVersions.should.eventually.have.property('async');
             latestVersions.should.eventually.have.property('npm');
             return latestVersions;
@@ -381,7 +381,7 @@ describe('versionmanager', function () {
         });
 
         it('should return an error for an unsupported versionTarget', function () {
-            var a = vm.queryVersions({'async': '1.5.1'}, {versionTarget: 'foo'});
+            const a = vm.queryVersions({'async': '1.5.1'}, {versionTarget: 'foo'});
             return a.should.be.rejected;
         });
 
@@ -416,7 +416,7 @@ describe('versionmanager', function () {
     describe('getPreferredWildcard', function () {
 
         it('should identify ^ when it is preferred', function () {
-            var deps = {
+            const deps = {
                 async: '^0.9.0',
                 bluebird: '^2.9.27',
                 cint: '^8.2.1',
@@ -427,7 +427,7 @@ describe('versionmanager', function () {
         });
 
         it('should identify ~ when it is preferred', function () {
-            var deps = {
+            const deps = {
                 async: '~0.9.0',
                 bluebird: '~2.9.27',
                 cint: '^8.2.1',
@@ -438,7 +438,7 @@ describe('versionmanager', function () {
         });
 
         it('should identify .x when it is preferred', function () {
-            var deps = {
+            const deps = {
                 async: '0.9.x',
                 bluebird: '2.9.x',
                 cint: '^8.2.1',
@@ -449,7 +449,7 @@ describe('versionmanager', function () {
         });
 
         it('should identify .* when it is preferred', function () {
-            var deps = {
+            const deps = {
                 async: '0.9.*',
                 bluebird: '2.9.*',
                 cint: '^8.2.1',
@@ -460,7 +460,7 @@ describe('versionmanager', function () {
         });
 
         it('should use the first wildcard if there is a tie', function () {
-            var deps = {
+            const deps = {
                 async: '0.9.x',
                 commander: '2.8.*'
             };
@@ -468,7 +468,7 @@ describe('versionmanager', function () {
         });
 
         it('should return null when it cannot be determined from other dependencies', function () {
-            var deps = {
+            const deps = {
                 async: '0.9.0',
                 commander: '2.8.1',
                 lodash: '3.2.0'
