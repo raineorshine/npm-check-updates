@@ -2,9 +2,11 @@
 [![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg?branch=master)](https://travis-ci.org/tjunnone/npm-check-updates)
 ![npm (@next)](https://img.shields.io/npm/v/npm-check-updates/next.svg)
 
-npm-check-updates allows you to upgrade your package.json dependencies to the latest versions, regardless of existing version constraints.
+npm-check-updates upgrades your package.json dependencies to the latest versions, ignoring specified versions.
 
-npm-check-updates maintains your existing semantic versioning *policies*, i.e., it will upgrade your `"express": "^4.0.0"` dependency to `"express": "^5.0.0"` (which npm will).
+npm-check-updates maintains your existing semantic versioning *policies*, i.e., it will upgrade your `"express": "^4.0.0"` dependency to `"express": "^5.0.0"`.
+
+npm-check-updates *only* modifies your package.json file. Run `npm install` to update your installed packages and package-lock.json. 
 
 ![npm-check-updates-screenshot](https://cloud.githubusercontent.com/assets/750276/8864534/0788a4d8-3171-11e5-9881-8f7dcf634d14.png)
 
@@ -43,6 +45,8 @@ $ ncu -u
  express           4.12.x  →   4.13.x
 
 package.json upgraded
+
+$ npm install      # update installed packages and package-lock.json
 ```
 
 Works with bower:
@@ -128,7 +132,11 @@ For example, `.ncurc.json`:
 ```json
 {
   "upgrade": true, 
-  "filter": "express"
+  "filter": "express",
+  "reject": [
+    "@types/estree",
+    "ts-node"
+  ]
 }
 ```
 
