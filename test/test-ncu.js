@@ -115,7 +115,7 @@ describe('npm-check-updates', function () {
             // run from tmp dir to avoid ncu analyzing the project's package.json
             return spawn('node', [process.cwd() + '/bin/ncu'], {cwd: tmp.dirSync().name})
                 .catch(function (stderr) {
-                    stderr.toString().trim().should.startWith('No package.json');
+                    stderr.toString().should.contain('No package.json');
                 });
         });
 
