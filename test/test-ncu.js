@@ -72,6 +72,18 @@ describe('npm-check-updates', function () {
         it('should use package.json in cwd by default', () => {
             return ncu.run({});
         });
+
+        it('should throw an exception instead of printing to the console when timeout is exceeded', function () {
+
+            return ncu.run({
+                packageFile: 'package.json',
+                timeout: 1
+            }).then(function () {
+                throw new Error('False positive');
+            }).catch(function (e) {
+                return e.message.should.contain('Exceeded global timeout of 1ms');
+            });
+        });
     });
 
     describe('cli', () => {

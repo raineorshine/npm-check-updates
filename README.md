@@ -185,7 +185,7 @@ Docker
 Docker volumes can be used to easily update a package:
 
 ```bash
-docker run -it --rm -v $(pwd)/package.json:/app/package.json creack/ncu -u -a
+docker run --rm -v $(pwd)/package.json:/app/package.json creack/ncu -u -a --packageFile /app/package.json
 ```
 
 Known Issues
