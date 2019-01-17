@@ -11,7 +11,7 @@ chai.use(require('chai-string'));
 
 spawn.Promise = BluebirdPromise;
 
-describe('npm-check-updates', function() {
+describe('npm-check-updates', function () {
 
     this.timeout(30000);
 
@@ -81,7 +81,7 @@ describe('npm-check-updates', function() {
                 timeout: 1
             }).then(() => {
                 throw new Error('False positive');
-            }).catch(function (e) {
+            }).catch(e => {
                 return e.message.should.contain('Exceeded global timeout of 1ms');
             });
         });
