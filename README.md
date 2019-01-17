@@ -102,8 +102,8 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     --jsonUpgraded           output upgraded dependencies in json
     -l, --loglevel           what level of logs to report: silent, error, warn,
                              info, verbose, silly (default: warn)
-    --minimal                do not upgrade newer versions that are already 
-                             satisfied by the version range according to semver.
+    --minimal                do not upgrade to newer versions that are already 
+                             satisfied by the existing version range (v2 behavior).
     -n, --newest             find the newest published versions available instead 
                              of the latest stable versions
     -o, --optional           check only optionalDependencies
