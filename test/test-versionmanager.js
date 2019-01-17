@@ -1,7 +1,8 @@
-var vm = require('../lib/versionmanager');
-var chai = require('chai');
-var chaiAsPromised = require('chai-as-promised');
-var should = chai.should();
+'use strict';
+const vm = require('../lib/versionmanager');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+const should = chai.should();
 
 chai.use(chaiAsPromised);
 
@@ -105,41 +106,41 @@ describe('versionmanager', () => {
 
     describe('upgradePackageData', () => {
         var pkgData = JSON.stringify({
-            'name': 'npm-check-updates',
-            'dependencies': {
-                'bluebird': '<2.0',
-                'bindings': '^1.1.0'
+            name: 'npm-check-updates',
+            dependencies: {
+                bluebird: '<2.0',
+                bindings: '^1.1.0'
             },
-            'devDependencies': {
-                'mocha': '^1'
+            devDependencies: {
+                mocha: '^1'
             }
         });
-        var oldDependencies = {
-            'bluebird': '<2.0',
-            'bindings': '^1.1.0',
-            'mocha': '^1'
+        const oldDependencies = {
+            bluebird: '<2.0',
+            bindings: '^1.1.0',
+            mocha: '^1'
         };
-        var newDependencies = {
-            'bluebird': '^2.9',
-            'bindings': '^1.2.1',
-            'mocha': '^2'
+        const newDependencies = {
+            bluebird: '^2.9',
+            bindings: '^1.2.1',
+            mocha: '^2'
         };
-        var newVersions = {
-            'bluebird': '2.9.0',
-            'bindings': '1.2.1',
-            'mocha': '2.2.5'
+        const newVersions = {
+            bluebird: '2.9.0',
+            bindings: '1.2.1',
+            mocha: '2.2.5'
         };
 
         it('should upgrade the dependencies in the given package data (including satisfied)', () => {
             JSON.parse(vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions))
                 .should.eql({
-                    'name': 'npm-check-updates',
-                    'dependencies': {
-                        'bluebird': '^2.9',
-                        'bindings': '^1.2.1'
+                    name: 'npm-check-updates',
+                    dependencies: {
+                        bluebird: '^2.9',
+                        bindings: '^1.2.1'
                     },
-                    'devDependencies': {
-                        'mocha': '^2'
+                    devDependencies: {
+                        mocha: '^2'
                     }
                 });
         });
@@ -147,13 +148,13 @@ describe('versionmanager', () => {
         it('should upgrade the dependencies in the given package data (except for satisfied)', () => {
             JSON.parse(vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions, {minimal: true}))
                 .should.eql({
-                    'name': 'npm-check-updates',
-                    'dependencies': {
-                        'bluebird': '^2.9',
-                        'bindings': '^1.1.0'
+                    name: 'npm-check-updates',
+                    dependencies: {
+                        bluebird: '^2.9',
+                        bindings: '^1.1.0'
                     },
-                    'devDependencies': {
-                        'mocha': '^2'
+                    devDependencies: {
+                        mocha: '^2'
                     }
                 });
         });
@@ -161,7 +162,7 @@ describe('versionmanager', () => {
 
     describe('getCurrentDependencies', () => {
 
-        var deps;
+        let deps;
         beforeEach(() => {
             deps = {
                 dependencies: {
@@ -354,34 +355,34 @@ describe('versionmanager', () => {
         this.timeout(30000);
 
         it('valid single package', () => {
-            var latestVersions = vm.queryVersions({'async': '1.5.1'});
+            const latestVersions = vm.queryVersions({async: '1.5.1'});
             return latestVersions.should.eventually.have.property('async');
         });
 
         it('valid packages', () => {
-            var latestVersions = vm.queryVersions({'async': '1.5.1', 'npm': '3.10.3'});
+            const latestVersions = vm.queryVersions({async: '1.5.1', npm: '3.10.3'});
             latestVersions.should.eventually.have.property('async');
             latestVersions.should.eventually.have.property('npm');
             return latestVersions;
         });
 
         it('unavailable packages should be ignored', () => {
-            return vm.queryVersions({'abchdefntofknacuifnt': '1.2.3'})
+            return vm.queryVersions({abchdefntofknacuifnt: '1.2.3'})
                 .should.eventually.deep.equal({});
         });
 
         it('set the versionTarget explicitly to latest', () => {
-            return vm.queryVersions({'async': '1.5.1'}, {versionTarget: 'latest'})
+            return vm.queryVersions({async: '1.5.1'}, {versionTarget: 'latest'})
                 .should.eventually.have.property('async');
         });
 
         it('set the versionTarget to greatest', () => {
-            return vm.queryVersions({'async': '1.5.1'}, {versionTarget: 'greatest'})
+            return vm.queryVersions({async: '1.5.1'}, {versionTarget: 'greatest'})
                 .should.eventually.have.property('async');
         });
 
         it('should return an error for an unsupported versionTarget', () => {
-            var a = vm.queryVersions({'async': '1.5.1'}, {versionTarget: 'foo'});
+            const a = vm.queryVersions({async: '1.5.1'}, {versionTarget: 'foo'});
             return a.should.be.rejected;
         });
 
@@ -416,7 +417,7 @@ describe('versionmanager', () => {
     describe('getPreferredWildcard', () => {
 
         it('should identify ^ when it is preferred', () => {
-            var deps = {
+            const deps = {
                 async: '^0.9.0',
                 bluebird: '^2.9.27',
                 cint: '^8.2.1',
@@ -427,7 +428,7 @@ describe('versionmanager', () => {
         });
 
         it('should identify ~ when it is preferred', () => {
-            var deps = {
+            const deps = {
                 async: '~0.9.0',
                 bluebird: '~2.9.27',
                 cint: '^8.2.1',
@@ -438,7 +439,7 @@ describe('versionmanager', () => {
         });
 
         it('should identify .x when it is preferred', () => {
-            var deps = {
+            const deps = {
                 async: '0.9.x',
                 bluebird: '2.9.x',
                 cint: '^8.2.1',
@@ -449,7 +450,7 @@ describe('versionmanager', () => {
         });
 
         it('should identify .* when it is preferred', () => {
-            var deps = {
+            const deps = {
                 async: '0.9.*',
                 bluebird: '2.9.*',
                 cint: '^8.2.1',
@@ -460,7 +461,7 @@ describe('versionmanager', () => {
         });
 
         it('should use the first wildcard if there is a tie', () => {
-            var deps = {
+            const deps = {
                 async: '0.9.x',
                 commander: '2.8.*'
             };
@@ -468,7 +469,7 @@ describe('versionmanager', () => {
         });
 
         it('should return null when it cannot be determined from other dependencies', () => {
-            var deps = {
+            const deps = {
                 async: '0.9.0',
                 commander: '2.8.1',
                 lodash: '3.2.0'

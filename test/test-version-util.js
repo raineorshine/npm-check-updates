@@ -1,8 +1,9 @@
-var versionUtil = require('../lib/version-util');
-var chai = require('chai');
-var chalk = require('chalk');
-var should = chai.should();
-var chaiAsPromised = require('chai-as-promised');
+'use strict';
+const versionUtil = require('../lib/version-util');
+const chai = require('chai');
+const chalk = require('chalk');
+const should = chai.should();
+const chaiAsPromised = require('chai-as-promised');
 
 chai.use(chaiAsPromised);
 
@@ -239,27 +240,27 @@ describe('version-util', () => {
             versionUtil.colorizeDiff('1.0.0', '1.0.0').should.equal('1.0.0');
         });
         it('should colorize changed versions', () => {
-            versionUtil.colorizeDiff('1.0.0', '1.0.1').should.equal('1.0.' + chalk.green('0'));
+            versionUtil.colorizeDiff('1.0.0', '1.0.1').should.equal(`1.0.${chalk.green('0')}`);
         });
         it('should colorize everything after the first difference', () => {
             versionUtil.colorizeDiff('1.0.0', '2.0.0').should.equal(chalk.green('1.0.0'));
         });
         it('should colorize whole parts', () => {
-            versionUtil.colorizeDiff('1.0.10', '1.0.11').should.equal('1.0.' + chalk.green('10'));
+            versionUtil.colorizeDiff('1.0.10', '1.0.11').should.equal(`1.0.${chalk.green('10')}`);
         });
         it('should accept an optional color option', () => {
-            versionUtil.colorizeDiff('1.0.0', '1.0.1', {color: 'blue'}).should.equal('1.0.' + chalk.blue('0'));
+            versionUtil.colorizeDiff('1.0.0', '1.0.1', {color: 'blue'}).should.equal(`1.0.${chalk.blue('0')}`);
         });
         it('should not include the leading ^ or ~ if the same', () => {
-            versionUtil.colorizeDiff('^1.0.0', '^2.0.0').should.equal('^' + chalk.green('1.0.0'));
-            versionUtil.colorizeDiff('~1.0.0', '~2.0.0').should.equal('~' + chalk.green('1.0.0'));
+            versionUtil.colorizeDiff('^1.0.0', '^2.0.0').should.equal(`^${chalk.green('1.0.0')}`);
+            versionUtil.colorizeDiff('~1.0.0', '~2.0.0').should.equal(`~${chalk.green('1.0.0')}`);
         });
     });
 
     describe('findGreatestByLevel', () => {
 
         it('should find the greatest version within the given semantic versioning level', () => {
-            var versions = ['0.1.0', '1.0.0', '1.0.1', '1.1.0', '2.0.1'];
+            const versions = ['0.1.0', '1.0.0', '1.0.1', '1.1.0', '2.0.1'];
             versionUtil.findGreatestByLevel(versions, '1.0.0', 'major').should.equal('1.1.0');
             versionUtil.findGreatestByLevel(versions, '1.1.0', 'major').should.equal('1.1.0');
             versionUtil.findGreatestByLevel(versions, '1.0.0', 'minor').should.equal('1.0.1');

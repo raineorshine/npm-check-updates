@@ -1,13 +1,14 @@
-var packageManagers = require('../../lib/package-managers');
-var chai = require('chai');
-var chaiAsPromised = require('chai-as-promised');
-var path = require('path');
+'use strict';
+const packageManagers = require('../../lib/package-managers');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+const path = require('path');
 
 chai.should();
 chai.use(chaiAsPromised);
 
 // the directory with the test package.json
-var testDir = path.resolve(__dirname, '../ncu');
+const testDir = path.resolve(__dirname, '../ncu');
 
 describe('package-managers', () => {
 
