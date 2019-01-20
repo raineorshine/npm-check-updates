@@ -3,9 +3,9 @@ sudo: false
 language: node_js
 
 node_js:
-  - 6
-  - 5
-  - 4
+  - 8
+  - 10
+  - 11
 
 notifications:
   email: false
@@ -13,6 +13,7 @@ notifications:
 branches:
   only:
     - master
+    - v3
 
 cache:
   directories:
