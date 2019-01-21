@@ -170,6 +170,21 @@ describe('npm-check-updates', function () {
                 });
         });
 
+        it('should write to --packageFile with jsonUpgraded flag', () => {
+            const tempFile = 'test/temp_package.json';
+            fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+            return spawn('node', ['bin/npm-check-updates', '-u', '--jsonUpgraded', '--packageFile', tempFile])
+                .then(output => {
+                    const ugradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                    ugradedPkg.should.have.property('dependencies');
+                    ugradedPkg.dependencies.should.have.property('express');
+                    ugradedPkg.dependencies.express.should.not.equal('1')
+                })
+                .finally(() => {
+                    fs.unlinkSync(tempFile);
+                });
+        });
+
         it('should ignore stdin if --packageFile is specified', () => {
             const tempFile = 'test/temp_package.json';
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
