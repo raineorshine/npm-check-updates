@@ -45,8 +45,14 @@ program
     .option('--semverLevel <level>', 'find the highest version within "major" or "minor"')
     .option('--removeRange', 'remove version ranges from the final package version')
     .option('--pre', 'include prereleases')
-    .option('-v, --version', pkg.version, () => { console.log(pkg.version); process.exit(0); })
-    .option('-V', '', () => { console.log(pkg.version); process.exit(0); });
+    .option('-v, --version', pkg.version, () => {
+        console.log(pkg.version);
+        process.exit(0);
+    })
+    .option('-V', '', () => {
+        console.log(pkg.version);
+        process.exit(0);
+    });
 
 program.parse(process.argv);
 

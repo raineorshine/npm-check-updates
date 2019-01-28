@@ -232,7 +232,7 @@ describe('versionmanager', () => {
                         '@ngrx/store': '4.0.0',
                         'mocha': '1.0.0'
                     }
-                }
+                };
 
                 vm.getCurrentDependencies(deps, {filter: '@ngrx/store'}).should.eql({
                     '@ngrx/store': '4.0.0'
