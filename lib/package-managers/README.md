@@ -2,14 +2,12 @@ To add support for another package manager, drop in a module with the following 
 
 ```
 {
-    list: (npmOptions) => Promise<{
-        NAME: VERSION
-    }>
-    latest: (String packageName) => Promise<String> version
-    newest: (String packageName) => Promise<String> version
-    greatest: (String packageName) => Promise<String> version
-    greatestMajor: (String packageName, String currentVersion) => Promise<String> version
-    greatestMinor: (String packageName, String currentVersion) => Promise<String> version
+    list: (npmOptions) => Promise<{ NAME: VERSION, ... }>
+    latest: (String pkgName) => Promise<String> version
+    newest: (String pkgName) => Promise<String> version
+    greatest: (String pkgName) => Promise<String> version
+    greatestMajor: (String pkgName, String currentVersion) => Promise<String> version
+    greatestMinor: (String pkgName, String currentVersion) => Promise<String> version
 }
 ```
 

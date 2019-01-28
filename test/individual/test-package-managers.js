@@ -7,26 +7,42 @@ const path = require('path');
 chai.should();
 chai.use(chaiAsPromised);
 
-// the directory with the test package.json
-const testDir = path.resolve(__dirname, '../ncu');
+// the directory with the test bower.json/package.json
+const testDir = path.resolve(__dirname + '/../ncu');
 
 describe('package-managers', () => {
 
     describe('npm', function () {
         this.timeout(30000);
 
-        it('list', () => {
-            return packageManagers.npm.list({prefix: testDir}).should.eventually.have.property('express');
-        });
+        it('list', () =>
+            packageManagers.npm.list({prefix: testDir}).should.eventually.have.property('express')
+        );
 
-        it('latest', () => {
-            return packageManagers.npm.latest('express', null, {prefix: testDir}).then(parseInt).should.eventually.be.above(1);
-        });
+        it('latest', () =>
+            packageManagers.npm.latest('express', null, {prefix: testDir}).then(parseInt).should.eventually.be.above(1)
+        );
 
-        it('greatest', () => {
-            return packageManagers.npm.greatest('express', null, {prefix: testDir}).then(parseInt).should.eventually.be.above(1);
-        });
+        it('greatest', () =>
+            packageManagers.npm.greatest('express', null, {prefix: testDir}).then(parseInt).should.eventually.be.above(1)
+        );
 
     });
 
+    // skip by default in case developer does not have bower installed
+    describe.skip('bower', function () {
+        this.timeout(30000);
+
+        it('list', () =>
+            packageManagers.bower.list({prefix: testDir}).should.eventually.have.property('lodash')
+        );
+
+        it('latest', () =>
+            packageManagers.bower.latest('lodash', null, {prefix: testDir}).then(parseInt).should.eventually.be.above(3)
+        );
+
+        it('greatest', () =>
+            packageManagers.bower.greatest('lodash', null, {prefix: testDir}).then(parseInt).should.eventually.be.above(3)
+        );
+    });
 });
