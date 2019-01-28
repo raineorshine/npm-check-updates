@@ -105,7 +105,7 @@ describe('versionmanager', () => {
     });
 
     describe('upgradePackageData', () => {
-        var pkgData = JSON.stringify({
+        const pkgData = JSON.stringify({
             name: 'npm-check-updates',
             dependencies: {
                 bluebird: '<2.0',
