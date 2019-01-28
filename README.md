@@ -2,9 +2,9 @@
 [![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg?branch=master)](https://travis-ci.org/tjunnone/npm-check-updates)
 ![npm (@next)](https://img.shields.io/npm/v/npm-check-updates/next.svg)
 
-npm-check-updates upgrades your package.json dependencies to the latest versions, ignoring specified versions.
+npm-check-updates upgrades your package.json dependencies to the *latest* versions—regardless of breaking versions or any version range specified for that matter.
 
-npm-check-updates maintains your existing semantic versioning *policies*, i.e., it will upgrade your `"express": "^4.0.0"` dependency to `"express": "^5.0.0"`.
+npm-check-updates maintains your existing semantic versioning *policies*, i.e., it will upgrade `"express": "^4.0.0"` to `"express": "^5.0.0"`.
 
 npm-check-updates *only* modifies your package.json file. Run `npm install` to update your installed packages and package-lock.json. 
 
@@ -32,7 +32,7 @@ $ ncu
  react-a11y        ^0.1.1  →   ^0.2.6
  webpack          ~1.9.10  →  ~1.10.5
 
-Run with -u to upgrade your package.json
+Run npm -u to upgrade your package.json
 ```
 
 Upgrade a project's package file:
@@ -44,14 +44,9 @@ $ ncu -u
 
  express           4.12.x  →   4.13.x
 
-package.json upgraded
+Upgraded package.json. Run npm install to install new versions.
 
 $ npm install      # update installed packages and package-lock.json
-```
-
-Works with bower:
-```sh
-$ ncu -m bower     # will use bower.json and check versions in bower
 ```
 
 You can include or exclude specific packages using the `--filter` and `--reject` options. They accept strings, comma-delimited lists, or regular expressions:
@@ -72,18 +67,20 @@ $ ncu '/^gulp-.*$/'
 $ ncu '/^(?!gulp-).*$/'
 ```
 
-Options
+Works with bower:
+
+```sh
+$ ncu -m bower     # will use bower.json and check versions in bower
+```
+
+Simple Options
 --------------
     -f, --filter             include only package names matching the given string,
                              comma-delimited list, or regex
     -g, --global             check global packages instead of in the current project
-    -h, --help               output usage information
-    -m, --packageManager     npm or bower (default: npm)
-    -r, --registry           specify third-party NPM registry
     -u, --upgrade            overwrite package file
     -x, --reject             exclude packages matching the given string, comma-
                              delimited list, or regex
-    -V, --version            output the version number
 
 Advanced Options
 --------------
@@ -102,6 +99,7 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     --jsonUpgraded           output upgraded dependencies in json
     -l, --loglevel           what level of logs to report: silent, error, warn,
                              info, verbose, silly (default: warn)
+    -m, --packageManager     npm or bower (default: npm)
     --minimal                do not upgrade to newer versions that are already 
                              satisfied by the existing version range (v2 behavior).
     -n, --newest             find the newest published versions available instead 
@@ -113,50 +111,15 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     --packageFile            package file location (default: ./package.json)
     --packageFileDir         use same directory as packageFile to compare against
                              installed modules. See #201.
-    --pre                    include prereleases
+    --pre                    include latest versions that contain -alpha, -beta, 
+                             -rc
+    -r, --registry           specify third-party NPM registry
     -s, --silent             don't output anything (--loglevel silent)
     --semverLevel            find the highest version within "major" or "minor"
     -t, --greatest           find the highest versions available instead of the
                              latest stable versions
     --removeRange            remove version ranges from the final package version
     --timeout                a global timeout in ms
-
-Configuration Files
---------------
-Use a `.ncurc.{json,yml,js}` file to specify configuration information.
-You can specify file name and path using `--configFileName` and `--configFilePath`
-command line options.
-
-For example, `.ncurc.json`:
-
-```json
-{
-  "upgrade": true, 
-  "filter": "express",
-  "reject": [
-    "@types/estree",
-    "ts-node"
-  ]
-}
-```
-
-Integration
---------------
-The tool allows integration with 3rd party code:
-
-```js
-const ncu = require('npm-check-updates');
-
-ncu.run({
-    // Any command-line option can be specified here.
-    // These are set by default:
-    jsonUpgraded: true,
-    packageManager: true,
-    silent: true
-}).then((upgraded) => {
-    console.log('dependencies to upgrade:', upgraded);
-});
-```
 
 How dependency updates are determined
 --------------
@@ -179,6 +142,43 @@ How dependency updates are determined
 - Closed ranges are replaced with a wildcard:
   - `1.0.0 < 2.0.0` → `^3.0.0`
 
+Configuration Files
+--------------
+Use a `.ncurc.{json,yml,js}` file to specify configuration information.
+You can specify file name and path using `--configFileName` and `--configFilePath`
+command line options.
+
+For example, `.ncurc.json`:
+
+```json
+{
+  "upgrade": true, 
+  "filter": "express",
+  "reject": [
+    "@types/estree",
+    "ts-node"
+  ]
+}
+```
+
+Module Use
+--------------
+npm-check-updates can be required:
+
+```js
+const ncu = require('npm-check-updates');
+
+ncu.run({
+    // Any command-line option can be specified here.
+    // These are set by default:
+    jsonUpgraded: true,
+    packageManager: 'npm',
+    silent: true
+}).then((upgraded) => {
+    console.log('dependencies to upgrade:', upgraded);
+});
+```
+
 Docker
 ------
 
@@ -191,22 +191,9 @@ docker run --rm -v $(pwd)/package.json:/app/package.json creack/ncu -u -a --pack
 Known Issues
 --------------
 
-Below you will find the most common known issues. Otherwise search the [issues page](https://github.com/tjunnone/npm-check-updates/issues).
-
-- `no such file or directory, rename`. `ncu` is awaiting a major version upgrade for it to be compatible with the latest version of `npm`. See [#420](https://github.com/tjunnone/npm-check-updates/issues/420). TLDR; `npm uninstall -g npm-check-updates && npm install -g npm-check-updates@next`
-
-- `Cannot find module 'X'`. Cannot reproduce. TLDR; Seems to be fixed by fresh installs of node and npm. See [#144](https://github.com/tjunnone/npm-check-updates/issues/144#issuecomment-148499121).
-
 - Windows: If npm-check-updates hangs, run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu -g --packageFile package.json`. See [#136](https://github.com/tjunnone/npm-check-updates/issues/136#issuecomment-155721102).
 
-Development Notes
---------------
-
-Running `ncu` on `ncu` itself is admittedly appealing, but the following dependencies should *not* be upgraded as they have breaking changes that are currently untenable to fix. This is internal to npm-check-updates. You are welcome to use and upgrade these dependencies in your project.
-
-- `"find-up": "1.1.2"`
-- `"chai": "^3.5.0"`
-- `"chai-as-promised": "^6.0.0"`
+Also search the [issues page](https://github.com/tjunnone/npm-check-updates/issues).
 
 
 Problems?
