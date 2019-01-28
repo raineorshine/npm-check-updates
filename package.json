@@ -29,7 +29,7 @@
   },
   "main": "./lib/npm-check-updates",
   "scripts": {
-    "lint": "eslint bin lib test",
+    "lint": "eslint bin/* lib test",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
     "test": "mocha && mocha test/individual"
   },
@@ -65,7 +65,7 @@
     "chai-as-promised": "^7.1.1",
     "chai-string": "^1.2.0",
     "chokidar-cli": "^1.2.1",
-    "eslint": "^4.0.0",
+    "eslint": "^5.12.1",
     "mocha": "^5.2.0",
     "should": "^13.2.3",
     "snyk": "^1.122.0",
