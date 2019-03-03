@@ -176,6 +176,9 @@ describe('versionmanager', () => {
                 },
                 optionalDependencies: {
                     chalk: '^1.1.0'
+                },
+                bundleDependencies: {
+                    bluebird: '^1.0.0'
                 }
             };
         });
@@ -190,30 +193,44 @@ describe('versionmanager', () => {
             vm.getCurrentDependencies(deps).should.eql({
                 mocha: '1.2',
                 lodash: '^3.9.3',
-                chalk: '^1.1.0'
+                chalk: '^1.1.0',
+                bluebird: '^1.0.0',
             });
         });
 
-        it('should only get dependencies when the prod option is true', () => {
-            vm.getCurrentDependencies(deps, {prod: true}).should.eql({
+        it('should only get dependencies with --dep prod', () => {
+            vm.getCurrentDependencies(deps, {dep: 'prod'}).should.eql({
                 mocha: '1.2'
             });
         });
 
-        it('should only get devDependencies when the dev option is true', () => {
-            vm.getCurrentDependencies(deps, {dev: true}).should.eql({
+        it('should only get devDependencies with --dep dev', () => {
+            vm.getCurrentDependencies(deps, {dep: 'dev'}).should.eql({
                 lodash: '^3.9.3'
             });
         });
 
-        it('should only get optionalDependencies when the optional option is true', () => {
-            vm.getCurrentDependencies(deps, {optional: true}).should.eql({
+        it('should only get optionalDependencies with --dep optional', () => {
+            vm.getCurrentDependencies(deps, {dep: 'optional'}).should.eql({
                 chalk: '^1.1.0'
             });
         });
 
-        it('should only get peerDependencies when the peer option is true', () => {
-            vm.getCurrentDependencies(deps, {peer: true}).should.eql({
+        it('should only get peerDependencies with --dep peer', () => {
+            vm.getCurrentDependencies(deps, {dep: 'peer'}).should.eql({
+                moment: '^1.0.0'
+            });
+        });
+
+        it('should only get bundleDependencies with --dep bundle', () => {
+            vm.getCurrentDependencies(deps, {dep: 'bundle'}).should.eql({
+                bluebird: '^1.0.0'
+            });
+        });
+
+        it('should only get devDependencies and peerDependencies with --dep dev,peer', () => {
+            vm.getCurrentDependencies(deps, {dep: 'dev,peer'}).should.eql({
+                lodash: '^3.9.3',
                 moment: '^1.0.0'
             });
         });
@@ -282,7 +299,8 @@ describe('versionmanager', () => {
             it('should reject dependencies by package name', () => {
                 vm.getCurrentDependencies(deps, {reject: 'chalk'}).should.eql({
                     mocha: '1.2',
-                    lodash: '^3.9.3'
+                    lodash: '^3.9.3',
+                    bluebird: '^1.0.0'
                 });
             });
 
@@ -290,28 +308,34 @@ describe('versionmanager', () => {
                 vm.getCurrentDependencies(deps, {reject: 'o'}).should.eql({
                     mocha: '1.2',
                     lodash: '^3.9.3',
-                    chalk: '^1.1.0'
+                    chalk: '^1.1.0',
+                    bluebird: '^1.0.0'
                 });
             });
 
             it('should reject dependencies by multiple packages', () => {
                 vm.getCurrentDependencies(deps, {reject: 'mocha lodash'}).should.eql({
-                    chalk: '^1.1.0'
+                    chalk: '^1.1.0',
+                    bluebird: '^1.0.0'
                 });
                 vm.getCurrentDependencies(deps, {reject: 'mocha,lodash'}).should.eql({
-                    chalk: '^1.1.0'
+                    chalk: '^1.1.0',
+                    bluebird: '^1.0.0'
                 });
                 vm.getCurrentDependencies(deps, {reject: ['mocha', 'lodash']}).should.eql({
-                    chalk: '^1.1.0'
+                    chalk: '^1.1.0',
+                    bluebird: '^1.0.0'
                 });
             });
 
             it('should filter dependencies by regex', () => {
                 vm.getCurrentDependencies(deps, {reject: /o/}).should.eql({
-                    chalk: '^1.1.0'
+                    chalk: '^1.1.0',
+                    bluebird: '^1.0.0'
                 });
                 vm.getCurrentDependencies(deps, {reject: '/o/'}).should.eql({
-                    chalk: '^1.1.0'
+                    chalk: '^1.1.0',
+                    bluebird: '^1.0.0'
                 });
             });
 

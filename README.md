@@ -89,7 +89,8 @@ Do not use these unless you know what you are doing! Not needed for typical usag
 
     --configFilePath         rc config file path (default: ./)
     --configFileName         rc config file name (default: .ncurc.{json,yml,js})                             
-    -d, --dev                check only devDependencies
+    --dep                    check only a specific section(s) of dependencies: 
+                             prod|dev|peer|optional|bundle (comma-delimited)
     -e, --error-level        set the error-level. 1: exits with error code 0 if no
                              errors occur. 2: exits with error code 0 if no
                              packages need updating (useful for continuous
@@ -99,14 +100,11 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     --jsonUpgraded           output upgraded dependencies in json
     -l, --loglevel           what level of logs to report: silent, error, warn,
                              info, verbose, silly (default: warn)
-    -m, --packageManager     npm or bower (default: npm)
-    --minimal                do not upgrade to newer versions that are already 
+    -p, --packageManager     npm or bower (default: npm)
+    -m, --minimal            do not upgrade to newer versions that are already 
                              satisfied by the existing version range (v2 behavior).
     -n, --newest             find the newest published versions available instead 
                              of the latest stable versions
-    -o, --optional           check only optionalDependencies
-    -p, --prod               check only dependencies (not devDependencies)
-    --peer                   check only peerDependencies
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
     --packageFileDir         use same directory as packageFile to compare against
