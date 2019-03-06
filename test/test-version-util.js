@@ -35,6 +35,11 @@ describe('version-util', () => {
 
         it('should detect versions as precise as "release"', () => {
             versionUtil.getPrecision('1.2.3-alpha.1').should.equal('release');
+            versionUtil.getPrecision('1.2.3-beta.1').should.equal('release');
+            versionUtil.getPrecision('1.2.3-rc.1').should.equal('release');
+            versionUtil.getPrecision('1.2.3-alpha').should.equal('release');
+            versionUtil.getPrecision('1.2.3-beta').should.equal('release');
+            versionUtil.getPrecision('1.2.3-rc').should.equal('release');
         });
 
         it('should detect versions as precise as "build"', () => {

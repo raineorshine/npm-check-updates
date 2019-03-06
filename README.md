@@ -109,8 +109,7 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     --packageFile            package file location (default: ./package.json)
     --packageFileDir         use same directory as packageFile to compare against
                              installed modules. See #201.
-    --pre                    include latest versions that contain -alpha, -beta, 
-                             -rc
+    --pre                    Override the default of excluding -alpha, -beta, -rc
     -r, --registry           specify third-party NPM registry
     -s, --silent             don't output anything (--loglevel silent)
     --semverLevel            find the highest version within "major" or "minor"
