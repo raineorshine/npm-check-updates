@@ -1,8 +1,7 @@
 [![npm](https://badge.fury.io/js/npm-check-updates.svg)](http://badge.fury.io/js/npm-check-updates)
 [![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg?branch=master)](https://travis-ci.org/tjunnone/npm-check-updates)
-![npm (@next)](https://img.shields.io/npm/v/npm-check-updates/next.svg)
 
-npm-check-updates upgrades your package.json dependencies to the *latest* versions—regardless of breaking versions or any version range specified for that matter.
+npm-check-updates upgrades your package.json dependencies to the *latest* versions, ignoring specified versions.
 
 npm-check-updates maintains your existing semantic versioning *policies*, i.e., it will upgrade `"express": "^4.0.0"` to `"express": "^5.0.0"`.
 
@@ -174,15 +173,6 @@ ncu.run({
 }).then((upgraded) => {
     console.log('dependencies to upgrade:', upgraded);
 });
-```
-
-Docker
-------
-
-Docker volumes can be used to easily update a package:
-
-```bash
-docker run --rm -v $(pwd)/package.json:/app/package.json creack/ncu -u -a --packageFile /app/package.json
 ```
 
 Known Issues
