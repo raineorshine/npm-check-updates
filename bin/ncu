@@ -1,21 +1,23 @@
 #!/usr/bin/env node
 
-var program = require('commander');
-var updateNotifier = require('update-notifier');
-var cint = require('cint');
-var _ = require('lodash');
-var rcLoader = require('rc-config-loader');
-var ncu = require('../lib/npm-check-updates');
-var pkg = require('../package.json');
+'use strict';
+
+const program = require('commander');
+const updateNotifier = require('update-notifier');
+const cint = require('cint');
+const _ = require('lodash');
+const rcLoader = require('rc-config-loader');
+const ncu = require('../lib/npm-check-updates');
+const pkg = require('../package.json');
 
 // check if a new version of ncu is available and print an update notification
-updateNotifier({pkg: pkg})
+updateNotifier({pkg})
     .notify({defer: false});
 
 program
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
-    .option('-d, --dev', 'check only devDependencies')
+    .option('--dep <dep>', 'check only a specific section(s) of dependencies: prod|dev|peer|optional|bundle (comma-delimited)')
     .option('-e, --error-level <n>', 'set the error-level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). Default is 1.', cint.partialAt(parseInt, 1, 10), 1)
     .option('-f, --filter <matches>', 'include only package names matching the given string, comma-delimited list, or regex')
     .option('-g, --global', 'check global packages instead of in the current project')
@@ -23,14 +25,12 @@ program
     .option('-j, --jsonAll', 'output new package file instead of human-readable message')
     .option('--jsonUpgraded', 'output upgraded dependencies in json')
     .option('-l, --loglevel <n>', 'what level of logs to report: silent, error, minimal, warn, info, verbose, silly (default: warn)', 'warn')
-    .option('-m, --packageManager <name>', 'npm (default) or bower', 'npm')
+    .option('-m, --minimal', 'do not upgrade newer versions that are already satisfied by the version range according to semver')
     .option('-n, --newest', 'find the newest versions available instead of the latest stable versions')
-    .option('-o, --optional', 'check only optionalDependencies')
+    .option('-p, --packageManager <name>', 'npm (default) or bower', 'npm')
     .option('--packageData', 'include stringified package file (use stdin instead)')
     .option('--packageFile <filename>', 'package file location (default: ./package.json)')
     .option('--packageFileDir', 'use same directory as packageFile to compare against installed modules. See #201.')
-    .option('-p, --prod', 'check only dependencies (not devDependencies)')
-    .option('--peer', 'check only peerDependencies')
     .option('-r, --registry <url>', 'specify third-party npm registry')
     .option('--configFilePath <path>', 'rc config file path (default: ./)')
     .option('--configFileName <path>', 'rc config file name (default: .ncurc.{json,yml,js})')
@@ -39,26 +39,32 @@ program
     .option('--timeout <ms>', 'a global timeout in ms')
     .option('-u, --upgrade', 'overwrite package file')
     .option('-x, --reject <matches>', 'exclude packages matching the given string, comma-delimited list, or regex')
-    .option('-a, --upgradeAll', 'include even those dependencies whose latest version satisfies the declared semver dependency')
     .option('--semverLevel <level>', 'find the highest version within "major" or "minor"')
     .option('--removeRange', 'remove version ranges from the final package version')
-    .option('-v, --version', pkg.version, function() { console.log(pkg.version); process.exit(0); })
-    .option('-V', '', function() { console.log(pkg.version); process.exit(0); });
+    .option('--pre', 'Override the default of excluding -alpha, -beta, -rc')
+    .option('-v, --version', pkg.version, () => {
+        console.log(pkg.version);
+        process.exit(0);
+    })
+    .option('-V', '', () => {
+        console.log(pkg.version);
+        process.exit(0);
+    });
 
 program.parse(process.argv);
 
-var rcFile = rcLoader('ncurc', {
+const rcFile = rcLoader('ncurc', {
     configFileName: program.configFileName || '.ncurc',
     defaultExtension: ['.json', '.yml', '.js'],
     cwd: program.configFilePath || undefined
 });
 
-var rcArguments = rcFile && rcFile.config ?
-    _.flatten(_.map(rcFile.config, function (value, name) {
-        return value === true ? ['--' + name] : ['--' + name, value];
-    })) : [];
+const rcArguments = rcFile && rcFile.config ?
+    _.flatten(_.map(rcFile.config, (value, name) =>
+        value === true ? [`--${name}`] : [`--${name}`, value]
+    )) : [];
 
-var combinedArguments = process.argv.slice(0,2).concat(rcArguments).concat(process.argv.slice(2));
+const combinedArguments = process.argv.slice(0,2).concat(rcArguments).concat(process.argv.slice(2));
 
 program.parse(combinedArguments);
 

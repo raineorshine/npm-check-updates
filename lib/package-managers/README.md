@@ -2,22 +2,13 @@ To add support for another package manager, drop in a module with the following 
 
 ```
 {
-    init: (PACKAGE_MANAGER_SPECIFIC_ARGS) => Promise<null> fulfilled if successful
-
-    list: () => Promise<{
-        dependencies: {
-            NAME: {
-                name: NAME,
-                version: VERSION
-            }
-        }
-    }>
-    latest: (String packageName) => Promise<String> version
-    newest: (String packageName) => Promise<String> version
-    greatest: (String packageName) => Promise<String> version
-    greatestMajor: (String packageName, String currentVersion) => Promise<String> version
-    greatestMinor: (String packageName, String currentVersion) => Promise<String> version
+    list: (npmOptions) => Promise<{ NAME: VERSION, ... }>
+    latest: (String pkgName) => Promise<String> version
+    newest: (String pkgName) => Promise<String> version
+    greatest: (String pkgName) => Promise<String> version
+    greatestMajor: (String pkgName, String currentVersion) => Promise<String> version
+    greatestMinor: (String pkgName, String currentVersion) => Promise<String> version
 }
 ```
 
-* latest and greatest are expected to throw `new Error(404)` if the package is not found
+* latest and greatest are expected to reject with `'404 Not Found'` if the package is not found

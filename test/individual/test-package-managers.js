@@ -1,40 +1,48 @@
-var packageManagers = require('../../lib/package-managers');
-var chai = require('chai');
-var chaiAsPromised = require('chai-as-promised');
+'use strict';
+const packageManagers = require('../../lib/package-managers');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+const path = require('path');
 
 chai.should();
 chai.use(chaiAsPromised);
 
-// the directory with the test package.json
-var testDir = __dirname + '/../ncu';
+// the directory with the test bower.json/package.json
+const testDir = path.resolve(__dirname + '/../ncu');
 
-describe('package-managers', function () {
-
-    // for(var name in packageManagers) {
-    //     describe(name, function () {
+describe('package-managers', () => {
 
     describe('npm', function () {
         this.timeout(30000);
 
-        var pkgManager = packageManagers.npm;
+        it('list', () =>
+            packageManagers.npm.list({prefix: testDir}).should.eventually.have.property('express')
+        );
 
-        before(function () {
-            return pkgManager.init({prefix: testDir});
-        });
+        it('latest', () =>
+            packageManagers.npm.latest('express', null, {prefix: testDir}).then(parseInt).should.eventually.be.above(1)
+        );
 
-        it('list', function () {
-            // eventual deep properties broken in chai-as-promised 7.0.0
-            return pkgManager.list().should.eventually.have.deep.property('dependencies.express');
-        });
-
-        it('latest', function () {
-            return pkgManager.latest('express').then(parseInt).should.eventually.be.above(1);
-        });
-
-        it('greatest', function () {
-            return pkgManager.greatest('express').then(parseInt).should.eventually.be.above(1);
-        });
+        it('greatest', () =>
+            packageManagers.npm.greatest('express', null, {prefix: testDir}).then(parseInt).should.eventually.be.above(1)
+        );
 
     });
 
+    // skip by default in case developer does not have bower installed
+    describe.skip('bower', function () {
+        this.timeout(30000);
+
+        it('list', () =>
+            packageManagers.bower.list({prefix: testDir}).should.eventually.have.property('lodash')
+        );
+
+        it('latest', () =>
+            packageManagers.bower.latest('lodash', null, {prefix: testDir}).then(parseInt).should.eventually.be.above(3)
+        );
+
+        it('greatest', () =>
+            packageManagers.bower.greatest('lodash', null, {prefix: testDir}).then(parseInt).should.eventually.be.above(3)
+        );
+    });
 });
