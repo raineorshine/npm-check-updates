@@ -6,6 +6,12 @@ os:
   - windows
   - linux
 
+# VM fails on Windows when there are secret ENV variables
+# https://travis-ci.community/t/current-known-issues-please-read-this-before-posting-a-new-topic/264
+matrix:
+  allow_failures:
+    - os: windows
+
 node_js:
   - 8
   - 10
