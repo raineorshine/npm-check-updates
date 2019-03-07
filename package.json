@@ -58,6 +58,7 @@
     "requireg": "^0.2.1",
     "semver": "^5.6.0",
     "semver-utils": "^1.1.4",
+    "spawn-please": "^0.3.0",
     "update-notifier": "^2.5.0"
   },
   "devDependencies": {
@@ -69,7 +70,6 @@
     "mocha": "^6.0.2",
     "should": "^13.2.3",
     "snyk": "^1.136.0",
-    "spawn-please": "^0.3.0",
     "tmp": "0.0.33"
   },
   "files": [
