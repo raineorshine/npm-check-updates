@@ -1,7 +1,9 @@
 [![npm](https://badge.fury.io/js/npm-check-updates.svg)](http://badge.fury.io/js/npm-check-updates)
 [![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg?branch=master)](https://travis-ci.org/tjunnone/npm-check-updates)
 
-npm-check-updates upgrades your package.json dependencies to the *latest* versions, ignoring specified versions.
+> v3 released! See the [release notes](https://github.com/tjunnone/npm-check-updates/releases/tag/v3.0.0) for a description of breaking changes.
+
+**npm-check-updates upgrades your package.json dependencies to the *latest* versions, ignoring specified versions.**
 
 npm-check-updates maintains your existing semantic versioning *policies*, i.e., it will upgrade `"express": "^4.0.0"` to `"express": "^5.0.0"`.
 
