@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "express": "2.4.1"
+  },
+  "devDependencies": {
+    "chalk": "^0.1.0"
+  },
+  "peerDependencies": {
+    "mocha": "6.0.0"
+  }
+}

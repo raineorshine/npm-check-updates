@@ -195,6 +195,7 @@ describe('versionmanager', () => {
                 lodash: '^3.9.3',
                 chalk: '^1.1.0',
                 bluebird: '^1.0.0',
+                moment: '^1.0.0'
             });
         });
 
@@ -277,16 +278,17 @@ describe('versionmanager', () => {
 
             it('should filter dependencies by regex', () => {
                 vm.getCurrentDependencies(deps, {filter: /o/}).should.eql({
+                    lodash: '^3.9.3',
                     mocha: '1.2',
-                    lodash: '^3.9.3'
+                    moment: '^1.0.0'
                 });
                 vm.getCurrentDependencies(deps, {filter: '/o/'}).should.eql({
+                    lodash: '^3.9.3',
                     mocha: '1.2',
-                    lodash: '^3.9.3'
+                    moment: '^1.0.0'
                 });
             });
 
-            // TODO
             it.skip('should filter org dependencies by regex', () => {
                 vm.getCurrentDependencies(deps, {filter: /store/}).should.eql({
                     '@ngrx/store': '4.0.0'
@@ -300,7 +302,8 @@ describe('versionmanager', () => {
                 vm.getCurrentDependencies(deps, {reject: 'chalk'}).should.eql({
                     mocha: '1.2',
                     lodash: '^3.9.3',
-                    bluebird: '^1.0.0'
+                    bluebird: '^1.0.0',
+                    moment: '^1.0.0'
                 });
             });
 
@@ -309,22 +312,26 @@ describe('versionmanager', () => {
                     mocha: '1.2',
                     lodash: '^3.9.3',
                     chalk: '^1.1.0',
-                    bluebird: '^1.0.0'
+                    bluebird: '^1.0.0',
+                    moment: '^1.0.0'
                 });
             });
 
             it('should reject dependencies by multiple packages', () => {
                 vm.getCurrentDependencies(deps, {reject: 'mocha lodash'}).should.eql({
                     chalk: '^1.1.0',
-                    bluebird: '^1.0.0'
+                    bluebird: '^1.0.0',
+                    moment: '^1.0.0'
                 });
                 vm.getCurrentDependencies(deps, {reject: 'mocha,lodash'}).should.eql({
                     chalk: '^1.1.0',
-                    bluebird: '^1.0.0'
+                    bluebird: '^1.0.0',
+                    moment: '^1.0.0'
                 });
                 vm.getCurrentDependencies(deps, {reject: ['mocha', 'lodash']}).should.eql({
                     chalk: '^1.1.0',
-                    bluebird: '^1.0.0'
+                    bluebird: '^1.0.0',
+                    moment: '^1.0.0'
                 });
             });
 

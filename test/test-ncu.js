@@ -85,6 +85,33 @@ describe('npm-check-updates', function () {
                 return e.message.should.contain('Exceeded global timeout of 1ms');
             });
         });
+
+        it('should only upgrade devDependencies and peerDependencies with --dep dev', () => {
+            const upgraded = ncu.run({
+                packageData: fs.readFileSync(`${__dirname}/ncu/package-dep.json`, 'utf-8'),
+                dep: 'dev'
+            });
+
+            return BluebirdPromise.all([
+                upgraded.should.eventually.not.have.property('express'),
+                upgraded.should.eventually.have.property('chalk'),
+                upgraded.should.eventually.not.have.property('mocha')
+            ]);
+        });
+
+        it('should only upgrade devDependencies and peerDependencies with --dep dev,peer', () => {
+            const upgraded = ncu.run({
+                packageData: fs.readFileSync(`${__dirname}/ncu/package-dep.json`, 'utf-8'),
+                dep: 'dev,peer'
+            });
+
+            return BluebirdPromise.all([
+                upgraded.should.eventually.not.have.property('express'),
+                upgraded.should.eventually.have.property('chalk'),
+                upgraded.should.eventually.have.property('mocha')
+            ]);
+        });
+
     });
 
     describe('cli', () => {
