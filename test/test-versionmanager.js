@@ -422,6 +422,11 @@ describe('versionmanager', () => {
                 .should.eventually.deep.equal({});
         });
 
+        it('git urls should be ignored', () => {
+            return vm.queryVersions({abchdefntofknacuifnt: 'git+https://mycompany.biz/git/some-private-module'})
+                .should.eventually.deep.equal({});
+        });
+
         it('set the versionTarget explicitly to latest', () => {
             return vm.queryVersions({async: '1.5.1'}, {versionTarget: 'latest'})
                 .should.eventually.have.property('async');
