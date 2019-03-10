@@ -11,7 +11,7 @@ npm-check-updates *only* modifies your package.json file. Run `npm install` to u
 
 ![npm-check-updates-screenshot](https://cloud.githubusercontent.com/assets/750276/8864534/0788a4d8-3171-11e5-9881-8f7dcf634d14.png)
 
-![Question](http://www.virginmobileusa.com/_img/2012/icon-questionmark-small.gif) Having issues? Check out [known issues](#known-issues) first. Then check the [issues page](https://github.com/tjunnone/npm-check-updates/issues).
+You may also want to consider [npm-check](https://github.com/dylang/npm-check). Similar in purpose, different in features.
 
 Installation
 --------------
