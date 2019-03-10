@@ -31,7 +31,7 @@
   "scripts": {
     "lint": "eslint bin/* lib test",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
-    "test": "npm run lint && snyk test && mocha && mocha test/individual"
+    "test": "npm run lint && mocha && mocha test/individual; if [ \"$TRAVIS_PULL_REQUEST\" = \"false\" ]; then snyk test; fi"
   },
   "bin": {
     "npm-check-updates": "./bin/npm-check-updates",
