@@ -54,6 +54,7 @@
     "json-parse-helpfulerror": "^1.0.3",
     "lodash": "^4.17.11",
     "node-alias": "^1.0.4",
+    "package-json": "^6.1.0",
     "rc-config-loader": "^2.0.2",
     "requireg": "^0.2.1",
     "semver": "^5.6.0",
