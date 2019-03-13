@@ -11,7 +11,7 @@ const ncu = require('../lib/npm-check-updates');
 const pkg = require('../package.json');
 
 // check if a new version of ncu is available and print an update notification
-const notifier = updateNotifier({pkg})
+const notifier = updateNotifier({pkg});
 if (notifier.update && notifier.update.latest !== pkg.version) {
     notifier.notify({defer: false});
 }
