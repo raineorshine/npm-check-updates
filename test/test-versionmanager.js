@@ -406,39 +406,44 @@ describe('versionmanager', () => {
         this.timeout(30000);
 
         it('valid single package', () => {
-            const latestVersions = vm.queryVersions({async: '1.5.1'});
+            const latestVersions = vm.queryVersions({async: '1.5.1'}, {loglevel: 'silent'});
             return latestVersions.should.eventually.have.property('async');
         });
 
         it('valid packages', () => {
-            const latestVersions = vm.queryVersions({async: '1.5.1', npm: '3.10.3'});
+            const latestVersions = vm.queryVersions({async: '1.5.1', npm: '3.10.3'}, {loglevel: 'silent'});
             latestVersions.should.eventually.have.property('async');
             latestVersions.should.eventually.have.property('npm');
             return latestVersions;
         });
 
         it('unavailable packages should be ignored', () => {
-            return vm.queryVersions({abchdefntofknacuifnt: '1.2.3'})
+            return vm.queryVersions({abchdefntofknacuifnt: '1.2.3'}, {loglevel: 'silent'})
                 .should.eventually.deep.equal({});
         });
 
         it('git urls should be ignored', () => {
-            return vm.queryVersions({abchdefntofknacuifnt: 'git+https://mycompany.biz/git/some-private-module'})
+            return vm.queryVersions({abchdefntofknacuifnt: 'git+https://mycompany.biz/git/some-private-module'}, {loglevel: 'silent'})
+                .should.eventually.deep.equal({});
+        });
+
+        it('local file urls should be ignored', () => {
+            return vm.queryVersions({'eslint-plugin-internal': 'file:devtools/eslint-rules'}, {loglevel: 'silent'})
                 .should.eventually.deep.equal({});
         });
 
         it('set the versionTarget explicitly to latest', () => {
-            return vm.queryVersions({async: '1.5.1'}, {versionTarget: 'latest'})
+            return vm.queryVersions({async: '1.5.1'}, {versionTarget: 'latest', loglevel: 'silent'})
                 .should.eventually.have.property('async');
         });
 
         it('set the versionTarget to greatest', () => {
-            return vm.queryVersions({async: '1.5.1'}, {versionTarget: 'greatest'})
+            return vm.queryVersions({async: '1.5.1'}, {versionTarget: 'greatest', loglevel: 'silent'})
                 .should.eventually.have.property('async');
         });
 
         it('should return an error for an unsupported versionTarget', () => {
-            const a = vm.queryVersions({async: '1.5.1'}, {versionTarget: 'foo'});
+            const a = vm.queryVersions({async: '1.5.1'}, {versionTarget: 'foo', loglevel: 'silent'});
             return a.should.be.rejected;
         });
 
