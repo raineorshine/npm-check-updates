@@ -112,6 +112,28 @@ describe('npm-check-updates', function () {
             ]);
         });
 
+        it('should write to --packageFile and output jsonUpgraded', () => {
+
+            const tempFile = 'test/temp_package.json';
+            fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
+
+            return ncu.run({
+                packageFile: tempFile,
+                jsonUpgraded: true,
+                upgrade: true
+            })
+                .then(result => {
+                    result.should.have.property('express');
+
+                    const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                    upgradedPkg.should.have.property('dependencies');
+                    upgradedPkg.dependencies.should.have.property('express');
+                })
+                .finally(() => {
+                    fs.unlinkSync(tempFile);
+                });
+        });
+
     });
 
     describe('cli', () => {
