@@ -44,6 +44,7 @@ program
     .option('--semverLevel <level>', 'find the highest version within "major" or "minor"')
     .option('--removeRange', 'remove version ranges from the final package version')
     .option('--pre', 'Override the default of excluding -alpha, -beta, -rc')
+    .option('-i, --interactive', 'Enable interactive prompts for each dependency when update is available. Works together with -u, --upgrade')
     .option('-v, --version', pkg.version, () => {
         console.log(pkg.version);
         process.exit(0);
