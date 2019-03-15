@@ -117,11 +117,12 @@ describe('npm-check-updates', function () {
             const tempFile = 'test/temp_package.json';
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
 
-            return ncu.run({
+            // wrap run in Bluebird Promise so .finally is defined in node < 9
+            return BluebirdPromise.resolve(ncu.run({
                 packageFile: tempFile,
                 jsonUpgraded: true,
                 upgrade: true
-            })
+            }))
                 .then(result => {
                     result.should.have.property('express');
 
