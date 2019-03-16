@@ -148,6 +148,23 @@ describe('npm-check-updates', function () {
                 });
         });
 
+        it('should reject out-of-date stdin with error-level 2', cb => {
+            const result = spawn('node', ['bin/ncu', '--error-level', '2'], '{ "dependencies": { "express": "1" } }');
+
+            // for some reason the error shows up as an unhandled rejection
+            // suppressing this does not interfere with the subsequent then and catch
+            process.on('unhandledRejection', () => {});
+
+            result.then(x => {
+                cb(new Error('Expected error. Instead got ' + x));
+            });
+            result.catch(e => {
+                e.toString().trim().should.equal('Dependencies not up-to-date');
+                cb();
+            });
+        });
+
+
         it('should fall back to package.json search when receiving empty content on stdin', () => {
             return spawn('node', ['bin/ncu']).then(stdout => {
                 stdout.toString().trim().should.match(/^Checking .+package.json/);
