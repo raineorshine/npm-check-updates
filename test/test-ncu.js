@@ -74,15 +74,17 @@ describe('npm-check-updates', function () {
             return ncu.run({});
         });
 
-        it('should throw an exception instead of printing to the console when timeout is exceeded', () => {
-
-            return ncu.run({
+        it('should throw an exception instead of printing to the console when timeout is exceeded', cb => {
+            const result = ncu.run({
                 packageFile: 'package.json',
                 timeout: 1
-            }).then(() => {
-                throw new Error('False positive');
-            }).catch(e => {
-                return e.message.should.contain('Exceeded global timeout of 1ms');
+            });
+            result.then(x => {
+                cb(new Error('Expected error. Instead got ' + x));
+            });
+            result.catch(e => {
+                e.message.should.contain('Exceeded global timeout of 1ms');
+                cb();
             });
         });
 
@@ -152,12 +154,17 @@ describe('npm-check-updates', function () {
             });
         });
 
-        it('should handle no package.json to analyze when receiving empty content on stdin', () => {
+        it('should handle no package.json to analyze when receiving empty content on stdin', cb => {
             // run from tmp dir to avoid ncu analyzing the project's package.json
-            return spawn('node', [`${process.cwd()}/bin/ncu`], {cwd: tmp.dirSync().name})
-                .catch(stderr => {
-                    stderr.toString().trim().should.startWith('No package.json');
-                });
+            const result = spawn('node', [`${process.cwd()}/bin/ncu`], {cwd: tmp.dirSync().name});
+
+            result.then(x => {
+                cb(new Error('Expected error. Instead got ' + x));
+            });
+            result.catch(e => {
+                e.toString().trim().should.startWith('No package.json');
+                cb();
+            });
         });
 
         it('should output json with --jsonAll', () => {
@@ -205,19 +212,23 @@ describe('npm-check-updates', function () {
                 });
         });
 
-        it('should not write to --packageFile if error-level=2 and upgrades', () => {
+        it('should not write to --packageFile if error-level=2 and upgrades', cb => {
             const tempFile = 'test/temp_package.json';
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
-            return spawn('node', ['bin/npm-check-updates', '-u', '--error-level', '2', '--packageFile', tempFile])
-                .catch(() => {
-                    const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
-                    upgradedPkg.should.have.property('dependencies');
-                    upgradedPkg.dependencies.should.have.property('express');
-                    upgradedPkg.dependencies.express.should.equal('1');
-                })
-                .finally(() => {
-                    fs.unlinkSync(tempFile);
-                });
+            const result = spawn('node', ['bin/ncu', '-u', '--error-level', '2', '--packageFile', tempFile]);
+            const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+            fs.unlinkSync(tempFile);
+
+            result.then(x => {
+                cb(new Error('Expected error. Instead got ' + x));
+            });
+
+            result.catch(() => {
+                upgradedPkg.should.have.property('dependencies');
+                upgradedPkg.dependencies.should.have.property('express');
+                upgradedPkg.dependencies.express.should.equal('1');
+                cb();
+            });
         });
 
         it('should write to --packageFile with jsonUpgraded flag', () => {
@@ -358,14 +369,15 @@ describe('npm-check-updates', function () {
 
         describe('with timeout option', () => {
 
-            it('should exit with error when timeout exceeded', done => {
-                spawn('node', ['bin/ncu', '--timeout', '1'], '{ "dependencies": { "express": "1" } }')
-                    .then(() => {
-                        done(new Error('should not resolve'));
-                    }).catch(stderr => {
-                        stderr.should.contain('Exceeded global timeout of 1ms');
-                        done();
-                    });
+            it('should exit with error when timeout exceeded', cb => {
+                const result = spawn('node', ['bin/ncu', '--timeout', '1'], '{ "dependencies": { "express": "1" } }');
+                result.then(x => {
+                    cb(new Error('Expected error. Instead got ' + x));
+                });
+                result.catch(e => {
+                    e.should.contain('Exceeded global timeout of 1ms');
+                    cb();
+                });
             });
 
             it('completes successfully with timeout', () => {
