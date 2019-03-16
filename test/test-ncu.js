@@ -175,6 +175,10 @@ describe('npm-check-updates', function () {
             // run from tmp dir to avoid ncu analyzing the project's package.json
             const result = spawn('node', [`${process.cwd()}/bin/ncu`], {cwd: tmp.dirSync().name});
 
+            // for some reason the error shows up as an unhandled rejection
+            // suppressing this does not interfere with the subsequent then and catch
+            process.on('unhandledRejection', () => {});
+
             result.then(x => {
                 cb(new Error('Expected error. Instead got ' + x));
             });
@@ -233,18 +237,23 @@ describe('npm-check-updates', function () {
             const tempFile = 'test/temp_package.json';
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             const result = spawn('node', ['bin/ncu', '-u', '--error-level', '2', '--packageFile', tempFile]);
-            const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
-            fs.unlinkSync(tempFile);
+
+            // for some reason the error shows up as an unhandled rejection
+            // suppressing this does not interfere with the subsequent then and catch
+            process.on('unhandledRejection', () => {});
 
             result.then(x => {
+                fs.unlinkSync(tempFile);
                 cb(new Error('Expected error. Instead got ' + x));
             });
 
             result.catch(() => {
+                const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                fs.unlinkSync(tempFile);
                 upgradedPkg.should.have.property('dependencies');
                 upgradedPkg.dependencies.should.have.property('express');
                 upgradedPkg.dependencies.express.should.equal('1');
-                cb();
+                cb()
             });
         });
 
