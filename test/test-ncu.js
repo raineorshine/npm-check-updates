@@ -148,7 +148,7 @@ describe('npm-check-updates', function () {
 
         it('should fall back to package.json search when receiving empty content on stdin', () => {
             return spawn('node', ['bin/ncu']).then(stdout => {
-                stdout.toString().trim().should.match(/^Using .+package.json/);
+                stdout.toString().trim().should.match(/^Checking .+package.json/);
             });
         });
 
