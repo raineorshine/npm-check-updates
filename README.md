@@ -7,7 +7,7 @@
 
 npm-check-updates maintains your existing semantic versioning *policies*, i.e., it will upgrade `"express": "^4.0.0"` to `"express": "^5.0.0"`.
 
-npm-check-updates *only* modifies your package.json file. Run `npm install` to update your installed packages and package-lock.json. 
+npm-check-updates *only* modifies your package.json file. Run `npm install` to update your installed packages and package-lock.json.
 
 ![npm-check-updates-screenshot](https://cloud.githubusercontent.com/assets/750276/8864534/0788a4d8-3171-11e5-9881-8f7dcf634d14.png)
 
@@ -90,7 +90,7 @@ Do not use these unless you know what you are doing! Not needed for typical usag
 
     --configFilePath         rc config file path (default: ./)
     --configFileName         rc config file name (default: .ncurc.{json,yml,js})                             
-    --dep                    check only a specific section(s) of dependencies: 
+    --dep                    check only a specific section(s) of dependencies:
                              prod|dev|peer|optional|bundle (comma-delimited)
     -e, --error-level        set the error-level. 1: exits with error code 0 if no
                              errors occur. 2: exits with error code 0 if no
@@ -102,9 +102,9 @@ Do not use these unless you know what you are doing! Not needed for typical usag
     -l, --loglevel           what level of logs to report: silent, error, warn,
                              info, verbose, silly (default: warn)
     -p, --packageManager     npm or bower (default: npm)
-    -m, --minimal            do not upgrade to newer versions that are already 
+    -m, --minimal            do not upgrade to newer versions that are already
                              satisfied by the existing version range (v2 behavior).
-    -n, --newest             find the newest published versions available instead 
+    -n, --newest             find the newest published versions available instead
                              of the latest stable versions
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
@@ -118,6 +118,8 @@ Do not use these unless you know what you are doing! Not needed for typical usag
                              latest stable versions
     --removeRange            remove version ranges from the final package version
     --timeout                a global timeout in ms
+    -i, --interactive        Enable interactive prompts for each dependency when
+                             update is available. Works together with -u, --upgrade
 
 How dependency updates are determined
 --------------
@@ -150,7 +152,7 @@ For example, `.ncurc.json`:
 
 ```json
 {
-  "upgrade": true, 
+  "upgrade": true,
   "filter": "express",
   "reject": [
     "@types/estree",

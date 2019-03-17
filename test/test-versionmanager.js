@@ -131,8 +131,8 @@ describe('versionmanager', () => {
             mocha: '2.2.5'
         };
 
-        it('should upgrade the dependencies in the given package data (including satisfied)', () => {
-            JSON.parse(vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions))
+        it('should upgrade the dependencies in the given package data (including satisfied)', async () => {
+            JSON.parse(await vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions))
                 .should.eql({
                     name: 'npm-check-updates',
                     dependencies: {
@@ -145,8 +145,8 @@ describe('versionmanager', () => {
                 });
         });
 
-        it('should upgrade the dependencies in the given package data (except for satisfied)', () => {
-            JSON.parse(vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions, {minimal: true}))
+        it('should upgrade the dependencies in the given package data (except for satisfied)', async () => {
+            JSON.parse(await vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions, {minimal: true}))
                 .should.eql({
                     name: 'npm-check-updates',
                     dependencies: {
