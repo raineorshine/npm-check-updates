@@ -26,6 +26,8 @@ Show any new dependencies for the project in the current directory:
 
 ```sh
 $ ncu
+Checking package.json
+[====================] 5/5 100%
 
  express           4.12.x  →   4.13.x
  multer            ^0.1.8  →   ^1.0.1
@@ -33,7 +35,7 @@ $ ncu
  react-a11y        ^0.1.1  →   ^0.2.6
  webpack          ~1.9.10  →  ~1.10.5
 
-Run ncu -u to upgrade your package.json
+Run ncu -u to upgrade package.json
 ```
 
 Upgrade a project's package file:
@@ -42,12 +44,20 @@ Upgrade a project's package file:
 
 ```sh
 $ ncu -u
+Upgrading package.json
+[====================] 1/1 100%
 
  express           4.12.x  →   4.13.x
 
-Upgraded package.json. Run npm install to install new versions.
+Run npm install to install new versions.
 
 $ npm install      # update installed packages and package-lock.json
+```
+
+Check global packages:
+
+```sh
+$ ncu -g           # add -u to get a one-line command for upgrading
 ```
 
 You can include or exclude specific packages using the `--filter` and `--reject` options. They accept strings, comma-delimited lists, or regular expressions:
@@ -68,25 +78,8 @@ $ ncu '/^gulp-.*$/'
 $ ncu '/^(?!gulp-).*$/'
 ```
 
-Works with bower:
-
-```sh
-$ ncu -m bower     # will use bower.json and check versions in bower
-```
-
-Simple Options
+Options
 --------------
-    -f, --filter             include only package names matching the given string,
-                             comma-delimited list, or regex
-    -g, --global             check global packages instead of in the current project
-    -u, --upgrade            overwrite package file
-    -x, --reject             exclude packages matching the given string, comma-
-                             delimited list, or regex
-
-Advanced Options
---------------
-
-Do not use these unless you know what you are doing! Not needed for typical usage.
 
     --configFilePath         rc config file path (default: ./)
     --configFileName         rc config file name (default: .ncurc.{json,yml,js})                             
@@ -96,6 +89,10 @@ Do not use these unless you know what you are doing! Not needed for typical usag
                              errors occur. 2: exits with error code 0 if no
                              packages need updating (useful for continuous
                              integration)
+    -f, --filter             include only package names matching the given string,
+                             comma-delimited list, or regex
+    -g, --global             check global packages instead of in the current project
+    -i, --interactive        Enable interactive prompts for each dependency
     -j, --jsonAll            output new package file instead of human-readable
                              message
     --jsonUpgraded           output upgraded dependencies in json
@@ -118,8 +115,9 @@ Do not use these unless you know what you are doing! Not needed for typical usag
                              latest stable versions
     --removeRange            remove version ranges from the final package version
     --timeout                a global timeout in ms
-    -i, --interactive        Enable interactive prompts for each dependency when
-                             update is available. Works together with -u, --upgrade
+    -u, --upgrade            overwrite package file
+    -x, --reject             exclude packages matching the given string, comma-
+                             delimited list, or regex
 
 How dependency updates are determined
 --------------
