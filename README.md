@@ -107,7 +107,8 @@ Options
     --packageFile            package file location (default: ./package.json)
     --packageFileDir         use same directory as packageFile to compare against
                              installed modules. See #201.
-    --pre                    Override the default of excluding -alpha, -beta, -rc
+    --pre                    include -alpha, -beta, -rc. Default: 0. Default 
+                             with --newest and --greatest: 1.
     -r, --registry           specify third-party NPM registry
     -s, --silent             don't output anything (--loglevel silent)
     --semverLevel            find the highest version within "major" or "minor"

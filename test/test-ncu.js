@@ -131,6 +131,101 @@ describe('npm-check-updates', function () {
                 });
         });
 
+        it('should exclude -alpha, -beta, -rc', () => {
+
+            return ncu.run({
+                jsonAll: true,
+                packageData: JSON.stringify({
+                    dependencies: {
+                        'ncu-mock-pre': '1.0.0'
+                    }
+                })
+            }).then(data => {
+                return data.should.eql({
+                    dependencies: {
+                        'ncu-mock-pre': '1.0.0'
+                    }
+                });
+            });
+        });
+
+        it('should include -alpha, -beta, -rc with --pre option', () => {
+
+            return ncu.run({
+                jsonAll: true,
+                packageData: JSON.stringify({
+                    dependencies: {
+                        'ncu-mock-pre': '1.0.0'
+                    }
+                }),
+                pre: 1
+            }).then(data => {
+                return data.should.eql({
+                    dependencies: {
+                        'ncu-mock-pre': '2.0.0-alpha.0'
+                    }
+                });
+            });
+        });
+
+        it('should not require --pre with --newest option', () => {
+
+            return ncu.run({
+                jsonAll: true,
+                packageData: JSON.stringify({
+                    dependencies: {
+                        'ncu-mock-pre': '1.0.0'
+                    }
+                }),
+                newest: true
+            }).then(data => {
+                return data.should.eql({
+                    dependencies: {
+                        'ncu-mock-pre': '2.0.0-alpha.0'
+                    }
+                });
+            });
+        });
+
+        it('should not require --pre with --greatest option', () => {
+
+            return ncu.run({
+                jsonAll: true,
+                packageData: JSON.stringify({
+                    dependencies: {
+                        'ncu-mock-pre': '1.0.0'
+                    }
+                }),
+                greatest: true
+            }).then(data => {
+                return data.should.eql({
+                    dependencies: {
+                        'ncu-mock-pre': '2.0.0-alpha.0'
+                    }
+                });
+            });
+        });
+
+        it('should allow --pre 0 with --newest option to exclude prereleases', () => {
+
+            return ncu.run({
+                jsonAll: true,
+                packageData: JSON.stringify({
+                    dependencies: {
+                        'ncu-mock-pre': '1.0.0'
+                    }
+                }),
+                newest: true,
+                pre: '0'
+            }).then(data => {
+                return data.should.eql({
+                    dependencies: {
+                        'ncu-mock-pre': '1.0.0'
+                    }
+                });
+            });
+        });
+
     });
 
     describe('cli', () => {
