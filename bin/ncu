@@ -33,6 +33,7 @@ program
     .option('--packageData', 'include stringified package file (use stdin instead)')
     .option('--packageFile <filename>', 'package file location (default: ./package.json)')
     .option('--packageFileDir', 'use same directory as packageFile to compare against installed modules. See #201.')
+    .option('--pre <n>', 'Include -alpha, -beta, -rc. Default: 0. Default with --newest and --greatest: 1')
     .option('-r, --registry <url>', 'specify third-party npm registry')
     .option('--configFilePath <path>', 'rc config file path (default: ./)')
     .option('--configFileName <path>', 'rc config file name (default: .ncurc.{json,yml,js})')
@@ -43,7 +44,6 @@ program
     .option('-x, --reject <matches>', 'exclude packages matching the given string, comma-delimited list, or regex')
     .option('--semverLevel <level>', 'find the highest version within "major" or "minor"')
     .option('--removeRange', 'remove version ranges from the final package version')
-    .option('--pre', 'Override the default of excluding -alpha, -beta, -rc')
     .option('-i, --interactive', 'Enable interactive prompts for each dependency when update is available. Works together with -u, --upgrade')
     .option('-v, --version', pkg.version, () => {
         console.log(pkg.version);
