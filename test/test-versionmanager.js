@@ -132,7 +132,8 @@ describe('versionmanager', () => {
         };
 
         it('should upgrade the dependencies in the given package data (including satisfied)', async () => {
-            JSON.parse(await vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions))
+            const {newPkgData} = await vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions);
+            JSON.parse(newPkgData)
                 .should.eql({
                     name: 'npm-check-updates',
                     dependencies: {
@@ -146,7 +147,8 @@ describe('versionmanager', () => {
         });
 
         it('should upgrade the dependencies in the given package data (except for satisfied)', async () => {
-            JSON.parse(await vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions, {minimal: true}))
+            const {newPkgData} = await vm.upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions, {minimal: true});
+            JSON.parse(newPkgData)
                 .should.eql({
                     name: 'npm-check-updates',
                     dependencies: {
