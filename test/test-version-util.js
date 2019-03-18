@@ -244,21 +244,21 @@ describe('version-util', () => {
         it('should not colorize unchanged versions', () => {
             versionUtil.colorizeDiff('1.0.0', '1.0.0').should.equal('1.0.0');
         });
-        it('should colorize changed versions', () => {
+        it('should colorize changed patch versions', () => {
             versionUtil.colorizeDiff('1.0.0', '1.0.1').should.equal(`1.0.${chalk.green('0')}`);
         });
-        it('should colorize everything after the first difference', () => {
-            versionUtil.colorizeDiff('1.0.0', '2.0.0').should.equal(chalk.green('1.0.0'));
+        it('should colorize changed minor versions', () => {
+            versionUtil.colorizeDiff('1.0.0', '1.1.0').should.equal(`1.${chalk.cyan('0.0')}`);
+        });
+        it('should colorize changed major versions', () => {
+            versionUtil.colorizeDiff('1.0.0', '2.0.0').should.equal(chalk.red('1.0.0'));
         });
         it('should colorize whole parts', () => {
             versionUtil.colorizeDiff('1.0.10', '1.0.11').should.equal(`1.0.${chalk.green('10')}`);
         });
-        it('should accept an optional color option', () => {
-            versionUtil.colorizeDiff('1.0.0', '1.0.1', {color: 'blue'}).should.equal(`1.0.${chalk.blue('0')}`);
-        });
         it('should not include the leading ^ or ~ if the same', () => {
-            versionUtil.colorizeDiff('^1.0.0', '^2.0.0').should.equal(`^${chalk.green('1.0.0')}`);
-            versionUtil.colorizeDiff('~1.0.0', '~2.0.0').should.equal(`~${chalk.green('1.0.0')}`);
+            versionUtil.colorizeDiff('^1.0.0', '^2.0.0').should.equal(`^${chalk.red('1.0.0')}`);
+            versionUtil.colorizeDiff('~1.0.0', '~2.0.0').should.equal(`~${chalk.red('1.0.0')}`);
         });
     });
 
