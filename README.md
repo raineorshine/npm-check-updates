@@ -9,9 +9,13 @@ npm-check-updates maintains your existing semantic versioning *policies*, i.e., 
 
 npm-check-updates *only* modifies your package.json file. Run `npm install` to update your installed packages and package-lock.json.
 
-![npm-check-updates-screenshot](https://cloud.githubusercontent.com/assets/750276/8864534/0788a4d8-3171-11e5-9881-8f7dcf634d14.png)
+![npm-check-updates-screenshot](https://github.com/tjunnone/npm-check-updates/blob/master/.github/screenshot.png?raw=true)
 
-You may also want to consider [npm-check](https://github.com/dylang/npm-check). Similar in purpose, different in features.
+- Red = major upgrade
+- Cyan = minor upgrade
+- Green = patch upgrade
+
+You may also want to consider [npm-check](https://github.com/dylang/npm-check). Similar purpose, different features.
 
 Installation
 --------------
