@@ -245,20 +245,25 @@ describe('version-util', () => {
             versionUtil.colorizeDiff('1.0.0', '1.0.0').should.equal('1.0.0');
         });
         it('should colorize changed patch versions', () => {
-            versionUtil.colorizeDiff('1.0.0', '1.0.1').should.equal(`1.0.${chalk.green('0')}`);
+            versionUtil.colorizeDiff('1.0.0', '1.0.1').should.equal(`1.0.${chalk.green('1')}`);
         });
         it('should colorize changed minor versions', () => {
-            versionUtil.colorizeDiff('1.0.0', '1.1.0').should.equal(`1.${chalk.cyan('0.0')}`);
+            versionUtil.colorizeDiff('1.0.0', '1.1.0').should.equal(`1.${chalk.cyan('1.0')}`);
         });
         it('should colorize changed major versions', () => {
-            versionUtil.colorizeDiff('1.0.0', '2.0.0').should.equal(chalk.red('1.0.0'));
+            versionUtil.colorizeDiff('1.0.0', '2.0.0').should.equal(chalk.red('2.0.0'));
         });
         it('should colorize whole parts', () => {
-            versionUtil.colorizeDiff('1.0.10', '1.0.11').should.equal(`1.0.${chalk.green('10')}`);
+            versionUtil.colorizeDiff('1.0.10', '1.0.11').should.equal(`1.0.${chalk.green('11')}`);
         });
         it('should not include the leading ^ or ~ if the same', () => {
-            versionUtil.colorizeDiff('^1.0.0', '^2.0.0').should.equal(`^${chalk.red('1.0.0')}`);
-            versionUtil.colorizeDiff('~1.0.0', '~2.0.0').should.equal(`~${chalk.red('1.0.0')}`);
+            versionUtil.colorizeDiff('^1.0.0', '^2.0.0').should.equal(`^${chalk.red('2.0.0')}`);
+            versionUtil.colorizeDiff('~1.0.0', '~2.0.0').should.equal(`~${chalk.red('2.0.0')}`);
+        });
+        it('should colorize changed versions before 1.0.0 as breaking', () => {
+            versionUtil.colorizeDiff('0.1.0', '0.2.0').should.equal(`0.${chalk.red('2.0')}`);
+            versionUtil.colorizeDiff('0.1.0', '0.1.1').should.equal(`0.1.${chalk.red('1')}`);
+            versionUtil.colorizeDiff('~0.1.0', '~0.1.1').should.equal(`~0.1.${chalk.red('1')}`);
         });
     });
 
