@@ -523,6 +523,15 @@ describe('versionmanager', () => {
             vm.getPreferredWildcard(deps).should.equal('.*');
         });
 
+        it('should not allow wildcards to be outnumbered by non-wildcards', () => {
+            const deps = {
+                gulp: '^4.0.0',
+                typescript: '3.3.0',
+                webpack: '4.30.0'
+            };
+            vm.getPreferredWildcard(deps).should.equal('^');
+        });
+
         it('should use the first wildcard if there is a tie', () => {
             const deps = {
                 async: '0.9.x',
