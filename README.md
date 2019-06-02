@@ -11,7 +11,7 @@ npm-check-updates *only* modifies your package.json file. Run `npm install` to u
 
 ![npm-check-updates-screenshot](https://github.com/tjunnone/npm-check-updates/blob/master/.github/screenshot.png?raw=true)
 
-- Red = major upgrade
+- Red = major upgrade (and all [major version zero](https://semver.org/#spec-item-4))
 - Cyan = minor upgrade
 - Green = patch upgrade
 
