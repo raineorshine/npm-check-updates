@@ -40,6 +40,15 @@ describe('npm proxy', () => {
         expect(getProxyAgent()).to.be.null;
     });
 
+    it('proxy set but default npm registry listed in no_proxy as npm-like wildcard', () => {
+        process.env.HTTPS_PROXY = 'http://localhost';
+        process.env.NO_PROXY = 'npmjs.org';
+
+        const {getProxyAgent} = mockRequire.reRequire(npmProxyPath);
+
+        expect(getProxyAgent()).to.be.null;
+    });
+
     it('proxy set but default npm registry listed in no_proxy as matching subdomain', () => {
         process.env.HTTPS_PROXY = 'http://localhost';
         process.env.NO_PROXY = '.npmjs.org';
