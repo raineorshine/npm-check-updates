@@ -3,13 +3,10 @@ const ncu             = require('../lib/npm-check-updates.js');
 const chai            = require('chai');
 const fs              = require('fs');
 const spawn           = require('spawn-please');
-const BluebirdPromise = require('bluebird');
 const tmp             = require('tmp');
 
 chai.use(require('chai-as-promised'));
 chai.use(require('chai-string'));
-
-spawn.Promise = BluebirdPromise;
 
 describe('npm-check-updates', function () {
 
@@ -27,7 +24,7 @@ describe('npm-check-updates', function () {
                 packageData: fs.readFileSync(`${__dirname}/ncu/package2.json`, 'utf-8'),
                 args: ['lodash.map']
             });
-            return BluebirdPromise.all([
+            return Promise.all([
                 upgraded.should.eventually.have.property('lodash.map'),
                 upgraded.should.eventually.not.have.property('lodash.filter')
             ]);
@@ -38,7 +35,7 @@ describe('npm-check-updates', function () {
                 packageData: fs.readFileSync(`${__dirname}/ncu/package2.json`, 'utf-8'),
                 args: ['lodash.map', 'lodash.filter']
             });
-            return BluebirdPromise.all([
+            return Promise.all([
                 upgraded.should.eventually.have.property('lodash.map'),
                 upgraded.should.eventually.have.property('lodash.filter')
             ]);
@@ -51,7 +48,7 @@ describe('npm-check-updates', function () {
                 jsonUpgraded: true
             });
 
-            return BluebirdPromise.all([
+            return Promise.all([
                 upgraded.should.eventually.have.property('juggernaut'),
                 upgraded.then(data => {
                     return data.should.eql({juggernaut: '^2.1.1'});
@@ -88,7 +85,7 @@ describe('npm-check-updates', function () {
                 dep: 'dev'
             });
 
-            return BluebirdPromise.all([
+            return Promise.all([
                 upgraded.should.eventually.not.have.property('express'),
                 upgraded.should.eventually.have.property('chalk'),
                 upgraded.should.eventually.not.have.property('mocha')
@@ -101,34 +98,32 @@ describe('npm-check-updates', function () {
                 dep: 'dev,peer'
             });
 
-            return BluebirdPromise.all([
+            return Promise.all([
                 upgraded.should.eventually.not.have.property('express'),
                 upgraded.should.eventually.have.property('chalk'),
                 upgraded.should.eventually.have.property('mocha')
             ]);
         });
 
-        it('should write to --packageFile and output jsonUpgraded', () => {
+        it('should write to --packageFile and output jsonUpgraded', async () => {
 
             const tempFile = 'test/temp_package.json';
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
 
-            // wrap run in Bluebird Promise so .finally is defined in node < 9
-            return BluebirdPromise.resolve(ncu.run({
-                packageFile: tempFile,
-                jsonUpgraded: true,
-                upgrade: true
-            }))
-                .then(result => {
-                    result.should.have.property('express');
-
-                    const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
-                    upgradedPkg.should.have.property('dependencies');
-                    upgradedPkg.dependencies.should.have.property('express');
-                })
-                .finally(() => {
-                    fs.unlinkSync(tempFile);
+            try {
+                const result = await ncu.run({
+                    packageFile: tempFile,
+                    jsonUpgraded: true,
+                    upgrade: true
                 });
+                result.should.have.property('express');
+
+                const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                upgradedPkg.should.have.property('dependencies');
+                upgradedPkg.dependencies.should.have.property('express');
+            } finally {
+                fs.unlinkSync(tempFile);
+            }
         });
 
         it('should exclude -alpha, -beta, -rc', () => {
