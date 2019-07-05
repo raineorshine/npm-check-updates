@@ -59,6 +59,8 @@
     "progress": "^2.0.3",
     "prompts": "^2.1.0",
     "rc-config-loader": "^2.0.3",
+    "registry-auth-token": "^4.0.0",
+    "registry-url": "^5.1.0",
     "requireg": "^0.2.2",
     "semver": "^6.1.1",
     "semver-utils": "^1.1.4",
