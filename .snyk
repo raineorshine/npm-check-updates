@@ -21,10 +21,4 @@ ignore:
     - npmi > npm > node-gyp > request > qs:
         reason: None given
         expires: '2017-04-02T15:55:36.451Z'
-# patches apply the minimum changes required to fix a vulnerability
-patch:
-  SNYK-JS-LODASH-450202:
-    - node-alias > lodash:
-        patched: '2019-07-05T15:14:23.514Z'
-    - lodash:
-        patched: '2019-07-05T15:14:23.514Z'
+patch: {}
