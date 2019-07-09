@@ -12,6 +12,11 @@ describe('npm-check-updates', function () {
 
     this.timeout(30000);
 
+    let last = 0;
+    function getTempFile() {
+        return `test/temp_package${++last}.json`;
+    }
+
     describe('run', () => {
         it('should return promised jsonUpgraded', () => {
             return ncu.run({
@@ -107,7 +112,7 @@ describe('npm-check-updates', function () {
 
         it('should write to --packageFile and output jsonUpgraded', async () => {
 
-            const tempFile = 'test/temp_package.json';
+            const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
 
             try {
@@ -268,7 +273,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should read --packageFile', async () => {
-            const tempFile = 'test/temp_package.json';
+            const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             try {
                 const text = await spawn('node', ['bin/ncu', '--jsonUpgraded', '--packageFile', tempFile]);
@@ -280,7 +285,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should write to --packageFile', async () => {
-            const tempFile = 'test/temp_package.json';
+            const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             try {
                 await spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile]);
@@ -294,7 +299,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should not write to --packageFile if error-level=2 and upgrades', () => {
-            const tempFile = 'test/temp_package.json';
+            const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
 
             (async () => {
@@ -311,7 +316,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should write to --packageFile with jsonUpgraded flag', async () => {
-            const tempFile = 'test/temp_package.json';
+            const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             try {
                 await spawn('node', ['bin/npm-check-updates', '-u', '--jsonUpgraded', '--packageFile', tempFile]);
@@ -319,13 +324,13 @@ describe('npm-check-updates', function () {
                 ugradedPkg.should.have.property('dependencies');
                 ugradedPkg.dependencies.should.have.property('express');
                 ugradedPkg.dependencies.express.should.not.equal('1');
-            } finally  {
+            } finally {
                 fs.unlinkSync(tempFile);
             }
         });
 
         it('should ignore stdin if --packageFile is specified', async () => {
-            const tempFile = 'test/temp_package.json';
+            const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             try {
                 await spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile], '{ "dependencies": {}}');
