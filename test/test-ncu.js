@@ -3,17 +3,19 @@ const ncu             = require('../lib/npm-check-updates.js');
 const chai            = require('chai');
 const fs              = require('fs');
 const spawn           = require('spawn-please');
-const BluebirdPromise = require('bluebird');
 const tmp             = require('tmp');
 
 chai.use(require('chai-as-promised'));
 chai.use(require('chai-string'));
 
-spawn.Promise = BluebirdPromise;
-
 describe('npm-check-updates', function () {
 
     this.timeout(30000);
+
+    let last = 0;
+    function getTempFile() {
+        return `test/temp_package${++last}.json`;
+    }
 
     describe('run', () => {
         it('should return promised jsonUpgraded', () => {
@@ -27,7 +29,7 @@ describe('npm-check-updates', function () {
                 packageData: fs.readFileSync(`${__dirname}/ncu/package2.json`, 'utf-8'),
                 args: ['lodash.map']
             });
-            return BluebirdPromise.all([
+            return Promise.all([
                 upgraded.should.eventually.have.property('lodash.map'),
                 upgraded.should.eventually.not.have.property('lodash.filter')
             ]);
@@ -38,7 +40,7 @@ describe('npm-check-updates', function () {
                 packageData: fs.readFileSync(`${__dirname}/ncu/package2.json`, 'utf-8'),
                 args: ['lodash.map', 'lodash.filter']
             });
-            return BluebirdPromise.all([
+            return Promise.all([
                 upgraded.should.eventually.have.property('lodash.map'),
                 upgraded.should.eventually.have.property('lodash.filter')
             ]);
@@ -51,7 +53,7 @@ describe('npm-check-updates', function () {
                 jsonUpgraded: true
             });
 
-            return BluebirdPromise.all([
+            return Promise.all([
                 upgraded.should.eventually.have.property('juggernaut'),
                 upgraded.then(data => {
                     return data.should.eql({juggernaut: '^2.1.1'});
@@ -88,7 +90,7 @@ describe('npm-check-updates', function () {
                 dep: 'dev'
             });
 
-            return BluebirdPromise.all([
+            return Promise.all([
                 upgraded.should.eventually.not.have.property('express'),
                 upgraded.should.eventually.have.property('chalk'),
                 upgraded.should.eventually.not.have.property('mocha')
@@ -101,34 +103,32 @@ describe('npm-check-updates', function () {
                 dep: 'dev,peer'
             });
 
-            return BluebirdPromise.all([
+            return Promise.all([
                 upgraded.should.eventually.not.have.property('express'),
                 upgraded.should.eventually.have.property('chalk'),
                 upgraded.should.eventually.have.property('mocha')
             ]);
         });
 
-        it('should write to --packageFile and output jsonUpgraded', () => {
+        it('should write to --packageFile and output jsonUpgraded', async () => {
 
-            const tempFile = 'test/temp_package.json';
+            const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
 
-            // wrap run in Bluebird Promise so .finally is defined in node < 9
-            return BluebirdPromise.resolve(ncu.run({
-                packageFile: tempFile,
-                jsonUpgraded: true,
-                upgrade: true
-            }))
-                .then(result => {
-                    result.should.have.property('express');
-
-                    const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
-                    upgradedPkg.should.have.property('dependencies');
-                    upgradedPkg.dependencies.should.have.property('express');
-                })
-                .finally(() => {
-                    fs.unlinkSync(tempFile);
+            try {
+                const result = await ncu.run({
+                    packageFile: tempFile,
+                    jsonUpgraded: true,
+                    upgrade: true
                 });
+                result.should.have.property('express');
+
+                const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                upgradedPkg.should.have.property('dependencies');
+                upgradedPkg.dependencies.should.have.property('express');
+            } finally {
+                fs.unlinkSync(tempFile);
+            }
         });
 
         it('should exclude -alpha, -beta, -rc', () => {
@@ -272,77 +272,75 @@ describe('npm-check-updates', function () {
                 });
         });
 
-        it('should read --packageFile', () => {
-            const tempFile = 'test/temp_package.json';
+        it('should read --packageFile', async () => {
+            const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--packageFile', tempFile])
-                .then(JSON.parse)
-                .then(pkgData => {
-                    pkgData.should.have.property('express');
-                })
-                .finally(() => {
-                    fs.unlinkSync(tempFile);
-                });
+            try {
+                const text = await spawn('node', ['bin/ncu', '--jsonUpgraded', '--packageFile', tempFile]);
+                const pkgData = JSON.parse(text);
+                pkgData.should.have.property('express');
+            } finally {
+                fs.unlinkSync(tempFile);
+            }
         });
 
-        it('should write to --packageFile', () => {
-            const tempFile = 'test/temp_package.json';
+        it('should write to --packageFile', async () => {
+            const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
-            return spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile])
-                .then(() => {
-                    const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
-                    upgradedPkg.should.have.property('dependencies');
-                    upgradedPkg.dependencies.should.have.property('express');
-                    upgradedPkg.dependencies.express.should.not.equal('1');
-                })
-                .finally(() => {
-                    fs.unlinkSync(tempFile);
-                });
+            try {
+                await spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile]);
+                const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                upgradedPkg.should.have.property('dependencies');
+                upgradedPkg.dependencies.should.have.property('express');
+                upgradedPkg.dependencies.express.should.not.equal('1');
+            } finally {
+                fs.unlinkSync(tempFile);
+            }
         });
 
         it('should not write to --packageFile if error-level=2 and upgrades', () => {
-            const tempFile = 'test/temp_package.json';
+            const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
 
-            return spawn('node', ['bin/ncu', '-u', '--error-level', '2', '--packageFile', tempFile])
-                .finally(() => {
+            (async () => {
+                try {
+                    await spawn('node', ['bin/ncu', '-u', '--error-level', '2', '--packageFile', tempFile]);
+                } finally {
                     const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
                     fs.unlinkSync(tempFile);
                     upgradedPkg.should.have.property('dependencies');
                     upgradedPkg.dependencies.should.have.property('express');
                     upgradedPkg.dependencies.express.should.equal('1');
-                })
-                .should.eventually.be.rejectedWith('Dependencies not up-to-date');
+                }
+            })().should.eventually.be.rejectedWith('Dependencies not up-to-date');
         });
 
-        it('should write to --packageFile with jsonUpgraded flag', () => {
-            const tempFile = 'test/temp_package.json';
+        it('should write to --packageFile with jsonUpgraded flag', async () => {
+            const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
-            return spawn('node', ['bin/npm-check-updates', '-u', '--jsonUpgraded', '--packageFile', tempFile])
-                .then(() => {
-                    const ugradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
-                    ugradedPkg.should.have.property('dependencies');
-                    ugradedPkg.dependencies.should.have.property('express');
-                    ugradedPkg.dependencies.express.should.not.equal('1');
-                })
-                .finally(() => {
-                    fs.unlinkSync(tempFile);
-                });
+            try {
+                await spawn('node', ['bin/npm-check-updates', '-u', '--jsonUpgraded', '--packageFile', tempFile]);
+                const ugradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                ugradedPkg.should.have.property('dependencies');
+                ugradedPkg.dependencies.should.have.property('express');
+                ugradedPkg.dependencies.express.should.not.equal('1');
+            } finally {
+                fs.unlinkSync(tempFile);
+            }
         });
 
-        it('should ignore stdin if --packageFile is specified', () => {
-            const tempFile = 'test/temp_package.json';
+        it('should ignore stdin if --packageFile is specified', async () => {
+            const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
-            return spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile], '{ "dependencies": {}}')
-                .then(() => {
-                    const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
-                    upgradedPkg.should.have.property('dependencies');
-                    upgradedPkg.dependencies.should.have.property('express');
-                    upgradedPkg.dependencies.express.should.not.equal('1');
-                })
-                .finally(() => {
-                    fs.unlinkSync(tempFile);
-                });
+            try {
+                await spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile], '{ "dependencies": {}}');
+                const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                upgradedPkg.should.have.property('dependencies');
+                upgradedPkg.dependencies.should.have.property('express');
+                upgradedPkg.dependencies.express.should.not.equal('1');
+            } finally {
+                fs.unlinkSync(tempFile);
+            }
         });
 
         it('should filter by package name with --filter', () => {
@@ -406,49 +404,46 @@ describe('npm-check-updates', function () {
                 });
         });
 
-        it('should read --configFilePath', () => {
+        it('should read --configFilePath', async () => {
             const tempFilePath = './test/';
             const tempFileName = '.ncurc.json';
             fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8');
-            return spawn('node', ['bin/ncu', '--configFilePath', tempFilePath], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
-                .then(JSON.parse)
-                .then(pkgData => {
-                    pkgData.should.have.property('express');
-                    pkgData.should.not.have.property('chalk');
-                })
-                .finally(() => {
-                    fs.unlinkSync(tempFilePath + tempFileName);
-                });
+            try {
+                const text = await spawn('node', ['bin/ncu', '--configFilePath', tempFilePath], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }');
+                const pkgData = JSON.parse(text);
+                pkgData.should.have.property('express');
+                pkgData.should.not.have.property('chalk');
+            } finally {
+                fs.unlinkSync(tempFilePath + tempFileName);
+            }
         });
 
-        it('should read --configFileName', () => {
+        it('should read --configFileName', async () => {
             const tempFilePath = './test/';
             const tempFileName = '.rctemp.json';
             fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8');
-            return spawn('node', ['bin/ncu', '--configFilePath', tempFilePath, '--configFileName', tempFileName], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
-                .then(JSON.parse)
-                .then(pkgData => {
-                    pkgData.should.have.property('express');
-                    pkgData.should.not.have.property('chalk');
-                })
-                .finally(() => {
-                    fs.unlinkSync(tempFilePath + tempFileName);
-                });
+            try {
+                const text = await spawn('node', ['bin/ncu', '--configFilePath', tempFilePath, '--configFileName', tempFileName], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }');
+                const pkgData = JSON.parse(text);
+                pkgData.should.have.property('express');
+                pkgData.should.not.have.property('chalk');
+            } finally {
+                fs.unlinkSync(tempFilePath + tempFileName);
+            }
         });
 
-        it('should override config with arguments', () => {
+        it('should override config with arguments', async () => {
             const tempFilePath = './test/';
             const tempFileName = '.ncurc.json';
             fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8');
-            return spawn('node', ['bin/ncu', '--configFilePath', tempFilePath, '--filter', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
-                .then(JSON.parse)
-                .then(pkgData => {
-                    pkgData.should.have.property('chalk');
-                    pkgData.should.not.have.property('express');
-                })
-                .finally(() => {
-                    fs.unlinkSync(tempFilePath + tempFileName);
-                });
+            try {
+                const text = await spawn('node', ['bin/ncu', '--configFilePath', tempFilePath, '--filter', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }');
+                const pkgData = JSON.parse(text);
+                pkgData.should.have.property('chalk');
+                pkgData.should.not.have.property('express');
+            } finally {
+                fs.unlinkSync(tempFilePath + tempFileName);
+            }
         });
 
         describe('with timeout option', () => {

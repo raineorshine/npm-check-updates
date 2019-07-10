@@ -43,7 +43,6 @@
   },
   "homepage": "https://github.com/tjunnone/npm-check-updates",
   "dependencies": {
-    "bluebird": "^3.5.5",
     "chalk": "^2.4.2",
     "cint": "^8.2.1",
     "cli-table": "^0.3.1",
