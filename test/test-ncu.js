@@ -78,7 +78,7 @@ describe('npm-check-updates', function () {
 
         it('should throw an exception instead of printing to the console when timeout is exceeded', () => {
             return ncu.run({
-                packageFile: 'package.json',
+                packageData: fs.readFileSync(`${__dirname}/ncu/package-large.json`, 'utf-8'),
                 timeout: 1
             })
                 .should.eventually.be.rejectedWith('Exceeded global timeout of 1ms');
