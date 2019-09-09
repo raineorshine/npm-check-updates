@@ -64,7 +64,7 @@ Check global packages:
 $ ncu -g           # add -u to get a one-line command for upgrading
 ```
 
-You can include or exclude specific packages using the `--filter` and `--reject` options. They accept strings, comma-delimited lists, or regular expressions:
+You can include or exclude specific packages using the `--filter` and `--reject` options. They accept strings, comma-or-space-delimited lists, or regular expressions:
 
 ```sh
 # match mocha and should packages exactly
@@ -94,7 +94,7 @@ Options
                              packages need updating (useful for continuous
                              integration)
     -f, --filter             include only package names matching the given string,
-                             comma-delimited list, or regex
+                             comma-or-space-delimited list, or /regex/
     -g, --global             check global packages instead of in the current project
     -i, --interactive        Enable interactive prompts for each dependency
     -j, --jsonAll            output new package file instead of human-readable
