@@ -109,8 +109,6 @@ Options
     -p, --packageManager     npm or bower (default: npm)
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
-    --packageFileDir         use same directory as packageFile to compare against
-                             installed modules. See #201.
     --pre                    include -alpha, -beta, -rc. Default: 0. Default 
                              with --newest and --greatest: 1.
     -r, --registry           specify third-party NPM registry
