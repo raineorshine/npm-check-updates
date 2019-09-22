@@ -35,7 +35,6 @@ program
     .option('-p, --packageManager <name>', 'npm (default) or bower', 'npm')
     .option('--packageData', 'include stringified package file (use stdin instead)')
     .option('--packageFile <filename>', 'package file location (default: ./package.json)')
-    .option('--packageFileDir', 'use same directory as packageFile to compare against installed modules. See #201.')
     .option('--pre <n>', 'Include -alpha, -beta, -rc. Default: 0. Default with --newest and --greatest: 1')
     .option('-r, --registry <url>', 'specify third-party npm registry')
     .option('--removeRange', 'remove version ranges from the final package version')
