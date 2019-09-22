@@ -102,25 +102,25 @@ Options
     --jsonUpgraded           output upgraded dependencies in json
     -l, --loglevel           what level of logs to report: silent, error, warn,
                              info, verbose, silly (default: warn)
-    -p, --packageManager     npm or bower (default: npm)
     -m, --minimal            do not upgrade to newer versions that are already
                              satisfied by the existing version range (v2 behavior).
     -n, --newest             find the newest published versions available instead
                              of the latest stable versions
+    -p, --packageManager     npm or bower (default: npm)
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
-    --packageFileDir         use same directory as packageFile to compare against
-                             installed modules. See #201.
     --pre                    include -alpha, -beta, -rc. Default: 0. Default 
                              with --newest and --greatest: 1.
     -r, --registry           specify third-party NPM registry
+    --removeRange            remove version ranges from the final package version
     -s, --silent             don't output anything (--loglevel silent)
     --semverLevel            find the highest version within "major" or "minor"
     -t, --greatest           find the highest versions available instead of the
                              latest stable versions
-    --removeRange            remove version ranges from the final package version
     --timeout                a global timeout in ms
     -u, --upgrade            overwrite package file
+    -v, --version            get version
+    -V                       get version
     -x, --reject             exclude packages matching the given string, comma-
                              delimited list, or regex
 

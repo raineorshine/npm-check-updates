@@ -19,6 +19,8 @@ if (notifier.update && notifier.update.latest !== pkg.version) {
 program
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
+    .option('--configFilePath <path>', 'rc config file path (default: ./)')
+    .option('--configFileName <path>', 'rc config file name (default: .ncurc.{json,yml,js})')
     .option('--dep <dep>', 'check only a specific section(s) of dependencies: prod|dev|peer|optional|bundle (comma-delimited)')
     .option('-e, --error-level <n>', 'set the error-level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). Default is 1.', cint.partialAt(parseInt, 1, 10), 1)
     .option('-f, --filter <matches>', 'include only package names matching the given string, comma-or-space-delimited list, or /regex/')
@@ -33,18 +35,15 @@ program
     .option('-p, --packageManager <name>', 'npm (default) or bower', 'npm')
     .option('--packageData', 'include stringified package file (use stdin instead)')
     .option('--packageFile <filename>', 'package file location (default: ./package.json)')
-    .option('--packageFileDir', 'use same directory as packageFile to compare against installed modules. See #201.')
     .option('--pre <n>', 'Include -alpha, -beta, -rc. Default: 0. Default with --newest and --greatest: 1')
     .option('-r, --registry <url>', 'specify third-party npm registry')
-    .option('--configFilePath <path>', 'rc config file path (default: ./)')
-    .option('--configFileName <path>', 'rc config file name (default: .ncurc.{json,yml,js})')
+    .option('--removeRange', 'remove version ranges from the final package version')
     .option('-s, --silent', "don't output anything (--loglevel silent)")
+    .option('--semverLevel <level>', 'find the highest version within "major" or "minor"')
     .option('-t, --greatest', 'find the highest versions available instead of the latest stable versions')
     .option('--timeout <ms>', 'a global timeout in ms')
     .option('-u, --upgrade', 'overwrite package file')
     .option('-x, --reject <matches>', 'exclude packages matching the given string, comma-or-space-delimited list, or /regex/')
-    .option('--semverLevel <level>', 'find the highest version within "major" or "minor"')
-    .option('--removeRange', 'remove version ranges from the final package version')
     .option('-v, --version', pkg.version, () => {
         console.log(pkg.version);
         process.exit(0);
