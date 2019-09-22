@@ -121,6 +121,8 @@ Options
                              latest stable versions
     --timeout                a global timeout in ms
     -u, --upgrade            overwrite package file
+    -v, --version            get version
+    -V                       get version
     -x, --reject             exclude packages matching the given string, comma-
                              delimited list, or regex
 
