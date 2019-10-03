@@ -50,6 +50,7 @@
     "fast-diff": "^1.2.0",
     "find-up": "4.1.0",
     "get-stdin": "^7.0.0",
+    "is-reachable": "^4.0.0",
     "json-parse-helpfulerror": "^1.0.3",
     "libnpmconfig": "^1.2.1",
     "lodash": "^4.17.15",
