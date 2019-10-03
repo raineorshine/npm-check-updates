@@ -1,9 +1,9 @@
 'use strict';
-const ncu             = require('../lib/npm-check-updates.js');
-const chai            = require('chai');
-const fs              = require('fs');
-const spawn           = require('spawn-please');
-const tmp             = require('tmp');
+const ncu = require('../lib/npm-check-updates.js');
+const chai = require('chai');
+const fs = require('fs');
+const spawn = require('spawn-please');
+const tmp = require('tmp');
 
 chai.use(require('chai-as-promised'));
 chai.use(require('chai-string'));
@@ -444,6 +444,18 @@ describe('npm-check-updates', function () {
             } finally {
                 fs.unlinkSync(tempFilePath + tempFileName);
             }
+        });
+
+        describe('online check', () => {
+
+            it('should exit with error when the package repository is not reachable', () => {
+                return spawn('node', ['bin/ncu', '--registry', 'https://fake.registry'], '{ "dependencies": { "express": "1" } }')
+                    .should.eventually.be.rejectedWith('The package repository is not reachable! Please check your internet connection.');
+            });
+
+            it('should not exit with error when the package repository is not reachable but --noOnlineCheck is set', () => {
+                return spawn('node', ['bin/ncu', '--registry', 'https://fake.registry', '--noOnlineCheck'], '{ "dependencies": { "express": "1" } }');
+            });
         });
 
         describe('with timeout option', () => {
