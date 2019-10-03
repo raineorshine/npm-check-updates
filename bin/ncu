@@ -32,6 +32,7 @@ program
     .option('-l, --loglevel <n>', 'what level of logs to report: silent, error, minimal, warn, info, verbose, silly (default: warn)', 'warn')
     .option('-m, --minimal', 'do not upgrade newer versions that are already satisfied by the version range according to semver')
     .option('-n, --newest', 'find the newest versions available instead of the latest stable versions')
+    .option('--noOnlineCheck', 'disable the internet connection check of the package repository')
     .option('-p, --packageManager <name>', 'npm (default) or bower', 'npm')
     .option('--packageData', 'include stringified package file (use stdin instead)')
     .option('--packageFile <filename>', 'package file location (default: ./package.json)')
