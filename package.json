@@ -42,6 +42,7 @@
     "url": "https://github.com/tjunnone/npm-check-updates.git"
   },
   "homepage": "https://github.com/tjunnone/npm-check-updates",
+  "bugs": "https://github.com/tjunnone/npm-check-updates/issues",
   "dependencies": {
     "chalk": "^2.4.2",
     "cint": "^8.2.1",
