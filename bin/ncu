@@ -18,7 +18,7 @@ if (notifier.update && notifier.update.latest !== pkg.version) {
 program
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
-    .option('--configFilePath <path>', 'rc config file path (default: ./)')
+    .option('--configFilePath <path>', 'rc config file path (default: directory of `packageFile` or ./ otherwise)')
     .option('--configFileName <path>', 'rc config file name (default: .ncurc.{json,yml,js})')
     .option('--dep <dep>', 'check only a specific section(s) of dependencies: prod|dev|peer|optional|bundle (comma-delimited)')
     .option('-e, --error-level <n>', 'set the error-level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). Default is 1.', cint.partialAt(parseInt, 1, 10), 1)
