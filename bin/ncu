@@ -54,11 +54,12 @@ program
 
 program.parse(process.argv);
 
-const {configFileName, configFilePath} = program;
+const {configFileName, configFilePath, packageFile} = program;
 
 const rcConfig = ncu.getNcurc({
     configFileName,
-    configFilePath
+    configFilePath,
+    packageFile
 });
 
 const rcArguments = rcConfig ?
