@@ -87,6 +87,7 @@ Options
 
     --configFilePath         rc config file path (default: ./)
     --configFileName         rc config file name (default: .ncurc.{json,yml,js})                             
+    --cwd                    Used as current working directory for `spawn` in npm listing
     --dep                    check only a specific section(s) of dependencies:
                              prod|dev|peer|optional|bundle (comma-delimited)
     -e, --error-level        set the error-level. 1: exits with error code 0 if no
@@ -99,6 +100,9 @@ Options
     -i, --interactive        Enable interactive prompts for each dependency
     -j, --jsonAll            output new package file instead of human-readable
                              message
+    --jsonDeps               Will return output like `jsonAll` but only lists
+                             `dependencies`, `devDependencies`, and
+                             `optionalDependencies` of the new package data.
     --jsonUpgraded           output upgraded dependencies in json
     -l, --loglevel           what level of logs to report: silent, error, warn,
                              info, verbose, silly (default: warn)
@@ -109,8 +113,9 @@ Options
     -p, --packageManager     npm or bower (default: npm)
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
-    --pre                    include -alpha, -beta, -rc. Default: 0. Default 
+    --pre                    include -alpha, -beta, -rc. Default: 0. Default
                              with --newest and --greatest: 1.
+    --prefix                 Used as current working directory in bower and npm
     -r, --registry           specify third-party NPM registry
     --removeRange            remove version ranges from the final package version
     -s, --silent             don't output anything (--loglevel silent)
