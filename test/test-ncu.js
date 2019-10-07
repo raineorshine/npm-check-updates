@@ -446,18 +446,6 @@ describe('npm-check-updates', function () {
             }
         });
 
-        describe('online check', () => {
-
-            /* it('should exit with error when the package repository is not reachable', () => {
-                return spawn('node', ['bin/ncu', '--registry', 'https://fake.registry'], '{ "dependencies": { "express": "1" } }')
-                    .should.eventually.be.rejectedWith('The package repository is not reachable! Please check your internet connection.');
-            });
-
-            it('should not exit with error when the package repository is not reachable but --noOnlineCheck is set', () => {
-                return spawn('node', ['bin/ncu', '--registry', 'https://fake.registry', '--noOnlineCheck'], '{ "dependencies": { "express": "1" } }');
-            });*/
-        });
-
         describe('with timeout option', () => {
 
             it('should exit with error when timeout exceeded', () => {
