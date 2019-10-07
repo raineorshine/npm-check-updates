@@ -67,7 +67,7 @@ const rcArguments = rcConfig ?
         value === true ? [`--${name}`] : [`--${name}`, value]
     )) : [];
 
-const combinedArguments = process.argv.slice(0,2).concat(rcArguments).concat(process.argv.slice(2));
+const combinedArguments = process.argv.slice(0,2).concat(rcArguments, process.argv.slice(2));
 
 program.parse(combinedArguments);
 
