@@ -75,11 +75,11 @@ $ ncu one, two, three
 $ ncu -x nodemon        # shorthand for ncu --reject nodemon
 
 # match packages that start with "gulp-" using regex
-$ ncu '/^gulp-.*$/'
+$ ncu "/^gulp-.*$/"
 
-# match packages that do not start with "gulp-". Note: single quotes are required
-# here to avoid inadvertent bash parsing
-$ ncu '/^(?!gulp-).*$/'
+# match packages that do not start with "gulp-".
+$ ncu '/^(?!gulp-).*$/' # mac/linux
+$ ncu "/^(?!gulp-).*$/" # windows
 ```
 
 Options
