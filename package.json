@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "3.1.23",
+  "version": "3.1.24",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -42,11 +42,12 @@
     "url": "https://github.com/tjunnone/npm-check-updates.git"
   },
   "homepage": "https://github.com/tjunnone/npm-check-updates",
+  "bugs": "https://github.com/tjunnone/npm-check-updates/issues",
   "dependencies": {
     "chalk": "^2.4.2",
     "cint": "^8.2.1",
     "cli-table": "^0.3.1",
-    "commander": "^3.0.1",
+    "commander": "^3.0.2",
     "fast-diff": "^1.2.0",
     "find-up": "4.1.0",
     "get-stdin": "^7.0.0",
@@ -70,10 +71,10 @@
     "chai-as-promised": "^7.1.1",
     "chai-string": "^1.5.0",
     "chokidar-cli": "^2.0.0",
-    "eslint": "^6.3.0",
-    "mocha": "^6.2.0",
+    "eslint": "^6.5.1",
+    "mocha": "^6.2.1",
     "should": "^13.2.3",
-    "snyk": "^1.226.1",
+    "snyk": "^1.231.0",
     "tmp": "0.1.0"
   },
   "files": [

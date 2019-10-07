@@ -21,4 +21,10 @@ ignore:
     - npmi > npm > node-gyp > request > qs:
         reason: None given
         expires: '2017-04-02T15:55:36.451Z'
-patch: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-HTTPSPROXYAGENT-469131:
+    - pacote > npm-registry-fetch > make-fetch-happen > https-proxy-agent:
+        patched: '2019-10-07T01:48:25.543Z'
+    - pacote > make-fetch-happen > https-proxy-agent:
+        patched: '2019-10-07T01:48:25.543Z'

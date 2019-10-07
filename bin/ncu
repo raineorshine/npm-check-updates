@@ -6,7 +6,6 @@ const program = require('commander');
 const updateNotifier = require('update-notifier');
 const cint = require('cint');
 const _ = require('lodash');
-const rcLoader = require('rc-config-loader');
 const ncu = require('../lib/npm-check-updates');
 const pkg = require('../package.json');
 
@@ -19,8 +18,9 @@ if (notifier.update && notifier.update.latest !== pkg.version) {
 program
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
-    .option('--configFilePath <path>', 'rc config file path (default: ./)')
+    .option('--configFilePath <path>', 'rc config file path (default: directory of `packageFile` or ./ otherwise)')
     .option('--configFileName <path>', 'rc config file name (default: .ncurc.{json,yml,js})')
+    .option('--cwd <path>', 'Used as current working directory for `spawn` in npm listing')
     .option('--dep <dep>', 'check only a specific section(s) of dependencies: prod|dev|peer|optional|bundle (comma-delimited)')
     .option('-e, --error-level <n>', 'set the error-level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). Default is 1.', cint.partialAt(parseInt, 1, 10), 1)
     .option('-f, --filter <matches>', 'include only package names matching the given string, comma-or-space-delimited list, or /regex/')
@@ -28,6 +28,7 @@ program
     // program.json is set to true in programInit if any options that begin with 'json' are true
     .option('-i, --interactive', 'Enable interactive prompts for each dependency')
     .option('-j, --jsonAll', 'output new package file instead of human-readable message')
+    .option('--jsonDeps', 'Will return output like `jsonAll` but only lists `dependencies`, `devDependencies`, and `optionalDependencies` of the new package data.')
     .option('--jsonUpgraded', 'output upgraded dependencies in json')
     .option('-l, --loglevel <n>', 'what level of logs to report: silent, error, minimal, warn, info, verbose, silly (default: warn)', 'warn')
     .option('-m, --minimal', 'do not upgrade newer versions that are already satisfied by the version range according to semver')
@@ -37,6 +38,7 @@ program
     .option('--packageData', 'include stringified package file (use stdin instead)')
     .option('--packageFile <filename>', 'package file location (default: ./package.json)')
     .option('--pre <n>', 'Include -alpha, -beta, -rc. Default: 0. Default with --newest and --greatest: 1')
+    .option('--prefix <path>', 'Used as current working directory in bower and npm')
     .option('-r, --registry <url>', 'specify third-party npm registry')
     .option('--removeRange', 'remove version ranges from the final package version')
     .option('-s, --silent', "don't output anything (--loglevel silent)")
@@ -56,18 +58,20 @@ program
 
 program.parse(process.argv);
 
-const rcFile = rcLoader('ncurc', {
-    configFileName: program.configFileName || '.ncurc',
-    defaultExtension: ['.json', '.yml', '.js'],
-    cwd: program.configFilePath || undefined
+const {configFileName, configFilePath, packageFile} = program;
+
+const rcConfig = ncu.getNcurc({
+    configFileName,
+    configFilePath,
+    packageFile
 });
 
-const rcArguments = rcFile && rcFile.config ?
-    _.flatten(_.map(rcFile.config, (value, name) =>
+const rcArguments = rcConfig ?
+    _.flatten(_.map(rcConfig, (value, name) =>
         value === true ? [`--${name}`] : [`--${name}`, value]
     )) : [];
 
-const combinedArguments = process.argv.slice(0,2).concat(rcArguments).concat(process.argv.slice(2));
+const combinedArguments = process.argv.slice(0,2).concat(rcArguments, process.argv.slice(2));
 
 program.parse(combinedArguments);
 
