@@ -6,7 +6,6 @@ const program = require('commander');
 const updateNotifier = require('update-notifier');
 const cint = require('cint');
 const _ = require('lodash');
-const rcLoader = require('rc-config-loader');
 const ncu = require('../lib/npm-check-updates');
 const pkg = require('../package.json');
 
@@ -19,7 +18,7 @@ if (notifier.update && notifier.update.latest !== pkg.version) {
 program
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
-    .option('--configFilePath <path>', 'rc config file path (default: ./)')
+    .option('--configFilePath <path>', 'rc config file path (default: directory of `packageFile` or ./ otherwise)')
     .option('--configFileName <path>', 'rc config file name (default: .ncurc.{json,yml,js})')
     .option('--dep <dep>', 'check only a specific section(s) of dependencies: prod|dev|peer|optional|bundle (comma-delimited)')
     .option('-e, --error-level <n>', 'set the error-level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). Default is 1.', cint.partialAt(parseInt, 1, 10), 1)
@@ -55,14 +54,16 @@ program
 
 program.parse(process.argv);
 
-const rcFile = rcLoader('ncurc', {
-    configFileName: program.configFileName || '.ncurc',
-    defaultExtension: ['.json', '.yml', '.js'],
-    cwd: program.configFilePath || undefined
+const {configFileName, configFilePath, packageFile} = program;
+
+const rcConfig = ncu.getNcurc({
+    configFileName,
+    configFilePath,
+    packageFile
 });
 
-const rcArguments = rcFile && rcFile.config ?
-    _.flatten(_.map(rcFile.config, (value, name) =>
+const rcArguments = rcConfig ?
+    _.flatten(_.map(rcConfig, (value, name) =>
         value === true ? [`--${name}`] : [`--${name}`, value]
     )) : [];
 

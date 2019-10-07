@@ -85,7 +85,7 @@ $ ncu '/^(?!gulp-).*$/'
 Options
 --------------
 
-    --configFilePath         rc config file path (default: ./)
+    --configFilePath         rc config file path (default: directory of `packageFile` or ./ otherwise)
     --configFileName         rc config file name (default: .ncurc.{json,yml,js})                             
     --dep                    check only a specific section(s) of dependencies:
                              prod|dev|peer|optional|bundle (comma-delimited)
@@ -109,7 +109,7 @@ Options
     -p, --packageManager     npm or bower (default: npm)
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
-    --pre                    include -alpha, -beta, -rc. Default: 0. Default 
+    --pre                    include -alpha, -beta, -rc. Default: 0. Default
                              with --newest and --greatest: 1.
     -r, --registry           specify third-party NPM registry
     --removeRange            remove version ranges from the final package version
