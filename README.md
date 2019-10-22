@@ -24,6 +24,14 @@ Installation
 npm install -g npm-check-updates
 ```
 
+Alternatively, you can use this package without installing it globally:
+
+```sh
+npx npm-check-updates
+```
+
+Note: `npx` comes with npm 5+.
+
 Usage
 --------------
 Show any new dependencies for the project in the current directory:
