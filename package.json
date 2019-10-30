@@ -69,11 +69,11 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-string": "^1.5.0",
-    "chokidar-cli": "^2.0.0",
-    "eslint": "^6.5.1",
-    "mocha": "^6.2.1",
+    "chokidar-cli": "^2.1.0",
+    "eslint": "^6.6.0",
+    "mocha": "^6.2.2",
     "should": "^13.2.3",
-    "snyk": "^1.231.0",
+    "snyk": "^1.239.5",
     "tmp": "0.1.0"
   },
   "files": [
