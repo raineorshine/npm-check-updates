@@ -90,6 +90,8 @@ Options
     --cwd                    Used as current working directory for `spawn` in npm listing
     --dep                    check only a specific section(s) of dependencies:
                              prod|dev|peer|optional|bundle (comma-delimited)
+    --engines-node           include only packages that satisfy engines.node as
+                             specified in the package file
     -e, --error-level        set the error-level. 1: exits with error code 0 if no
                              errors occur. 2: exits with error code 0 if no
                              packages need updating (useful for continuous
