@@ -46,7 +46,7 @@ describe('npm-check-updates', function () {
             ]);
         });
 
-        it('should suggest upgrades to versions within the specified version range if jsonUpraded is true', () => {
+        it('should suggest upgrades to versions within the specified version range if jsonUpgraded is true', () => {
             const upgraded = ncu.run({
                 // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
                 packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
@@ -61,7 +61,7 @@ describe('npm-check-updates', function () {
             ]);
         });
 
-        it('should not suggest upgrades to versions within the specified version range if jsonUpraded is true and minimial is true', () => {
+        it('should not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimial is true', () => {
             const upgraded = ncu.run({
                 // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
                 packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
@@ -223,6 +223,85 @@ describe('npm-check-updates', function () {
                         'ncu-mock-pre': '1.0.0'
                     }
                 });
+            });
+        });
+
+        it('should enable --engines-node matching ', () => {
+            return ncu.run({
+                jsonAll: true,
+                packageData: JSON.stringify({
+                    dependencies: {
+                        'del': '3.0.0'
+                    },
+                    engines: {
+                        'node': '>=6'
+                    }
+                }),
+                enginesNode: true
+            }).then(data => {
+                return data.should.eql({
+                    dependencies: {
+                        'del': '4.1.1'
+                    },
+                    engines: {
+                        'node': '>=6'
+                    }
+                });
+            });
+        });
+
+        it('should enable engines matching if --engines-node', () => {
+            return ncu.run({
+                jsonAll: true,
+                packageData: JSON.stringify({
+                    dependencies: {
+                        'del': '3.0.0'
+                    },
+                    engines: {
+                        'node': '>=6'
+                    }
+                }),
+                enginesNode: true
+            }).then(upgradedPkg => {
+                upgradedPkg.should.have.property('dependencies');
+                upgradedPkg.dependencies.should.have.property('del');
+                upgradedPkg.dependencies.del.should.equal('4.1.1');
+            });
+        });
+
+        it('should enable engines matching if --engines-node, not update if matches not exists', () => {
+            return ncu.run({
+                jsonAll: true,
+                packageData: JSON.stringify({
+                    dependencies: {
+                        'del': '3.0.0'
+                    },
+                    engines: {
+                        'node': '>=1'
+                    }
+                }),
+                enginesNode: true
+            }).then(upgradedPkg => {
+                upgradedPkg.should.have.property('dependencies');
+                upgradedPkg.dependencies.should.have.property('del');
+                upgradedPkg.dependencies.del.should.equal('3.0.0');
+            });
+        });
+
+        it('should enable engines matching if --engines-node, update to latest version if engines.node not exists', () => {
+            return ncu.run({
+                jsonAll: true,
+                packageData: JSON.stringify({
+                    dependencies: {
+                        'del': '3.0.0'
+                    }
+                }),
+                enginesNode: true
+            }).then(upgradedPkg => {
+                upgradedPkg.should.have.property('dependencies');
+                upgradedPkg.dependencies.should.have.property('del');
+                upgradedPkg.dependencies.del.should.not.equal('3.0.0');
+                upgradedPkg.dependencies.del.should.not.equal('4.1.1');
             });
         });
 
