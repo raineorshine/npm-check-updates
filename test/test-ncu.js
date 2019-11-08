@@ -226,6 +226,47 @@ describe('npm-check-updates', function () {
             });
         });
 
+        it('should work with --newest option with any invalid or wildcard range', () => {
+            return Promise.all([
+                ncu.run({
+                    jsonAll: true,
+                    newest: true,
+                    packageData: JSON.stringify({
+                        dependencies: {
+                            'del': ''
+                        }
+                    })
+                }),
+                ncu.run({
+                    jsonAll: true,
+                    newest: true,
+                    packageData: JSON.stringify({
+                        dependencies: {
+                            'del': 'invalid range'
+                        }
+                    })
+                }),
+                ncu.run({
+                    jsonAll: true,
+                    newest: true,
+                    packageData: JSON.stringify({
+                        dependencies: {
+                            'del': '*'
+                        }
+                    })
+                }),
+                ncu.run({
+                    jsonAll: true,
+                    newest: true,
+                    packageData: JSON.stringify({
+                        dependencies: {
+                            'del': '~'
+                        }
+                    })
+                })
+            ]);
+        });
+
         it('should enable --engines-node matching ', () => {
             return ncu.run({
                 jsonAll: true,
