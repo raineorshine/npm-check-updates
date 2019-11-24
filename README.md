@@ -99,7 +99,8 @@ Options
     -f, --filter             include only package names matching the given string,
                              comma-or-space-delimited list, or /regex/
     -g, --global             check global packages instead of in the current project
-    -i, --interactive        Enable interactive prompts for each dependency
+    -i, --interactive        Enable interactive prompts for each dependency;
+                             Implies -u unless one of the json options are set
     -j, --jsonAll            output new package file instead of human-readable
                              message
     --jsonDeps               Will return output like `jsonAll` but only lists

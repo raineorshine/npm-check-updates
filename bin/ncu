@@ -27,7 +27,7 @@ program
     .option('-f, --filter <matches>', 'include only package names matching the given string, comma-or-space-delimited list, or /regex/')
     .option('-g, --global', 'check global packages instead of in the current project')
     // program.json is set to true in programInit if any options that begin with 'json' are true
-    .option('-i, --interactive', 'Enable interactive prompts for each dependency')
+    .option('-i, --interactive', 'Enable interactive prompts for each dependency; implies -u unless one of the json options are set')
     .option('-j, --jsonAll', 'output new package file instead of human-readable message')
     .option('--jsonDeps', 'Will return output like `jsonAll` but only lists `dependencies`, `devDependencies`, and `optionalDependencies` of the new package data.')
     .option('--jsonUpgraded', 'output upgraded dependencies in json')
