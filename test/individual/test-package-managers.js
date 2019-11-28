@@ -24,7 +24,7 @@ describe('package-managers', () => {
         );
 
         it('greatest', () =>
-            packageManagers.npm.greatest('express', null, {prefix: testDir}).then(parseInt).should.eventually.be.above(1)
+            packageManagers.npm.greatest('ncu-test-greatest-not-newest', null, {prefix: testDir}).should.eventually.equal('2.0.0-beta')
         );
 
     });
