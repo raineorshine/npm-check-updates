@@ -57,8 +57,8 @@
     "node-alias": "^1.0.4",
     "pacote": "^9.5.8",
     "progress": "^2.0.3",
-    "prompts": "^2.2.1",
-    "rc-config-loader": "^2.0.4",
+    "prompts": "^2.3.0",
+    "rc-config-loader": "^2.0.5",
     "requireg": "^0.2.2",
     "semver": "^6.3.0",
     "semver-utils": "^1.1.4",
@@ -70,10 +70,10 @@
     "chai-as-promised": "^7.1.1",
     "chai-string": "^1.5.0",
     "chokidar-cli": "^2.1.0",
-    "eslint": "^6.6.0",
+    "eslint": "^6.7.1",
     "mocha": "^6.2.2",
     "should": "^13.2.3",
-    "snyk": "^1.239.5",
+    "snyk": "^1.252.0",
     "tmp": "0.1.0"
   },
   "files": [
