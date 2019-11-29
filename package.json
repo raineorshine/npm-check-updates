@@ -55,7 +55,7 @@
     "libnpmconfig": "^1.2.1",
     "lodash": "^4.17.15",
     "node-alias": "^1.0.4",
-    "pacote": "^9.5.8",
+    "pacote": "^10.2.0",
     "progress": "^2.0.3",
     "prompts": "^2.3.0",
     "rc-config-loader": "^2.0.5",
