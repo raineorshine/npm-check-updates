@@ -284,4 +284,18 @@ describe('version-util', () => {
         });
     });
 
+    describe('isPre', () => {
+
+        it('should return false for non-prerelease versions', () => {
+            versionUtil.isPre('1.0.0').should.be.false;
+        });
+
+        it('should return true for prerelease versions', () => {
+            versionUtil.isPre('1.0.0-alpha').should.be.true;
+            versionUtil.isPre('1.0.0-beta').should.be.true;
+            versionUtil.isPre('1.0.0-rc').should.be.true;
+        });
+
+    });
+
 });

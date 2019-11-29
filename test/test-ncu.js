@@ -149,6 +149,35 @@ describe('npm-check-updates', function () {
             });
         });
 
+        it('should upgrade prereleases to newer prereleases', () => {
+
+            return ncu.run({
+                packageData: JSON.stringify({
+                    dependencies: {
+                        'ncu-test-alpha-latest': '1.0.0-alpha.1'
+                    }
+                })
+            }).then(data => {
+                return data.should.eql({
+                    'ncu-test-alpha-latest': '1.0.0-alpha.2'
+                });
+            });
+        });
+
+        it('should not upgrade prereleases to newer prereleases with --pre 0', () => {
+
+            return ncu.run({
+                pre: false,
+                packageData: JSON.stringify({
+                    dependencies: {
+                        'ncu-test-alpha-latest': '1.0.0-alpha.1'
+                    }
+                })
+            }).then(data => {
+                return data.should.eql({});
+            });
+        });
+
         it('should include -alpha, -beta, -rc with --pre option', () => {
 
             return ncu.run({
