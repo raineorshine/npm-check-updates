@@ -32,7 +32,7 @@
     "lint": "eslint bin/* lib test",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
     "test": "npm run lint && mocha && mocha test/individual && if [ ! \"$TRAVIS\" ]; then snyk test; fi",
-    "postinstall": "node postinstall.js"
+    "postinstall": "node lib/postinstall.js"
   },
   "bin": {
     "npm-check-updates": "./bin/npm-check-updates",
