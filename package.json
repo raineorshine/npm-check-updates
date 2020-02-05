@@ -29,7 +29,7 @@
   },
   "main": "./lib/npm-check-updates",
   "scripts": {
-    "lint": "eslint bin/* lib test",
+    "lint": "eslint .",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
     "test": "npm run lint && mocha && mocha test/individual && if [ ! \"$TRAVIS\" ]; then snyk test; fi"
   },
