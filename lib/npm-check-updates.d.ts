@@ -1,4 +1,4 @@
-namespace ncu {
+declare namespace ncu {
   interface RunOptions {
     /**
      * rc config file path (default: directory of `packageFile` or ./ otherwise)
@@ -153,7 +153,7 @@ namespace ncu {
 
   type RunResults = Record<string, string>;
 
-  async function run(options?: RunOptions): Promise<RunResults>;
+  function run(options?: RunOptions): Promise<RunResults>;
 }
 
 export = ncu;
