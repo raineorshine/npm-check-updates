@@ -46,6 +46,7 @@ program
     .option('-t, --greatest', 'find the highest versions available instead of the latest stable versions')
     .option('--timeout <ms>', 'a global timeout in ms')
     .option('-u, --upgrade', 'overwrite package file')
+    .option('--requests-batch-size <n>','requests to npm registry are issued in batches whose size is determined by this option',parseInt,8)
     .option('-x, --reject <matches>', 'exclude packages matching the given string, comma-or-space-delimited list, or /regex/')
     .option('-v, --version', pkg.version, () => {
         console.log(pkg.version);
