@@ -82,9 +82,12 @@ $ ncu "/^(?!gulp-).*$/" # windows
 Options
 --------------
 
-    --configFilePath         rc config file path (default: directory of `packageFile` or ./ otherwise)
-    --configFileName         rc config file name (default: .ncurc.{json,yml,js})                             
-    --cwd                    Used as current working directory for `spawn` in npm listing
+    --concurrency            max number of concurrent HTTP requests to npm registry 
+                             (default: 8)
+    --configFilePath         rc config file path (default: directory of 
+                             `packageFile` or ./ otherwise)
+    --configFileName         rc config file name (default: .ncurc.{json,yml,js}) --cwd                    Used as current working directory for `spawn` in npm 
+                             listing
     --dep                    check only a specific section(s) of dependencies:
                              prod|dev|peer|optional|bundle (comma-delimited)
     --engines-node           include only packages that satisfy engines.node as
