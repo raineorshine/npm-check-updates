@@ -103,7 +103,7 @@ Options
                              Implies -u unless one of the json options are set
     -j, --jsonAll            output new package file instead of human-readable
                              message
-    --jsonDeps               Will return output like `jsonAll` but only lists
+    --jsonDeps               returns output like `jsonAll` but only lists
                              `dependencies`, `devDependencies`, and
                              `optionalDependencies` of the new package data.
     --jsonUpgraded           output upgraded dependencies in json
@@ -116,8 +116,8 @@ Options
     -p, --packageManager     npm or bower (default: npm)
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
-    --pre                    include -alpha, -beta, -rc. Default: 0. Default
-                             with --newest and --greatest: 1.
+    --pre                    include -alpha, -beta, -rc. (default: 0; default
+                             with --newest and --greatest: 1)
     --prefix                 Used as current working directory in bower and npm
     -r, --registry           specify third-party NPM registry
     --removeRange            remove version ranges from the final package version
@@ -125,7 +125,8 @@ Options
     --semverLevel            find the highest version within "major" or "minor"
     -t, --greatest           find the highest versions available instead of the
                              latest stable versions
-    --timeout                a global timeout in ms
+    --timeout                a global timeout in milliseconds. (default: no global
+                             timeout and 30 seconds per npm-registery-fetch)
     -u, --upgrade            overwrite package file
     -v, --version            get version
     -V                       get version
