@@ -123,7 +123,7 @@ declare namespace ncu {
      * exclude packages matching the given string, comma-or-space-delimited
      * list, or /regex/
      */
-    reject?: string;
+    reject?: string | string[] | RegExp;
 
     /**
      * remove version ranges from the final package version
