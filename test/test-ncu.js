@@ -447,21 +447,21 @@ describe('npm-check-updates', function () {
             }
         });
 
-        it('should not write to --packageFile if error-level=2 and upgrades', () => {
+        it('should write to --packageFile if error-level=2 and upgrades', async () => {
             const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
 
-            (async () => {
-                try {
-                    await spawn('node', ['bin/ncu', '-u', '--error-level', '2', '--packageFile', tempFile]);
-                } finally {
-                    const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
-                    fs.unlinkSync(tempFile);
-                    upgradedPkg.should.have.property('dependencies');
-                    upgradedPkg.dependencies.should.have.property('express');
-                    upgradedPkg.dependencies.express.should.equal('1');
-                }
-            })().should.eventually.be.rejectedWith('Dependencies not up-to-date');
+            try {
+                const result = await spawn('node', ['bin/ncu', '-u', '--error-level', '2', '--packageFile', tempFile])
+                    .should.eventually.be.rejectedWith('Dependencies not up-to-date');
+                const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
+                upgradedPkg.should.have.property('dependencies');
+                upgradedPkg.dependencies.should.have.property('express');
+                upgradedPkg.dependencies.express.should.not.equal('1');
+                return result;
+            } finally {
+                fs.unlinkSync(tempFile);
+            }
         });
 
         it('should write to --packageFile with jsonUpgraded flag', async () => {
@@ -478,10 +478,7 @@ describe('npm-check-updates', function () {
             }
         });
 
-        // causes a large number of network timeout error for some reason, which is triggering the timeout hint
-        // passes on its own
-        // skip to prevent CI from failing
-        it.skip('should ignore stdin if --packageFile is specified', async () => {
+        it('should ignore stdin if --packageFile is specified', async () => {
             const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             try {
