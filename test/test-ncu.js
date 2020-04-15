@@ -154,7 +154,6 @@ describe('npm-check-updates', function () {
             return ncu.run({
                 packageData: JSON.stringify({
                     dependencies: {
-                        'chalk': '3.0.0',
                         'ncu-test-alpha-latest': '1.0.0-alpha.1'
                     }
                 })
