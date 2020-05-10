@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "4.0.1",
+  "version": "5.0.0",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -25,13 +25,13 @@
   ],
   "preferGlobal": true,
   "engines": {
-    "node": ">=8"
+    "node": ">=10.17"
   },
   "main": "./lib/npm-check-updates",
   "scripts": {
-    "lint": "eslint bin/* lib test",
+    "lint": "eslint .",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
-    "test": "npm run lint && mocha && mocha test/individual && if [ ! \"$TRAVIS\" ]; then snyk test; fi"
+    "test": "npm run lint && NODE_ENV=test mocha && mocha test/individual && if [ ! \"$TRAVIS\" ]; then snyk test; fi"
   },
   "bin": {
     "npm-check-updates": "./bin/npm-check-updates",
@@ -44,10 +44,10 @@
   "homepage": "https://github.com/tjunnone/npm-check-updates",
   "bugs": "https://github.com/tjunnone/npm-check-updates/issues",
   "dependencies": {
-    "chalk": "^3.0.0",
+    "chalk": "^4.0.0",
     "cint": "^8.2.1",
     "cli-table": "^0.3.1",
-    "commander": "^4.0.1",
+    "commander": "^5.1.0",
     "fast-diff": "^1.2.0",
     "find-up": "4.1.0",
     "get-stdin": "^7.0.0",
@@ -55,26 +55,27 @@
     "libnpmconfig": "^1.2.1",
     "lodash": "^4.17.15",
     "node-alias": "^1.0.4",
-    "pacote": "^10.2.0",
+    "p-map": "^4.0.0",
+    "pacote": "^11.1.9",
     "progress": "^2.0.3",
-    "prompts": "^2.3.0",
+    "prompts": "^2.3.2",
     "rc-config-loader": "^3.0.0",
     "requireg": "^0.2.2",
-    "semver": "^6.3.0",
+    "semver": "^7.3.2",
     "semver-utils": "^1.1.4",
     "spawn-please": "^0.3.0",
-    "update-notifier": "^3.0.1"
+    "update-notifier": "^4.1.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-string": "^1.5.0",
     "chokidar-cli": "^2.1.0",
-    "eslint": "^6.7.1",
-    "mocha": "^6.2.2",
+    "eslint": "^7.0.0",
+    "mocha": "^7.1.2",
     "should": "^13.2.3",
-    "snyk": "^1.252.0",
-    "tmp": "0.1.0"
+    "snyk": "^1.319.2",
+    "tmp": "0.2.1"
   },
   "files": [
     "bin",
