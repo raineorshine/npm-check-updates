@@ -276,11 +276,11 @@ describe('version-util', () => {
             versionUtil.findGreatestByLevel(versions, '1.0.0', 'minor').should.equal('1.0.1');
             versionUtil.findGreatestByLevel(versions, '1.0.1', 'minor').should.equal('1.0.1');
 
-            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '^1.0.1', 'major'), null);
-            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '1.*', 'major'), null);
-            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '1.1', 'major'), null);
-            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '1.x', 'major'), null);
-            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '>1.1', 'major'), null);
+            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '^1.0.1', 'major'), '1.0.2');
+            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '1.*', 'major'), '1.0.2');
+            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '1.1', 'major'), '1.0.2');
+            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '1.x', 'major'), '1.0.2');
+            should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '>1.1', 'major'), '1.0.2');
         });
     });
 

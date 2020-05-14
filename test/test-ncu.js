@@ -528,21 +528,54 @@ describe('npm-check-updates', function () {
                 });
         });
 
-        it('should update only packages which have new minor/patch versions', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "express": "2.4.1", "chalk": "^0.1.0" } }')
+        it('should not update major versions with --semverLevel major', () => {
+            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "chalk": "3.0.0" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
-                    pkgData.express.should.equal('2.5.11');
                     pkgData.should.not.have.property('chalk');
                 });
         });
 
-        it('should update only packages which have new patch versions', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "express": "2.4.1", "chalk": "^0.1.0" } }')
+        it('should update minor versions with --semverLevel major', () => {
+            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "chalk": "2.3.0" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
-                    pkgData.express.should.equal('2.4.7');
+                    pkgData.should.have.property('chalk');
+                    pkgData.chalk.should.equal('2.4.2');
+                });
+        });
+
+        it('should update patch versions with --semverLevel major', () => {
+            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "chalk": "2.4.1" } }')
+                .then(JSON.parse)
+                .then(pkgData => {
+                    pkgData.should.have.property('chalk');
+                    pkgData.chalk.should.equal('2.4.2');
+                });
+        });
+
+        it('should not update major versions with --semverLevel minor', () => {
+            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "chalk": "3.0.0" } }')
+                .then(JSON.parse)
+                .then(pkgData => {
                     pkgData.should.not.have.property('chalk');
+                });
+        });
+
+        it('should not update minor versions with --semverLevel minor', () => {
+            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "chalk": "2.3.2" } }')
+                .then(JSON.parse)
+                .then(pkgData => {
+                    pkgData.should.not.have.property('chalk');
+                });
+        });
+
+        it('should update patch versions with --semverLevel minor', () => {
+            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "chalk": "2.4.1" } }')
+                .then(JSON.parse)
+                .then(pkgData => {
+                    pkgData.should.have.property('chalk');
+                    pkgData.chalk.should.equal('2.4.2');
                 });
         });
 
