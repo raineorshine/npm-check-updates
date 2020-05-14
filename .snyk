@@ -28,3 +28,8 @@ patch:
         patched: '2019-10-07T01:48:25.543Z'
     - pacote > make-fetch-happen > https-proxy-agent:
         patched: '2019-10-07T01:48:25.543Z'
+  SNYK-JS-LODASH-567746:
+    - node-alias > lodash:
+        patched: '2020-05-14T23:56:03.532Z'
+    - lodash:
+        patched: '2020-05-14T23:56:03.532Z'
