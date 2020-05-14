@@ -61,18 +61,24 @@ program.parse(process.argv);
 
 const {configFileName, configFilePath, packageFile} = program;
 
-const rcConfig = ncu.getNcurc({
-    configFileName,
-    configFilePath,
-    packageFile
-});
+// load .ncurc
+// NOTE: Do not load .ncurc from project directory when tests are running
+// Can be overridden if configFilePath is set explicitly
+let rcArguments = []
+if (process.env.NODE_ENV !== 'test' || configFilePath) {
+    const rcConfig = ncu.getNcurc({
+        configFileName,
+        configFilePath,
+        packageFile
+    });
+    rcArguments = rcConfig ?
+        _.flatten(_.map(rcConfig, (value, name) =>
+            value === true ? [`--${name}`] : [`--${name}`, value]
+        )) : [];
 
-const rcArguments = rcConfig ?
-    _.flatten(_.map(rcConfig, (value, name) =>
-        value === true ? [`--${name}`] : [`--${name}`, value]
-    )) : [];
-
+}
 const combinedArguments = process.argv.slice(0,2).concat(rcArguments, process.argv.slice(2));
+
 
 program.parse(combinedArguments);
 
