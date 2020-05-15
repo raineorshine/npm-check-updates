@@ -570,6 +570,14 @@ describe('npm-check-updates', function () {
                 });
         });
 
+        it('should skip non-semver versions with --semverLevel', () => {
+            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "test": "github:a/b" } }')
+                .then(JSON.parse)
+                .then(pkgData => {
+                    pkgData.should.not.have.property('test');
+                });
+        });
+
         it('should update patch versions with --semverLevel minor', () => {
             return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "chalk": "2.4.1" } }')
                 .then(JSON.parse)
