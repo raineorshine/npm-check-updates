@@ -287,13 +287,13 @@ describe('version-util', () => {
     describe('isPre', () => {
 
         it('should return false for non-prerelease versions', () => {
-            versionUtil.isPre('1.0.0').should.be.false;
+            versionUtil.isPre('1.0.0').should.equal(false);
         });
 
         it('should return true for prerelease versions', () => {
-            versionUtil.isPre('1.0.0-alpha').should.be.true;
-            versionUtil.isPre('1.0.0-beta').should.be.true;
-            versionUtil.isPre('1.0.0-rc').should.be.true;
+            versionUtil.isPre('1.0.0-alpha').should.equal(true);
+            versionUtil.isPre('1.0.0-beta').should.equal(true);
+            versionUtil.isPre('1.0.0-rc').should.equal(true);
         });
 
     });

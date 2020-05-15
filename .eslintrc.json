@@ -1,6 +1,14 @@
 {
+    "env": {
+        "node": true,
+        "mocha": true,
+        "es6": true
+    },
+    "extends": [
+        "eslint:recommended"
+    ],
     "parserOptions": {
-        "ecmaVersion": 8
+        "ecmaVersion": 2018
     },
     "rules": {
         "indent": [
@@ -101,6 +109,8 @@
             2,
             "always"
         ],
+        "prefer-const": 2,
+        "prefer-spread": 2,
         "no-throw-literal": 2,
         "no-eval": 2,
         "no-unneeded-ternary": 2,
@@ -117,11 +127,5 @@
         "no-trailing-spaces": 2,
         "camelcase": 2,
         "no-undef": 2
-    },
-    "env": {
-        "node": true,
-        "mocha": true,
-        "es6": true
-    },
-    "extends": ["eslint:recommended"]
+    }
 }
