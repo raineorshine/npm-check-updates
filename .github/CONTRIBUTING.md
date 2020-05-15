@@ -1,4 +1,4 @@
-Make sure you read the list of [known issues](https://github.com/tjunnone/npm-check-updates#known-issues) and search for [similiar issues](https://github.com/tjunnone/npm-check-updates/issues) before filing an issue.
+Make sure you read the list of [known issues](https://github.com/raineorshine/npm-check-updates#known-issues) and search for [similar issues](https://github.com/raineorshine/npm-check-updates/issues) before filing an issue.
 
 When filing an issue, please include:
 
