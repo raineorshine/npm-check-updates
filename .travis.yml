@@ -1,11 +1,9 @@
-sudo: false
-
 language: node_js
 
 node_js:
-  - 10
-  - 11
-  - 12
+  - "10"
+  - "12"
+  - "14"
 
 notifications:
   email: false
@@ -14,6 +12,4 @@ branches:
   only:
     - master
 
-cache:
-  directories:
-    - "$HOME/.npm"
+cache: npm
