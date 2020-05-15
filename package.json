@@ -32,8 +32,8 @@
     "lint": "eslint .",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
     "snyk": "snyk test",
-    "test": "npm run lint && NODE_ENV=test mocha && mocha test/individual && npm run snyk",
-    "test:ci": "npm run lint && NODE_ENV=test mocha && mocha test/individual"
+    "test": "npm run lint && cross-env NODE_ENV=test mocha && mocha test/individual && npm run snyk",
+    "test:ci": "npm run lint && cross-env NODE_ENV=test mocha && mocha test/individual"
   },
   "bin": {
     "npm-check-updates": "./bin/npm-check-updates",
@@ -74,6 +74,7 @@
     "chai-as-promised": "^7.1.1",
     "chai-string": "^1.5.0",
     "chokidar-cli": "^2.1.0",
+    "cross-env": "^7.0.2",
     "eslint": "^7.0.0",
     "mocha": "^7.1.2",
     "should": "^13.2.3",
