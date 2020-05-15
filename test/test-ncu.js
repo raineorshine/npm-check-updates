@@ -8,6 +8,8 @@ const tmp             = require('tmp');
 chai.use(require('chai-as-promised'));
 chai.use(require('chai-string'));
 
+process.env.NODE_ENV = 'test';
+
 describe('npm-check-updates', function () {
 
     this.timeout(30000);

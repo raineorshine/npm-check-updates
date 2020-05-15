@@ -1,4 +1,4 @@
-# npm-check-updates [![npm version](https://badge.fury.io/js/npm-check-updates.svg)](https://www.npmjs.com/package/npm-check-updates) [![Build Status](https://travis-ci.com/raineorshine/npm-check-updates.svg?branch=master)](https://travis-ci.com/raineorshine/npm-check-updates)
+# npm-check-updates [![npm version](https://badge.fury.io/js/npm-check-updates.svg)](https://www.npmjs.com/package/npm-check-updates) [![Build Status](https://github.com/raineorshine/npm-check-updates/workflows/Tests/badge.svg?branch=master)](https://github.com/raineorshine/npm-check-updates/actions?query=workflow%3ATests+branch%3Amaster)
 
 **npm-check-updates upgrades your package.json dependencies to the *latest* versions, ignoring specified versions.**
 
