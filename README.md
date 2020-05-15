@@ -1,12 +1,12 @@
 [![npm](https://badge.fury.io/js/npm-check-updates.svg)](http://badge.fury.io/js/npm-check-updates)
-[![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg?branch=master)](https://travis-ci.org/tjunnone/npm-check-updates)
+[![Build Status](https://travis-ci.org/raineorshine/npm-check-updates.svg?branch=master)](https://travis-ci.org/raineorshine/npm-check-updates)
 
 **npm-check-updates upgrades your package.json dependencies to the *latest* versions, ignoring specified versions.**
 
 - maintains existing semantic versioning *policies*, i.e. `"express": "^4.0.0"` to `"express": "^5.0.0"`.
 - *only* modifies package.json file. Run `npm install` to update your installed packages and package-lock.json.
 
-![npm-check-updates-screenshot](https://github.com/tjunnone/npm-check-updates/blob/master/.github/screenshot.png?raw=true)
+![npm-check-updates-screenshot](https://github.com/raineorshine/npm-check-updates/blob/master/.github/screenshot.png?raw=true)
 
 - Red = major upgrade (and all [major version zero](https://semver.org/#spec-item-4))
 - Cyan = minor upgrade
@@ -194,12 +194,12 @@ ncu.run({
 Known Issues
 --------------
 
-- Windows: If npm-check-updates hangs, run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu -g --packageFile package.json`. See [#136](https://github.com/tjunnone/npm-check-updates/issues/136#issuecomment-155721102).
+- Windows: If npm-check-updates hangs, run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu -g --packageFile package.json`. See [#136](https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102).
 
-Also search the [issues page](https://github.com/tjunnone/npm-check-updates/issues).
+Also search the [issues page](https://github.com/raineorshine/npm-check-updates/issues).
 
 
 Problems?
 --------------
 
-Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues)! But always [search existing issues](https://github.com/tjunnone/npm-check-updates/issues?utf8=%E2%9C%93&q=is%3Aissue) first!
+Please [file an issue](https://github.com/raineorshine/npm-check-updates/issues)! But always [search existing issues](https://github.com/raineorshine/npm-check-updates/issues?utf8=%E2%9C%93&q=is%3Aissue) first!

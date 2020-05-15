@@ -7,4 +7,4 @@ git push && git push --tags
 npm publish [--tag unstable]
 
 - Update the release history
-https://github.com/tjunnone/npm-check-updates/releases
+https://github.com/raineorshine/npm-check-updates/releases
