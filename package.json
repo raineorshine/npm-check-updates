@@ -31,7 +31,9 @@
   "scripts": {
     "lint": "eslint .",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
-    "test": "npm run lint && NODE_ENV=test mocha && mocha test/individual && if [ ! \"$TRAVIS\" ]; then snyk test; fi"
+    "snyk": "snyk test",
+    "test": "npm run lint && NODE_ENV=test mocha && mocha test/individual && npm run snyk",
+    "test:ci": "npm run lint && NODE_ENV=test mocha && mocha test/individual"
   },
   "bin": {
     "npm-check-updates": "./bin/npm-check-updates",
