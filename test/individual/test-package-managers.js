@@ -8,7 +8,7 @@ chai.should();
 chai.use(chaiAsPromised);
 
 // the directory with the test bower.json/package.json
-const testDir = path.resolve(__dirname + '/../ncu');
+const testDir = path.resolve(path.join(__dirname, '/../ncu'));
 
 describe('package-managers', () => {
 
