@@ -35,8 +35,8 @@
     "test": "npm run lint && npm run mocha"
   },
   "bin": {
-    "npm-check-updates": "./bin/npm-check-updates",
-    "ncu": "./bin/ncu"
+    "npm-check-updates": "./bin/npm-check-updates.js",
+    "ncu": "./bin/ncu.js"
   },
   "repository": {
     "type": "git",
