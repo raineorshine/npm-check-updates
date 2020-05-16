@@ -8,7 +8,7 @@ const tmp             = require('tmp');
 chai.use(require('chai-as-promised'));
 chai.use(require('chai-string'));
 
-process.env.NODE_ENV = 'test';
+process.env.NCU_TESTS = true;
 
 describe('npm-check-updates', function () {
 

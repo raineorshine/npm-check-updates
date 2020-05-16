@@ -65,7 +65,7 @@ const {configFileName, configFilePath, packageFile} = program;
 // NOTE: Do not load .ncurc from project directory when tests are running
 // Can be overridden if configFilePath is set explicitly
 let rcArguments = [];
-if (process.env.NODE_ENV !== 'test' || configFilePath) {
+if (!process.env.NCU_TESTS || configFilePath) {
     const rcConfig = ncu.getNcurc({
         configFileName,
         configFilePath,
