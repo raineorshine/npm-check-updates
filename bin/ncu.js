@@ -18,6 +18,7 @@ if (notifier.update && notifier.update.latest !== pkg.version) {
 program
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
+    .version(pkg.version)
     .option('--concurrency <n>', 'max number of concurrent HTTP requests to npm registry.', cint.partialAt(parseInt, 1, 10), 8)
     .option('--configFilePath <path>', 'rc config file path (default: directory of `packageFile` or ./ otherwise)')
     .option('--configFileName <path>', 'rc config file name (default: .ncurc.{json,yml,js})')
@@ -47,15 +48,7 @@ program
     .option('-t, --greatest', 'find the highest versions available instead of the latest stable versions')
     .option('--timeout <ms>', 'a global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registery-fetch)')
     .option('-u, --upgrade', 'overwrite package file')
-    .option('-x, --reject <matches>', 'exclude packages matching the given string, comma-or-space-delimited list, or /regex/')
-    .option('-v, --version', pkg.version, () => {
-        console.log(pkg.version);
-        process.exit(0);
-    })
-    .option('-V', '', () => {
-        console.log(pkg.version);
-        process.exit(0);
-    });
+    .option('-x, --reject <matches>', 'exclude packages matching the given string, comma-or-space-delimited list, or /regex/');
 
 program.parse(process.argv);
 
@@ -65,7 +58,7 @@ const {configFileName, configFilePath, packageFile} = program;
 // NOTE: Do not load .ncurc from project directory when tests are running
 // Can be overridden if configFilePath is set explicitly
 let rcArguments = [];
-if (process.env.NODE_ENV !== 'test' || configFilePath) {
+if (!process.env.NCU_TESTS || configFilePath) {
     const rcConfig = ncu.getNcurc({
         configFileName,
         configFilePath,

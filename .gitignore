@@ -19,3 +19,7 @@ node_modules
 *.iml
 yarn.lock
 .DS_store
+
+# test files
+/test/temp_package*.json
+/test/.ncurc.json

@@ -8,7 +8,7 @@ const tmp             = require('tmp');
 chai.use(require('chai-as-promised'));
 chai.use(require('chai-string'));
 
-process.env.NODE_ENV = 'test';
+process.env.NCU_TESTS = true;
 
 describe('npm-check-updates', function () {
 
@@ -382,32 +382,32 @@ describe('npm-check-updates', function () {
     describe('cli', () => {
 
         it('should accept stdin', () => {
-            return spawn('node', ['bin/ncu'], '{ "dependencies": { "express": "1" } }')
+            return spawn('node', ['bin/ncu.js'], '{ "dependencies": { "express": "1" } }')
                 .then(output => {
                     output.trim().should.startWith('express');
                 });
         });
 
         it('should reject out-of-date stdin with error-level 2', () => {
-            return spawn('node', ['bin/ncu', '--error-level', '2'], '{ "dependencies": { "express": "1" } }')
+            return spawn('node', ['bin/ncu.js', '--error-level', '2'], '{ "dependencies": { "express": "1" } }')
                 .should.eventually.be.rejectedWith('Dependencies not up-to-date');
         });
 
 
         it('should fall back to package.json search when receiving empty content on stdin', () => {
-            return spawn('node', ['bin/ncu']).then(stdout => {
+            return spawn('node', ['bin/ncu.js']).then(stdout => {
                 stdout.toString().trim().should.match(/^Checking .+package.json/);
             });
         });
 
         it('should handle no package.json to analyze when receiving empty content on stdin', () => {
             // run from tmp dir to avoid ncu analyzing the project's package.json
-            return spawn('node', [`${process.cwd()}/bin/ncu`], {cwd: tmp.dirSync().name})
+            return spawn('node', [`${process.cwd()}/bin/ncu.js`], {cwd: tmp.dirSync().name})
                 .should.eventually.be.rejectedWith('No package.json');
         });
 
         it('should output json with --jsonAll', () => {
-            return spawn('node', ['bin/ncu', '--jsonAll'], '{ "dependencies": { "express": "1" } }')
+            return spawn('node', ['bin/ncu.js', '--jsonAll'], '{ "dependencies": { "express": "1" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
                     pkgData.should.have.property('dependencies');
@@ -416,7 +416,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should output only upgraded with --jsonUpgraded', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded'], '{ "dependencies": { "express": "1" } }')
+            return spawn('node', ['bin/ncu.js', '--jsonUpgraded'], '{ "dependencies": { "express": "1" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
                     pkgData.should.have.property('express');
@@ -427,7 +427,7 @@ describe('npm-check-updates', function () {
             const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             try {
-                const text = await spawn('node', ['bin/ncu', '--jsonUpgraded', '--packageFile', tempFile]);
+                const text = await spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--packageFile', tempFile]);
                 const pkgData = JSON.parse(text);
                 pkgData.should.have.property('express');
             } finally {
@@ -439,7 +439,7 @@ describe('npm-check-updates', function () {
             const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             try {
-                await spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile]);
+                await spawn('node', ['bin/npm-check-updates.js', '-u', '--packageFile', tempFile]);
                 const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
                 upgradedPkg.should.have.property('dependencies');
                 upgradedPkg.dependencies.should.have.property('express');
@@ -454,7 +454,7 @@ describe('npm-check-updates', function () {
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
 
             try {
-                const result = await spawn('node', ['bin/ncu', '-u', '--error-level', '2', '--packageFile', tempFile])
+                const result = await spawn('node', ['bin/ncu.js', '-u', '--error-level', '2', '--packageFile', tempFile])
                     .should.eventually.be.rejectedWith('Dependencies not up-to-date');
                 const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
                 upgradedPkg.should.have.property('dependencies');
@@ -470,7 +470,7 @@ describe('npm-check-updates', function () {
             const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             try {
-                await spawn('node', ['bin/npm-check-updates', '-u', '--jsonUpgraded', '--packageFile', tempFile]);
+                await spawn('node', ['bin/npm-check-updates.js', '-u', '--jsonUpgraded', '--packageFile', tempFile]);
                 const ugradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
                 ugradedPkg.should.have.property('dependencies');
                 ugradedPkg.dependencies.should.have.property('express');
@@ -484,7 +484,7 @@ describe('npm-check-updates', function () {
             const tempFile = getTempFile();
             fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8');
             try {
-                await spawn('node', ['bin/npm-check-updates', '-u', '--packageFile', tempFile], '{ "dependencies": {}}');
+                await spawn('node', ['bin/npm-check-updates.js', '-u', '--packageFile', tempFile], '{ "dependencies": {}}');
                 const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'));
                 upgradedPkg.should.have.property('dependencies');
                 upgradedPkg.dependencies.should.have.property('express');
@@ -495,7 +495,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should filter by package name with --filter', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--filter', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+            return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--filter', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
                     pkgData.should.have.property('express');
@@ -504,7 +504,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should filter by package name with -f', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '-f', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+            return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '-f', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
                     pkgData.should.have.property('express');
@@ -513,7 +513,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should reject by package name with --reject', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--reject', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+            return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--reject', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
                     pkgData.should.have.property('express');
@@ -522,7 +522,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should reject by package name with -x', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '-x', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+            return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '-x', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
                     pkgData.should.have.property('express');
@@ -531,7 +531,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should not update major versions with --semverLevel major', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "chalk": "3.0.0" } }')
+            return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "chalk": "3.0.0" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
                     pkgData.should.not.have.property('chalk');
@@ -539,7 +539,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should update minor versions with --semverLevel major', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "chalk": "2.3.0" } }')
+            return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "chalk": "2.3.0" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
                     pkgData.should.have.property('chalk');
@@ -548,7 +548,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should update patch versions with --semverLevel major', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "chalk": "2.4.1" } }')
+            return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "chalk": "2.4.1" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
                     pkgData.should.have.property('chalk');
@@ -557,7 +557,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should not update major versions with --semverLevel minor', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "chalk": "3.0.0" } }')
+            return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "chalk": "3.0.0" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
                     pkgData.should.not.have.property('chalk');
@@ -565,7 +565,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should not update minor versions with --semverLevel minor', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "chalk": "2.3.2" } }')
+            return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "chalk": "2.3.2" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
                     pkgData.should.not.have.property('chalk');
@@ -573,7 +573,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should skip non-semver versions with --semverLevel', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "test": "github:a/b" } }')
+            return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "test": "github:a/b" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
                     pkgData.should.not.have.property('test');
@@ -581,7 +581,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should update patch versions with --semverLevel minor', () => {
-            return spawn('node', ['bin/ncu', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "chalk": "2.4.1" } }')
+            return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "chalk": "2.4.1" } }')
                 .then(JSON.parse)
                 .then(pkgData => {
                     pkgData.should.have.property('chalk');
@@ -590,7 +590,7 @@ describe('npm-check-updates', function () {
         });
 
         it('should suppress stdout when --silent is provided', () => {
-            return spawn('node', ['bin/ncu', '--silent'], '{ "dependencies": { "express": "1" } }')
+            return spawn('node', ['bin/ncu.js', '--silent'], '{ "dependencies": { "express": "1" } }')
                 .then(output => {
                     output.trim().should.equal('');
                 });
@@ -601,7 +601,7 @@ describe('npm-check-updates', function () {
             const tempFileName = '.ncurc.json';
             fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8');
             try {
-                const text = await spawn('node', ['bin/ncu', '--configFilePath', tempFilePath], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }');
+                const text = await spawn('node', ['bin/ncu.js', '--configFilePath', tempFilePath], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }');
                 const pkgData = JSON.parse(text);
                 pkgData.should.have.property('express');
                 pkgData.should.not.have.property('chalk');
@@ -615,7 +615,7 @@ describe('npm-check-updates', function () {
             const tempFileName = '.rctemp.json';
             fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8');
             try {
-                const text = await spawn('node', ['bin/ncu', '--configFilePath', tempFilePath, '--configFileName', tempFileName], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }');
+                const text = await spawn('node', ['bin/ncu.js', '--configFilePath', tempFilePath, '--configFileName', tempFileName], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }');
                 const pkgData = JSON.parse(text);
                 pkgData.should.have.property('express');
                 pkgData.should.not.have.property('chalk');
@@ -629,7 +629,7 @@ describe('npm-check-updates', function () {
             const tempFileName = '.ncurc.json';
             fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8');
             try {
-                const text = await spawn('node', ['bin/ncu', '--configFilePath', tempFilePath, '--filter', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }');
+                const text = await spawn('node', ['bin/ncu.js', '--configFilePath', tempFilePath, '--filter', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }');
                 const pkgData = JSON.parse(text);
                 pkgData.should.have.property('chalk');
                 pkgData.should.not.have.property('express');
@@ -641,12 +641,12 @@ describe('npm-check-updates', function () {
         describe('with timeout option', () => {
 
             it('should exit with error when timeout exceeded', () => {
-                return spawn('node', ['bin/ncu', '--timeout', '1'], '{ "dependencies": { "express": "1" } }')
+                return spawn('node', ['bin/ncu.js', '--timeout', '1'], '{ "dependencies": { "express": "1" } }')
                     .should.eventually.be.rejectedWith('Exceeded global timeout of 1ms');
             });
 
             it('completes successfully with timeout', () => {
-                return spawn('node', ['bin/ncu', '--timeout', '100000'], '{ "dependencies": { "express": "1" } }');
+                return spawn('node', ['bin/ncu.js', '--timeout', '100000'], '{ "dependencies": { "express": "1" } }');
             });
         });
     });

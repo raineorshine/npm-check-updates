@@ -31,11 +31,12 @@
   "scripts": {
     "lint": "eslint .",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
-    "test": "npm run lint && mocha && mocha test/individual"
+    "mocha": "mocha && mocha test/individual",
+    "test": "npm run lint && npm run mocha"
   },
   "bin": {
-    "npm-check-updates": "./bin/npm-check-updates",
-    "ncu": "./bin/ncu"
+    "npm-check-updates": "./bin/npm-check-updates.js",
+    "ncu": "./bin/ncu.js"
   },
   "repository": {
     "type": "git",
@@ -80,5 +81,12 @@
   "files": [
     "bin",
     "lib"
-  ]
+  ],
+  "mocha": {
+    "check-leaks": true,
+    "throw-deprecation": true,
+    "trace-deprecation": true,
+    "trace-warnings": true,
+    "use_strict": true
+  }
 }

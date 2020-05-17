@@ -10,11 +10,10 @@ chai.use(chaiAsPromised);
 // the directory with the test bower.json/package.json
 const testDir = path.resolve(path.join(__dirname, '/../ncu'));
 
-describe('package-managers', () => {
+describe('package-managers', function () {
+    this.timeout(30000);
 
-    describe('npm', function () {
-        this.timeout(30000);
-
+    describe('npm', () => {
         it('list', () =>
             packageManagers.npm.list({prefix: testDir}).should.eventually.have.property('express')
         );
@@ -30,9 +29,7 @@ describe('package-managers', () => {
     });
 
     // skip by default in case developer does not have bower installed
-    describe.skip('bower', function () {
-        this.timeout(30000);
-
+    describe.skip('bower', () => {
         it('list', () =>
             packageManagers.bower.list({prefix: testDir}).should.eventually.have.property('lodash')
         );
