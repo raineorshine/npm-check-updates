@@ -1,81 +1,80 @@
 #!/usr/bin/env node
 
-'use strict';
+'use strict'
 
-const program = require('commander');
-const updateNotifier = require('update-notifier');
-const cint = require('cint');
-const _ = require('lodash');
-const ncu = require('../lib/npm-check-updates');
-const pkg = require('../package.json');
+const program = require('commander')
+const updateNotifier = require('update-notifier')
+const cint = require('cint')
+const _ = require('lodash')
+const ncu = require('../lib/npm-check-updates')
+const pkg = require('../package.json')
 
 // check if a new version of ncu is available and print an update notification
-const notifier = updateNotifier({pkg});
+const notifier = updateNotifier({ pkg })
 if (notifier.update && notifier.update.latest !== pkg.version) {
-    notifier.notify({defer: false});
+  notifier.notify({ defer: false })
 }
 
 program
-    .description('[filter] is a list or regex of package names to check (all others will be ignored).')
-    .usage('[options] [filter]')
-    .version(pkg.version)
-    .option('--concurrency <n>', 'max number of concurrent HTTP requests to npm registry.', cint.partialAt(parseInt, 1, 10), 8)
-    .option('--configFilePath <path>', 'rc config file path (default: directory of `packageFile` or ./ otherwise)')
-    .option('--configFileName <path>', 'rc config file name (default: .ncurc.{json,yml,js})')
-    .option('--cwd <path>', 'Used as current working directory for `spawn` in npm listing')
-    .option('--dep <dep>', 'check only a specific section(s) of dependencies: prod|dev|peer|optional|bundle (comma-delimited)')
-    .option('-e, --error-level <n>', 'set the error-level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration).', cint.partialAt(parseInt, 1, 10), 1)
-    .option('--engines-node', 'upgrade to version which satisfies engines.node range')
-    .option('-f, --filter <matches>', 'include only package names matching the given string, comma-or-space-delimited list, or /regex/')
-    .option('-g, --global', 'check global packages instead of in the current project')
-    // program.json is set to true in programInit if any options that begin with 'json' are true
-    .option('-i, --interactive', 'Enable interactive prompts for each dependency; implies -u unless one of the json options are set')
-    .option('-j, --jsonAll', 'output new package file instead of human-readable message')
-    .option('--jsonDeps', 'Will return output like `jsonAll` but only lists `dependencies`, `devDependencies`, and `optionalDependencies` of the new package data.')
-    .option('--jsonUpgraded', 'output upgraded dependencies in json')
-    .option('-l, --loglevel <n>', 'what level of logs to report: silent, error, minimal, warn, info, verbose, silly', 'warn')
-    .option('-m, --minimal', 'do not upgrade newer versions that are already satisfied by the version range according to semver')
-    .option('-n, --newest', 'find the newest versions available instead of the latest stable versions')
-    .option('-p, --packageManager <name>', 'npm (default) or bower', 'npm')
-    .option('--packageData', 'include stringified package file (use stdin instead)')
-    .option('--packageFile <filename>', 'package file location (default: ./package.json)')
-    .option('--pre <n>', 'Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1)')
-    .option('--prefix <path>', 'Used as current working directory in bower and npm')
-    .option('-r, --registry <url>', 'specify third-party npm registry')
-    .option('--removeRange', 'remove version ranges from the final package version')
-    .option('-s, --silent', "don't output anything (--loglevel silent)")
-    .option('--semverLevel <level>', 'find the highest version within "major" or "minor"')
-    .option('-t, --greatest', 'find the highest versions available instead of the latest stable versions')
-    .option('--timeout <ms>', 'a global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registery-fetch)')
-    .option('-u, --upgrade', 'overwrite package file')
-    .option('-x, --reject <matches>', 'exclude packages matching the given string, comma-or-space-delimited list, or /regex/');
+  .description('[filter] is a list or regex of package names to check (all others will be ignored).')
+  .usage('[options] [filter]')
+  .version(pkg.version)
+  .option('--concurrency <n>', 'max number of concurrent HTTP requests to npm registry.', cint.partialAt(parseInt, 1, 10), 8)
+  .option('--configFilePath <path>', 'rc config file path (default: directory of `packageFile` or ./ otherwise)')
+  .option('--configFileName <path>', 'rc config file name (default: .ncurc.{json,yml,js})')
+  .option('--cwd <path>', 'Used as current working directory for `spawn` in npm listing')
+  .option('--dep <dep>', 'check only a specific section(s) of dependencies: prod|dev|peer|optional|bundle (comma-delimited)')
+  .option('-e, --error-level <n>', 'set the error-level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration).', cint.partialAt(parseInt, 1, 10), 1)
+  .option('--engines-node', 'upgrade to version which satisfies engines.node range')
+  .option('-f, --filter <matches>', 'include only package names matching the given string, comma-or-space-delimited list, or /regex/')
+  .option('-g, --global', 'check global packages instead of in the current project')
+// program.json is set to true in programInit if any options that begin with 'json' are true
+  .option('-i, --interactive', 'Enable interactive prompts for each dependency; implies -u unless one of the json options are set')
+  .option('-j, --jsonAll', 'output new package file instead of human-readable message')
+  .option('--jsonDeps', 'Will return output like `jsonAll` but only lists `dependencies`, `devDependencies`, and `optionalDependencies` of the new package data.')
+  .option('--jsonUpgraded', 'output upgraded dependencies in json')
+  .option('-l, --loglevel <n>', 'what level of logs to report: silent, error, minimal, warn, info, verbose, silly', 'warn')
+  .option('-m, --minimal', 'do not upgrade newer versions that are already satisfied by the version range according to semver')
+  .option('-n, --newest', 'find the newest versions available instead of the latest stable versions')
+  .option('-p, --packageManager <name>', 'npm (default) or bower', 'npm')
+  .option('--packageData', 'include stringified package file (use stdin instead)')
+  .option('--packageFile <filename>', 'package file location (default: ./package.json)')
+  .option('--pre <n>', 'Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1)')
+  .option('--prefix <path>', 'Used as current working directory in bower and npm')
+  .option('-r, --registry <url>', 'specify third-party npm registry')
+  .option('--removeRange', 'remove version ranges from the final package version')
+  .option('-s, --silent', 'don\'t output anything (--loglevel silent)')
+  .option('--semverLevel <level>', 'find the highest version within "major" or "minor"')
+  .option('-t, --greatest', 'find the highest versions available instead of the latest stable versions')
+  .option('--timeout <ms>', 'a global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registery-fetch)')
+  .option('-u, --upgrade', 'overwrite package file')
+  .option('-x, --reject <matches>', 'exclude packages matching the given string, comma-or-space-delimited list, or /regex/')
 
-program.parse(process.argv);
+program.parse(process.argv)
 
-const {configFileName, configFilePath, packageFile} = program;
+const { configFileName, configFilePath, packageFile } = program
 
 // load .ncurc
 // NOTE: Do not load .ncurc from project directory when tests are running
 // Can be overridden if configFilePath is set explicitly
-let rcArguments = [];
+let rcArguments = []
 if (!process.env.NCU_TESTS || configFilePath) {
-    const rcConfig = ncu.getNcurc({
-        configFileName,
-        configFilePath,
-        packageFile
-    });
-    rcArguments = rcConfig ?
-        _.flatten(_.map(rcConfig, (value, name) =>
-            value === true ? [`--${name}`] : [`--${name}`, value]
-        )) : [];
+  const rcConfig = ncu.getNcurc({
+    configFileName,
+    configFilePath,
+    packageFile
+  })
+  rcArguments = rcConfig ?
+    _.flatten(_.map(rcConfig, (value, name) =>
+      value === true ? [`--${name}`] : [`--${name}`, value]
+    )) : []
 
 }
-const combinedArguments = process.argv.slice(0,2).concat(rcArguments, process.argv.slice(2));
+const combinedArguments = process.argv.slice(0, 2).concat(rcArguments, process.argv.slice(2))
 
+program.parse(combinedArguments)
 
-program.parse(combinedArguments);
+program.cli = true
+program.filter = program.args.join(' ') || program.filter
 
-program.cli = true;
-program.filter = program.args.join(' ') || program.filter;
-
-ncu.run(program);
+ncu.run(program)

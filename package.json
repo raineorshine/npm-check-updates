@@ -31,6 +31,7 @@
   "scripts": {
     "nyc": "nyc",
     "lint": "eslint .",
+    "lintfix": "eslint --fix .",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
     "mocha": "mocha && mocha test/individual",
     "test": "npm run lint && npm run mocha"
@@ -75,6 +76,13 @@
     "chai-string": "^1.5.0",
     "chokidar-cli": "^2.1.0",
     "eslint": "^7.0.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-fp": "^2.3.0",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jsdoc": "^25.4.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
     "mocha": "^7.1.2",
     "nyc": "^15.0.1",
     "should": "^13.2.3",

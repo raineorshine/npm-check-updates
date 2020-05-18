@@ -1,132 +1,96 @@
 {
-    "env": {
-        "node": true,
-        "mocha": true,
-        "es6": true
-    },
-    "extends": [
-        "eslint:recommended"
+  "env": {
+    "browser": true,
+    "es6": true,
+    "mocha": true,
+    "jest": true
+  },
+  "extends": [
+    "standard"
+  ],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "fp",
+    "jsdoc"
+  ],
+  "rules": {
+    "arrow-parens": [
+      2,
+      "as-needed"
     ],
-    "parserOptions": {
-        "ecmaVersion": 2018
-    },
-    "rules": {
-        "indent": [
-            2,
-            4,
-            {
-                "SwitchCase": 1
-            }
-        ],
-        "quotes": [
-            2,
-            "single",
-            "avoid-escape"
-        ],
-        "linebreak-style": [
-            2,
-            "unix"
-        ],
-        "semi": [
-            2,
-            "always"
-        ],
-        "no-multiple-empty-lines": [
-            2,
-            {
-                "max": 2
-            }
-        ],
-        "new-cap": [
-            2,
-            {
-                "newIsCap": true,
-                "capIsNew": true
-            }
-        ],
-        "one-var": [
-            2,
-            "never"
-        ],
-        "object-curly-spacing": [
-            2,
-            "never"
-        ],
-        "array-bracket-spacing": [
-            2,
-            "never"
-        ],
-        "space-before-function-paren": [
-            2,
-            {
-                "anonymous": "always",
-                "named": "never"
-            }
-        ],
-        "keyword-spacing": [
-            2,
-            {
-                "before": true,
-                "after": true
-            }
-        ],
-        "operator-linebreak": [
-            2,
-            "after"
-        ],
-        "space-in-parens": [
-            2,
-            "never"
-        ],
-        "space-before-blocks": [
-            2,
-            "always"
-        ],
-        "yoda": [
-            2,
-            "never"
-        ],
-        "eqeqeq": [
-            2,
-            "smart"
-        ],
-        "space-unary-ops": [
-            2,
-            {
-                "words": true,
-                "nonwords": false
-            }
-        ],
-        "no-implicit-coercion": [
-            2,
-            {
-                "boolean": true,
-                "number": true,
-                "string": true
-            }
-        ],
-        "spaced-comment": [
-            2,
-            "always"
-        ],
-        "no-return-await": 2,
-        "prefer-const": 2,
-        "prefer-spread": 2,
-        "no-throw-literal": 2,
-        "no-eval": 2,
-        "no-unneeded-ternary": 2,
-        "no-with": 2,
-        "curly": 2,
-        "brace-style": 2,
-        "no-spaced-func": 2,
-        "comma-style": 2,
-        "semi-spacing": 2,
-        "key-spacing": 2,
-        "new-parens": 2,
-        "no-console": 0,
-        "eol-last": 2,
-        "no-trailing-spaces": 2,
-        "camelcase": 2,
-        "no-undef": 2
-    }
+    "brace-style": [
+      2,
+      "stroustrup"
+    ],
+    "comma-dangle": [
+      2,
+      {
+        "arrays": "only-multiline",
+        "objects": "only-multiline",
+        "imports": "always-multiline",
+        "exports": "always-multiline"
+      }
+    ],
+    "indent": [
+      2,
+      2,
+      {
+        "flatTernaryExpressions": true
+      }
+    ],
+    "no-extra-parens": [
+      2,
+      "all",
+      {
+        "nestedBinaryExpressions": false
+      }
+    ],
+    "no-var": 2,
+    "object-curly-newline": 0,
+    "object-property-newline": 0,
+    "operator-linebreak": 0,
+    "padded-blocks": 0,
+    "quotes": [
+      2,
+      "single",
+      {
+        "allowTemplateLiterals": true
+      }
+    ],
+    "sort-imports": [
+      2,
+      {
+        "ignoreDeclarationSort": true
+      }
+    ],
+    "space-before-function-paren": 0,
+
+    // fp
+    "fp/no-class": 2,
+    "fp/no-delete": 2,
+    "fp/no-events": 2,
+    "fp/no-get-set": 2,
+    "fp/no-loops": 2,
+    "fp/no-mutating-assign": 2,
+    "fp/no-mutating-methods": 2,
+    "fp/no-valueof-field": 2,
+
+    // jsdoc
+    "jsdoc/check-alignment": 2,
+    "jsdoc/check-indentation": 2,
+    "jsdoc/check-syntax": 2,
+    "jsdoc/check-tag-names": 2,
+    "jsdoc/check-types": 2,
+    "jsdoc/implements-on-classes": 2,
+    "jsdoc/newline-after-description": 2,
+    "jsdoc/no-types": 2,
+    "jsdoc/no-undefined-types": 2
+  }
 }
