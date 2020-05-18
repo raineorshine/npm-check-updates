@@ -1,9 +1,11 @@
 'use strict';
-const versionUtil = require('../lib/version-util');
+
 const chai = require('chai');
 const chalk = require('chalk');
-const should = chai.should();
 const chaiAsPromised = require('chai-as-promised');
+const versionUtil = require('../lib/version-util');
+
+const should = chai.should();
 
 chai.use(chaiAsPromised);
 

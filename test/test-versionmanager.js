@@ -1,7 +1,9 @@
 'use strict';
-const vm = require('../lib/versionmanager');
+
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
+const vm = require('../lib/versionmanager');
+
 const should = chai.should();
 
 chai.use(chaiAsPromised);

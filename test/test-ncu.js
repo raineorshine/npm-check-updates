@@ -1,12 +1,15 @@
 'use strict';
-const ncu             = require('../lib/npm-check-updates.js');
-const chai            = require('chai');
-const fs              = require('fs');
-const spawn           = require('spawn-please');
-const tmp             = require('tmp');
 
-chai.use(require('chai-as-promised'));
-chai.use(require('chai-string'));
+const fs = require('fs');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+const chaiString = require('chai-string');
+const spawn = require('spawn-please');
+const tmp = require('tmp');
+const ncu = require('../lib/npm-check-updates');
+
+chai.use(chaiAsPromised);
+chai.use(chaiString);
 
 process.env.NCU_TESTS = true;
 
