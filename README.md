@@ -111,12 +111,12 @@ $ ncu "/^(?!gulp-).*$/" # windows
                          satisfied by the existing version range (v2 behavior).
 -n, --newest             find the newest published versions available instead
                          of the latest stable versions
--p, --packageManager     npm or bower (default: npm)
+-p, --packageManager     npm (default: npm)
 --packageData            include stringified package file (use stdin instead)
 --packageFile            package file location (default: ./package.json)
 --pre                    include -alpha, -beta, -rc. (default: 0; default
                          with --newest and --greatest: 1)
---prefix                 Used as current working directory in bower and npm
+--prefix                 Used as current working directory in npm
 -r, --registry           specify third-party NPM registry
 --removeRange            remove version ranges from the final package version
 -s, --silent             don't output anything (--loglevel silent)
