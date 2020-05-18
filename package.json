@@ -30,8 +30,8 @@
   "main": "./lib/npm-check-updates",
   "scripts": {
     "nyc": "nyc",
-    "lint": "eslint .",
-    "lintfix": "eslint --fix .",
+    "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
+    "lintfix": "npm run lint -- --fix",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
     "mocha": "mocha && mocha test/individual",
     "test": "npm run lint && npm run mocha"
