@@ -1,8 +1,9 @@
 'use strict';
-const packageManagers = require('../../lib/package-managers');
+
+const path = require('path');
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
-const path = require('path');
+const packageManagers = require('../../lib/package-managers');
 
 chai.should();
 chai.use(chaiAsPromised);
