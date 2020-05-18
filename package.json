@@ -6,10 +6,9 @@
   "contributors": [
     "Raine Revere (https://github.com/raineorshine)"
   ],
-  "description": "Find newer versions of dependencies than what your package.json or bower.json allows",
+  "description": "Find newer versions of dependencies than what your package.json allows",
   "keywords": [
     "npm",
-    "bower",
     "check",
     "find",
     "discover",
@@ -17,7 +16,6 @@
     "upgrades",
     "dependencies",
     "package.json",
-    "bower.json",
     "updater",
     "version",
     "management",

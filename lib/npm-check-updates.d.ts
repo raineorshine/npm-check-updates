@@ -89,7 +89,7 @@ declare namespace ncu {
     newest?: boolean;
 
     /**
-     * npm (default) or bower
+     * npm (default)
      */
     packageManager?: string;
 
@@ -110,7 +110,7 @@ declare namespace ncu {
     pre?: boolean;
 
     /**
-     * Used as current working directory in bower and npm
+     * Used as current working directory in npm
      */
     prefix?: string;
 
