@@ -29,6 +29,7 @@
   },
   "main": "./lib/npm-check-updates",
   "scripts": {
+    "nyc": "nyc",
     "lint": "eslint .",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
     "mocha": "mocha && mocha test/individual",
@@ -75,6 +76,7 @@
     "chokidar-cli": "^2.1.0",
     "eslint": "^7.0.0",
     "mocha": "^7.1.2",
+    "nyc": "^15.0.1",
     "should": "^13.2.3",
     "tmp": "0.2.1"
   },
@@ -88,5 +90,12 @@
     "trace-deprecation": true,
     "trace-warnings": true,
     "use_strict": true
+  },
+  "nyc": {
+    "reporter": [
+      "html",
+      "lcov",
+      "text-summary"
+    ]
   }
 }
