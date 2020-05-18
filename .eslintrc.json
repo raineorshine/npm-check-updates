@@ -109,6 +109,7 @@
             2,
             "always"
         ],
+        "no-return-await": 2,
         "prefer-const": 2,
         "prefer-spread": 2,
         "no-throw-literal": 2,
