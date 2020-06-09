@@ -41,6 +41,7 @@ describe('versionmanager', () => {
     })
 
     it('should convert < to ^', () => {
+      vm.upgradeDependencyDeclaration('<1', '2.1.0').should.equal('^2')
       vm.upgradeDependencyDeclaration('<1.0', '1.1.0').should.equal('^1.1')
     })
 
@@ -395,6 +396,7 @@ describe('versionmanager', () => {
       vm.upgradeDependencies({ mongodb: '' }, { mongodb: '1.4.30' })
         .should.eql({})
     })
+
   })
 
   describe('getInstalledPackages', function () {
@@ -475,6 +477,9 @@ describe('versionmanager', () => {
       vm.isUpgradeable('>1.0', '0.5.1').should.equal(false)
       vm.isUpgradeable('<3.0 >0.1', '0.5.1').should.equal(false)
       vm.isUpgradeable('>0.1.x', '0.5.1').should.equal(true)
+      vm.isUpgradeable('<7.0.0', '7.2.0').should.equal(true)
+      vm.isUpgradeable('<7.0', '7.2.0').should.equal(true)
+      vm.isUpgradeable('<7', '7.2.0').should.equal(true)
     })
 
   })
