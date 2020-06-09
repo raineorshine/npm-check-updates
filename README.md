@@ -134,23 +134,23 @@ $ ncu "/^(?!gulp-).*$/" # windows
 
 ## How dependency updates are determined
 
-- Direct dependencies will be increased to the latest stable version:
+- Direct dependencies are updated to the latest stable version:
   - `2.0.1` → `2.2.0`
   - `1.2` → `1.3`
   - `0.1.0` → `1.0.1`
-  - with `--semverLevel major`
-    - `0.1.0` → `0.2.1`
-  - with `--semverLevel minor`
-    - `0.1.0` → `0.1.2`
-- Semantic versioning policies for levels are maintained while satisfying the latest version:
+- Range operators are preserved and the version is updated:
   - `^1.2.0` → `^2.0.0`
   - `1.x` → `2.x`
-- "Any version" is maintained:
-  - `*` → `*`
-- "Greater than" is maintained:
   - `>0.2.0` → `>0.3.0`
-- Closed ranges are replaced with a wildcard:
+- "Less than" is replaced with a wildcard:
+  - `<2.0.0` → `^3.0.0`
   - `1.0.0 < 2.0.0` → `^3.0.0`
+- "Any version" is preserved:
+  - `*` → `*`
+- with `--semverLevel major`, the major version is preserved:
+  - `0.1.0` → `0.2.1`
+- with `--semverLevel minor`, the major and minor versions are preserved:
+  - `0.1.0` → `0.1.2`
 
 ## Configuration Files
 
