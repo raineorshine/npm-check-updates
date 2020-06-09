@@ -1,0 +1,1 @@
+https://github.com/raineorshine/npm-check-updates/releases
