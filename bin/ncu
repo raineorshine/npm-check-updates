@@ -27,7 +27,6 @@ program
     .option('--engines-node', 'upgrade to version which satisfies engines.node range')
     .option('-f, --filter <matches>', 'include only package names matching the given string, comma-or-space-delimited list, or /regex/')
     .option('-g, --global', 'check global packages instead of in the current project')
-    .option('-o, --ownerChanged', 'check if package owner changed and show as additional column')
     // program.json is set to true in programInit if any options that begin with 'json' are true
     .option('-i, --interactive', 'Enable interactive prompts for each dependency; implies -u unless one of the json options are set')
     .option('-j, --jsonAll', 'output new package file instead of human-readable message')
@@ -36,6 +35,7 @@ program
     .option('-l, --loglevel <n>', 'what level of logs to report: silent, error, minimal, warn, info, verbose, silly', 'warn')
     .option('-m, --minimal', 'do not upgrade newer versions that are already satisfied by the version range according to semver')
     .option('-n, --newest', 'find the newest versions available instead of the latest stable versions')
+    .option('-o, --ownerChanged', 'check if package owner changed and show as additional column')
     .option('-p, --packageManager <name>', 'npm (default) or bower', 'npm')
     .option('--packageData', 'include stringified package file (use stdin instead)')
     .option('--packageFile <filename>', 'package file location (default: ./package.json)')

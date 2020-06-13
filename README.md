@@ -113,6 +113,8 @@ Options
                              satisfied by the existing version range (v2 behavior).
     -n, --newest             find the newest published versions available instead
                              of the latest stable versions
+    -o, --ownerChanged       check if the package owner changed between current
+                             and next version.
     -p, --packageManager     npm or bower (default: npm)
     --packageData            include stringified package file (use stdin instead)
     --packageFile            package file location (default: ./package.json)
