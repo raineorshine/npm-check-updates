@@ -1,12 +1,11 @@
-[![npm](https://badge.fury.io/js/npm-check-updates.svg)](http://badge.fury.io/js/npm-check-updates)
-[![Build Status](https://travis-ci.org/tjunnone/npm-check-updates.svg?branch=master)](https://travis-ci.org/tjunnone/npm-check-updates)
+# npm-check-updates [![npm version](https://badge.fury.io/js/npm-check-updates.svg)](https://www.npmjs.com/package/npm-check-updates) [![Build Status](https://github.com/raineorshine/npm-check-updates/workflows/Tests/badge.svg?branch=master)](https://github.com/raineorshine/npm-check-updates/actions?query=workflow%3ATests+branch%3Amaster) [![Coverage Status](https://coveralls.io/repos/github/raineorshine/npm-check-updates/badge.svg?branch=master)](https://coveralls.io/github/raineorshine/npm-check-updates?branch=master)
 
 **npm-check-updates upgrades your package.json dependencies to the *latest* versions, ignoring specified versions.**
 
 - maintains existing semantic versioning *policies*, i.e. `"express": "^4.0.0"` to `"express": "^5.0.0"`.
 - *only* modifies package.json file. Run `npm install` to update your installed packages and package-lock.json.
 
-![npm-check-updates-screenshot](https://github.com/tjunnone/npm-check-updates/blob/master/.github/screenshot.png?raw=true)
+![npm-check-updates-screenshot](https://github.com/raineorshine/npm-check-updates/blob/master/.github/screenshot.png?raw=true)
 
 - Red = major upgrade (and all [major version zero](https://semver.org/#spec-item-4))
 - Cyan = minor upgrade
@@ -14,18 +13,17 @@
 
 You may also want to consider [npm-check](https://github.com/dylang/npm-check). Similar purpose, different features.
 
-Installation
---------------
+## Installation
 
 ```sh
 npm install -g npm-check-updates
 ```
 
-Usage
---------------
+## Usage
+
 Show any new dependencies for the project in the current directory:
 
-```sh
+```console
 $ ncu
 Checking package.json
 [====================] 5/5 100%
@@ -43,7 +41,7 @@ Upgrade a project's package file:
 
 > **Make sure your package file is in version control and all changes have been committed. This *will* overwrite your package file.**
 
-```sh
+```console
 $ ncu -u
 Upgrading package.json
 [====================] 1/1 100%
@@ -58,7 +56,7 @@ $ npm install      # update installed packages and package-lock.json
 Check global packages:
 
 ```sh
-$ ncu -g           # add -u to get a one-line command for upgrading
+ncu -g           # add -u to get a one-line command for upgrading
 ```
 
 You can include or exclude specific packages using the `--filter` and `--reject` options. They accept strings, comma-or-space-delimited lists, or regular expressions:
@@ -79,85 +77,85 @@ $ ncu '/^(?!gulp-).*$/' # mac/linux
 $ ncu "/^(?!gulp-).*$/" # windows
 ```
 
-Options
---------------
+## Options
 
-    --concurrency            max number of concurrent HTTP requests to npm registry 
-                             (default: 8)
-    --configFilePath         rc config file path (default: directory of 
-                             `packageFile` or ./ otherwise)
-    --configFileName         rc config file name (default: .ncurc.{json,yml,js}) --cwd                    Used as current working directory for `spawn` in npm 
-                             listing
-    --dep                    check only a specific section(s) of dependencies:
-                             prod|dev|peer|optional|bundle (comma-delimited)
-    --engines-node           include only packages that satisfy engines.node as
-                             specified in the package file
-    -e, --error-level        set the error-level. 1: exits with error code 0 if no
-                             errors occur. 2: exits with error code 0 if no
-                             packages need updating (useful for continuous
-                             integration)
-    -f, --filter             include only package names matching the given string,
-                             comma-or-space-delimited list, or /regex/
-    -g, --global             check global packages instead of in the current project
-    -i, --interactive        Enable interactive prompts for each dependency;
-                             Implies -u unless one of the json options are set
-    -j, --jsonAll            output new package file instead of human-readable
-                             message
-    --jsonDeps               returns output like `jsonAll` but only lists
-                             `dependencies`, `devDependencies`, and
-                             `optionalDependencies` of the new package data.
-    --jsonUpgraded           output upgraded dependencies in json
-    -l, --loglevel           what level of logs to report: silent, error, warn,
-                             info, verbose, silly (default: warn)
-    -m, --minimal            do not upgrade to newer versions that are already
-                             satisfied by the existing version range (v2 behavior).
-    -n, --newest             find the newest published versions available instead
-                             of the latest stable versions
-    -o, --ownerChanged       check if the package owner changed between current
-                             and next version.
-    -p, --packageManager     npm or bower (default: npm)
-    --packageData            include stringified package file (use stdin instead)
-    --packageFile            package file location (default: ./package.json)
-    --pre                    include -alpha, -beta, -rc. (default: 0; default
-                             with --newest and --greatest: 1)
-    --prefix                 Used as current working directory in bower and npm
-    -r, --registry           specify third-party NPM registry
-    --removeRange            remove version ranges from the final package version
-    -s, --silent             don't output anything (--loglevel silent)
-    --semverLevel            find the highest version within "major" or "minor"
-    -t, --greatest           find the highest versions available instead of the
-                             latest stable versions
-    --timeout                a global timeout in milliseconds. (default: no global
-                             timeout and 30 seconds per npm-registery-fetch)
-    -u, --upgrade            overwrite package file
-    -v, --version            get version
-    -V                       get version
-    -x, --reject             exclude packages matching the given string, comma-
-                             delimited list, or regex
+```text
+--concurrency            max number of concurrent HTTP requests to npm registry
+                         (default: 8)
+--configFilePath         rc config file path (default: directory of
+                         `packageFile` or ./ otherwise)
+--configFileName         rc config file name (default: .ncurc.{json,yml,js}) --cwd
+                         Used as current working directory for `spawn` in npm listing
+--dep                    check only a specific section(s) of dependencies:
+                         prod|dev|peer|optional|bundle (comma-delimited)
+--engines-node           include only packages that satisfy engines.node as
+                         specified in the package file
+-e, --error-level        set the error-level. 1: exits with error code 0 if no
+                         errors occur. 2: exits with error code 0 if no
+                         packages need updating (useful for continuous
+                         integration)
+-f, --filter             include only package names matching the given string,
+                         comma-or-space-delimited list, or /regex/
+-g, --global             check global packages instead of in the current project
+-i, --interactive        Enable interactive prompts for each dependency;
+                         Implies -u unless one of the json options are set
+-j, --jsonAll            output new package file instead of human-readable
+                         message
+--jsonDeps               returns output like `jsonAll` but only lists
+                         `dependencies`, `devDependencies`, and
+                         `optionalDependencies` of the new package data.
+--jsonUpgraded           output upgraded dependencies in json
+-l, --loglevel           what level of logs to report: silent, error, warn,
+                         info, verbose, silly (default: warn)
+-m, --minimal            do not upgrade to newer versions that are already
+                         satisfied by the existing version range (v2 behavior).
+-n, --newest             find the newest published versions available instead
+                         of the latest stable versions
+-o, --ownerChanged       check if the package owner changed between current
+                         and next version.
+-p, --packageManager     npm (default: npm)
+--packageData            include stringified package file (use stdin instead)
+--packageFile            package file location (default: ./package.json)
+--pre                    include -alpha, -beta, -rc. (default: 0; default
+                         with --newest and --greatest: 1)
+--prefix                 Used as current working directory in npm
+-r, --registry           specify third-party NPM registry
+--removeRange            remove version ranges from the final package version
+-s, --silent             don't output anything (--loglevel silent)
+--semverLevel            find the highest version within "major" or "minor"
+-t, --greatest           find the highest versions available instead of the
+                         latest stable versions
+--timeout                a global timeout in milliseconds. (default: no global
+                         timeout and 30 seconds per npm-registery-fetch)
+-u, --upgrade            overwrite package file
+-v, --version            get version
+-V                       get version
+-x, --reject             exclude packages matching the given string, comma-
+                         delimited list, or regex
+```
 
-How dependency updates are determined
---------------
+## How dependency updates are determined
 
-- Direct dependencies will be increased to the latest stable version:
+- Direct dependencies are updated to the latest stable version:
   - `2.0.1` → `2.2.0`
   - `1.2` → `1.3`
   - `0.1.0` → `1.0.1`
-  - with `--semverLevel major`
-    - `0.1.0` → `0.2.1`
-  - with `--semverLevel minor`
-    - `0.1.0` → `0.1.2`
--  Semantic versioning policies for levels are maintained while satisfying the latest version:
+- Range operators are preserved and the version is updated:
   - `^1.2.0` → `^2.0.0`
   - `1.x` → `2.x`
-- "Any version" is maintained:
-  - `*` → `*`
-- "Greater than" is maintained:
   - `>0.2.0` → `>0.3.0`
-- Closed ranges are replaced with a wildcard:
+- "Less than" is replaced with a wildcard:
+  - `<2.0.0` → `^3.0.0`
   - `1.0.0 < 2.0.0` → `^3.0.0`
+- "Any version" is preserved:
+  - `*` → `*`
+- with `--semverLevel major`, the major version is preserved:
+  - `0.1.0` → `0.2.1`
+- with `--semverLevel minor`, the major and minor versions are preserved:
+  - `0.1.0` → `0.1.2`
 
-Configuration Files
---------------
+## Configuration Files
+
 Use a `.ncurc.{json,yml,js}` file to specify configuration information.
 You can specify file name and path using `--configFileName` and `--configFilePath`
 command line options.
@@ -175,8 +173,8 @@ For example, `.ncurc.json`:
 }
 ```
 
-Module Use
---------------
+## Module Use
+
 npm-check-updates can be required:
 
 ```js
@@ -193,15 +191,12 @@ ncu.run({
 });
 ```
 
-Known Issues
---------------
+## Known Issues
 
-- Windows: If npm-check-updates hangs, run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu -g --packageFile package.json`. See [#136](https://github.com/tjunnone/npm-check-updates/issues/136#issuecomment-155721102).
+- Windows: If npm-check-updates hangs, run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu -g --packageFile package.json`. See [#136](https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102).
 
-Also search the [issues page](https://github.com/tjunnone/npm-check-updates/issues).
+Also search the [issues page](https://github.com/raineorshine/npm-check-updates/issues).
 
+## Problems?
 
-Problems?
---------------
-
-Please [file an issue](https://github.com/tjunnone/npm-check-updates/issues)! But always [search existing issues](https://github.com/tjunnone/npm-check-updates/issues?utf8=%E2%9C%93&q=is%3Aissue) first!
+Please [file an issue](https://github.com/raineorshine/npm-check-updates/issues)! But always [search existing issues](https://github.com/raineorshine/npm-check-updates/issues?utf8=%E2%9C%93&q=is%3Aissue) first!

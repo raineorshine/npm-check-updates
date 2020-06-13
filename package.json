@@ -1,15 +1,14 @@
 {
   "name": "npm-check-updates",
-  "version": "5.0.0",
+  "version": "7.0.1",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
     "Raine Revere (https://github.com/raineorshine)"
   ],
-  "description": "Find newer versions of dependencies than what your package.json or bower.json allows",
+  "description": "Find newer versions of dependencies than what your package.json allows",
   "keywords": [
     "npm",
-    "bower",
     "check",
     "find",
     "discover",
@@ -17,7 +16,6 @@
     "upgrades",
     "dependencies",
     "package.json",
-    "bower.json",
     "updater",
     "version",
     "management",
@@ -29,34 +27,37 @@
   },
   "main": "./lib/npm-check-updates",
   "scripts": {
-    "lint": "eslint .",
+    "nyc": "nyc",
+    "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
+    "lintfix": "npm run lint -- --fix",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
-    "test": "npm run lint && NODE_ENV=test mocha && mocha test/individual && if [ ! \"$TRAVIS\" ]; then snyk test; fi"
+    "mocha": "mocha && mocha test/individual",
+    "test": "npm run lint && npm run mocha"
   },
   "bin": {
-    "npm-check-updates": "./bin/npm-check-updates",
-    "ncu": "./bin/ncu"
+    "npm-check-updates": "./bin/npm-check-updates.js",
+    "ncu": "./bin/ncu.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tjunnone/npm-check-updates.git"
+    "url": "git+https://github.com/raineorshine/npm-check-updates.git"
   },
-  "homepage": "https://github.com/tjunnone/npm-check-updates",
-  "bugs": "https://github.com/tjunnone/npm-check-updates/issues",
+  "homepage": "https://github.com/raineorshine/npm-check-updates",
+  "bugs": {
+    "url": "https://github.com/raineorshine/npm-check-updates/issues"
+  },
   "dependencies": {
-    "chalk": "^4.0.0",
+    "chalk": "^4.1.0",
     "cint": "^8.2.1",
     "cli-table": "^0.3.1",
     "commander": "^5.1.0",
-    "fast-diff": "^1.2.0",
     "find-up": "4.1.0",
-    "get-stdin": "^7.0.0",
+    "get-stdin": "^8.0.0",
     "json-parse-helpfulerror": "^1.0.3",
     "libnpmconfig": "^1.2.1",
     "lodash": "^4.17.15",
-    "node-alias": "^1.0.4",
     "p-map": "^4.0.0",
-    "pacote": "^11.1.9",
+    "pacote": "^11.1.10",
     "progress": "^2.0.3",
     "prompts": "^2.3.2",
     "rc-config-loader": "^3.0.0",
@@ -71,14 +72,35 @@
     "chai-as-promised": "^7.1.1",
     "chai-string": "^1.5.0",
     "chokidar-cli": "^2.1.0",
-    "eslint": "^7.0.0",
-    "mocha": "^7.1.2",
+    "eslint": "^7.2.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-fp": "^2.3.0",
+    "eslint-plugin-import": "^2.21.1",
+    "eslint-plugin-jsdoc": "^27.0.5",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "mocha": "^7.2.0",
+    "nyc": "^15.1.0",
     "should": "^13.2.3",
-    "snyk": "^1.319.2",
     "tmp": "0.2.1"
   },
   "files": [
     "bin",
     "lib"
-  ]
+  ],
+  "mocha": {
+    "check-leaks": true,
+    "throw-deprecation": true,
+    "trace-deprecation": true,
+    "trace-warnings": true,
+    "use_strict": true
+  },
+  "nyc": {
+    "reporter": [
+      "html",
+      "lcov",
+      "text-summary"
+    ]
+  }
 }

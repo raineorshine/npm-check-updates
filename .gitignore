@@ -19,3 +19,10 @@ node_modules
 *.iml
 yarn.lock
 .DS_store
+
+/.nyc_output/
+/coverage/
+
+# test files
+/test/temp_package*.json
+/test/.ncurc.json

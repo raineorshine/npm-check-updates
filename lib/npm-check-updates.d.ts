@@ -89,7 +89,7 @@ declare namespace ncu {
     newest?: boolean;
 
     /**
-     * npm (default) or bower
+     * npm (default)
      */
     packageManager?: string;
 
@@ -110,7 +110,7 @@ declare namespace ncu {
     pre?: boolean;
 
     /**
-     * Used as current working directory in bower and npm
+     * Used as current working directory in npm
      */
     prefix?: string;
 
@@ -151,9 +151,9 @@ declare namespace ncu {
     upgrade?: boolean;
   }
 
-  type RunResults = Record<string, string>;
+  type RunResults = Record<string, string>
 
-  function run(options?: RunOptions): Promise<RunResults>;
+  function run(options?: RunOptions): Promise<RunResults>
 }
 
-export = ncu;
+export = ncu

@@ -1,4 +1,0 @@
-{
-    // requires node v10
-    "reject": "chalk"
-}
