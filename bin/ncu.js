@@ -35,6 +35,7 @@ program
   .option('-l, --loglevel <n>', 'what level of logs to report: silent, error, minimal, warn, info, verbose, silly', 'warn')
   .option('-m, --minimal', 'do not upgrade newer versions that are already satisfied by the version range according to semver')
   .option('-n, --newest', 'find the newest versions available instead of the latest stable versions')
+  .option('-o, --ownerChanged', 'check if package owner changed and show as additional column')
   .option('-p, --packageManager <name>', 'npm (default)', 'npm')
   .option('--packageData', 'include stringified package file (use stdin instead)')
   .option('--packageFile <filename>', 'package file location (default: ./package.json)')
