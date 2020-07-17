@@ -1,6 +1,0 @@
-{
-    "name": "npm-check-updates-test",
-    "dependencies": {
-        "lodash": "^3.10.1"
-    }
-}
