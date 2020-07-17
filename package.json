@@ -61,7 +61,6 @@
     "progress": "^2.0.3",
     "prompts": "^2.3.2",
     "rc-config-loader": "^3.0.0",
-    "requireg": "^0.2.2",
     "semver": "^7.3.2",
     "semver-utils": "^1.1.4",
     "spawn-please": "^0.3.0",
