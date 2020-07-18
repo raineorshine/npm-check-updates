@@ -4,3 +4,5 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    open-pull-requests-limit: 10
+    versioning-strategy: increase
