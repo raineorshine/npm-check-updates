@@ -57,7 +57,7 @@
     "libnpmconfig": "^1.2.1",
     "lodash": "^4.17.19",
     "p-map": "^4.0.0",
-    "pacote": "^11.1.10",
+    "pacote": "^11.1.11",
     "progress": "^2.0.3",
     "prompts": "^2.3.2",
     "rc-config-loader": "^3.0.0",
