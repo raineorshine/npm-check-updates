@@ -191,9 +191,7 @@ ncu.run({
 
 ## Known Issues
 
-- SELF_SIGNED_CERT_IN_CHAIN: If you use a private npm registry, you may get a `SELF_SIGNED_CERT_IN_CHAIN` error. See [#636](https://github.com/raineorshine/npm-check-updates/issues/636) and [#694](https://github.com/raineorshine/npm-check-updates/issues/694). This a dependency error from [`minipass-fetch`](https://github.com/npm/minipass-fetch/commit/468620c999ec61cc31a65602719acb9185744310) via [`pacote`](https://github.com/npm/pacote/issues/43). It is unclear where exactly the issue is occurring in the dependency chain and will require an intrepid open source contributor to investigate!
-
-- Windows: If npm-check-updates hangs, run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu -g --packageFile package.json`. See [#136](https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102).
+- Windows: If npm-check-updates hangs, run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu --packageFile package.json`. See [#136](https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102).
 
 Also search the [issues page](https://github.com/raineorshine/npm-check-updates/issues).
 
