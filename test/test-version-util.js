@@ -300,4 +300,24 @@ describe('version-util', () => {
 
   })
 
+  describe('createNpmAlias', () => {
+
+    it('should create an npm alias from a name and version', () => {
+      versionUtil.createNpmAlias('chalk', '1.0.0').should.equal('npm:chalk@1.0.0')
+    })
+
+  })
+
+  describe('parseNpmAlias', () => {
+
+    it('should parse an npm alias into [name, version]', () => {
+      versionUtil.parseNpmAlias('npm:chalk@1.0.0').should.eql(['chalk', '1.0.0'])
+    })
+
+    it('should return null if given a non-alias', () => {
+      should.equal(versionUtil.parseNpmAlias('1.0.0'), null)
+    })
+
+  })
+
 })
