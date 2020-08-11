@@ -111,7 +111,7 @@ $ ncu "/^(?!gulp-).*$/" # windows
                          satisfied by the existing version range (v2 behavior).
 -n, --newest             find the newest published versions available instead
                          of the latest stable versions
--p, --packageManager     npm (default: npm)
+-p, --packageManager     npm|yarn (default: npm)
 --packageData            include stringified package file (use stdin instead)
 --packageFile            package file location (default: ./package.json)
 --pre                    include -alpha, -beta, -rc. (default: 0; default
