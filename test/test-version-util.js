@@ -359,6 +359,17 @@ describe('version-util', () => {
 
     })
 
+    describe('getGithubUrlTag', () => {
+
+      it('should return an embedded tag in a Github URL, or null if not valid', () => {
+        should.equal(versionUtil.getGithubUrlTag(null), null)
+        should.equal(versionUtil.getGithubUrlTag('https://github.com/raineorshine/ncu-test-v2'), null)
+        should.equal(versionUtil.getGithubUrlTag('https://github.com/raineorshine/ncu-test-v2#1.0.0'), '1.0.0')
+        should.equal(versionUtil.getGithubUrlTag('https://github.com/raineorshine/ncu-test-v2#v1.0.0'), 'v1.0.0')
+      })
+
+    })
+
     describe('upgradeGithubUrl', () => {
 
       it('should replace embedded version', () => {
