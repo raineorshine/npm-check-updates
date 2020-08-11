@@ -106,10 +106,6 @@ describe('versionmanager', () => {
       vm.upgradeDependencyDeclaration('2.2.*', '3.1.1', { removeRange: true }).should.equal('3.1.1')
     })
 
-    it('npm alias', () => {
-      vm.upgradeDependencyDeclaration('npm:chalk@^1.0.0', 'npm:chalk@2.0.0').should.equal('npm:chalk@^2.0.0')
-    })
-
   })
 
   describe('upgradePackageData', () => {
@@ -484,6 +480,15 @@ describe('versionmanager', () => {
         })
     })
 
+    it('github urls should upgrade the embedded semver tag', () => {
+      return vm.queryVersions({
+        'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#v1.0.0'
+      }, { loglevel: 'silent' })
+        .should.eventually.deep.equal({
+          'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#v2.0.0'
+        })
+    })
+
   })
 
   describe('isUpgradeable', () => {
@@ -511,10 +516,6 @@ describe('versionmanager', () => {
       vm.isUpgradeable('<7.0.0', '7.2.0').should.equal(true)
       vm.isUpgradeable('<7.0', '7.2.0').should.equal(true)
       vm.isUpgradeable('<7', '7.2.0').should.equal(true)
-    })
-
-    it('should upgrade npm aliases', () => {
-      vm.isUpgradeable('npm:chalk@1.0.0', 'npm:chalk@2.0.0').should.equal(true)
     })
 
   })

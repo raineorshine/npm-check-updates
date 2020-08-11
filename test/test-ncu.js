@@ -396,6 +396,29 @@ describe('npm-check-updates', function () {
       ])
     })
 
+    it('should upgrade git url with semver tag', async () => {
+      const dependencies = { 'parse-github-url': 'https://github.com/jonschlinkert/parse-github-url#1.0.0' }
+      const upgraded = await ncu.run({
+        packageData: JSON.stringify({ dependencies }),
+        jsonUpgraded: true
+      })
+
+      // unknown latest, but we can still check that there was an upgrade
+      upgraded.should.have.property('parse-github-url')
+      upgraded['parse-github-url'].should.startWith('https://github.com/jonschlinkert/parse-github-url#')
+    })
+
+    it('should upgrade git url with semver tag (with "v" prefix)', async () => {
+      const dependencies = { 'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0' }
+      const upgraded = await ncu.run({
+        packageData: JSON.stringify({ dependencies }),
+        jsonUpgraded: true
+      })
+
+      upgraded.should.have.property('ncu-test-v2')
+      upgraded['ncu-test-v2'].should.equal('https://github.com/raineorshine/ncu-test-v2.git#v2.0.0')
+    })
+
   })
 
   describe('cli', () => {
