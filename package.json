@@ -31,7 +31,7 @@
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
     "lintfix": "npm run lint -- --fix",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
-    "mocha": "mocha && mocha test/individual",
+    "mocha": "mocha test test/package-managers/npm test/package-managers/yarn",
     "test": "npm run lint && npm run mocha"
   },
   "bin": {
@@ -54,6 +54,7 @@
     "find-up": "4.1.0",
     "get-stdin": "^8.0.0",
     "json-parse-helpfulerror": "^1.0.3",
+    "jsonlines": "^0.1.1",
     "libnpmconfig": "^1.2.1",
     "lodash": "^4.17.19",
     "p-map": "^4.0.0",
@@ -82,7 +83,8 @@
     "mocha": "^8.1.1",
     "nyc": "^15.1.0",
     "should": "^13.2.3",
-    "tmp": "0.2.1"
+    "tmp": "0.2.1",
+    "yarn": "^1.22.4"
   },
   "files": [
     "bin",
