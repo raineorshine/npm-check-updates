@@ -419,6 +419,17 @@ describe('npm-check-updates', function () {
       upgraded['ncu-test-v2'].should.equal('https://github.com/raineorshine/ncu-test-v2.git#v2.0.0')
     })
 
+    it('should upgrade git shorthand', async () => {
+      const dependencies = { 'ncu-test-v2': 'raineorshine/ncu-test-v2.git#v1.0.0' }
+      const upgraded = await ncu.run({
+        packageData: JSON.stringify({ dependencies }),
+        jsonUpgraded: true
+      })
+
+      upgraded.should.have.property('ncu-test-v2')
+      upgraded['ncu-test-v2'].should.equal('raineorshine/ncu-test-v2.git#v2.0.0')
+    })
+
   })
 
   describe('cli', () => {
@@ -711,7 +722,7 @@ describe('npm-check-updates', function () {
 
       it('should strip prefix from npm alias in "to" output', async () => {
         const dependencies = {
-          'request': 'npm:postman-request@2.88.1-postman.16'
+          request: 'npm:postman-request@2.88.1-postman.16'
         }
         const output = await spawn('node', ['bin/ncu.js'], JSON.stringify({ dependencies }))
         output.trim().should.equal('request  npm:postman-request@2.88.1-postman.16  →  2.88.1-postman.24')
