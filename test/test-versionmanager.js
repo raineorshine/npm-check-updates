@@ -167,9 +167,9 @@ describe('versionmanager', () => {
 
     it('should upgrade npm aliases', async () => {
 
-      const oldDependencies = { request: 'postman-request@^2.88.1-postman.16' }
-      const newDependencies = { request: 'postman-request@^2.88.1-postman.24' }
-      const newVersions = { request: 'postman-request@2.88.1-postman.24' }
+      const oldDependencies = { foo: 'ncu-test-v2@^1.0.0' }
+      const newDependencies = { foo: 'ncu-test-v2@^2.0.0' }
+      const newVersions = { foo: 'ncu-test-v2@2.0.0' }
       const oldPkgData = JSON.stringify({ dependencies: oldDependencies })
 
       const { newPkgData } = await vm.upgradePackageData(oldPkgData, oldDependencies, newDependencies, newVersions)
@@ -177,7 +177,7 @@ describe('versionmanager', () => {
       JSON.parse(newPkgData)
         .should.eql({
           dependencies: {
-            request: 'postman-request@^2.88.1-postman.24'
+            foo: 'ncu-test-v2@^2.0.0'
           }
         })
     })
@@ -473,10 +473,10 @@ describe('versionmanager', () => {
 
     it('npm aliases should upgrade the installed package', () => {
       return vm.queryVersions({
-        request: 'npm:postman-request@2.88.1-postman.16'
+        request: 'npm:ncu-test-v2@1.0.0'
       }, { loglevel: 'silent' })
         .should.eventually.deep.equal({
-          request: 'npm:postman-request@2.88.1-postman.24'
+          request: 'npm:ncu-test-v2@2.0.0'
         })
     })
 

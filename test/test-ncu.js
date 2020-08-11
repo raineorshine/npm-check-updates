@@ -384,14 +384,14 @@ describe('npm-check-updates', function () {
 
     it('should upgrade npm alias', () => {
       const upgraded = ncu.run({
-        packageData: '{ "dependencies": { "request": "npm:postman-request@^2.88.1-postman.16" } }',
+        packageData: '{ "dependencies": { "foo": "npm:ncu-test-v2@^1.0.0" } }',
         jsonUpgraded: true
       })
 
       return Promise.all([
-        upgraded.should.eventually.have.property('request'),
+        upgraded.should.eventually.have.property('foo'),
         upgraded.then(data => {
-          return data.should.eql({ request: 'npm:postman-request@^2.88.1-postman.24' })
+          return data.should.eql({ foo: 'npm:ncu-test-v2@^2.0.0' })
         })
       ])
     })
@@ -722,10 +722,10 @@ describe('npm-check-updates', function () {
 
       it('should strip prefix from npm alias in "to" output', async () => {
         const dependencies = {
-          request: 'npm:postman-request@2.88.1-postman.16'
+          request: 'npm:ncu-test-v2@1.0.0'
         }
         const output = await spawn('node', ['bin/ncu.js'], JSON.stringify({ dependencies }))
-        output.trim().should.equal('request  npm:postman-request@2.88.1-postman.16  →  2.88.1-postman.24')
+        output.trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  2.0.0')
       })
 
     })
