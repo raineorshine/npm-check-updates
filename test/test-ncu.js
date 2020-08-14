@@ -381,6 +381,21 @@ describe('npm-check-updates', function () {
       })
     })
 
+    it('should not allow --greatest and --newest together', async () => {
+      ncu.run({ greatest: true, newest: true })
+        .should.eventually.be.rejectedWith('Cannot specify both')
+    })
+
+    it('should not allow --target and --greatest together', async () => {
+      ncu.run({ target: 'greatest', newest: true })
+        .should.eventually.be.rejectedWith('Cannot specify both')
+    })
+
+    it('should not allow --target and --newest together', async () => {
+      ncu.run({ target: 'newest', greatest: true })
+        .should.eventually.be.rejectedWith('Cannot specify both')
+    })
+
   })
 
   describe('cli', () => {
