@@ -538,64 +538,54 @@ describe('npm-check-updates', function () {
         })
     })
 
-    it('should not update major versions with --semverLevel major', () => {
-      return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "chalk": "3.0.0" } }')
-        .then(JSON.parse)
-        .then(pkgData => {
-          pkgData.should.not.have.property('chalk')
-        })
-    })
+    describe('target', () => {
 
-    it('should update minor versions with --semverLevel major', () => {
-      return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "chalk": "2.3.0" } }')
-        .then(JSON.parse)
-        .then(pkgData => {
-          pkgData.should.have.property('chalk')
-          pkgData.chalk.should.equal('2.4.2')
-        })
-    })
+      it('should not update major versions with --target minor', async () => {
+        const output = await spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--target', 'minor'], '{ "dependencies": { "chalk": "3.0.0" } }')
+        const pkgData = JSON.parse(output)
+        pkgData.should.not.have.property('chalk')
+      })
 
-    it('should update patch versions with --semverLevel major', () => {
-      return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'major'], '{ "dependencies": { "chalk": "2.4.1" } }')
-        .then(JSON.parse)
-        .then(pkgData => {
-          pkgData.should.have.property('chalk')
-          pkgData.chalk.should.equal('2.4.2')
-        })
-    })
+      it('should update minor versions with --target minor', async () => {
+        const output = await spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--target', 'minor'], '{ "dependencies": { "chalk": "2.3.0" } }')
+        const pkgData = JSON.parse(output)
+        pkgData.should.have.property('chalk')
+        pkgData.chalk.should.equal('2.4.2')
+      })
 
-    it('should not update major versions with --semverLevel minor', () => {
-      return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "chalk": "3.0.0" } }')
-        .then(JSON.parse)
-        .then(pkgData => {
-          pkgData.should.not.have.property('chalk')
-        })
-    })
+      it('should update patch versions with --target patch', async () => {
+        const output = await spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--target', 'patch'], '{ "dependencies": { "chalk": "2.4.1" } }')
+        const pkgData = JSON.parse(output)
+        pkgData.should.have.property('chalk')
+        pkgData.chalk.should.equal('2.4.2')
+      })
 
-    it('should not update minor versions with --semverLevel minor', () => {
-      return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "chalk": "2.3.2" } }')
-        .then(JSON.parse)
-        .then(pkgData => {
-          pkgData.should.not.have.property('chalk')
-        })
-    })
+      it('should not update major versions with --target patch', async () => {
+        const output = await spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--target', 'patch'], '{ "dependencies": { "chalk": "3.0.0" } }')
+        const pkgData = JSON.parse(output)
+        pkgData.should.not.have.property('chalk')
+      })
 
-    it('should skip non-semver versions with --semverLevel', () => {
-      return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "test": "github:a/b" } }')
-        .then(JSON.parse)
-        .then(pkgData => {
-          pkgData.should.not.have.property('test')
-        })
-    })
+      it('should not update minor versions with --target patch', async () => {
+        const output = await spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--target', 'patch'], '{ "dependencies": { "chalk": "2.3.2" } }')
+        const pkgData = JSON.parse(output)
+        pkgData.should.not.have.property('chalk')
+      })
 
-    it('should update patch versions with --semverLevel minor', () => {
-      return spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--semverLevel', 'minor'], '{ "dependencies": { "chalk": "2.4.1" } }')
-        .then(JSON.parse)
-        .then(pkgData => {
-          pkgData.should.have.property('chalk')
-          pkgData.chalk.should.equal('2.4.2')
-        })
-    })
+      it('should skip non-semver versions with --target', async () => {
+        const output = await spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--target', 'patch'], '{ "dependencies": { "test": "github:a/b" } }')
+        const pkgData = JSON.parse(output)
+        pkgData.should.not.have.property('test')
+      })
+
+      it('should update patch versions with --target patch', async () => {
+        const output = await spawn('node', ['bin/ncu.js', '--jsonUpgraded', '--target', 'patch'], '{ "dependencies": { "chalk": "2.4.1" } }')
+        const pkgData = JSON.parse(output)
+        pkgData.should.have.property('chalk')
+        pkgData.chalk.should.equal('2.4.2')
+      })
+
+    }) // end 'target'
 
     it('should suppress stdout when --silent is provided', () => {
       return spawn('node', ['bin/ncu.js', '--silent'], '{ "dependencies": { "express": "1" } }')

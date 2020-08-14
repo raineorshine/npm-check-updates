@@ -438,18 +438,18 @@ describe('versionmanager', () => {
         .should.eventually.deep.equal({})
     })
 
-    it('set the versionTarget explicitly to latest', () => {
-      return vm.queryVersions({ async: '1.5.1' }, { versionTarget: 'latest', loglevel: 'silent' })
+    it('set the target explicitly to latest', () => {
+      return vm.queryVersions({ async: '1.5.1' }, { target: 'latest', loglevel: 'silent' })
         .should.eventually.have.property('async')
     })
 
-    it('set the versionTarget to greatest', () => {
-      return vm.queryVersions({ async: '1.5.1' }, { versionTarget: 'greatest', loglevel: 'silent' })
+    it('set the target to greatest', () => {
+      return vm.queryVersions({ async: '1.5.1' }, { target: 'greatest', loglevel: 'silent' })
         .should.eventually.have.property('async')
     })
 
-    it('should return an error for an unsupported versionTarget', () => {
-      const a = vm.queryVersions({ async: '1.5.1' }, { versionTarget: 'foo', loglevel: 'silent' })
+    it('should return an error for an unsupported target', () => {
+      const a = vm.queryVersions({ async: '1.5.1' }, { target: 'foo', loglevel: 'silent' })
       return a.should.be.rejected
     })
 
