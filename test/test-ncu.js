@@ -302,7 +302,7 @@ describe('npm-check-updates', function () {
       ])
     })
 
-    it('should enable --engines-node matching ', () => {
+    it('should enable --enginesNode matching ', () => {
       return ncu.run({
         jsonAll: true,
         packageData: JSON.stringify({
@@ -326,7 +326,7 @@ describe('npm-check-updates', function () {
       })
     })
 
-    it('should enable engines matching if --engines-node', () => {
+    it('should enable engines matching if --enginesNode', () => {
       return ncu.run({
         jsonAll: true,
         packageData: JSON.stringify({
@@ -345,7 +345,7 @@ describe('npm-check-updates', function () {
       })
     })
 
-    it('should enable engines matching if --engines-node, not update if matches not exists', () => {
+    it('should enable engines matching if --enginesNode, not update if matches not exists', () => {
       return ncu.run({
         jsonAll: true,
         packageData: JSON.stringify({
@@ -364,7 +364,7 @@ describe('npm-check-updates', function () {
       })
     })
 
-    it('should enable engines matching if --engines-node, update to latest version if engines.node not exists', () => {
+    it('should enable engines matching if --enginesNode, update to latest version if engines.node not exists', () => {
       return ncu.run({
         jsonAll: true,
         packageData: JSON.stringify({
@@ -392,8 +392,8 @@ describe('npm-check-updates', function () {
         })
     })
 
-    it('should reject out-of-date stdin with error-level 2', () => {
-      return spawn('node', ['bin/ncu.js', '--error-level', '2'], '{ "dependencies": { "express": "1" } }')
+    it('should reject out-of-date stdin with errorLevel 2', () => {
+      return spawn('node', ['bin/ncu.js', '--errorLevel', '2'], '{ "dependencies": { "express": "1" } }')
         .should.eventually.be.rejectedWith('Dependencies not up-to-date')
     })
 
@@ -454,12 +454,12 @@ describe('npm-check-updates', function () {
       }
     })
 
-    it('should write to --packageFile if error-level=2 and upgrades', async () => {
+    it('should write to --packageFile if errorLevel=2 and upgrades', async () => {
       const tempFile = getTempFile()
       fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
 
       try {
-        const result = await spawn('node', ['bin/ncu.js', '-u', '--error-level', '2', '--packageFile', tempFile])
+        const result = await spawn('node', ['bin/ncu.js', '-u', '--errorLevel', '2', '--packageFile', tempFile])
           .should.eventually.be.rejectedWith('Dependencies not up-to-date')
         const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'))
         upgradedPkg.should.have.property('dependencies')

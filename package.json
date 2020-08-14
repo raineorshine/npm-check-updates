@@ -27,7 +27,7 @@
   },
   "main": "./lib/npm-check-updates",
   "scripts": {
-    "build-readme": "node bin/build-readme.js",
+    "build": "node bin/build.js",
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
     "lintfix": "npm run lint -- --fix",
     "nyc": "nyc",

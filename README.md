@@ -90,12 +90,12 @@ $ ncu "/^(?!gulp-).*$/" # windows
 --dep <dep>                  check only a specific section(s) of
                              dependencies: prod, dev, peer, optional, bundle
                              (comma-delimited)
--e, --error-level <n>        set the error-level. 1: exits with error code 0
+--enginesNode                include only packages that satisfy engines.node
+                             as specified in the package file
+-e, --errorLevel <n>         set the error level. 1: exits with error code 0
                              if no errors occur. 2: exits with error code 0
                              if no packages need updating (useful for
                              continuous integration). (default: 1)
---engines-node               include only packages that satisfy engines.node
-                             as specified in the package file
 -f, --filter <matches>       include only package names matching the given
                              string, comma-or-space-delimited list, or
                              /regex/
