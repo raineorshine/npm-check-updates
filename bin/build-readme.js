@@ -1,19 +1,24 @@
+const fs = require('fs')
+const spawn = require('spawn-please')
+
+const typedefsStart = `declare namespace ncu {
+  interface RunOptions {
+`
+
+/** Extracts CLI options from the bin output. */
+const readOptions = async () => {
+  const optionsBinLabel = 'Options:\n'
+  const helpOutput = await spawn('./bin/ncu.js', ['--help'])
+  return helpOutput.slice(helpOutput.indexOf(optionsBinLabel) + optionsBinLabel.length)
+  // outdent
+    .split('\n').map(s => s.slice(2)).join('\n')
+}
+
 /** Replaces the "Options" section of the README with direct output from "ncu --help". */
-
-(async () => {
-
-  const fs = require('fs')
-  const spawn = require('spawn-please')
+const writeReadme = helpOptionsNew => {
 
   const optionsLabelStart = '## Options\n\n```text\n'
   const optionsLabelEnd = '```'
-  const optionsBinLabel = 'Options:\n'
-
-  // extract options from bin output
-  const helpOutput = await spawn('./bin/ncu.js', ['--help'])
-  const helpOptionsNew = helpOutput.slice(helpOutput.indexOf(optionsBinLabel) + optionsBinLabel.length)
-  // outdent
-    .split('\n').map(s => s.slice(2)).join('\n')
 
   // find insertion point for options into README
   const readme = fs.readFileSync('./README.md', 'utf8')
@@ -26,5 +31,11 @@
   + helpOptionsNew
   + readme.slice(optionsEnd)
   fs.writeFileSync('./README.md', readmeNew)
+}
+
+(async () => {
+
+  const helpOptionsNew = await readOptions()
+  writeReadme(helpOptionsNew)
 
 })()
