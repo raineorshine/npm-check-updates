@@ -27,12 +27,13 @@
   },
   "main": "./lib/npm-check-updates",
   "scripts": {
-    "nyc": "nyc",
+    "build-readme": "node bin/build-readme.js",
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
     "lintfix": "npm run lint -- --fix",
-    "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
+    "nyc": "nyc",
     "mocha": "mocha test test/package-managers/npm test/package-managers/yarn",
-    "test": "npm run lint && npm run mocha"
+    "test": "npm run lint && npm run mocha",
+    "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\""
   },
   "bin": {
     "npm-check-updates": "./bin/npm-check-updates.js",
