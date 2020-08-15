@@ -1,14 +1,16 @@
-To add support for another package manager, drop in a module with the following interface:
+To add support for another package manager, drop in a module with the following interface. 
 
-```
+```js
 {
-    list: (npmOptions) => Promise<{ NAME: VERSION, ... }>
-    latest: (String pkgName) => Promise<String> version
-    newest: (String pkgName) => Promise<String> version
-    greatest: (String pkgName) => Promise<String> version
-    greatestMajor: (String pkgName, String currentVersion) => Promise<String> version
-    greatestMinor: (String pkgName, String currentVersion) => Promise<String> version
+  *list: (npmOptions: {}) => Promise<{ name: version }>,
+  *latest: (pkgName: string) => Promise<String> version,
+  newest: (pkgName: string) => Promise<String> version,
+  greatest: (pkgName: string) => Promise<String> version,
+  minor: (pkgName: string, String currentVersion) => Promise<String> version,
+  patch: (pkgName: string, String currentVersion) => Promise<String> version,
 }
 ```
 
-* latest and greatest are expected to reject with `'404 Not Found'` if the package is not found
+- `list` and `latest` are required. 
+- Methods corresponding to other `--target` values are optional.
+- Methods are expected to reject with `'404 Not Found'` if the package is not found.

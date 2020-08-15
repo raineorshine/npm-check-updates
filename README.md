@@ -101,6 +101,8 @@ $ ncu "/^(?!gulp-).*$/" # windows
                              /regex/
 -g, --global                 check global packages instead of in the current
                              project
+--greatest                   find the highest versions available instead of
+                             the latest stable versions (--target greatest)
 -i, --interactive            Enable interactive prompts for each dependency;
                              implies -u unless one of the json options are
                              set
@@ -117,7 +119,7 @@ $ ncu "/^(?!gulp-).*$/" # windows
                              satisfied by the version range according to
                              semver
 -n, --newest                 find the newest versions available instead of
-                             the latest stable versions
+                             the latest stable versions (--target newest)
 -p, --packageManager <name>  npm, yarn (default: "npm")
 --packageData                include stringified package file (use stdin
                              instead)
@@ -129,10 +131,8 @@ $ ncu "/^(?!gulp-).*$/" # windows
 --removeRange                remove version ranges from the final package
                              version
 -s, --silent                 don't output anything (--loglevel silent)
---semverLevel <level>        find the highest version within "major" or
-                             "minor"
--t, --greatest               find the highest versions available instead of
-                             the latest stable versions
+-t, --target <value>         target version to upgrade to: latest, newest,
+                             greatest, minor, patch (default: "latest")
 --timeout <ms>               global timeout in milliseconds. (default: no
                              global timeout and 30 seconds per
                              npm-registery-fetch)
@@ -158,9 +158,9 @@ $ ncu "/^(?!gulp-).*$/" # windows
   - `1.0.0 < 2.0.0` → `^3.0.0`
 - "Any version" is preserved:
   - `*` → `*`
-- with `--semverLevel major`, the major version is preserved:
+- with `--target minor`, only update patch and minor:
   - `0.1.0` → `0.2.1`
-- with `--semverLevel minor`, the major and minor versions are preserved:
+- with `--target patch`, only update patch:
   - `0.1.0` → `0.1.2`
 
 ## Configuration Files

@@ -29,6 +29,9 @@ declare namespace ncu {
     /** check global packages instead of in the current project */
     global?: boolean;
 
+    /** find the highest versions available instead of the latest stable versions (--target greatest) */
+    greatest?: boolean;
+
     /** Enable interactive prompts for each dependency; implies -u unless one of the json options are set */
     interactive?: boolean;
 
@@ -47,7 +50,7 @@ declare namespace ncu {
     /** do not upgrade newer versions that are already satisfied by the version range according to semver */
     minimal?: boolean;
 
-    /** find the newest versions available instead of the latest stable versions */
+    /** find the newest versions available instead of the latest stable versions (--target newest) */
     newest?: boolean;
 
     /** npm, yarn (default: "npm") */
@@ -74,11 +77,8 @@ declare namespace ncu {
     /** don't output anything (--loglevel silent) */
     silent?: boolean;
 
-    /** find the highest version within "major" or "minor" */
-    semverLevel?: string;
-
-    /** find the highest versions available instead of the latest stable versions */
-    greatest?: boolean;
+    /** target version to upgrade to: latest, newest, greatest, minor, patch (default: "latest") */
+    target?: string;
 
     /** global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registery-fetch) */
     timeout?: number;
