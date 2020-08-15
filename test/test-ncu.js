@@ -73,10 +73,6 @@ describe('run', function () {
     return upgraded.should.eventually.not.have.property('juggernaut')
   })
 
-  it('should use package.json in cwd by default', () => {
-    return ncu.run({})
-  })
-
   it('should only upgrade devDependencies and peerDependencies with --dep dev', () => {
     const upgraded = ncu.run({
       packageData: fs.readFileSync(`${__dirname}/ncu/package-dep.json`, 'utf-8'),

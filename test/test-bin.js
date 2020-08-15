@@ -1,6 +1,7 @@
 'use strict'
 
 const fs = require('fs')
+const path = require('path')
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const chaiString = require('chai-string')
@@ -33,10 +34,15 @@ describe('bin', function () {
       .should.eventually.be.rejectedWith('Dependencies not up-to-date')
   })
 
-  it('should fall back to package.json search when receiving empty content on stdin', () => {
-    return spawn('node', ['bin/ncu.js']).then(stdout => {
-      stdout.toString().trim().should.match(/^Checking .+package.json/)
-    })
+  it('should fall back to package.json search when receiving empty content on stdin', async () => {
+    const stdout = await spawn('node', ['bin/ncu.js'])
+    stdout.toString().trim().should.match(/^Checking .+package.json/)
+  })
+
+  it('should use package.json in cwd by default', async () => {
+    const output = await spawn('node', [path.join(__dirname, '../bin/ncu.js'), '--jsonUpgraded'], { cwd: path.join(__dirname, 'ncu') })
+    const pkgData = JSON.parse(output)
+    pkgData.should.have.property('express')
   })
 
   it('should handle no package.json to analyze when receiving empty content on stdin', () => {
