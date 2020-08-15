@@ -1,154 +1,94 @@
 declare namespace ncu {
+
   interface RunOptions {
-    /**
-     * rc config file path (default: directory of `packageFile` or ./ otherwise)
-     */
+
+    /** max number of concurrent HTTP requests to registry. (default: 8) */
+    concurrency?: number;
+
+    /** rc config file path (default: directory of `packageFile` or ./ otherwise) */
     configFilePath?: string;
 
-    /**
-     * rc config file name (default: .ncurc.{json,yml,js})
-     */
+    /** rc config file name (default: .ncurc.{json,yml,js}) */
     configFileName?: string;
 
-    /**
-     * Used as current working directory for `spawn` in npm listing
-     */
+    /** working directory in which npm will be executed */
     cwd?: string;
 
-    /**
-     * check only a specific section(s) of dependencies:
-     * prod|dev|peer|optional|bundle (comma-delimited)
-     */
+    /** check only a specific section(s) of dependencies: prod, dev, peer, optional, bundle (comma-delimited) */
     dep?: string;
 
-    /**
-     * upgrade to version which satisfies engines.node range
-     */
+    /** include only packages that satisfy engines.node as specified in the package file */
     enginesNode?: boolean;
 
-    /**
-     * set the error-level. 1: exits with error code 0 if no errors occur. 2:
-     * exits with error code 0 if no packages need updating (useful for
-     * continuous integration). Default is 1.
-     */
+    /** set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). (default: 1) */
     errorLevel?: number;
 
-    /**
-     * include only package names matching the given string,
-     * comma-or-space-delimited list, or /regex/
-     */
+    /** include only package names matching the given string, comma-or-space-delimited list, or /regex/ */
     filter?: string | string[] | RegExp;
 
-    /**
-     * check global packages instead of in the current project
-     */
+    /** check global packages instead of in the current project */
     global?: boolean;
 
-    /**
-     * find the highest versions available instead of the latest stable versions
-     */
-    greatest?: boolean;
-
-    /**
-     * Enable interactive prompts for each dependency; implies -u unless one of
-     * the json options are set
-     */
+    /** Enable interactive prompts for each dependency; implies -u unless one of the json options are set */
     interactive?: boolean;
 
-    /**
-     * output new package file instead of human-readable message
-     */
+    /** output new package file instead of human-readable message */
     jsonAll?: boolean;
 
-    /**
-     * Will return output like `jsonAll` but only lists `dependencies`,
-     * `devDependencies`, and `optionalDependencies` of the new package data.
-     */
+    /** Will return output like `jsonAll` but only lists `dependencies`, `devDependencies`, and `optionalDependencies` of the new package data. */
     jsonDeps?: boolean;
 
-    /**
-     * output upgraded dependencies in json
-     */
+    /** output upgraded dependencies in json */
     jsonUpgraded?: boolean;
 
-    /**
-     * what level of logs to report: silent, error, minimal, warn, info,
-     * verbose, silly (default: warn)
-     */
+    /** what level of logs to report: silent, error, minimal, warn, info, verbose, silly (default: "warn") */
     loglevel?: string;
 
-    /**
-     * do not upgrade newer versions that are already satisfied by the version
-     * range according to semver
-     */
+    /** do not upgrade newer versions that are already satisfied by the version range according to semver */
     minimal?: boolean;
 
-    /**
-     * find the newest versions available instead of the latest stable versions
-     */
+    /** find the newest versions available instead of the latest stable versions */
     newest?: boolean;
 
-    /**
-     * npm (default)
-     */
+    /** npm, yarn (default: "npm") */
     packageManager?: string;
 
-    /**
-     * include stringified package file (use stdin instead)
-     */
-    packageData?: string;
+    /** include stringified package file (use stdin instead) */
+    packageData?: boolean;
 
-    /**
-     * package file location (default: ./package.json)
-     */
+    /** package file location (default: ./package.json) */
     packageFile?: string;
 
-    /**
-     * Include -alpha, -beta, -rc. Default: 0. Default with --newest and
-     * --greatest: 1
-     */
+    /** Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1) */
     pre?: boolean;
 
-    /**
-     * Used as current working directory in npm
-     */
+    /** Used as current working directory in npm */
     prefix?: string;
 
-    /**
-     * specify third-party npm registry
-     */
+    /** specify third-party npm registry */
     registry?: string;
 
-    /**
-     * exclude packages matching the given string, comma-or-space-delimited
-     * list, or /regex/
-     */
-    reject?: string | string[] | RegExp;
-
-    /**
-     * remove version ranges from the final package version
-     */
+    /** remove version ranges from the final package version */
     removeRange?: boolean;
 
-    /**
-     * don't output anything (--loglevel silent)
-     */
+    /** don't output anything (--loglevel silent) */
     silent?: boolean;
 
-    /**
-     * find the highest version within "major" or "minor"
-     */
+    /** find the highest version within "major" or "minor" */
     semverLevel?: string;
 
-    /**
-     * a global timeout in ms
-     */
+    /** find the highest versions available instead of the latest stable versions */
+    greatest?: boolean;
+
+    /** global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registery-fetch) */
     timeout?: number;
 
-    /**
-     * overwrite package file
-     */
+    /** overwrite package file */
     upgrade?: boolean;
+
+    /** exclude packages matching the given string, comma-or-space-delimited list, or /regex/ */
+    reject?: string | string[] | RegExp;
+
   }
 
   type RunResults = Record<string, string>
