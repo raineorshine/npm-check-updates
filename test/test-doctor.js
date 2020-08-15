@@ -23,6 +23,16 @@ describe.only('doctor', () => {
 
   })
 
+  it('throw an error if there is no test script', async () => {
+
+    const cwd = path.join(__dirname, 'doctor/notestscript')
+    const pkgPath = path.join(cwd, 'package.json')
+
+    return spawn('node', [path.join(__dirname, '../bin/cli.js'), '--doctor'], { cwd })
+      .should.eventually.be.rejectedWith('No npm "test" script')
+
+  })
+
   it('use npm install to restore lockfile if missing', async () => {
 
     const cwd = path.join(__dirname, 'doctor/nolockfile')
