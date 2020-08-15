@@ -105,6 +105,11 @@ describe('versionmanager', () => {
       vm.upgradeDependencyDeclaration('^1.0.0', '1.0.1', { removeRange: true }).should.equal('1.0.1')
       vm.upgradeDependencyDeclaration('2.2.*', '3.1.1', { removeRange: true }).should.equal('3.1.1')
     })
+
+    it('npm alias', () => {
+      vm.upgradeDependencyDeclaration('npm:chalk@^1.0.0', 'npm:chalk@2.0.0').should.equal('npm:chalk@^2.0.0')
+    })
+
   })
 
   describe('upgradePackageData', () => {
@@ -160,6 +165,23 @@ describe('versionmanager', () => {
           },
           devDependencies: {
             mocha: '^2'
+          }
+        })
+    })
+
+    it('should upgrade npm aliases', async () => {
+
+      const oldDependencies = { request: 'postman-request@^2.88.1-postman.16' }
+      const newDependencies = { request: 'postman-request@^2.88.1-postman.24' }
+      const newVersions = { request: 'postman-request@2.88.1-postman.24' }
+      const oldPkgData = JSON.stringify({ dependencies: oldDependencies })
+
+      const { newPkgData } = await vm.upgradePackageData(oldPkgData, oldDependencies, newDependencies, newVersions)
+
+      JSON.parse(newPkgData)
+        .should.eql({
+          dependencies: {
+            request: 'postman-request@^2.88.1-postman.24'
           }
         })
     })
@@ -453,6 +475,15 @@ describe('versionmanager', () => {
       return a.should.be.rejected
     })
 
+    it('npm aliases should upgrade the installed package', () => {
+      return vm.queryVersions({
+        request: 'npm:postman-request@2.88.1-postman.16'
+      }, { loglevel: 'silent' })
+        .should.eventually.deep.equal({
+          request: 'npm:postman-request@2.88.1-postman.24'
+        })
+    })
+
   })
 
   describe('isUpgradeable', () => {
@@ -480,6 +511,10 @@ describe('versionmanager', () => {
       vm.isUpgradeable('<7.0.0', '7.2.0').should.equal(true)
       vm.isUpgradeable('<7.0', '7.2.0').should.equal(true)
       vm.isUpgradeable('<7', '7.2.0').should.equal(true)
+    })
+
+    it('should upgrade npm aliases', () => {
+      vm.isUpgradeable('npm:chalk@1.0.0', 'npm:chalk@2.0.0').should.equal(true)
     })
 
   })

@@ -23,6 +23,7 @@ describe('npm-check-updates', function () {
   }
 
   describe('run', () => {
+
     it('should return promised jsonUpgraded', () => {
       return ncu.run({
         packageData: fs.readFileSync(`${__dirname}/ncu/package.json`, 'utf-8')
@@ -379,6 +380,20 @@ describe('npm-check-updates', function () {
         upgradedPkg.dependencies.del.should.not.equal('3.0.0')
         upgradedPkg.dependencies.del.should.not.equal('4.1.1')
       })
+    })
+
+    it('should upgrade npm alias', () => {
+      const upgraded = ncu.run({
+        packageData: '{ "dependencies": { "request": "npm:postman-request@^2.88.1-postman.16" } }',
+        jsonUpgraded: true
+      })
+
+      return Promise.all([
+        upgraded.should.eventually.have.property('request'),
+        upgraded.then(data => {
+          return data.should.eql({ request: 'npm:postman-request@^2.88.1-postman.24' })
+        })
+      ])
     })
 
   })
