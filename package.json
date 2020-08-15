@@ -85,6 +85,7 @@
     "eslint-plugin-standard": "^4.0.1",
     "mocha": "^8.1.1",
     "nyc": "^15.1.0",
+    "rimraf": "^3.0.2",
     "should": "^13.2.3",
     "tmp": "0.2.1",
     "yarn": "^1.22.4"

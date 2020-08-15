@@ -6,16 +6,28 @@ const chai = require('chai')
 const chalk = require('chalk')
 const chaiAsPromised = require('chai-as-promised')
 const spawn = require('spawn-please')
+const rimraf = require('rimraf')
 
 const should = chai.should()
 chai.use(chaiAsPromised)
 
 describe.only('doctor', () => {
 
-  it('run npm install if there is no lockfile', async () => {
+  it('throw an error if there is no package file', async () => {
 
-    const lockfilePath = path.join(__dirname, 'doctor/nolockfile/package-lock.json')
+    const cwd = path.join(__dirname, 'doctor/nopackagefile')
+    const pkgPath = path.join(cwd, 'package.json')
+
+    return spawn('node', [path.join(__dirname, '../bin/cli.js'), '--doctor'], { cwd })
+      .should.eventually.be.rejectedWith('Missing or invalid package.json')
+
+  })
+
+  it('use npm install to restore lockfile if missing', async () => {
+
     const cwd = path.join(__dirname, 'doctor/nolockfile')
+    const lockfilePath = path.join(cwd, 'package-lock.json')
+    const nodeModulesPath = path.join(cwd, 'node_modules')
 
     try
     {
@@ -26,6 +38,7 @@ describe.only('doctor', () => {
     }
     finally {
       fs.unlinkSync(lockfilePath)
+      rimraf.sync(nodeModulesPath)
     }
 
   })
