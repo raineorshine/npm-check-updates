@@ -392,4 +392,46 @@ describe('run', function () {
       .should.eventually.be.rejectedWith('Cannot specify both')
   })
 
+  describe('target', () => {
+
+    it('should not update major versions with --target minor', async () => {
+      const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
+      pkgData.should.not.have.property('chalk')
+    })
+
+    it('should update minor versions with --target minor', async () => {
+      const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "2.3.0" } }' })
+      pkgData.should.have.property('chalk')
+      pkgData.chalk.should.equal('2.4.2')
+    })
+
+    it('should update patch versions with --target patch', async () => {
+      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.4.1" } }' })
+      pkgData.should.have.property('chalk')
+      pkgData.chalk.should.equal('2.4.2')
+    })
+
+    it('should not update major versions with --target patch', async () => {
+      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
+      pkgData.should.not.have.property('chalk')
+    })
+
+    it('should not update minor versions with --target patch', async () => {
+      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.3.2" } }' })
+      pkgData.should.not.have.property('chalk')
+    })
+
+    it('should skip non-semver versions with --target', async () => {
+      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "test": "github:a/b" } }' })
+      pkgData.should.not.have.property('test')
+    })
+
+    it('should update patch versions with --target patch', async () => {
+      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.4.1" } }' })
+      pkgData.should.have.property('chalk')
+      pkgData.chalk.should.equal('2.4.2')
+    })
+
+  }) // end 'target'
+
 })
