@@ -17,6 +17,9 @@ declare namespace ncu {
     /** Check one or more sections of dependencies only: prod, dev, peer, optional, bundle (comma-delimited). */
     dep?: string;
 
+    /** Iteratively installs upgrades and runs tests to identify breaking upgrades. */
+    doctor?: boolean;
+
     /** Include only packages that satisfy engines.node as specified in the package file. */
     enginesNode?: boolean;
 
@@ -59,8 +62,8 @@ declare namespace ncu {
     /** Check if the package owner changed between current and upgraded version. */
     ownerChanged?: boolean;
 
-    /** Include stringified package file (you can also send to stdin). */
-    packageData?: boolean;
+    /** Package file data (you can also use stdin). */
+    packageData?: string;
 
     /** Package file location (default: ./package.json). */
     packageFile?: string;

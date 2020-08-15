@@ -89,6 +89,8 @@ $ ncu "/^(?!gulp-).*$/" # windows
 --dep <dep>                  Check one or more sections of dependencies only:
                              prod, dev, peer, optional, bundle
                              (comma-delimited).
+--doctor                     Iteratively installs upgrades and runs tests to
+                             identify breaking upgrades.
 --enginesNode                Include only packages that satisfy engines.node
                              as specified in the package file.
 -e, --errorLevel <n>         Set the error level. 1: exits with error code 0
@@ -119,8 +121,7 @@ $ ncu "/^(?!gulp-).*$/" # windows
 -p, --packageManager <name>  npm, yarn (default: "npm")
 -o, --ownerChanged           Check if the package owner changed between
                              current and upgraded version.
---packageData                Include stringified package file (you can also
-                             send to stdin).
+--packageData <string>       Package file data (you can also use stdin).
 --packageFile <path>         Package file location (default: ./package.json).
 --pre <n>                    Include -alpha, -beta, -rc. (default: 0; default
                              with --newest and --greatest: 1).

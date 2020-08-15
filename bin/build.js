@@ -70,7 +70,7 @@ export = ncu
   fs.writeFileSync(path.join(__dirname, '../lib/npm-check-updates.d.ts'), typedefsNew)
 }
 
-(async () => {
+;(async () => {
 
   const helpOptionsNew = await readOptions()
   writeReadme(helpOptionsNew)
