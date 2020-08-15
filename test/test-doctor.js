@@ -33,6 +33,17 @@ describe.only('doctor', () => {
 
   })
 
+  it('throw an error if --packageData or --packageFile are supplied', async () => {
+
+    return Promise.all([
+      spawn('node', [path.join(__dirname, '../bin/cli.js'), '--doctor', '--packageFile', 'package.json'])
+        .should.eventually.be.rejectedWith('--packageData and --packageFile are not allowed with --doctor'),
+      spawn('node', [path.join(__dirname, '../bin/cli.js'), '--doctor', '--packageData', '{}'])
+        .should.eventually.be.rejectedWith('--packageData and --packageFile are not allowed with --doctor')
+    ])
+
+  })
+
   it('use npm install to restore lockfile if missing', async () => {
 
     const cwd = path.join(__dirname, 'doctor/nolockfile')
