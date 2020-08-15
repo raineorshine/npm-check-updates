@@ -77,14 +77,6 @@ describe('run', function () {
     return ncu.run({})
   })
 
-  it('should throw an exception instead of printing to the console when timeout is exceeded', () => {
-    return ncu.run({
-      packageData: fs.readFileSync(`${__dirname}/ncu/package-large.json`, 'utf-8'),
-      timeout: 1
-    })
-      .should.eventually.be.rejectedWith('Exceeded global timeout of 1ms')
-  })
-
   it('should only upgrade devDependencies and peerDependencies with --dep dev', () => {
     const upgraded = ncu.run({
       packageData: fs.readFileSync(`${__dirname}/ncu/package-dep.json`, 'utf-8'),
