@@ -237,4 +237,25 @@ describe('bin', function () {
       return spawn('node', ['bin/ncu.js', '--timeout', '100000'], '{ "dependencies": { "express": "1" } }')
     })
   })
+
+  describe('embedded versions', () => {
+
+    it('should strip url from Github url in "to" output', async () => {
+      const dependencies = {
+        'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0'
+      }
+      const output = await spawn('node', ['bin/ncu.js'], JSON.stringify({ dependencies }))
+      output.trim().should.equal('ncu-test-v2  https://github.com/raineorshine/ncu-test-v2.git#v1.0.0  →  v2.0.0')
+    })
+
+    it('should strip prefix from npm alias in "to" output', async () => {
+      const dependencies = {
+        request: 'npm:ncu-test-v2@1.0.0'
+      }
+      const output = await spawn('node', ['bin/ncu.js'], JSON.stringify({ dependencies }))
+      output.trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  2.0.0')
+    })
+
+  })
+
 })
