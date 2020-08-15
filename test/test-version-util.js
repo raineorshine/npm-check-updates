@@ -300,22 +300,85 @@ describe('version-util', () => {
 
   })
 
-  describe('createNpmAlias', () => {
+  describe('npm aliases', () => {
 
-    it('should create an npm alias from a name and version', () => {
-      versionUtil.createNpmAlias('chalk', '1.0.0').should.equal('npm:chalk@1.0.0')
+    describe('createNpmAlias', () => {
+
+      it('should create an npm alias from a name and version', () => {
+        versionUtil.createNpmAlias('chalk', '1.0.0').should.equal('npm:chalk@1.0.0')
+      })
+
+    })
+
+    describe('parseNpmAlias', () => {
+
+      it('should parse an npm alias into [name, version]', () => {
+        versionUtil.parseNpmAlias('npm:chalk@1.0.0').should.eql(['chalk', '1.0.0'])
+      })
+
+      it('should return null if given a non-alias', () => {
+        should.equal(versionUtil.parseNpmAlias('1.0.0'), null)
+      })
+    })
+
+    describe('isNpmAlias', () => {
+
+      it('should return true if an npm alias', () => {
+        should.equal(versionUtil.isNpmAlias('npm:chalk@1.0.0'), true)
+        should.equal(versionUtil.isNpmAlias('npm:chalk@^1.0.0'), true)
+      })
+
+      it('should return false if not an npm alias', () => {
+        should.equal(versionUtil.isNpmAlias('1.0.0'), false)
+        should.equal(versionUtil.isNpmAlias('npm:chalk'), false)
+      })
+
+    })
+
+    describe('upgradeNpmAlias', () => {
+
+      it('should replace embedded version', () => {
+        versionUtil.upgradeNpmAlias('npm:chalk@^1.0.0', '2.0.0')
+          .should.equal('npm:chalk@2.0.0')
+      })
+
     })
 
   })
 
-  describe('parseNpmAlias', () => {
+  describe('github urls', () => {
 
-    it('should parse an npm alias into [name, version]', () => {
-      versionUtil.parseNpmAlias('npm:chalk@1.0.0').should.eql(['chalk', '1.0.0'])
+    describe('isGithubUrl', () => {
+
+      it('should return true if a declaration is a Github url with a semver tag and false otherwise', () => {
+        should.equal(versionUtil.isGithubUrl(null), false)
+        should.equal(versionUtil.isGithubUrl('https://github.com/raineorshine/ncu-test-v2'), false)
+        should.equal(versionUtil.isGithubUrl('https://github.com/raineorshine/ncu-test-v2#1.0.0'), true)
+        should.equal(versionUtil.isGithubUrl('https://github.com/raineorshine/ncu-test-v2#v1.0.0'), true)
+      })
+
     })
 
-    it('should return null if given a non-alias', () => {
-      should.equal(versionUtil.parseNpmAlias('1.0.0'), null)
+    describe('getGithubUrlTag', () => {
+
+      it('should return an embedded tag in a Github URL, or null if not valid', () => {
+        should.equal(versionUtil.getGithubUrlTag(null), null)
+        should.equal(versionUtil.getGithubUrlTag('https://github.com/raineorshine/ncu-test-v2'), null)
+        should.equal(versionUtil.getGithubUrlTag('https://github.com/raineorshine/ncu-test-v2#1.0.0'), '1.0.0')
+        should.equal(versionUtil.getGithubUrlTag('https://github.com/raineorshine/ncu-test-v2#v1.0.0'), 'v1.0.0')
+      })
+
+    })
+
+    describe('upgradeGithubUrl', () => {
+
+      it('should replace embedded version', () => {
+        versionUtil.upgradeGithubUrl('https://github.com/raineorshine/ncu-test-v2#v1.0.0', 'v2.0.0')
+          .should.equal('https://github.com/raineorshine/ncu-test-v2#v2.0.0')
+        versionUtil.upgradeGithubUrl('https://github.com/raineorshine/ncu-test-v2#1.0.0', '2.0.0')
+          .should.equal('https://github.com/raineorshine/ncu-test-v2#2.0.0')
+      })
+
     })
 
   })

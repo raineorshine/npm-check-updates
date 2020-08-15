@@ -384,16 +384,50 @@ describe('npm-check-updates', function () {
 
     it('should upgrade npm alias', () => {
       const upgraded = ncu.run({
-        packageData: '{ "dependencies": { "request": "npm:postman-request@^2.88.1-postman.16" } }',
+        packageData: '{ "dependencies": { "foo": "npm:ncu-test-v2@^1.0.0" } }',
         jsonUpgraded: true
       })
 
       return Promise.all([
-        upgraded.should.eventually.have.property('request'),
+        upgraded.should.eventually.have.property('foo'),
         upgraded.then(data => {
-          return data.should.eql({ request: 'npm:postman-request@^2.88.1-postman.24' })
+          return data.should.eql({ foo: 'npm:ncu-test-v2@^2.0.0' })
         })
       ])
+    })
+
+    it('should upgrade git url with semver tag', async () => {
+      const dependencies = { 'parse-github-url': 'https://github.com/jonschlinkert/parse-github-url#1.0.0' }
+      const upgraded = await ncu.run({
+        packageData: JSON.stringify({ dependencies }),
+        jsonUpgraded: true
+      })
+
+      // unknown latest, but we can still check that there was an upgrade
+      upgraded.should.have.property('parse-github-url')
+      upgraded['parse-github-url'].should.startWith('https://github.com/jonschlinkert/parse-github-url#')
+    })
+
+    it('should upgrade git url with semver tag (with "v" prefix)', async () => {
+      const dependencies = { 'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0' }
+      const upgraded = await ncu.run({
+        packageData: JSON.stringify({ dependencies }),
+        jsonUpgraded: true
+      })
+
+      upgraded.should.have.property('ncu-test-v2')
+      upgraded['ncu-test-v2'].should.equal('https://github.com/raineorshine/ncu-test-v2.git#v2.0.0')
+    })
+
+    it('should upgrade git shorthand', async () => {
+      const dependencies = { 'ncu-test-v2': 'raineorshine/ncu-test-v2.git#v1.0.0' }
+      const upgraded = await ncu.run({
+        packageData: JSON.stringify({ dependencies }),
+        jsonUpgraded: true
+      })
+
+      upgraded.should.have.property('ncu-test-v2')
+      upgraded['ncu-test-v2'].should.equal('raineorshine/ncu-test-v2.git#v2.0.0')
     })
 
   })
@@ -675,6 +709,27 @@ describe('npm-check-updates', function () {
         return spawn('node', ['bin/ncu.js', '--timeout', '100000'], '{ "dependencies": { "express": "1" } }')
       })
     })
+
+    describe('embedded versions', () => {
+
+      it('should strip url from Github url in "to" output', async () => {
+        const dependencies = {
+          'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0'
+        }
+        const output = await spawn('node', ['bin/ncu.js'], JSON.stringify({ dependencies }))
+        output.trim().should.equal('ncu-test-v2  https://github.com/raineorshine/ncu-test-v2.git#v1.0.0  →  v2.0.0')
+      })
+
+      it('should strip prefix from npm alias in "to" output', async () => {
+        const dependencies = {
+          request: 'npm:ncu-test-v2@1.0.0'
+        }
+        const output = await spawn('node', ['bin/ncu.js'], JSON.stringify({ dependencies }))
+        output.trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  2.0.0')
+      })
+
+    })
+
   })
 
 })
