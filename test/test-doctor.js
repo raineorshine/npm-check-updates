@@ -65,7 +65,7 @@ describe('doctor', () => {
     }
     finally {
       fs.writeFileSync(pkgPath, pkgOriginal)
-      fs.unlinkSync(lockfilePath)
+      rimraf.sync(lockfilePath)
       rimraf.sync(nodeModulesPath)
     }
 
