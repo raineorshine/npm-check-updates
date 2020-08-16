@@ -6,7 +6,6 @@ const program = require('commander')
 const updateNotifier = require('update-notifier')
 const _ = require('lodash')
 const ncu = require('../lib/npm-check-updates')
-const doctor = require('../lib/doctor')
 const pkg = require('../package.json')
 const { cliOptions } = require('../lib/constants')
 
@@ -56,9 +55,4 @@ program.parse(combinedArguments)
 program.cli = true
 program.filter = program.args.join(' ') || program.filter
 
-if (program.doctor) {
-  doctor(program)
-}
-else {
-  ncu.run(program)
-}
+ncu.run(program)
