@@ -10,26 +10,29 @@ const rimraf = require('rimraf')
 chai.should()
 chai.use(chaiAsPromised)
 
+/** Run the ncu CLI. */
+const ncu = (args, options) => spawn(path.join(__dirname, '../bin/cli.js'), args, options)
+
 describe('doctor', () => {
 
   it('throw an error if there is no package file', async () => {
     const cwd = path.join(__dirname, 'doctor/nopackagefile')
-    return spawn('node', [path.join(__dirname, '../bin/cli.js'), '--doctor'], { cwd })
+    return ncu(['--doctor'], { cwd })
       .should.eventually.be.rejectedWith('Missing or invalid package.json')
   })
 
   it('throw an error if there is no test script', async () => {
     const cwd = path.join(__dirname, 'doctor/notestscript')
-    return spawn('node', [path.join(__dirname, '../bin/cli.js'), '--doctor'], { cwd })
+    return ncu(['--doctor'], { cwd })
       .should.eventually.be.rejectedWith('No npm "test" script')
   })
 
   it('throw an error if --packageData or --packageFile are supplied', async () => {
 
     return Promise.all([
-      spawn('node', [path.join(__dirname, '../bin/cli.js'), '--doctor', '--packageFile', 'package.json'])
+      ncu(['--doctor', '--packageFile', 'package.json'])
         .should.eventually.be.rejectedWith('--packageData and --packageFile are not allowed with --doctor'),
-      spawn('node', [path.join(__dirname, '../bin/cli.js'), '--doctor', '--packageData', '{}'])
+      ncu(['--doctor', '--packageData', '{}'])
         .should.eventually.be.rejectedWith('--packageData and --packageFile are not allowed with --doctor')
     ])
 
@@ -48,7 +51,7 @@ describe('doctor', () => {
     let stderr = ''
 
     try {
-      await spawn('node', [path.join(__dirname, '../bin/cli.js'), '--doctor'], {
+      await ncu(['--doctor'], {
         cwd,
         stdout: function(data) {
           stdout += data
