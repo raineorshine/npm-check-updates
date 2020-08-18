@@ -29,7 +29,7 @@ declare namespace ncu {
     /** check global packages instead of in the current project */
     global?: boolean;
 
-    /** find the highest versions available instead of the latest stable versions (--target greatest) */
+    /** DEPRECATED. Renamed to "--target greatest" */
     greatest?: boolean;
 
     /** Enable interactive prompts for each dependency; implies -u unless one of the json options are set */
@@ -50,7 +50,7 @@ declare namespace ncu {
     /** do not upgrade newer versions that are already satisfied by the version range according to semver */
     minimal?: boolean;
 
-    /** find the newest versions available instead of the latest stable versions (--target newest) */
+    /** DEPRECATED. Renamed to "--target newest" */
     newest?: boolean;
 
     /** npm, yarn (default: "npm") */
@@ -73,6 +73,9 @@ declare namespace ncu {
 
     /** remove version ranges from the final package version */
     removeRange?: boolean;
+
+    /** DEPRECATED. Renamed to --target */
+    semverLevel?: string;
 
     /** don't output anything (--loglevel silent) */
     silent?: boolean;

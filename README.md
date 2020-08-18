@@ -101,8 +101,7 @@ $ ncu "/^(?!gulp-).*$/" # windows
                              /regex/
 -g, --global                 check global packages instead of in the current
                              project
---greatest                   find the highest versions available instead of
-                             the latest stable versions (--target greatest)
+--greatest                   DEPRECATED. Renamed to "--target greatest"
 -i, --interactive            Enable interactive prompts for each dependency;
                              implies -u unless one of the json options are
                              set
@@ -118,8 +117,7 @@ $ ncu "/^(?!gulp-).*$/" # windows
 -m, --minimal                do not upgrade newer versions that are already
                              satisfied by the version range according to
                              semver
--n, --newest                 find the newest versions available instead of
-                             the latest stable versions (--target newest)
+-n, --newest                 DEPRECATED. Renamed to "--target newest"
 -p, --packageManager <name>  npm, yarn (default: "npm")
 --packageData                include stringified package file (use stdin
                              instead)
@@ -130,6 +128,7 @@ $ ncu "/^(?!gulp-).*$/" # windows
 -r, --registry <url>         specify third-party npm registry
 --removeRange                remove version ranges from the final package
                              version
+--semverLevel <value>        DEPRECATED. Renamed to --target
 -s, --silent                 don't output anything (--loglevel silent)
 -t, --target <value>         target version to upgrade to: latest, newest,
                              greatest, minor, patch (default: "latest")
