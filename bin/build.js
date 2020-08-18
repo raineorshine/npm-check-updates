@@ -6,7 +6,7 @@ const { cliOptions } = require('../lib/constants')
 /** Extracts CLI options from the bin output. */
 const readOptions = async () => {
   const optionsBinLabel = 'Options:\n'
-  const helpOutput = await spawn('./bin/ncu.js', ['--help'])
+  const helpOutput = await spawn('./bin/cli.js', ['--help'])
   return helpOutput.slice(helpOutput.indexOf(optionsBinLabel) + optionsBinLabel.length)
   // outdent
     .split('\n').map(s => s.slice(2)).join('\n')

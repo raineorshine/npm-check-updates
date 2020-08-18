@@ -36,8 +36,8 @@
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\""
   },
   "bin": {
-    "npm-check-updates": "./bin/npm-check-updates.js",
-    "ncu": "./bin/ncu.js"
+    "npm-check-updates": "./bin/cli.js",
+    "ncu": "./bin/cli.js"
   },
   "repository": {
     "type": "git",
