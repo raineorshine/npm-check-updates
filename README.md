@@ -186,17 +186,16 @@ For example, `.ncurc.json`:
 npm-check-updates can be required:
 
 ```js
-const ncu = require('npm-check-updates');
+const ncu = require('npm-check-updates')
 
-ncu.run({
-    // Any command-line option can be specified here.
-    // These are set by default:
-    jsonUpgraded: true,
-    packageManager: 'npm',
-    silent: true
-}).then((upgraded) => {
-    console.log('dependencies to upgrade:', upgraded);
-});
+const upgraded = await ncu.run({
+  // Any command-line option can be specified here.
+  // These are set by default:
+  jsonUpgraded: true,
+  silent: true
+})
+
+console.log('dependencies to upgrade:', upgraded)
 ```
 
 ## Known Issues
