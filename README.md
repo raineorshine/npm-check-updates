@@ -80,64 +80,63 @@ $ ncu "/^(?!gulp-).*$/" # windows
 ## Options
 
 ```text
---concurrency <n>            max number of concurrent HTTP requests to
+--concurrency <n>            Max number of concurrent HTTP requests to
                              registry. (default: 8)
---configFilePath <path>      rc config file path (default: directory of
-                             `packageFile` or ./ otherwise)
---configFileName <path>      rc config file name (default:
-                             .ncurc.{json,yml,js})
---cwd <path>                 working directory in which npm will be executed
---dep <dep>                  check only a specific section(s) of
-                             dependencies: prod, dev, peer, optional, bundle
-                             (comma-delimited)
---enginesNode                include only packages that satisfy engines.node
-                             as specified in the package file
--e, --errorLevel <n>         set the error level. 1: exits with error code 0
+--configFilePath <path>      Directory of .ncurc config file (default:
+                             directory of `packageFile`).
+--configFileName <filename>  Config file name (default: .ncurc.{json,yml,js})
+--cwd <path>                 Working directory in which npm will be executed.
+--dep <dep>                  Check one or more sections of dependencies only:
+                             prod, dev, peer, optional, bundle
+                             (comma-delimited).
+--enginesNode                Include only packages that satisfy engines.node
+                             as specified in the package file.
+-e, --errorLevel <n>         Set the error level. 1: exits with error code 0
                              if no errors occur. 2: exits with error code 0
                              if no packages need updating (useful for
                              continuous integration). (default: 1)
--f, --filter <matches>       include only package names matching the given
+-f, --filter <matches>       Include only package names matching the given
                              string, comma-or-space-delimited list, or
-                             /regex/
--g, --global                 check global packages instead of in the current
-                             project
---greatest                   DEPRECATED. Renamed to "--target greatest"
+                             /regex/.
+-g, --global                 Check global packages instead of in the current
+                             project.
+--greatest                   DEPRECATED. Renamed to "--target greatest".
 -i, --interactive            Enable interactive prompts for each dependency;
                              implies -u unless one of the json options are
-                             set
--j, --jsonAll                output new package file instead of
-                             human-readable message
---jsonDeps                   Will return output like `jsonAll` but only lists
-                             `dependencies`, `devDependencies`, and
-                             `optionalDependencies` of the new package data.
---jsonUpgraded               output upgraded dependencies in json
--l, --loglevel <n>           what level of logs to report: silent, error,
-                             minimal, warn, info, verbose, silly (default:
-                             "warn")
--m, --minimal                do not upgrade newer versions that are already
+                             set,
+-j, --jsonAll                Output new package file instead of
+                             human-readable message.
+--jsonDeps                   Like `jsonAll` but only lists `dependencies`,
+                             `devDependencies`, `optionalDependencies`, etc
+                             of the new package data.
+--jsonUpgraded               Output upgraded dependencies in json.
+-l, --loglevel <n>           Amount to log: silent, error, minimal, warn,
+                             info, verbose, silly. (default: "warn")
+-m, --minimal                Do not upgrade newer versions that are already
                              satisfied by the version range according to
-                             semver
--n, --newest                 DEPRECATED. Renamed to "--target newest"
+                             semver.
+-n, --newest                 DEPRECATED. Renamed to "--target newest".
 -p, --packageManager <name>  npm, yarn (default: "npm")
---packageData                include stringified package file (use stdin
-                             instead)
---packageFile <filename>     package file location (default: ./package.json)
+--packageData                Include stringified package file (you can also
+                             send to stdin).
+--packageFile <path>         Package file location (default: ./package.json).
 --pre <n>                    Include -alpha, -beta, -rc. (default: 0; default
-                             with --newest and --greatest: 1)
---prefix <path>              Used as current working directory in npm
--r, --registry <url>         specify third-party npm registry
---removeRange                remove version ranges from the final package
-                             version
---semverLevel <value>        DEPRECATED. Renamed to --target
--s, --silent                 don't output anything (--loglevel silent)
--t, --target <value>         target version to upgrade to: latest, newest,
-                             greatest, minor, patch (default: "latest")
---timeout <ms>               global timeout in milliseconds. (default: no
+                             with --newest and --greatest: 1).
+--prefix <path>              Current working directory of npm.
+-r, --registry <url>         Third-party npm registry.
+--removeRange                Remove version ranges from the final package
+                             version.
+--semverLevel <value>        DEPRECATED. Renamed to --target.
+-s, --silent                 Don't output anything (--loglevel silent).
+-t, --target <value>         Target version to upgrade to: latest, newest,
+                             greatest, minor, patch. (default: "latest")
+--timeout <ms>               Global timeout in milliseconds. (default: no
                              global timeout and 30 seconds per
-                             npm-registery-fetch)
--u, --upgrade                overwrite package file
--x, --reject <matches>       exclude packages matching the given string,
-                             comma-or-space-delimited list, or /regex/
+                             npm-registery-fetch).
+-u, --upgrade                Overwrite package file with upgraded versions
+                             instead of just outputting to console.
+-x, --reject <matches>       Exclude packages matching the given string,
+                             comma-or-space-delimited list, or /regex/.
 -V, --version                output the version number
 -h, --help                   display help for command
 ```
