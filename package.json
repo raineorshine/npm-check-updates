@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "7.0.2",
+  "version": "7.1.1",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -27,16 +27,17 @@
   },
   "main": "./lib/npm-check-updates",
   "scripts": {
-    "nyc": "nyc",
+    "build": "node bin/build.js",
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
     "lintfix": "npm run lint -- --fix",
-    "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
-    "mocha": "mocha && mocha test/individual",
-    "test": "npm run lint && npm run mocha"
+    "nyc": "nyc",
+    "mocha": "mocha test test/package-managers/npm test/package-managers/yarn && mocha --exit test/timeout",
+    "test": "npm run lint && npm run mocha",
+    "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\""
   },
   "bin": {
-    "npm-check-updates": "./bin/npm-check-updates.js",
-    "ncu": "./bin/ncu.js"
+    "npm-check-updates": "./bin/cli.js",
+    "ncu": "./bin/cli.js"
   },
   "repository": {
     "type": "git",
@@ -50,17 +51,20 @@
     "chalk": "^4.1.0",
     "cint": "^8.2.1",
     "cli-table": "^0.3.1",
-    "commander": "^5.1.0",
+    "commander": "^6.0.0",
     "find-up": "4.1.0",
     "get-stdin": "^8.0.0",
     "json-parse-helpfulerror": "^1.0.3",
+    "jsonlines": "^0.1.1",
     "libnpmconfig": "^1.2.1",
     "lodash": "^4.17.19",
     "p-map": "^4.0.0",
-    "pacote": "^11.1.10",
+    "pacote": "^11.1.11",
+    "parse-github-url": "^1.0.2",
     "progress": "^2.0.3",
     "prompts": "^2.3.2",
     "rc-config-loader": "^3.0.0",
+    "remote-git-tags": "^3.0.0",
     "semver": "^7.3.2",
     "semver-utils": "^1.1.4",
     "spawn-please": "^0.3.0",
@@ -71,18 +75,19 @@
     "chai-as-promised": "^7.1.1",
     "chai-string": "^1.5.0",
     "chokidar-cli": "^2.1.0",
-    "eslint": "^7.4.0",
+    "eslint": "^7.6.0",
     "eslint-config-standard": "^14.1.1",
     "eslint-plugin-fp": "^2.3.0",
     "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-jsdoc": "^29.2.0",
+    "eslint-plugin-jsdoc": "^30.2.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "mocha": "^8.0.1",
+    "mocha": "^8.1.1",
     "nyc": "^15.1.0",
     "should": "^13.2.3",
-    "tmp": "0.2.1"
+    "tmp": "0.2.1",
+    "yarn": "^1.22.4"
   },
   "files": [
     "bin",

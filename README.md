@@ -80,58 +80,67 @@ $ ncu "/^(?!gulp-).*$/" # windows
 ## Options
 
 ```text
---concurrency            max number of concurrent HTTP requests to npm registry
-                         (default: 8)
---configFilePath         rc config file path (default: directory of
-                         `packageFile` or ./ otherwise)
---configFileName         rc config file name (default: .ncurc.{json,yml,js}) --cwd
-                         Used as current working directory for `spawn` in npm listing
---dep                    check only a specific section(s) of dependencies:
-                         prod|dev|peer|optional|bundle (comma-delimited)
---engines-node           include only packages that satisfy engines.node as
-                         specified in the package file
--e, --error-level        set the error-level. 1: exits with error code 0 if no
-                         errors occur. 2: exits with error code 0 if no
-                         packages need updating (useful for continuous
-                         integration)
--f, --filter             include only package names matching the given string,
-                         comma-or-space-delimited list, or /regex/
--g, --global             check global packages instead of in the current project
--i, --interactive        Enable interactive prompts for each dependency;
-                         Implies -u unless one of the json options are set
--j, --jsonAll            output new package file instead of human-readable
-                         message
---jsonDeps               returns output like `jsonAll` but only lists
-                         `dependencies`, `devDependencies`, and
-                         `optionalDependencies` of the new package data.
---jsonUpgraded           output upgraded dependencies in json
--l, --loglevel           what level of logs to report: silent, error, warn,
-                         info, verbose, silly (default: warn)
--m, --minimal            do not upgrade to newer versions that are already
-                         satisfied by the existing version range (v2 behavior).
--n, --newest             find the newest published versions available instead
-                         of the latest stable versions
--o, --ownerChanged       check if the package owner changed between current
-                         and next version.
--p, --packageManager     npm (default: npm)
---packageData            include stringified package file (use stdin instead)
---packageFile            package file location (default: ./package.json)
---pre                    include -alpha, -beta, -rc. (default: 0; default
-                         with --newest and --greatest: 1)
---prefix                 Used as current working directory in npm
--r, --registry           specify third-party NPM registry
---removeRange            remove version ranges from the final package version
--s, --silent             don't output anything (--loglevel silent)
---semverLevel            find the highest version within "major" or "minor"
--t, --greatest           find the highest versions available instead of the
-                         latest stable versions
---timeout                a global timeout in milliseconds. (default: no global
-                         timeout and 30 seconds per npm-registery-fetch)
--u, --upgrade            overwrite package file
--v, --version            get version
--V                       get version
--x, --reject             exclude packages matching the given string, comma-
-                         delimited list, or regex
+--concurrency <n>            Max number of concurrent HTTP requests to
+                             registry. (default: 8)
+--configFilePath <path>      Directory of .ncurc config file (default:
+                             directory of `packageFile`).
+--configFileName <filename>  Config file name (default: .ncurc.{json,yml,js})
+--cwd <path>                 Working directory in which npm will be executed.
+--dep <dep>                  Check one or more sections of dependencies only:
+                             prod, dev, peer, optional, bundle
+                             (comma-delimited).
+--enginesNode                Include only packages that satisfy engines.node
+                             as specified in the package file.
+-e, --errorLevel <n>         Set the error level. 1: exits with error code 0
+                             if no errors occur. 2: exits with error code 0
+                             if no packages need updating (useful for
+                             continuous integration). (default: 1)
+-f, --filter <matches>       Include only package names matching the given
+                             string, comma-or-space-delimited list, or
+                             /regex/.
+-g, --global                 Check global packages instead of in the current
+                             project.
+--greatest                   DEPRECATED. Renamed to "--target greatest".
+-i, --interactive            Enable interactive prompts for each dependency;
+                             implies -u unless one of the json options are
+                             set,
+-j, --jsonAll                Output new package file instead of
+                             human-readable message.
+--jsonDeps                   Like `jsonAll` but only lists `dependencies`,
+                             `devDependencies`, `optionalDependencies`, etc
+                             of the new package data.
+--jsonUpgraded               Output upgraded dependencies in json.
+-l, --loglevel <n>           Amount to log: silent, error, minimal, warn,
+                             info, verbose, silly. (default: "warn")
+-m, --minimal                Do not upgrade newer versions that are already
+                             satisfied by the version range according to
+                             semver.
+-n, --newest                 DEPRECATED. Renamed to "--target newest".
+-o, --ownerChanged           Check if the package owner changed between current
+                             and next version.
+-p, --packageManager <name>  npm, yarn (default: "npm")
+--packageData                Include stringified package file (you can also
+                             send to stdin).
+--packageFile <path>         Package file location (default: ./package.json).
+--pre <n>                    Include -alpha, -beta, -rc. (default: 0; default
+                             with --newest and --greatest: 1).
+--prefix <path>              Current working directory of npm.
+-r, --registry <url>         Third-party npm registry.
+--removeRange                Remove version ranges from the final package
+                             version.
+--semverLevel <value>        DEPRECATED. Renamed to --target.
+-s, --silent                 Don't output anything (--loglevel silent).
+-t, --target <value>         Target version to upgrade to: latest, newest,
+                             greatest, minor, patch. (default: "latest")
+--timeout <ms>               Global timeout in milliseconds. (default: no
+                             global timeout and 30 seconds per
+                             npm-registery-fetch).
+-u, --upgrade                Overwrite package file with upgraded versions
+                             instead of just outputting to console.
+-x, --reject <matches>       Exclude packages matching the given string,
+                             comma-or-space-delimited list, or /regex/.
+-V, --version                output the version number
+-h, --help                   display help for command
 ```
 
 ## How dependency updates are determined
@@ -149,9 +158,9 @@ $ ncu "/^(?!gulp-).*$/" # windows
   - `1.0.0 < 2.0.0` → `^3.0.0`
 - "Any version" is preserved:
   - `*` → `*`
-- with `--semverLevel major`, the major version is preserved:
+- with `--target minor`, only update patch and minor:
   - `0.1.0` → `0.2.1`
-- with `--semverLevel minor`, the major and minor versions are preserved:
+- with `--target patch`, only update patch:
   - `0.1.0` → `0.1.2`
 
 ## Configuration Files
@@ -178,22 +187,21 @@ For example, `.ncurc.json`:
 npm-check-updates can be required:
 
 ```js
-const ncu = require('npm-check-updates');
+const ncu = require('npm-check-updates')
 
-ncu.run({
-    // Any command-line option can be specified here.
-    // These are set by default:
-    jsonUpgraded: true,
-    packageManager: 'npm',
-    silent: true
-}).then((upgraded) => {
-    console.log('dependencies to upgrade:', upgraded);
-});
+const upgraded = await ncu.run({
+  // Any command-line option can be specified here.
+  // These are set by default:
+  jsonUpgraded: true,
+  silent: true
+})
+
+console.log('dependencies to upgrade:', upgraded)
 ```
 
 ## Known Issues
 
-- Windows: If npm-check-updates hangs, run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu -g --packageFile package.json`. See [#136](https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102).
+- Windows: If npm-check-updates hangs, run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu --packageFile package.json`. See [#136](https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102).
 
 Also search the [issues page](https://github.com/raineorshine/npm-check-updates/issues).
 

@@ -105,6 +105,7 @@ describe('versionmanager', () => {
       vm.upgradeDependencyDeclaration('^1.0.0', '1.0.1', { removeRange: true }).should.equal('1.0.1')
       vm.upgradeDependencyDeclaration('2.2.*', '3.1.1', { removeRange: true }).should.equal('3.1.1')
     })
+
   })
 
   describe('upgradePackageData', () => {
@@ -160,6 +161,23 @@ describe('versionmanager', () => {
           },
           devDependencies: {
             mocha: '^2'
+          }
+        })
+    })
+
+    it('should upgrade npm aliases', async () => {
+
+      const oldDependencies = { foo: 'ncu-test-v2@^1.0.0' }
+      const newDependencies = { foo: 'ncu-test-v2@^2.0.0' }
+      const newVersions = { foo: 'ncu-test-v2@2.0.0' }
+      const oldPkgData = JSON.stringify({ dependencies: oldDependencies })
+
+      const { newPkgData } = await vm.upgradePackageData(oldPkgData, oldDependencies, newDependencies, newVersions)
+
+      JSON.parse(newPkgData)
+        .should.eql({
+          dependencies: {
+            foo: 'ncu-test-v2@^2.0.0'
           }
         })
     })
@@ -438,19 +456,37 @@ describe('versionmanager', () => {
         .should.eventually.deep.equal({})
     })
 
-    it('set the versionTarget explicitly to latest', () => {
-      return vm.queryVersions({ async: '1.5.1' }, { versionTarget: 'latest', loglevel: 'silent' })
+    it('set the target explicitly to latest', () => {
+      return vm.queryVersions({ async: '1.5.1' }, { target: 'latest', loglevel: 'silent' })
         .should.eventually.have.property('async')
     })
 
-    it('set the versionTarget to greatest', () => {
-      return vm.queryVersions({ async: '1.5.1' }, { versionTarget: 'greatest', loglevel: 'silent' })
+    it('set the target to greatest', () => {
+      return vm.queryVersions({ async: '1.5.1' }, { target: 'greatest', loglevel: 'silent' })
         .should.eventually.have.property('async')
     })
 
-    it('should return an error for an unsupported versionTarget', () => {
-      const a = vm.queryVersions({ async: '1.5.1' }, { versionTarget: 'foo', loglevel: 'silent' })
+    it('should return an error for an unsupported target', () => {
+      const a = vm.queryVersions({ async: '1.5.1' }, { target: 'foo', loglevel: 'silent' })
       return a.should.be.rejected
+    })
+
+    it('npm aliases should upgrade the installed package', () => {
+      return vm.queryVersions({
+        request: 'npm:ncu-test-v2@1.0.0'
+      }, { loglevel: 'silent' })
+        .should.eventually.deep.equal({
+          request: 'npm:ncu-test-v2@2.0.0'
+        })
+    })
+
+    it('github urls should upgrade the embedded semver tag', () => {
+      return vm.queryVersions({
+        'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#v1.0.0'
+      }, { loglevel: 'silent' })
+        .should.eventually.deep.equal({
+          'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#v2.0.0'
+        })
     })
 
   })
