@@ -49,10 +49,54 @@ describe('doctor', () => {
     try {
       await ncu(['--doctor', '-u'], {
         cwd,
-        stdout: function(data) {
+        stdout: function (data) {
           stdout += data
         },
-        stderr: function(data) {
+        stderr: function (data) {
+          stderr += data
+        },
+      })
+    }
+    catch (e) {}
+
+    const pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
+
+    // cleanup before assertions in case they fail
+    fs.writeFileSync(pkgPath, pkgOriginal)
+    rimraf.sync(lockfilePath)
+    rimraf.sync(nodeModulesPath)
+
+    // stdout should include normal output
+    stdout.should.include('✓ Tests pass')
+    stdout.should.include('ncu-test-v2  ~1.0.0  →  ~2.0.0')
+
+    // stderr should include first failing upgrade
+    stderr.should.equal('')
+
+    // package file should include upgrades
+    pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
+  })
+
+  it('pass through options', async function () {
+
+    this.timeout(30000)
+
+    const cwd = path.join(__dirname, 'doctor/options')
+    const pkgPath = path.join(cwd, 'package.json')
+    const lockfilePath = path.join(cwd, 'package-lock.json')
+    const nodeModulesPath = path.join(cwd, 'node_modules')
+    const pkgOriginal = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')
+    let stdout = ''
+    let stderr = ''
+
+    try {
+      // check only ncu-test-v2 (excluding ncu-return-version)
+      await ncu(['--doctor', '-u', '--filter', 'ncu-test-v2'], {
+        cwd,
+        stdout: function (data) {
+          stdout += data
+        },
+        stderr: function (data) {
           stderr += data
         },
       })
@@ -103,10 +147,10 @@ describe('doctor', () => {
     try {
       await ncu(['--doctor', '-u'], {
         cwd,
-        stdout: function(data) {
+        stdout: function (data) {
           stdout += data
         },
-        stderr: function(data) {
+        stderr: function (data) {
           stderr += data
         },
       })
