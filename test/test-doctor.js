@@ -6,6 +6,7 @@ const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const spawn = require('spawn-please')
 const rimraf = require('rimraf')
+const { doctorHelpText } = require('../lib/constants.js')
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -15,24 +16,30 @@ const ncu = (args, options) => spawn(path.join(__dirname, '../bin/cli.js'), args
 
 describe('doctor', () => {
 
-  it('throw an error if there is no package file', async () => {
+  it('print instructions when -u is not specified', async () => {
     const cwd = path.join(__dirname, 'doctor/nopackagefile')
     return ncu(['--doctor'], { cwd })
+      .should.eventually.equal(doctorHelpText + '\n')
+  })
+
+  it('throw an error if there is no package file', async () => {
+    const cwd = path.join(__dirname, 'doctor/nopackagefile')
+    return ncu(['--doctor', '-u'], { cwd })
       .should.eventually.be.rejectedWith('Missing or invalid package.json')
   })
 
   it('throw an error if there is no test script', async () => {
     const cwd = path.join(__dirname, 'doctor/notestscript')
-    return ncu(['--doctor'], { cwd })
+    return ncu(['--doctor', '-u'], { cwd })
       .should.eventually.be.rejectedWith('No npm "test" script')
   })
 
   it('throw an error if --packageData or --packageFile are supplied', async () => {
 
     return Promise.all([
-      ncu(['--doctor', '--packageFile', 'package.json'])
+      ncu(['--doctor', '-u', '--packageFile', 'package.json'])
         .should.eventually.be.rejectedWith('--packageData and --packageFile are not allowed with --doctor'),
-      ncu(['--doctor', '--packageData', '{}'])
+      ncu(['--doctor', '-u', '--packageData', '{}'])
         .should.eventually.be.rejectedWith('--packageData and --packageFile are not allowed with --doctor')
     ])
 
@@ -51,7 +58,7 @@ describe('doctor', () => {
     let stderr = ''
 
     try {
-      await ncu(['--doctor'], {
+      await ncu(['--doctor', '-u'], {
         cwd,
         stdout: function(data) {
           stdout += data

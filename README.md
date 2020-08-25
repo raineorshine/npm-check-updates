@@ -90,7 +90,8 @@ $ ncu "/^(?!gulp-).*$/" # windows
                              prod, dev, peer, optional, bundle
                              (comma-delimited).
 --doctor                     Iteratively installs upgrades and runs tests to
-                             identify breaking upgrades.
+                             identify breaking upgrades. Run "ncu --doctor"
+                             for detailed help. Add "-u" to execute.
 --enginesNode                Include only packages that satisfy engines.node
                              as specified in the package file.
 -e, --errorLevel <n>         Set the error level. 1: exits with error code 0
