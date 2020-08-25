@@ -46,7 +46,7 @@ describe('doctor', () => {
     const pkgPath = path.join(cwd, 'package.json')
     const lockfilePath = path.join(cwd, 'package-lock.json')
     const nodeModulesPath = path.join(cwd, 'node_modules')
-    const pkgOriginal = fs.readFileSync(path.join(cwd, 'package-original.json'), 'utf-8')
+    const pkgOriginal = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
     let stderr = ''
 
@@ -60,17 +60,28 @@ describe('doctor', () => {
           stderr += data
         },
       })
+
+      throw new Error('should not resolve')
     }
-    catch (e) {
-      stdout.should.include('✓ ncu-test-v2 1.0.0 → 2.0.0')
-      stdout.should.include('Breaks with v2.x')
-      stderr.should.include('✗ ncu-test-return-version 1.0.0 → 2.0.0')
-    }
-    finally {
-      fs.writeFileSync(pkgPath, pkgOriginal)
-      rimraf.sync(lockfilePath)
-      rimraf.sync(nodeModulesPath)
-    }
+    catch (e) {}
+
+    const pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
+
+    // cleanup before assertions in case they fail
+    fs.writeFileSync(pkgPath, pkgOriginal)
+    rimraf.sync(lockfilePath)
+    rimraf.sync(nodeModulesPath)
+
+    // stdout should include successful upgrades
+    stdout.should.include('✓ ncu-test-v2 ~1.0.0 → ~2.0.0')
+
+    // stderr should include first failing upgrade
+    stderr.should.include('Breaks with v2.x')
+    stderr.should.include('✗ ncu-test-return-version ~1.0.0 → ~2.0.0')
+
+    // package file should only include successful upgrades
+    pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
+    pkgUpgraded.should.include('"ncu-test-return-version": "~1.0.0"')
 
   })
 
