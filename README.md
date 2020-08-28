@@ -116,9 +116,9 @@ $ ncu "/^(?!gulp-).*$/" # windows
                              satisfied by the version range according to
                              semver.
 -n, --newest                 DEPRECATED. Renamed to "--target newest".
--o, --ownerChanged           Check if the package owner changed between current
-                             and next version.
 -p, --packageManager <name>  npm, yarn (default: "npm")
+-o, --ownerChanged           Check if the package owner changed between
+                             current and upgraded version.
 --packageData                Include stringified package file (you can also
                              send to stdin).
 --packageFile <path>         Package file location (default: ./package.json).
