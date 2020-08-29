@@ -38,7 +38,7 @@ To be more precise:
 
 Example:
 
-```sh
+```
 $ ncu --doctor -u
 npm install
 npm run test
