@@ -56,6 +56,9 @@ declare namespace ncu {
     /** npm, yarn (default: "npm") */
     packageManager?: string;
 
+    /** Check if the package owner changed between current and upgraded version. */
+    ownerChanged?: boolean;
+
     /** Include stringified package file (you can also send to stdin). */
     packageData?: boolean;
 
