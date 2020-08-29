@@ -224,19 +224,21 @@ For example, `.ncurc.json`:
 }
 ```
 
-## Module Use
+## Module/Programmatic Usage
 
-npm-check-updates can be required:
+npm-check-updates can be required as a module:
 
 ```js
 const ncu = require('npm-check-updates')
 
 const upgraded = await ncu.run({
-  // Any command-line option can be specified here.
-  // These are set by default:
+  // Pass any cli option.
+  // Defaults:
   jsonUpgraded: true,
   silent: true
 })
+
+console.log(upgraded) // { "mypackage": "^2.0.0", ... }
 ```
 
 ## Known Issues
