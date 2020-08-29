@@ -1,6 +1,129 @@
 # Changelog
 This file documents all **major version** releases. For other releases, you'll have to read the [commit history](https://github.com/raineorshine/npm-check-updates/).
 
+## [8.0.0] - 2020-08-29
+
+### Breaking
+
+- `--semverLevel major` is now `--target minor`. `--semverLevel minor` is now `--target patch`. This change was made to provide more intuitive semantics for `--semverLevel` (now `--target`). Most people assumed it meant the inclusive upper bound, so now it reflects that. [a2111f4c2](https://github.com/raineorshine/npm-check-updates/commits/a2111f4c2)
+- Programmatic usage: `run` now defaults to `silent: true` instead of `loglevel: 'silent`, unless `loglevel` is explicitly specified. If you overrode `silent` or `loglevel`, this may affect the logging behavior. [423e024](https://github.com/raineorshine/npm-check-updates/commits/423e024)
+
+### Deprecated
+
+Options that controlled the target version (upper bound) of upgrades have been consolidated under `--target`. The old options are aliased with a deprecation warning and will be removed in the next major version. No functionality has been removed.
+
+- `--greatest`: Renamed to `--target greatest`
+- `--newest`: Renamed to `--target newest`
+- `--semverLevel`: Renamed to `--target`
+
+See: [7eca5bf3](https://github.com/raineorshine/npm-check-updates/commits/7eca5bf3)
+
+### Features
+
+#### Doctor Mode
+
+[#722](https://github.com/raineorshine/npm-check-updates/pull/722)
+
+Usage: `ncu --doctor [-u] [options]`
+
+Iteratively installs upgrades and runs tests to identify breaking upgrades. Add `-u` to execute (modifies your package file, lock file, and node_modules).
+
+To be more precise:
+1. Runs `npm install` and `npm test` to ensure tests are currently passing.
+2. Runs `ncu -u` to optimistically upgrade all dependencies.
+3. If tests pass, hurray!
+4. If tests fail, restores package file and lock file.
+5. For each dependency, install upgrade and run tests.
+6. When the breaking upgrade is found, saves partially upgraded package.json (not including the breaking upgrade) and exits.
+
+Example:
+
+```sh
+$ ncu --doctor -u
+npm install
+npm run test
+ncu -u
+npm install
+npm run test
+Failing tests found:
+/projects/myproject/test.js:13
+  throw new Error('Test failed!')
+  ^
+Now let's identify the culprit, shall we?
+Restoring package.json
+Restoring package-lock.json
+npm install
+npm install --no-save react@16.0.0
+npm run test
+  ✓ react 15.0.0 → 16.0.0
+npm install --no-save react-redux@7.0.0
+npm run test
+  ✗ react-redux 6.0.0 → 7.0.0
+Saving partially upgraded package.json
+```
+
+#### Github URLs
+
+Added support for GitHub URLs.
+
+See: [f0aa792a4](https://github.com/raineorshine/npm-check-updates/commits/f0aa792a4)
+
+Example:
+
+```json
+{
+  "dependencies": {
+    "chalk": "https://github.com/chalk/chalk#v2.0.0"
+  }
+}
+```
+
+#### npm aliases
+
+Added support for npm aliases.
+
+See: [0f6f35c](https://github.com/raineorshine/npm-check-updates/commits/0f6f35c)
+
+Example:
+
+```json
+{
+  "dependencies": {
+    "request": "npm:postman-request@2.88.1-postman.16"
+  }
+}
+```
+
+#### Owner Changed
+
+[#621](https://github.com/raineorshine/npm-check-updates/pull/621)
+
+Usage: `ncu --ownerChanged`
+
+Check if the npm user that published the package has changed between current and upgraded version.
+
+Output values:
+
+- Owner changed: `*owner changed*`
+- Owner has not changed: *no output*
+- Owner information not available: `*unknown*`
+
+Example:
+
+```sh
+$ ncu --ownerChanged
+Checking /tmp/package.json
+[====================] 1/1 100%
+
+ mocha  ^7.1.0  →  ^8.1.3  *owner changed*
+
+Run ncu -u to upgrade package.json
+```
+
+### Commits
+
+https://github.com/raineorshine/npm-check-updates/compare/v7.1.1...v8.0.0
+
 ## [7.0.0] - 2020-06-09
 
 ### Breaking
@@ -22,7 +145,7 @@ https://github.com/raineorshine/npm-check-updates/compare/v6.0.2...v7.0.0
 
 ## [6.0.0] - 2020-05-14
 
-### Breaking Changes
+### Breaking
 - `--semverLevel` now supports version ranges. This is a breaking change since version ranges are no longer ignored by `--semverLevel`, which may result in some dependencies having new suggested updates.
 
 If you are not using `--semverLevel`, NO CHANGE! 😅
@@ -31,7 +154,7 @@ https://github.com/raineorshine/npm-check-updates/compare/v5.0.0...v6.0.0
 
 ## [5.0.0] - 2020-05-11
 
-### Breaking Changes
+### Breaking
 ~node >= 8~
 node >= 10.17
 
@@ -58,7 +181,7 @@ https://github.com/raineorshine/npm-check-updates/compare/v3.2.2...v4.0.0
 
 ## [3.0.0] - 2019-03-07
 
-### Breaking Changes
+### Breaking
 
 #### node < 8 deprecated
 The required node version has been updated to allow the use of newer Javascript features and reduce maintenance efforts for old versions.
