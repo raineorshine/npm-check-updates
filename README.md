@@ -165,6 +165,46 @@ $ ncu "/^(?!gulp-).*$/" # windows
 - with `--target patch`, only update patch:
   - `0.1.0` → `0.1.2`
 
+## Doctor Mode
+
+Usage: `ncu --doctor [-u] [options]`
+
+Iteratively installs upgrades and runs tests to identify breaking upgrades. Add `-u` to execute (modifies your package file, lock file, and node_modules).
+
+To be more precise:
+1. Runs `npm install` and `npm test` to ensure tests are currently passing.
+2. Runs `ncu -u` to optimistically upgrade all dependencies.
+3. If tests pass, hurray!
+4. If tests fail, restores package file and lock file.
+5. For each dependency, install upgrade and run tests.
+6. When the breaking upgrade is found, saves partially upgraded package.json (not including the breaking upgrade) and exits.
+
+Example:
+
+```
+$ ncu --doctor -u
+npm install
+npm run test
+ncu -u
+npm install
+npm run test
+Failing tests found:
+/projects/myproject/test.js:13
+  throw new Error('Test failed!')
+  ^
+Now let's identify the culprit, shall we?
+Restoring package.json
+Restoring package-lock.json
+npm install
+npm install --no-save react@16.0.0
+npm run test
+  ✓ react 15.0.0 → 16.0.0
+npm install --no-save react-redux@7.0.0
+npm run test
+  ✗ react-redux 6.0.0 → 7.0.0
+Saving partially upgraded package.json
+```
+
 ## Configuration Files
 
 Use a `.ncurc.{json,yml,js}` file to specify configuration information.
@@ -197,8 +237,6 @@ const upgraded = await ncu.run({
   jsonUpgraded: true,
   silent: true
 })
-
-console.log('dependencies to upgrade:', upgraded)
 ```
 
 ## Known Issues
@@ -209,4 +247,4 @@ Also search the [issues page](https://github.com/raineorshine/npm-check-updates/
 
 ## Problems?
 
-Please [file an issue](https://github.com/raineorshine/npm-check-updates/issues)! But always [search existing issues](https://github.com/raineorshine/npm-check-updates/issues?utf8=%E2%9C%93&q=is%3Aissue) first!
+[File an issue](https://github.com/raineorshine/npm-check-updates/issues). Please [search existing issues](https://github.com/raineorshine/npm-check-updates/issues?utf8=%E2%9C%93&q=is%3Aissue) first.
