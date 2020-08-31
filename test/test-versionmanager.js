@@ -489,6 +489,17 @@ describe('versionmanager', () => {
         })
     })
 
+    it('private github urls with tags should be ignored', () => {
+      return vm.queryVersions({
+        'ncu-test-private': 'https://github.com/ncu-test/ncu-test-private#v999.9.9',
+        'ncu-test-v2': '^1.0.0'
+      }, { loglevel: 'silent' })
+        .should.eventually.deep.equal({
+          'ncu-test-v2': '2.0.0',
+          'ncu-test-private': 'https://github.com/ncu-test/ncu-test-private#v999.9.9',
+        })
+    })
+
   })
 
   describe('isUpgradeable', () => {
