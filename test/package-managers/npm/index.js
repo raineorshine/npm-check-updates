@@ -11,21 +11,21 @@ describe('npm', function () {
 
   this.timeout(30000)
 
-  it('list', async () =>
-    await packageManagers.npm.list({ cwd: __dirname })
-      .should.eventually.have.property('express')
-  )
+  it('list', async () => {
+    const versionObject = await packageManagers.npm.list({ cwd: __dirname })
+    versionObject.should.have.property('express')
+  })
 
-  it('latest', async () =>
-    await packageManagers.npm.latest('express', null, { cwd: __dirname })
+  it('latest', async () => {
+    const version = await packageManagers.npm.latest('express', null, { cwd: __dirname })
       .then(parseInt)
-      .should.eventually.be.above(1)
-  )
+    parseInt(version, 10).should.be.above(1)
+  })
 
-  it('greatest', async () =>
-    await packageManagers.npm.greatest('ncu-test-greatest-not-newest', null, { cwd: __dirname })
-      .should.eventually.equal('2.0.0-beta')
-  )
+  it('greatest', async () => {
+    const version = await packageManagers.npm.greatest('ncu-test-greatest-not-newest', null, { pre: true, cwd: __dirname })
+    version.should.equal('2.0.0-beta')
+  })
 
   it('ownerChanged', async () => {
     await packageManagers.npm.packageAuthorChanged('mocha', '^7.1.0', '8.0.1').should.eventually.equal(true)
