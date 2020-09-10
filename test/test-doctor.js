@@ -12,9 +12,11 @@ chai.should()
 chai.use(chaiAsPromised)
 
 /** Run the ncu CLI. */
-const ncu = (args, options) => spawn(path.join(__dirname, '../bin/cli.js'), args, options)
+const ncu = (args, options) => spawn('node', [path.join(__dirname, '../bin/cli.js'), ...args], options)
 
-describe('doctor', () => {
+describe('doctor', function() {
+
+  this.timeout(30000)
 
   it('print instructions when -u is not specified', async () => {
     const cwd = path.join(__dirname, 'doctor/nopackagefile')
@@ -35,8 +37,6 @@ describe('doctor', () => {
   })
 
   it('upgrade dependencies when tests pass', async function () {
-
-    this.timeout(30000)
 
     const cwd = path.join(__dirname, 'doctor/pass')
     const pkgPath = path.join(cwd, 'package.json')
@@ -78,8 +78,6 @@ describe('doctor', () => {
   })
 
   it('pass through options', async function () {
-
-    this.timeout(30000)
 
     const cwd = path.join(__dirname, 'doctor/options')
     const pkgPath = path.join(cwd, 'package.json')
@@ -133,8 +131,6 @@ describe('doctor', () => {
   })
 
   it('identify broken upgrade', async function() {
-
-    this.timeout(30000)
 
     const cwd = path.join(__dirname, 'doctor/fail')
     const pkgPath = path.join(cwd, 'package.json')
