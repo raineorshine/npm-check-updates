@@ -1,6 +1,14 @@
 # Changelog
 This file documents all **major version** releases. For other releases, you'll have to read the [commit history](https://github.com/raineorshine/npm-check-updates/).
 
+## [9.0.0] - 2020-09-10
+
+### Breaking
+
+- Versions marked as `deprecated` in npm are now ignored by default. If the latest version is deprecated, the next highest non-deprecated version will be suggested. Use `--deprecated` to include deprecated versions (old behavior).
+
+https://github.com/raineorshine/npm-check-updates/compare/v8.1.1...v9.0.0
+
 ## [8.0.0] - 2020-08-29
 
 ### Breaking

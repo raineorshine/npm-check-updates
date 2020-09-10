@@ -17,6 +17,9 @@ declare namespace ncu {
     /** Check one or more sections of dependencies only: prod, dev, peer, optional, bundle (comma-delimited). */
     dep?: string;
 
+    /** Include deprecated packages. */
+    deprecated?: boolean;
+
     /** Iteratively installs upgrades and runs tests to identify breaking upgrades. Run "ncu --doctor" for detailed help. Add "-u" to execute. */
     doctor?: boolean;
 

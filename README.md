@@ -89,6 +89,7 @@ $ ncu "/^(?!gulp-).*$/" # windows
 --dep <dep>                  Check one or more sections of dependencies only:
                              prod, dev, peer, optional, bundle
                              (comma-delimited).
+--deprecated                 Include deprecated packages.
 --doctor                     Iteratively installs upgrades and runs tests to
                              identify breaking upgrades. Run "ncu --doctor"
                              for detailed help. Add "-u" to execute.
