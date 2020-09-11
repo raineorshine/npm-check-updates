@@ -157,7 +157,7 @@ describe('run', function () {
   it('should not upgrade prereleases to newer prereleases with --pre 0', () => {
 
     return ncu.run({
-      pre: false,
+      pre: 0,
       packageData: JSON.stringify({
         dependencies: {
           'ncu-test-alpha-latest': '1.0.0-alpha.1'
@@ -187,7 +187,7 @@ describe('run', function () {
     })
   })
 
-  it('should not require --pre with --newest option', () => {
+  it('should not require --pre with --target newest', () => {
 
     return ncu.run({
       jsonAll: true,
@@ -196,7 +196,7 @@ describe('run', function () {
           'ncu-mock-pre': '1.0.0'
         }
       }),
-      newest: true
+      target: 'newest'
     }).then(data => {
       return data.should.eql({
         dependencies: {
@@ -206,7 +206,7 @@ describe('run', function () {
     })
   })
 
-  it('should not require --pre with --greatest option', () => {
+  it('should not require --pre with --target greatest', () => {
 
     return ncu.run({
       jsonAll: true,
@@ -215,7 +215,7 @@ describe('run', function () {
           'ncu-mock-pre': '1.0.0'
         }
       }),
-      greatest: true
+      target: 'greatest'
     }).then(data => {
       return data.should.eql({
         dependencies: {
@@ -225,7 +225,7 @@ describe('run', function () {
     })
   })
 
-  it('should allow --pre 0 with --newest option to exclude prereleases', () => {
+  it('should allow --pre 0 with --target newest to exclude prereleases', () => {
 
     return ncu.run({
       jsonAll: true,
@@ -234,8 +234,8 @@ describe('run', function () {
           'ncu-mock-pre': '1.0.0'
         }
       }),
-      newest: true,
-      pre: '0'
+      target: 'newest',
+      pre: 0
     }).then(data => {
       return data.should.eql({
         dependencies: {
@@ -245,11 +245,11 @@ describe('run', function () {
     })
   })
 
-  it('should work with --newest option with any invalid or wildcard range', () => {
+  it('should work with --target newest with any invalid or wildcard range', () => {
     return Promise.all([
       ncu.run({
         jsonAll: true,
-        newest: true,
+        target: 'newest',
         packageData: JSON.stringify({
           dependencies: {
             del: ''
@@ -258,7 +258,7 @@ describe('run', function () {
       }),
       ncu.run({
         jsonAll: true,
-        newest: true,
+        target: 'newest',
         packageData: JSON.stringify({
           dependencies: {
             del: 'invalid range'
@@ -267,7 +267,7 @@ describe('run', function () {
       }),
       ncu.run({
         jsonAll: true,
-        newest: true,
+        target: 'newest',
         packageData: JSON.stringify({
           dependencies: {
             del: '*'
@@ -276,7 +276,7 @@ describe('run', function () {
       }),
       ncu.run({
         jsonAll: true,
-        newest: true,
+        target: 'newest',
         packageData: JSON.stringify({
           dependencies: {
             del: '~'
@@ -365,22 +365,26 @@ describe('run', function () {
     })
   })
 
-  it('should not allow --greatest and --newest together', async () => {
-    ncu.run({ greatest: true, newest: true })
-      .should.eventually.be.rejectedWith('Cannot specify both')
-  })
-
-  it('should not allow --target and --greatest together', async () => {
-    ncu.run({ target: 'greatest', newest: true })
-      .should.eventually.be.rejectedWith('Cannot specify both')
-  })
-
-  it('should not allow --target and --newest together', async () => {
-    ncu.run({ target: 'newest', greatest: true })
-      .should.eventually.be.rejectedWith('Cannot specify both')
-  })
-
   describe('target', () => {
+
+    it('should not allow --greatest and --newest together', async () => {
+      ncu.run({ greatest: true, target: 'newest' })
+        .should.eventually.be.rejectedWith('Cannot specify both')
+      ncu.run({ target: 'greatest', newest: true })
+        .should.eventually.be.rejectedWith('Cannot specify both')
+      ncu.run({ greatest: true, newest: true })
+        .should.eventually.be.rejectedWith('Cannot specify both')
+    })
+
+    it('should not allow --target and --greatest together', async () => {
+      ncu.run({ target: 'greatest', greatest: true })
+        .should.eventually.be.rejectedWith('Cannot specify both')
+    })
+
+    it('should not allow --target and --newest together', async () => {
+      ncu.run({ target: 'newest', newest: true })
+        .should.eventually.be.rejectedWith('Cannot specify both')
+    })
 
     it('should not update major versions with --target minor', async () => {
       const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
