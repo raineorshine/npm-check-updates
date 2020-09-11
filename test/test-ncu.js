@@ -19,13 +19,13 @@ describe('run', function () {
   }
   this.timeout(30000)
 
-  it('should return promised jsonUpgraded', () => {
+  it('return promised jsonUpgraded', () => {
     return ncu.run({
       packageData: fs.readFileSync(`${__dirname}/ncu/package.json`, 'utf-8')
     }).should.eventually.have.property('express')
   })
 
-  it('should filter by package name with one arg', () => {
+  it('filter by package name with one arg', () => {
     const upgraded = ncu.run({
       packageData: fs.readFileSync(`${__dirname}/ncu/package2.json`, 'utf-8'),
       args: ['lodash.map']
@@ -36,7 +36,7 @@ describe('run', function () {
     ])
   })
 
-  it('should filter by package name with multiple args', () => {
+  it('filter by package name with multiple args', () => {
     const upgraded = ncu.run({
       packageData: fs.readFileSync(`${__dirname}/ncu/package2.json`, 'utf-8'),
       args: ['lodash.map', 'lodash.filter']
@@ -47,7 +47,7 @@ describe('run', function () {
     ])
   })
 
-  it('should suggest upgrades to versions within the specified version range if jsonUpgraded is true', () => {
+  it('suggest upgrades to versions within the specified version range if jsonUpgraded is true', () => {
     const upgraded = ncu.run({
       // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
       packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
@@ -62,7 +62,7 @@ describe('run', function () {
     ])
   })
 
-  it('should not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimial is true', () => {
+  it('not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimial is true', () => {
     const upgraded = ncu.run({
       // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
       packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
@@ -73,7 +73,7 @@ describe('run', function () {
     return upgraded.should.eventually.not.have.property('juggernaut')
   })
 
-  it('should only upgrade devDependencies and peerDependencies with --dep dev', () => {
+  it('only upgrade devDependencies and peerDependencies with --dep dev', () => {
     const upgraded = ncu.run({
       packageData: fs.readFileSync(`${__dirname}/ncu/package-dep.json`, 'utf-8'),
       dep: 'dev'
@@ -86,7 +86,7 @@ describe('run', function () {
     ])
   })
 
-  it('should only upgrade devDependencies and peerDependencies with --dep dev,peer', () => {
+  it('only upgrade devDependencies and peerDependencies with --dep dev,peer', () => {
     const upgraded = ncu.run({
       packageData: fs.readFileSync(`${__dirname}/ncu/package-dep.json`, 'utf-8'),
       dep: 'dev,peer'
@@ -99,7 +99,7 @@ describe('run', function () {
     ])
   })
 
-  it('should write to --packageFile and output jsonUpgraded', async () => {
+  it('write to --packageFile and output jsonUpgraded', async () => {
 
     const tempFile = getTempFile()
     fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
@@ -121,7 +121,7 @@ describe('run', function () {
     }
   })
 
-  it('should exclude -alpha, -beta, -rc', () => {
+  it('exclude -alpha, -beta, -rc', () => {
 
     return ncu.run({
       jsonAll: true,
@@ -139,7 +139,7 @@ describe('run', function () {
     })
   })
 
-  it('should upgrade prereleases to newer prereleases', () => {
+  it('upgrade prereleases to newer prereleases', () => {
 
     return ncu.run({
       packageData: JSON.stringify({
@@ -154,7 +154,7 @@ describe('run', function () {
     })
   })
 
-  it('should not upgrade prereleases to newer prereleases with --pre 0', () => {
+  it('not upgrade prereleases to newer prereleases with --pre 0', () => {
 
     return ncu.run({
       pre: 0,
@@ -168,7 +168,7 @@ describe('run', function () {
     })
   })
 
-  it('should include -alpha, -beta, -rc with --pre option', () => {
+  it('include -alpha, -beta, -rc with --pre option', () => {
 
     return ncu.run({
       jsonAll: true,
@@ -187,7 +187,7 @@ describe('run', function () {
     })
   })
 
-  it('should not require --pre with --target newest', () => {
+  it('not require --pre with --target newest', () => {
 
     return ncu.run({
       jsonAll: true,
@@ -206,7 +206,7 @@ describe('run', function () {
     })
   })
 
-  it('should not require --pre with --target greatest', () => {
+  it('not require --pre with --target greatest', () => {
 
     return ncu.run({
       jsonAll: true,
@@ -225,7 +225,7 @@ describe('run', function () {
     })
   })
 
-  it('should allow --pre 0 with --target newest to exclude prereleases', () => {
+  it('allow --pre 0 with --target newest to exclude prereleases', () => {
 
     return ncu.run({
       jsonAll: true,
@@ -245,7 +245,7 @@ describe('run', function () {
     })
   })
 
-  it('should work with --target newest with any invalid or wildcard range', () => {
+  it('work with --target newest with any invalid or wildcard range', () => {
     return Promise.all([
       ncu.run({
         jsonAll: true,
@@ -286,7 +286,7 @@ describe('run', function () {
     ])
   })
 
-  it('should enable --enginesNode matching ', () => {
+  it('enable --enginesNode matching ', () => {
     return ncu.run({
       jsonAll: true,
       packageData: JSON.stringify({
@@ -310,7 +310,7 @@ describe('run', function () {
     })
   })
 
-  it('should enable engines matching if --enginesNode', () => {
+  it('enable engines matching if --enginesNode', () => {
     return ncu.run({
       jsonAll: true,
       packageData: JSON.stringify({
@@ -329,7 +329,7 @@ describe('run', function () {
     })
   })
 
-  it('should enable engines matching if --enginesNode, not update if matches not exists', () => {
+  it('enable engines matching if --enginesNode, not update if matches not exists', () => {
     return ncu.run({
       jsonAll: true,
       packageData: JSON.stringify({
@@ -348,7 +348,7 @@ describe('run', function () {
     })
   })
 
-  it('should enable engines matching if --enginesNode, update to latest version if engines.node not exists', () => {
+  it('enable engines matching if --enginesNode, update to latest version if engines.node not exists', () => {
     return ncu.run({
       jsonAll: true,
       packageData: JSON.stringify({
@@ -367,7 +367,7 @@ describe('run', function () {
 
   describe('target', () => {
 
-    it('should not allow --greatest and --newest together', async () => {
+    it('not allow --greatest and --newest together', async () => {
       ncu.run({ greatest: true, target: 'newest' })
         .should.eventually.be.rejectedWith('Cannot specify both')
       ncu.run({ target: 'greatest', newest: true })
@@ -376,49 +376,49 @@ describe('run', function () {
         .should.eventually.be.rejectedWith('Cannot specify both')
     })
 
-    it('should not allow --target and --greatest together', async () => {
+    it('not allow --target and --greatest together', async () => {
       ncu.run({ target: 'greatest', greatest: true })
         .should.eventually.be.rejectedWith('Cannot specify both')
     })
 
-    it('should not allow --target and --newest together', async () => {
+    it('not allow --target and --newest together', async () => {
       ncu.run({ target: 'newest', newest: true })
         .should.eventually.be.rejectedWith('Cannot specify both')
     })
 
-    it('should not update major versions with --target minor', async () => {
+    it('not update major versions with --target minor', async () => {
       const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
       pkgData.should.not.have.property('chalk')
     })
 
-    it('should update minor versions with --target minor', async () => {
+    it('update minor versions with --target minor', async () => {
       const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "2.3.0" } }' })
       pkgData.should.have.property('chalk')
       pkgData.chalk.should.equal('2.4.2')
     })
 
-    it('should update patch versions with --target patch', async () => {
+    it('update patch versions with --target patch', async () => {
       const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.4.1" } }' })
       pkgData.should.have.property('chalk')
       pkgData.chalk.should.equal('2.4.2')
     })
 
-    it('should not update major versions with --target patch', async () => {
+    it('not update major versions with --target patch', async () => {
       const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
       pkgData.should.not.have.property('chalk')
     })
 
-    it('should not update minor versions with --target patch', async () => {
+    it('not update minor versions with --target patch', async () => {
       const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.3.2" } }' })
       pkgData.should.not.have.property('chalk')
     })
 
-    it('should skip non-semver versions with --target', async () => {
+    it('skip non-semver versions with --target', async () => {
       const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "test": "github:a/b" } }' })
       pkgData.should.not.have.property('test')
     })
 
-    it('should update patch versions with --target patch', async () => {
+    it('update patch versions with --target patch', async () => {
       const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.4.1" } }' })
       pkgData.should.have.property('chalk')
       pkgData.chalk.should.equal('2.4.2')

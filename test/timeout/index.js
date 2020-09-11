@@ -17,7 +17,7 @@ describe('timeout (with --exit)', function () {
 
   // this must be executed as a separate process with --exit to prevent delayed test completion
   // https://github.com/raineorshine/npm-check-updates/issues/721
-  it('should throw an exception instead of printing to the console when timeout is exceeded', () => {
+  it('throw an exception instead of printing to the console when timeout is exceeded', () => {
     return ncu.run({
       packageData: fs.readFileSync(path.join(__dirname, '../ncu/package-large.json'), 'utf-8'),
       timeout: 1

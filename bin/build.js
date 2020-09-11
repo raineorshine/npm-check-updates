@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const spawn = require('spawn-please')
-const { cliOptions } = require('../lib/constants')
+const cliOptions = require('../lib/cli-options')
 
 /** Extracts CLI options from the bin output. */
 const readOptions = async () => {

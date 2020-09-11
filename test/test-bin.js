@@ -22,36 +22,36 @@ describe('bin', function () {
     return `test/temp_package${++last}.json`
   }
 
-  it('should accept stdin', () => {
+  it('accept stdin', () => {
     return spawn('node', ['bin/cli.js'], '{ "dependencies": { "express": "1" } }')
       .then(output => {
         output.trim().should.startWith('express')
       })
   })
 
-  it('should reject out-of-date stdin with errorLevel 2', () => {
+  it('reject out-of-date stdin with errorLevel 2', () => {
     return spawn('node', ['bin/cli.js', '--errorLevel', '2'], '{ "dependencies": { "express": "1" } }')
       .should.eventually.be.rejectedWith('Dependencies not up-to-date')
   })
 
-  it('should fall back to package.json search when receiving empty content on stdin', async () => {
+  it('fall back to package.json search when receiving empty content on stdin', async () => {
     const stdout = await spawn('node', ['bin/cli.js'])
     stdout.toString().trim().should.match(/^Checking .+package.json/)
   })
 
-  it('should use package.json in cwd by default', async () => {
+  it('use package.json in cwd by default', async () => {
     const output = await spawn('node', [path.join(__dirname, '../bin/cli.js'), '--jsonUpgraded'], { cwd: path.join(__dirname, 'ncu') })
     const pkgData = JSON.parse(output)
     pkgData.should.have.property('express')
   })
 
-  it('should handle no package.json to analyze when receiving empty content on stdin', () => {
+  it('handle no package.json to analyze when receiving empty content on stdin', () => {
     // run from tmp dir to avoid ncu analyzing the project's package.json
     return spawn('node', [`${process.cwd()}/bin/cli.js`], { cwd: tmp.dirSync().name })
       .should.eventually.be.rejectedWith('No package.json')
   })
 
-  it('should output json with --jsonAll', () => {
+  it('output json with --jsonAll', () => {
     return spawn('node', ['bin/cli.js', '--jsonAll'], '{ "dependencies": { "express": "1" } }')
       .then(JSON.parse)
       .then(pkgData => {
@@ -60,7 +60,7 @@ describe('bin', function () {
       })
   })
 
-  it('should output only upgraded with --jsonUpgraded', () => {
+  it('output only upgraded with --jsonUpgraded', () => {
     return spawn('node', ['bin/cli.js', '--jsonUpgraded'], '{ "dependencies": { "express": "1" } }')
       .then(JSON.parse)
       .then(pkgData => {
@@ -68,7 +68,7 @@ describe('bin', function () {
       })
   })
 
-  it('should read --packageFile', async () => {
+  it('read --packageFile', async () => {
     const tempFile = getTempFile()
     fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
@@ -81,7 +81,7 @@ describe('bin', function () {
     }
   })
 
-  it('should write to --packageFile', async () => {
+  it('write to --packageFile', async () => {
     const tempFile = getTempFile()
     fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
@@ -96,7 +96,7 @@ describe('bin', function () {
     }
   })
 
-  it('should write to --packageFile if errorLevel=2 and upgrades', async () => {
+  it('write to --packageFile if errorLevel=2 and upgrades', async () => {
     const tempFile = getTempFile()
     fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
 
@@ -114,7 +114,7 @@ describe('bin', function () {
     }
   })
 
-  it('should write to --packageFile with jsonUpgraded flag', async () => {
+  it('write to --packageFile with jsonUpgraded flag', async () => {
     const tempFile = getTempFile()
     fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
@@ -129,7 +129,7 @@ describe('bin', function () {
     }
   })
 
-  it('should ignore stdin if --packageFile is specified', async () => {
+  it('ignore stdin if --packageFile is specified', async () => {
     const tempFile = getTempFile()
     fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
@@ -144,7 +144,7 @@ describe('bin', function () {
     }
   })
 
-  it('should filter by package name with --filter', () => {
+  it('filter by package name with --filter', () => {
     return spawn('node', ['bin/cli.js', '--jsonUpgraded', '--filter', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
       .then(JSON.parse)
       .then(pkgData => {
@@ -153,7 +153,7 @@ describe('bin', function () {
       })
   })
 
-  it('should filter by package name with -f', () => {
+  it('filter by package name with -f', () => {
     return spawn('node', ['bin/cli.js', '--jsonUpgraded', '-f', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
       .then(JSON.parse)
       .then(pkgData => {
@@ -162,7 +162,7 @@ describe('bin', function () {
       })
   })
 
-  it('should reject by package name with --reject', () => {
+  it('reject by package name with --reject', () => {
     return spawn('node', ['bin/cli.js', '--jsonUpgraded', '--reject', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
       .then(JSON.parse)
       .then(pkgData => {
@@ -171,7 +171,7 @@ describe('bin', function () {
       })
   })
 
-  it('should reject by package name with -x', () => {
+  it('reject by package name with -x', () => {
     return spawn('node', ['bin/cli.js', '--jsonUpgraded', '-x', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
       .then(JSON.parse)
       .then(pkgData => {
@@ -180,14 +180,14 @@ describe('bin', function () {
       })
   })
 
-  it('should suppress stdout when --silent is provided', () => {
+  it('suppress stdout when --silent is provided', () => {
     return spawn('node', ['bin/cli.js', '--silent'], '{ "dependencies": { "express": "1" } }')
       .then(output => {
         output.trim().should.equal('')
       })
   })
 
-  it('should read --configFilePath', async () => {
+  it('read --configFilePath', async () => {
     const tempFilePath = './test/'
     const tempFileName = '.ncurc.json'
     fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
@@ -202,7 +202,7 @@ describe('bin', function () {
     }
   })
 
-  it('should read --configFileName', async () => {
+  it('read --configFileName', async () => {
     const tempFilePath = './test/'
     const tempFileName = '.rctemp.json'
     fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
@@ -217,7 +217,7 @@ describe('bin', function () {
     }
   })
 
-  it('should override config with arguments', async () => {
+  it('override config with arguments', async () => {
     const tempFilePath = './test/'
     const tempFileName = '.ncurc.json'
     fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
@@ -234,7 +234,7 @@ describe('bin', function () {
 
   describe('with timeout option', () => {
 
-    it('should exit with error when timeout exceeded', () => {
+    it('exit with error when timeout exceeded', () => {
       return spawn('node', ['bin/cli.js', '--timeout', '1'], '{ "dependencies": { "express": "1" } }')
         .should.eventually.be.rejectedWith('Exceeded global timeout of 1ms')
     })
@@ -246,7 +246,7 @@ describe('bin', function () {
 
   describe('embedded versions', () => {
 
-    it('should strip url from Github url in "to" output', async () => {
+    it('strip url from Github url in "to" output', async () => {
       const dependencies = {
         'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0'
       }
@@ -254,7 +254,7 @@ describe('bin', function () {
       output.trim().should.equal('ncu-test-v2  https://github.com/raineorshine/ncu-test-v2.git#v1.0.0  →  v2.0.0')
     })
 
-    it('should strip prefix from npm alias in "to" output', async () => {
+    it('strip prefix from npm alias in "to" output', async () => {
       const dependencies = {
         request: 'npm:ncu-test-v2@1.0.0'
       }
