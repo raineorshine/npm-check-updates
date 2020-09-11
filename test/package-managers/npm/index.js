@@ -18,7 +18,6 @@ describe('npm', function () {
 
   it('latest', async () => {
     const version = await packageManagers.npm.latest('express', null, { cwd: __dirname })
-      .then(parseInt)
     parseInt(version, 10).should.be.above(1)
   })
 

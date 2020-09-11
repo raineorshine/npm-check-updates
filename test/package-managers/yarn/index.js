@@ -14,16 +14,14 @@ describe('yarn', function () {
 
   it('list', async () => {
     const testDir = path.resolve(path.join(__dirname, './default'))
-    await packageManagers.yarn.latest('chalk', null, { cwd: testDir })
-      .then(parseInt)
-      .should.eventually.be.above(3)
+    const version = await packageManagers.yarn.latest('chalk', null, { cwd: testDir })
+    parseInt(version, 10).should.be.above(3)
   })
 
   it('latest', async () => {
     const testDir = path.resolve(path.join(__dirname, './default'))
-    await packageManagers.yarn.latest('chalk', null, { cwd: testDir })
-      .then(parseInt)
-      .should.eventually.be.above(3)
+    const version = await packageManagers.yarn.latest('chalk', null, { cwd: testDir })
+    parseInt(version, 10).should.be.above(3)
   })
 
   it('"No lockfile" error should be thrown on list command when there is no lockfile', async () => {
