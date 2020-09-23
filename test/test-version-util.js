@@ -243,7 +243,7 @@ describe('version-util', () => {
   })
 
   describe('colorizeDiff', () => {
-    it('not colorize unchanged versions', () => {
+    it('do not colorize unchanged versions', () => {
       versionUtil.colorizeDiff('1.0.0', '1.0.0').should.equal('1.0.0')
     })
     it('colorize changed patch versions', () => {
@@ -258,7 +258,7 @@ describe('version-util', () => {
     it('colorize whole parts', () => {
       versionUtil.colorizeDiff('1.0.10', '1.0.11').should.equal(`1.0.${chalk.green('11')}`)
     })
-    it('not include the leading ^ or ~ if the same', () => {
+    it('do not include the leading ^ or ~ if the same', () => {
       versionUtil.colorizeDiff('^1.0.0', '^2.0.0').should.equal(`^${chalk.red('2.0.0')}`)
       versionUtil.colorizeDiff('~1.0.0', '~2.0.0').should.equal(`~${chalk.red('2.0.0')}`)
     })

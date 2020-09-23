@@ -280,7 +280,7 @@ describe('versionmanager', () => {
         })
       })
 
-      it('not filter out dependencies with a partial package name', () => {
+      it('do not filter out dependencies with a partial package name', () => {
         vm.getCurrentDependencies(deps, { filter: 'o' }).should.eql({})
       })
 
@@ -330,7 +330,7 @@ describe('versionmanager', () => {
         })
       })
 
-      it('not reject dependencies with a partial package name', () => {
+      it('do not reject dependencies with a partial package name', () => {
         vm.getCurrentDependencies(deps, { reject: 'o' }).should.eql({
           mocha: '1.2',
           lodash: '^3.9.3',
@@ -390,7 +390,7 @@ describe('versionmanager', () => {
       })
     })
 
-    it('not downgrade', () => {
+    it('do not downgrade', () => {
       vm.upgradeDependencies({ mongodb: '^2.0.7' }, { mongodb: '1.4.30' }).should.eql({})
     })
 
@@ -505,7 +505,7 @@ describe('versionmanager', () => {
 
   describe('isUpgradeable', () => {
 
-    it('not upgrade pure wildcards', () => {
+    it('do not upgrade pure wildcards', () => {
       vm.isUpgradeable('*', '0.5.1').should.equal(false)
     })
 
@@ -513,11 +513,11 @@ describe('versionmanager', () => {
       vm.isUpgradeable('0.1.x', '0.5.1').should.equal(true)
     })
 
-    it('not upgrade invalid versions', () => {
+    it('do not upgrade invalid versions', () => {
       vm.isUpgradeable('https://github.com/strongloop/express', '4.11.2').should.equal(false)
     })
 
-    it('not upgrade versions beyond the latest', () => {
+    it('do not upgrade versions beyond the latest', () => {
       vm.isUpgradeable('5.0.0', '4.11.2').should.equal(false)
     })
 
@@ -578,7 +578,7 @@ describe('versionmanager', () => {
       vm.getPreferredWildcard(deps).should.equal('.*')
     })
 
-    it('not allow wildcards to be outnumbered by non-wildcards', () => {
+    it('do not allow wildcards to be outnumbered by non-wildcards', () => {
       const deps = {
         gulp: '^4.0.0',
         typescript: '3.3.0',

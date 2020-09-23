@@ -62,7 +62,7 @@ describe('run', function () {
     ])
   })
 
-  it('not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimial is true', () => {
+  it('do not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimial is true', () => {
     const upgraded = ncu.run({
       // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
       packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
@@ -154,7 +154,7 @@ describe('run', function () {
     })
   })
 
-  it('not upgrade prereleases to newer prereleases with --pre 0', () => {
+  it('do not upgrade prereleases to newer prereleases with --pre 0', () => {
 
     return ncu.run({
       pre: 0,
@@ -187,7 +187,7 @@ describe('run', function () {
     })
   })
 
-  it('not require --pre with --target newest', () => {
+  it('do not require --pre with --target newest', () => {
 
     return ncu.run({
       jsonAll: true,
@@ -206,7 +206,7 @@ describe('run', function () {
     })
   })
 
-  it('not require --pre with --target greatest', () => {
+  it('do not require --pre with --target greatest', () => {
 
     return ncu.run({
       jsonAll: true,
@@ -367,7 +367,7 @@ describe('run', function () {
 
   describe('target', () => {
 
-    it('not allow --greatest and --newest together', async () => {
+    it('do not allow --greatest and --newest together', async () => {
       ncu.run({ greatest: true, target: 'newest' })
         .should.eventually.be.rejectedWith('Cannot specify both')
       ncu.run({ target: 'greatest', newest: true })
@@ -376,17 +376,17 @@ describe('run', function () {
         .should.eventually.be.rejectedWith('Cannot specify both')
     })
 
-    it('not allow --target and --greatest together', async () => {
+    it('do not allow --target and --greatest together', async () => {
       ncu.run({ target: 'greatest', greatest: true })
         .should.eventually.be.rejectedWith('Cannot specify both')
     })
 
-    it('not allow --target and --newest together', async () => {
+    it('do not allow --target and --newest together', async () => {
       ncu.run({ target: 'newest', newest: true })
         .should.eventually.be.rejectedWith('Cannot specify both')
     })
 
-    it('not update major versions with --target minor', async () => {
+    it('do not update major versions with --target minor', async () => {
       const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
       pkgData.should.not.have.property('chalk')
     })
@@ -397,31 +397,31 @@ describe('run', function () {
       pkgData.chalk.should.equal('2.4.2')
     })
 
-    it('update patch versions with --target patch', async () => {
-      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.4.1" } }' })
+    it('update patch versions with --target minor', async () => {
+      const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "2.4.0" } }' })
       pkgData.should.have.property('chalk')
       pkgData.chalk.should.equal('2.4.2')
     })
 
-    it('not update major versions with --target patch', async () => {
+    it('do not update major versions with --target patch', async () => {
       const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
       pkgData.should.not.have.property('chalk')
     })
 
-    it('not update minor versions with --target patch', async () => {
+    it('do not update minor versions with --target patch', async () => {
       const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.3.2" } }' })
       pkgData.should.not.have.property('chalk')
+    })
+
+    it('update patch versions with --target patch', async () => {
+      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.4.1" } }' })
+      pkgData.should.have.property('chalk')
+      pkgData.chalk.should.equal('2.4.2')
     })
 
     it('skip non-semver versions with --target', async () => {
       const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "test": "github:a/b" } }' })
       pkgData.should.not.have.property('test')
-    })
-
-    it('update patch versions with --target patch', async () => {
-      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.4.1" } }' })
-      pkgData.should.have.property('chalk')
-      pkgData.chalk.should.equal('2.4.2')
     })
 
   }) // end 'target'
