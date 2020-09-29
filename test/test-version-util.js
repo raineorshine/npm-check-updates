@@ -271,19 +271,32 @@ describe('version-util', () => {
 
   describe('findGreatestByLevel', () => {
 
-    it('find the greatest version within the given semantic versioning level', () => {
+    it('find the greatest version at the given semantic versioning level', () => {
       const versions = ['0.1.0', '1.0.0', '1.0.1', '1.1.0', '2.0.1']
-      versionUtil.findGreatestByLevel(versions, '1.0.0', 'major').should.equal('1.1.0')
-      versionUtil.findGreatestByLevel(versions, '1.1.0', 'major').should.equal('1.1.0')
-      versionUtil.findGreatestByLevel(versions, '1.0.0', 'minor').should.equal('1.0.1')
-      versionUtil.findGreatestByLevel(versions, '1.0.1', 'minor').should.equal('1.0.1')
 
-      should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '^1.0.1', 'major'), '1.0.2')
-      should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '1.*', 'major'), '1.0.2')
-      should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '1.1', 'major'), '1.0.2')
-      should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '1.x', 'major'), '1.0.2')
-      should.equal(versionUtil.findGreatestByLevel(['1.0.1', '1.0.2'], '>1.1', 'major'), '1.0.2')
+      versionUtil.findGreatestByLevel(versions, '1.0.0', 'major').should.equal('2.0.1')
+      versionUtil.findGreatestByLevel(versions, '2.0.0', 'major').should.equal('2.0.1')
+      versionUtil.findGreatestByLevel(versions, '1.0.0', 'minor').should.equal('1.1.0')
+      versionUtil.findGreatestByLevel(versions, '1.1.0', 'minor').should.equal('1.1.0')
+      versionUtil.findGreatestByLevel(versions, '1.0.0', 'patch').should.equal('1.0.1')
+      versionUtil.findGreatestByLevel(versions, '1.0.1', 'patch').should.equal('1.0.1')
     })
+
+    it('handle wildcards', () => {
+      const versions = ['1.0.1', '1.0.2']
+
+      should.equal(versionUtil.findGreatestByLevel(versions, '^1.0.1', 'minor'), '1.0.2')
+      should.equal(versionUtil.findGreatestByLevel(versions, '1.*', 'minor'), '1.0.2')
+      should.equal(versionUtil.findGreatestByLevel(versions, '1.1', 'minor'), '1.0.2')
+      should.equal(versionUtil.findGreatestByLevel(versions, '1.x', 'minor'), '1.0.2')
+      should.equal(versionUtil.findGreatestByLevel(versions, '>1.1', 'minor'), '1.0.2')
+    })
+
+    it('sort version list', () => {
+      const versions = ['0.1.0', '0.3.0', '0.2.0']
+      versionUtil.findGreatestByLevel(versions, '0.1.0', 'minor').should.equal('0.3.0')
+    })
+
   })
 
   describe('isPre', () => {
