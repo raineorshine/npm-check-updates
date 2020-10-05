@@ -480,25 +480,42 @@ describe('versionmanager', () => {
         })
     })
 
-    it('github urls should upgrade the embedded semver tag', () => {
-      return vm.queryVersions({
-        'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#v1.0.0'
-      }, { loglevel: 'silent' })
-        .should.eventually.deep.equal({
+    describe('github urls', () => {
+
+      it('github urls should upgrade the embedded semver tag', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#v1.0.0'
+        }, { loglevel: 'silent' })
+
+        upgrades.should.deep.equal({
           'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#v2.0.0'
         })
-    })
+      })
 
-    it('private github urls with tags should be ignored', () => {
-      return vm.queryVersions({
-        'ncu-test-alpha': 'git+https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git#v283',
-        'ncu-test-private': 'https://github.com/ncu-test/ncu-test-private#v999.9.9',
-        'ncu-return-version': 'git+https://raineorshine@github.com/ncu-return-version#v999.9.9',
-        'ncu-test-v2': '^1.0.0'
-      }, { loglevel: 'silent' })
-        .should.eventually.deep.equal({
+      it('skip github url tags that are not valid semver', async () => {
+        const upgrades = await vm.queryVersions({
+          // this repo has tag "1.0" which is not valid semver
+          'ncu-test-invalid-tag': 'raineorshine/ncu-test-invalid-tag.git#v3.0.0'
+        }, { loglevel: 'silent' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-invalid-tag': 'raineorshine/ncu-test-invalid-tag.git#v3.0.5'
+        })
+      })
+
+      it('private github urls with tags should be ignored', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-alpha': 'git+https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git#v283',
+          'ncu-test-private': 'https://github.com/ncu-test/ncu-test-private#v999.9.9',
+          'ncu-return-version': 'git+https://raineorshine@github.com/ncu-return-version#v999.9.9',
+          'ncu-test-v2': '^1.0.0'
+        }, { loglevel: 'silent' })
+
+        upgrades.should.deep.equal({
           'ncu-test-v2': '2.0.0',
         })
+      })
+
     })
 
   })
