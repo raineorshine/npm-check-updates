@@ -4,7 +4,6 @@
 
 const program = require('commander')
 const updateNotifier = require('update-notifier')
-const _ = require('lodash')
 const ncu = require('../lib/npm-check-updates')
 const pkg = require('../package.json')
 const cliOptions = require('../lib/cli-options')
@@ -35,31 +34,29 @@ const { configFileName, configFilePath, packageFile } = program
 // load .ncurc
 // NOTE: Do not load .ncurc from project directory when tests are running
 // Can be overridden if configFilePath is set explicitly
-let rcArguments = []
-let rcResult
+const rcResult = !process.env.NCU_TESTS || configFilePath
+  ? ncu.getNcurc({ configFileName, configFilePath, packageFile })
+  : null
 
-if (!process.env.NCU_TESTS || configFilePath) {
-  rcResult = ncu.getNcurc({
-    configFileName,
-    configFilePath,
-    packageFile
-  })
-
-  rcArguments = rcResult ?
-    _.flatten(_.map(rcResult.config, (value, name) =>
-      value === true ? [`--${name}`] : [`--${name}`, value]
-    )) : []
-}
-
-const combinedArguments = process.argv.slice(0, 2).concat(rcArguments, process.argv.slice(2))
+// combine command line arguments with config file arguments
+const combinedArguments = rcResult
+  ? [
+    ...process.argv.slice(0, 2),
+    ...rcResult.args,
+    ...process.argv.slice(2),
+  ]
+  : process.argv
 
 program.parse(combinedArguments)
 
-program.cli = true
-program.filter = program.args.join(' ') || program.filter
-
-const options = rcResult && Object.keys(rcResult.config).length > 0
-  ? { ...program, rcConfigPath: rcResult.filePath }
-  : program
+// combine program options with config file options
+const options = {
+  ...rcResult && Object.keys(rcResult.config).length > 0
+    ? { rcConfigPath: rcResult.filePath }
+    : null,
+  ...program,
+  filter: program.args.join(' ') || program.filter,
+  cli: true,
+}
 
 ncu.run(options)

@@ -213,7 +213,7 @@ describe('bin', function () {
       fs.writeFileSync(tempFilePath + tempFileName, '{}', 'utf-8')
       try {
         const text = await spawn('node', ['bin/cli.js', '--configFilePath', tempFilePath], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
-      text.should.not.include('Using config file')
+        text.should.not.include('Using config file')
       }
       finally {
         fs.unlinkSync(tempFilePath + tempFileName)
