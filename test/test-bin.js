@@ -187,49 +187,53 @@ describe('bin', function () {
       })
   })
 
-  it('read --configFilePath', async () => {
-    const tempFilePath = './test/'
-    const tempFileName = '.ncurc.json'
-    fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
-    try {
-      const text = await spawn('node', ['bin/cli.js', '--configFilePath', tempFilePath], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
-      const pkgData = JSON.parse(text)
-      pkgData.should.have.property('express')
-      pkgData.should.not.have.property('chalk')
-    }
-    finally {
-      fs.unlinkSync(tempFilePath + tempFileName)
-    }
-  })
+  describe('rc-config', () => {
 
-  it('read --configFileName', async () => {
-    const tempFilePath = './test/'
-    const tempFileName = '.rctemp.json'
-    fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
-    try {
-      const text = await spawn('node', ['bin/cli.js', '--configFilePath', tempFilePath, '--configFileName', tempFileName], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
-      const pkgData = JSON.parse(text)
-      pkgData.should.have.property('express')
-      pkgData.should.not.have.property('chalk')
-    }
-    finally {
-      fs.unlinkSync(tempFilePath + tempFileName)
-    }
-  })
+    it('read --configFilePath', async () => {
+      const tempFilePath = './test/'
+      const tempFileName = '.ncurc.json'
+      fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
+      try {
+        const text = await spawn('node', ['bin/cli.js', '--configFilePath', tempFilePath], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+        const pkgData = JSON.parse(text)
+        pkgData.should.have.property('express')
+        pkgData.should.not.have.property('chalk')
+      }
+      finally {
+        fs.unlinkSync(tempFilePath + tempFileName)
+      }
+    })
 
-  it('override config with arguments', async () => {
-    const tempFilePath = './test/'
-    const tempFileName = '.ncurc.json'
-    fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
-    try {
-      const text = await spawn('node', ['bin/cli.js', '--configFilePath', tempFilePath, '--filter', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
-      const pkgData = JSON.parse(text)
-      pkgData.should.have.property('chalk')
-      pkgData.should.not.have.property('express')
-    }
-    finally {
-      fs.unlinkSync(tempFilePath + tempFileName)
-    }
+    it('read --configFileName', async () => {
+      const tempFilePath = './test/'
+      const tempFileName = '.rctemp.json'
+      fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
+      try {
+        const text = await spawn('node', ['bin/cli.js', '--configFilePath', tempFilePath, '--configFileName', tempFileName], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+        const pkgData = JSON.parse(text)
+        pkgData.should.have.property('express')
+        pkgData.should.not.have.property('chalk')
+      }
+      finally {
+        fs.unlinkSync(tempFilePath + tempFileName)
+      }
+    })
+
+    it('override config with arguments', async () => {
+      const tempFilePath = './test/'
+      const tempFileName = '.ncurc.json'
+      fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
+      try {
+        const text = await spawn('node', ['bin/cli.js', '--configFilePath', tempFilePath, '--filter', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+        const pkgData = JSON.parse(text)
+        pkgData.should.have.property('chalk')
+        pkgData.should.not.have.property('express')
+      }
+      finally {
+        fs.unlinkSync(tempFilePath + tempFileName)
+      }
+    })
+
   })
 
   describe('with timeout option', () => {

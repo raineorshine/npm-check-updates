@@ -36,18 +36,21 @@ const { configFileName, configFilePath, packageFile } = program
 // NOTE: Do not load .ncurc from project directory when tests are running
 // Can be overridden if configFilePath is set explicitly
 let rcArguments = []
+let rcResult
+
 if (!process.env.NCU_TESTS || configFilePath) {
-  const rcConfig = ncu.getNcurc({
+  rcResult = ncu.getNcurc({
     configFileName,
     configFilePath,
     packageFile
   })
-  rcArguments = rcConfig ?
-    _.flatten(_.map(rcConfig, (value, name) =>
+
+  rcArguments = rcResult ?
+    _.flatten(_.map(rcResult.config, (value, name) =>
       value === true ? [`--${name}`] : [`--${name}`, value]
     )) : []
-
 }
+
 const combinedArguments = process.argv.slice(0, 2).concat(rcArguments, process.argv.slice(2))
 
 program.parse(combinedArguments)
@@ -55,4 +58,8 @@ program.parse(combinedArguments)
 program.cli = true
 program.filter = program.args.join(' ') || program.filter
 
-ncu.run(program)
+const options = rcResult && Object.keys(rcResult.config).length > 0
+  ? { ...program, rcConfigPath: rcResult.filePath }
+  : program
+
+ncu.run(options)
