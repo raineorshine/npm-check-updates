@@ -3,6 +3,7 @@
 'use strict'
 
 const program = require('commander')
+const _ = require('lodash')
 const updateNotifier = require('update-notifier')
 const ncu = require('../lib/npm-check-updates')
 const pkg = require('../package.json')
@@ -49,12 +50,13 @@ const combinedArguments = rcResult
 
 program.parse(combinedArguments)
 
-// combine program options with config file options
+// filter out undefined program options and combine with config file options
 const options = {
   ...rcResult && Object.keys(rcResult.config).length > 0
     ? { rcConfigPath: rcResult.filePath }
     : null,
-  ...program,
+  ..._.pickBy(program.opts(), value => value !== undefined),
+  args: program.args,
   filter: program.args.join(' ') || program.filter,
   cli: true,
 }
