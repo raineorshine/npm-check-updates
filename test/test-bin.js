@@ -189,6 +189,37 @@ describe('bin', function () {
 
   describe('rc-config', () => {
 
+    it('print rcConfigPath when there is a non-empty rc config file', async () => {
+      const tempFilePath = './test/'
+      const tempFileName = '.ncurc.json'
+      fs.writeFileSync(tempFilePath + tempFileName, '{"filter": "express"}', 'utf-8')
+      try {
+        const text = await spawn('node', ['bin/cli.js', '--configFilePath', tempFilePath], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+        text.should.include(`Using config file ${path.resolve(tempFilePath, tempFileName)}`)
+      }
+      finally {
+        fs.unlinkSync(tempFilePath + tempFileName)
+      }
+    })
+
+    it('do not print rcConfigPath when there is no rc config file', async () => {
+      const text = await spawn('node', ['bin/cli.js'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+      text.should.not.include('Using config file')
+    })
+
+    it('do not print rcConfigPath when there is an empty rc config file', async () => {
+      const tempFilePath = './test/'
+      const tempFileName = '.ncurc.json'
+      fs.writeFileSync(tempFilePath + tempFileName, '{}', 'utf-8')
+      try {
+        const text = await spawn('node', ['bin/cli.js', '--configFilePath', tempFilePath], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+      text.should.not.include('Using config file')
+      }
+      finally {
+        fs.unlinkSync(tempFilePath + tempFileName)
+      }
+    })
+
     it('read --configFilePath', async () => {
       const tempFilePath = './test/'
       const tempFileName = '.ncurc.json'
