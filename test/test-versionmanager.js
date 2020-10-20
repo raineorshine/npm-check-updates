@@ -446,11 +446,6 @@ describe('versionmanager', () => {
         .should.eventually.deep.equal({})
     })
 
-    it('git urls should be ignored', () => {
-      return vm.queryVersions({ abchdefntofknacuifnt: 'git+https://mycompany.biz/git/some-private-module' }, { loglevel: 'silent' })
-        .should.eventually.deep.equal({})
-    })
-
     it('local file urls should be ignored', () => {
       return vm.queryVersions({ 'eslint-plugin-internal': 'file:devtools/eslint-rules' }, { loglevel: 'silent' })
         .should.eventually.deep.equal({})
@@ -489,6 +484,16 @@ describe('versionmanager', () => {
 
         upgrades.should.deep.equal({
           'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#v2.0.0'
+        })
+      })
+
+      it('git+https urls should upgrade the embedded semver tag', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-v2': 'git+https://github.com/raineorshine/ncu-test-v2#v1.0.0'
+        }, { loglevel: 'silent' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-v2': 'git+https://github.com/raineorshine/ncu-test-v2#v2.0.0'
         })
       })
 
