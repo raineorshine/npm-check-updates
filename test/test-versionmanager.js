@@ -519,7 +519,15 @@ describe('versionmanager', () => {
         })
       })
 
-      it('private github urls with tags should be ignored', async () => {
+      it('ignore repos with no tags', async () => {
+        const upgrades = await vm.queryVersions({
+          // this repo has tag "1.0" which is not valid semver
+          'ncu-test-invalid-tag': 'git+https://github.com/raineorshine/ncu-test-no-tags#v1'
+        }, { loglevel: 'silent' })
+        upgrades.should.deep.equal({})
+      })
+
+      it('valid but non-existent github urls with tags should be ignored', async () => {
         const upgrades = await vm.queryVersions({
           'ncu-test-alpha': 'git+https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git#v283',
           'ncu-test-private': 'https://github.com/ncu-test/ncu-test-private#v999.9.9',
