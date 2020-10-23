@@ -380,8 +380,9 @@ describe('versionmanager', () => {
 
   describe('upgradeDependencies', () => {
 
-    it('upgrade simple versions', () => {
+    it('upgrade simple, non-semver versions', () => {
       vm.upgradeDependencies({ mongodb: '0.5' }, { mongodb: '1.4.30' }).should.eql({ mongodb: '1.4' })
+      vm.upgradeDependencies({ 'ncu-test-simple-tag': 'v1' }, { 'ncu-test-simple-tag': 'v3' }).should.eql({ 'ncu-test-simple-tag': 'v3' })
     })
 
     it('upgrade latest versions that already satisfy the specified version', () => {
@@ -508,7 +509,7 @@ describe('versionmanager', () => {
         })
       })
 
-      it('support the non-semver tag "v1"', async () => {
+      it('support simple, non-semver tags in the format "v1"', async () => {
         const upgrades = await vm.queryVersions({
           // this repo has tag "1.0" which is not valid semver
           'ncu-test-invalid-tag': 'git+https://github.com/raineorshine/ncu-test-simple-tag#v1'
@@ -569,6 +570,10 @@ describe('versionmanager', () => {
       vm.isUpgradeable('<7.0.0', '7.2.0').should.equal(true)
       vm.isUpgradeable('<7.0', '7.2.0').should.equal(true)
       vm.isUpgradeable('<7', '7.2.0').should.equal(true)
+    })
+
+    it('upgrade simple versions', () => {
+      vm.isUpgradeable('v1', 'v2').should.equal(true)
     })
 
   })
