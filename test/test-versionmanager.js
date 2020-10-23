@@ -497,7 +497,7 @@ describe('versionmanager', () => {
         })
       })
 
-      it('skip github url tags that are not valid semver', async () => {
+      it('ignore tags that are not valid semver', async () => {
         const upgrades = await vm.queryVersions({
           // this repo has tag "1.0" which is not valid semver
           'ncu-test-invalid-tag': 'raineorshine/ncu-test-invalid-tag.git#v3.0.0'
@@ -505,6 +505,17 @@ describe('versionmanager', () => {
 
         upgrades.should.deep.equal({
           'ncu-test-invalid-tag': 'raineorshine/ncu-test-invalid-tag.git#v3.0.5'
+        })
+      })
+
+      it('support the non-semver tag "v1"', async () => {
+        const upgrades = await vm.queryVersions({
+          // this repo has tag "1.0" which is not valid semver
+          'ncu-test-invalid-tag': 'git+https://github.com/raineorshine/ncu-test-simple-tag#v1'
+        }, { loglevel: 'silent' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-invalid-tag': 'git+https://github.com/raineorshine/ncu-test-simple-tag#v3'
         })
       })
 
