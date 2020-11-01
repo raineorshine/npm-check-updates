@@ -62,7 +62,7 @@
     "pacote": "^11.1.11",
     "parse-github-url": "^1.0.2",
     "progress": "^2.0.3",
-    "prompts": "^2.3.2",
+    "prompts": "^2.4.0",
     "rc-config-loader": "^3.0.0",
     "remote-git-tags": "^3.0.0",
     "rimraf": "^3.0.2",
