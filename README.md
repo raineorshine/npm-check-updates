@@ -59,20 +59,27 @@ Check global packages:
 ncu -g           # add -u to get a one-line command for upgrading
 ```
 
-You can include or exclude specific packages using the `--filter` and `--reject` options. They accept strings, comma-or-space-delimited lists, or regular expressions:
+You can upgrade specific packages using the `--filter` option or adding additional cli arguments. You can exclude specific packages with the `--reject` option. They accept strings, comma-or-space-delimited lists, or regular expressions:
 
 ```sh
-# match mocha and should packages exactly
-$ ncu mocha             # shorthand for ncu -f mocha (or --filter)
-$ ncu one, two, three
+# upgrade only mocha
+$ ncu mocha
+$ ncu --filter mocha
+$ ncu -f mocha
 
-# exclude packages
-$ ncu -x nodemon        # shorthand for ncu --reject nodemon
+# upgrade only chalk, mocha, and react
+$ ncu chalk mocha react
+$ ncu chalk,mocha,react
+$ ncu -f "chalk mocha react"
 
-# match packages that start with "gulp-" using regex
+# do not upgrade nodemon
+$ ncu -x nodemon
+$ ncu --reject nodemon
+
+# upgrade packages that start with "gulp-" using regex
 $ ncu "/^gulp-.*$/"
 
-# match packages that do not start with "gulp-".
+# upgrade packages that do not start with "gulp-".
 $ ncu '/^(?!gulp-).*$/' # mac/linux
 $ ncu "/^(?!gulp-).*$/" # windows
 ```

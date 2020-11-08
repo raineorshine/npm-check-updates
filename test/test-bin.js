@@ -144,40 +144,78 @@ describe('bin', function () {
     }
   })
 
-  it('filter by package name with --filter', () => {
-    return spawn('node', ['bin/cli.js', '--jsonUpgraded', '--filter', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
-      .then(JSON.parse)
-      .then(pkgData => {
-        pkgData.should.have.property('express')
-        pkgData.should.not.have.property('chalk')
-      })
+  describe('filter', () => {
+
+    it('filter by package name with --filter', () => {
+      return spawn('node', ['bin/cli.js', '--jsonUpgraded', '--filter', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+        .then(JSON.parse)
+        .then(pkgData => {
+          pkgData.should.have.property('express')
+          pkgData.should.not.have.property('chalk')
+        })
+    })
+
+    it('filter by package name with -f', () => {
+      return spawn('node', ['bin/cli.js', '--jsonUpgraded', '-f', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+        .then(JSON.parse)
+        .then(pkgData => {
+          pkgData.should.have.property('express')
+          pkgData.should.not.have.property('chalk')
+        })
+    })
+
+    it('do not allow non-matching --filter and arguments', async () => {
+
+      const pkgData = {
+        dependencies: {
+          'lodash.map': '2.0.0',
+          'lodash.filter': '2.0.0',
+        }
+      }
+
+      await spawn('node', ['bin/cli.js', '--jsonUpgraded', '--filter', 'lodash.map', 'lodash.filter'], JSON.stringify(pkgData))
+        .should.eventually.be.rejected
+
+    })
+
+    it('allow matching --filter and arguments', async () => {
+
+      const pkgData = {
+        dependencies: {
+          'lodash.map': '2.0.0',
+          'lodash.filter': '2.0.0',
+        }
+      }
+
+      const output = await spawn('node', ['bin/cli.js', '--jsonUpgraded', '--filter', 'lodash.map lodash.filter', 'lodash.map', 'lodash.filter'], JSON.stringify(pkgData))
+      const upgraded = JSON.parse(output)
+      upgraded.should.have.property('lodash.map')
+      upgraded.should.have.property('lodash.filter')
+
+    })
+
   })
 
-  it('filter by package name with -f', () => {
-    return spawn('node', ['bin/cli.js', '--jsonUpgraded', '-f', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
-      .then(JSON.parse)
-      .then(pkgData => {
-        pkgData.should.have.property('express')
-        pkgData.should.not.have.property('chalk')
-      })
-  })
+  describe('reject', () => {
 
-  it('reject by package name with --reject', () => {
-    return spawn('node', ['bin/cli.js', '--jsonUpgraded', '--reject', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
-      .then(JSON.parse)
-      .then(pkgData => {
-        pkgData.should.have.property('express')
-        pkgData.should.not.have.property('chalk')
-      })
-  })
+    it('reject by package name with --reject', () => {
+      return spawn('node', ['bin/cli.js', '--jsonUpgraded', '--reject', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+        .then(JSON.parse)
+        .then(pkgData => {
+          pkgData.should.have.property('express')
+          pkgData.should.not.have.property('chalk')
+        })
+    })
 
-  it('reject by package name with -x', () => {
-    return spawn('node', ['bin/cli.js', '--jsonUpgraded', '-x', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
-      .then(JSON.parse)
-      .then(pkgData => {
-        pkgData.should.have.property('express')
-        pkgData.should.not.have.property('chalk')
-      })
+    it('reject by package name with -x', () => {
+      return spawn('node', ['bin/cli.js', '--jsonUpgraded', '-x', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
+        .then(JSON.parse)
+        .then(pkgData => {
+          pkgData.should.have.property('express')
+          pkgData.should.not.have.property('chalk')
+        })
+    })
+
   })
 
   it('suppress stdout when --silent is provided', () => {
