@@ -1,6 +1,16 @@
 # Changelog
 This file documents all **major version** releases. For other releases, you'll have to read the [commit history](https://github.com/raineorshine/npm-check-updates/).
 
+## [10.0.0] - 2020-11-08
+
+### Breaking
+
+- Specifiying both the `--filter` option and argument filters will now throw an error. Use one or the other. Previously the arguments would override the `--filter` option, which made for a confusing result when accidentally not quoting the option in the shell. This change is only breaking for those who are relying on the incorrect behavior of argument filters overriding `--filter`.
+
+See: [#759](https://github.com/raineorshine/npm-check-updates/issues/759#issuecomment-723587297)
+
+https://github.com/raineorshine/npm-check-updates/compare/v9.2.4...v10.0.0
+
 ## [9.0.0] - 2020-09-10
 
 ### Breaking
