@@ -1,6 +1,7 @@
 'use strict'
 
 const fs = require('fs')
+const path = require('path')
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const chaiString = require('chai-string')
@@ -21,13 +22,13 @@ describe('run', function () {
 
   it('return promised jsonUpgraded', () => {
     return ncu.run({
-      packageData: fs.readFileSync(`${__dirname}/ncu/package.json`, 'utf-8')
+      packageData: fs.readFileSync(path.join(__dirname, '/ncu/package.json'), 'utf-8')
     }).should.eventually.have.property('express')
   })
 
   it('filter by package name with one arg', () => {
     const upgraded = ncu.run({
-      packageData: fs.readFileSync(`${__dirname}/ncu/package2.json`, 'utf-8'),
+      packageData: fs.readFileSync(path.join(__dirname, '/ncu/package2.json'), 'utf-8'),
       args: ['lodash.map']
     })
     return Promise.all([
@@ -38,7 +39,7 @@ describe('run', function () {
 
   it('filter by package name with multiple args', () => {
     const upgraded = ncu.run({
-      packageData: fs.readFileSync(`${__dirname}/ncu/package2.json`, 'utf-8'),
+      packageData: fs.readFileSync(path.join(__dirname, '/ncu/package2.json'), 'utf-8'),
       args: ['lodash.map', 'lodash.filter']
     })
     return Promise.all([
@@ -75,7 +76,7 @@ describe('run', function () {
 
   it('only upgrade devDependencies and peerDependencies with --dep dev', () => {
     const upgraded = ncu.run({
-      packageData: fs.readFileSync(`${__dirname}/ncu/package-dep.json`, 'utf-8'),
+      packageData: fs.readFileSync(path.join(__dirname, '/ncu/package-dep.json'), 'utf-8'),
       dep: 'dev'
     })
 
@@ -88,7 +89,7 @@ describe('run', function () {
 
   it('only upgrade devDependencies and peerDependencies with --dep dev,peer', () => {
     const upgraded = ncu.run({
-      packageData: fs.readFileSync(`${__dirname}/ncu/package-dep.json`, 'utf-8'),
+      packageData: fs.readFileSync(path.join(__dirname, '/ncu/package-dep.json'), 'utf-8'),
       dep: 'dev,peer'
     })
 

@@ -45,6 +45,7 @@
         "flatTernaryExpressions": true
       }
     ],
+    "multiline-ternary": 0,
     "no-extra-parens": [
       2,
       "all",
