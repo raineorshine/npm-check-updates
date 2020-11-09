@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - master
-    branches-ignore:
-      - "dependabot/**"
+      - "!dependabot/**"
   pull_request:
     branches:
       - "**"
