@@ -37,7 +37,7 @@ jobs:
         run: npm ci
 
       - name: Run lint
-        run: npm run lint
+        run: npm run lintall
 
       - name: Run tests with coverage
         run: npm run nyc -- npm run mocha
