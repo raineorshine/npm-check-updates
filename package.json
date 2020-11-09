@@ -30,9 +30,11 @@
     "build": "node bin/build.js",
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
     "lintfix": "npm run lint -- --fix",
+    "lockfile-lint": "lockfile-lint --allowed-hosts npm --allowed-schemes https: --empty-hostname false --type npm --path package-lock.json",
+    "lintall": "npm run lint && npm run lockfile-lint",
     "nyc": "nyc",
     "mocha": "mocha test test/package-managers/npm test/package-managers/yarn && mocha --exit test/timeout",
-    "test": "npm run lint && npm run mocha",
+    "test": "npm run lintall && npm run mocha",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\""
   },
   "bin": {
@@ -84,6 +86,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.2",
+    "lockfile-lint": "^4.3.7",
     "mocha": "^8.2.1",
     "nyc": "^15.1.0",
     "should": "^13.2.3",
