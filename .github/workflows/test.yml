@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - "!dependabot/**"
   pull_request:
     branches:
       - "**"
@@ -42,6 +43,6 @@ jobs:
 
       - name: Run Coveralls
         uses: coverallsapp/github-action@master
-        if: startsWith(matrix.os, 'ubuntu') && matrix.node == 12
+        if: startsWith(matrix.os, 'ubuntu') && matrix.node == 14
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
