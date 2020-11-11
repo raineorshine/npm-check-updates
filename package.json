@@ -88,9 +88,11 @@
     "eslint-plugin-standard": "^4.0.2",
     "lockfile-lint": "^4.3.7",
     "mocha": "^8.2.1",
+    "mock-require": "^3.0.3",
     "nyc": "^15.1.0",
     "should": "^13.2.3",
-    "tmp": "0.2.1"
+    "tmp": "0.2.1",
+    "yarn": "^1.22.10"
   },
   "files": [
     "bin",
