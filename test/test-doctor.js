@@ -67,7 +67,7 @@ describe('doctor', function() {
     rimraf.sync(nodeModulesPath)
 
     // stdout should include normal output
-    stdout.should.include('✓ Tests pass')
+    stdout.should.include('Tests pass')
     stdout.should.include('ncu-test-v2  ~1.0.0  →  ~2.0.0')
 
     // stderr should include first failing upgrade
@@ -109,7 +109,7 @@ describe('doctor', function() {
     rimraf.sync(nodeModulesPath)
 
     // stdout should include normal output
-    stdout.should.include('✓ Tests pass')
+    stdout.should.include('Tests pass')
     stdout.should.include('ncu-test-v2  ~1.0.0  →  ~2.0.0')
 
     // stderr should include first failing upgrade
@@ -163,11 +163,11 @@ describe('doctor', function() {
     rimraf.sync(nodeModulesPath)
 
     // stdout should include successful upgrades
-    stdout.should.include('✓ ncu-test-v2 ~1.0.0 → ~2.0.0')
+    stdout.should.include('ncu-test-v2 ~1.0.0 → ~2.0.0')
 
     // stderr should include first failing upgrade
     stderr.should.include('Breaks with v2.x')
-    stderr.should.include('✗ ncu-test-return-version ~1.0.0 → ~2.0.0')
+    stderr.should.include('ncu-test-return-version ~1.0.0 → ~2.0.0')
 
     // package file should only include successful upgrades
     pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
