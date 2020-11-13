@@ -67,7 +67,7 @@ export = ncu
     .join('')
 
   const typedefsNew = typedefsStart + optionTypes + typedefsEnd
-  fs.writeFileSync(path.join(__dirname, '../lib/npm-check-updates.d.ts'), typedefsNew)
+  fs.writeFileSync(path.join(__dirname, '../lib/index.d.ts'), typedefsNew)
 }
 
 ;(async () => {

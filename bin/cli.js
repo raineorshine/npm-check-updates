@@ -5,7 +5,7 @@
 const program = require('commander')
 const _ = require('lodash')
 const updateNotifier = require('update-notifier')
-const ncu = require('../lib/npm-check-updates')
+const ncu = require('../lib/')
 const pkg = require('../package.json')
 const cliOptions = require('../lib/cli-options')
 
