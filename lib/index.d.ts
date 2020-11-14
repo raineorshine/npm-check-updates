@@ -62,8 +62,11 @@ declare namespace ncu {
     /** npm, yarn (default: "npm") */
     packageManager?: string;
 
-    /** Check if the package owner changed between current and upgraded version. */
+    /** DEPRECATED. Renamed to "--output ownerChanged". */
     ownerChanged?: boolean;
+
+    /** Enable additional output data, string or comma-delimited list: ownerChanged, repositoryLink. ownerChanged: shows if the package owner changed between versions. repositoryLink: infers and displays links to source code repository. (default: []) */
+    output?: string[];
 
     /** Package file data (you can also use stdin). */
     packageData?: string;

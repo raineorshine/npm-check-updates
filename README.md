@@ -82,6 +82,9 @@ $ ncu "/^gulp-.*$/"
 # upgrade packages that do not start with "gulp-".
 $ ncu '/^(?!gulp-).*$/' # mac/linux
 $ ncu "/^(?!gulp-).*$/" # windows
+
+# enable detailed output with links to each repository
+$ ncu --output repositoryLink
 ```
 
 ## Options
@@ -128,8 +131,13 @@ $ ncu "/^(?!gulp-).*$/" # windows
                              semver.
 -n, --newest                 DEPRECATED. Renamed to "--target newest".
 -p, --packageManager <name>  npm, yarn (default: "npm")
--o, --ownerChanged           Check if the package owner changed between
-                             current and upgraded version.
+-o, --ownerChanged           DEPRECATED. Renamed to "--output ownerChanged".
+--output <value>             Enable additional output data, string or
+                             comma-delimited list: ownerChanged,
+                             repositoryLink. ownerChanged: shows if the
+                             package owner changed between versions.
+                             repositoryLink: infers and displays links to
+                             source code repository. (default: [])
 --packageData <string>       Package file data (you can also use stdin).
 --packageFile <path>         Package file location (default: ./package.json).
 --pre <n>                    Include -alpha, -beta, -rc. (default: 0; default
