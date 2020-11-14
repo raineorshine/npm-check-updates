@@ -82,8 +82,11 @@ $ ncu "/^gulp-.*$/"
 # upgrade packages that do not start with "gulp-".
 $ ncu '/^(?!gulp-).*$/' # mac/linux
 $ ncu "/^(?!gulp-).*$/" # windows
+```
 
-# enable detailed output with links to each repository
+Detailed output with links to each repository:
+
+```sh
 $ ncu --output repositoryLink
 ```
 
