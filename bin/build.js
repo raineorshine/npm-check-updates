@@ -59,8 +59,12 @@ export = ncu
       : 'string'
     )
     const tsDefault = defaultValue ? ' (default: ' + JSON.stringify(defaultValue) + ')' : ''
+    const deprecatedLine = description.includes('DEPRECATED') ? `
+     * @deprecated` : ''
     return `
-    /** ${description}${tsDefault} */
+    /**
+     * ${description}${tsDefault}${deprecatedLine}
+     */
     ${tsName}?: ${tsType};
 `
   })
