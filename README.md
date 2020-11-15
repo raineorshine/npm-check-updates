@@ -87,7 +87,7 @@ $ ncu "/^(?!gulp-).*$/" # windows
 Detailed output with links to each repository:
 
 ```sh
-$ ncu --output repositoryLink
+$ ncu --format repo
 ```
 
 ## Options
@@ -136,11 +136,10 @@ $ ncu --output repositoryLink
 -p, --packageManager <name>  npm, yarn (default: "npm")
 -o, --ownerChanged           DEPRECATED. Renamed to "--format ownerChanged".
 --format <value>             Enable additional output data, string or
-                             comma-delimited list: ownerChanged,
-                             repositoryLink. ownerChanged: shows if the
-                             package owner changed between versions.
-                             repositoryLink: infers and displays links to
-                             source code repository. (default: [])
+                             comma-delimited list: ownerChanged, repo.
+                             ownerChanged: shows if the package owner changed
+                             between versions. repo: infers and displays
+                             links to source code repository. (default: [])
 --packageData <value>        Package file data (you can also use stdin).
 --packageFile <path>         Package file location (default: ./package.json).
 --pre <n>                    Include -alpha, -beta, -rc. (default: 0; default

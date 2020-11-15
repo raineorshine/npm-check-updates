@@ -111,7 +111,7 @@ declare namespace ncu {
     ownerChanged?: boolean;
 
     /**
-     * Enable additional output data, string or comma-delimited list: ownerChanged, repositoryLink. ownerChanged: shows if the package owner changed between versions. repositoryLink: infers and displays links to source code repository. (default: [])
+     * Enable additional output data, string or comma-delimited list: ownerChanged, repo. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository. (default: [])
      */
     format?: string[];
 
