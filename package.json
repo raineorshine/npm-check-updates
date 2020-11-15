@@ -35,7 +35,8 @@
     "nyc": "nyc",
     "mocha": "mocha test test/package-managers/npm test/package-managers/yarn && mocha --exit test/timeout",
     "test": "npm run lintall && npm run mocha",
-    "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\""
+    "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
+    "ncu": "node ./bin/cli.js"
   },
   "bin": {
     "npm-check-updates": "./bin/cli.js",
@@ -56,6 +57,7 @@
     "commander": "^6.2.0",
     "find-up": "5.0.0",
     "get-stdin": "^8.0.0",
+    "hosted-git-info": "^3.0.7",
     "json-parse-helpfulerror": "^1.0.3",
     "jsonlines": "^0.1.1",
     "libnpmconfig": "^1.2.1",

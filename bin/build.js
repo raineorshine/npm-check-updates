@@ -6,7 +6,7 @@ const cliOptions = require('../lib/cli-options')
 /** Extracts CLI options from the bin output. */
 const readOptions = async () => {
   const optionsBinLabel = 'Options:\n'
-  const helpOutput = await spawn('./bin/cli.js', ['--help'])
+  const helpOutput = await spawn('node', ['./bin/cli.js', '--help'])
   return helpOutput.slice(helpOutput.indexOf(optionsBinLabel) + optionsBinLabel.length)
   // outdent
     .split('\n').map(s => s.slice(2)).join('\n')
@@ -50,17 +50,21 @@ export = ncu
 `
 
   // parse commander values
-  const optionTypes = cliOptions.map(({ name, description, default: defaultValue, type: typeValue }) => {
-    const tsName = name.replace(/(?:-\w, )?--([^ ]+)(?: <.*>)?/, (_, m) => m)
+  const optionTypes = cliOptions.map(({ long, arg, deprecated, description, default: defaultValue, type: typeValue }) => {
+    const tsName = long
     const tsType = typeValue || (
       defaultValue ? typeof defaultValue
-      : name.includes(' <n>') || name.includes(' <ms>') ? 'number'
-      : !name.includes(' <') ? 'boolean'
+      : ['n', 'ms'].includes(arg) ? 'number'
+      : !arg ? 'boolean'
       : 'string'
     )
     const tsDefault = defaultValue ? ' (default: ' + JSON.stringify(defaultValue) + ')' : ''
+    const deprecatedLine = deprecated ? `
+     * @deprecated` : ''
     return `
-    /** ${description}${tsDefault} */
+    /**
+     * ${description}${tsDefault}${deprecatedLine}
+     */
     ${tsName}?: ${tsType};
 `
   })
