@@ -50,16 +50,16 @@ export = ncu
 `
 
   // parse commander values
-  const optionTypes = cliOptions.map(({ optionName, name, description, default: defaultValue, type: typeValue }) => {
-    const tsName = optionName
+  const optionTypes = cliOptions.map(({ long, arg, deprecated, description, default: defaultValue, type: typeValue }) => {
+    const tsName = long
     const tsType = typeValue || (
       defaultValue ? typeof defaultValue
-      : name.includes(' <n>') || name.includes(' <ms>') ? 'number'
-      : !name.includes(' <') ? 'boolean'
+      : ['n', 'ms'].includes(arg) ? 'number'
+      : !arg ? 'boolean'
       : 'string'
     )
     const tsDefault = defaultValue ? ' (default: ' + JSON.stringify(defaultValue) + ')' : ''
-    const deprecatedLine = description.includes('DEPRECATED') ? `
+    const deprecatedLine = deprecated ? `
      * @deprecated` : ''
     return `
     /**

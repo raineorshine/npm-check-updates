@@ -27,19 +27,19 @@ describe('repo-url', () => {
       repoUrl.getRepoUrl('package-name', { repository: 'https://bitbucket.org/user/repo' }).should.equal('https://bitbucket.org/user/repo')
     })
     it('return url constructed from github shortcut syntax string', () => {
-      repoUrl.getRepoUrl('package-name', { repository: 'user/repo' }).should.equal('https://github.com/user/repo/tree/master')
+      repoUrl.getRepoUrl('package-name', { repository: 'user/repo' }).should.equal('https://github.com/user/repo')
     })
     it('return url constructed from repository specific shortcut syntax string', () => {
-      repoUrl.getRepoUrl('package-name', { repository: 'github:user/repo' }).should.equal('https://github.com/user/repo/tree/master')
+      repoUrl.getRepoUrl('package-name', { repository: 'github:user/repo' }).should.equal('https://github.com/user/repo')
     })
     it('return url constructed from git-https protocol', () => {
-      repoUrl.getRepoUrl('package-name', { repository: { url: 'git+https://github.com/user/repo.git' } }).should.equal('https://github.com/user/repo/tree/master')
+      repoUrl.getRepoUrl('package-name', { repository: { url: 'git+https://github.com/user/repo.git' } }).should.equal('https://github.com/user/repo')
     })
     it('return url constructed from git protocol', () => {
-      repoUrl.getRepoUrl('package-name', { repository: { url: 'git://github.com/user/repo.git' } }).should.equal('https://github.com/user/repo/tree/master')
+      repoUrl.getRepoUrl('package-name', { repository: { url: 'git://github.com/user/repo.git' } }).should.equal('https://github.com/user/repo')
     })
     it('return url constructed from http protocol', () => {
-      repoUrl.getRepoUrl('package-name', { repository: { url: 'http://github.com/user/repo.git' } }).should.equal('https://github.com/user/repo/tree/master')
+      repoUrl.getRepoUrl('package-name', { repository: { url: 'http://github.com/user/repo.git' } }).should.equal('https://github.com/user/repo')
     })
     it('return url with directory path', () => {
       repoUrl.getRepoUrl('package-name', { repository: { url: 'http://github.com/user/repo.git', directory: 'packages/specific-package' } }).should.equal('https://github.com/user/repo/tree/master/packages/specific-package')

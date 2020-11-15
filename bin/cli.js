@@ -21,9 +21,9 @@ program
   .usage('[options] [filter]')
 
 // add cli options
-cliOptions.forEach(({ name, description, default: defaultValue, parse }) =>
+cliOptions.forEach(({ long, short, arg, description, default: defaultValue, parse }) =>
   // handle 3rd/4th argument polymorphism
-  program.option(name, description, parse || defaultValue, parse ? defaultValue : undefined))
+  program.option(`${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : ''}`, description, parse || defaultValue, parse ? defaultValue : undefined))
 
 // set version option at the end
 program.version(pkg.version)

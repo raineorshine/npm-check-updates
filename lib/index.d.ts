@@ -105,7 +105,7 @@ declare namespace ncu {
     packageManager?: string;
 
     /**
-     * DEPRECATED. Renamed to "--output ownerChanged".
+     * DEPRECATED. Renamed to "--format ownerChanged".
      * @deprecated
      */
     ownerChanged?: boolean;
@@ -113,7 +113,7 @@ declare namespace ncu {
     /**
      * Enable additional output data, string or comma-delimited list: ownerChanged, repositoryLink. ownerChanged: shows if the package owner changed between versions. repositoryLink: infers and displays links to source code repository. (default: [])
      */
-    output?: string[];
+    format?: string[];
 
     /**
      * Package file data (you can also use stdin).

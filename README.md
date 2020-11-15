@@ -99,7 +99,7 @@ $ ncu --output repositoryLink
                              directory of `packageFile`).
 --configFileName <filename>  Config file name (default: .ncurc.{json,yml,js})
 --cwd <path>                 Working directory in which npm will be executed.
---dep <dep>                  Check one or more sections of dependencies only:
+--dep <value>                Check one or more sections of dependencies only:
                              prod, dev, peer, optional, bundle
                              (comma-delimited).
 --deprecated                 Include deprecated packages.
@@ -134,14 +134,14 @@ $ ncu --output repositoryLink
                              semver.
 -n, --newest                 DEPRECATED. Renamed to "--target newest".
 -p, --packageManager <name>  npm, yarn (default: "npm")
--o, --ownerChanged           DEPRECATED. Renamed to "--output ownerChanged".
---output <value>             Enable additional output data, string or
+-o, --ownerChanged           DEPRECATED. Renamed to "--format ownerChanged".
+--format <value>             Enable additional output data, string or
                              comma-delimited list: ownerChanged,
                              repositoryLink. ownerChanged: shows if the
                              package owner changed between versions.
                              repositoryLink: infers and displays links to
                              source code repository. (default: [])
---packageData <string>       Package file data (you can also use stdin).
+--packageData <value>        Package file data (you can also use stdin).
 --packageFile <path>         Package file location (default: ./package.json).
 --pre <n>                    Include -alpha, -beta, -rc. (default: 0; default
                              with --newest and --greatest: 1).
