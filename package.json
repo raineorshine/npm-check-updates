@@ -56,6 +56,7 @@
     "cli-table": "^0.3.1",
     "commander": "^6.2.0",
     "find-up": "5.0.0",
+    "fp-and-or": "^0.1.2",
     "get-stdin": "^8.0.0",
     "hosted-git-info": "^3.0.7",
     "json-parse-helpfulerror": "^1.0.3",
