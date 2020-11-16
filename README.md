@@ -115,6 +115,8 @@ $ ncu --format repo
 -f, --filter <matches>       Include only package names matching the given
                              string, comma-or-space-delimited list, or
                              /regex/.
+--filterVersion <matches>    Filter on package version using
+                             comma-or-space-delimited list, or /regex/.
 -g, --global                 Check global packages instead of in the current
                              project.
 --greatest                   DEPRECATED. Renamed to "--target greatest".
@@ -146,6 +148,10 @@ $ ncu --format repo
                              with --newest and --greatest: 1).
 --prefix <path>              Current working directory of npm.
 -r, --registry <url>         Third-party npm registry.
+-x, --reject <matches>       Exclude packages matching the given string,
+                             comma-or-space-delimited list, or /regex/.
+--rejectVersion <matches>    Exclude package.json versions using
+                             comma-or-space-delimited list, or /regex/.
 --removeRange                Remove version ranges from the final package
                              version.
 --semverLevel <value>        DEPRECATED. Renamed to --target.
@@ -157,8 +163,6 @@ $ ncu --format repo
                              npm-registery-fetch).
 -u, --upgrade                Overwrite package file with upgraded versions
                              instead of just outputting to console.
--x, --reject <matches>       Exclude packages matching the given string,
-                             comma-or-space-delimited list, or /regex/.
 -V, --version                output the version number
 -h, --help                   display help for command
 ```

@@ -53,6 +53,11 @@ declare namespace ncu {
     filter?: string | string[] | RegExp;
 
     /**
+     * Filter on package version using comma-or-space-delimited list, or /regex/.
+     */
+    filterVersion?: string | string[] | RegExp;
+
+    /**
      * Check global packages instead of in the current project.
      */
     global?: boolean;
@@ -141,6 +146,16 @@ declare namespace ncu {
     registry?: string;
 
     /**
+     * Exclude packages matching the given string, comma-or-space-delimited list, or /regex/.
+     */
+    reject?: string | string[] | RegExp;
+
+    /**
+     * Exclude package.json versions using comma-or-space-delimited list, or /regex/.
+     */
+    rejectVersion?: string | string[] | RegExp;
+
+    /**
      * Remove version ranges from the final package version.
      */
     removeRange?: boolean;
@@ -170,11 +185,6 @@ declare namespace ncu {
      * Overwrite package file with upgraded versions instead of just outputting to console.
      */
     upgrade?: boolean;
-
-    /**
-     * Exclude packages matching the given string, comma-or-space-delimited list, or /regex/.
-     */
-    reject?: string | string[] | RegExp;
 
   }
 
