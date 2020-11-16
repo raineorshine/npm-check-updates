@@ -139,6 +139,7 @@ describe('doctor', function() {
     const pkgOriginal = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
     let stderr = ''
+    let pkgUpgraded
 
     try {
       await ncu(['--doctor', '-u'], {
@@ -150,29 +151,29 @@ describe('doctor', function() {
           stderr += data
         },
       })
-
-      throw new Error('should not resolve')
     }
-    catch (e) {}
-
-    const pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
-
-    // cleanup before assertions in case they fail
-    fs.writeFileSync(pkgPath, pkgOriginal)
-    rimraf.sync(lockfilePath)
-    rimraf.sync(nodeModulesPath)
+    finally {
+      pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
+      fs.writeFileSync(pkgPath, pkgOriginal)
+      rimraf.sync(lockfilePath)
+      rimraf.sync(nodeModulesPath)
+    }
 
     // stdout should include successful upgrades
-    stdout.should.include('ncu-test-v2 ~1.0.0 → ~2.0.0')
+    stdout.should.include('ncu-test-v2 ~1.0.0 →')
+    stdout.should.not.include('ncu-test-return-version ~1.0.0 →')
+    stdout.should.include('fp-and-or 0.1.1 →')
 
     // stderr should include first failing upgrade
     stderr.should.include('Breaks with v2.x')
-    stderr.should.include('ncu-test-return-version ~1.0.0 → ~2.0.0')
+    stderr.should.not.include('ncu-test-v2 ~1.0.0 →')
+    stderr.should.include('ncu-test-return-version ~1.0.0 →')
+    stderr.should.not.include('fp-and-or 0.1.1 →')
 
     // package file should only include successful upgrades
     pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
     pkgUpgraded.should.include('"ncu-test-return-version": "~1.0.0"')
-
+    pkgUpgraded.should.include('"fp-and-or": "0.1.2"')
   })
 
 })

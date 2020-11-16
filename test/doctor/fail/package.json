@@ -1,7 +1,8 @@
 {
   "dependencies": {
     "ncu-test-v2": "~1.0.0",
-    "ncu-test-return-version": "~1.0.0"
+    "ncu-test-return-version": "~1.0.0",
+    "fp-and-or": "0.1.1"
   },
   "scripts": {
     "test": "node test.js"
