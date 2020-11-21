@@ -173,7 +173,6 @@ describe('doctor', function() {
     // package file should only include successful upgrades
     pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
     pkgUpgraded.should.include('"ncu-test-return-version": "~1.0.0"')
-    pkgUpgraded.should.include('"fp-and-or": "0.1.2"')
     pkgUpgraded.should.not.include('"fp-and-or": "0.1.1"') // assert the negation since fp-and-or is a live package and I don't feel like mocking it
   })
 
