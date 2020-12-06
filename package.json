@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "10.2.2",
+  "version": "10.2.3",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -26,7 +26,9 @@
     "node": ">=10.17"
   },
   "eslintConfig": {
-    "extends": ["raine"]
+    "extends": [
+      "raine"
+    ]
   },
   "main": "./lib",
   "scripts": {
