@@ -94,7 +94,7 @@
     "eslint-plugin-jsdoc": "^30.7.8",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.1.0",
+    "eslint-plugin-standard": "^5.0.0",
     "lockfile-lint": "^4.3.7",
     "mocha": "^8.2.1",
     "mock-require": "^3.0.3",
