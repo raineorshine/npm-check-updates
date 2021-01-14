@@ -1,5 +1,6 @@
 'use strict'
 
+const fs = require('fs')
 const path = require('path')
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
@@ -15,6 +16,29 @@ const cwd = path.join(__dirname, 'monorepo')
 process.env.NCU_TESTS = true
 
 describe('monorepo', function () {
+
+  this.timeout(30000)
+
+  let last = 0
+
+  function getTempPackage() {
+    ++last
+    const pkgDir = path.join(cwd, `tmp/tmp-pkg-${last}`)
+    const rel = `./tmp/tmp-pkg-${last}/package.json`
+    const pkgJson = path.join(cwd, rel)
+    return {
+      dir: pkgDir,
+      file: pkgJson,
+      rel: rel,
+      data: {
+        name: `tmp-pkg-${last}`,
+        dependencies: {
+          express: '1',
+        }
+      }
+    }
+  }
+
   it('do not allow --packageFile and --deep together', () => {
     ncu.run({ packageFile: './package.json', deep: true })
       .should.eventually.be.rejectedWith('Cannot specify both')
@@ -29,5 +53,22 @@ describe('monorepo', function () {
         deepJsonOut.should.have.property('pkg/sub2/package.json')
         deepJsonOut['package.json'].dependencies.should.have.property('express')
       })
+  })
+
+  it('ignore stdin if --packageFile glob is specified', async () => {
+    const pkg = getTempPackage()
+    fs.mkdirSync(pkg.dir, { recursive: true })
+    fs.writeFileSync(pkg.file, JSON.stringify(pkg.data))
+    try {
+      await spawn('node', [bin, '-u', '--packageFile', './tmp/**/package.json'], '{ "dependencies": {}}', { cwd: cwd })
+      const upgradedPkg = JSON.parse(fs.readFileSync(pkg.file, 'utf-8'))
+      upgradedPkg.should.have.property('dependencies')
+      upgradedPkg.dependencies.should.have.property('express')
+      upgradedPkg.dependencies.express.should.not.equal('1')
+    }
+    finally {
+      fs.unlinkSync(pkg.file)
+      fs.rmdirSync(path.join(cwd, 'tmp'), { recursive: true })
+    }
   })
 })
