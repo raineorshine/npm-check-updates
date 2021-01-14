@@ -68,6 +68,7 @@ describe('monorepo', function () {
     }
     finally {
       fs.unlinkSync(pkg.file)
+      fs.rmdirSync(pkg.dir, { recursive: true })
       fs.rmdirSync(path.join(cwd, 'tmp'), { recursive: true })
     }
   })
@@ -100,6 +101,8 @@ describe('monorepo', function () {
     finally {
       fs.unlinkSync(pkg1.file)
       fs.unlinkSync(pkg2.file)
+      fs.rmdirSync(pkg1.dir, { recursive: true })
+      fs.rmdirSync(pkg2.dir, { recursive: true })
       fs.rmdirSync(path.join(cwd, 'tmp'), { recursive: true })
     }
   })
