@@ -71,4 +71,36 @@ describe('monorepo', function () {
       fs.rmdirSync(path.join(cwd, 'tmp'), { recursive: true })
     }
   })
+
+  it('update multiple packages', async () => {
+    const pkg1 = getTempPackage()
+    fs.mkdirSync(pkg1.dir, { recursive: true })
+    fs.writeFileSync(pkg1.file, JSON.stringify(pkg1.data))
+    const pkg2 = getTempPackage()
+    fs.mkdirSync(pkg2.dir, { recursive: true })
+    fs.writeFileSync(pkg2.file, JSON.stringify(pkg2.data))
+    try {
+      const output = await spawn('node', [bin, '-u', '--jsonUpgraded', '--packageFile', './tmp/**/package.json'], '{ "dependencies": {}}', { cwd: cwd })
+
+      const upgradedPkg1 = JSON.parse(fs.readFileSync(pkg1.file, 'utf-8'))
+      upgradedPkg1.should.have.property('dependencies')
+      upgradedPkg1.dependencies.should.have.property('express')
+      upgradedPkg1.dependencies.express.should.not.equal('1')
+
+      const upgradedPkg2 = JSON.parse(fs.readFileSync(pkg2.file, 'utf-8'))
+      upgradedPkg2.should.have.property('dependencies')
+      upgradedPkg2.dependencies.should.have.property('express')
+      upgradedPkg2.dependencies.express.should.not.equal('1')
+
+      const json = JSON.parse(output)
+      json.should.have.property(pkg1.rel)
+      json.should.have.property(pkg2.rel)
+      json.should.not.have.property('package.json')
+    }
+    finally {
+      fs.unlinkSync(pkg1.file)
+      fs.unlinkSync(pkg2.file)
+      fs.rmdirSync(path.join(cwd, 'tmp'), { recursive: true })
+    }
+  })
 })
