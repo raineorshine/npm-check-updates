@@ -106,4 +106,14 @@ describe('deep', function () {
       fs.rmdirSync(path.join(cwd, 'tmp'), { recursive: true })
     }
   })
+
+  it('--prefix is checking files from right location', async () => {
+    return spawn('node', [bin, '--jsonAll', '--deep', '--prefix', './pkg'], { cwd: cwd })
+      .then(JSON.parse)
+      .then(deepJsonOut => {
+        deepJsonOut.should.not.have.property('package.json')
+        deepJsonOut.should.have.property('sub1/package.json')
+        deepJsonOut.should.have.property('sub2/package.json')
+      })
+  })
 })
