@@ -11,11 +11,11 @@ chai.should()
 chai.use(chaiAsPromised)
 
 const bin = path.join(__dirname, '../bin/cli.js')
-const cwd = path.join(__dirname, 'monorepo')
+const cwd = path.join(__dirname, 'deep')
 
 process.env.NCU_TESTS = true
 
-describe('monorepo', function () {
+describe('deep', function () {
 
   this.timeout(30000)
 
