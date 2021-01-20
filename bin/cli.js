@@ -15,6 +15,38 @@ if (notifier.update && notifier.update.latest !== pkg.version) {
   notifier.notify({ defer: false, isGlobal: true })
 }
 
+// manually detect option-specific help
+// https://github.com/raineorshine/npm-check-updates/issues/787
+const rawArgs = process.argv.slice(2)
+if (rawArgs.includes('--help') && rawArgs.length > 1) {
+  const nonHelpArgs = rawArgs.filter(arg => arg !== '--help')
+  nonHelpArgs.forEach(arg => {
+    const option = cliOptions.find(({ long }) => `--${long}` === arg)
+    if (option) {
+      console.log(`Usage: ncu --${option.long}`)
+      if (option.short) {
+        console.log(`       ncu -${option.short}`)
+      }
+      if (option.default !== undefined) {
+        console.log(`Default: ${option.default}`)
+      }
+      if (option.help) {
+        console.log(`\n${option.help}`)
+      }
+      else if (option.description) {
+        console.log(`\n${option.description}`)
+      }
+    }
+    else {
+      console.log(`Unknown option: '--${option.long}'`)
+    }
+  })
+  if (rawArgs.length - nonHelpArgs.length > 1) {
+    console.log('Would you like some help with your help?')
+  }
+  process.exit(0)
+}
+
 // start commander program
 program
   .description('[filter] is a list or regex of package names to check (all others will be ignored).')
