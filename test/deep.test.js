@@ -107,8 +107,8 @@ describe('deep', function () {
     }
   })
 
-  it('--prefix is checking files from right location', async () => {
-    return spawn('node', [bin, '--jsonAll', '--deep', '--prefix', './pkg'], { cwd: cwd })
+  it('using --cwd is checking files from right location', async () => {
+    return spawn('node', [bin, '--jsonAll', '--deep', '--cwd', './test/deep/pkg'])
       .then(JSON.parse)
       .then(deepJsonOut => {
         deepJsonOut.should.not.have.property('package.json')
