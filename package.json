@@ -106,8 +106,9 @@
     "yarn": "^1.22.10"
   },
   "files": [
-    "bin",
-    "lib"
+    "bin/*.js",
+    "!bin/build.js",
+    "lib/**/*.{js,ts}"
   ],
   "mocha": {
     "check-leaks": true,
