@@ -71,7 +71,7 @@
     "lodash": "^4.17.20",
     "mem": "^8.0.0",
     "p-map": "^4.0.0",
-    "pacote": "^11.2.2",
+    "pacote": "^11.2.3",
     "parse-github-url": "^1.0.2",
     "progress": "^2.0.3",
     "prompts": "^2.4.0",
