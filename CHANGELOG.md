@@ -1,6 +1,20 @@
 # Changelog
 This file documents all **major version** releases. For other releases, you'll have to read the [commit history](https://github.com/raineorshine/npm-check-updates/).
 
+## [11.0.0] - 2021-01-20
+
+### Breaking
+
+- `--packageFile` - Now interprets its argument as a glob pattern. It is possible that a previously supplied argument may be interepreted differently now (though I'm not aware of specific instances). Due to our conservative release policy we are releasing as a major version upgrade and allowing developers to assess for themselves.
+
+### Features
+
+- `--deep` - Run recursively in current working directory. Alias of `--packageFile '**/package.json'`.
+
+See: [#785](https://github.com/raineorshine/npm-check-updates/issues/785)
+
+https://github.com/raineorshine/npm-check-updates/compare/v10.3.1...v11.0.0
+
 ## [10.0.0] - 2020-11-08
 
 ### Breaking
