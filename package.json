@@ -35,7 +35,7 @@
     "build": "node scripts/build.js",
     "lint": "npm run lint:src && npm run lint:lockfile && npm run lint:markdown",
     "lint:lockfile": "lockfile-lint --allowed-hosts npm --allowed-schemes https: --empty-hostname false --type npm --path package-lock.json",
-    "lint:markdown": "markdownlint '**/*.md' --ignore node_modules --config .markdownlint.js",
+    "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.js",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
     "nyc": "nyc",
     "mocha": "mocha test test/package-managers/npm test/package-managers/yarn && mocha --exit test/timeout",
