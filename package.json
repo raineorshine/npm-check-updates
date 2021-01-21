@@ -69,6 +69,7 @@
     "jsonlines": "^0.1.1",
     "libnpmconfig": "^1.2.1",
     "lodash": "^4.17.20",
+    "mem": "^8.0.0",
     "p-map": "^4.0.0",
     "pacote": "^11.2.2",
     "parse-github-url": "^1.0.2",
