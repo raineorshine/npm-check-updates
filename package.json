@@ -32,7 +32,7 @@
   },
   "main": "./lib",
   "scripts": {
-    "build": "node bin/build.js",
+    "build": "node scripts/build.js",
     "lint": "npm run lint:src && npm run lint:lockfile && npm run lint:markdown",
     "lint:lockfile": "lockfile-lint --allowed-hosts npm --allowed-schemes https: --empty-hostname false --type npm --path package-lock.json",
     "lint:markdown": "markdownlint '**/*.md' --ignore node_modules --config .markdownlint.js",
@@ -106,9 +106,8 @@
     "yarn": "^1.22.10"
   },
   "files": [
-    "bin/*.js",
-    "!bin/build.js",
-    "lib/**/*.{js,ts}"
+    "bin",
+    "lib"
   ],
   "mocha": {
     "check-leaks": true,
