@@ -10,7 +10,7 @@ on:
       - "**"
 
 env:
-  CI: true
+  NODE_COV: 14
 
 jobs:
   run:
@@ -27,8 +27,8 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v2
 
-      - name: Set Node.js version
-        uses: actions/setup-node@v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -38,11 +38,16 @@ jobs:
       - name: Run lint
         run: npm run lintall
 
+      - name: Run tests
+        run: npm run mocha
+        if: "!(startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV)"
+
       - name: Run tests with coverage
         run: npm run nyc -- npm run mocha
+        if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
 
       - name: Run Coveralls
         uses: coverallsapp/github-action@master
-        if: startsWith(matrix.os, 'ubuntu') && matrix.node == 14
+        if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
