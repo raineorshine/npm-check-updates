@@ -8,19 +8,24 @@ declare namespace ncu {
     concurrency?: number;
 
     /**
-     * Directory of .ncurc config file (default: directory of `packageFile`).
-     */
-    configFilePath?: string;
-
-    /**
      * Config file name (default: .ncurc.{json,yml,js})
      */
     configFileName?: string;
 
     /**
+     * Directory of .ncurc config file (default: directory of `packageFile`).
+     */
+    configFilePath?: string;
+
+    /**
      * Working directory in which npm will be executed.
      */
     cwd?: string;
+
+    /**
+     * Run recursively in current working directory. Alias of (--packageFile '**/package.json').
+     */
+    deep?: boolean;
 
     /**
      * Check one or more sections of dependencies only: prod, dev, peer, optional, bundle (comma-delimited).
@@ -56,6 +61,11 @@ declare namespace ncu {
      * Filter on package version using comma-or-space-delimited list, or /regex/.
      */
     filterVersion?: string | string[] | RegExp;
+
+    /**
+     * Enable additional output data, string or comma-delimited list: ownerChanged, repo. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository. (default: [])
+     */
+    format?: string[];
 
     /**
      * Check global packages instead of in the current project.
@@ -105,20 +115,10 @@ declare namespace ncu {
     newest?: boolean;
 
     /**
-     * npm, yarn (default: "npm")
-     */
-    packageManager?: string;
-
-    /**
      * DEPRECATED. Renamed to "--format ownerChanged".
      * @deprecated
      */
     ownerChanged?: boolean;
-
-    /**
-     * Enable additional output data, string or comma-delimited list: ownerChanged, repo. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository. (default: [])
-     */
-    format?: string[];
 
     /**
      * Package file data (you can also use stdin).
@@ -126,9 +126,14 @@ declare namespace ncu {
     packageData?: string;
 
     /**
-     * Package file location (default: ./package.json).
+     * Package file(s) location (default: ./package.json).
      */
     packageFile?: string;
+
+    /**
+     * npm, yarn (default: "npm")
+     */
+    packageManager?: string;
 
     /**
      * Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1).
@@ -172,7 +177,7 @@ declare namespace ncu {
     silent?: boolean;
 
     /**
-     * Target version to upgrade to: latest, newest, greatest, minor, patch. (default: "latest")
+     * Target version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details.` (default: "latest")
      */
     target?: string;
 
