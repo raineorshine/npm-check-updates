@@ -47,7 +47,7 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
 
       - name: Run Coveralls
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v1.1.2
         if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"

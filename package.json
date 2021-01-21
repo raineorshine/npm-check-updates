@@ -39,7 +39,7 @@
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
     "nyc": "nyc",
     "mocha": "mocha test test/package-managers/npm test/package-managers/yarn && mocha --exit test/timeout",
-    "test": "npm run lint:all && npm run mocha",
+    "test": "npm run lint && npm run mocha",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
     "ncu": "node ./bin/cli.js"
   },
