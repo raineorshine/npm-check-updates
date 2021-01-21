@@ -1,4 +1,5 @@
 # Changelog
+
 This file documents all **major version** releases. For other releases, you'll have to read the [commit history](https://github.com/raineorshine/npm-check-updates/).
 
 ## [11.0.0] - 2021-01-20
@@ -13,7 +14,7 @@ This file documents all **major version** releases. For other releases, you'll h
 
 See: [#785](https://github.com/raineorshine/npm-check-updates/issues/785)
 
-https://github.com/raineorshine/npm-check-updates/compare/v10.3.1...v11.0.0
+<https://github.com/raineorshine/npm-check-updates/compare/v10.3.1...v11.0.0>
 
 ## [10.0.0] - 2020-11-08
 
@@ -23,7 +24,7 @@ https://github.com/raineorshine/npm-check-updates/compare/v10.3.1...v11.0.0
 
 See: [#759](https://github.com/raineorshine/npm-check-updates/issues/759#issuecomment-723587297)
 
-https://github.com/raineorshine/npm-check-updates/compare/v9.2.4...v10.0.0
+<https://github.com/raineorshine/npm-check-updates/compare/v9.2.4...v10.0.0>
 
 ## [9.0.0] - 2020-09-10
 
@@ -31,7 +32,7 @@ https://github.com/raineorshine/npm-check-updates/compare/v9.2.4...v10.0.0
 
 - Versions marked as `deprecated` in npm are now ignored by default. If the latest version is deprecated, the next highest non-deprecated version will be suggested. Use `--deprecated` to include deprecated versions (old behavior).
 
-https://github.com/raineorshine/npm-check-updates/compare/v8.1.1...v9.0.0
+<https://github.com/raineorshine/npm-check-updates/compare/v8.1.1...v9.0.0>
 
 ## [8.0.0] - 2020-08-29
 
@@ -61,6 +62,7 @@ Usage: `ncu --doctor [-u] [options]`
 Iteratively installs upgrades and runs tests to identify breaking upgrades. Add `-u` to execute (modifies your package file, lock file, and node_modules).
 
 To be more precise:
+
 1. Runs `npm install` and `npm test` to ensure tests are currently passing.
 2. Runs `ncu -u` to optimistically upgrade all dependencies.
 3. If tests pass, hurray!
@@ -70,7 +72,7 @@ To be more precise:
 
 Example:
 
-```
+```sh
 $ ncu --doctor -u
 npm install
 npm run test
@@ -81,7 +83,7 @@ Failing tests found:
 /projects/myproject/test.js:13
   throw new Error('Test failed!')
   ^
-Now let's identify the culprit, shall we?
+Now let’s identify the culprit, shall we?
 Restoring package.json
 Restoring package-lock.json
 npm install
@@ -154,7 +156,7 @@ Run ncu -u to upgrade package.json
 
 ### Commits
 
-https://github.com/raineorshine/npm-check-updates/compare/v7.1.1...v8.0.0
+<https://github.com/raineorshine/npm-check-updates/compare/v7.1.1...v8.0.0>
 
 ## [7.0.0] - 2020-06-09
 
@@ -173,20 +175,22 @@ https://github.com/raineorshine/npm-check-updates/compare/v7.1.1...v8.0.0
 - Replace cint methods with native methods
 - Add CI via GitHub Actions workflow
 
-https://github.com/raineorshine/npm-check-updates/compare/v6.0.2...v7.0.0
+<https://github.com/raineorshine/npm-check-updates/compare/v6.0.2...v7.0.0>
 
 ## [6.0.0] - 2020-05-14
 
 ### Breaking
+
 - `--semverLevel` now supports version ranges. This is a breaking change since version ranges are no longer ignored by `--semverLevel`, which may result in some dependencies having new suggested updates.
 
 If you are not using `--semverLevel`, NO CHANGE! 😅
 
-https://github.com/raineorshine/npm-check-updates/compare/v5.0.0...v6.0.0
+<https://github.com/raineorshine/npm-check-updates/compare/v5.0.0...v6.0.0>
 
 ## [5.0.0] - 2020-05-11
 
 ### Breaking
+
 ~node >= 8~
 node >= 10.17
 
@@ -194,7 +198,7 @@ Bump minimum node version to `v10.17.0` due to `move-file` #651
 
 If `ncu` was working for you on `v4.x`, then `v5.0.0` will still work. Just doing a major version bump since ncu's officially supported node version is changing. `v4` should be patched to be compatible with node `v8`, but I'll hold off unless someone requests it.
 
-https://github.com/raineorshine/npm-check-updates/compare/v4.1.2...v5.0.0
+<https://github.com/raineorshine/npm-check-updates/compare/v4.1.2...v5.0.0>
 
 ## [4.0.0] - 2019-12-10
 
@@ -203,31 +207,37 @@ ncu v3 excluded prerelease versions (`-alpha`, `-beta`, etc) from the remote by 
 However, when you are already specifying a prerelease version in your package.json dependencies, then clearly you want ncu to find newer prerelease versions. This is now default in v4, albeit with the conservative approach of sticking to the `latest` tag.
 
 ### Migration
+
 No effect for most users.
 
 If a prerelease version is published on the `latest` tag, and you specify a prerelease version in your package.json, ncu will now suggest upgrades for it.
 
 If a prerelease version is published on a different tag, there is no change from ncu v3; you will still need `--pre`, `--greatest`, or `--newest` to get prerelease upgrades.
 
-https://github.com/raineorshine/npm-check-updates/compare/v3.2.2...v4.0.0
+<https://github.com/raineorshine/npm-check-updates/compare/v3.2.2...v4.0.0>
 
 ## [3.0.0] - 2019-03-07
 
 ### Breaking
 
 #### node < 8 deprecated
+
 The required node version has been updated to allow the use of newer Javascript features and reduce maintenance efforts for old versions.
 
 #### System npm used
+
 In ncu v2, an internally packaged npm was used for version lookups. When this became out-of-date and differed considerably from the system npm problems would occur. In ncu v3, the system-installed npm will be used for all lookups. This comes with the maintenance cost of needing to upgrade ncu whenever the output format of npm changes.
 
 #### Installed modules ignored
+
 In ncu v2, out-of-date dependencies in package.json that were installed up-to-date (e.g. `^1.0.0` specified and `1.0.1` installed) were ignored by ncu. Installed modules are now completely ignored and ncu only consider your package.json. This change was made to better match users’ expectations.
 
 #### Existing version ranges that satisfy latest are ignored (-a by default)
+
 In ncu v2, if you had `^1.0.0` in your package.json, a newly released `1.0.1` would be ignored by ncu. The logic was that `^1.0.0` is a range that includes `1.0.1`, so you don’t really need to change the version specified in your package.json, you just need to run `npm update`. While logical, that turned out to be quite confusing to users. In ncu v3, the package.json will always be upgraded if there is a newer version (same as `-a` in v2). The old default behavior is available via the `--minimal` option.
 
 #### Prerelease versions ignored
+
 In ncu v2, any version published to the `latest` tag was assumed to be a stable release version. In practice, occasional package authors would accidentally or unconventionally publish `-alpha`, `-beta`, and `-rc` versions to the `latest` tag. While I still consider this a bad practice, ncu v3 now ignores these prerelease versions by default to better match users’ expectations. The old behavior is available via the `--pre 1` option. (When `--newest` or `--greatest` are set, `--pre 1` is set by default, and can be disabled with `--pre 0`).
 
 #### Options changed: `-m`, `--prod`, `--dev`, `--peer`
@@ -240,15 +250,15 @@ In order to only target one or more dependency sections, ncu now uses the `--dep
 
 The `--packageManager` alias has changed from `-m` to `-p` to make room for `--minimal` as `-m`.
 
-https://github.com/raineorshine/npm-check-updates/compare/v2.15.0...v3.0.0
+<https://github.com/raineorshine/npm-check-updates/compare/v2.15.0...v3.0.0>
 
 ## [2.0.0] - 2005-08-14
 
 v2 has a few important differences from v1:
+
 - Newer published versions that satisfy the specified range are _not_ upgraded by default (e.g. `1.0.0` to `1.1.0`). This change was made because `npm update` handles upgrades within the satisfied range just fine, and npm-check-updates is primarily intended to provide functionality not otherwise provided by npm itself. These satisfied dependencies will still be shown when you run npm-check-updates, albeit with a short explanation. **For the old behavior, add the -ua/--upgradeAll option.**
 - The command-line argument now specifies a package name filter (e.g. `ncu /^gulp-/`). For the old behavior (specifying an alternative package.json), pipe the package.json through stdin.
 - Use the easier-to-type `ncu` instead of `npm-check-updates`. `npm-check-updates` is preserved for backwards-compatibility.
-
 - Allow packageData to be specified as an option
 - Colored table output
 - Add -a/--upgradeAll
@@ -264,4 +274,4 @@ v2 has a few important differences from v1:
 - Bug fixes and refactoring
 - Full unit test coverage!
 
-https://github.com/raineorshine/npm-check-updates/compare/v1.5.1...v2.0.0
+<https://github.com/raineorshine/npm-check-updates/compare/v1.5.1...v2.0.0>

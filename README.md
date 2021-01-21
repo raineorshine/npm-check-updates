@@ -23,7 +23,7 @@ npm install -g npm-check-updates
 
 Show any new dependencies for the project in the current directory:
 
-```console
+```sh
 $ ncu
 Checking package.json
 [====================] 5/5 100%
@@ -41,7 +41,7 @@ Upgrade a project's package file:
 
 > **Make sure your package file is in version control and all changes have been committed. This *will* overwrite your package file.**
 
-```console
+```sh
 $ ncu -u
 Upgrading package.json
 [====================] 1/1 100%
@@ -208,7 +208,7 @@ To be more precise:
 
 Example:
 
-```console
+```sh
 $ ncu --doctor -u
 npm install
 npm run test

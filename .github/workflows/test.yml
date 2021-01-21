@@ -36,7 +36,7 @@ jobs:
         run: npm ci
 
       - name: Run lint
-        run: npm run lintall
+        run: npm run lint
 
       - name: Run tests
         run: npm run mocha
