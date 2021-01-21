@@ -1,4 +1,4 @@
-# npm-check-updates [![npm version](https://badge.fury.io/js/npm-check-updates.svg)](https://www.npmjs.com/package/npm-check-updates) [![Build Status](https://github.com/raineorshine/npm-check-updates/workflows/Tests/badge.svg?branch=master)](https://github.com/raineorshine/npm-check-updates/actions?query=workflow%3ATests+branch%3Amaster) [![Coverage Status](https://coveralls.io/repos/github/raineorshine/npm-check-updates/badge.svg?branch=master)](https://coveralls.io/github/raineorshine/npm-check-updates?branch=master)
+# npm-check-updates [![npm version](https://img.shields.io/npm/v/npm-check-updates)](https://www.npmjs.com/package/npm-check-updates) [![Build Status](https://img.shields.io/github/workflow/status/raineorshine/npm-check-updates/Tests/master?label=Tests&logo=github)](https://github.com/raineorshine/npm-check-updates/actions?query=workflow%3ATests+branch%3Amaster) [![Coverage Status](https://img.shields.io/coveralls/github/raineorshine/npm-check-updates/master)](https://coveralls.io/github/raineorshine/npm-check-updates?branch=master)
 
 **npm-check-updates upgrades your package.json dependencies to the *latest* versions, ignoring specified versions.**
 
@@ -87,7 +87,7 @@ $ ncu "/^(?!gulp-).*$/" # windows
 Detailed output with links to each repository:
 
 ```sh
-$ ncu --format repo
+ncu --format repo
 ```
 
 ## Options
@@ -198,6 +198,7 @@ Usage: `ncu --doctor [-u] [options]`
 Iteratively installs upgrades and runs tests to identify breaking upgrades. Add `-u` to execute (modifies your package file, lock file, and node_modules).
 
 To be more precise:
+
 1. Runs `npm install` and `npm test` to ensure tests are currently passing.
 2. Runs `ncu -u` to optimistically upgrade all dependencies.
 3. If tests pass, hurray!
@@ -207,7 +208,7 @@ To be more precise:
 
 Example:
 
-```
+```console
 $ ncu --doctor -u
 npm install
 npm run test
