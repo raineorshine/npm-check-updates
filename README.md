@@ -95,10 +95,12 @@ $ ncu --format repo
 ```text
 --concurrency <n>            Max number of concurrent HTTP requests to
                              registry. (default: 8)
+--configFileName <filename>  Config file name (default: .ncurc.{json,yml,js})
 --configFilePath <path>      Directory of .ncurc config file (default:
                              directory of `packageFile`).
---configFileName <filename>  Config file name (default: .ncurc.{json,yml,js})
 --cwd <path>                 Working directory in which npm will be executed.
+--deep                       Run recursively in current working directory.
+                             Alias of (--packageFile '**/package.json').
 --dep <value>                Check one or more sections of dependencies only:
                              prod, dev, peer, optional, bundle
                              (comma-delimited).
@@ -117,6 +119,11 @@ $ ncu --format repo
                              /regex/.
 --filterVersion <matches>    Filter on package version using
                              comma-or-space-delimited list, or /regex/.
+--format <value>             Enable additional output data, string or
+                             comma-delimited list: ownerChanged, repo.
+                             ownerChanged: shows if the package owner changed
+                             between versions. repo: infers and displays
+                             links to source code repository. (default: [])
 -g, --global                 Check global packages instead of in the current
                              project.
 --greatest                   DEPRECATED. Renamed to "--target greatest".
@@ -135,15 +142,11 @@ $ ncu --format repo
                              satisfied by the version range according to
                              semver.
 -n, --newest                 DEPRECATED. Renamed to "--target newest".
--p, --packageManager <name>  npm, yarn (default: "npm")
 -o, --ownerChanged           DEPRECATED. Renamed to "--format ownerChanged".
---format <value>             Enable additional output data, string or
-                             comma-delimited list: ownerChanged, repo.
-                             ownerChanged: shows if the package owner changed
-                             between versions. repo: infers and displays
-                             links to source code repository. (default: [])
 --packageData <value>        Package file data (you can also use stdin).
---packageFile <path>         Package file location (default: ./package.json).
+--packageFile <path|glob>    Package file(s) location (default:
+                             ./package.json).
+-p, --packageManager <name>  npm, yarn (default: "npm")
 --pre <n>                    Include -alpha, -beta, -rc. (default: 0; default
                              with --newest and --greatest: 1).
 --prefix <path>              Current working directory of npm.
@@ -157,7 +160,8 @@ $ ncu --format repo
 --semverLevel <value>        DEPRECATED. Renamed to --target.
 -s, --silent                 Don't output anything (--loglevel silent).
 -t, --target <value>         Target version to upgrade to: latest, newest,
-                             greatest, minor, patch. (default: "latest")
+                             greatest, minor, patch. Run "ncu --help
+                             --target" for details.` (default: "latest")
 --timeout <ms>               Global timeout in milliseconds. (default: no
                              global timeout and 30 seconds per
                              npm-registery-fetch).
