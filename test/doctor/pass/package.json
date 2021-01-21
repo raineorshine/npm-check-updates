@@ -3,6 +3,6 @@
     "ncu-test-v2": "~1.0.0"
   },
   "scripts": {
-    "test": "true"
+    "test": "echo 'Dummy script'"
   }
 }
