@@ -72,7 +72,7 @@ To be more precise:
 
 Example:
 
-```console
+```sh
 $ ncu --doctor -u
 npm install
 npm run test
@@ -144,7 +144,7 @@ Output values:
 
 Example:
 
-```console
+```sh
 $ ncu --ownerChanged
 Checking /tmp/package.json
 [====================] 1/1 100%
