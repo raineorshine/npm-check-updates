@@ -23,7 +23,7 @@ npm install -g npm-check-updates
 
 Show any new dependencies for the project in the current directory:
 
-```console
+```sh
 $ ncu
 Checking package.json
 [====================] 5/5 100%
@@ -41,7 +41,7 @@ Upgrade a project's package file:
 
 > **Make sure your package file is in version control and all changes have been committed. This *will* overwrite your package file.**
 
-```console
+```sh
 $ ncu -u
 Upgrading package.json
 [====================] 1/1 100%
@@ -63,25 +63,25 @@ You can upgrade specific packages using the `--filter` option or adding addition
 
 ```sh
 # upgrade only mocha
-$ ncu mocha
-$ ncu --filter mocha
-$ ncu -f mocha
+ncu mocha
+ncu --filter mocha
+ncu -f mocha
 
 # upgrade only chalk, mocha, and react
-$ ncu chalk mocha react
-$ ncu chalk,mocha,react
-$ ncu -f "chalk mocha react"
+ncu chalk mocha react
+ncu chalk,mocha,react
+ncu -f "chalk mocha react"
 
 # do not upgrade nodemon
-$ ncu -x nodemon
-$ ncu --reject nodemon
+ncu -x nodemon
+ncu --reject nodemon
 
 # upgrade packages that start with "gulp-" using regex
-$ ncu "/^gulp-.*$/"
+ncu "/^gulp-.*$/"
 
 # upgrade packages that do not start with "gulp-".
-$ ncu '/^(?!gulp-).*$/' # mac/linux
-$ ncu "/^(?!gulp-).*$/" # windows
+ncu '/^(?!gulp-).*$/' # mac/linux
+ncu "/^(?!gulp-).*$/" # windows
 ```
 
 Detailed output with links to each repository:
@@ -208,7 +208,7 @@ To be more precise:
 
 Example:
 
-```console
+```sh
 $ ncu --doctor -u
 npm install
 npm run test
