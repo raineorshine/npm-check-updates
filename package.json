@@ -59,7 +59,7 @@
     "chalk": "^4.1.0",
     "cint": "^8.2.1",
     "cli-table": "^0.3.4",
-    "commander": "^6.2.1",
+    "commander": "^7.0.0",
     "find-up": "5.0.0",
     "fp-and-or": "^0.1.3",
     "get-stdin": "^8.0.0",
