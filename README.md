@@ -15,7 +15,7 @@ You may also want to consider [npm-check](https://github.com/dylang/npm-check). 
 
 ## Installation
 
-```console
+```sh
 npm install -g npm-check-updates
 ```
 
@@ -55,13 +55,13 @@ $ npm install      # update installed packages and package-lock.json
 
 Check global packages:
 
-```console
+```sh
 ncu -g           # add -u to get a one-line command for upgrading
 ```
 
 You can upgrade specific packages using the `--filter` option or adding additional cli arguments. You can exclude specific packages with the `--reject` option. They accept strings, comma-or-space-delimited lists, or regular expressions:
 
-```console
+```sh
 # upgrade only mocha
 $ ncu mocha
 $ ncu --filter mocha
@@ -86,7 +86,7 @@ $ ncu "/^(?!gulp-).*$/" # windows
 
 Detailed output with links to each repository:
 
-```console
+```sh
 ncu --format repo
 ```
 
