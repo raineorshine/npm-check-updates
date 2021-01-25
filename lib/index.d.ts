@@ -3,6 +3,11 @@ declare namespace ncu {
   interface RunOptions {
 
     /**
+     * Force color in terminal
+     */
+    color?: boolean;
+
+    /**
      * Max number of concurrent HTTP requests to registry. (default: 8)
      */
     concurrency?: number;

@@ -93,6 +93,7 @@ ncu --format repo
 ## Options
 
 ```text
+--color                      Force color in terminal
 --concurrency <n>            Max number of concurrent HTTP requests to
                              registry. (default: 8)
 --configFileName <filename>  Config file name (default: .ncurc.{json,yml,js})
