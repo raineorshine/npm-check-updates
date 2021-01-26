@@ -16,7 +16,8 @@ const ncu = (args, options) => spawn('node', [path.join(__dirname, '../bin/cli.j
 
 describe('doctor', function() {
 
-  this.timeout(30000)
+  // 3 min timeout
+  this.timeout(3 * 60 * 1000)
 
   it('print instructions when -u is not specified', async () => {
     const cwd = path.join(__dirname, 'doctor/nopackagefile')
