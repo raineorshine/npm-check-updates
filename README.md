@@ -1,4 +1,8 @@
-# npm-check-updates [![npm version](https://img.shields.io/npm/v/npm-check-updates)](https://www.npmjs.com/package/npm-check-updates) [![Build Status](https://img.shields.io/github/workflow/status/raineorshine/npm-check-updates/Tests/master?label=Tests&logo=github)](https://github.com/raineorshine/npm-check-updates/actions?query=workflow%3ATests+branch%3Amaster) [![Coverage Status](https://img.shields.io/coveralls/github/raineorshine/npm-check-updates/master)](https://coveralls.io/github/raineorshine/npm-check-updates?branch=master)
+# npm-check-updates
+
+[![npm version](https://img.shields.io/npm/v/npm-check-updates)](https://www.npmjs.com/package/npm-check-updates)
+[![Build Status](https://img.shields.io/github/workflow/status/raineorshine/npm-check-updates/Tests/master?label=tests&logo=github)](https://github.com/raineorshine/npm-check-updates/actions?query=workflow%3ATests+branch%3Amaster)
+[![Coverage Status](https://img.shields.io/coveralls/github/raineorshine/npm-check-updates/master)](https://coveralls.io/github/raineorshine/npm-check-updates?branch=master)
 
 **npm-check-updates upgrades your package.json dependencies to the *latest* versions, ignoring specified versions.**
 
