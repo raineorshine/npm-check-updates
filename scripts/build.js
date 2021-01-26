@@ -7,6 +7,9 @@ const path = require('path')
 const spawn = require('spawn-please')
 const cliOptions = require('../lib/cli-options')
 
+/** Escape closing block comments that would interfere with JSDOC. */
+const escapeComments = s => s.replace(/\*\*\//g, '**\\/')
+
 /** Extracts CLI options from the bin output. */
 const readOptions = async () => {
   const optionsBinLabel = 'Options:\n'
@@ -67,7 +70,7 @@ export = ncu
      * @deprecated` : ''
     return `
     /**
-     * ${description}${tsDefault}${deprecatedLine}
+     * ${escapeComments(description)}${escapeComments(tsDefault)}${escapeComments(deprecatedLine)}
      */
     ${tsName}?: ${tsType};
 `
