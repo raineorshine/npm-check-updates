@@ -28,7 +28,7 @@ declare namespace ncu {
     cwd?: string;
 
     /**
-     * Run recursively in current working directory. Alias of (--packageFile '**/package.json').
+     * Run recursively in current working directory. Alias of (--packageFile '**\/package.json').
      */
     deep?: boolean;
 
