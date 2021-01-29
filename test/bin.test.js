@@ -366,4 +366,8 @@ describe('bin', function () {
 
   })
 
+  it('global should run', async () => {
+    await spawn('node', ['bin/cli.js', '--global'])
+  })
+
 })
