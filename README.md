@@ -275,9 +275,7 @@ console.log(upgraded) // { "mypackage": "^2.0.0", ... }
 
 ## Known Issues
 
-- Windows: If npm-check-updates hangs, run `ncu --loglevel verbose` to see if it is waiting for stdin. If so, try setting the package file explicitly: `ncu --packageFile package.json`. See [#136](https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102).
-
-Also search the [issues page](https://github.com/raineorshine/npm-check-updates/issues).
+- Windows: If npm-check-updates hangs, try setting the package file explicitly: `ncu --packageFile package.json`. You can run `ncu --loglevel verbose` to confirm that it was incorrectly waiting for stdin. See [#136](https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102).
 
 ## Problems?
 
