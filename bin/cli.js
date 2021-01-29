@@ -38,7 +38,7 @@ if (rawArgs.includes('--help') && rawArgs.length > 1) {
       }
     }
     else {
-      console.log(`Unknown option: '--${option.long}'`)
+      console.log(`Unknown option: ${arg}`)
     }
   })
   if (rawArgs.length - nonHelpArgs.length > 1) {

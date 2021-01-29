@@ -337,4 +337,33 @@ describe('bin', function () {
 
   })
 
+  describe('option-specific help', () => {
+
+    it('regular option', async () => {
+      const output = await spawn('node', ['bin/cli.js', '--help', '--filter'])
+      output.trim().should.startWith('Usage: ncu --filter')
+    })
+
+    it('option with default', async () => {
+      const output = await spawn('node', ['bin/cli.js', '--help', '--concurrency'])
+      output.trim().should.include('Default:')
+    })
+
+    it('option with extended help', async () => {
+      const output = await spawn('node', ['bin/cli.js', '--help', '--target'])
+      output.trim().should.include('Upgrade to the highest version number')
+    })
+
+    it('unknown option', async () => {
+      const output = await spawn('node', ['bin/cli.js', '--help', '--foo'])
+      output.trim().should.include('Unknown option')
+    })
+
+    it('special --help --help', async () => {
+      const output = await spawn('node', ['bin/cli.js', '--help', '--help'])
+      output.trim().should.not.include('Usage')
+    })
+
+  })
+
 })
