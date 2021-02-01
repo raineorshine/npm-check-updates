@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "chalk": "^4.1.0",
-    "cint": "^8.2.1",
+    "cint": "^9.1.0",
     "cli-table": "^0.3.4",
     "commander": "^6.2.1",
     "find-up": "5.0.0",
