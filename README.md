@@ -1,15 +1,15 @@
 # npm-check-updates
 
 [![npm version](https://img.shields.io/npm/v/npm-check-updates)](https://www.npmjs.com/package/npm-check-updates)
-[![Build Status](https://img.shields.io/github/workflow/status/raineorshine/npm-check-updates/Tests/master?label=tests&logo=github)](https://github.com/raineorshine/npm-check-updates/actions?query=workflow%3ATests+branch%3Amaster)
-[![Coverage Status](https://img.shields.io/coveralls/github/raineorshine/npm-check-updates/master)](https://coveralls.io/github/raineorshine/npm-check-updates?branch=master)
+[![Build Status](https://img.shields.io/github/workflow/status/raineorshine/npm-check-updates/Tests/main?label=tests&logo=github)](https://github.com/raineorshine/npm-check-updates/actions?query=workflow%3ATests+branch%3Amain)
+[![Coverage Status](https://img.shields.io/coveralls/github/raineorshine/npm-check-updates/main)](https://coveralls.io/github/raineorshine/npm-check-updates?branch=main)
 
 **npm-check-updates upgrades your package.json dependencies to the *latest* versions, ignoring specified versions.**
 
 - maintains existing semantic versioning *policies*, i.e. `"express": "^4.0.0"` to `"express": "^5.0.0"`.
 - *only* modifies package.json file. Run `npm install` to update your installed packages and package-lock.json.
 
-![npm-check-updates-screenshot](https://github.com/raineorshine/npm-check-updates/blob/master/.github/screenshot.png?raw=true)
+![npm-check-updates-screenshot](https://github.com/raineorshine/npm-check-updates/blob/main/.github/screenshot.png?raw=true)
 
 - Red = major upgrade (and all [major version zero](https://semver.org/#spec-item-4))
 - Cyan = minor upgrade
