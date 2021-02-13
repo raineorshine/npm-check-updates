@@ -33,7 +33,7 @@
   "main": "./lib",
   "scripts": {
     "build": "node scripts/build.js",
-    "lint": "npm-run-all --parallel --aggregate-output lint:*",
+    "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.js",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
@@ -88,6 +88,7 @@
     "chai-as-promised": "^7.1.1",
     "chai-string": "^1.5.0",
     "chokidar-cli": "^2.1.0",
+    "cross-env": "^7.0.3",
     "eslint": "^7.19.0",
     "eslint-config-raine": "^0.2.2",
     "eslint-config-standard": "^16.0.2",
