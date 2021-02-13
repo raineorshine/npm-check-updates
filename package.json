@@ -39,6 +39,7 @@
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
     "nyc": "nyc",
     "mocha": "mocha test test/package-managers/npm test/package-managers/yarn && mocha --exit test/timeout",
+    "postinstall": "husky install",
     "test": "npm-run-all lint mocha",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
     "ncu": "node ./bin/cli.js"
@@ -97,6 +98,7 @@
     "eslint-plugin-jsdoc": "^31.6.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
+    "husky": "^5.0.9",
     "lockfile-lint": "^4.3.7",
     "markdownlint-cli": "^0.26.0",
     "mocha": "^8.2.1",
