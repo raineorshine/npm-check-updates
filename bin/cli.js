@@ -89,7 +89,7 @@ const options = {
     : null,
   ..._.pickBy(program.opts(), value => value !== undefined),
   args: program.args,
-  filter: program.filter,
+  ...program.filter ? { filter: program.filter } : null,
   cli: true,
 }
 
