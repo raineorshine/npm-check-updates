@@ -34,7 +34,7 @@
   "scripts": {
     "build": "node scripts/build.js",
     "lint": "npm-run-all --parallel --aggregate-output lint:*",
-    "lint:lockfile": "lockfile-lint --allowed-hosts npm --allowed-schemes https: --empty-hostname false --type npm --path package-lock.json",
+    "lint:lockfile": "lockfile-lint",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.js",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
     "nyc": "nyc",
@@ -110,6 +110,19 @@
     "bin",
     "lib"
   ],
+  "lockfile-lint": {
+    "allowed-schemes": [
+      "https:",
+      "git+https:"
+    ],
+    "allowed-hosts": [
+      "npm",
+      "https://github.com/raineorshine"
+    ],
+    "empty-hostname": false,
+    "type": "npm ",
+    "path": "package-lock.json"
+  },
   "mocha": {
     "check-leaks": true,
     "throw-deprecation": true,
