@@ -38,7 +38,6 @@
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.js",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
     "nyc": "nyc",
-    "postinstall": "husky install",
     "test": "mocha test test/package-managers/npm test/package-managers/yarn && mocha --exit test/timeout",
     "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
     "ncu": "node ./bin/cli.js"
