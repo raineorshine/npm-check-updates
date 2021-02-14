@@ -464,6 +464,45 @@ describe('versionmanager', () => {
         })
       })
 
+      it('github urls should support --target greatest', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
+        }, { loglevel: 'silent', target: 'newest' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta'
+        })
+      })
+
+      it('github urls should support --target newest', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
+        }, { loglevel: 'silent', target: 'newest' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta'
+        })
+      })
+
+      it('github urls should support --target minor', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^0.1.0'
+        }, { loglevel: 'silent', target: 'minor' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^0.2.0'
+        })
+      })
+
+      it('github urls should support --target patch', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^1.0.0'
+        }, { loglevel: 'silent', target: 'patch' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^1.0.1'
+        })
+      })
 
       it('github urls should not upgrade embedded semver version ranges to prereleases by default', async () => {
         const upgrades = await vm.queryVersions({
@@ -473,6 +512,26 @@ describe('versionmanager', () => {
         upgrades.should.deep.equal({
           'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.1'
         })
+      })
+
+      it('github urls should upgrade embedded semver version ranges to prereleases with --target greatest and newest', async () => {
+
+        const upgradesNewest = await vm.queryVersions({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
+        }, { loglevel: 'silent', target: 'newest' })
+
+        upgradesNewest.should.deep.equal({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta'
+        })
+
+        const upgradesGreatest = await vm.queryVersions({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
+        }, { loglevel: 'silent', target: 'greatest' })
+
+        upgradesGreatest.should.deep.equal({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta'
+        })
+
       })
 
     })
