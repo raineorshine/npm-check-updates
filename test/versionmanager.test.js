@@ -10,104 +10,6 @@ chai.use(chaiAsPromised)
 
 describe('versionmanager', () => {
 
-  describe('upgradeDependencyDeclaration', () => {
-    it('numeric upgrades', () => {
-      vm.upgradeDependencyDeclaration('0', '1.0.0').should.equal('1')
-      vm.upgradeDependencyDeclaration('1', '10.0.0').should.equal('10')
-
-      vm.upgradeDependencyDeclaration('0.1', '1.0.0').should.equal('1.0')
-      vm.upgradeDependencyDeclaration('1.0', '1.1.0').should.equal('1.1')
-
-      vm.upgradeDependencyDeclaration('1.0.0', '1.0.1').should.equal('1.0.1')
-      vm.upgradeDependencyDeclaration('1.0.1', '1.1.0').should.equal('1.1.0')
-      vm.upgradeDependencyDeclaration('2.0.1', '2.0.11').should.equal('2.0.11')
-    })
-
-    it('wildcard upgrades', () => {
-      vm.upgradeDependencyDeclaration('1.x', '1.1.0').should.equal('1.x')
-      vm.upgradeDependencyDeclaration('1.x.1', '1.1.2').should.equal('1.x.2')
-      vm.upgradeDependencyDeclaration('1.0.x', '1.1.1').should.equal('1.1.x')
-      vm.upgradeDependencyDeclaration('1.0.x', '1.1.0').should.equal('1.1.x')
-      vm.upgradeDependencyDeclaration('1.0.x', '2.0.0').should.equal('2.0.x')
-
-      vm.upgradeDependencyDeclaration('*', '1.0.0').should.equal('*')
-      vm.upgradeDependencyDeclaration('1.*', '2.0.1').should.equal('2.*')
-
-      vm.upgradeDependencyDeclaration('^*', '1.0.0').should.equal('^*')
-
-      vm.upgradeDependencyDeclaration('x', '1.0.0').should.equal('x')
-      vm.upgradeDependencyDeclaration('x.x', '1.0.0').should.equal('x.x')
-      vm.upgradeDependencyDeclaration('x.x.x', '1.0.0').should.equal('x.x.x')
-    })
-
-    it('convert < to ^', () => {
-      vm.upgradeDependencyDeclaration('<1', '2.1.0').should.equal('^2')
-      vm.upgradeDependencyDeclaration('<1.0', '1.1.0').should.equal('^1.1')
-    })
-
-    it('preserve > and >=', () => {
-      vm.upgradeDependencyDeclaration('>1.0', '2.0.0').should.equal('>2.0')
-      vm.upgradeDependencyDeclaration('>=1.0', '2.0.0').should.equal('>=2.0')
-    })
-
-    it('preserve ^ and ~', () => {
-      vm.upgradeDependencyDeclaration('^1.2.3', '1.2.4').should.equal('^1.2.4')
-      vm.upgradeDependencyDeclaration('~1.2.3', '1.2.4').should.equal('~1.2.4')
-    })
-
-    it('preserve prerelease versons', () => {
-      vm.upgradeDependencyDeclaration('^0.15.7', '0.16.0-beta.3').should.equal('^0.16.0-beta.3')
-    })
-
-    it('replace multiple ranges with ^', () => {
-      vm.upgradeDependencyDeclaration('>1.0 >2.0 < 3.0', '3.1.0').should.equal('^3.1')
-    })
-
-    it('handle ||', () => {
-      vm.upgradeDependencyDeclaration('~1.0 || ~1.2', '3.1.0').should.equal('~3.1')
-    })
-
-    it('hyphen (-) range', () => {
-      vm.upgradeDependencyDeclaration('1.0 - 2.0', '3.1.0').should.equal('3.1')
-    })
-
-    it('use the range with the fewest parts if there are multiple ranges', () => {
-      vm.upgradeDependencyDeclaration('1.1 || 1.2.0', '3.1.0').should.equal('3.1')
-      vm.upgradeDependencyDeclaration('1.2.0 || 1.1', '3.1.0').should.equal('3.1')
-    })
-
-    it('preserve wildcards in comparisons', () => {
-      vm.upgradeDependencyDeclaration('1.x < 1.2.0', '3.1.0').should.equal('3.x')
-    })
-
-    it('use the first operator if a comparison has mixed operators', () => {
-      vm.upgradeDependencyDeclaration('1.x < 1.*', '3.1.0').should.equal('3.x')
-    })
-
-    it('maintain \'unclean\' semantic versions', () => {
-      vm.upgradeDependencyDeclaration('v1.0', '1.1').should.equal('v1.1')
-      vm.upgradeDependencyDeclaration('=v1.0', '1.1').should.equal('=v1.1')
-      vm.upgradeDependencyDeclaration(' =v1.0', '1.1').should.equal('=v1.1')
-    })
-
-    it('maintain \'unclean\' semantic versions', () => {
-      vm.upgradeDependencyDeclaration('v1.0', '1.1').should.equal('v1.1')
-      vm.upgradeDependencyDeclaration('=v1.0', '1.1').should.equal('=v1.1')
-      vm.upgradeDependencyDeclaration(' =v1.0', '1.1').should.equal('=v1.1')
-    })
-
-    it('maintain existing version if new version is unknown', () => {
-      vm.upgradeDependencyDeclaration('1.0', '').should.equal('1.0')
-      vm.upgradeDependencyDeclaration('1.0', null).should.equal('1.0')
-    })
-
-    it('remove semver range if removeRange option is specified', () => {
-      vm.upgradeDependencyDeclaration('^1.0.0', '1.0.1', { removeRange: true }).should.equal('1.0.1')
-      vm.upgradeDependencyDeclaration('2.2.*', '3.1.1', { removeRange: true }).should.equal('3.1.1')
-    })
-
-  })
-
   describe('upgradePackageData', () => {
     const pkgData = JSON.stringify({
       name: 'npm-check-updates',
@@ -478,7 +380,7 @@ describe('versionmanager', () => {
 
     describe('github urls', () => {
 
-      it('github urls should upgrade the embedded semver tag', async () => {
+      it('github urls should upgrade the embedded version tag', async () => {
         const upgrades = await vm.queryVersions({
           'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#v1.0.0'
         }, { loglevel: 'silent' })
@@ -488,7 +390,7 @@ describe('versionmanager', () => {
         })
       })
 
-      it('git+https urls should upgrade the embedded semver tag', async () => {
+      it('git+https urls should upgrade the embedded version tag', async () => {
         const upgrades = await vm.queryVersions({
           'ncu-test-v2': 'git+https://github.com/raineorshine/ncu-test-v2#v1.0.0'
         }, { loglevel: 'silent' })
@@ -498,9 +400,9 @@ describe('versionmanager', () => {
         })
       })
 
-      it('ignore tags that are not valid semver', async () => {
+      it('ignore tags that are not valid versions', async () => {
 
-        // this repo has tag "1.0" which is not valid semver
+        // this repo has tag "1.0" which is not a valid version
         const upgrades1 = await vm.queryVersions({
           'ncu-test-invalid-tag': 'raineorshine/ncu-test-invalid-tag.git#v3.0.0'
         }, { loglevel: 'silent' })
@@ -509,7 +411,7 @@ describe('versionmanager', () => {
           'ncu-test-invalid-tag': 'raineorshine/ncu-test-invalid-tag.git#v3.0.5'
         })
 
-        // this repo has tag "v0.1.3a" which is not valid semver
+        // this repo has tag "v0.1.3a" which is not a valid version
         const upgrades2 = await vm.queryVersions({
           'angular-toasty': 'git+https://github.com/raineorshine/ncu-test-v0.1.3a.git#1.0.0'
         }, { loglevel: 'silent' })
@@ -550,6 +452,86 @@ describe('versionmanager', () => {
         upgrades.should.deep.equal({
           'ncu-test-v2': '2.0.0',
         })
+      })
+
+      it('github urls should upgrade the embedded semver version range', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#semver:^1.0.0'
+        }, { loglevel: 'silent' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#semver:^2.0.0'
+        })
+      })
+
+      it('github urls should support --target greatest', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
+        }, { loglevel: 'silent', target: 'newest' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta'
+        })
+      })
+
+      it('github urls should support --target newest', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
+        }, { loglevel: 'silent', target: 'newest' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta'
+        })
+      })
+
+      it('github urls should support --target minor', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^0.1.0'
+        }, { loglevel: 'silent', target: 'minor' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^0.2.0'
+        })
+      })
+
+      it('github urls should support --target patch', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^1.0.0'
+        }, { loglevel: 'silent', target: 'patch' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^1.0.1'
+        })
+      })
+
+      it('github urls should not upgrade embedded semver version ranges to prereleases by default', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
+        }, { loglevel: 'silent' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.1'
+        })
+      })
+
+      it('github urls should upgrade embedded semver version ranges to prereleases with --target greatest and newest', async () => {
+
+        const upgradesNewest = await vm.queryVersions({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
+        }, { loglevel: 'silent', target: 'newest' })
+
+        upgradesNewest.should.deep.equal({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta'
+        })
+
+        const upgradesGreatest = await vm.queryVersions({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
+        }, { loglevel: 'silent', target: 'greatest' })
+
+        upgradesGreatest.should.deep.equal({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta'
+        })
+
       })
 
     })
