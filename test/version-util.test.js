@@ -11,6 +11,104 @@ chai.use(chaiAsPromised)
 
 describe('version-util', () => {
 
+  describe('upgradeDependencyDeclaration', () => {
+    it('numeric upgrades', () => {
+      versionUtil.upgradeDependencyDeclaration('0', '1.0.0').should.equal('1')
+      versionUtil.upgradeDependencyDeclaration('1', '10.0.0').should.equal('10')
+
+      versionUtil.upgradeDependencyDeclaration('0.1', '1.0.0').should.equal('1.0')
+      versionUtil.upgradeDependencyDeclaration('1.0', '1.1.0').should.equal('1.1')
+
+      versionUtil.upgradeDependencyDeclaration('1.0.0', '1.0.1').should.equal('1.0.1')
+      versionUtil.upgradeDependencyDeclaration('1.0.1', '1.1.0').should.equal('1.1.0')
+      versionUtil.upgradeDependencyDeclaration('2.0.1', '2.0.11').should.equal('2.0.11')
+    })
+
+    it('wildcard upgrades', () => {
+      versionUtil.upgradeDependencyDeclaration('1.x', '1.1.0').should.equal('1.x')
+      versionUtil.upgradeDependencyDeclaration('1.x.1', '1.1.2').should.equal('1.x.2')
+      versionUtil.upgradeDependencyDeclaration('1.0.x', '1.1.1').should.equal('1.1.x')
+      versionUtil.upgradeDependencyDeclaration('1.0.x', '1.1.0').should.equal('1.1.x')
+      versionUtil.upgradeDependencyDeclaration('1.0.x', '2.0.0').should.equal('2.0.x')
+
+      versionUtil.upgradeDependencyDeclaration('*', '1.0.0').should.equal('*')
+      versionUtil.upgradeDependencyDeclaration('1.*', '2.0.1').should.equal('2.*')
+
+      versionUtil.upgradeDependencyDeclaration('^*', '1.0.0').should.equal('^*')
+
+      versionUtil.upgradeDependencyDeclaration('x', '1.0.0').should.equal('x')
+      versionUtil.upgradeDependencyDeclaration('x.x', '1.0.0').should.equal('x.x')
+      versionUtil.upgradeDependencyDeclaration('x.x.x', '1.0.0').should.equal('x.x.x')
+    })
+
+    it('convert < to ^', () => {
+      versionUtil.upgradeDependencyDeclaration('<1', '2.1.0').should.equal('^2')
+      versionUtil.upgradeDependencyDeclaration('<1.0', '1.1.0').should.equal('^1.1')
+    })
+
+    it('preserve > and >=', () => {
+      versionUtil.upgradeDependencyDeclaration('>1.0', '2.0.0').should.equal('>2.0')
+      versionUtil.upgradeDependencyDeclaration('>=1.0', '2.0.0').should.equal('>=2.0')
+    })
+
+    it('preserve ^ and ~', () => {
+      versionUtil.upgradeDependencyDeclaration('^1.2.3', '1.2.4').should.equal('^1.2.4')
+      versionUtil.upgradeDependencyDeclaration('~1.2.3', '1.2.4').should.equal('~1.2.4')
+    })
+
+    it('preserve prerelease versons', () => {
+      versionUtil.upgradeDependencyDeclaration('^0.15.7', '0.16.0-beta.3').should.equal('^0.16.0-beta.3')
+    })
+
+    it('replace multiple ranges with ^', () => {
+      versionUtil.upgradeDependencyDeclaration('>1.0 >2.0 < 3.0', '3.1.0').should.equal('^3.1')
+    })
+
+    it('handle ||', () => {
+      versionUtil.upgradeDependencyDeclaration('~1.0 || ~1.2', '3.1.0').should.equal('~3.1')
+    })
+
+    it('hyphen (-) range', () => {
+      versionUtil.upgradeDependencyDeclaration('1.0 - 2.0', '3.1.0').should.equal('3.1')
+    })
+
+    it('use the range with the fewest parts if there are multiple ranges', () => {
+      versionUtil.upgradeDependencyDeclaration('1.1 || 1.2.0', '3.1.0').should.equal('3.1')
+      versionUtil.upgradeDependencyDeclaration('1.2.0 || 1.1', '3.1.0').should.equal('3.1')
+    })
+
+    it('preserve wildcards in comparisons', () => {
+      versionUtil.upgradeDependencyDeclaration('1.x < 1.2.0', '3.1.0').should.equal('3.x')
+    })
+
+    it('use the first operator if a comparison has mixed operators', () => {
+      versionUtil.upgradeDependencyDeclaration('1.x < 1.*', '3.1.0').should.equal('3.x')
+    })
+
+    it('maintain \'unclean\' semantic versions', () => {
+      versionUtil.upgradeDependencyDeclaration('v1.0', '1.1').should.equal('v1.1')
+      versionUtil.upgradeDependencyDeclaration('=v1.0', '1.1').should.equal('=v1.1')
+      versionUtil.upgradeDependencyDeclaration(' =v1.0', '1.1').should.equal('=v1.1')
+    })
+
+    it('maintain \'unclean\' semantic versions', () => {
+      versionUtil.upgradeDependencyDeclaration('v1.0', '1.1').should.equal('v1.1')
+      versionUtil.upgradeDependencyDeclaration('=v1.0', '1.1').should.equal('=v1.1')
+      versionUtil.upgradeDependencyDeclaration(' =v1.0', '1.1').should.equal('=v1.1')
+    })
+
+    it('maintain existing version if new version is unknown', () => {
+      versionUtil.upgradeDependencyDeclaration('1.0', '').should.equal('1.0')
+      versionUtil.upgradeDependencyDeclaration('1.0', null).should.equal('1.0')
+    })
+
+    it('remove semver range if removeRange option is specified', () => {
+      versionUtil.upgradeDependencyDeclaration('^1.0.0', '1.0.1', { removeRange: true }).should.equal('1.0.1')
+      versionUtil.upgradeDependencyDeclaration('2.2.*', '3.1.1', { removeRange: true }).should.equal('3.1.1')
+    })
+
+  })
+
   describe('numParts', () => {
     it('count the number of parts in a version', () => {
       versionUtil.numParts('1').should.equal(1)
