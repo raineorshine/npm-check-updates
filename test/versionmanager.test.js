@@ -465,6 +465,16 @@ describe('versionmanager', () => {
       })
 
 
+      it('github urls should not upgrade embedded semver version ranges to prereleases by default', async () => {
+        const upgrades = await vm.queryVersions({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
+        }, { loglevel: 'silent' })
+
+        upgrades.should.deep.equal({
+          'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.1'
+        })
+      })
+
     })
 
   })
