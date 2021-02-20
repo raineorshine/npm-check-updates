@@ -27,7 +27,7 @@ if (rawArgs.includes('--help') && rawArgs.length > 1) {
       if (option.short) {
         console.log(`       ncu -${option.short}`)
       }
-      if (option.default !== undefined) {
+      if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
         console.log(`Default: ${option.default}`)
       }
       if (option.help) {
