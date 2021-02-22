@@ -60,7 +60,7 @@ $ npm install      # update installed packages and package-lock.json
 Check global packages:
 
 ```sh
-ncu -g           # add -u to get a one-line command for upgrading
+ncu -g
 ```
 
 You can upgrade specific packages using the `--filter` option or adding additional cli arguments. You can exclude specific packages with the `--reject` option. They accept strings, comma-or-space-delimited lists, or regular expressions:
@@ -93,6 +93,29 @@ Detailed output with links to each repository:
 ```sh
 ncu --format repo
 ```
+
+## How dependency updates are determined
+
+- Direct dependencies are updated to the latest stable version:
+  - `2.0.1` → `2.2.0`
+  - `1.2` → `1.3`
+  - `0.1.0` → `1.0.1`
+- Range operators are preserved and the version is updated:
+  - `^1.2.0` → `^2.0.0`
+  - `1.x` → `2.x`
+  - `>0.2.0` → `>0.3.0`
+- "Less than" is replaced with a wildcard:
+  - `<2.0.0` → `^3.0.0`
+  - `1.0.0 < 2.0.0` → `^3.0.0`
+- "Any version" is preserved:
+  - `*` → `*`
+- Prerelease and deprecated versions are ignored by default.
+  - Use `--pre` to include prerelease versions (e.g. `alpha`, `beta`, `build1235`)
+  - Use `--deprecated` to include deprecated versions
+- With `--target minor`, only update patch and minor:
+  - `0.1.0` → `0.2.1`
+- With `--target patch`, only update patch:
+  - `0.1.0` → `0.1.2`
 
 ## Options
 
@@ -175,26 +198,6 @@ ncu --format repo
 -V, --version                output the version number
 -h, --help                   display help for command
 ```
-
-## How dependency updates are determined
-
-- Direct dependencies are updated to the latest stable version:
-  - `2.0.1` → `2.2.0`
-  - `1.2` → `1.3`
-  - `0.1.0` → `1.0.1`
-- Range operators are preserved and the version is updated:
-  - `^1.2.0` → `^2.0.0`
-  - `1.x` → `2.x`
-  - `>0.2.0` → `>0.3.0`
-- "Less than" is replaced with a wildcard:
-  - `<2.0.0` → `^3.0.0`
-  - `1.0.0 < 2.0.0` → `^3.0.0`
-- "Any version" is preserved:
-  - `*` → `*`
-- with `--target minor`, only update patch and minor:
-  - `0.1.0` → `0.2.1`
-- with `--target patch`, only update patch:
-  - `0.1.0` → `0.1.2`
 
 ## Doctor Mode
 
