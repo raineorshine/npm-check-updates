@@ -21,16 +21,6 @@ describe('npm', function () {
     parseInt(version, 10).should.be.above(1)
   })
 
-  it('deprecated excluded by default', async () => {
-    const latest = await packageManagers.npm.latest('ncu-test-deprecated', null, { cwd: __dirname })
-    latest.should.equal('1.0.0')
-  })
-
-  it('deprecated included with option', async () => {
-    const latest = await packageManagers.npm.latest('ncu-test-deprecated', null, { deprecated: true, cwd: __dirname })
-    latest.should.equal('2.0.0')
-  })
-
   it('greatest', async () => {
     const version = await packageManagers.npm.greatest('ncu-test-greatest-not-newest', null, { pre: true, cwd: __dirname })
     version.should.equal('2.0.0-beta')

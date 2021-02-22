@@ -366,6 +366,35 @@ describe('run', function () {
     })
   })
 
+  describe('deprecated', () => {
+
+    it('deprecated excluded by default', async () => {
+      const upgrades = await ncu.run({
+        packageData: JSON.stringify({
+          dependencies: {
+            'ncu-test-deprecated': '1.0.0'
+          }
+        })
+      })
+      upgrades.should.deep.equal({})
+    })
+
+    it('deprecated included with option', async () => {
+      const upgrades = await ncu.run({
+        deprecated: true,
+        packageData: JSON.stringify({
+          dependencies: {
+            'ncu-test-deprecated': '1.0.0'
+          }
+        })
+      })
+      upgrades.should.deep.equal({
+        'ncu-test-deprecated': '2.0.0'
+      })
+    })
+
+  })
+
   describe('target', () => {
 
     it('do not allow --greatest and --newest together', async () => {
