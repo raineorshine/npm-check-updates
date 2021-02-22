@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "11.1.4",
+  "version": "11.1.5",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -43,8 +43,8 @@
     "ncu": "node ./bin/cli.js"
   },
   "bin": {
-    "npm-check-updates": "./bin/cli.js",
-    "ncu": "./bin/cli.js"
+    "npm-check-updates": "bin/cli.js",
+    "ncu": "bin/cli.js"
   },
   "repository": {
     "type": "git",
