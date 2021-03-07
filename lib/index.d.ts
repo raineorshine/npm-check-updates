@@ -58,7 +58,7 @@ declare namespace ncu {
     errorLevel?: number;
 
     /**
-     * Include only package names matching the given string, comma-or-space-delimited list, or /regex/.
+     * Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
      */
     filter?: string | string[] | RegExp;
 
@@ -156,7 +156,7 @@ declare namespace ncu {
     registry?: string;
 
     /**
-     * Exclude packages matching the given string, comma-or-space-delimited list, or /regex/.
+     * Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
      */
     reject?: string | string[] | RegExp;
 

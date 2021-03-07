@@ -63,35 +63,32 @@ Check global packages:
 ncu -g
 ```
 
-You can upgrade specific packages using the `--filter` option or adding additional cli arguments. You can exclude specific packages with the `--reject` option. They accept strings, comma-or-space-delimited lists, or regular expressions:
+Filter packages using the `--filter` option or adding additional cli arguments. You can exclude specific packages with the `--reject` option or prefixing a filter with `!`. Supports strings, wildcards, globs, comma-or-space-delimited lists, and regular expressions:
 
 ```sh
 # upgrade only mocha
 ncu mocha
-ncu --filter mocha
 ncu -f mocha
+ncu --filter mocha
 
-# upgrade only chalk, mocha, and react
-ncu chalk mocha react
-ncu chalk,mocha,react
-ncu -f "chalk mocha react"
+# upgrade packages that start with "react-"
+ncu react-*
+ncu "/^react-.*$/"
 
-# do not upgrade nodemon
+# upgrade everything except nodemon
+ncu \!nodemon
 ncu -x nodemon
 ncu --reject nodemon
 
-# upgrade packages that start with "gulp-" using regex
-ncu "/^gulp-.*$/"
+# upgrade only chalk, mocha, and react
+ncu chalk mocha react
+ncu chalk, mocha, react
+ncu -f "chalk mocha react"
 
-# upgrade packages that do not start with "gulp-".
-ncu '/^(?!gulp-).*$/' # mac/linux
-ncu "/^(?!gulp-).*$/" # windows
-```
-
-Detailed output with links to each repository:
-
-```sh
-ncu --format repo
+# upgrade packages that do not start with "react-".
+ncu \!react-*
+ncu '/^(?!react-).*$/' # mac/linux
+ncu "/^(?!react-).*$/" # windows
 ```
 
 ## How dependency updates are determined
@@ -143,8 +140,8 @@ ncu --format repo
                              if no packages need updating (useful for
                              continuous integration). (default: 1)
 -f, --filter <matches>       Include only package names matching the given
-                             string, comma-or-space-delimited list, or
-                             /regex/.
+                             string, wildcard, glob, comma-or-space-delimited
+                             list, or /regex/.
 --filterVersion <matches>    Filter on package version using
                              comma-or-space-delimited list, or /regex/.
 --format <value>             Enable additional output data, string or
@@ -180,7 +177,8 @@ ncu --format repo
 --prefix <path>              Current working directory of npm.
 -r, --registry <url>         Third-party npm registry.
 -x, --reject <matches>       Exclude packages matching the given string,
-                             comma-or-space-delimited list, or /regex/.
+                             wildcard, glob, comma-or-space-delimited list,
+                             or /regex/.
 --rejectVersion <matches>    Exclude package.json versions using
                              comma-or-space-delimited list, or /regex/.
 --removeRange                Remove version ranges from the final package
