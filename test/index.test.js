@@ -26,28 +26,6 @@ describe('run', function () {
     }).should.eventually.have.property('express')
   })
 
-  it('filter by package name with one arg', () => {
-    const upgraded = ncu.run({
-      packageData: fs.readFileSync(path.join(__dirname, '/ncu/package2.json'), 'utf-8'),
-      args: ['lodash.map']
-    })
-    return Promise.all([
-      upgraded.should.eventually.have.property('lodash.map'),
-      upgraded.should.eventually.not.have.property('lodash.filter')
-    ])
-  })
-
-  it('filter by package name with multiple args', () => {
-    const upgraded = ncu.run({
-      packageData: fs.readFileSync(path.join(__dirname, '/ncu/package2.json'), 'utf-8'),
-      args: ['lodash.map', 'lodash.filter']
-    })
-    return Promise.all([
-      upgraded.should.eventually.have.property('lodash.map'),
-      upgraded.should.eventually.have.property('lodash.filter')
-    ])
-  })
-
   it('suggest upgrades to versions within the specified version range if jsonUpgraded is true', () => {
     const upgraded = ncu.run({
       // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
