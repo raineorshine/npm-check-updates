@@ -57,4 +57,68 @@ describe('filter', () => {
     upgraded.should.have.property('lodash')
   })
 
+  it('filter with regex string', async () => {
+    const upgraded = await ncu.run({
+      packageData: JSON.stringify({
+        dependencies: {
+          lodash: '2.0.0',
+          'lodash.map': '2.0.0',
+          'lodash.filter': '2.0.0'
+        }
+      }),
+      filter: '/lodash\\..*/'
+    })
+    upgraded.should.have.property('lodash.map')
+    upgraded.should.have.property('lodash.filter')
+  })
+
+  it('filter with array of strings', async () => {
+    const upgraded = await ncu.run({
+      packageData: JSON.stringify({
+        dependencies: {
+          lodash: '2.0.0',
+          'lodash.map': '2.0.0',
+          'lodash.filter': '2.0.0'
+        }
+      }),
+      filter: ['lodash.map', 'lodash.filter']
+    })
+    upgraded.should.have.property('lodash.map')
+    upgraded.should.have.property('lodash.filter')
+  })
+
+  it('filter with array of regex', async () => {
+    const upgraded = await ncu.run({
+      packageData: JSON.stringify({
+        dependencies: {
+          'fp-and-or': '0.1.0',
+          lodash: '2.0.0',
+          'lodash.map': '2.0.0',
+          'lodash.filter': '2.0.0'
+        }
+      }),
+      filter: [/lodash\..*/, /fp.*/]
+    })
+    upgraded.should.have.property('lodash.map')
+    upgraded.should.have.property('lodash.filter')
+    upgraded.should.have.property('fp-and-or')
+  })
+
+  it('filter with array of regex strings', async () => {
+    const upgraded = await ncu.run({
+      packageData: JSON.stringify({
+        dependencies: {
+          'fp-and-or': '0.1.0',
+          lodash: '2.0.0',
+          'lodash.map': '2.0.0',
+          'lodash.filter': '2.0.0'
+        }
+      }),
+      filter: ['/lodash\\..*/', '/fp.*/']
+    })
+    upgraded.should.have.property('lodash.map')
+    upgraded.should.have.property('lodash.filter')
+    upgraded.should.have.property('fp-and-or')
+  })
+
 })
