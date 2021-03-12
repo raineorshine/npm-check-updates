@@ -653,6 +653,32 @@ describe('run', function () {
       })
     })
 
+    it('upgrade short github urls', async () => {
+      const upgrades = await ncu.run({
+        packageData: JSON.stringify({
+          dependencies: {
+            'ncu-test-v2': 'github:raineorshine/ncu-test-v2#1.0.0'
+          }
+        })
+      })
+      upgrades.should.deep.equal({
+        'ncu-test-v2': 'github:raineorshine/ncu-test-v2#2.0.0'
+      })
+    })
+
+    it('upgrade shortest github urls', async () => {
+      const upgrades = await ncu.run({
+        packageData: JSON.stringify({
+          dependencies: {
+            'ncu-test-v2': 'raineorshine/ncu-test-v2#1.0.0'
+          }
+        })
+      })
+      upgrades.should.deep.equal({
+        'ncu-test-v2': 'raineorshine/ncu-test-v2#2.0.0'
+      })
+    })
+
     it('upgrade github http urls with semver', async () => {
       const upgrades = await ncu.run({
         packageData: JSON.stringify({
