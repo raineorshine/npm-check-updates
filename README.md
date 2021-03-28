@@ -264,14 +264,18 @@ npm-check-updates can be required as a module:
 ```js
 const ncu = require('npm-check-updates')
 
-const upgraded = await ncu.run({
-  // Pass any cli option.
-  // Defaults:
-  jsonUpgraded: true,
-  silent: true
-})
+const upgraded = async ()=>{
+  console.log(await ncu.run({
+    packageFile:'../package.json',
+    upgrade:true,
+    // Pass any cli option.
+    // Defaults:
+    jsonUpgraded: true,
+    silent: true
+  }))
+}
 
-console.log(upgraded) // { "mypackage": "^2.0.0", ... }
+upgraded() // { "mypackage": "^2.0.0", ... }
 ```
 
 ## Known Issues
