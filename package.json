@@ -71,7 +71,7 @@
     "mem": "^8.1.0",
     "minimatch": "^3.0.4",
     "p-map": "^4.0.0",
-    "pacote": "^11.3.0",
+    "pacote": "^11.3.1",
     "parse-github-url": "^1.0.2",
     "progress": "^2.0.3",
     "prompts": "^2.4.1",
