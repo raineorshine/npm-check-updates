@@ -117,6 +117,8 @@ ncu "/^(?!react-).*$/" # windows
 ## Options
 
 ```text
+--checkPeer                  Check peer dependencies of installed packages
+                             and filter updates to compatible versions.
 --color                      Force color in terminal
 --concurrency <n>            Max number of concurrent HTTP requests to
                              registry. (default: 8)

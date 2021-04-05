@@ -3,6 +3,11 @@ declare namespace ncu {
   interface RunOptions {
 
     /**
+     * Check peer dependencies of installed packages and filter updates to compatible versions.
+     */
+    checkPeer?: boolean;
+
+    /**
      * Force color in terminal
      */
     color?: boolean;
