@@ -6,6 +6,7 @@ const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const chaiString = require('chai-string')
 const ncu = require('../lib/')
+const { npm: spawnNpm } = require('../lib/package-managers/npm')
 
 chai.use(chaiAsPromised)
 chai.use(chaiString)
@@ -703,6 +704,27 @@ describe('run', function () {
       })
       upgrades.should.deep.equal({
         'ncu-test-v2': 'git+ssh://git@github.com/raineorshine/ncu-test-v2.git#semver:^2.0.0'
+      })
+    })
+
+  })
+
+  describe('peer dependencies', () => {
+    const peerPath = path.join(__dirname, '/peer/')
+
+    it('peer dependencies of installed packages are ignored by default', async () => {
+      await spawnNpm('install', {}, { cwd: peerPath })
+      const upgrades = await ncu.run({ cwd: peerPath })
+      upgrades.should.deep.equal({
+        'ncu-test-return-version': '2.0.0'
+      })
+    })
+
+    it('peer dependencies of installed packages are checked when using option checkPeer', async () => {
+      await spawnNpm('install', {}, { cwd: peerPath })
+      const upgrades = await ncu.run({ cwd: peerPath, checkPeer: true })
+      upgrades.should.deep.equal({
+        'ncu-test-return-version': '1.1.0'
       })
     })
 
