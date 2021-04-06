@@ -720,9 +720,9 @@ describe('run', function () {
       })
     })
 
-    it('peer dependencies of installed packages are checked when using option checkPeer', async () => {
+    it('peer dependencies of installed packages are checked when using option peer', async () => {
       await spawnNpm('install', {}, { cwd: peerPath })
-      const upgrades = await ncu.run({ cwd: peerPath, checkPeer: true })
+      const upgrades = await ncu.run({ cwd: peerPath, peer: true })
       upgrades.should.deep.equal({
         'ncu-test-return-version': '1.1.0'
       })

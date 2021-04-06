@@ -3,11 +3,6 @@ declare namespace ncu {
   interface RunOptions {
 
     /**
-     * Check peer dependencies of installed packages and filter updates to compatible versions.
-     */
-    checkPeer?: boolean;
-
-    /**
      * Force color in terminal
      */
     color?: boolean;
@@ -144,6 +139,11 @@ declare namespace ncu {
      * npm, yarn (default: "npm")
      */
     packageManager?: string;
+
+    /**
+     * Check peer dependencies of installed packages and filter updates to compatible versions.
+     */
+    peer?: boolean;
 
     /**
      * Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1).
