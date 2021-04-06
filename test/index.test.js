@@ -2,6 +2,7 @@
 
 const fs = require('fs')
 const path = require('path')
+const rimraf = require('rimraf')
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const chaiString = require('chai-string')
@@ -713,19 +714,31 @@ describe('run', function () {
     const peerPath = path.join(__dirname, '/peer/')
 
     it('peer dependencies of installed packages are ignored by default', async () => {
-      await spawnNpm('install', {}, { cwd: peerPath })
-      const upgrades = await ncu.run({ cwd: peerPath })
-      upgrades.should.deep.equal({
-        'ncu-test-return-version': '2.0.0'
-      })
+      try {
+        await spawnNpm('install', {}, { cwd: peerPath })
+        const upgrades = await ncu.run({ cwd: peerPath })
+        upgrades.should.deep.equal({
+          'ncu-test-return-version': '2.0.0'
+        })
+      }
+      finally {
+        rimraf.sync(path.join(peerPath, 'node_modules'))
+        rimraf.sync(path.join(peerPath, 'package-lock.json'))
+      }
     })
 
     it('peer dependencies of installed packages are checked when using option peer', async () => {
-      await spawnNpm('install', {}, { cwd: peerPath })
-      const upgrades = await ncu.run({ cwd: peerPath, peer: true })
-      upgrades.should.deep.equal({
-        'ncu-test-return-version': '1.1.0'
-      })
+      try {
+        await spawnNpm('install', {}, { cwd: peerPath })
+        const upgrades = await ncu.run({ cwd: peerPath, peer: true })
+        upgrades.should.deep.equal({
+          'ncu-test-return-version': '1.1.0'
+        })
+      }
+      finally {
+        rimraf.sync(path.join(peerPath, 'node_modules'))
+        rimraf.sync(path.join(peerPath, 'package-lock.json'))
+      }
     })
 
   })
