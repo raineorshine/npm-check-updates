@@ -38,7 +38,7 @@ declare namespace ncu {
     deep?: boolean;
 
     /**
-     * Check one or more sections of dependencies only: prod, dev, peer, optional, bundle (comma-delimited).
+     * Check one or more sections of dependencies only: dev, optional, peer, prod, bundle (comma-delimited).
      */
     dep?: string;
 
