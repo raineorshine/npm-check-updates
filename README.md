@@ -127,7 +127,7 @@ ncu "/^(?!react-).*$/" # windows
 --deep                       Run recursively in current working directory.
                              Alias of (--packageFile '**/package.json').
 --dep <value>                Check one or more sections of dependencies only:
-                             prod, dev, peer, optional, bundle
+                             dev, optional, peer, prod, bundle
                              (comma-delimited).
 --deprecated                 Include deprecated packages.
 --doctor                     Iteratively installs upgrades and runs tests to
@@ -172,6 +172,8 @@ ncu "/^(?!react-).*$/" # windows
 --packageFile <path|glob>    Package file(s) location (default:
                              ./package.json).
 -p, --packageManager <name>  npm, yarn (default: "npm")
+--peer                       Check peer dependencies of installed packages
+                             and filter updates to compatible versions.
 --pre <n>                    Include -alpha, -beta, -rc. (default: 0; default
                              with --newest and --greatest: 1).
 --prefix <path>              Current working directory of npm.
