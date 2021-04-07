@@ -10,12 +10,12 @@ const spawn = require('spawn-please')
 chai.should()
 chai.use(chaiAsPromised)
 
-const bin = path.join(__dirname, '../bin/cli.js')
-const cwd = path.join(__dirname, 'deep')
-
 process.env.NCU_TESTS = true
 
-describe('deep', function () {
+describe('--deep', function () {
+
+  const bin = path.join(__dirname, '../bin/cli.js')
+  const cwd = path.join(__dirname, 'deep')
 
   this.timeout(30000)
 
@@ -44,15 +44,14 @@ describe('deep', function () {
       .should.eventually.be.rejectedWith('Cannot specify both')
   })
 
-  it('output json with --jsonAll', () => {
-    return spawn('node', [bin, '--jsonAll', '--deep'], { cwd: cwd })
-      .then(JSON.parse)
-      .then(deepJsonOut => {
-        deepJsonOut.should.have.property('package.json')
-        deepJsonOut.should.have.property('pkg/sub1/package.json')
-        deepJsonOut.should.have.property('pkg/sub2/package.json')
-        deepJsonOut['package.json'].dependencies.should.have.property('express')
-      })
+  it('output json with --jsonAll', async () => {
+    const deepJsonOut = await spawn('node', [bin, '--jsonAll', '--deep'], { cwd }).then(JSON.parse)
+    deepJsonOut.should.have.property('package.json')
+    deepJsonOut.should.have.property('pkg/sub1/package.json')
+    deepJsonOut.should.have.property('pkg/sub2/package.json')
+    deepJsonOut['package.json'].dependencies.should.have.property('express')
+    deepJsonOut['pkg/sub1/package.json'].dependencies.should.have.property('express')
+    deepJsonOut['pkg/sub2/package.json'].dependencies.should.have.property('express')
   })
 
   it('ignore stdin if --packageFile glob is specified', async () => {
@@ -60,7 +59,7 @@ describe('deep', function () {
     fs.mkdirSync(pkg.dir, { recursive: true })
     fs.writeFileSync(pkg.file, JSON.stringify(pkg.data))
     try {
-      await spawn('node', [bin, '-u', '--packageFile', './tmp/**/package.json'], '{ "dependencies": {}}', { cwd: cwd })
+      await spawn('node', [bin, '-u', '--packageFile', './tmp/**/package.json'], '{ "dependencies": {}}', { cwd })
       const upgradedPkg = JSON.parse(fs.readFileSync(pkg.file, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
@@ -81,7 +80,7 @@ describe('deep', function () {
     fs.mkdirSync(pkg2.dir, { recursive: true })
     fs.writeFileSync(pkg2.file, JSON.stringify(pkg2.data))
     try {
-      const output = await spawn('node', [bin, '-u', '--jsonUpgraded', '--packageFile', './tmp/**/package.json'], '{ "dependencies": {}}', { cwd: cwd })
+      const output = await spawn('node', [bin, '-u', '--jsonUpgraded', '--packageFile', './tmp/**/package.json'], '{ "dependencies": {}}', { cwd })
 
       const upgradedPkg1 = JSON.parse(fs.readFileSync(pkg1.file, 'utf-8'))
       upgradedPkg1.should.have.property('dependencies')
@@ -116,4 +115,35 @@ describe('deep', function () {
         deepJsonOut.should.have.property('sub2/package.json')
       })
   })
+})
+
+describe('--deep with nested ncurc files', function () {
+
+  const bin = path.join(__dirname, '../bin/cli.js')
+  const cwd = path.join(__dirname, 'deep-ncurc')
+
+  this.timeout(30000)
+
+  it('use ncurc of nested packages', async () => {
+
+    const deepJsonOut = await spawn('node', [bin, '--jsonUpgraded', '--deep'], { cwd }).then(JSON.parse)
+
+    // root: reject: ['cute-animals']
+    deepJsonOut.should.have.property('package.json')
+    deepJsonOut['package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['package.json'].should.have.property('fp-and-or')
+
+    // pkg1: reject: ['fp-ando-or']
+    deepJsonOut.should.have.property('pkg/sub1/package.json')
+    deepJsonOut['pkg/sub1/package.json'].should.have.property('cute-animals')
+    deepJsonOut['pkg/sub1/package.json'].should.not.have.property('fp-and-or')
+    deepJsonOut['pkg/sub1/package.json'].should.have.property('ncu-test-return-version')
+
+    // pkg2: reject: ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub2/package.json')
+    deepJsonOut['pkg/sub2/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub2/package.json'].should.have.property('fp-and-or')
+    deepJsonOut['pkg/sub2/package.json'].should.have.property('ncu-test-v2')
+  })
+
 })
