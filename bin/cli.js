@@ -5,6 +5,7 @@
 const program = require('commander')
 const _ = require('lodash')
 const updateNotifier = require('update-notifier')
+const fs = require('fs')
 const ncu = require('../lib/')
 const pkg = require('../package.json')
 const cliOptions = require('../lib/cli-options')
@@ -91,6 +92,17 @@ const options = {
   args: program.args,
   ...program.filter ? { filter: program.filter } : null,
   cli: true,
+}
+
+/**
+ * Detect package manager according to lock file
+ */
+const files = fs.readdirSync('.')
+
+// By default, npm is set as package manager.
+// If yarn is detected, set yarn instead
+if (files.includes('yarn.lock') && !files.includes('package-lock.json')) {
+  options.packageManager = 'yarn'
 }
 
 ncu.run(options)
