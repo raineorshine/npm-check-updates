@@ -82,7 +82,7 @@ const combinedArguments = rcResult
 
 program.parse(combinedArguments)
 
-// filter out undefined program options and combine with config file options
+// filter out undefined program options and combine cli options with config file options
 const options = {
   ...rcResult && Object.keys(rcResult.config).length > 0
     ? { rcConfigPath: rcResult.filePath }
@@ -92,5 +92,7 @@ const options = {
   ...program.filter ? { filter: program.filter } : null,
   cli: true,
 }
+
+// NOTE: Options handling and defaults go in initOptions in index.js
 
 ncu.run(options)
