@@ -5,7 +5,6 @@
 const program = require('commander')
 const _ = require('lodash')
 const updateNotifier = require('update-notifier')
-const fs = require('fs')
 const ncu = require('../lib/')
 const pkg = require('../package.json')
 const cliOptions = require('../lib/cli-options')
@@ -83,7 +82,7 @@ const combinedArguments = rcResult
 
 program.parse(combinedArguments)
 
-// filter out undefined program options and combine with config file options
+// filter out undefined program options and combine cli options with config file options
 const options = {
   ...rcResult && Object.keys(rcResult.config).length > 0
     ? { rcConfigPath: rcResult.filePath }
@@ -94,15 +93,6 @@ const options = {
   cli: true,
 }
 
-/**
- * Detect package manager according to lock file
- */
-const files = fs.readdirSync('.')
-
-// By default, npm is set as package manager.
-// If yarn is detected, set yarn instead
-if (files.includes('yarn.lock') && !files.includes('package-lock.json')) {
-  options.packageManager = 'yarn'
-}
+// NOTE: Options handling and defaults go in initOptions in index.js
 
 ncu.run(options)
