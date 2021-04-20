@@ -17,7 +17,7 @@ describe('--deep', function () {
   const bin = path.join(__dirname, '../bin/cli.js')
   const cwd = path.join(__dirname, 'deep')
 
-  this.timeout(30000)
+  this.timeout(60000)
 
   let last = 0
 
@@ -122,7 +122,7 @@ describe('--deep with nested ncurc files', function () {
   const bin = path.join(__dirname, '../bin/cli.js')
   const cwd = path.join(__dirname, 'deep-ncurc')
 
-  this.timeout(30000)
+  this.timeout(60000)
 
   it('use ncurc of nested packages', async () => {
 
