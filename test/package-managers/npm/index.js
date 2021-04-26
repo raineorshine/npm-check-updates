@@ -31,4 +31,11 @@ describe('npm', function () {
     await packageManagers.npm.packageAuthorChanged('htmlparser2', '^3.10.1', '^4.0.0').should.eventually.equal(false)
     await packageManagers.npm.packageAuthorChanged('ncu-test-v2', '^1.0.0', '2.2.0').should.eventually.be.null
   })
+
+  it('getPeerDependencies', async () => {
+    await packageManagers.npm.getPeerDependencies('ncu-test-return-version', '1.0').should.eventually.deep.equal({})
+    await packageManagers.npm.getPeerDependencies('ncu-test-peer', '1.0').should.eventually.deep.equal({
+      'ncu-test-return-version': '1.x'
+    })
+  })
 })

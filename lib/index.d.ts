@@ -141,7 +141,7 @@ declare namespace ncu {
     packageManager?: string;
 
     /**
-     * Check peer dependencies of installed packages and filter updates to compatible versions.
+     * Check peer dependencies of installed packages and filter updates to compatible versions. Run "ncu --help --peer" for details.
      */
     peer?: boolean;
 

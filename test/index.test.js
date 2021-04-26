@@ -741,6 +741,22 @@ describe('run', function () {
       }
     })
 
+    const peerUpdatePath = path.join(__dirname, '/peer-update/')
+    it('peer dependencies of installed packages are checked iteratively when using option peer', async () => {
+      try {
+        await spawnNpm('install', {}, { cwd: peerUpdatePath })
+        const upgrades = await ncu.run({ cwd: peerUpdatePath, peer: true })
+        upgrades.should.deep.equal({
+          'ncu-test-return-version': '1.1.0',
+          'ncu-test-peer-update': '1.1.0'
+        })
+      }
+      finally {
+        rimraf.sync(path.join(peerUpdatePath, 'node_modules'))
+        rimraf.sync(path.join(peerUpdatePath, 'package-lock.json'))
+      }
+    })
+
   })
 
 })
