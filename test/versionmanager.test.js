@@ -329,6 +329,58 @@ describe('versionmanager', () => {
     })
   })
 
+  describe('getIgnoredUpgrades', function () {
+    it('ncu-test-peer-update', async () => {
+      const data = await vm.getIgnoredUpgrades({
+        'ncu-test-return-version': '1.0.0',
+        'ncu-test-peer': '1.0.0',
+      }, {
+        'ncu-test-return-version': '1.1.0',
+        'ncu-test-peer': '1.1.0',
+      }, {
+        'ncu-test-peer': {
+          'ncu-test-return-version': '1.1.x'
+        }
+      }, {})
+      data.should.deep.equal({
+        'ncu-test-return-version': {
+          from: '1.0.0',
+          to: '2.0.0',
+          reason: {
+            'ncu-test-peer': '1.1.x'
+          }
+        }
+      })
+    })
+  })
+
+  describe('getPeerDependenciesFromRegistry', function () {
+    it('single package', async () => {
+      const data = await vm.getPeerDependenciesFromRegistry({ 'ncu-test-peer': '1.0' }, {})
+      data.should.deep.equal({
+        'ncu-test-peer': {
+          'ncu-test-return-version': '1.x'
+        }
+      })
+    })
+    it('single package empty', async () => {
+      const data = await vm.getPeerDependenciesFromRegistry({ 'ncu-test-return-version': '1.0' }, {})
+      data.should.deep.equal({ 'ncu-test-return-version': {} })
+    })
+    it('multiple packages', async () => {
+      const data = await vm.getPeerDependenciesFromRegistry({
+        'ncu-test-return-version': '1.0.0',
+        'ncu-test-peer': '1.0.0',
+      }, {})
+      data.should.deep.equal({
+        'ncu-test-return-version': {},
+        'ncu-test-peer': {
+          'ncu-test-return-version': '1.x'
+        }
+      })
+    })
+  })
+
   describe('queryVersions', function () {
     // We increase the timeout to allow for more time to retrieve the version information
     this.timeout(30000)

@@ -173,7 +173,8 @@ ncu "/^(?!react-).*$/" # windows
                              ./package.json).
 -p, --packageManager <name>  npm, yarn (default: "npm")
 --peer                       Check peer dependencies of installed packages
-                             and filter updates to compatible versions.
+                             and filter updates to compatible versions. Run
+                             "ncu --help --peer" for details.
 --pre <n>                    Include -alpha, -beta, -rc. (default: 0; default
                              with --newest and --greatest: 1).
 --prefix <path>              Current working directory of npm.
