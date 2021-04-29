@@ -759,4 +759,15 @@ describe('run', function () {
 
   })
 
+  it('ignore non-string versions (sometimes used as comments)', async () => {
+    const upgrades = await ncu.run({
+      packageData: JSON.stringify({
+        dependencies: {
+          '//': ['This is a comment']
+        }
+      })
+    })
+    upgrades.should.deep.equal({})
+  })
+
 })
