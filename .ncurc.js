@@ -9,6 +9,7 @@ module.exports = {
     // sindresorhus switched to pure ESM (node >= 12)
     'get-stdin',
     'p-map',
+    'strip-ansi',
 
   ]
 }

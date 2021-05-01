@@ -7,6 +7,7 @@ const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const chaiString = require('chai-string')
 const spawn = require('spawn-please')
+const stripAnsi = require('strip-ansi')
 
 chai.use(chaiAsPromised)
 chai.use(chaiString)
@@ -324,7 +325,7 @@ describe('bin', function () {
         'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0'
       }
       const output = await spawn('node', ['bin/cli.js'], JSON.stringify({ dependencies }))
-      output.trim().should.equal('ncu-test-v2  https://github.com/raineorshine/ncu-test-v2.git#v1.0.0  →  v2.0.0')
+      stripAnsi(output).trim().should.equal('ncu-test-v2  https://github.com/raineorshine/ncu-test-v2.git#v1.0.0  →  v2.0.0')
     })
 
     it('strip prefix from npm alias in "to" output', async () => {
@@ -332,7 +333,7 @@ describe('bin', function () {
         request: 'npm:ncu-test-v2@1.0.0'
       }
       const output = await spawn('node', ['bin/cli.js'], JSON.stringify({ dependencies }))
-      output.trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  2.0.0')
+      stripAnsi(output).trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  2.0.0')
     })
 
   })
