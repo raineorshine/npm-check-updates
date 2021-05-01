@@ -65,9 +65,9 @@ program.parse(process.argv)
 const { configFileName, configFilePath, packageFile } = program
 
 // load .ncurc
-// NOTE: Do not load .ncurc from project directory when tests are running
-// Can be overridden if configFilePath is set explicitly
-const rcResult = !process.env.NCU_TESTS || configFilePath
+// Do not load when global option is set
+// Do not load when tests are running (an be overridden if configFilePath is set explicitly)
+const rcResult = !program.global && (!process.env.NCU_TESTS || configFilePath)
   ? ncu.getNcurc({ configFileName, configFilePath, packageFile })
   : null
 
