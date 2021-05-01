@@ -1,12 +1,12 @@
 'use strict'
 
 const fs = require('fs')
+const os = require('os')
 const path = require('path')
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const chaiString = require('chai-string')
 const spawn = require('spawn-please')
-const tmp = require('tmp')
 
 chai.use(chaiAsPromised)
 chai.use(chaiString)
@@ -47,7 +47,7 @@ describe('bin', function () {
 
   it('handle no package.json to analyze when receiving empty content on stdin', () => {
     // run from tmp dir to avoid ncu analyzing the project's package.json
-    return spawn('node', [`${process.cwd()}/bin/cli.js`], { cwd: tmp.dirSync().name })
+    return spawn('node', [`${process.cwd()}/bin/cli.js`], { cwd: os.tmpdir() })
       .should.eventually.be.rejectedWith('No package.json')
   })
 
