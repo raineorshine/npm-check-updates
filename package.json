@@ -70,7 +70,7 @@
     "lodash": "^4.17.21",
     "mem": "^8.1.1",
     "minimatch": "^3.0.4",
-    "p-map": "^4.0.0",
+    "p-map": "^5.0.0",
     "pacote": "^11.3.3",
     "parse-github-url": "^1.0.2",
     "progress": "^2.0.3",
