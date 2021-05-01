@@ -125,7 +125,6 @@
   },
   "mocha": {
     "check-leaks": true,
-    "throw-deprecation": true,
     "trace-deprecation": true,
     "trace-warnings": true,
     "use_strict": true
