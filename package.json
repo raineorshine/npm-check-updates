@@ -114,12 +114,10 @@
   ],
   "lockfile-lint": {
     "allowed-schemes": [
-      "https:",
-      "git+https:"
+      "https:"
     ],
     "allowed-hosts": [
-      "npm",
-      "https://github.com/raineorshine"
+      "npm"
     ],
     "empty-hostname": false,
     "type": "npm ",
