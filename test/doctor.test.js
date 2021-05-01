@@ -6,6 +6,7 @@ const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const spawn = require('spawn-please')
 const rimraf = require('rimraf')
+const stripAnsi = require('strip-ansi')
 const { doctorHelpText } = require('../lib/constants.js')
 
 chai.should()
@@ -68,8 +69,8 @@ describe('doctor', function() {
     rimraf.sync(nodeModulesPath)
 
     // stdout should include normal output
-    stdout.should.include('Tests pass')
-    stdout.should.include('ncu-test-v2  ~1.0.0  →  ~2.0.0')
+    stripAnsi(stdout).should.include('Tests pass')
+    stripAnsi(stdout).should.include('ncu-test-v2  ~1.0.0  →  ~2.0.0')
 
     // stderr should include first failing upgrade
     stderr.should.equal('')
@@ -110,8 +111,8 @@ describe('doctor', function() {
     rimraf.sync(nodeModulesPath)
 
     // stdout should include normal output
-    stdout.should.include('Tests pass')
-    stdout.should.include('ncu-test-v2  ~1.0.0  →  ~2.0.0')
+    stripAnsi(stdout).should.include('Tests pass')
+    stripAnsi(stdout).should.include('ncu-test-v2  ~1.0.0  →  ~2.0.0')
 
     // stderr should include first failing upgrade
     stderr.should.equal('')
