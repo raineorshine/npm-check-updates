@@ -1,16 +1,16 @@
-'use strict'
+import _ from 'lodash'
+import { Options } from './types'
 
 const util = require('util')
 const semverutils = require('semver-utils')
-const _ = require('lodash')
 const chalk = require('chalk')
 const cint = require('cint')
 const semver = require('semver')
 const parseGithubUrl = require('parse-github-url')
 
-const VERSION_BASE_PARTS = ['major', 'minor', 'patch']
-const VERSION_ADDED_PARTS = ['release', 'build']
-const VERSION_PARTS = [].concat(VERSION_BASE_PARTS, VERSION_ADDED_PARTS)
+const VERSION_BASE_PARTS = ['major', 'minor', 'patch'] as VersionPart[]
+const VERSION_ADDED_PARTS = ['release', 'build'] as VersionPart[]
+const VERSION_PARTS = [...VERSION_BASE_PARTS, ...VERSION_ADDED_PARTS] as VersionPart[]
 const VERSION_PART_DELIM = {
   major: '',
   minor: '.',
@@ -28,11 +28,28 @@ const WILDCARD_PURE_REGEX = new RegExp(`^(${WILDCARDS_PURE.join('|')
 /** Matches an npm alias version declaration. */
 const NPM_ALIAS_REGEX = /^npm:(.*)@(.*)/
 
+interface Semver {
+  major: string,
+  minor: string,
+  patch: string,
+  release: string,
+  build: string,
+}
+
+type SemverResult = Semver & { semver: string }
+
+type VersionPart = keyof Semver
+
+interface UpgradeOptions {
+  wildcard?: string,
+  removeRange?: boolean,
+}
+
 /**
  * @param version
  * @returns The number of parts in the version
  */
-function numParts(version) {
+export function numParts(version: string) {
 
   const [semver] = semverutils.parseRange(version)
 
@@ -50,13 +67,11 @@ function numParts(version) {
  * @param n
  * @returns
  */
-function precisionAdd(precision, n) {
+export function precisionAdd(precision: VersionPart, n: number) {
 
-  if (n === 0) {
-    return precision
-  }
+  if (n === 0) return precision
 
-  const index = n === 0 ? precision :
+  const index =
     VERSION_BASE_PARTS.includes(precision) ? VERSION_BASE_PARTS.indexOf(precision) + n :
     VERSION_ADDED_PARTS.includes(precision) ? VERSION_BASE_PARTS.length + n :
     null
@@ -64,7 +79,7 @@ function precisionAdd(precision, n) {
   if (index === null) {
     throw new Error(`Invalid precision: ${precision}`)
   }
-  if (!VERSION_PARTS[index]) {
+  else if (!VERSION_PARTS[index]) {
     throw new Error(`Invalid precision math${arguments}`)
   }
 
@@ -79,7 +94,7 @@ function precisionAdd(precision, n) {
  * @param [precision]
  * @returns
  */
-function stringify(semver, precision) {
+export function stringify(semver: Semver, precision?: VersionPart) {
 
   // get a list of the parts up until (and including) the given precision
   // or all of them, if no precision is specified
@@ -87,7 +102,7 @@ function stringify(semver, precision) {
 
   // pair each part with its delimiter and join together
   return parts
-    .filter(part => VERSION_BASE_PARTS.includes(precision) || semver[part])
+    .filter(part => (precision && VERSION_BASE_PARTS.includes(precision)) || semver[part])
     .map(part => VERSION_PART_DELIM[part] + (semver[part] || '0'))
     .join('')
 }
@@ -98,7 +113,7 @@ function stringify(semver, precision) {
  * @param version
  * @returns
  */
-function getPrecision(version) {
+export function getPrecision(version: string) {
   const [semver] = semverutils.parseRange(version)
   // expects VERSION_PARTS to be in correct order
   // eslint-disable-next-line fp/no-mutating-methods
@@ -112,7 +127,7 @@ function getPrecision(version) {
  * @param [precision]
  * @returns
  */
-function setPrecision(version, precision) {
+export function setPrecision(version: string, precision: VersionPart) {
   const [semver] = semverutils.parseRange(version)
   return stringify(semver, precision)
 }
@@ -125,7 +140,7 @@ function setPrecision(version, precision) {
  * @param wildcard
  * @returns
  */
-function addWildCard(version, wildcard) {
+export function addWildCard(version: string, wildcard: string) {
   return wildcard === '^' || wildcard === '~' ?
     wildcard + version :
     setPrecision(version, 'major') + wildcard
@@ -137,7 +152,7 @@ function addWildCard(version, wildcard) {
  * @param version
  * @returns
  */
-function isWildCard(version) {
+export function isWildCard(version: string) {
   return WILDCARD_PURE_REGEX.test(version)
 }
 
@@ -147,8 +162,8 @@ function isWildCard(version) {
  * @param versionPart
  * @returns
  */
-function isWildPart(versionPart) {
-  return versionPart === '*' || versionPart === 'x'
+export function isWildPart(versionPartValue: string) {
+  return versionPartValue === '*' || versionPartValue === 'x'
 }
 
 /**
@@ -159,7 +174,7 @@ function isWildPart(versionPart) {
  * @param to
  * @returns
  */
-function colorizeDiff(from, to) {
+export function colorizeDiff(from: string, to: string) {
   let leadingWildcard = ''
 
   // separate out leading ^ or ~
@@ -197,10 +212,10 @@ function colorizeDiff(from, to) {
  *
  * @param versions  Unsorted array of all available versions
  * @param current   Current version or range
- * @param level     minor|patch
+ * @param level     major|minor
  * @returns         String representation of the suggested version.
  */
-function findGreatestByLevel(versions, current, level) {
+export function findGreatestByLevel(versions: string[], current: string, level: 'major' | 'minor') {
 
   if (!semver.validRange(current)) {
     return null
@@ -219,7 +234,7 @@ function findGreatestByLevel(versions, current, level) {
 }
 
 /** Comparator used to sort semver versions */
-function compareVersions(a, b) {
+export function compareVersions(a: string, b: string) {
   return semver.gt(a, b) ? 1 : a === b ? 0 : -1
 }
 
@@ -227,7 +242,7 @@ function compareVersions(a, b) {
  * @param version
  * @returns True if the version is any kind of prerelease: alpha, beta, rc, pre
  */
-function isPre(version) {
+export function isPre(version: string) {
   return getPrecision(version) === 'release'
 }
 
@@ -275,13 +290,15 @@ const revertPseudoVersion = (current, latest) =>
     revertMissingPatch(current)
   )(latest)
 
+const isSimpleVersion = (s: string) => /^[vV]?\d+$/.test(s)
+
 /**
  * Returns 'v' if the string starts with a v, otherwise returns empty string.
  *
  * @param str
  * @returns
  */
-function v(str) {
+export function v(str: string) {
   return str && (str[0] === 'v' || str[1] === 'v') ? 'v' : ''
 }
 
@@ -293,7 +310,8 @@ function v(str) {
  * @returns    "npm:package@x.y.z"
  * @example    createNpmAlias('chalk', '2.0.0') -> 'npm:chalk@2.0.0'
  */
-const createNpmAlias = (name, version) => `npm:${name}@${version}`
+const createNpmAlias = (name: string, version: string) =>
+  `npm:${name}@${version}`
 
 /**
  * Parses an npm alias into a [name, version] 2-tuple.
@@ -301,7 +319,7 @@ const createNpmAlias = (name, version) => `npm:${name}@${version}`
  * @returns  [name, version] or null if the input is not an npm alias
  * @example  'npm:chalk@1.0.0' -> ['chalk', '1.0.0']
  */
-const parseNpmAlias = alias => {
+const parseNpmAlias = (alias: string) => {
   const match = alias && alias.match && alias.match(NPM_ALIAS_REGEX)
   return match && match.slice(1)
 }
@@ -309,19 +327,22 @@ const parseNpmAlias = alias => {
 /**
  * Returns true if a version declaration is an npm alias.
  */
-const isNpmAlias = declaration =>
+const isNpmAlias = (declaration: string) =>
   declaration && !!declaration.match(NPM_ALIAS_REGEX)
 
 /**
  * Replaces the version number embedded in an npm alias.
  */
-const upgradeNpmAlias = (declaration, upgraded) =>
-  createNpmAlias(parseNpmAlias(declaration)[0], upgraded)
+const upgradeNpmAlias = (declaration: string, upgraded: string) => {
+  const npmAlias = parseNpmAlias(declaration)
+  if (!npmAlias) return null
+  return createNpmAlias(npmAlias[0], upgraded)
+}
 
 /**
  * Returns true if a version declaration is a Github URL with a valid semver version.
  */
-const isGithubUrl = declaration => {
+const isGithubUrl = (declaration: string) => {
   if (!declaration) return false
   const parsed = parseGithubUrl(declaration)
   if (!parsed || !parsed.branch) return false
@@ -334,7 +355,7 @@ const isGithubUrl = declaration => {
 /**
  * Returns the embedded tag in a Github URL.
  */
-const getGithubUrlTag = declaration => {
+const getGithubUrlTag = (declaration: string) => {
   if (!declaration) return null
   const parsed = parseGithubUrl(declaration)
   if (!parsed || !parsed.branch) return null
@@ -351,7 +372,7 @@ const getGithubUrlTag = declaration => {
  * @param [options={}]
  * @returns The upgraded dependency declaration (e.g. "1.3.x")
  */
-function upgradeDependencyDeclaration(declaration, latestVersion, options = {}) {
+export function upgradeDependencyDeclaration(declaration: string, latestVersion: string, options: UpgradeOptions = {}) {
   options.wildcard = options.wildcard || DEFAULT_WILDCARD
 
   // parse the latestVersion
@@ -377,7 +398,7 @@ function upgradeDependencyDeclaration(declaration, latestVersion, options = {}) 
     .reject({ operator: '-' })
     .sortBy(_.ary(_.flow(stringify, numParts), 1))
     .value()
-  const [declaredSemver] = parsedRange
+  const [declaredSemver] = parsedRange as [SemverResult]
 
   /**
    * Chooses version parts between the declared version and the latest.
@@ -385,7 +406,7 @@ function upgradeDependencyDeclaration(declaration, latestVersion, options = {}) 
    * Added parts (release, build) are always included. They are only present if we are checking --greatest versions
    * anyway.
    */
-  function chooseVersion(part) {
+  function chooseVersion(part: VersionPart): string {
     return isWildPart(declaredSemver[part]) ? declaredSemver[part] :
       VERSION_BASE_PARTS.includes(part) && declaredSemver[part] ? latestSemver[part] :
       VERSION_ADDED_PARTS.includes(part) ? latestSemver[part] :
@@ -393,7 +414,7 @@ function upgradeDependencyDeclaration(declaration, latestVersion, options = {}) 
   }
 
   // create a new semver object with major, minor, patch, build, and release parts
-  const newSemver = cint.toObject(VERSION_PARTS, part => ({
+  const newSemver = cint.toObject(VERSION_PARTS, (part: VersionPart) => ({
     [part]: chooseVersion(part)
   }))
   const newSemverString = stringify(newSemver)
@@ -424,7 +445,7 @@ function upgradeDependencyDeclaration(declaration, latestVersion, options = {}) 
 /**
  * Replaces the version number embedded in a Github URL.
  */
-const upgradeGithubUrl = (declaration, upgraded) => {
+const upgradeGithubUrl = (declaration: string, upgraded: string) => {
   const tag = decodeURIComponent(parseGithubUrl(declaration).branch)
     .replace(/^semver:/, '')
   return declaration.replace(tag, upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgraded)))
