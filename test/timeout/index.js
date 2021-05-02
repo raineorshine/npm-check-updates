@@ -5,7 +5,7 @@ const path = require('path')
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const chaiString = require('chai-string')
-const ncu = require('../../lib/')
+const ncu = require('../../src/')
 
 chai.should()
 chai.use(chaiAsPromised)

@@ -2,7 +2,7 @@
 
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
-const packageManagers = require('../../../lib/package-managers')
+const packageManagers = require('../../../src/package-managers')
 
 chai.should()
 chai.use(chaiAsPromised)

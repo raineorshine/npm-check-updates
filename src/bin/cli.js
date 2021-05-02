@@ -5,9 +5,9 @@
 const program = require('commander')
 const _ = require('lodash')
 const updateNotifier = require('update-notifier')
-const ncu = require('../lib/')
-const pkg = require('../package.json')
-const cliOptions = require('../lib/cli-options')
+const ncu = require('../')
+const pkg = require('../../package.json')
+const cliOptions = require('../cli-options')
 
 // check if a new version of ncu is available and print an update notification
 const notifier = updateNotifier({ pkg })

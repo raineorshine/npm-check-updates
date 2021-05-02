@@ -30,7 +30,7 @@
       "raine"
     ]
   },
-  "main": "./lib",
+  "main": "./build/src",
   "scripts": {
     "build": "node scripts/build.js",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
@@ -39,12 +39,11 @@
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
     "nyc": "nyc",
     "test": "mocha test test/package-managers/npm test/package-managers/yarn && mocha --exit test/timeout",
-    "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
     "ncu": "node ./bin/cli.js"
   },
   "bin": {
-    "npm-check-updates": "bin/cli.js",
-    "ncu": "bin/cli.js"
+    "npm-check-updates": "./build/src/bin/cli.js",
+    "ncu": "./build/src/bin/cli.js"
   },
   "repository": {
     "type": "git",
@@ -110,8 +109,7 @@
     "yarn": "^1.22.17"
   },
   "files": [
-    "bin",
-    "lib"
+    "build"
   ],
   "lockfile-lint": {
     "allowed-schemes": [

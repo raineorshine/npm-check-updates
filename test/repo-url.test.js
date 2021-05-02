@@ -1,7 +1,7 @@
 'use strict'
 
 const chai = require('chai')
-const repoUrl = require('../lib/repo-url')
+const repoUrl = require('../src/repo-url')
 
 const should = chai.should()
 
