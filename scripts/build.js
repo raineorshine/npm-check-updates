@@ -5,7 +5,7 @@
 const fs = require('fs')
 const path = require('path')
 const spawn = require('spawn-please')
-const cliOptions = require('../lib/cli-options')
+const cliOptions = require('../src/cli-options')
 
 /** Escape closing block comments that would interfere with JSDOC. */
 const escapeComments = s => s.replace(/\*\*\//g, '**\\/')
@@ -78,7 +78,7 @@ export = ncu
     .join('')
 
   const typedefsNew = typedefsStart + optionTypes + typedefsEnd
-  fs.writeFileSync(path.join(__dirname, '../lib/index.d.ts'), typedefsNew)
+  fs.writeFileSync(path.join(__dirname, '../src/index.d.ts'), typedefsNew)
 }
 
 ;(async () => {

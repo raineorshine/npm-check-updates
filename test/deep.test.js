@@ -4,7 +4,7 @@ const fs = require('fs')
 const path = require('path')
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
-const ncu = require('../lib/')
+const ncu = require('../src/')
 const spawn = require('spawn-please')
 const mergeOptions = require('../merge-options')
 

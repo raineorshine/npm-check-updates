@@ -1,7 +1,7 @@
 'use strict'
 
 const chai = require('chai')
-const cliOptions = require('../lib/cli-options')
+const cliOptions = require('../src/cli-options')
 
 chai.should()
 

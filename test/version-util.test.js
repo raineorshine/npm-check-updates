@@ -3,7 +3,7 @@
 const chai = require('chai')
 const chalk = require('chalk')
 const chaiAsPromised = require('chai-as-promised')
-const versionUtil = require('../lib/version-util')
+const versionUtil = require('../src/version-util')
 
 const should = chai.should()
 

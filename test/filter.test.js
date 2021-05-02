@@ -3,7 +3,7 @@
 const fs = require('fs')
 const path = require('path')
 const chai = require('chai')
-const ncu = require('../lib/index')
+const ncu = require('../src/index')
 
 chai.should()
 process.env.NCU_TESTS = true
