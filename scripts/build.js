@@ -13,7 +13,7 @@ const escapeComments = s => s.replace(/\*\*\//g, '**\\/')
 /** Extracts CLI options from the bin output. */
 const readOptions = async () => {
   const optionsBinLabel = 'Options:\n'
-  const helpOutput = await spawn('node', ['./bin/cli.js', '--help'])
+  const helpOutput = await spawn('node', ['./build/src/bin/cli.js', '--help'])
   return helpOutput.slice(helpOutput.indexOf(optionsBinLabel) + optionsBinLabel.length)
   // outdent
     .split('\n').map(s => s.slice(2)).join('\n')
