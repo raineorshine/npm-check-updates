@@ -558,5 +558,5 @@ export async function run(options: Options = {}) {
   }
 }
 
-// export { run, getNcurc, getPeerDependencies, ...vm }
 export { default as getNcurc } from './lib/get-ncu-rc'
+export * from './versionmanager.js'
