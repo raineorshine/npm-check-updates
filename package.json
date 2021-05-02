@@ -87,6 +87,7 @@
     "update-notifier": "^5.1.0"
   },
   "devDependencies": {
+    "@types/json-parse-helpfulerror": "^1.0.1",
     "@types/lodash": "^4.14.168",
     "@types/node": "^15.0.1",
     "chai": "^4.3.4",

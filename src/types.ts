@@ -1,3 +1,6 @@
+/** A very generic object. */
+export type Index<T = any> = {[key: string]: T}
+
 export interface RunOptions {
 
   /**
@@ -205,5 +208,6 @@ export type Options = RunOptions & {
   args?: any[],
   cli?: boolean,
   json?: boolean,
+  peerDependencies?: {},
   rcConfigPath?: string,
 }

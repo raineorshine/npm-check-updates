@@ -23,7 +23,7 @@ import * as constants from './constants.js'
 import cliOptions from './cli-options.js'
 import getNcurc from './lib/get-ncu-rc'
 
-import { Options } from './types'
+import { Index, Options } from './types'
 
 const { deepPatternPrefix, doctorHelpText } = constants
 const { print, printJson, printUpgrades, printIgnoredUpdates } = logging
@@ -42,7 +42,7 @@ const chalk = Chalk
 // Helper functions
 //
 
-function programError(options, message) {
+function programError(options: Options, message: string) {
   if (options.cli) {
     print(options, message, null, 'error')
     process.exit(1)
@@ -55,27 +55,28 @@ function programError(options, message) {
 /**
  * Gets the name of the package file based on --packageFile or --packageManager.
  */
-function getPackageFileName(options) {
+function getPackageFileName(options: Options) {
   return options.packageFile ? options.packageFile :
-    packageFileNames[options.packageManager] || packageFileNames.npm
+    packageFileNames[options.packageManager as 'npm' | 'yarn'] || packageFileNames.npm
 }
 
 const readPackageFile = _.partialRight(promisify(fs.readFile), 'utf8') as any
 const writePackageFile = promisify(fs.writeFile)
 
 /** Recreate the options object sorted. */
-function sortOptions(options) {
+function sortOptions(options: Options) {
   // eslint-disable-next-line fp/no-mutating-methods
   return _.transform(Object.keys(options).sort(), (accum, key) => {
+    // @ts-ignore
     accum[key] = options[key]
-  }, {})
+  }, {} as Options)
 }
 
 //
 // Main functions
 //
 
-async function analyzeGlobalPackages(options) {
+async function analyzeGlobalPackages(options: Options) {
 
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
@@ -123,7 +124,7 @@ async function analyzeGlobalPackages(options) {
   }
 }
 
-async function analyzeProjectDependencies(options, pkgData, pkgFile) {
+async function analyzeProjectDependencies(options: Options, pkgData?: string | null, pkgFile?: string | null) {
 
   let pkg
 
@@ -181,15 +182,15 @@ async function analyzeProjectDependencies(options, pkgData, pkgFile) {
 
   // split the deps into satisfied and unsatisfied to display in two separate tables
   const deps = Object.keys(selectedNewDependencies)
-  const satisfied = cint.toObject(deps, dep => ({
+  const satisfied = cint.toObject(deps, (dep: string) => ({
     [dep]: vm.isSatisfied(latest[dep], current[dep])
   }))
 
   const isSatisfied = _.propertyOf(satisfied)
-  const filteredUpgraded = options.minimal ? cint.filterObject(selectedNewDependencies, dep => !isSatisfied(dep)) : selectedNewDependencies
+  const filteredUpgraded = options.minimal ? cint.filterObject(selectedNewDependencies, (dep: string) => !isSatisfied(dep)) : selectedNewDependencies
   const numUpgraded = Object.keys(filteredUpgraded).length
 
-  const ownersChangedDeps = options.format.includes('ownerChanged')
+  const ownersChangedDeps = (options.format || []).includes('ownerChanged')
     ? await vm.getOwnerPerDependency(current, filteredUpgraded, options)
     : null
 
@@ -246,13 +247,13 @@ async function analyzeProjectDependencies(options, pkgData, pkgFile) {
 }
 
 /** Get peer dependencies from installed packages */
-export function getPeerDependencies(current, options) {
+export function getPeerDependencies(current: Index<any>, options: Options) {
   const basePath = options.cwd || './'
   return Object.keys(current).reduce((accum, pkgName) => {
     const path = basePath + 'node_modules/' + pkgName + '/package.json'
     let peers = {}
     try {
-      const pkgData = fs.readFileSync(path)
+      const pkgData = fs.readFileSync(path, 'utf-8')
       const pkg = jph.parse(pkgData)
       peers = vm.getCurrentDependencies(pkg, { ...options, dep: 'peer' })
     }
@@ -350,10 +351,10 @@ function initOptions(options: Options): Options {
  *
  * @returns Promise<PkgInfo>
  */
-async function findPackage(options) {
+async function findPackage(options: Options) {
 
   let pkgData
-  let pkgFile
+  let pkgFile = null
   let stdinTimer
 
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
@@ -364,7 +365,7 @@ async function findPackage(options) {
   const pkgFileName = getPackageFileName(options)
 
   // returns: string
-  function getPackageDataFromFile(pkgFile: string, pkgFileName: string): string {
+  function getPackageDataFromFile(pkgFile: string | null | undefined, pkgFileName: string): string {
     // exit if no pkgFile to read from fs
     if (pkgFile != null) {
       const relPathToPackage = path.resolve(pkgFile)
@@ -442,7 +443,7 @@ export async function run(options: Options = {}) {
 
   options = initOptions(options)
 
-  const deprecatedOptions = cliOptions.filter(({ long, deprecated }) => deprecated && options[long])
+  const deprecatedOptions = cliOptions.filter(({ long, deprecated }) => deprecated && options[long as keyof Options])
   if (deprecatedOptions.length > 0) {
     deprecatedOptions.forEach(({ short, long, description }) => {
       const deprecationMessage = `--${long}: ${description}`
@@ -515,10 +516,10 @@ export async function run(options: Options = {}) {
           ...packages,
           // index by relative path if cwd was specified
           [pkgOptions.cwd
-            ? path.relative(path.resolve(pkgOptions.cwd), pkgFile)
+            ? path.relative(path.resolve(pkgOptions.cwd), pkgFile!)
               // convert Windows path to *nix path for consistency
               .replace(/\\/g, '/')
-            : pkgFile
+            : pkgFile!
           ]: await analyzeProjectDependencies(pkgOptions, pkgData, pkgFile)
         }
       }, {})
