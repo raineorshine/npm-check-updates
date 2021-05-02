@@ -6,7 +6,7 @@ const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const ncu = require('../src/')
 const spawn = require('spawn-please')
-const mergeOptions = require('../merge-options')
+const mergeOptions = require('../src/lib/mergeOptions').default
 
 chai.should()
 chai.use(chaiAsPromised)
