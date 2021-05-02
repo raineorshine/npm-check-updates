@@ -17,9 +17,10 @@
       "dom",
       "es2019"
     ],
-    "module": "esnext",
+    "module": "commonjs",
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": false,
     "resolveJsonModule": true,
     "outDir": "./build",
     "skipLibCheck": true,

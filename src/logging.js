@@ -26,7 +26,7 @@ const logLevels = {
  * @param loglevel   silent|error|warn|info|verbose|silly
  * @param method     The console method to call. Default: 'log'.
  */
-function print(options, message, loglevel, method = 'log') {
+function print(options, message, loglevel = null, method = 'log') {
   // not in json mode
   // not silent
   // not at a loglevel under minimum specified

@@ -4,24 +4,29 @@
 
 'use strict'
 
-const fs = require('fs')
-const os = require('os')
-const path = require('path')
-const globby = require('globby')
-const { promisify } = require('util')
-const cint = require('cint')
-const findUp = require('find-up')
-const _ = require('lodash')
-const getstdin = require('get-stdin')
-let chalk = require('chalk')
-const { rcFile } = require('rc-config-loader')
-const jph = require('json-parse-helpfulerror')
-const vm = require('./versionmanager')
-const doctor = require('./doctor')
-const packageManagers = require('./package-managers')
-const { print, printJson, printUpgrades, printIgnoredUpdates } = require('./logging')
-const { deepPatternPrefix, doctorHelpText } = require('./constants')
-const cliOptions = require('./cli-options')
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+import globby from 'globby'
+import { promisify } from 'util'
+import * as cint from 'cint'
+import findUp from 'find-up'
+import _ from 'lodash'
+import getstdin from 'get-stdin'
+import Chalk from 'chalk'
+import jph from 'json-parse-helpfulerror'
+import * as vm from './versionmanager.js'
+import doctor from './doctor.js'
+import * as packageManagers from './package-managers/index.js'
+import * as logging from './logging.js'
+import * as constants from './constants.js'
+import cliOptions from './cli-options.js'
+import getNcurc from './lib/get-ncu-rc'
+
+import { Options } from './types'
+
+const { deepPatternPrefix, doctorHelpText } = constants
+const { print, printJson, printUpgrades, printIgnoredUpdates } = logging
 
 // maps package managers to package file names
 const packageFileNames = {
@@ -31,6 +36,7 @@ const packageFileNames = {
 
 // time to wait for stdin before printing a warning
 const stdinWarningTime = 5000
+const chalk = Chalk
 
 //
 // Helper functions
@@ -54,7 +60,7 @@ function getPackageFileName(options) {
     packageFileNames[options.packageManager] || packageFileNames.npm
 }
 
-const readPackageFile = _.partialRight(promisify(fs.readFile), 'utf8')
+const readPackageFile = _.partialRight(promisify(fs.readFile), 'utf8') as any
 const writePackageFile = promisify(fs.writeFile)
 
 /** Recreate the options object sorted. */
@@ -71,9 +77,7 @@ function sortOptions(options) {
 
 async function analyzeGlobalPackages(options) {
 
-  if (options.color) {
-    chalk = new chalk.Instance({ level: 1 })
-  }
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   print(options, 'Getting installed packages', 'verbose')
 
@@ -93,9 +97,9 @@ async function analyzeGlobalPackages(options) {
   printUpgrades(options, {
     current: globalPackages,
     upgraded,
-    latest,
     // since an interactive upgrade of globals is not available, the numUpgraded is always all
     numUpgraded: upgradedPackageNames.length,
+    ownersChangedDeps: null,
     total: upgradedPackageNames.length
   })
 
@@ -123,9 +127,7 @@ async function analyzeProjectDependencies(options, pkgData, pkgFile) {
 
   let pkg
 
-  if (options.color) {
-    chalk = new chalk.Instance({ level: 1 })
-  }
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   try {
     if (!pkgData) {
@@ -201,7 +203,6 @@ async function analyzeProjectDependencies(options, pkgData, pkgFile) {
     printUpgrades(options, {
       current,
       upgraded: filteredUpgraded,
-      latest,
       numUpgraded,
       total: Object.keys(upgraded).length,
       ownersChangedDeps
@@ -245,7 +246,7 @@ async function analyzeProjectDependencies(options, pkgData, pkgFile) {
 }
 
 /** Get peer dependencies from installed packages */
-function getPeerDependencies(current, options) {
+export function getPeerDependencies(current, options) {
   const basePath = options.cwd || './'
   return Object.keys(current).reduce((accum, pkgName) => {
     const path = basePath + 'node_modules/' + pkgName + '/package.json'
@@ -267,11 +268,9 @@ function getPeerDependencies(current, options) {
 //
 
 /** Initializes and consolidates program options. */
-function initOptions(options) {
+function initOptions(options: Options): Options {
 
-  if (options.color) {
-    chalk = new chalk.Instance({ level: 1 })
-  }
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   const json = Object.keys(options)
     .filter(option => option.startsWith('json'))
@@ -288,7 +287,7 @@ function initOptions(options) {
     programError(options, chalk.red('Cannot specify both --greatest and --newest. --greatest is an alias for "--target greatest" and --newest is an alias for "--target newest".'))
   }
   // disallow non-matching filter and args
-  else if (options.filter && options.args.length > 0 && options.filter !== options.args.join(' ')) {
+  else if (options.filter && (options.args || []).length > 0 && options.filter !== options.args!.join(' ')) {
     programError(options, chalk.red('Cannot specify a filter using both --filter and args. Did you forget to quote an argument?') + '\nSee: https://github.com/raineorshine/npm-check-updates/issues/759#issuecomment-723587297')
   }
   else if (options.packageFile && options.deep) {
@@ -302,7 +301,7 @@ function initOptions(options) {
   const autoPre = target === 'newest' || target === 'greatest'
 
   const format = [
-    ...options.format,
+    ...options.format || [],
     ...options.ownerChanged ? ['ownerChanged'] : []
   ]
 
@@ -316,7 +315,7 @@ function initOptions(options) {
   return {
     ...options,
     ...options.deep ? { packageFile: `${deepPatternPrefix}${getPackageFileName(options)}` } : null,
-    ...options.args.length > 0 ? { filter: options.args.join(' ') } : null,
+    ...(options.args || []).length > 0 ? { filter: options.args!.join(' ') } : null,
     ...format.length > 0 ? { format } : null,
     // add shortcut for any keys that start with 'json'
     json,
@@ -357,9 +356,7 @@ async function findPackage(options) {
   let pkgFile
   let stdinTimer
 
-  if (options.color) {
-    chalk = new chalk.Instance({ level: 1 })
-  }
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   print(options, 'Running in local mode', 'verbose')
   print(options, 'Finding package file data', 'verbose')
@@ -367,7 +364,7 @@ async function findPackage(options) {
   const pkgFileName = getPackageFileName(options)
 
   // returns: string
-  function getPackageDataFromFile(pkgFile, pkgFileName) {
+  function getPackageDataFromFile(pkgFile: string, pkgFileName: string): string {
     // exit if no pkgFile to read from fs
     if (pkgFile != null) {
       const relPathToPackage = path.resolve(pkgFile)
@@ -424,11 +421,9 @@ process.on('unhandledRejection', err => {
 })
 
 /** main entry point */
-async function run(options = {}) {
+export async function run(options: Options = {}) {
 
-  if (options.color) {
-    chalk = new chalk.Instance({ level: 1 })
-  }
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   // if not executed on the command-line (i.e. executed as a node module), set some defaults
   if (!options.cli) {
@@ -470,10 +465,12 @@ async function run(options = {}) {
     options.prefix = await packageManagers.yarn.defaultPrefix(options)
   }
 
-  let timeout
+  let timeout: any
   let timeoutPromise = new Promise(resolve => resolve)
   if (options.timeout) {
-    const timeoutMs = _.isString(options.timeout) ? Number.parseInt(options.timeout, 10) : options.timeout
+    const timeoutMs = _.isString(options.timeout)
+      ? Number.parseInt(options.timeout as unknown as string, 10)
+      : options.timeout
     timeoutPromise = new Promise((resolve, reject) => {
       timeout = setTimeout(() => {
         // must catch the error and reject explicitly since we are in a setTimeout
@@ -560,31 +557,5 @@ async function run(options = {}) {
   }
 }
 
-/**
- * Loads the .ncurc config file.
- *
- * @param [cfg]
- * @param [cfg.configFileName=.ncurc]
- * @param [cfg.configFilePath]
- * @param [cfg.packageFile]
- * @returns
- */
-function getNcurc({ configFileName, configFilePath, packageFile } = {}) {
-
-  const result = rcFile('ncurc', {
-    configFileName: configFileName || '.ncurc',
-    defaultExtension: ['.json', '.yml', '.js'],
-    cwd: configFilePath ||
-      (packageFile ? path.dirname(packageFile) : undefined)
-  })
-
-  // flatten config object into command line arguments to be read by commander
-  const args = result ?
-    _.flatten(_.map(result.config, (value, name) =>
-      value === true ? [`--${name}`] : [`--${name}`, value]
-    )) : []
-
-  return result ? { ...result, args } : null
-}
-
-module.exports = { run, getNcurc, getPeerDependencies, ...vm }
+// export { run, getNcurc, getPeerDependencies, ...vm }
+export { default as getNcurc } from './lib/get-ncu-rc'
