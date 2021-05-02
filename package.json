@@ -36,10 +36,13 @@
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.js",
-    "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
+    "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives src",
+    "mocha": "mocha --require source-map-support/register",
     "nyc": "nyc",
-    "test": "mocha test test/package-managers/npm test/package-managers/yarn && mocha --exit test/timeout",
-    "ncu": "node ./bin/cli.js"
+    "test": "npm run test:src && npm run test:timeout",
+    "test:src": "npm run mocha -- ./build/test ./build/test/package-managers/npm ./build/test/package-managers/yarn",
+    "test:timeout": "npm run mocha -- --exit ./build/test/timeout",
+    "ncu": "node ./build/src/bin/cli.js"
   },
   "bin": {
     "npm-check-updates": "./build/src/bin/cli.js",
@@ -79,6 +82,7 @@
     "rimraf": "^3.0.2",
     "semver": "^7.3.5",
     "semver-utils": "^1.1.4",
+    "source-map-support": "^0.5.19",
     "spawn-please": "^1.0.0",
     "update-notifier": "^5.1.0"
   },

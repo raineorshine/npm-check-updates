@@ -1,5 +1,6 @@
 'use strict'
 
+const path = require('path')
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const packageManagers = require('../../../src/package-managers')
@@ -7,22 +8,24 @@ const packageManagers = require('../../../src/package-managers')
 chai.should()
 chai.use(chaiAsPromised)
 
+const npmTestDir = path.join(__dirname, '../../../../test/package-managers/npm')
+
 describe('npm', function () {
 
   this.timeout(30000)
 
   it('list', async () => {
-    const versionObject = await packageManagers.npm.list({ cwd: __dirname })
+    const versionObject = await packageManagers.npm.list({ cwd: npmTestDir })
     versionObject.should.have.property('express')
   })
 
   it('latest', async () => {
-    const version = await packageManagers.npm.latest('express', null, { cwd: __dirname })
+    const version = await packageManagers.npm.latest('express', null, { cwd: npmTestDir })
     parseInt(version, 10).should.be.above(1)
   })
 
   it('greatest', async () => {
-    const version = await packageManagers.npm.greatest('ncu-test-greatest-not-newest', null, { pre: true, cwd: __dirname })
+    const version = await packageManagers.npm.greatest('ncu-test-greatest-not-newest', null, { pre: true, cwd: npmTestDir })
     version.should.equal('2.0.0-beta')
   })
 

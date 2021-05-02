@@ -1,6 +1,11 @@
 {
   "include": [
-    "./src/**/*",
+    "src",
+    "test"
+  ],
+  "exclude": [
+    "test/deep",
+    "test/doctor"
   ],
   "compilerOptions": {
     "allowJs": true,
@@ -18,6 +23,7 @@
     "resolveJsonModule": true,
     "outDir": "./build",
     "skipLibCheck": true,
+    "sourceMap": true,
     "strict": true,
     "target": "es5"
   }
