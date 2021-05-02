@@ -1,6 +1,6 @@
 {
   "include": [
-    "src/**/*",
+    "./src/**/*",
   ],
   "compilerOptions": {
     "allowJs": true,
@@ -16,7 +16,7 @@
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
-    "outDir": "build",
+    "outDir": "./build",
     "skipLibCheck": true,
     "strict": true,
     "target": "es5"

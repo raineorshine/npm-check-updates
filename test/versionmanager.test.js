@@ -2,7 +2,7 @@
 
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
-const vm = require('../lib/versionmanager')
+const vm = require('../src/versionmanager')
 
 const should = chai.should()
 

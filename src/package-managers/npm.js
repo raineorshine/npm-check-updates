@@ -15,7 +15,7 @@ const TIME_FIELDS = ['modified', 'created']
 
 const npmConfigToPacoteMap = {
   cafile: path => {
-    // load-cafile, based on github.com/npm/cli/blob/40c1b0f/lib/config/load-cafile.js
+    // load-cafile, based on github.com/npm/cli/blob/40c1b0f/src/config/load-cafile.js
     if (!path) return
     const cadata = fs.readFileSync(path, 'utf8')
     const delim = '-----END CERTIFICATE-----'
