@@ -22,7 +22,7 @@ const packageManagers = require('./package-managers')
 const { print, printJson, printUpgrades, printIgnoredUpdates } = require('./logging')
 const { deepPatternPrefix, doctorHelpText } = require('./constants')
 const cliOptions = require('./cli-options')
-const mergeOptions = require('./merge-options')
+const mergeOptions = require('./merge-options').default
 
 // maps package managers to package file names
 const packageFileNames = {

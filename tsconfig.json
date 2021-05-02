@@ -1,0 +1,24 @@
+{
+  "include": [
+    "src/**/*",
+  ],
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "lib": [
+      "dom",
+      "es2019"
+    ],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "outDir": "build",
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es5"
+  }
+}
