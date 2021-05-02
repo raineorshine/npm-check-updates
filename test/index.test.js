@@ -14,6 +14,8 @@ chai.use(chaiString)
 
 process.env.NCU_TESTS = true
 
+const testDir = path.join(__dirname, '../../test/')
+
 describe('run', function () {
 
   let last = 0
@@ -24,7 +26,7 @@ describe('run', function () {
 
   it('return promised jsonUpgraded', () => {
     return ncu.run({
-      packageData: fs.readFileSync(path.join(__dirname, '/ncu/package.json'), 'utf-8')
+      packageData: fs.readFileSync(path.join(testDir, 'ncu/package.json'), 'utf-8')
     }).should.eventually.have.property('express')
   })
 
@@ -78,7 +80,7 @@ describe('run', function () {
 
   it('only upgrade devDependencies with --dep dev', () => {
     const upgraded = ncu.run({
-      packageData: fs.readFileSync(path.join(__dirname, '/ncu/package-dep.json'), 'utf-8'),
+      packageData: fs.readFileSync(path.join(testDir, 'ncu/package-dep.json'), 'utf-8'),
       dep: 'dev'
     })
 
@@ -91,7 +93,7 @@ describe('run', function () {
 
   it('only upgrade devDependencies and peerDependencies with --dep dev,peer', () => {
     const upgraded = ncu.run({
-      packageData: fs.readFileSync(path.join(__dirname, '/ncu/package-dep.json'), 'utf-8'),
+      packageData: fs.readFileSync(path.join(testDir, 'ncu/package-dep.json'), 'utf-8'),
       dep: 'dev,peer'
     })
 
@@ -733,7 +735,7 @@ describe('run', function () {
   })
 
   describe('peer dependencies', () => {
-    const peerPath = path.join(__dirname, '/peer/')
+    const peerPath = path.join(__dirname, '../../test/peer/')
 
     it('peer dependencies of installed packages are ignored by default', async () => {
       try {
@@ -763,7 +765,7 @@ describe('run', function () {
       }
     })
 
-    const peerUpdatePath = path.join(__dirname, '/peer-update/')
+    const peerUpdatePath = path.join(__dirname, '../../test/peer-update/')
     it('peer dependencies of installed packages are checked iteratively when using option peer', async () => {
       try {
         await spawnNpm('install', {}, { cwd: peerUpdatePath })
