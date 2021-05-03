@@ -37,11 +37,10 @@
     "lint:lockfile": "lockfile-lint",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.js",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives src",
-    "mocha": "mocha --require source-map-support/register",
     "nyc": "nyc",
     "test": "npm run test:src && npm run test:timeout",
-    "test:src": "npm run mocha -- ./build/test ./build/test/package-managers/npm ./build/test/package-managers/yarn",
-    "test:timeout": "npm run mocha -- --exit ./build/test/timeout",
+    "test:src": "mocha ./build/test ./build/test/package-managers/npm ./build/test/package-managers/yarn",
+    "test:timeout": "mocha --exit ./build/test/timeout",
     "ncu": "node ./build/src/bin/cli.js"
   },
   "bin": {
@@ -131,6 +130,7 @@
   },
   "mocha": {
     "check-leaks": true,
+    "require": "source-map-support/register",
     "trace-deprecation": true,
     "trace-warnings": true,
     "use_strict": true
