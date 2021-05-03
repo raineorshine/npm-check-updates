@@ -120,18 +120,18 @@ const testFail = ({ packageManager }) => {
     // stdout should include successful upgrades
     stdout.should.include('ncu-test-v2 ~1.0.0 →')
     stdout.should.not.include('ncu-test-return-version ~1.0.0 →')
-    stdout.should.include('fp-and-or 0.1.1 →')
+    stdout.should.include('emitter20 1.0.0 →')
 
     // stderr should include first failing upgrade
     stderr.should.include('Breaks with v2.x')
     stderr.should.not.include('ncu-test-v2 ~1.0.0 →')
     stderr.should.include('ncu-test-return-version ~1.0.0 →')
-    stderr.should.not.include('fp-and-or 0.1.1 →')
+    stderr.should.not.include('emitter20 1.0.0 →')
 
     // package file should only include successful upgrades
     pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
     pkgUpgraded.should.include('"ncu-test-return-version": "~1.0.0"')
-    pkgUpgraded.should.not.include('"fp-and-or": "0.1.1"') // assert the negation since fp-and-or is a live package and I don't feel like mocking it
+    pkgUpgraded.should.not.include('"emitter20": "1.0.0"') // assert the negation since emitter20 is a live package and the latest version could change (it would be better to mock this)
   })
 }
 
