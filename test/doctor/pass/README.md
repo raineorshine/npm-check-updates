@@ -1,0 +1,2 @@
+- yarn.lock is necessary otherwise yarn sees the package.json in the npm-check-updates directory and throws an error.
+- license must be specified in the package.json otherwise yarn will print a warning to stderr, which doctor thinks is a failed test.
