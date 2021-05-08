@@ -1,9 +1,3 @@
-//
-// Dependencies
-//
-
-'use strict'
-
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
@@ -22,6 +16,7 @@ import * as logging from './logging.js'
 import * as constants from './constants.js'
 import cliOptions from './cli-options.js'
 import getNcurc from './lib/get-ncu-rc'
+import getPeerDependencies from './lib/getPeerDependencies'
 import mergeOptions from './lib/mergeOptions'
 
 import { Index, Maybe, Options, PackageFile, VersionDeclaration } from './types'
@@ -123,24 +118,6 @@ async function runGlobal(options: Options): Promise<void> {
   if (options.cli && options.errorLevel === 2 && upgradedPackageNames.length > 0) {
     process.exit(1)
   }
-}
-
-/** Get peer dependencies from installed packages */
-export function getPeerDependencies(current: Index<VersionDeclaration>, options: Options) {
-  const basePath = options.cwd || './'
-  return Object.keys(current).reduce((accum, pkgName) => {
-    const path = basePath + 'node_modules/' + pkgName + '/package.json'
-    let peers = {}
-    try {
-      const pkgData = fs.readFileSync(path, 'utf-8')
-      const pkg = jph.parse(pkgData)
-      peers = vm.getCurrentDependencies(pkg, { ...options, dep: 'peer' })
-    }
-    catch (e) {
-      print(options, 'Could not read peer dependencies for package ' + pkgName + '. Is this package installed?', 'warn')
-    }
-    return { ...accum, [pkgName]: peers }
-  }, {})
 }
 
 /** Checks local project dependencies for upgrades. */
