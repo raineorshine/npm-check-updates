@@ -3,15 +3,13 @@ const Table = require('cli-table')
 const chalk = require('chalk')
 const { deepPatternPrefix } = require('./constants')
 
-/*
-
-  "newest" means most recently released in terms of release date, even if there are other version numbers that are higher. It includes prereleases.
-  "greatest" means highest version number, regardless of release date. It includes prereleases.
-  "latest" is whatever the project's "latest" git tag points to. It's usually the non-prerelease version with the highest version number, but is ultimately decided by each project's maintainers.
-  "minor" means highest minor version without incrementing the current major.
-  "patch" means highest patch version without incrementing the current major or minor.
-
-*/
+/**
+ * "newest" means most recently released in terms of release date, even if there are other version numbers that are higher. It includes prereleases.
+ * "greatest" means highest version number, regardless of release date. It includes prereleases.
+ * "latest" is whatever the project's "latest" git tag points to. It's usually the non-prerelease version with the highest version number, but is ultimately decided by each project's maintainers.
+ * "minor" means highest minor version without incrementing the current major.
+ * "patch" means highest patch version without incrementing the current major or minor.
+ **/
 const getHelpTargetTable = () => {
   /* eslint-disable fp/no-mutating-methods */
 

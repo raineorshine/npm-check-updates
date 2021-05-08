@@ -35,12 +35,14 @@ function print(options, message, loglevel = null, method = 'log') {
   }
 }
 
+/** Pretty print a JSON object. */
 function printJson(options, object) {
   if (options.loglevel !== 'silent') {
     console.log(JSON.stringify(object, null, 2))
   }
 }
 
+/** Create a table with the appropriate columns and alignment to render dependency upgrades. */
 function createDependencyTable() {
   return new Table({
     colAligns: ['left', 'right', 'right', 'right', 'left', 'left'],
@@ -143,6 +145,7 @@ function printUpgrades(options, { current, latest, upgraded, numUpgraded, total,
   }
 }
 
+/** Print updates that were ignored due to incompatible peer dependencies. */
 function printIgnoredUpdates(options, ignoredUpdates) {
   print(options, `\nIgnored incompatible updates (peer dependencies):\n`)
   const table = createDependencyTable()
