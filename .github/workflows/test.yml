@@ -48,8 +48,8 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Compile typescript
-        run: tsc
+      - name: Build
+        run: npm run build
 
       - name: Run tests
         run: npm run test
