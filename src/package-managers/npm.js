@@ -104,7 +104,7 @@ async function packageAuthorChanged(packageName, currentVersion, upgradedVersion
     }
   }
 
-  return null
+  return false
 }
 
 /**
