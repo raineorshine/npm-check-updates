@@ -12,8 +12,8 @@ const { doctorHelpText } = require('../src/constants.js')
 chai.should()
 chai.use(chaiAsPromised)
 
-const bin = path.join(__dirname, '../src/bin/cli.js')
-const doctorTests = path.join(__dirname, '../../test/doctor')
+const bin = path.join(__dirname, '../build/src/bin/cli.js')
+const doctorTests = path.join(__dirname, 'doctor')
 
 /** Run the ncu CLI. */
 const ncu = (args, options) => spawn('node', [bin, ...args], options)

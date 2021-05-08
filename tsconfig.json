@@ -18,6 +18,9 @@
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
+    "paths": {
+      "cint": ["./src/types/cint"]
+    },
     "resolveJsonModule": true,
     "outDir": "./build",
     "skipLibCheck": true,
