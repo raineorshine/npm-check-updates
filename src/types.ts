@@ -4,6 +4,33 @@ export type Index<T = any> = {[key: string]: T}
 /** A value that may be null or undefined. */
 export type Maybe<T = any> = T | null | undefined
 
+/** A function that gets a target version of a dependency. */
+export type GetVersion = (packageName: string, currentVersion: Version, options?: Options) => Promise<Version | null>
+
+export interface PackageManager {
+  list?: (options: Options) => unknown,
+  latest: GetVersion,
+  major?: GetVersion,
+  minor?: GetVersion,
+  newest?: GetVersion,
+  greatest?: GetVersion,
+  packageAuthorChanged?: (packageName: string, from: VersionDeclaration, to: VersionDeclaration, options?: Options) => Promise<boolean>,
+  getPeerDependencies?: (packageName: string, version: Version) => Promise<Index<Version>>,
+}
+
+export type Version = string
+export type VersionDeclaration = string
+
+export type FilterPattern = string | string[] | RegExp | RegExp[]
+
+export interface PackageFile {
+  dependencies?: Index<VersionDeclaration>,
+  devDependencies?: Index<VersionDeclaration>,
+  peerDependencies?: Index<VersionDeclaration>,
+  optionalDependencies?: Index<VersionDeclaration>,
+  bundleDependencies?: Index<VersionDeclaration>,
+}
+
 export interface RunOptions {
 
   /**

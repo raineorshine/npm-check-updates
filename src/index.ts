@@ -15,7 +15,7 @@ import _ from 'lodash'
 import getstdin from 'get-stdin'
 import Chalk from 'chalk'
 import jph from 'json-parse-helpfulerror'
-import * as vm from './versionmanager.js'
+import * as vm from './versionmanager'
 import doctor from './doctor.js'
 import * as packageManagers from './package-managers/index.js'
 import * as logging from './logging.js'
@@ -23,7 +23,7 @@ import * as constants from './constants.js'
 import cliOptions from './cli-options.js'
 import getNcurc from './lib/get-ncu-rc'
 
-import { Index, Options } from './types'
+import { Index, Maybe, Options } from './types'
 
 const { deepPatternPrefix, doctorHelpText } = constants
 const { print, printJson, printUpgrades, printIgnoredUpdates } = logging
@@ -143,7 +143,7 @@ export function getPeerDependencies(current: Index<any>, options: Options) {
 }
 
 /** Checks local project dependencies for upgrades. */
-async function runLocal(options: Options, pkgData?: string | null, pkgFile?: string | null) {
+async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: Maybe<string>) {
 
   let pkg
 
@@ -189,7 +189,7 @@ async function runLocal(options: Options, pkgData?: string | null, pkgFile?: str
   print(options, '\nUpgraded:', 'verbose')
   print(options, upgraded, 'verbose')
 
-  const { newPkgData, selectedNewDependencies } = await vm.upgradePackageData(pkgData, current, upgraded, latest, options)
+  const { newPkgData, selectedNewDependencies } = await vm.upgradePackageData(pkgData!, current, upgraded, latest, options)
 
   const output = options.jsonAll ? jph.parse(newPkgData) :
     options.jsonDeps ?
@@ -228,7 +228,7 @@ async function runLocal(options: Options, pkgData?: string | null, pkgFile?: str
       ownersChangedDeps
     })
     if (options.peer) {
-      const ignoredUpdates = await vm.getIgnoredUpgrades(current, upgraded, upgradedPeerDependencies, options)
+      const ignoredUpdates = await vm.getIgnoredUpgrades(current, upgraded, upgradedPeerDependencies!, options)
       if (!_.isEmpty(ignoredUpdates)) {
         printIgnoredUpdates(options, ignoredUpdates)
       }
@@ -561,4 +561,4 @@ export async function run(options: Options = {}) {
 }
 
 export { default as getNcurc } from './lib/get-ncu-rc'
-export * from './versionmanager.js'
+export * from './versionmanager'
