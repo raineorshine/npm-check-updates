@@ -25,12 +25,8 @@
   "engines": {
     "node": ">=10.17"
   },
-  "eslintConfig": {
-    "extends": [
-      "raine"
-    ]
-  },
-  "main": "build/src",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
   "scripts": {
     "build": "npm run build:ts && npm run build:readme",
     "build:ts": "tsc",
@@ -40,6 +36,7 @@
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.js",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives src",
     "nyc": "nyc",
+    "prepublishOnly": "npm run build",
     "test": "npm run test:src && npm run test:timeout",
     "test:src": "mocha test test/package-managers/npm test/package-managers/yarn",
     "test:timeout": "mocha --exit test/timeout",

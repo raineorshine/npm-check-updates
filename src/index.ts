@@ -23,7 +23,7 @@ import * as constants from './constants.js'
 import cliOptions from './cli-options.js'
 import getNcurc from './lib/get-ncu-rc'
 
-import { Index, Maybe, Options } from './types'
+import { Index, Maybe, Options, PackageFile, VersionDeclaration } from './types'
 
 const { deepPatternPrefix, doctorHelpText } = constants
 const { print, printJson, printUpgrades, printIgnoredUpdates } = logging
@@ -76,7 +76,7 @@ function sortOptions(options: Options) {
 //
 
 /** Checks global dependencies for upgrades. */
-async function runGlobal(options: Options) {
+async function runGlobal(options: Options): Promise<void> {
 
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
@@ -125,7 +125,7 @@ async function runGlobal(options: Options) {
 }
 
 /** Get peer dependencies from installed packages */
-export function getPeerDependencies(current: Index<any>, options: Options) {
+export function getPeerDependencies(current: Index<VersionDeclaration>, options: Options) {
   const basePath = options.cwd || './'
   return Object.keys(current).reduce((accum, pkgName) => {
     const path = basePath + 'node_modules/' + pkgName + '/package.json'
@@ -143,7 +143,7 @@ export function getPeerDependencies(current: Index<any>, options: Options) {
 }
 
 /** Checks local project dependencies for upgrades. */
-async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: Maybe<string>) {
+async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: Maybe<string>): Promise<PackageFile | Index<VersionDeclaration>> {
 
   let pkg
 
@@ -191,9 +191,9 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
 
   const { newPkgData, selectedNewDependencies } = await vm.upgradePackageData(pkgData!, current, upgraded, latest, options)
 
-  const output = options.jsonAll ? jph.parse(newPkgData) :
+  const output = options.jsonAll ? jph.parse(newPkgData) as PackageFile :
     options.jsonDeps ?
-      _.pick(jph.parse(newPkgData), 'dependencies', 'devDependencies', 'optionalDependencies') :
+      _.pick(jph.parse(newPkgData) as PackageFile, 'dependencies', 'devDependencies', 'optionalDependencies') :
       selectedNewDependencies
 
   // will be overwritten with the result of writePackageFile so that the return promise waits for the package file to be written
@@ -422,8 +422,15 @@ process.on('unhandledRejection', err => {
   throw err
 })
 
-/** main entry point */
-export async function run(options: Options = {}) {
+/** Main entry point.
+ *
+ * @returns Promise<
+ * PackageFile                    Default returns upgraded package file.
+ * | Index<VersionDeclaration>    --jsonUpgraded returns only upgraded dependencies.
+ * | void                         --global upgrade returns void.
+ * >
+ */
+export async function run(options: Options = {}): Promise<PackageFile | Index<VersionDeclaration> | void> {
 
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
@@ -467,11 +474,11 @@ export async function run(options: Options = {}) {
     options.prefix = await packageManagers.yarn.defaultPrefix(options)
   }
 
-  let timeout: any
-  let timeoutPromise = new Promise(resolve => resolve)
+  let timeout: NodeJS.Timeout
+  let timeoutPromise: Promise<void> = new Promise(() => null)
   if (options.timeout) {
     const timeoutMs = _.isString(options.timeout)
-      ? Number.parseInt(options.timeout as unknown as string, 10)
+      ? Number.parseInt(options.timeout, 10)
       : options.timeout
     timeoutPromise = new Promise((resolve, reject) => {
       timeout = setTimeout(() => {
@@ -487,7 +494,7 @@ export async function run(options: Options = {}) {
   }
 
   /** Runs the denpendency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
-  async function runUpgrades() {
+  async function runUpgrades(): Promise<Index<string> | PackageFile | void> {
     const defaultPackageFilename = getPackageFileName(options)
     const pkgs = globby.sync(options.cwd
       ? path.resolve(options.cwd.replace(/^~/, os.homedir()), defaultPackageFilename)
@@ -497,7 +504,7 @@ export async function run(options: Options = {}) {
     })
     options.deep = options.deep || pkgs.length > 1
 
-    let analysis
+    let analysis: Index<string> | PackageFile | void
     if (options.global) {
       const analysis = await runGlobal(options)
       clearTimeout(timeout)
@@ -524,7 +531,7 @@ export async function run(options: Options = {}) {
             : pkgFile!
           ]: await runLocal(pkgOptions, pkgData, pkgFile)
         }
-      }, {})
+      }, Promise.resolve({} as Index<string> | PackageFile))
       if (options.json) {
         printJson(options, analysis)
       }
