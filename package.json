@@ -90,8 +90,11 @@
   "devDependencies": {
     "@types/json-parse-helpfulerror": "^1.0.1",
     "@types/lodash": "^4.14.168",
+    "@types/minimatch": "^3.0.4",
     "@types/node": "^15.0.1",
     "@types/parse-github-url": "^1.0.0",
+    "@types/progress": "^2.0.3",
+    "@types/prompts": "^2.0.11",
     "@types/semver": "^7.3.5",
     "@types/semver-utils": "^1.1.0",
     "@typescript-eslint/eslint-plugin": "^4.22.1",
@@ -138,7 +141,10 @@
   },
   "mocha": {
     "check-leaks": true,
-    "extensions": ["js", "ts"],
+    "extensions": [
+      "js",
+      "ts"
+    ],
     "require": [
       "source-map-support/register",
       "ts-node/register"

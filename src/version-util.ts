@@ -18,8 +18,8 @@ const VERSION_PART_DELIM: SemVer = {
   release: '-',
   build: '+'
 }
-const DEFAULT_WILDCARD = '^'
-const WILDCARDS = ['^', '~', '.*', '.x']
+export const DEFAULT_WILDCARD = '^'
+export const WILDCARDS = ['^', '~', '.*', '.x']
 const WILDCARDS_PURE = ['^', '~', '^*', '*', 'x', 'x.x', 'x.x.x']
 const WILDCARD_PURE_REGEX = new RegExp(`^(${WILDCARDS_PURE.join('|')
   .replace(/\^/g, '\\^')
@@ -207,7 +207,8 @@ export function compareVersions(a: string, b: string) {
  * @param level     major|minor
  * @returns         String representation of the suggested version.
  */
-export function findGreatestByLevel(versions: string[], current: string, level: 'major' | 'minor') {
+export function findGreatestByLevel(versions: string[], current: string, level: 'major' | 'minor'): string
+ | null {
 
   if (!semver.validRange(current)) {
     return null
@@ -223,7 +224,7 @@ export function findGreatestByLevel(versions: string[], current: string, level: 
         (level === 'major' || level === 'minor' || parsed.minor === cur?.minor)
     })
 
-  return _.last(versionsSorted)
+  return _.last(versionsSorted) || null
 }
 
 /**
@@ -235,50 +236,50 @@ export function isPre(version: string) {
 }
 
 /** Checks if a string is a simple version in the format "v1". */
-const isMissingMinorAndPatch = s => /^[vV]?\d+$/.test(s)
+const isMissingMinorAndPatch = (s: string) => /^[vV]?\d+$/.test(s)
 
 /** Checks if a version string is missing its match component, e.g. "1.0". */
-const isMissingPatch = s => /^[vV]?\d+\.\d+$/.test(s)
+const isMissingPatch = (s: string) => /^[vV]?\d+\.\d+$/.test(s)
 
 /** Removes a leading 'v' or 'V' from a pseudo version.. */
-const fixLeadingV = s => s.replace(/^[vV]/, '')
+const fixLeadingV = (s: string) => s.replace(/^[vV]/, '')
 
 /** Converts a pseudo version that is missing its minor and patch components into a valid semver version. NOOP for valid semver versions. */
-const fixMissingMinorAndPatch = s => isMissingMinorAndPatch(s) ? s + '.0.0' : s
+const fixMissingMinorAndPatch = (s: string) => isMissingMinorAndPatch(s) ? s + '.0.0' : s
 
 /** Converts a pseudo version that is missing its patch component into a valid semver version. NOOP for valid semver versions. */
-const fixMissingPatch = s => isMissingPatch(s) ? s + '.0' : s
+const fixMissingPatch = (s: string) => isMissingPatch(s) ? s + '.0' : s
 
 /** Converts a pseudo version into a valid semver version. NOOP for valid semver versions. */
 const fixPseudoVersion = _.flow(fixLeadingV, fixMissingMinorAndPatch, fixMissingPatch)
 
 /** Reverts a valid semver version to a pseudo version that is missing its minor and patch components. NOOP If the original version was a valid semver version. */
-const revertMissingMinorAndPatch = _.curry((current, latest) =>
+const revertMissingMinorAndPatch = _.curry((current: string, latest: string) =>
   isMissingMinorAndPatch(current)
     ? latest.slice(0, latest.length - '.0.0'.length)
     : latest)
 
 /** Reverts a valid semver version to a pseudo version that is missing its patch components. NOOP If the original version was a valid semver version. */
-const revertMissingPatch = _.curry((current, latest) =>
+const revertMissingPatch = _.curry((current: string, latest: string) =>
   isMissingPatch(current)
     ? latest.slice(0, latest.length - '.0'.length)
     : latest)
 
 /** Reverts a valid semver version to a pseudo version with a leading 'v'. NOOP If the original version was a valid semver version. */
-const revertLeadingV = _.curry((current, latest) =>
+const revertLeadingV = _.curry((current: string, latest: string) =>
   v(current)
     ? v(current) + latest
     : latest)
 
 /** Reverts a valid semver version to a pseudo version. NOOP If the original version was a valid semver version. */
-const revertPseudoVersion = (current, latest) =>
+const revertPseudoVersion = (current: string, latest: string) =>
   _.flow(
     revertLeadingV(current),
     revertMissingMinorAndPatch(current),
     revertMissingPatch(current)
   )(latest)
 
-const isSimpleVersion = (s: string) => /^[vV]?\d+$/.test(s)
+export const isSimpleVersion = (s: string) => /^[vV]?\d+$/.test(s)
 
 /**
  * Returns 'v' if the string starts with a v, otherwise returns empty string.
@@ -298,7 +299,7 @@ export function v(str: Maybe<string>) {
  * @returns    "npm:package@x.y.z"
  * @example    createNpmAlias('chalk', '2.0.0') -> 'npm:chalk@2.0.0'
  */
-const createNpmAlias = (name: string, version: string) =>
+export const createNpmAlias = (name: string, version: string) =>
   `npm:${name}@${version}`
 
 /**
@@ -307,7 +308,7 @@ const createNpmAlias = (name: string, version: string) =>
  * @returns  [name, version] or null if the input is not an npm alias
  * @example  'npm:chalk@1.0.0' -> ['chalk', '1.0.0']
  */
-const parseNpmAlias = (alias: string) => {
+export const parseNpmAlias = (alias: string) => {
   const match = alias && alias.match && alias.match(NPM_ALIAS_REGEX)
   return match && match.slice(1)
 }
@@ -315,13 +316,13 @@ const parseNpmAlias = (alias: string) => {
 /**
  * Returns true if a version declaration is an npm alias.
  */
-const isNpmAlias = (declaration: string) =>
+export const isNpmAlias = (declaration: string) =>
   declaration && !!declaration.match(NPM_ALIAS_REGEX)
 
 /**
  * Replaces the version number embedded in an npm alias.
  */
-const upgradeNpmAlias = (declaration: string, upgraded: string) => {
+export const upgradeNpmAlias = (declaration: string, upgraded: string) => {
   const npmAlias = parseNpmAlias(declaration)
   if (!npmAlias) return null
   return createNpmAlias(npmAlias[0], upgraded)
@@ -330,7 +331,7 @@ const upgradeNpmAlias = (declaration: string, upgraded: string) => {
 /**
  * Returns true if a version declaration is a Github URL with a valid semver version.
  */
-const isGithubUrl = (declaration: string) => {
+export const isGithubUrl = (declaration: string) => {
   if (!declaration) return false
   const parsed = parseGithubUrl(declaration)
   if (!parsed || !parsed.branch) return false
@@ -343,7 +344,7 @@ const isGithubUrl = (declaration: string) => {
 /**
  * Returns the embedded tag in a Github URL.
  */
-const getGithubUrlTag = (declaration: string) => {
+export const getGithubUrlTag = (declaration: string) => {
   if (!declaration) return null
   const parsed = parseGithubUrl(declaration)
   if (!parsed || !parsed.branch) return null
@@ -434,7 +435,7 @@ export function upgradeDependencyDeclaration(declaration: string, latestVersion:
 /**
  * Replaces the version number embedded in a Github URL.
  */
-const upgradeGithubUrl = (declaration: string, upgraded: string) => {
+export const upgradeGithubUrl = (declaration: string, upgraded: string) => {
   const parsedUrl = parseGithubUrl(declaration)
   if (!parsedUrl) return declaration
   const tag = decodeURIComponent(parsedUrl.branch)
