@@ -32,7 +32,9 @@
   },
   "main": "./build/src",
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "npm run build:ts && npm run build:options",
+    "build:ts": "tsc",
+    "build:options": "node scripts/buildCliOptions.js",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.js",
