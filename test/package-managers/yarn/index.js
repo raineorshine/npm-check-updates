@@ -35,26 +35,24 @@ const packageManagers = require('../../../src/package-managers')
 chai.should()
 chai.use(chaiAsPromised)
 
-const yarnTestDir = path.join(__dirname, '../../../../test/package-managers/yarn')
-
 describe('yarn', function () {
 
   this.timeout(30000)
 
   it('list', async () => {
-    const testDir = path.join(yarnTestDir, 'default')
+    const testDir = path.join(__dirname, 'default')
     const version = await packageManagers.yarn.latest('chalk', null, { cwd: testDir })
     parseInt(version, 10).should.be.above(3)
   })
 
   it('latest', async () => {
-    const testDir = path.join(yarnTestDir, 'default')
+    const testDir = path.join(__dirname, 'default')
     const version = await packageManagers.yarn.latest('chalk', null, { cwd: testDir })
     parseInt(version, 10).should.be.above(3)
   })
 
   it('"No lockfile" error should be thrown on list command when there is no lockfile', async () => {
-    const testDir = path.join(yarnTestDir, 'nolockfile')
+    const testDir = path.join(__dirname, 'nolockfile')
     const lockFileErrorMessage = 'No lockfile in this directory. Run `yarn install` to generate one.'
     await packageManagers.yarn.list({ cwd: testDir })
       .should.eventually.be.rejectedWith(lockFileErrorMessage)
