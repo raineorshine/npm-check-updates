@@ -12,11 +12,11 @@ chai.use(chaiAsPromised)
 
 process.env.NCU_TESTS = true
 
-const bin = path.join(__dirname, '../src/bin/cli.js')
+const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('--deep', function () {
 
-  const cwd = path.join(__dirname, '../../test/deep')
+  const cwd = path.join(__dirname, 'deep')
 
   this.timeout(60000)
 
@@ -120,7 +120,7 @@ describe('--deep', function () {
 
 describe('--deep with nested ncurc files', function () {
 
-  const cwd = path.join(__dirname, '../../test/deep-ncurc')
+  const cwd = path.join(__dirname, 'deep-ncurc')
 
   this.timeout(60000)
 

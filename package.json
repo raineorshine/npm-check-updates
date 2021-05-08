@@ -30,7 +30,7 @@
       "raine"
     ]
   },
-  "main": "./build/src",
+  "main": "build/src",
   "scripts": {
     "build": "npm run build:ts && npm run build:readme",
     "build:ts": "tsc",
@@ -41,13 +41,13 @@
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives src",
     "nyc": "nyc",
     "test": "npm run test:src && npm run test:timeout",
-    "test:src": "mocha ./build/test ./build/test/package-managers/npm ./build/test/package-managers/yarn",
-    "test:timeout": "mocha --exit ./build/test/timeout",
-    "ncu": "node ./build/src/bin/cli.js"
+    "test:src": "mocha test test/package-managers/npm test/package-managers/yarn",
+    "test:timeout": "mocha --exit test/timeout",
+    "ncu": "node build/src/bin/cli.js"
   },
   "bin": {
-    "npm-check-updates": "./build/src/bin/cli.js",
-    "ncu": "./build/src/bin/cli.js"
+    "npm-check-updates": "build/src/bin/cli.js",
+    "ncu": "build/src/bin/cli.js"
   },
   "repository": {
     "type": "git",
@@ -118,6 +118,7 @@
     "nyc": "^15.1.0",
     "should": "^13.2.3",
     "strip-ansi": "^6.0.0",
+    "ts-node": "^9.1.1",
     "typescript": "^4.2.4",
     "yarn": "^1.22.10"
   },
@@ -137,7 +138,11 @@
   },
   "mocha": {
     "check-leaks": true,
-    "require": "source-map-support/register",
+    "extensions": ["js", "ts"],
+    "require": [
+      "source-map-support/register",
+      "ts-node/register"
+    ],
     "trace-deprecation": true,
     "trace-warnings": true,
     "use_strict": true
