@@ -28,6 +28,8 @@ function upgradeDependencies(currentDependencies, latestVersions, options = {}) 
 
   // get the preferred wildcard and bind it to upgradeDependencyDeclaration
   const wildcard = getPreferredWildcard(currentDependencies) || versionUtil.DEFAULT_WILDCARD
+
+  /** Upgrades a single dependency. */
   const upgradeDep = (current, latest) => versionUtil.upgradeDependencyDeclaration(current, latest, {
     wildcard,
     removeRange: options.removeRange
@@ -344,6 +346,7 @@ function getCurrentDependencies(pkgData = {}, options = {}) {
   return filteredDependencies
 }
 
+/** Get all upgrades that are ignored due to incompatible peer dependencies. */
 async function getIgnoredUpgrades(current, upgraded, upgradedPeerDependencies, options = {}) {
   const [upgradedLatestVersions, latestVersions] = await upgradePackageDefinitions(
     current,

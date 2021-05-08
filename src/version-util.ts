@@ -1,17 +1,17 @@
 import _ from 'lodash'
-import { Options } from './types'
 
-const util = require('util')
-const semverutils = require('semver-utils')
-const chalk = require('chalk')
-const cint = require('cint')
-const semver = require('semver')
-const parseGithubUrl = require('parse-github-url')
+import util from 'util'
+import semverutils, { SemVer } from 'semver-utils'
+import chalk from 'chalk'
+import cint from 'cint'
+import semver from 'semver'
+import parseGithubUrl from 'parse-github-url'
+import { Maybe } from './types'
 
 const VERSION_BASE_PARTS = ['major', 'minor', 'patch'] as VersionPart[]
 const VERSION_ADDED_PARTS = ['release', 'build'] as VersionPart[]
 const VERSION_PARTS = [...VERSION_BASE_PARTS, ...VERSION_ADDED_PARTS] as VersionPart[]
-const VERSION_PART_DELIM = {
+const VERSION_PART_DELIM: SemVer = {
   major: '',
   minor: '.',
   patch: '.',
@@ -28,17 +28,7 @@ const WILDCARD_PURE_REGEX = new RegExp(`^(${WILDCARDS_PURE.join('|')
 /** Matches an npm alias version declaration. */
 const NPM_ALIAS_REGEX = /^npm:(.*)@(.*)/
 
-interface Semver {
-  major: string,
-  minor: string,
-  patch: string,
-  release: string,
-  build: string,
-}
-
-type SemverResult = Semver & { semver: string }
-
-type VersionPart = keyof Semver
+type VersionPart = keyof SemVer
 
 interface UpgradeOptions {
   wildcard?: string,
@@ -61,7 +51,7 @@ export function numParts(version: string) {
 }
 
 /**
- * Increases or decreases the given precision by the given amount, e.g. major+1 -> minor
+ * Increases or decreases the a precision by the given amount, e.g. major+1 -> minor
  *
  * @param precision
  * @param n
@@ -76,11 +66,8 @@ export function precisionAdd(precision: VersionPart, n: number) {
     VERSION_ADDED_PARTS.includes(precision) ? VERSION_BASE_PARTS.length + n :
     null
 
-  if (index === null) {
+  if (index === null || !VERSION_PARTS[index]) {
     throw new Error(`Invalid precision: ${precision}`)
-  }
-  else if (!VERSION_PARTS[index]) {
-    throw new Error(`Invalid precision math${arguments}`)
   }
 
   return VERSION_PARTS[index]
@@ -94,7 +81,7 @@ export function precisionAdd(precision: VersionPart, n: number) {
  * @param [precision]
  * @returns
  */
-export function stringify(semver: Semver, precision?: VersionPart) {
+export function stringify(semver: SemVer, precision?: VersionPart) {
 
   // get a list of the parts up until (and including) the given precision
   // or all of them, if no precision is specified
@@ -162,7 +149,7 @@ export function isWildCard(version: string) {
  * @param versionPart
  * @returns
  */
-export function isWildPart(versionPartValue: string) {
+export function isWildPart(versionPartValue: Maybe<string>) {
   return versionPartValue === '*' || versionPartValue === 'x'
 }
 
@@ -207,6 +194,11 @@ export function colorizeDiff(from: string, to: string) {
         chalk[color](partsToColor.slice(i).join('.'))
 }
 
+/** Comparator used to sort semver versions */
+export function compareVersions(a: string, b: string) {
+  return semver.gt(a, b) ? 1 : a === b ? 0 : -1
+}
+
 /**
  * Finds the greatest version at the given level (minor|patch).
  *
@@ -226,16 +218,12 @@ export function findGreatestByLevel(versions: string[], current: string, level: 
     .sort(compareVersions)
     .filter(v => {
       const parsed = semver.parse(v)
-      return (level === 'major' || parsed.major === cur.major) &&
-        (level === 'major' || level === 'minor' || parsed.minor === cur.minor)
+      return parsed &&
+        (level === 'major' || parsed.major === cur?.major) &&
+        (level === 'major' || level === 'minor' || parsed.minor === cur?.minor)
     })
 
   return _.last(versionsSorted)
-}
-
-/** Comparator used to sort semver versions */
-export function compareVersions(a: string, b: string) {
-  return semver.gt(a, b) ? 1 : a === b ? 0 : -1
 }
 
 /**
@@ -255,7 +243,7 @@ const isSimpleVersion = (s: string) => /^[vV]?\d+$/.test(s)
  * @param str
  * @returns
  */
-export function v(str: string) {
+export function v(str: Maybe<string>) {
   return str && (str[0] === 'v' || str[1] === 'v') ? 'v' : ''
 }
 
@@ -355,7 +343,7 @@ export function upgradeDependencyDeclaration(declaration: string, latestVersion:
     .reject({ operator: '-' })
     .sortBy(_.ary(_.flow(stringify, numParts), 1))
     .value()
-  const [declaredSemver] = parsedRange as [SemverResult]
+  const [declaredSemver] = parsedRange
 
   /**
    * Chooses version parts between the declared version and the latest.
@@ -363,11 +351,12 @@ export function upgradeDependencyDeclaration(declaration: string, latestVersion:
    * Added parts (release, build) are always included. They are only present if we are checking --greatest versions
    * anyway.
    */
-  function chooseVersion(part: VersionPart): string {
-    return isWildPart(declaredSemver[part]) ? declaredSemver[part] :
+  function chooseVersion(part: VersionPart): string | null {
+    return (isWildPart(declaredSemver[part]) ? declaredSemver[part] :
       VERSION_BASE_PARTS.includes(part) && declaredSemver[part] ? latestSemver[part] :
       VERSION_ADDED_PARTS.includes(part) ? latestSemver[part] :
-      undefined
+      null)
+    || null
   }
 
   // create a new semver object with major, minor, patch, build, and release parts
@@ -400,7 +389,9 @@ export function upgradeDependencyDeclaration(declaration: string, latestVersion:
  * Replaces the version number embedded in a Github URL.
  */
 const upgradeGithubUrl = (declaration: string, upgraded: string) => {
-  const tag = decodeURIComponent(parseGithubUrl(declaration).branch)
+  const parsedUrl = parseGithubUrl(declaration)
+  if (!parsedUrl) return declaration
+  const tag = decodeURIComponent(parsedUrl.branch)
     .replace(/^semver:/, '')
   // if the tag does not start with "v", remove it from upgraded
   const upgradedNormalized = !tag.startsWith('v') && upgraded.startsWith('v')
