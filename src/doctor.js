@@ -55,6 +55,7 @@ const loadPackageFile = async options => {
   return { pkg, pkgFile }
 }
 
+/** Iteratively installs upgrades and runs tests to identify breaking upgrades. */
 // we have to pass run directly since it would be a circular require if doctor included this file
 const doctor = async (run, options) => {
 

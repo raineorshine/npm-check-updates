@@ -38,53 +38,9 @@ const writeReadme = helpOptionsNew => {
   fs.writeFileSync('README.md', readmeNew)
 }
 
-/** Writes CLI options to type definitions file (npm-check-updates.d.ts). */
-const writeTypeDefinitions = helpOptionsNew => {
-
-  const typedefsStart = `declare namespace ncu {
-
-  interface RunOptions {
-`
-  const typedefsEnd = `
-  }
-
-  type RunResults = Record<string, string>
-
-  function run(options?: RunOptions): Promise<RunResults>
-}
-
-export = ncu
-`
-
-  // parse commander values
-  const optionTypes = cliOptions.map(({ long, arg, deprecated, description, default: defaultValue, type: typeValue }) => {
-    const tsName = long
-    const tsType = typeValue || (
-      defaultValue ? typeof defaultValue
-      : ['n', 'ms'].includes(arg) ? 'number'
-      : !arg ? 'boolean'
-      : 'string'
-    )
-    const tsDefault = defaultValue ? ' (default: ' + JSON.stringify(defaultValue) + ')' : ''
-    const deprecatedLine = deprecated ? `
-     * @deprecated` : ''
-    return `
-    /**
-     * ${escapeComments(description)}${escapeComments(tsDefault)}${escapeComments(deprecatedLine)}
-     */
-    ${tsName}?: ${tsType};
-`
-  })
-    .join('')
-
-  const typedefsNew = typedefsStart + optionTypes + typedefsEnd
-  fs.writeFileSync(path.join(__dirname, '../src/index.d.ts'), typedefsNew)
-}
-
 ;(async () => {
 
   const helpOptionsNew = await readOptions()
   writeReadme(helpOptionsNew)
-  writeTypeDefinitions(helpOptionsNew)
 
 })()

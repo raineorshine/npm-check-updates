@@ -37,12 +37,12 @@ const packageFileNames = {
 
 // time to wait for stdin before printing a warning
 const stdinWarningTime = 5000
-const chalk = Chalk
 
 //
 // Helper functions
 //
 
+/** Print an error. Exit the process if in CLI mode. */
 function programError(options: Options, message: string) {
   if (options.cli) {
     print(options, message, null, 'error')
@@ -68,16 +68,16 @@ const writePackageFile = promisify(fs.writeFile)
 function sortOptions(options: Options) {
   // eslint-disable-next-line fp/no-mutating-methods
   return _.transform(Object.keys(options).sort(), (accum, key) => {
-    // @ts-ignore
-    accum[key] = options[key]
-  }, {} as Options)
+    accum[key] = options[key as keyof Options]
+  }, {} as any)
 }
 
 //
 // Main functions
 //
 
-async function analyzeGlobalPackages(options: Options) {
+/** Checks global dependencies for upgrades. */
+async function runGlobal(options: Options) {
 
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
@@ -125,7 +125,26 @@ async function analyzeGlobalPackages(options: Options) {
   }
 }
 
-async function analyzeProjectDependencies(options: Options, pkgData?: string | null, pkgFile?: string | null) {
+/** Get peer dependencies from installed packages */
+export function getPeerDependencies(current: Index<any>, options: Options) {
+  const basePath = options.cwd || './'
+  return Object.keys(current).reduce((accum, pkgName) => {
+    const path = basePath + 'node_modules/' + pkgName + '/package.json'
+    let peers = {}
+    try {
+      const pkgData = fs.readFileSync(path, 'utf-8')
+      const pkg = jph.parse(pkgData)
+      peers = vm.getCurrentDependencies(pkg, { ...options, dep: 'peer' })
+    }
+    catch (e) {
+      print(options, 'Could not read peer dependencies for package ' + pkgName + '. Is this package installed?', 'warn')
+    }
+    return { ...accum, [pkgName]: peers }
+  }, {})
+}
+
+/** Checks local project dependencies for upgrades. */
+async function runLocal(options: Options, pkgData?: string | null, pkgFile?: string | null) {
 
   print(options, '\nOptions:', 'verbose')
   print(options, sortOptions(options), 'verbose')
@@ -250,24 +269,6 @@ async function analyzeProjectDependencies(options: Options, pkgData?: string | n
   return output
 }
 
-/** Get peer dependencies from installed packages */
-export function getPeerDependencies(current: Index<any>, options: Options) {
-  const basePath = options.cwd || './'
-  return Object.keys(current).reduce((accum, pkgName) => {
-    const path = basePath + 'node_modules/' + pkgName + '/package.json'
-    let peers = {}
-    try {
-      const pkgData = fs.readFileSync(path, 'utf-8')
-      const pkg = jph.parse(pkgData)
-      peers = vm.getCurrentDependencies(pkg, { ...options, dep: 'peer' })
-    }
-    catch (e) {
-      print(options, 'Could not read peer dependencies for package ' + pkgName + '. Is this package installed?', 'warn')
-    }
-    return { ...accum, [pkgName]: peers }
-  }, {})
-}
-
 //
 // Program
 //
@@ -369,7 +370,7 @@ async function findPackage(options: Options) {
 
   const pkgFileName = getPackageFileName(options)
 
-  // returns: string
+  /** Reads the contents of a package file. */
   function getPackageDataFromFile(pkgFile: string | null | undefined, pkgFileName: string): string {
     // exit if no pkgFile to read from fs
     if (pkgFile != null) {
@@ -450,7 +451,7 @@ export async function run(options: Options = {}) {
 
   const deprecatedOptions = cliOptions.filter(({ long, deprecated }) => deprecated && options[long as keyof Options])
   if (deprecatedOptions.length > 0) {
-    deprecatedOptions.forEach(({ short, long, description }) => {
+    deprecatedOptions.forEach(({ long, description }) => {
       const deprecationMessage = `--${long}: ${description}`
       print(options, chalk.yellow(deprecationMessage), 'warn')
     })
@@ -490,7 +491,8 @@ export async function run(options: Options = {}) {
     })
   }
 
-  async function getAnalysis() {
+  /** Runs the denpendency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
+  async function runUpgrades() {
     const defaultPackageFilename = getPackageFileName(options)
     const pkgs = globby.sync(options.cwd
       ? path.resolve(options.cwd.replace(/^~/, os.homedir()), defaultPackageFilename)
@@ -502,7 +504,7 @@ export async function run(options: Options = {}) {
 
     let analysis
     if (options.global) {
-      const analysis = await analyzeGlobalPackages(options)
+      const analysis = await runGlobal(options)
       clearTimeout(timeout)
       return analysis
     }
@@ -530,7 +532,7 @@ export async function run(options: Options = {}) {
               // convert Windows path to *nix path for consistency
               .replace(/\\/g, '/')
             : pkgFile!
-          ]: await analyzeProjectDependencies(pkgOptions, pkgData, pkgFile)
+          ]: await runLocal(pkgOptions, pkgData, pkgFile)
         }
       }, {})
       if (options.json) {
@@ -543,7 +545,7 @@ export async function run(options: Options = {}) {
         options.packageFile = pkgs[0]
       }
       const [pkgData, pkgFile] = await findPackage(options)
-      analysis = await analyzeProjectDependencies(options, pkgData, pkgFile)
+      analysis = await runLocal(options, pkgData, pkgFile)
     }
     clearTimeout(timeout)
     return analysis
@@ -564,7 +566,7 @@ export async function run(options: Options = {}) {
   }
   // normal mode
   else {
-    return Promise.race([timeoutPromise, getAnalysis()])
+    return Promise.race([timeoutPromise, runUpgrades()])
   }
 }
 
