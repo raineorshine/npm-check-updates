@@ -207,7 +207,7 @@ export function compareVersions(a: string, b: string) {
  * @param level     major|minor
  * @returns         String representation of the suggested version.
  */
-export function findGreatestByLevel(versions: string[], current: string, level: 'major' | 'minor'): string
+export function findGreatestByLevel(versions: string[], current: string, level: 'major' | 'minor' | 'patch'): string
  | null {
 
   if (!semver.validRange(current)) {
