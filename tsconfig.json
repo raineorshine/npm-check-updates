@@ -20,7 +20,9 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "paths": {
-      "cint": ["./src/types/cint"]
+      "cint": ["./src/types/cint"],
+      "libnpmconfig": ["./src/types/libnpmconfig"],
+      "spawn-please": ["./src/types/spawn-please"]
     },
     "resolveJsonModule": true,
     "outDir": "./build",

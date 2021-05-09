@@ -23,12 +23,29 @@ export type VersionDeclaration = string
 
 export type FilterPattern = string | string[] | RegExp | RegExp[]
 
+export interface Packument {
+  name: string,
+  deprecated?: boolean,
+  engines: {
+    node: string,
+  },
+  time: Index<string>,
+  version: Version,
+  versions: Packument[],
+}
+
 export interface PackageFile {
   dependencies?: Index<VersionDeclaration>,
   devDependencies?: Index<VersionDeclaration>,
   peerDependencies?: Index<VersionDeclaration>,
   optionalDependencies?: Index<VersionDeclaration>,
   bundleDependencies?: Index<VersionDeclaration>,
+}
+
+export interface NpmOptions {
+  global?: boolean,
+  prefix?: string,
+  registry?: string,
 }
 
 export interface RunOptions {

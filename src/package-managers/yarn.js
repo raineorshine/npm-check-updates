@@ -9,7 +9,7 @@ const spawn = require('spawn-please')
 const libnpmconfig = require('libnpmconfig')
 const jsonlines = require('jsonlines')
 const versionUtil = require('../version-util')
-const { viewOne, viewManyMemoized } = require('./npm.js')
+const { viewOne, viewManyMemoized } = require('./npm')
 
 const TIME_FIELDS = ['modified', 'created']
 
