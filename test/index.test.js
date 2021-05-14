@@ -770,4 +770,36 @@ describe('run', function () {
     upgrades.should.deep.equal({})
   })
 
+  it('update devDependency when duplicate dependency is up-to-date', async () => {
+    const upgrades = await ncu.run({
+      packageData: JSON.stringify({
+        dependencies: {
+          'ncu-test-v2': '2.0.0'
+        },
+        devDependencies: {
+          'ncu-test-v2': '1.0.0'
+        }
+      })
+    })
+    upgrades.should.deep.equal({
+      'ncu-test-v2': '2.0.0'
+    })
+  })
+
+  it('update dependency when duplicate devDependency is up-to-date', async () => {
+    const upgrades = await ncu.run({
+      packageData: JSON.stringify({
+        dependencies: {
+          'ncu-test-v2': '1.0.0'
+        },
+        devDependencies: {
+          'ncu-test-v2': '2.0.0'
+        }
+      })
+    })
+    upgrades.should.deep.equal({
+      'ncu-test-v2': '2.0.0'
+    })
+  })
+
 })
