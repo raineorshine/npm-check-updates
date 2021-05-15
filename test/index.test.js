@@ -774,15 +774,15 @@ describe('run', function () {
     const upgrades = await ncu.run({
       packageData: JSON.stringify({
         dependencies: {
-          'ncu-test-v2': '2.0.0'
+          'ncu-test-v2': '^2.0.0'
         },
         devDependencies: {
-          'ncu-test-v2': '1.0.0'
+          'ncu-test-v2': '^1.0.0'
         }
       })
     })
     upgrades.should.deep.equal({
-      'ncu-test-v2': '2.0.0'
+      'ncu-test-v2': '^2.0.0'
     })
   })
 
@@ -790,15 +790,15 @@ describe('run', function () {
     const upgrades = await ncu.run({
       packageData: JSON.stringify({
         dependencies: {
-          'ncu-test-v2': '1.0.0'
+          'ncu-test-v2': '^1.0.0'
         },
         devDependencies: {
-          'ncu-test-v2': '2.0.0'
+          'ncu-test-v2': '^2.0.0'
         }
       })
     })
     upgrades.should.deep.equal({
-      'ncu-test-v2': '2.0.0'
+      'ncu-test-v2': '^2.0.0'
     })
   })
 
