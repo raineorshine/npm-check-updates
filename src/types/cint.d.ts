@@ -1,3 +1,4 @@
+// add to tsconfig compilerOptions.paths
 declare module 'cint' {
   export function filterObject<T = any>(obj: Index<T>, f: (key: string, value: T) => boolean): Index<T>
   export function mapObject<T = any, R = any>(obj: Index<T>, f: (key: string, value: T) => R): Index<R>
