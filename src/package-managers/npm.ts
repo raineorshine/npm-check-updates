@@ -257,7 +257,7 @@ export async function defaultPrefix(options: Options) {
  * @param options
  * @returns
  */
-export const greatest: GetVersion = async (packageName, currentVersion, options = {}) => {
+export const greatest: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
   // known type based on 'versions'
   const versions = await viewOne(packageName, 'versions', currentVersion, options) as Packument[]
 
@@ -341,7 +341,7 @@ export const latest: GetVersion = async (packageName, currentVersion, options = 
  * @param options
  * @returns
  */
-export const newest: GetVersion = async (packageName, currentVersion, options = {}) => {
+export const newest: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
 
   const result = await viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options)
 
@@ -367,7 +367,7 @@ export const newest: GetVersion = async (packageName, currentVersion, options = 
  * @param options
  * @returns
  */
-export const minor: GetVersion = async (packageName, currentVersion, options = {}) => {
+export const minor: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
   const versions = await viewOne(packageName, 'versions', currentVersion, options) as Packument[]
   return versionUtil.findGreatestByLevel(
     _.filter(versions, filterPredicate(options)).map(o => o.version),
@@ -382,7 +382,7 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
  * @param options
  * @returns
  */
-export const patch: GetVersion = async (packageName, currentVersion, options = {}) => {
+export const patch: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
   const versions = await viewOne(packageName, 'versions', currentVersion, options) as Packument[]
   return versionUtil.findGreatestByLevel(
     _.filter(versions, filterPredicate(options)).map(o => o.version),

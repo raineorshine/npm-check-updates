@@ -22,7 +22,8 @@
     "paths": {
       "cint": ["./src/types/cint"],
       "libnpmconfig": ["./src/types/libnpmconfig"],
-      "spawn-please": ["./src/types/spawn-please"]
+      "spawn-please": ["./src/types/spawn-please"],
+      "jsonlines": ["./src/types/jsonlines"],
     },
     "resolveJsonModule": true,
     "outDir": "./build",

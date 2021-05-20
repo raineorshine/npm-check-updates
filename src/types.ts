@@ -48,6 +48,12 @@ export interface NpmOptions {
   registry?: string,
 }
 
+export interface YarnOptions {
+  global?: boolean,
+  prefix?: string,
+  registry?: string,
+}
+
 export interface RunOptions {
 
   /**
