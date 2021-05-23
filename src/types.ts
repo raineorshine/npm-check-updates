@@ -9,7 +9,7 @@ export type GetVersion = (packageName: string, currentVersion: Version, options?
 
 export interface PackageManager {
   defaultPrefix?: (options: Options) => Promise<string | undefined>,
-  list?: (options: Options) => Promise<unknown>,
+  list?: (options: Options) => Promise<Index<Version>>,
   latest: GetVersion,
   major?: GetVersion,
   minor?: GetVersion,

@@ -7,7 +7,7 @@ import cint from 'cint'
 import semver from 'semver'
 import spawn from 'spawn-please'
 import libnpmconfig from 'libnpmconfig'
-import jsonlines, { Line as JsonLinesData } from 'jsonlines'
+import jsonlines from 'jsonlines'
 import * as versionUtil from '../version-util'
 import { viewOne, viewManyMemoized } from './npm'
 import { GetVersion, Index, Options, Packument, Version, YarnOptions } from '../types'
@@ -49,7 +49,7 @@ async function parseJsonLines(result: string): Promise<{ dependencies: Index<Par
 
   const parser = jsonlines.parse()
 
-  parser.on('data', (d: JsonLinesData) => {
+  parser.on('data', d => {
     // only parse info data
     // ignore error info, e.g. "Visit https://yarnpkg.com/en/docs/cli/list for documentation about this command."
     if (d.type === 'info' && !d.data.match(/^Visit/)) {
