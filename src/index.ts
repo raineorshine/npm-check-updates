@@ -11,7 +11,7 @@ import Chalk from 'chalk'
 import jph from 'json-parse-helpfulerror'
 import * as vm from './versionmanager'
 import doctor from './doctor.js'
-import * as packageManagers from './package-managers/index.js'
+import packageManagers from './package-managers'
 import * as logging from './logging.js'
 import * as constants from './constants.js'
 import cliOptions from './cli-options.js'
@@ -444,11 +444,11 @@ export async function run(options: Options = {}): Promise<PackageFile | Index<Ve
   print(options, 'Initializing', 'verbose')
 
   if (options.packageManager === 'npm' && !options.prefix) {
-    options.prefix = await packageManagers.npm.defaultPrefix(options)
+    options.prefix = await packageManagers.npm.defaultPrefix!(options)
   }
 
   if (options.packageManager === 'yarn' && !options.prefix) {
-    options.prefix = await packageManagers.yarn.defaultPrefix(options)
+    options.prefix = await packageManagers.yarn.defaultPrefix!(options)
   }
 
   let timeout: NodeJS.Timeout
