@@ -38,7 +38,7 @@
     "nyc": "nyc",
     "prepublishOnly": "npm run build",
     "test": "npm run test:src && npm run test:timeout",
-    "test:src": "mocha test test/package-managers/npm test/package-managers/yarn",
+    "test:src": "mocha test test/package-managers/npm/index.ts test/package-managers/yarn/index.ts",
     "test:timeout": "mocha --exit test/timeout",
     "ncu": "node build/src/bin/cli.js"
   },
@@ -85,9 +85,13 @@
     "update-notifier": "^5.1.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.18",
+    "@types/chai-as-promised": "^7.1.4",
     "@types/json-parse-helpfulerror": "^1.0.1",
     "@types/lodash": "^4.14.168",
     "@types/minimatch": "^3.0.4",
+    "@types/mocha": "^8.2.2",
+    "@types/mock-require": "^2.0.0",
     "@types/node": "^15.0.1",
     "@types/pacote": "^11.1.0",
     "@types/parse-github-url": "^1.0.0",

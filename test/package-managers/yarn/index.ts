@@ -1,10 +1,9 @@
-'use strict'
-
-const mock = require('mock-require')
-const path = require('path')
-const chai = require('chai')
-const chaiAsPromised = require('chai-as-promised')
-const spawn = require('spawn-please')
+import mock from 'mock-require'
+import path from 'path'
+import chai from 'chai'
+import chaiAsPromised from 'chai-as-promised'
+import spawn from 'spawn-please'
+import * as yarn from '../../../src/package-managers/yarn'
 
 // mock spawn-please to use local yarn
 // must be mocked before requiring packageManagers
@@ -30,7 +29,6 @@ mock('spawn-please', async (cmd, args, options) => {
 
   return result
 })
-const packageManagers = require('../../../src/package-managers')
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -41,20 +39,20 @@ describe('yarn', function () {
 
   it('list', async () => {
     const testDir = path.join(__dirname, 'default')
-    const version = await packageManagers.yarn.latest('chalk', null, { cwd: testDir })
-    parseInt(version, 10).should.be.above(3)
+    const version = await yarn.latest('chalk', '', { cwd: testDir })
+    parseInt(version!, 10).should.be.above(3)
   })
 
   it('latest', async () => {
     const testDir = path.join(__dirname, 'default')
-    const version = await packageManagers.yarn.latest('chalk', null, { cwd: testDir })
-    parseInt(version, 10).should.be.above(3)
+    const version = await yarn.latest('chalk', '', { cwd: testDir })
+    parseInt(version!, 10).should.be.above(3)
   })
 
   it('"No lockfile" error should be thrown on list command when there is no lockfile', async () => {
     const testDir = path.join(__dirname, 'nolockfile')
     const lockFileErrorMessage = 'No lockfile in this directory. Run `yarn install` to generate one.'
-    await packageManagers.yarn.list({ cwd: testDir })
+    await yarn.list({ cwd: testDir })
       .should.eventually.be.rejectedWith(lockFileErrorMessage)
   })
 
