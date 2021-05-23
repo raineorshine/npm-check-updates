@@ -220,7 +220,7 @@ function spawnNpm(args: string | string[], npmOptions: NpmOptions = {}, spawnOpt
  * @param [options.prefix]
  * @returns
  */
-export async function defaultPrefix(options: Options) {
+export async function defaultPrefix(options: Options): Promise<string | undefined> {
 
   if (options.prefix) {
     return Promise.resolve(options.prefix)
@@ -248,7 +248,7 @@ export async function defaultPrefix(options: Options) {
     // Only needed when using npm api directly
     process.platform === 'win32' && options.global && !process.env.prefix ?
       prefix ? prefix.trim() : `${process.env.AppData}\\npm` :
-      null
+      undefined
 }
 
 /**

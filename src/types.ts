@@ -8,7 +8,8 @@ export type Maybe<T = any> = T | null | undefined
 export type GetVersion = (packageName: string, currentVersion: Version, options?: Options) => Promise<Version | null>
 
 export interface PackageManager {
-  list?: (options: Options) => unknown,
+  defaultPrefix?: (options: Options) => Promise<string | undefined>,
+  list?: (options: Options) => Promise<unknown>,
   latest: GetVersion,
   major?: GetVersion,
   minor?: GetVersion,

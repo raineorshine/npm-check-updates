@@ -316,6 +316,7 @@ async function queryVersions(packageMap: Index<VersionDeclaration>, options: Opt
   }
 
   // set the getPackageVersion function from options.target
+  // TODO: Remove "as GetVersion" and fix types
   const getPackageVersion = packageManager[target as keyof typeof packageManager] as GetVersion
   if (!getPackageVersion) {
     const packageManagerSupportedVersionTargets = supportedVersionTargets.filter(t => t in packageManager)
@@ -334,14 +335,14 @@ async function queryVersions(packageMap: Index<VersionDeclaration>, options: Opt
     const npmAlias = versionUtil.parseNpmAlias(packageMap[dep])
     const [name, version] = npmAlias || [dep, packageMap[dep]]
 
-    let versionNew = null
+    let versionNew: Version | null = null
 
     // use gitTags package manager for git urls
     if (versionUtil.isGithubUrl(packageMap[dep])) {
 
       // override packageManager and getPackageVersion just for this dependency
       const packageManager = packageManagers.gitTags
-      const getPackageVersion = packageManager[target as keyof typeof packageManager]
+      const getPackageVersion = packageManager[target as keyof typeof packageManager] as GetVersion
 
       if (!getPackageVersion) {
         const packageManagerSupportedVersionTargets = supportedVersionTargets.filter(t => t in packageManager)
