@@ -266,6 +266,7 @@ export type Options = RunOptions & {
   args?: any[],
   cli?: boolean,
   json?: boolean,
+  nodeEngineVersion?: VersionDeclaration,
   peerDependencies?: Index<any>,
   rcConfigPath?: string,
 }
