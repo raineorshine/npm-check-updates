@@ -150,7 +150,7 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
   print(options, `\nFetching ${options.target} versions`, 'verbose')
 
   if (options.enginesNode) {
-    options.enginesNode = _.get(pkg, 'engines.node')
+    options.nodeEngineVersion = _.get(pkg, 'engines.node')
   }
 
   if (options.peer) {
