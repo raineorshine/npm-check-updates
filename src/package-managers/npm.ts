@@ -130,7 +130,7 @@ export async function viewMany(packageName: string, fields: string[], currentVer
   return fields.reduce((accum, field) => ({
     ...accum,
     [field]: field.startsWith('dist-tags.') && result.versions ?
-      result.versions[_.get(result, field) as any] :
+      result.versions[_.get(result, field) as unknown as string] :
       result[field]
   }), {} as Packument)
 }
@@ -157,13 +157,13 @@ export async function viewOne(packageName: string, field: string, currentVersion
 /**
  * Returns true if the node engine requirement is satisfied or not specified for a given package version.
  *
- * @param versionResult   Version object returned by pacote.packument.
- * @param nodeEngine      The value of engines.node in the package file.
- * @returns               True if the node engine requirement is satisfied or not specified.
+ * @param versionResult     Version object returned by pacote.packument.
+ * @param nodeEngineVersion The value of engines.node in the package file.
+ * @returns                 True if the node engine requirement is satisfied or not specified.
  */
-function satisfiesNodeEngine(versionResult: Packument, nodeEngine: Maybe<string>): boolean {
-  if (!nodeEngine) return true
-  const minVersion = _.get(semver.minVersion(nodeEngine), 'version')
+function satisfiesNodeEngine(versionResult: Packument, nodeEngineVersion: Maybe<string>): boolean {
+  if (!nodeEngineVersion) return true
+  const minVersion = _.get(semver.minVersion(nodeEngineVersion), 'version')
   if (!minVersion) return true
   const versionNodeEngine = _.get(versionResult, 'engines.node')
   return versionNodeEngine && semver.satisfies(minVersion, versionNodeEngine)
@@ -188,8 +188,7 @@ function filterPredicate(options: Options): (o: Packument) => boolean {
   return _.overEvery([
     options.deprecated ? null! : o => !o.deprecated,
     options.pre ? null! : o => !versionUtil.isPre(o.version),
-    // TODO: options.enginesNode is a boolean, but satisfiesNodeEngine expects the value of engines.node
-    options.enginesNode ? o => satisfiesNodeEngine(o, options.enginesNode as any) : null!,
+    options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null!,
     options.peerDependencies ? o => satisfiesPeerDependencies(o, options.peerDependencies!) : null!,
   ])
 }
@@ -346,8 +345,7 @@ export const newest: GetVersion = async (packageName, currentVersion, options = 
 
   const result = await viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options)
 
-  // TODO: options.enginesNode is a boolean, but satisfiesNodeEngine expects the value of engines.node
-  const versionsSatisfyingNodeEngine = _.filter(result.versions, version => satisfiesNodeEngine(version, options.enginesNode as any))
+  const versionsSatisfyingNodeEngine = _.filter(result.versions, version => satisfiesNodeEngine(version, options.nodeEngineVersion))
     .map((o: Packument) => o.version)
 
   const versions = Object.keys(result.time || {}).reduce((accum: string[], key: string) =>
