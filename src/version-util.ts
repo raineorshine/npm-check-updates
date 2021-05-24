@@ -6,7 +6,7 @@ import chalk from 'chalk'
 import cint from 'cint'
 import semver from 'semver'
 import parseGithubUrl from 'parse-github-url'
-import { Maybe } from './types'
+import { Maybe, VersionLevel } from './types'
 
 const VERSION_BASE_PARTS = ['major', 'minor', 'patch'] as VersionPart[]
 const VERSION_ADDED_PARTS = ['release', 'build'] as VersionPart[]
@@ -207,7 +207,7 @@ export function compareVersions(a: string, b: string) {
  * @param level     major|minor
  * @returns         String representation of the suggested version.
  */
-export function findGreatestByLevel(versions: string[], current: string, level: 'major' | 'minor' | 'patch'): string
+export function findGreatestByLevel(versions: string[], current: string, level: VersionLevel): string
  | null {
 
   if (!semver.validRange(current)) {

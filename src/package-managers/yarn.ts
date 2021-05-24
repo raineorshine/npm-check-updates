@@ -223,7 +223,7 @@ export const newest: GetVersion = (packageName: string, currentVersion, options 
     const versions = doesSatisfyEnginesNode(result.versions, options.nodeEngineVersion) as Version[]
     return Object.keys(result.time || {}).reduce((accum: string[], key) =>
       accum.concat(
-        TIME_FIELDS.includes(key) || (versions).includes(key) ? key : []), []
+        TIME_FIELDS.includes(key) || versions.includes(key) ? key : []), []
     )
   }).then(_.partialRight(_.pullAll, TIME_FIELDS)).then(versions =>
     _.last(filterOutPrereleaseVersions(versions as Version[],

@@ -1,17 +1,19 @@
 /** Fetches package metadata from Github tags. */
 
-const remoteGitTags = require('remote-git-tags')
-const parseGithubUrl = require('parse-github-url')
-const semver = require('semver')
-const versionUtil = require('../version-util')
-const { print } = require('../logging')
+import remoteGitTags from 'remote-git-tags'
+import parseGithubUrl from 'parse-github-url'
+import semver from 'semver'
+import * as versionUtil from '../version-util'
+import { print } from '../logging'
+import { Options, VersionDeclaration, VersionLevel } from '../types'
 
 /** Gets remote versions sorted. */
-const getSortedVersions = async (name, declaration, options) => {
+const getSortedVersions = async (name: string, declaration: VersionDeclaration, options: Options) => {
   // if present, github: is parsed as the protocol. This is not valid when passed into remote-git-tags.
   declaration = declaration.replace(/^github:/, '')
-  const { auth, protocol, host, path } = parseGithubUrl(declaration)
-  let tagsPromise = Promise.resolve()
+  const { auth, protocol, host, path } = parseGithubUrl(declaration)!
+  let tagMap = new Map()
+  let tagsPromise = Promise.resolve(tagMap)
   const protocolKnown = protocol != null
   if (protocolKnown) {
     tagsPromise = tagsPromise.then(() => remoteGitTags(`${protocol ? protocol.replace('git+', '') : 'https:'}//${auth ? auth + '@' : ''}${host}/${path}`))
@@ -21,8 +23,6 @@ const getSortedVersions = async (name, declaration, options) => {
     tagsPromise = tagsPromise.then(() => remoteGitTags(`ssh://git@${host}/${path}`))
       .catch(() => remoteGitTags(`https://${auth ? auth + '@' : ''}${host}/${path}`))
   }
-
-  let tagMap = new Map()
 
   // fetch remote tags
   try {
@@ -46,7 +46,7 @@ const getSortedVersions = async (name, declaration, options) => {
 }
 
 /** Return the highest non-prerelease numbered tag on a remote Git URL. */
-const latest = async (name, declaration, options) => {
+export const latest = async (name: string, declaration: VersionDeclaration, options: Options) => {
   const versions = await getSortedVersions(name, declaration, options)
   if (!versions) return null
   const versionsFiltered = options.pre
@@ -59,7 +59,7 @@ const latest = async (name, declaration, options) => {
 }
 
 /** Return the highest numbered tag on a remote Git URL. */
-const greatest = async (name, declaration, options) => {
+export const greatest = async (name: string, declaration: VersionDeclaration, options: Options) => {
   const versions = await getSortedVersions(name, declaration, options)
   if (!versions) return null
   const greatestVersion = versions[versions.length - 1]
@@ -69,9 +69,9 @@ const greatest = async (name, declaration, options) => {
 }
 
 /** Returns a function that returns the highest version at the given level. */
-const greatestLevel = level => async (name, declaration, options = {}) => {
+export const greatestLevel = (level: VersionLevel) => async (name: string, declaration: VersionDeclaration, options: Options = {}) => {
 
-  const version = decodeURIComponent(parseGithubUrl(declaration).branch)
+  const version = decodeURIComponent(parseGithubUrl(declaration)!.branch)
     .replace(/^semver:/, '')
   const versions = await getSortedVersions(name, declaration, options)
   if (!versions) return null
@@ -87,12 +87,9 @@ const greatestLevel = level => async (name, declaration, options = {}) => {
     : null
 }
 
-module.exports = {
-  greatest,
-  minor: greatestLevel('minor'),
-  latest,
-  // use greatest for newest rather than leaving newest undefined
-  // this allows a mix of npm and github urls to be used in a package file without causing an "Unsupported target" error
-  newest: greatest,
-  patch: greatestLevel('patch'),
-}
+export const minor = greatestLevel('minor')
+export const patch = greatestLevel('patch')
+
+// use greatest for newest rather than leaving newest undefined
+// this allows a mix of npm and github urls to be used in a package file without causing an "Unsupported target" error
+export const newest = greatest
