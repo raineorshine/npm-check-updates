@@ -21,6 +21,7 @@ export interface PackageManager {
 
 export type Version = string
 export type VersionDeclaration = string
+export type VersionLevel = 'major' | 'minor' | 'patch'
 
 export type FilterPattern = string | string[] | RegExp | RegExp[]
 
