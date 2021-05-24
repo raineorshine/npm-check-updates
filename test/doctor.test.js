@@ -7,7 +7,7 @@ const chaiAsPromised = require('chai-as-promised')
 const spawn = require('spawn-please')
 const rimraf = require('rimraf')
 const stripAnsi = require('strip-ansi')
-const { doctorHelpText } = require('../src/constants.js')
+const { doctorHelpText } = require('../src/constants')
 
 chai.should()
 chai.use(chaiAsPromised)

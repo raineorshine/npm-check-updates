@@ -1,6 +1,6 @@
-const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch']
+export const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch']
 
-const doctorHelpText = `Usage: ncu --doctor [-u] [options]
+export const doctorHelpText = `Usage: ncu --doctor [-u] [options]
 
 Iteratively installs upgrades and runs tests to identify breaking upgrades. Add "-u" to execute (modifies your package file, lock file, and node_modules).
 
@@ -43,6 +43,4 @@ npm run test
 Saving partially upgraded package.json
 `
 
-const deepPatternPrefix = '**/'
-
-module.exports = { deepPatternPrefix, doctorHelpText, supportedVersionTargets }
+export const deepPatternPrefix = '**/'
