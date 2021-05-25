@@ -87,6 +87,7 @@
   "devDependencies": {
     "@types/chai": "^4.2.18",
     "@types/chai-as-promised": "^7.1.4",
+    "@types/cli-table": "^0.3.0",
     "@types/json-parse-helpfulerror": "^1.0.1",
     "@types/lodash": "^4.14.168",
     "@types/minimatch": "^3.0.4",

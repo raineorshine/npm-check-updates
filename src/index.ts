@@ -12,7 +12,7 @@ import jph from 'json-parse-helpfulerror'
 import * as vm from './versionmanager'
 import doctor from './doctor.js'
 import packageManagers from './package-managers'
-import * as logging from './logging.js'
+import * as logging from './logging'
 import * as constants from './constants'
 import cliOptions from './cli-options.js'
 import getNcurc from './lib/get-ncu-rc'
@@ -96,8 +96,7 @@ async function runGlobal(options: Options): Promise<void> {
     upgraded,
     // since an interactive upgrade of globals is not available, the numUpgraded is always all
     numUpgraded: upgradedPackageNames.length,
-    ownersChangedDeps: null,
-    total: upgradedPackageNames.length
+    total: upgradedPackageNames.length,
   })
 
   const instruction = upgraded
@@ -192,7 +191,7 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
 
   const ownersChangedDeps = (options.format || []).includes('ownerChanged')
     ? await vm.getOwnerPerDependency(current, filteredUpgraded, options)
-    : null
+    : undefined
 
   // print
   if (options.json && !options.deep) {
