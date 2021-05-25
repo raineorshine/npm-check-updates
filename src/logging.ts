@@ -2,10 +2,11 @@
  * Loggin functions.
  */
 
-const Table = require('cli-table')
-let chalk = require('chalk')
-const { colorizeDiff, isGithubUrl, getGithubUrlTag, isNpmAlias, parseNpmAlias } = require('./version-util')
-const { getRepoUrl } = require('./repo-url')
+import Table from 'cli-table'
+import Chalk from 'chalk'
+import { colorizeDiff, isGithubUrl, getGithubUrlTag, isNpmAlias, parseNpmAlias } from './version-util'
+import { getRepoUrl } from './repo-url'
+import { IgnoredUpgrade, Index, Options, VersionDeclaration } from './types'
 
 // maps string levels to numeric levels
 const logLevels = {
@@ -26,17 +27,17 @@ const logLevels = {
  * @param loglevel   silent|error|warn|info|verbose|silly
  * @param method     The console method to call. Default: 'log'.
  */
-function print(options, message, loglevel = null, method = 'log') {
+export function print(options: Options, message: any, loglevel: 'silent' | 'error' | 'warn' | 'info' | 'verbose' | 'silly' | null = null, method: 'log' | 'warn' | 'info' | 'error' = 'log') {
   // not in json mode
   // not silent
   // not at a loglevel under minimum specified
-  if (!options.json && options.loglevel !== 'silent' && (loglevel == null || logLevels[options.loglevel] >= logLevels[loglevel])) {
+  if (!options.json && options.loglevel !== 'silent' && (loglevel == null || logLevels[options.loglevel as unknown as keyof typeof logLevels] >= logLevels[loglevel])) {
     console[method](message)
   }
 }
 
 /** Pretty print a JSON object. */
-function printJson(options, object) {
+export function printJson(options: Options, object: any) {
   if (options.loglevel !== 'silent') {
     console.log(JSON.stringify(object, null, 2))
   }
@@ -73,13 +74,18 @@ function createDependencyTable() {
  * @param args.ownersChangedDeps
  * @param args.format Array of strings from the --format CLI arg
  */
-function toDependencyTable({ from: fromDeps, to: toDeps, ownersChangedDeps, format }) {
+function toDependencyTable({ from: fromDeps, to: toDeps, ownersChangedDeps, format }: {
+  from: Index<VersionDeclaration>,
+  to: Index<VersionDeclaration>,
+  ownersChangedDeps?: Index<boolean>,
+  format?: string[],
+}) {
   const table = createDependencyTable()
   const rows = Object.keys(toDeps).map(dep => {
     const from = fromDeps[dep] || ''
     const toRaw = toDeps[dep] || ''
-    const to = isGithubUrl(toRaw) ? getGithubUrlTag(toRaw)
-      : isNpmAlias(toRaw) ? parseNpmAlias(toRaw)[1]
+    const to = isGithubUrl(toRaw) ? getGithubUrlTag(toRaw)!
+      : isNpmAlias(toRaw) ? parseNpmAlias(toRaw)![1]
       : toRaw
     const ownerChanged = ownersChangedDeps
       ? dep in ownersChangedDeps
@@ -87,7 +93,7 @@ function toDependencyTable({ from: fromDeps, to: toDeps, ownersChangedDeps, form
         : '*unknown*'
       : ''
     const toColorized = colorizeDiff(from, to)
-    const repoUrl = format.includes('repo')
+    const repoUrl = format?.includes('repo')
       ? getRepoUrl(dep) || ''
       : ''
     return [dep, from, '→', toColorized, ownerChanged, repoUrl]
@@ -105,11 +111,15 @@ function toDependencyTable({ from: fromDeps, to: toDeps, ownersChangedDeps, form
  * @param args.total - The total number of all possible upgrades
  * @param args.ownersChangedDeps - Boolean flag per dependency which announces if package owner changed.
  */
-function printUpgrades(options, { current, upgraded, numUpgraded, total, ownersChangedDeps }) {
+export function printUpgrades(options: Options, { current, upgraded, numUpgraded, total, ownersChangedDeps }: {
+  current: Index<VersionDeclaration>,
+  upgraded: Index<VersionDeclaration>,
+  numUpgraded: number,
+  total: number,
+  ownersChangedDeps?: Index<boolean>,
+}) {
 
-  if (options.color) {
-    chalk = new chalk.Instance({ level: 1 })
-  }
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   print(options, '')
 
@@ -143,7 +153,7 @@ function printUpgrades(options, { current, upgraded, numUpgraded, total, ownersC
 }
 
 /** Print updates that were ignored due to incompatible peer dependencies. */
-function printIgnoredUpdates(options, ignoredUpdates) {
+export function printIgnoredUpdates(options: Options, ignoredUpdates: Index<IgnoredUpgrade>) {
   print(options, `\nIgnored incompatible updates (peer dependencies):\n`)
   const table = createDependencyTable()
   const rows = Object.entries(ignoredUpdates).map(([pkgName, { from, to, reason }]) => {
@@ -155,5 +165,3 @@ function printIgnoredUpdates(options, ignoredUpdates) {
   rows.forEach(row => table.push(row)) // eslint-disable-line fp/no-mutating-methods
   print(options, table.toString())
 }
-
-module.exports = { print, printJson, printUpgrades, toDependencyTable, printIgnoredUpdates }

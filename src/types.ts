@@ -44,6 +44,12 @@ export interface PackageFile {
   bundleDependencies?: Index<VersionDeclaration>,
 }
 
+export interface IgnoredUpgrade {
+  from: Version,
+  to: Version,
+  reason: Index<string>,
+}
+
 export interface NpmOptions {
   global?: boolean,
   prefix?: string,
