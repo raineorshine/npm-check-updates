@@ -11,7 +11,7 @@ import { and } from 'fp-and-or'
 import * as versionUtil from './version-util'
 import packageManagers from './package-managers'
 import { supportedVersionTargets } from './constants'
-import { FilterPattern, GetVersion, Index, Maybe, Options, PackageManager, PackageFile, Version, VersionDeclaration } from './types'
+import { FilterPattern, GetVersion, IgnoredUpgrade, Index, Maybe, Options, PackageManager, PackageFile, Version, VersionDeclaration } from './types'
 
 interface MappedDependencies {
   current: VersionDeclaration,
@@ -293,7 +293,7 @@ export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersi
       ...accum,
       [dep]: ownerChanged,
     }
-  }, {})
+  }, {} as Promise<Index<boolean>>)
 }
 
 /**
@@ -582,9 +582,9 @@ export async function getIgnoredUpgrades(current: Index<VersionDeclaration>, upg
         to: newVersion,
         reason: Object.entries(upgradedPeerDependencies)
           .filter(([, peers]) => peers[pkgName] !== undefined && !semver.satisfies(latestVersions[pkgName], peers[pkgName]))
-          .reduce((accumReason, [peerPkg, peers]) => ({ ...accumReason, [peerPkg]: peers[pkgName] }), {})
+          .reduce((accumReason, [peerPkg, peers]) => ({ ...accumReason, [peerPkg]: peers[pkgName] }), {} as Index<string>)
       }
-    }), {})
+    }), {} as Index<IgnoredUpgrade>)
 }
 
 /**
