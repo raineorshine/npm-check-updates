@@ -10,8 +10,6 @@ const spawn = require('spawn-please')
 chai.should()
 chai.use(chaiAsPromised)
 
-process.env.NCU_TESTS = true
-
 describe('--deep', function () {
 
   const bin = path.join(__dirname, '../bin/cli.js')
@@ -144,6 +142,40 @@ describe('--deep with nested ncurc files', function () {
     deepJsonOut['pkg/sub2/package.json'].should.not.have.property('cute-animals')
     deepJsonOut['pkg/sub2/package.json'].should.have.property('fp-and-or')
     deepJsonOut['pkg/sub2/package.json'].should.have.property('ncu-test-v2')
+
+    // pkg3: reject: ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub3/package.json')
+    deepJsonOut['pkg/sub3/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub3/package.json'].should.have.property('fp-and-or')
+    deepJsonOut['pkg/sub3/package.json'].should.have.property('ncu-test-v2')
+  })
+
+  it('use ncurc of nested packages with --recursive option', async () => {
+
+    const deepJsonOut = await spawn('node', [bin, '--jsonUpgraded', '--deep', '--recursive'], { cwd }).then(JSON.parse)
+
+    // root: reject: ['cute-animals']
+    deepJsonOut.should.have.property('package.json')
+    deepJsonOut['package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['package.json'].should.have.property('fp-and-or')
+
+    // pkg1: reject: ['fp-ando-or', 'cute-animals']
+    deepJsonOut.should.have.property('pkg/sub1/package.json')
+    deepJsonOut['pkg/sub1/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub1/package.json'].should.not.have.property('fp-and-or')
+    deepJsonOut['pkg/sub1/package.json'].should.have.property('ncu-test-return-version')
+
+    // pkg2: reject: ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub2/package.json')
+    deepJsonOut['pkg/sub2/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub2/package.json'].should.have.property('fp-and-or')
+    deepJsonOut['pkg/sub2/package.json'].should.have.property('ncu-test-v2')
+
+    // pkg3: reject: ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub3/package.json')
+    deepJsonOut['pkg/sub3/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub3/package.json'].should.have.property('fp-and-or')
+    deepJsonOut['pkg/sub3/package.json'].should.have.property('ncu-test-v2')
   })
 
 })
