@@ -181,4 +181,30 @@ describe('--deep with nested ncurc files', function () {
     deepJsonOut['pkg/sub3/package.json'].should.have.property('ncu-test-v2')
   })
 
+  it('merge options', () => {
+    const eq = (o1, o2, result) => chai.expect(ncu.mergeOptions(o1, o2)).to.deep.equal(result)
+    // trivial cases
+    eq(null, null, {})
+    eq({}, {}, {})
+
+    // standard merge not broken
+    eq({ a: 1 }, {}, { a: 1 })
+    eq({}, { a: 1 }, { a: 1 })
+    eq({ a: 1 }, { a: 2 }, { a: 2 })
+
+    // merge arrays (non standard behavior)
+    eq({ a: [1] }, { a: [2] }, { a: [1, 2] })
+    eq({ a: [1, 2] }, { a: [2, 3] }, { a: [1, 2, 3] })
+
+    // if property types different, then apply standard merge behavior
+    eq({ a: 1 }, { a: [2] }, { a: [2] })
+
+    // all together
+    eq(
+      { a: [1], b: true, c: 1, d1: 'd1' },
+      { a: [2], b: false, c: ['1'], d2: 'd2' },
+      { a: [1, 2], b: false, c: ['1'], d1: 'd1', d2: 'd2' }
+    )
+  })
+
 })

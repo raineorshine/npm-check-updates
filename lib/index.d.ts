@@ -206,6 +206,8 @@ declare namespace ncu {
   type RunResults = Record<string, string>
 
   function run(options?: RunOptions): Promise<RunResults>
+
+  function mergeOptions(options1: RunOptions | null, options1: RunOptions | null): RunOptions
 }
 
 export = ncu
