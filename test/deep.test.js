@@ -10,6 +10,8 @@ const spawn = require('spawn-please')
 chai.should()
 chai.use(chaiAsPromised)
 
+process.env.NCU_TESTS = true
+
 describe('--deep', function () {
 
   const bin = path.join(__dirname, '../bin/cli.js')
@@ -152,7 +154,8 @@ describe('--deep with nested ncurc files', function () {
 
   it('use ncurc of nested packages with --recursive option', async () => {
 
-    const deepJsonOut = await spawn('node', [bin, '--jsonUpgraded', '--deep', '--recursive'], { cwd }).then(JSON.parse)
+    const configFilePath = path.join(__dirname, 'deep-ncurc', '.ncurc.js')
+    const deepJsonOut = await spawn('node', [bin, '--jsonUpgraded', '--deep', '--recursive', '--configFilePath', configFilePath], { cwd }).then(JSON.parse)
 
     // root: reject: ['cute-animals']
     deepJsonOut.should.have.property('package.json')
