@@ -6,6 +6,7 @@ const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const ncu = require('../lib/')
 const spawn = require('spawn-please')
+const mergeOptions = require('../lib/merge-options')
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -154,8 +155,7 @@ describe('--deep with nested ncurc files', function () {
 
   it('use ncurc of nested packages with --recursive option', async () => {
 
-    const configFilePath = path.join(__dirname, 'deep-ncurc', '.ncurc.js')
-    const deepJsonOut = await spawn('node', [bin, '--jsonUpgraded', '--deep', '--recursive', '--configFilePath', configFilePath], { cwd }).then(JSON.parse)
+    const deepJsonOut = await spawn('node', [bin, '--jsonUpgraded', '--deep', '--recursive'], { cwd }).then(JSON.parse)
 
     // root: reject: ['cute-animals']
     deepJsonOut.should.have.property('package.json')
@@ -182,7 +182,11 @@ describe('--deep with nested ncurc files', function () {
   })
 
   it('merge options', () => {
-    const eq = (o1, o2, result) => chai.expect(ncu.mergeOptions(o1, o2)).to.deep.equal(result)
+    const eq = (o1, o2, result, opts) => chai.expect(mergeOptions(o1, o2, opts)).to.deep.equal(result)
+    // merge only specific properties
+    eq({ a: 1, b: 1 }, { a: 2, b: 2 }, { a: 2, b: 2 })
+    eq({ a: 1, b: 1 }, { a: 2, b: 2 }, { a: 1, b: 2 }, { keys: ['b'] })
+
     // trivial cases
     eq(null, null, {})
     eq({}, {}, {})
@@ -201,9 +205,10 @@ describe('--deep with nested ncurc files', function () {
 
     // all together
     eq(
-      { a: [1], b: true, c: 1, d1: 'd1' },
-      { a: [2], b: false, c: ['1'], d2: 'd2' },
-      { a: [1, 2], b: false, c: ['1'], d1: 'd1', d2: 'd2' }
+      { a: [1], b: true, c: 1, d1: 'd1', e: 1 },
+      { a: [2], b: false, c: ['1'], d2: 'd2', e: 2 },
+      { a: [1, 2], b: false, c: ['1'], d1: 'd1', d2: 'd2', e: 1 },
+      { keys: ['a', 'b', 'c', 'd1', 'd2'] }
     )
   })
 
