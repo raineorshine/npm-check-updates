@@ -174,11 +174,36 @@ describe('--deep with nested ncurc files', function () {
     deepJsonOut['pkg/sub2/package.json'].should.have.property('fp-and-or')
     deepJsonOut['pkg/sub2/package.json'].should.have.property('ncu-test-v2')
 
+    // pkg21: explicit reject: ['fp-ando-or'] and implicit reject ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub2/sub21/package.json')
+    deepJsonOut['pkg/sub2/sub21/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub2/sub21/package.json'].should.not.have.property('fp-and-or')
+    deepJsonOut['pkg/sub2/sub21/package.json'].should.have.property('ncu-test-return-version')
+
+    // pkg22: implicit reject: ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub2/sub22/package.json')
+    deepJsonOut['pkg/sub2/sub22/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub2/sub22/package.json'].should.have.property('fp-and-or')
+    deepJsonOut['pkg/sub2/sub22/package.json'].should.have.property('ncu-test-v2')
+
     // pkg3: reject: ['cute-animals']
     deepJsonOut.should.have.property('pkg/sub3/package.json')
     deepJsonOut['pkg/sub3/package.json'].should.not.have.property('cute-animals')
     deepJsonOut['pkg/sub3/package.json'].should.have.property('fp-and-or')
     deepJsonOut['pkg/sub3/package.json'].should.have.property('ncu-test-v2')
+
+    // pkg31: explicit reject: ['fp-ando-or'] and implicit reject ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub3/sub31/package.json')
+    deepJsonOut['pkg/sub3/sub31/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub3/sub31/package.json'].should.not.have.property('fp-and-or')
+    deepJsonOut['pkg/sub3/sub31/package.json'].should.have.property('ncu-test-return-version')
+
+    // pkg32: implicit reject: ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub3/sub32/package.json')
+    deepJsonOut['pkg/sub3/sub32/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub3/sub32/package.json'].should.have.property('fp-and-or')
+    deepJsonOut['pkg/sub3/sub32/package.json'].should.have.property('ncu-test-v2')
+
   })
 
   it('merge options', () => {
