@@ -7,7 +7,7 @@ import { supportedVersionTargets } from '../constants'
 import getPackageManager from './getPackageManager'
 import packageManagers from '../package-managers'
 import { createNpmAlias, isGithubUrl, isPre, parseNpmAlias } from '../version-util'
-import { FilterPattern, GetVersion, IgnoredUpgrade, Index, Maybe, Options, PackageManager, PackageFile, Version, VersionDeclaration } from '../types'
+import { GetVersion, Index, Options, Version, VersionDeclaration } from '../types'
 
 /**
  * Get the latest or greatest versions from the NPM repository based on the version target.

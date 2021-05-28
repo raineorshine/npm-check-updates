@@ -1,5 +1,3 @@
-import _ from 'lodash'
-import cint from 'cint'
 import { print } from '../logging'
 import { Options } from '../types'
 

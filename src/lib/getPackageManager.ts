@@ -1,7 +1,5 @@
-import _ from 'lodash'
-import cint from 'cint'
 import packageManagers from '../package-managers'
-import { Index, Maybe, PackageManager } from '../types'
+import { Maybe, PackageManager } from '../types'
 
 /**
  * Initialize the version manager with the given package manager.

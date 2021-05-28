@@ -1,5 +1,3 @@
-import _ from 'lodash'
-import cint from 'cint'
 import { satisfies } from 'semver'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
 import { IgnoredUpgrade, Index, Options, Version, VersionDeclaration } from '../types'
