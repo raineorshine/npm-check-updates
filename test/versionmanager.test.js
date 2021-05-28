@@ -589,37 +589,4 @@ describe('versionmanager', () => {
 
   })
 
-  describe('isUpgradeable', () => {
-
-    it('do not upgrade pure wildcards', () => {
-      vm.isUpgradeable('*', '0.5.1').should.equal(false)
-    })
-
-    it('upgrade versions that do not satisfy latest versions', () => {
-      vm.isUpgradeable('0.1.x', '0.5.1').should.equal(true)
-    })
-
-    it('do not upgrade invalid versions', () => {
-      vm.isUpgradeable('https://github.com/strongloop/express', '4.11.2').should.equal(false)
-    })
-
-    it('do not upgrade versions beyond the latest', () => {
-      vm.isUpgradeable('5.0.0', '4.11.2').should.equal(false)
-    })
-
-    it('handle comparison constraints', () => {
-      vm.isUpgradeable('>1.0', '0.5.1').should.equal(false)
-      vm.isUpgradeable('<3.0 >0.1', '0.5.1').should.equal(false)
-      vm.isUpgradeable('>0.1.x', '0.5.1').should.equal(true)
-      vm.isUpgradeable('<7.0.0', '7.2.0').should.equal(true)
-      vm.isUpgradeable('<7.0', '7.2.0').should.equal(true)
-      vm.isUpgradeable('<7', '7.2.0').should.equal(true)
-    })
-
-    it('upgrade simple versions', () => {
-      vm.isUpgradeable('v1', 'v2').should.equal(true)
-    })
-
-  })
-
 })
