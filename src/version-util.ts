@@ -251,7 +251,7 @@ const fixMissingMinorAndPatch = (s: string) => isMissingMinorAndPatch(s) ? s + '
 const fixMissingPatch = (s: string) => isMissingPatch(s) ? s + '.0' : s
 
 /** Converts a pseudo version into a valid semver version. NOOP for valid semver versions. */
-const fixPseudoVersion = _.flow(fixLeadingV, fixMissingMinorAndPatch, fixMissingPatch)
+export const fixPseudoVersion = _.flow(fixLeadingV, fixMissingMinorAndPatch, fixMissingPatch)
 
 /** Reverts a valid semver version to a pseudo version that is missing its minor and patch components. NOOP If the original version was a valid semver version. */
 const revertMissingMinorAndPatch = _.curry((current: string, latest: string) =>

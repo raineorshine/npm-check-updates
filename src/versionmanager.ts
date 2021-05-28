@@ -13,6 +13,7 @@ import packageManagers from './package-managers'
 import { supportedVersionTargets } from './constants'
 import { FilterPattern, GetVersion, IgnoredUpgrade, Index, Maybe, Options, PackageManager, PackageFile, Version, VersionDeclaration } from './types'
 import getPreferredWildcard from './lib/getPreferredWildcard'
+import isUpgradeable from './lib/isUpgradeable'
 
 interface MappedDependencies {
   current: VersionDeclaration,
@@ -30,45 +31,6 @@ interface MappedDependencies {
  * @returns {boolean}
  */
 export const isSatisfied = semver.satisfies
-
-/**
- * Check if a version satisfies the latest, and is not beyond the latest). Ignores `v` prefix.
- *
- * @param current
- * @param latest
- * @returns
- */
-function isUpgradeable(current: VersionDeclaration, latest: Version) {
-
-  // do not upgrade non-npm version declarations (such as git tags)
-  // do not upgrade versionUtil.wildcards
-  if (!semver.validRange(current) || versionUtil.isWildCard(current)) {
-    return false
-  }
-
-  // remove the constraint (e.g. ^1.0.1 -> 1.0.1) to allow upgrades that satisfy the range, but are out of date
-  const [range] = semverutils.parseRange(current)
-  if (!range) {
-    throw new Error(`"${current}" could not be parsed by semver-utils. This is probably a bug. Please file an issue at https://github.com/raineorshine/npm-check-updates.`)
-  }
-
-  const version = versionUtil.stringify(range)
-
-  // allow upgrading of pseudo versions such as "v1" or "1.0"
-  const latestNormalized = versionUtil.fixPseudoVersion(latest)
-
-  const isValidCurrent = Boolean(semver.validRange(version))
-  const isValidLatest = Boolean(semver.valid(latestNormalized))
-
-  // make sure it is a valid range
-  // not upgradeable if the latest version satisfies the current range
-  // not upgradeable if the specified version is newer than the latest (indicating a prerelease version)
-  // NOTE: When "<" is specified with a single digit version, e.g. "<7", and has the same major version as the latest, e.g. "7", isSatisfied(latest, version) will return true since it ignores the "<". In this case, test the original range (current) rather than the versionUtil output (version).
-  return isValidCurrent &&
-    isValidLatest &&
-    !isSatisfied(latestNormalized, range.operator === '<' ? current : version) &&
-    !semver.ltr(latestNormalized, version)
-}
 
 /**
  * Upgrade a dependencies collection based on latest available versions. Supports npm aliases.
@@ -593,7 +555,6 @@ module.exports = {
   getOwnerPerDependency,
 
   // exposed for testing
-  isUpgradeable,
   queryVersions,
   upgradeDependencies,
   getPackageManager,
