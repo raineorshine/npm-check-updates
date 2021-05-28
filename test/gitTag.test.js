@@ -8,7 +8,7 @@ const ncu = require('../src/index')
 chai.should()
 process.env.NCU_TESTS = true
 
- describe('github urls', () => {
+describe('github urls', () => {
 
   it('upgrade github https urls', async () => {
     const upgrades = await ncu.run({
