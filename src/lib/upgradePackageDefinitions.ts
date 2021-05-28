@@ -1,10 +1,9 @@
 import _ from 'lodash'
-import cint from 'cint'
 import { satisfies } from 'semver'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
 import queryVersions from './queryVersions'
 import upgradeDependencies from './upgradeDependencies'
-import { Index, Options, Version, VersionDeclaration } from '../types'
+import { Index, Options, VersionDeclaration } from '../types'
 
 /**
  * Returns an 3-tuple of upgradedDependencies, their latest versions and the resulting peer dependencies.

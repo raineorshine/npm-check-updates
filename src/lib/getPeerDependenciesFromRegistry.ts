@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { Index, Options, VersionDeclaration } from '../types'
 import getPackageManager from './getPackageManager'
 import ProgressBar from 'progress'

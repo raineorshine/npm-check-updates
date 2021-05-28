@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import cint from 'cint'
 import path from 'path'
 import fs from 'fs'
 import { promisify } from 'util'
@@ -8,8 +7,8 @@ import findUp from 'find-up'
 import getstdin from 'get-stdin'
 import getPackageFileName from './getPackageFileName'
 import programError from './programError'
-import { print, printJson, printUpgrades, printIgnoredUpdates } from '../logging'
-import { Index, Options } from '../types'
+import { print } from '../logging'
+import { Options } from '../types'
 
 // time to wait for stdin before printing a warning
 const stdinWarningTime = 5000
