@@ -1,20 +1,12 @@
 import semver from 'semver'
 import _ from 'lodash'
 import cint from 'cint'
-import chalk from 'chalk'
 import minimatch from 'minimatch'
-import semverutils from 'semver-utils'
-import ProgressBar from 'progress'
 import prompts from 'prompts'
 import { and } from 'fp-and-or'
 import * as versionUtil from './version-util'
-import getPreferredWildcard from './lib/getPreferredWildcard'
-import isUpgradeable from './lib/isUpgradeable'
-import queryVersions from './lib/queryVersions'
 import getPackageManager from './lib/getPackageManager'
-import upgradeDependencies from './lib/upgradeDependencies'
-import getPeerDependenciesFromRegistry from './lib/getPeerDependenciesFromRegistry'
-import { FilterPattern, GetVersion, IgnoredUpgrade, Index, Maybe, Options, PackageManager, PackageFile, Version, VersionDeclaration } from './types'
+import { FilterPattern, Index, Maybe, Options, PackageFile, Version, VersionDeclaration } from './types'
 
 /**
  * Return true if the version satisfies the range.
