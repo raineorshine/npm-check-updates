@@ -109,6 +109,11 @@ declare namespace ncu {
     loglevel?: string;
 
     /**
+     * Merges nested configs with the root config file for --deep or --packageFile options (default: false)').
+     */
+    mergeConfig?: boolean;
+
+    /**
      * Do not upgrade newer versions that are already satisfied by the version range according to semver.
      */
     minimal?: boolean;
@@ -206,7 +211,6 @@ declare namespace ncu {
   type RunResults = Record<string, string>
 
   function run(options?: RunOptions): Promise<RunResults>
-
 }
 
 export = ncu

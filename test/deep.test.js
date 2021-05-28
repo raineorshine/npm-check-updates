@@ -153,9 +153,9 @@ describe('--deep with nested ncurc files', function () {
     deepJsonOut['pkg/sub3/package.json'].should.have.property('ncu-test-v2')
   })
 
-  it('use ncurc of nested packages with --recursive option', async () => {
+  it('use ncurc of nested packages with --mergeConfig option', async () => {
 
-    const deepJsonOut = await spawn('node', [bin, '--jsonUpgraded', '--deep', '--recursive'], { cwd }).then(JSON.parse)
+    const deepJsonOut = await spawn('node', [bin, '--jsonUpgraded', '--deep', '--mergeConfig'], { cwd }).then(JSON.parse)
 
     // root: reject: ['cute-animals']
     deepJsonOut.should.have.property('package.json')
@@ -207,6 +207,10 @@ describe('--deep with nested ncurc files', function () {
   })
 
   it('merge options', () => {
+    // should return option1 if keys = []
+    const obj1 = { a: 42 }
+    chai.expect(mergeOptions(obj1, { a: 43 }, { keys: [] })).to.be.eq(obj1)
+
     const eq = (o1, o2, result, opts) => chai.expect(mergeOptions(o1, o2, opts)).to.deep.equal(result)
     // merge only specific properties
     eq({ a: 1, b: 1 }, { a: 2, b: 2 }, { a: 2, b: 2 })
