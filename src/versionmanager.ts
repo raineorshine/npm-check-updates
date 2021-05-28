@@ -6,14 +6,13 @@ import minimatch from 'minimatch'
 import semverutils from 'semver-utils'
 import ProgressBar from 'progress'
 import prompts from 'prompts'
-import pMap from 'p-map'
 import { and } from 'fp-and-or'
 import * as versionUtil from './version-util'
-import packageManagers from './package-managers'
-import { supportedVersionTargets } from './constants'
 import { FilterPattern, GetVersion, IgnoredUpgrade, Index, Maybe, Options, PackageManager, PackageFile, Version, VersionDeclaration } from './types'
 import getPreferredWildcard from './lib/getPreferredWildcard'
 import isUpgradeable from './lib/isUpgradeable'
+import queryVersions from './lib/queryVersions'
+import getPackageManager from './lib/getPackageManager'
 
 interface MappedDependencies {
   current: VersionDeclaration,
@@ -178,32 +177,6 @@ function filterAndReject(filter: Maybe<FilterPattern>, reject: Maybe<FilterPatte
 }
 
 /**
- * Initialize the version manager with the given package manager.
- *
- * @param packageManagerNameOrObject
- * @param packageManagerNameOrObject.global
- * @param packageManagerNameOrObject.packageManager
- * @returns
- */
-function getPackageManager(packageManagerNameOrObject: Maybe<string | PackageManager>): PackageManager {
-
-  /** Get one of the preset package managers or throw an error if there is no match. */
-  function getPresetPackageManager(packageManagerName: string): PackageManager {
-    if (!(packageManagerName in packageManagers)) {
-      throw new Error(`Invalid package manager: ${packageManagerName}`)
-    }
-    const key = packageManagerName as keyof typeof packageManagers
-    return (packageManagers as any)[key]
-  }
-
-  return !packageManagerNameOrObject ? packageManagers.npm : // default to npm
-  // use present package manager if name is specified
-    typeof packageManagerNameOrObject === 'string' ? getPresetPackageManager(packageManagerNameOrObject!)! :
-    // use provided package manager object otherwise
-    packageManagerNameOrObject!
-}
-
-/**
  * Return a promise which resolves to object storing package owner changed status for each dependency.
  *
  * @param fromVersion current packages version.
@@ -222,109 +195,6 @@ export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersi
       [dep]: ownerChanged,
     }
   }, {} as Promise<Index<boolean>>)
-}
-
-/**
- * Get the latest or greatest versions from the NPM repository based on the version target.
- *
- * @param packageMap   An object whose keys are package name and values are current versions. May include npm aliases, i.e. { "package": "npm:other-package@1.0.0" }
- * @param [options={}] Options. Default: { target: 'latest' }.
- * @returns Promised {packageName: version} collection
- */
-async function queryVersions(packageMap: Index<VersionDeclaration>, options: Options = {}) {
-
-  const target = options.target || 'latest'
-  const packageList = Object.keys(packageMap)
-  const packageManager = getPackageManager(options.packageManager)
-
-  let bar: ProgressBar
-  if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && packageList.length > 0) {
-    bar = new ProgressBar('[:bar] :current/:total :percent', { total: packageList.length, width: 20 })
-    bar.render()
-  }
-
-  // set the getPackageVersion function from options.target
-  // TODO: Remove "as GetVersion" and fix types
-  const getPackageVersion = packageManager[target as keyof typeof packageManager] as GetVersion
-  if (!getPackageVersion) {
-    const packageManagerSupportedVersionTargets = supportedVersionTargets.filter(t => t in packageManager)
-    return Promise.reject(new Error(`Unsupported target "${target}" for ${options.packageManager || 'npm'}. Supported version targets are: ${packageManagerSupportedVersionTargets.join(', ')}`))
-  }
-
-  /**
-   * Ignore 404 errors from getPackageVersion by having them return `null`
-   * instead of rejecting.
-   *
-   * @param dep
-   * @returns
-   */
-  async function getPackageVersionProtected(dep: VersionDeclaration): Promise<Version | null> {
-
-    const npmAlias = versionUtil.parseNpmAlias(packageMap[dep])
-    const [name, version] = npmAlias || [dep, packageMap[dep]]
-
-    let versionNew: Version | null = null
-
-    // use gitTags package manager for git urls
-    if (versionUtil.isGithubUrl(packageMap[dep])) {
-
-      // override packageManager and getPackageVersion just for this dependency
-      const packageManager = packageManagers.gitTags
-      const getPackageVersion = packageManager[target as keyof typeof packageManager] as GetVersion
-
-      if (!getPackageVersion) {
-        const packageManagerSupportedVersionTargets = supportedVersionTargets.filter(t => t in packageManager)
-        return Promise.reject(new Error(`Unsupported target "${target}" for github urls. Supported version targets are: ${packageManagerSupportedVersionTargets.join(', ')}`))
-      }
-      versionNew = await getPackageVersion(name, version, {
-        ...options,
-        // upgrade prereleases to newer prereleases by default
-        pre: options.pre != null ? options.pre : versionUtil.isPre(version),
-      })
-    }
-    else {
-      try {
-        versionNew = await getPackageVersion(name, version, {
-          ...options,
-          // upgrade prereleases to newer prereleases by default
-          pre: options.pre != null ? options.pre : versionUtil.isPre(version),
-        } as Options)
-        versionNew = npmAlias && versionNew ? versionUtil.createNpmAlias(name, versionNew) : versionNew
-      }
-      catch (err) {
-        const errorMessage = err ? (err.message || err).toString() : ''
-        if (!errorMessage.match(/E404|ENOTFOUND|404 Not Found/i)) {
-          // print a hint about the --timeout option for network timeout errors
-          if (!process.env.NCU_TESTS && /(Response|network) timeout/i.test(errorMessage)) {
-            console.error('\n\n' + chalk.red('FetchError: Request Timeout. npm-registry-fetch defaults to 30000 (30 seconds). Try setting the --timeout option (in milliseconds) to override this.') + '\n')
-          }
-
-          throw err
-        }
-      }
-    }
-
-    if (bar) {
-      bar.tick()
-    }
-
-    return versionNew
-  }
-
-  /**
-   * Zip up the array of versions into to a nicer object keyed by package name.
-   *
-   * @param versionList
-   * @returns
-   */
-  const zipVersions = (versionList: (Version | null)[]) =>
-    cint.toObject(versionList, (version, i) => ({
-      [packageList[i]]: version
-    }))
-
-  const versions = await pMap(packageList, getPackageVersionProtected, { concurrency: options.concurrency })
-
-  return _.pickBy(zipVersions(versions), _.identity)
 }
 
 /**
@@ -553,9 +423,7 @@ module.exports = {
   getOwnerPerDependency,
 
   // exposed for testing
-  queryVersions,
   upgradeDependencies,
-  getPackageManager,
   getPeerDependenciesFromRegistry,
   getIgnoredUpgrades,
 }
