@@ -128,42 +128,6 @@ export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersi
 }
 
 /**
- * Returns an 3-tuple of upgradedDependencies, their latest versions and the resulting peer dependencies.
- *
- * @param currentDependencies
- * @param options
- * @returns
- */
-export async function upgradePackageDefinitions(currentDependencies: Index<VersionDeclaration>, options: Options): Promise<[Index<VersionDeclaration>, Index<VersionDeclaration>, Index<Index<VersionDeclaration>>?]> {
-  const latestVersions = await queryVersions(currentDependencies, options)
-
-  const upgradedDependencies = upgradeDependencies(currentDependencies, latestVersions, {
-    removeRange: options.removeRange
-  })
-
-  const filteredUpgradedDependencies = _.pickBy(upgradedDependencies, (v, dep) => {
-    return !options.jsonUpgraded || !options.minimal || !isSatisfied(latestVersions[dep], currentDependencies[dep])
-  })
-
-  if (options.peer && !_.isEmpty(filteredUpgradedDependencies)) {
-    const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredUpgradedDependencies, options)
-    const peerDependencies = { ...options.peerDependencies, ...upgradedPeerDependencies }
-    if (!_.isEqual(options.peerDependencies, peerDependencies)) {
-      const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
-        { ...currentDependencies, ...filteredUpgradedDependencies },
-        { ...options, peerDependencies, loglevel: 'silent' }
-      )
-      return [
-        { ...filteredUpgradedDependencies, ...newUpgradedDependencies },
-        { ...latestVersions, ...newLatestVersions },
-        newPeerDependencies
-      ]
-    }
-  }
-  return [filteredUpgradedDependencies, latestVersions, options.peerDependencies]
-}
-
-/**
  * Upgrade the dependency declarations in the package data.
  *
  * @param pkgData The package.json data, as utf8 text
@@ -264,27 +228,6 @@ export function getCurrentDependencies(pkgData: PackageFile = {}, options: Optio
   return filteredDependencies
 }
 
-/** Get all upgrades that are ignored due to incompatible peer dependencies. */
-export async function getIgnoredUpgrades(current: Index<VersionDeclaration>, upgraded: Index<VersionDeclaration>, upgradedPeerDependencies: Index<Index<Version>>, options: Options = {}) {
-  const [upgradedLatestVersions, latestVersions] = await upgradePackageDefinitions(
-    current,
-    { ...options, peer: false, peerDependencies: undefined, loglevel: 'silent' }
-  )
-
-  return Object.entries(upgradedLatestVersions)
-    .filter(([pkgName, newVersion]) => upgraded[pkgName] !== newVersion)
-    .reduce((accum, [pkgName, newVersion]) => ({
-      ...accum,
-      [pkgName]: {
-        from: current[pkgName],
-        to: newVersion,
-        reason: Object.entries(upgradedPeerDependencies)
-          .filter(([, peers]) => peers[pkgName] !== undefined && !semver.satisfies(latestVersions[pkgName], peers[pkgName]))
-          .reduce((accumReason, [peerPkg, peers]) => ({ ...accumReason, [peerPkg]: peers[pkgName] }), {} as Index<string>)
-      }
-    }), {} as Index<IgnoredUpgrade>)
-}
-
 /**
  * @param [options]
  * @param options.cwd
@@ -321,9 +264,5 @@ module.exports = {
   getInstalledPackages,
   isSatisfied,
   upgradePackageData,
-  upgradePackageDefinitions,
   getOwnerPerDependency,
-
-  // exposed for testing
-  getIgnoredUpgrades,
 }

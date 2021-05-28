@@ -17,6 +17,8 @@ import * as constants from './constants'
 import cliOptions from './cli-options.js'
 import getNcurc from './lib/get-ncu-rc'
 import getPeerDependencies from './lib/getPeerDependencies'
+import getIgnoredUpgrades from './lib/getIgnoredUpgrades'
+import upgradePackageDefinitions from './lib/upgradePackageDefinitions'
 
 import { Index, Maybe, Options, PackageFile, VersionDeclaration } from './types'
 
@@ -86,7 +88,7 @@ async function runGlobal(options: Options): Promise<void> {
   print(options, '', 'silly')
   print(options, `Fetching ${options.target} versions`, 'verbose')
 
-  const [upgraded, latest] = await vm.upgradePackageDefinitions(globalPackages, options)
+  const [upgraded, latest] = await upgradePackageDefinitions(globalPackages, options)
   print(options, latest, 'silly')
 
   const upgradedPackageNames = Object.keys(upgraded)
@@ -152,7 +154,7 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
     options.peerDependencies = getPeerDependencies(current, options)
   }
 
-  const [upgraded, latest, upgradedPeerDependencies] = await vm.upgradePackageDefinitions(current, options)
+  const [upgraded, latest, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)
 
   if (options.peer) {
     print(options, '\nupgradedPeerDependencies:', 'verbose')
@@ -204,7 +206,7 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
       ownersChangedDeps
     })
     if (options.peer) {
-      const ignoredUpdates = await vm.getIgnoredUpgrades(current, upgraded, upgradedPeerDependencies!, options)
+      const ignoredUpdates = await getIgnoredUpgrades(current, upgraded, upgradedPeerDependencies!, options)
       if (!_.isEmpty(ignoredUpdates)) {
         printIgnoredUpdates(options, ignoredUpdates)
       }
