@@ -403,32 +403,3 @@ export const upgradeGithubUrl = (declaration: string, upgraded: string) => {
     : upgradedNormalized
   return declaration.replace(tag, upgradeDependencyDeclaration(tag, upgradedWithSimpleStripped))
 }
-
-module.exports = {
-  compareVersions,
-  numParts,
-  stringify,
-  precisionAdd,
-  getPrecision,
-  setPrecision,
-  addWildCard,
-  isPre,
-  isSimpleVersion,
-  isWildCard,
-  isWildPart,
-  colorizeDiff,
-  findGreatestByLevel,
-  isNpmAlias,
-  createNpmAlias,
-  parseNpmAlias,
-  upgradeNpmAlias,
-  isGithubUrl,
-  getGithubUrlTag,
-  upgradeDependencyDeclaration,
-  upgradeGithubUrl,
-  DEFAULT_WILDCARD,
-  VERSION_BASE_PARTS,
-  VERSION_ADDED_PARTS,
-  VERSION_PARTS,
-  WILDCARDS,
-}
