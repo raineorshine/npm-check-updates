@@ -3,7 +3,6 @@
 // eslint-disable-next-line fp/no-events
 import { once, EventEmitter } from 'events'
 import _ from 'lodash'
-import path from 'path'
 import cint from 'cint'
 import semver from 'semver'
 import spawn from 'spawn-please'
@@ -11,7 +10,7 @@ import libnpmconfig from 'libnpmconfig'
 import jsonlines from 'jsonlines'
 import * as versionUtil from '../version-util'
 import { viewOne, viewManyMemoized } from './npm'
-import { GetVersion, Index, Options, Packument, Version, YarnOptions } from '../types'
+import { GetVersion, Index, Options, Packument, SpawnOptions, Version, YarnOptions } from '../types'
 
 interface ParsedDep {
   version: string,
@@ -116,23 +115,19 @@ function doesSatisfyEnginesNode(versions: Packument[], nodeEngineVersion?: Versi
  * @param [spawnOptions={}]
  * @returns
  */
-async function spawnYarn(args: string | string[], yarnOptions: YarnOptions = {}, spawnOptions: Index<string> = {}): Promise<string> {
-  const platformCmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
+async function spawnYarn(args: string | string[], yarnOptions: YarnOptions = {}, spawnOptions?: SpawnOptions): Promise<string> {
 
-  // use local yarn for tests
-  // ncu cannot be mocked in doctor tests because they spawn ncu in a separate process
-  const cmd = process.env.NCU_TESTS
-    ? path.resolve(__dirname.replace('build/', ''), '../../node_modules/yarn/bin', platformCmd)
-    : platformCmd
+  const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
 
-  const fullArgs = ([] as string[]).concat(
-    yarnOptions.global ? 'global' : [],
-    args,
+  const fullArgs = [
+    ...yarnOptions.global ? 'global' : [],
+    ...Array.isArray(args) ? args : [args],
     '--depth=0',
-    yarnOptions.prefix ? `--prefix=${yarnOptions.prefix}` : [],
+    ...yarnOptions.prefix ? `--prefix=${yarnOptions.prefix}` : [],
     '--json',
     '--no-progress'
-  )
+  ]
+
   return spawn(cmd, fullArgs, spawnOptions)
 }
 
@@ -177,20 +172,16 @@ export async function defaultPrefix(options: Options) {
  * @param [options.prefix]
  * @returns
  */
-export const list = (options: Options = {}) => {
-
-  return spawnYarn('list', options as Index<string>, options.cwd ? { cwd: options.cwd } : {}).then(async jsonLines => {
-    const json = await parseJsonLines(jsonLines)
-
-    return cint.mapObject(json.dependencies, (name, info) => ({
-      // unmet peer dependencies have a different structure
-      [name]: info.version || (info.required && info.required.version),
-    }))
+export const list = async (options: Options = {}, spawnOptions?: SpawnOptions) => {
+  const jsonLines = await spawnYarn('list', options as Index<string>, {
+    ...options.cwd ? { cwd: options.cwd } : {},
+    ...spawnOptions,
   })
-    .catch(async jsonLines => {
-      await parseJsonLines(jsonLines)
-      return {}
-    })
+  const json = await parseJsonLines(jsonLines)
+  return cint.mapObject(json.dependencies, (name, info) => ({
+    // unmet peer dependencies have a different structure
+    [name]: info.version || (info.required && info.required.version),
+  }))
 }
 
 /**

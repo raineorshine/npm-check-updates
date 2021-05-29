@@ -1,5 +1,6 @@
 {
-    "dependencies": {
-        "express": "^1.0.0"
-    }
+  "license": "MIT",
+  "dependencies": {
+    "express": "^1.0.0"
+  }
 }
