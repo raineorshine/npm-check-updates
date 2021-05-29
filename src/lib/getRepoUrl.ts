@@ -1,19 +1,18 @@
-'use strict'
-
-const fs = require('fs')
-const path = require('path')
-const { URL } = require('url')
-const hostedGitInfo = require('hosted-git-info')
+import fs from 'fs'
+import path from 'path'
+import { URL } from 'url'
+import hostedGitInfo from 'hosted-git-info'
+import { PackageFile } from '../types'
 
 // extract the defaultBranchPath so it can be stripped in the final output
-const defaultBranchPath = hostedGitInfo.fromUrl('user/repo').browse('').match(/(\/tree\/[a-z]+)/)[0]
+const defaultBranchPath = hostedGitInfo.fromUrl('user/repo')?.browse('').match(/(\/tree\/[a-z]+)/)?.[0]
 const regexDefaultBranchPath = new RegExp(`${defaultBranchPath}$`)
 
 /** Gets the repo url of an installed package. */
-function getPackageRepo(packageName) {
+function getPackageRepo(packageName: string) {
   let nodeModulePaths = require.resolve.paths(packageName)
   const localNodeModules = path.join(process.cwd(), 'node_modules')
-  nodeModulePaths = [localNodeModules].concat(nodeModulePaths)
+  nodeModulePaths = [localNodeModules].concat(nodeModulePaths || [])
   for (const basePath of nodeModulePaths) { // eslint-disable-line fp/no-loops
     const packageJsonPath = path.join(basePath, packageName, 'package.json')
     if (fs.existsSync(packageJsonPath)) {
@@ -29,7 +28,7 @@ function getPackageRepo(packageName) {
 }
 
 /** Remove the default branch path from a git url. */
-const cleanRepoUrl = url =>
+const cleanRepoUrl = (url: string) =>
   url.replace(/\/$/, '').replace(regexDefaultBranchPath, '')
 
 /**
@@ -37,7 +36,7 @@ const cleanRepoUrl = url =>
  * @param packageJson Optional param to specify a object representation of a package.json file instead of loading from node_modules
  * @returns A valid url to the root of the package's source or null if a url could not be determined
  */
-function getRepoUrl(packageName, packageJson = undefined) {
+function getRepoUrl(packageName: string, packageJson?: PackageFile) {
 
   const repositoryMetadata =
     !packageJson ? getPackageRepo(packageName)
@@ -70,10 +69,8 @@ function getRepoUrl(packageName, packageJson = undefined) {
   }
 
   return typeof gitURL === 'string' && typeof directory === 'string'
-    ? cleanRepoUrl(hostedGitInfo.fromUrl(gitURL).browse(directory))
+    ? cleanRepoUrl(hostedGitInfo.fromUrl(gitURL)!.browse(directory))
     : null
 }
 
-module.exports = {
-  getRepoUrl
-}
+export default getRepoUrl

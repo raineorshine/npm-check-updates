@@ -5,7 +5,7 @@
 import Table from 'cli-table'
 import Chalk from 'chalk'
 import { colorizeDiff, isGithubUrl, getGithubUrlTag, isNpmAlias, parseNpmAlias } from './version-util'
-import { getRepoUrl } from './repo-url'
+import getRepoUrl from './lib/getRepoUrl'
 import { IgnoredUpgrade, Index, Options, VersionDeclaration } from './types'
 
 // maps string levels to numeric levels
