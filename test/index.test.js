@@ -7,7 +7,7 @@ const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const chaiString = require('chai-string')
 const ncu = require('../src/')
-const { npm: spawnNpm } = require('../src/package-managers/npm')
+const spawnNpm = require('../src/package-managers/npm').default
 
 chai.use(chaiAsPromised)
 chai.use(chaiString)

@@ -3,8 +3,8 @@ let chalk = require('chalk')
 const rimraf = require('rimraf')
 const upgradePackageData = require('./lib/upgradePackageData').default
 const { printUpgrades } = require('./logging')
-const { yarn: spawnYarn } = require('./package-managers/yarn')
-const { npm: spawnNpm } = require('./package-managers/npm')
+const spawnYarn = require('./package-managers/yarn').default
+const spawnNpm = require('./package-managers/npm').default
 
 /** Run the npm CLI in CI mode. */
 const npm = (args, options, print) => {

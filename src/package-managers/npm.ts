@@ -390,4 +390,4 @@ export const patch: GetVersion = async (packageName, currentVersion, options = {
   )
 }
 
-export const npm = spawnNpm
+export default spawnNpm
