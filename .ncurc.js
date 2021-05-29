@@ -6,8 +6,8 @@ module.exports = {
     // breaking changes (just need to spend some time to fix them)
     'commander',
 
-    // node >= 12
-    'find-up',
+    // "Must use import to load ES Module"
+    // These can be removed once the tests are converted to Typescript
     'get-stdin',
     'globby',
     'mocha',
