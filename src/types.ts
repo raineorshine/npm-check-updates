@@ -172,6 +172,11 @@ export interface RunOptions {
   loglevel?: string,
 
   /**
+   * Merges nested configs with the root config file for --deep or --packageFile options (default: false)
+   */
+  mergeConfig?: boolean,
+
+  /**
    * Do not upgrade newer versions that are already satisfied by the version range according to semver.
    */
   minimal?: boolean,
