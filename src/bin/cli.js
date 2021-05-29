@@ -7,7 +7,7 @@ const _ = require('lodash')
 const updateNotifier = require('update-notifier')
 const ncu = require('../')
 const pkg = require('../../package.json')
-const cliOptions = require('../cli-options')
+const cliOptions = require('../cli-options').default
 
 // check if a new version of ncu is available and print an update notification
 const notifier = updateNotifier({ pkg })
