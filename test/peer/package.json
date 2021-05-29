@@ -1,4 +1,5 @@
 {
+  "license": "MIT",
   "dependencies": {
     "ncu-test-peer": "1.0.0",
     "ncu-test-return-version": "1.0.0"

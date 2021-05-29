@@ -64,6 +64,7 @@ export interface YarnOptions {
 }
 
 export interface SpawnOptions {
+  env?: Index<string>,
   stderr?: (s: string) => void,
 }
 
