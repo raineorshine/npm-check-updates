@@ -279,7 +279,6 @@ describe('versionmanager', () => {
   })
 
   describe('getInstalledPackages', function () {
-    this.timeout(30000)
     it('execute npm ls', () => {
       return vm.getInstalledPackages()
         .should.be.fulfilled

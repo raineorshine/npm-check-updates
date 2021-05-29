@@ -20,8 +20,6 @@ describe('run', function () {
   function getTempFile() {
     return `test/temp_package${++last}.json`
   }
-  this.timeout(30000)
-
   it('return promised jsonUpgraded', () => {
     return ncu.run({
       packageData: fs.readFileSync(path.join(__dirname, 'ncu/package.json'), 'utf-8')

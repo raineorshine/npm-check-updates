@@ -16,8 +16,6 @@ process.env.NCU_TESTS = true
 
 describe('peer dependencies', function () {
 
-  this.timeout(30000)
-
   it('peer dependencies of installed packages are ignored by default', async () => {
     const cwd = path.join(__dirname, '/peer/')
     try {
