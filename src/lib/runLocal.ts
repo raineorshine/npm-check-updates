@@ -5,14 +5,16 @@ import _ from 'lodash'
 import Chalk from 'chalk'
 import jph from 'json-parse-helpfulerror'
 import { satisfies } from 'semver'
-import * as vm from '../versionmanager'
 import { print, printJson, printUpgrades, printIgnoredUpdates } from '../logging'
+import getCurrentDependencies from './getCurrentDependencies'
 import getIgnoredUpgrades from './getIgnoredUpgrades'
 import getPackageFileName from './getPackageFileName'
+import getPackageManager from './getPackageManager'
 import getPeerDependencies from './getPeerDependencies'
 import programError from './programError'
+import upgradePackageData from './upgradePackageData'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
-import { Index, Maybe, Options, PackageFile, VersionDeclaration } from '../types'
+import { Index, Maybe, Options, PackageFile, Version, VersionDeclaration } from '../types'
 
 const writePackageFile = promisify(fs.writeFile)
 
@@ -22,6 +24,27 @@ function sortOptions(options: Options): Options {
   return _.transform(Object.keys(options).sort(), (accum, key) => {
     accum[key] = options[key as keyof Options]
   }, {} as any)
+}
+
+/**
+ * Return a promise which resolves to object storing package owner changed status for each dependency.
+ *
+ * @param fromVersion current packages version.
+ * @param toVersion target packages version.
+ * @param options
+ * @returns
+ */
+export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersion: Index<Version>, options: Options) {
+  const packageManager = getPackageManager(options.packageManager)
+  return await Object.keys(toVersion).reduce(async (accum, dep) => {
+    const from = fromVersion[dep] || null
+    const to = toVersion[dep] || null
+    const ownerChanged = await packageManager.packageAuthorChanged!(dep, from!, to!, options)
+    return {
+      ...accum,
+      [dep]: ownerChanged,
+    }
+  }, {} as Promise<Index<boolean>>)
 }
 
 /** Checks local project dependencies for upgrades. */
@@ -46,7 +69,7 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
     programError(options, chalk.red(`Invalid package file${pkgFile ? `: ${pkgFile}` : ' from stdin'}. Error details:\n${e.message}`))
   }
 
-  const current = vm.getCurrentDependencies(pkg, options)
+  const current = getCurrentDependencies(pkg, options)
 
   print(options, '\nCurrent:', 'verbose')
   print(options, current, 'verbose')
@@ -74,7 +97,7 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
   print(options, '\nUpgraded:', 'verbose')
   print(options, upgraded, 'verbose')
 
-  const { newPkgData, selectedNewDependencies } = await vm.upgradePackageData(pkgData!, current, upgraded, latest, options)
+  const { newPkgData, selectedNewDependencies } = await upgradePackageData(pkgData!, current, upgraded, latest, options)
 
   const output = options.jsonAll ? jph.parse(newPkgData) as PackageFile :
     options.jsonDeps ?
@@ -95,13 +118,13 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
   const numUpgraded = Object.keys(filteredUpgraded).length
 
   const ownersChangedDeps = (options.format || []).includes('ownerChanged')
-    ? await vm.getOwnerPerDependency(current, filteredUpgraded, options)
+    ? await getOwnerPerDependency(current, filteredUpgraded, options)
     : undefined
 
   // print
   if (options.json && !options.deep) {
     // use the selectedNewDependencies dependencies data to generate new package data
-    // INVARIANT: we don't need try-catch here because pkgData has already been parsed as valid JSON, and vm.upgradePackageData simply does a find-and-replace on that
+    // INVARIANT: we don't need try-catch here because pkgData has already been parsed as valid JSON, and upgradePackageData simply does a find-and-replace on that
     printJson(options, output)
   }
   else {

@@ -29,11 +29,11 @@
   "types": "build/src/index.d.ts",
   "scripts": {
     "build": "npm run build:ts && npm run build:readme",
-    "build:ts": "tsc",
+    "build:ts": "tsc && chmod u+x ./build/src/bin/cli.js",
     "build:readme": "node scripts/buildReadme.js",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
-    "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.js",
+    "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.js",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives src",
     "nyc": "nyc",
     "prepublishOnly": "npm run build",
