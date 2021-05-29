@@ -1,21 +1,10 @@
 import semver from 'semver'
-import _ from 'lodash'
 import cint from 'cint'
 import prompts from 'prompts'
 import * as versionUtil from './version-util'
 import filterAndReject from './lib/filterAndReject'
 import getPackageManager from './lib/getPackageManager'
-import { FilterPattern, Index, Maybe, Options, PackageFile, Version, VersionDeclaration } from './types'
-
-/**
- * Return true if the version satisfies the range.
- *
- * @type {Function}
- * @param {string} version
- * @param {string} range
- * @returns {boolean}
- */
-export const isSatisfied = semver.satisfies
+import { Index, Options, PackageFile, Version, VersionDeclaration } from './types'
 
 /**
  * @returns String safe for use in `new RegExp()`
@@ -64,7 +53,7 @@ export async function upgradePackageData(pkgData: string, oldDependencies: Index
 
   // eslint-disable-next-line fp/no-loops
   for (const dependency in newDependencies) {
-    if (!options.minimal || !isSatisfied(newVersions[dependency], oldDependencies[dependency])) {
+    if (!options.minimal || !semver.satisfies(newVersions[dependency], oldDependencies[dependency])) {
       if (options.interactive) {
         const to = versionUtil.colorizeDiff(oldDependencies[dependency], newDependencies[dependency] || '')
         const response = await prompts({
@@ -153,7 +142,6 @@ export function getCurrentDependencies(pkgData: PackageFile = {}, options: Optio
 module.exports = {
   // used directly by cli.js
   getCurrentDependencies,
-  isSatisfied,
   upgradePackageData,
   getOwnerPerDependency,
 }
