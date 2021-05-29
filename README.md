@@ -163,7 +163,7 @@ ncu "/^(?!react-).*$/" # windows
 --greatest                   DEPRECATED. Renamed to "--target greatest".
 -i, --interactive            Enable interactive prompts for each dependency;
                              implies -u unless one of the json options are
-                             set,
+                             set.
 -j, --jsonAll                Output new package file instead of
                              human-readable message.
 --jsonDeps                   Like `jsonAll` but only lists `dependencies`,
