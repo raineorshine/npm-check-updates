@@ -14,7 +14,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "lib": ["es2018"],
+    "lib": ["es2019"],
     "module": "commonjs",
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
@@ -31,6 +31,6 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2018"
+    "target": "es2019"
   }
 }
