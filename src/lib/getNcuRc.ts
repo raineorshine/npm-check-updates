@@ -17,7 +17,7 @@ interface Options {
  * @param [cfg.packageFile]
  * @returns
  */
-export default function getNcurc({ configFileName, configFilePath, packageFile }: Options = {}) {
+function getNcuRc({ configFileName, configFilePath, packageFile }: Options = {}) {
 
   const result = rcFile('ncurc', {
     configFileName: configFileName || '.ncurc',
@@ -34,3 +34,5 @@ export default function getNcurc({ configFileName, configFilePath, packageFile }
 
   return result ? { ...result, args } : null
 }
+
+export default getNcuRc
