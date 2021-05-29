@@ -15,12 +15,12 @@ export interface PackageManager {
   minor?: GetVersion,
   newest?: GetVersion,
   greatest?: GetVersion,
-  packageAuthorChanged?: (packageName: string, from: VersionDeclaration, to: VersionDeclaration, options?: Options) => Promise<boolean>,
+  packageAuthorChanged?: (packageName: string, from: VersionSpec, to: VersionSpec, options?: Options) => Promise<boolean>,
   getPeerDependencies?: (packageName: string, version: Version) => Promise<Index<Version>>,
 }
 
 export type Version = string
-export type VersionDeclaration = string
+export type VersionSpec = string
 export type VersionLevel = 'major' | 'minor' | 'patch'
 
 export type FilterPattern = string | string[] | RegExp | RegExp[]
@@ -38,11 +38,11 @@ export interface Packument {
 
 export interface PackageFile {
   repository?: string | { url: string },
-  dependencies?: Index<VersionDeclaration>,
-  devDependencies?: Index<VersionDeclaration>,
-  peerDependencies?: Index<VersionDeclaration>,
-  optionalDependencies?: Index<VersionDeclaration>,
-  bundleDependencies?: Index<VersionDeclaration>,
+  dependencies?: Index<VersionSpec>,
+  devDependencies?: Index<VersionSpec>,
+  peerDependencies?: Index<VersionSpec>,
+  optionalDependencies?: Index<VersionSpec>,
+  bundleDependencies?: Index<VersionSpec>,
 }
 
 export interface IgnoredUpgrade {
@@ -279,7 +279,7 @@ export type Options = RunOptions & {
   args?: any[],
   cli?: boolean,
   json?: boolean,
-  nodeEngineVersion?: VersionDeclaration,
+  nodeEngineVersion?: VersionSpec,
   peerDependencies?: Index<any>,
   rcConfigPath?: string,
 }

@@ -6,7 +6,7 @@ import Table from 'cli-table'
 import Chalk from 'chalk'
 import { colorizeDiff, isGithubUrl, getGithubUrlTag, isNpmAlias, parseNpmAlias } from './version-util'
 import getRepoUrl from './lib/getRepoUrl'
-import { IgnoredUpgrade, Index, Options, VersionDeclaration } from './types'
+import { IgnoredUpgrade, Index, Options, VersionSpec } from './types'
 
 // maps string levels to numeric levels
 const logLevels = {
@@ -75,8 +75,8 @@ function createDependencyTable() {
  * @param args.format Array of strings from the --format CLI arg
  */
 function toDependencyTable({ from: fromDeps, to: toDeps, ownersChangedDeps, format }: {
-  from: Index<VersionDeclaration>,
-  to: Index<VersionDeclaration>,
+  from: Index<VersionSpec>,
+  to: Index<VersionSpec>,
   ownersChangedDeps?: Index<boolean>,
   format?: string[],
 }) {
@@ -112,8 +112,8 @@ function toDependencyTable({ from: fromDeps, to: toDeps, ownersChangedDeps, form
  * @param args.ownersChangedDeps - Boolean flag per dependency which announces if package owner changed.
  */
 export function printUpgrades(options: Options, { current, upgraded, numUpgraded, total, ownersChangedDeps }: {
-  current: Index<VersionDeclaration>,
-  upgraded: Index<VersionDeclaration>,
+  current: Index<VersionSpec>,
+  upgraded: Index<VersionSpec>,
   numUpgraded: number,
   total: number,
   ownersChangedDeps?: Index<boolean>,

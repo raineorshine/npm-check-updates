@@ -10,7 +10,7 @@ import mem from 'mem'
 import libnpmconfig from 'libnpmconfig'
 import * as versionUtil from '../version-util'
 import { print } from '../logging'
-import { GetVersion, Index, Maybe, Options, NpmOptions, Packument, Version, VersionDeclaration } from '../types'
+import { GetVersion, Index, Maybe, Options, NpmOptions, Packument, Version, VersionSpec } from '../types'
 
 const TIME_FIELDS = ['modified', 'created']
 
@@ -87,7 +87,7 @@ function parseJson(result: string, data: { command?: string, packageName?: strin
  * @param upgradedVersion Upgraded version declaration (may be range)
  * @returns A promise that fullfills with boolean value.
  */
-export async function packageAuthorChanged(packageName: string, currentVersion: VersionDeclaration, upgradedVersion: VersionDeclaration, options: Options = {}) {
+export async function packageAuthorChanged(packageName: string, currentVersion: VersionSpec, upgradedVersion: VersionSpec, options: Options = {}) {
 
   const result = await pacote.packument(packageName, {
     ...npmConfig,

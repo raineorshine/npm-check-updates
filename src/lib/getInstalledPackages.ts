@@ -2,7 +2,7 @@ import cint from 'cint'
 import { isWildPart } from '../version-util'
 import getPackageManager from './getPackageManager'
 import filterAndReject from './filterAndReject'
-import { Options, Version, VersionDeclaration } from '../types'
+import { Options, Version, VersionSpec } from '../types'
 
 /**
  * @param [options]
@@ -24,7 +24,7 @@ async function getInstalledPackages(options: Options = {}) {
 
   // filter out undefined packages or those with a wildcard
   const filterFunction = filterAndReject(options.filter, options.reject, options.filterVersion, options.rejectVersion)
-  return cint.filterObject(pkgInfoObj, (dep: VersionDeclaration, version: Version) =>
+  return cint.filterObject(pkgInfoObj, (dep: VersionSpec, version: Version) =>
     !!version && !isWildPart(version) && filterFunction(dep, version)
   )
 

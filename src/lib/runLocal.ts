@@ -14,7 +14,7 @@ import getPeerDependencies from './getPeerDependencies'
 import programError from './programError'
 import upgradePackageData from './upgradePackageData'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
-import { Index, Maybe, Options, PackageFile, Version, VersionDeclaration } from '../types'
+import { Index, Maybe, Options, PackageFile, Version, VersionSpec } from '../types'
 
 const writePackageFile = promisify(fs.writeFile)
 
@@ -48,7 +48,7 @@ export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersi
 }
 
 /** Checks local project dependencies for upgrades. */
-async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: Maybe<string>): Promise<PackageFile | Index<VersionDeclaration>> {
+async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: Maybe<string>): Promise<PackageFile | Index<VersionSpec>> {
 
   let pkg
 

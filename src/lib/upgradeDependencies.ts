@@ -4,11 +4,11 @@ import { parseRange } from 'semver-utils'
 import * as versionUtil from '../version-util'
 import getPreferredWildcard from './getPreferredWildcard'
 import isUpgradeable from './isUpgradeable'
-import { Index, Options, Version, VersionDeclaration } from '../types'
+import { Index, Options, Version, VersionSpec } from '../types'
 
 interface MappedDependencies {
-  current: VersionDeclaration,
-  currentParsed: VersionDeclaration | null,
+  current: VersionSpec,
+  currentParsed: VersionSpec | null,
   latest: Version,
   latestParsed: Version | null,
 }
@@ -21,7 +21,7 @@ interface MappedDependencies {
  * @param [options={}]
  * @returns upgraded dependency collection object
  */
-function upgradeDependencies(currentDependencies: Index<VersionDeclaration>, latestVersions: Index<Version>, options: Options = {}): Index<VersionDeclaration> {
+function upgradeDependencies(currentDependencies: Index<VersionSpec>, latestVersions: Index<Version>, options: Options = {}): Index<VersionSpec> {
   // filter out dependencies with empty values
   currentDependencies = cint.filterObject(currentDependencies, (key, value) => !!value)
 
@@ -29,7 +29,7 @@ function upgradeDependencies(currentDependencies: Index<VersionDeclaration>, lat
   const wildcard = getPreferredWildcard(currentDependencies) || versionUtil.DEFAULT_WILDCARD
 
   /** Upgrades a single dependency. */
-  const upgradeDep = (current: VersionDeclaration, latest: Version) => versionUtil.upgradeDependencyDeclaration(current, latest, {
+  const upgradeDep = (current: VersionSpec, latest: Version) => versionUtil.upgradeDependencyDeclaration(current, latest, {
     wildcard,
     removeRange: options.removeRange
   })
@@ -75,7 +75,7 @@ function upgradeDependencies(currentDependencies: Index<VersionDeclaration>, lat
         : upgraded
     })
     // TODO: type
-    .value() as unknown as Index<VersionDeclaration>
+    .value() as unknown as Index<VersionSpec>
 }
 
 export default upgradeDependencies
