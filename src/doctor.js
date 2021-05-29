@@ -1,9 +1,9 @@
 const fs = require('fs')
-const spawn = require('spawn-please')
 let chalk = require('chalk')
 const rimraf = require('rimraf')
-const { upgradePackageData } = require('./versionmanager')
+const upgradePackageData = require('./lib/upgradePackageData').default
 const { printUpgrades } = require('./logging')
+const { yarn: spawnYarn } = require('./package-managers/yarn')
 const { npm: spawnNpm } = require('./package-managers/npm')
 
 /** Run the npm CLI in CI mode. */
@@ -23,9 +23,7 @@ const npm = (args, options, print) => {
     ...options
   }
 
-  return options.packageManager === 'yarn'
-    ? spawn('yarn' + (process.platform === 'win32' ? '.cmd' : ''), args, spawnOptions)
-    : spawnNpm(args, options, spawnOptions)
+  return (options.packageManager === 'yarn' ? spawnYarn : spawnNpm)(args, options, spawnOptions)
 }
 
 /** Load and validate package file and tests. */

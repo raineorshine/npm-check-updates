@@ -11,6 +11,7 @@ const { doctorHelpText } = require('../src/constants')
 
 chai.should()
 chai.use(chaiAsPromised)
+process.env.NCU_TESTS = 'true'
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 const doctorTests = path.join(__dirname, 'doctor')
@@ -65,6 +66,7 @@ const testPass = ({ packageManager }) => {
     }
 
     // stdout should include normal output
+    stderr.should.equal('')
     stripAnsi(stdout).should.include('Tests pass')
     stripAnsi(stdout).should.include('ncu-test-v2  ~1.0.0  →  ~2.0.0')
 
@@ -209,6 +211,7 @@ describe('doctor', function() {
       rimraf.sync(nodeModulesPath)
 
       // stdout should include normal output
+      stderr.should.equal('')
       stripAnsi(stdout).should.include('Tests pass')
       stripAnsi(stdout).should.include('ncu-test-v2  ~1.0.0  →  ~2.0.0')
 

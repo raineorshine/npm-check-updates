@@ -3,6 +3,7 @@
 // eslint-disable-next-line fp/no-events
 import { once, EventEmitter } from 'events'
 import _ from 'lodash'
+import path from 'path'
 import cint from 'cint'
 import semver from 'semver'
 import spawn from 'spawn-please'
@@ -115,8 +116,14 @@ function doesSatisfyEnginesNode(versions: Packument[], nodeEngineVersion?: Versi
  * @param [spawnOptions={}]
  * @returns
  */
-function spawnYarn(args: string | string[], yarnOptions: YarnOptions = {}, spawnOptions: Index<string> = {}): Promise<string> {
-  const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
+async function spawnYarn(args: string | string[], yarnOptions: YarnOptions = {}, spawnOptions: Index<string> = {}): Promise<string> {
+  const platformCmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
+
+  // use local yarn for tests
+  // ncu cannot be mocked in doctor tests because they spawn ncu in a separate process
+  const cmd = process.env.NCU_TESTS
+    ? path.resolve('../../../node_modules/yarn/bin', platformCmd)
+    : platformCmd
 
   const fullArgs = ([] as string[]).concat(
     yarnOptions.global ? 'global' : [],
@@ -126,6 +133,7 @@ function spawnYarn(args: string | string[], yarnOptions: YarnOptions = {}, spawn
     '--json',
     '--no-progress'
   )
+
   return spawn(cmd, fullArgs, spawnOptions)
 }
 
@@ -281,3 +289,5 @@ export const patch: GetVersion = async (packageName, currentVersion, options = {
     'patch'
   )
 }
+
+export const yarn = spawnYarn
