@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
-'use strict'
-
-const program = require('commander')
-const _ = require('lodash')
-const updateNotifier = require('update-notifier')
-const ncu = require('../')
-const pkg = require('../../package.json')
-const cliOptions = require('../cli-options').default
+import program from 'commander'
+import _ from 'lodash'
+import updateNotifier from 'update-notifier'
+import ncu from '../index'
+import pkg from '../../package.json'
+import cliOptions from '../cli-options'
+import getNcuRc from '../lib/getNcuRc'
 
 // check if a new version of ncu is available and print an update notification
 const notifier = updateNotifier({ pkg })
@@ -68,7 +67,7 @@ const { configFileName, configFilePath, packageFile } = program
 // Do not load when global option is set
 // Do not load when tests are running (an be overridden if configFilePath is set explicitly)
 const rcResult = !program.global && (!process.env.NCU_TESTS || configFilePath)
-  ? ncu.getNcuRc({ configFileName, configFilePath, packageFile })
+  ? getNcuRc({ configFileName, configFilePath, packageFile })
   : null
 
 // combine command line arguments with config file arguments
@@ -95,4 +94,4 @@ const options = {
 
 // NOTE: Options handling and defaults go in initOptions in index.js
 
-ncu.run(options)
+ncu(options)
