@@ -7,7 +7,7 @@ import { supportedVersionTargets } from '../constants'
 import getPackageManager from './getPackageManager'
 import packageManagers from '../package-managers'
 import { createNpmAlias, isGithubUrl, isPre, parseNpmAlias } from '../version-util'
-import { GetVersion, Index, Options, Version, VersionDeclaration } from '../types'
+import { GetVersion, Index, Options, Version, VersionSpec } from '../types'
 
 /**
  * Get the latest or greatest versions from the NPM repository based on the version target.
@@ -16,7 +16,7 @@ import { GetVersion, Index, Options, Version, VersionDeclaration } from '../type
  * @param [options={}] Options. Default: { target: 'latest' }.
  * @returns Promised {packageName: version} collection
  */
-async function queryVersions(packageMap: Index<VersionDeclaration>, options: Options = {}) {
+async function queryVersions(packageMap: Index<VersionSpec>, options: Options = {}) {
 
   const target = options.target || 'latest'
   const packageList = Object.keys(packageMap)
@@ -43,7 +43,7 @@ async function queryVersions(packageMap: Index<VersionDeclaration>, options: Opt
    * @param dep
    * @returns
    */
-  async function getPackageVersionProtected(dep: VersionDeclaration): Promise<Version | null> {
+  async function getPackageVersionProtected(dep: VersionSpec): Promise<Version | null> {
 
     const npmAlias = parseNpmAlias(packageMap[dep])
     const [name, version] = npmAlias || [dep, packageMap[dep]]

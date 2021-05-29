@@ -5,9 +5,9 @@ import upgradePackageData from './upgradePackageData'
 import { printUpgrades } from '../logging'
 import spawnYarn from '../package-managers/yarn'
 import spawnNpm from '../package-managers/npm'
-import { Index, Options, PackageFile, SpawnOptions, VersionDeclaration } from '../types'
+import { Index, Options, PackageFile, SpawnOptions, VersionSpec } from '../types'
 
-type Run = (options?: Options) => Promise<PackageFile | Index<VersionDeclaration> | void>
+type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
 
 /** Run the npm CLI in CI mode. */
 const npm = (args: string[], options: Options & SpawnOptions, print?: boolean) => {
