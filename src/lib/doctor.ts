@@ -1,17 +1,18 @@
-const fs = require('fs')
-let chalk = require('chalk')
-const rimraf = require('rimraf')
-const upgradePackageData = require('./lib/upgradePackageData').default
-const { printUpgrades } = require('./logging')
-const spawnYarn = require('./package-managers/yarn').default
-const spawnNpm = require('./package-managers/npm').default
+import fs from 'fs'
+import Chalk from 'chalk'
+import rimraf from 'rimraf'
+import upgradePackageData from './upgradePackageData'
+import { printUpgrades } from '../logging'
+import spawnYarn from '../package-managers/yarn'
+import spawnNpm from '../package-managers/npm'
+import { Index, Options, PackageFile, SpawnOptions, VersionDeclaration } from '../types'
+
+type Run = (options?: Options) => Promise<PackageFile | Index<VersionDeclaration> | void>
 
 /** Run the npm CLI in CI mode. */
-const npm = (args, options, print) => {
+const npm = (args: string[], options: Options & SpawnOptions, print?: boolean) => {
 
-  if (options.color) {
-    chalk = new chalk.Instance({ level: 1 })
-  }
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   if (print) {
     console.log(chalk.blue([options.packageManager, ...args].join(' ')))
@@ -27,7 +28,7 @@ const npm = (args, options, print) => {
 }
 
 /** Load and validate package file and tests. */
-const loadPackageFile = async options => {
+const loadPackageFile = async (options: Options) => {
 
   let pkg, pkgFile
 
@@ -55,8 +56,9 @@ const loadPackageFile = async options => {
 
 /** Iteratively installs upgrades and runs tests to identify breaking upgrades. */
 // we have to pass run directly since it would be a circular require if doctor included this file
-const doctor = async (run, options) => {
+const doctor = async (run: Run, options: Options) => {
 
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
   const lockFileName = options.packageManager === 'yarn' ? 'yarn.lock' : 'package-lock.json'
   const { pkg, pkgFile } = await loadPackageFile(options)
 
@@ -73,7 +75,7 @@ const doctor = async (run, options) => {
   // install and load lock file
   await npm(['install'], { packageManager: options.packageManager }, true)
 
-  let lockFile
+  let lockFile = ''
   try {
     lockFile = fs.readFileSync(lockFileName, 'utf-8')
   }
@@ -100,9 +102,9 @@ const doctor = async (run, options) => {
     ...options,
     silent: true,
     doctor: false, // --doctor triggers the initial call to doctor, but the internal call executes npm-check-updates normally in order to upgrade the dependencies
-  })
+  }) as Index<string>
 
-  if (Object.keys(upgrades).length === 0) {
+  if (Object.keys(upgrades || {}).length === 0) {
     console.log('All dependencies are up-to-date ' + chalk.green.bold(':)'))
     return
   }
@@ -119,7 +121,7 @@ const doctor = async (run, options) => {
 
     console.log(`${chalk.green('✓')} Tests pass`)
 
-    const numUpgraded = Object.keys(upgrades).length
+    const numUpgraded = Object.keys(upgrades || {}).length
 
     printUpgrades(options, {
       current: allDependencies,
@@ -162,7 +164,7 @@ const doctor = async (run, options) => {
         console.log(`  ${chalk.green('✓')} ${name} ${allDependencies[name]} → ${version}`)
 
         // save upgraded package data so that passing versions can still be saved even when there is a failure
-        lastPkgFile = (await upgradePackageData(lastPkgFile, { [name]: allDependencies[name] }, { [name]: version })).newPkgData
+        lastPkgFile = (await upgradePackageData(lastPkgFile, { [name]: allDependencies[name] }, { [name]: version }, {}, { ...options, interactive: false })).newPkgData
 
         // save working lock file
         lockFile = fs.readFileSync(lockFileName, 'utf-8')
@@ -195,4 +197,4 @@ const doctor = async (run, options) => {
   }
 }
 
-module.exports = doctor
+export default doctor

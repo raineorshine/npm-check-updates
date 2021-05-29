@@ -63,6 +63,10 @@ export interface YarnOptions {
   registry?: string,
 }
 
+export interface SpawnOptions {
+  stderr?: (s: string) => void,
+}
+
 export interface RunOptions {
 
   /**
