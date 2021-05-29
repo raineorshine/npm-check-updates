@@ -442,33 +442,3 @@ export const upgradeGithubUrl = (declaration: string, upgraded: string) => {
     .replace(/^semver:/, '')
   return declaration.replace(tag, upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgraded)))
 }
-
-module.exports = {
-  compareVersions,
-  numParts,
-  stringify,
-  precisionAdd,
-  getPrecision,
-  setPrecision,
-  addWildCard,
-  fixPseudoVersion,
-  revertPseudoVersion,
-  isPre,
-  isWildCard,
-  isWildPart,
-  colorizeDiff,
-  findGreatestByLevel,
-  isNpmAlias,
-  createNpmAlias,
-  parseNpmAlias,
-  upgradeNpmAlias,
-  isGithubUrl,
-  getGithubUrlTag,
-  upgradeDependencyDeclaration,
-  upgradeGithubUrl,
-  DEFAULT_WILDCARD,
-  VERSION_BASE_PARTS,
-  VERSION_ADDED_PARTS,
-  VERSION_PARTS,
-  WILDCARDS,
-}
