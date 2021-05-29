@@ -5,7 +5,7 @@
 const fs = require('fs')
 const path = require('path')
 const spawn = require('spawn-please')
-const cliOptions = require('../build/src/cli-options.js')
+const cliOptions = require('../build/src/cli-options.js').default
 
 /** Escape closing block comments that would interfere with JSDOC. */
 const escapeComments = s => s.replace(/\*\*\//g, '**\\/')
