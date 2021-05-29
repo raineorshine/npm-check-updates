@@ -152,6 +152,7 @@
       "source-map-support/register",
       "ts-node/register"
     ],
+    "timeout": 30000,
     "trace-deprecation": true,
     "trace-warnings": true,
     "use_strict": true

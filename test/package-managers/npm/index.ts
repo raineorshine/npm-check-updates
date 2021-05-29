@@ -8,8 +8,6 @@ chai.use(chaiAsPromised)
 
 describe('npm', function () {
 
-  this.timeout(30000)
-
   it('list', async () => {
     const versionObject = await npm.list({ cwd: __dirname })
     versionObject.should.have.property('express')

@@ -18,8 +18,6 @@ const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('bin', function () {
 
-  this.timeout(30000)
-
   let last = 0
   function getTempFile() {
     return `test/temp_package${++last}.json`

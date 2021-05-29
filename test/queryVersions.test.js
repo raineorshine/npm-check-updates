@@ -10,8 +10,6 @@ chai.use(chaiAsPromised)
 process.env.NCU_TESTS = true
 
 describe('queryVersions', function () {
-  // We increase the timeout to allow for more time to retrieve the version information
-  this.timeout(30000)
 
   it('valid single package', () => {
     const latestVersions = queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })

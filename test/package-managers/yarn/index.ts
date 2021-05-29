@@ -35,8 +35,6 @@ chai.use(chaiAsPromised)
 
 describe('yarn', function () {
 
-  this.timeout(30000)
-
   it('list', async () => {
     const testDir = path.join(__dirname, 'default')
     const version = await yarn.latest('chalk', '', { cwd: testDir })
