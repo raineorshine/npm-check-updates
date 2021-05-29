@@ -13,7 +13,7 @@ import packageManagers from './package-managers'
 import * as logging from './logging'
 import * as constants from './constants'
 import cliOptions from './cli-options.js'
-import getNcurc from './lib/get-ncu-rc'
+import getNcuRc from './lib/getNcuRc'
 import getPeerDependencies from './lib/getPeerDependencies'
 import getIgnoredUpgrades from './lib/getIgnoredUpgrades'
 import programError from './lib/programError'
@@ -388,7 +388,7 @@ export async function run(options: Options = {}): Promise<PackageFile | Index<Ve
       analysis = await pkgs.reduce(async (previousPromise, packageFile) => {
         const packages = await previousPromise
         // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
-        const rcResult = getNcurc({ packageFile })
+        const rcResult = getNcuRc({ packageFile })
         const pkgOptions = {
           ...options,
           ...rcResult && rcResult.config,
@@ -441,5 +441,5 @@ export async function run(options: Options = {}): Promise<PackageFile | Index<Ve
   }
 }
 
-export { default as getNcurc } from './lib/get-ncu-rc'
+export { default as getNcuRc } from './lib/getNcuRc'
 export * from './versionmanager'

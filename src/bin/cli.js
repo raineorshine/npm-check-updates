@@ -68,7 +68,7 @@ const { configFileName, configFilePath, packageFile } = program
 // Do not load when global option is set
 // Do not load when tests are running (an be overridden if configFilePath is set explicitly)
 const rcResult = !program.global && (!process.env.NCU_TESTS || configFilePath)
-  ? ncu.getNcurc({ configFileName, configFilePath, packageFile })
+  ? ncu.getNcuRc({ configFileName, configFilePath, packageFile })
   : null
 
 // combine command line arguments with config file arguments
