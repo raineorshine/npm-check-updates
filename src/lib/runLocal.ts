@@ -4,6 +4,7 @@ import * as cint from 'cint'
 import _ from 'lodash'
 import Chalk from 'chalk'
 import jph from 'json-parse-helpfulerror'
+import { satisfies } from 'semver'
 import * as vm from '../versionmanager'
 import { print, printJson, printUpgrades, printIgnoredUpdates } from '../logging'
 import getIgnoredUpgrades from './getIgnoredUpgrades'
@@ -86,7 +87,7 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
   // split the deps into satisfied and unsatisfied to display in two separate tables
   const deps = Object.keys(selectedNewDependencies)
   const satisfied = cint.toObject(deps, (dep: string) => ({
-    [dep]: vm.isSatisfied(latest[dep], current[dep])
+    [dep]: satisfies(latest[dep], current[dep])
   }))
 
   const isSatisfied = _.propertyOf(satisfied)
