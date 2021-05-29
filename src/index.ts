@@ -1,238 +1,27 @@
-import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { promisify } from 'util'
 import globby from 'globby'
-import * as cint from 'cint'
 import _ from 'lodash'
 import Chalk from 'chalk'
-import jph from 'json-parse-helpfulerror'
-import * as vm from './versionmanager'
-import doctor from './doctor.js'
-import packageManagers from './package-managers'
-import * as logging from './logging'
-import * as constants from './constants'
 import cliOptions from './cli-options.js'
+import doctor from './doctor.js'
 import getNcuRc from './lib/getNcuRc'
-import getPeerDependencies from './lib/getPeerDependencies'
-import getIgnoredUpgrades from './lib/getIgnoredUpgrades'
-import mergeOptions from './lib/mergeOptions'
-import programError from './lib/programError'
-import upgradePackageDefinitions from './lib/upgradePackageDefinitions'
-import getPackageFileName from './lib/getPackageFileName'
+import packageManagers from './package-managers'
+import { doctorHelpText } from './constants'
+import { print, printJson } from './logging'
 import findPackage from './lib/findPackage'
+import getPackageFileName from './lib/getPackageFileName'
+import mergeOptions from './lib/mergeOptions'
 import initOptions from './lib/initOptions'
-import { Index, Maybe, Options, PackageFile, VersionDeclaration } from './types'
-
-const { doctorHelpText } = constants
-const { print, printJson, printUpgrades, printIgnoredUpdates } = logging
-
-//
-// Global Error Handling
-//
-
-/**
- * @typedef {Array} PkgInfo
- * @property 0 pkgFile
- * @property 1 pkgData
- */
+import programError from './lib/programError'
+import runGlobal from './lib/runGlobal'
+import runLocal from './lib/runLocal'
+import { Index, Options, PackageFile, VersionDeclaration } from './types'
 
 // exit with non-zero error code when there is an unhandled promise rejection
 process.on('unhandledRejection', err => {
   throw err
 })
-
-//
-// Helper functions
-//
-
-const writePackageFile = promisify(fs.writeFile)
-
-/** Recreate the options object sorted. */
-function sortOptions(options: Options): Options {
-  // eslint-disable-next-line fp/no-mutating-methods
-  return _.transform(Object.keys(options).sort(), (accum, key) => {
-    accum[key] = options[key as keyof Options]
-  }, {} as any)
-}
-
-//
-// Main functions
-//
-
-/** Checks global dependencies for upgrades. */
-async function runGlobal(options: Options): Promise<void> {
-
-  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
-
-  print(options, 'Getting installed packages', 'verbose')
-
-  const globalPackages = await vm.getInstalledPackages(
-    _.pick(options, ['cwd', 'filter', 'filterVersion', 'global', 'packageManager', 'prefix', 'reject', 'rejectVersion'])
-  )
-
-  print(options, 'globalPackages', 'silly')
-  print(options, globalPackages, 'silly')
-  print(options, '', 'silly')
-  print(options, `Fetching ${options.target} versions`, 'verbose')
-
-  const [upgraded, latest] = await upgradePackageDefinitions(globalPackages, options)
-  print(options, latest, 'silly')
-
-  const upgradedPackageNames = Object.keys(upgraded)
-  printUpgrades(options, {
-    current: globalPackages,
-    upgraded,
-    // since an interactive upgrade of globals is not available, the numUpgraded is always all
-    numUpgraded: upgradedPackageNames.length,
-    total: upgradedPackageNames.length,
-  })
-
-  const instruction = upgraded
-    ? upgradedPackageNames.map(pkg => pkg + '@' + upgraded[pkg]).join(' ')
-    : '[package]'
-
-  if (options.json) {
-    // since global packages do not have a package.json, return the upgraded deps directly (no version range replacements)
-    printJson(options, upgraded)
-  }
-  else if (instruction.length) {
-    const upgradeCmd = options.packageManager === 'yarn' ? 'yarn global upgrade' : 'npm -g install'
-
-    print(options, '\n' + chalk.cyan('ncu') + ' itself cannot upgrade global packages. Run the following to upgrade all global packages: \n\n' + chalk.cyan(`${upgradeCmd} ` + instruction) + '\n')
-  }
-
-  // if errorLevel is 2, exit with non-zero error code
-  if (options.cli && options.errorLevel === 2 && upgradedPackageNames.length > 0) {
-    process.exit(1)
-  }
-}
-
-/** Checks local project dependencies for upgrades. */
-async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: Maybe<string>): Promise<PackageFile | Index<VersionDeclaration>> {
-
-  print(options, '\nOptions:', 'verbose')
-  print(options, sortOptions(options), 'verbose')
-
-  let pkg
-
-  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
-
-  try {
-    if (!pkgData) {
-      throw new Error('Missing pkgData: ' + pkgData)
-    }
-    else {
-      pkg = jph.parse(pkgData)
-    }
-  }
-  catch (e) {
-    programError(options, chalk.red(`Invalid package file${pkgFile ? `: ${pkgFile}` : ' from stdin'}. Error details:\n${e.message}`))
-  }
-
-  const current = vm.getCurrentDependencies(pkg, options)
-
-  print(options, '\nCurrent:', 'verbose')
-  print(options, current, 'verbose')
-
-  print(options, `\nFetching ${options.target} versions`, 'verbose')
-
-  if (options.enginesNode) {
-    options.nodeEngineVersion = _.get(pkg, 'engines.node')
-  }
-
-  if (options.peer) {
-    options.peerDependencies = getPeerDependencies(current, options)
-  }
-
-  const [upgraded, latest, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)
-
-  if (options.peer) {
-    print(options, '\nupgradedPeerDependencies:', 'verbose')
-    print(options, upgradedPeerDependencies, 'verbose')
-  }
-
-  print(options, '\nFetched:', 'verbose')
-  print(options, latest, 'verbose')
-
-  print(options, '\nUpgraded:', 'verbose')
-  print(options, upgraded, 'verbose')
-
-  const { newPkgData, selectedNewDependencies } = await vm.upgradePackageData(pkgData!, current, upgraded, latest, options)
-
-  const output = options.jsonAll ? jph.parse(newPkgData) as PackageFile :
-    options.jsonDeps ?
-      _.pick(jph.parse(newPkgData) as PackageFile, 'dependencies', 'devDependencies', 'optionalDependencies') :
-      selectedNewDependencies
-
-  // will be overwritten with the result of writePackageFile so that the return promise waits for the package file to be written
-  let writePromise = Promise.resolve()
-
-  // split the deps into satisfied and unsatisfied to display in two separate tables
-  const deps = Object.keys(selectedNewDependencies)
-  const satisfied = cint.toObject(deps, (dep: string) => ({
-    [dep]: vm.isSatisfied(latest[dep], current[dep])
-  }))
-
-  const isSatisfied = _.propertyOf(satisfied)
-  const filteredUpgraded = options.minimal ? cint.filterObject(selectedNewDependencies, (dep: string) => !isSatisfied(dep)) : selectedNewDependencies
-  const numUpgraded = Object.keys(filteredUpgraded).length
-
-  const ownersChangedDeps = (options.format || []).includes('ownerChanged')
-    ? await vm.getOwnerPerDependency(current, filteredUpgraded, options)
-    : undefined
-
-  // print
-  if (options.json && !options.deep) {
-    // use the selectedNewDependencies dependencies data to generate new package data
-    // INVARIANT: we don't need try-catch here because pkgData has already been parsed as valid JSON, and vm.upgradePackageData simply does a find-and-replace on that
-    printJson(options, output)
-  }
-  else {
-    printUpgrades(options, {
-      current,
-      upgraded: filteredUpgraded,
-      numUpgraded,
-      total: Object.keys(upgraded).length,
-      ownersChangedDeps
-    })
-    if (options.peer) {
-      const ignoredUpdates = await getIgnoredUpgrades(current, upgraded, upgradedPeerDependencies!, options)
-      if (!_.isEmpty(ignoredUpdates)) {
-        printIgnoredUpdates(options, ignoredUpdates)
-      }
-    }
-  }
-
-  if (numUpgraded > 0) {
-
-    // if there is a package file, write the new package data
-    // otherwise, suggest ncu -u
-    if (pkgFile) {
-      if (options.upgrade) {
-        // do not await until end
-        writePromise = writePackageFile(pkgFile, newPkgData)
-          .then(() => {
-            print(options, `\nRun ${chalk.cyan(options.packageManager === 'yarn' ? 'yarn install' : 'npm install')} to install new versions.\n`)
-          })
-      }
-      else {
-        print(options, `\nRun ${chalk.cyan('ncu -u')} to upgrade ${getPackageFileName(options)}`)
-      }
-    }
-
-    // if errorLevel is 2, exit with non-zero error code
-    if (options.errorLevel === 2) {
-      writePromise.then(() => {
-        programError(options, '\nDependencies not up-to-date')
-      })
-    }
-  }
-
-  await writePromise
-
-  return output
-}
 
 /** Main entry point.
  *

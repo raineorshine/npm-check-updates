@@ -113,7 +113,7 @@ function toDependencyTable({ from: fromDeps, to: toDeps, ownersChangedDeps, form
  */
 export function printUpgrades(options: Options, { current, latest, upgraded, numUpgraded, total, ownersChangedDeps }: {
   current: Index<VersionDeclaration>,
-  latest: Index<Version>,
+  latest?: Index<Version>,
   upgraded: Index<VersionDeclaration>,
   numUpgraded: number,
   total: number,
