@@ -1,10 +1,9 @@
 import semver from 'semver'
 import _ from 'lodash'
 import cint from 'cint'
-import minimatch from 'minimatch'
 import prompts from 'prompts'
-import { and } from 'fp-and-or'
 import * as versionUtil from './version-util'
+import filterAndReject from './lib/filterAndReject'
 import getPackageManager from './lib/getPackageManager'
 import { FilterPattern, Index, Maybe, Options, PackageFile, Version, VersionDeclaration } from './types'
 
@@ -21,79 +20,6 @@ export const isSatisfied = semver.satisfies
 /** Returns a string that is safe to use in `new RegExp(...)`. */
 function escapeRegexp(s: string) {
   return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') // Thanks Stack Overflow!
-}
-
-/**
- * @typedef {string|string[]|RegExp} FilterObject
- */
-
-/**
- * Creates a filter function from a given filter string. Supports
- * strings, wildcards, comma-or-space-delimited lists, and regexes.
- *
- * @param [filter]
- * @returns
- */
-function composeFilter(filterPattern: FilterPattern): (s: string) => boolean {
-
-  let predicate
-
-  // no filter
-  if (!filterPattern) {
-    predicate = _.identity
-  }
-  // string
-  else if (typeof filterPattern === 'string') {
-    // RegExp string
-    if (filterPattern[0] === '/' && filterPattern[filterPattern.length - 1] === '/') {
-      const regexp = new RegExp(filterPattern.slice(1, -1))
-      predicate = (s: string) => regexp.test(s)
-    }
-    // glob string
-    else {
-      const patterns = filterPattern.split(/[\s,]+/)
-      predicate = (s: string) => patterns.some(pattern => minimatch(s, pattern))
-    }
-  }
-  // array
-  else if (Array.isArray(filterPattern)) {
-    predicate = (s: string) => filterPattern.some(
-      (subpattern: string | RegExp) => composeFilter(subpattern)(s)
-    )
-  }
-  // raw RegExp
-  else if (filterPattern instanceof RegExp) {
-    predicate = (s: string) => filterPattern.test(s)
-  }
-  else {
-    throw new TypeError('Invalid filter. Must be a RegExp, array, or comma-or-space-delimited list.')
-  }
-
-  // limit the arity to 1 to avoid passing the value
-  return predicate
-}
-
-/**
- * Composes a filter function from filter, reject, filterVersion, and rejectVersion patterns.
- *
- * @param filter
- * @param reject
- * @param filterVersion
- * @param rejectVersion
- */
-function filterAndReject(filter: Maybe<FilterPattern>, reject: Maybe<FilterPattern>, filterVersion: Maybe<FilterPattern>, rejectVersion: Maybe<FilterPattern>) {
-  return and(
-    // filter dep
-    (dep: VersionDeclaration) => and(
-      filter ? composeFilter(filter) : _.identity,
-      reject ? _.negate(composeFilter(reject)) : _.identity
-    )(dep),
-    // filter version
-    (dep: VersionDeclaration, version: Version) => and(
-      filterVersion ? composeFilter(filterVersion) : _.identity,
-      rejectVersion ? _.negate(composeFilter(rejectVersion)) : _.identity
-    )(version)
-  )
 }
 
 /**
@@ -220,32 +146,6 @@ export function getCurrentDependencies(pkgData: PackageFile = {}, options: Optio
   return filteredDependencies
 }
 
-/**
- * @param [options]
- * @param options.cwd
- * @param options.filter
- * @param options.global
- * @param options.packageManager
- * @param options.prefix
- * @param options.reject
- */
-export async function getInstalledPackages(options: Options = {}) {
-
-  const pkgInfoObj = await getPackageManager(options.packageManager)
-    .list?.({ cwd: options.cwd, prefix: options.prefix, global: options.global })
-
-  if (!pkgInfoObj) {
-    throw new Error('Unable to retrieve NPM package list')
-  }
-
-  // filter out undefined packages or those with a wildcard
-  const filterFunction = filterAndReject(options.filter, options.reject, options.filterVersion, options.rejectVersion)
-  return cint.filterObject(pkgInfoObj, (dep: VersionDeclaration, version: Version) =>
-    !!version && !versionUtil.isWildPart(version) && filterFunction(dep, version)
-  )
-
-}
-
 //
 // API
 //
@@ -253,7 +153,6 @@ export async function getInstalledPackages(options: Options = {}) {
 module.exports = {
   // used directly by cli.js
   getCurrentDependencies,
-  getInstalledPackages,
   isSatisfied,
   upgradePackageData,
   getOwnerPerDependency,
