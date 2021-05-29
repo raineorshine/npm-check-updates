@@ -207,14 +207,7 @@ describe('--deep with nested ncurc files', function () {
   })
 
   it('merge options', () => {
-    // should return option1 if keys = []
-    const obj1 = { a: 42 }
-    chai.expect(mergeOptions(obj1, { a: 43 }, { keys: [] })).to.be.eq(obj1)
-
-    const eq = (o1, o2, result, opts) => chai.expect(mergeOptions(o1, o2, opts)).to.deep.equal(result)
-    // merge only specific properties
-    eq({ a: 1, b: 1 }, { a: 2, b: 2 }, { a: 2, b: 2 })
-    eq({ a: 1, b: 1 }, { a: 2, b: 2 }, { a: 1, b: 2 }, { keys: ['b'] })
+    const eq = (o1, o2, result, opts) => chai.expect(mergeOptions(o1, o2)).to.deep.equal(result)
 
     // trivial cases
     eq(null, null, {})
@@ -234,10 +227,9 @@ describe('--deep with nested ncurc files', function () {
 
     // all together
     eq(
-      { a: [1], b: true, c: 1, d1: 'd1', e: 1 },
-      { a: [2], b: false, c: ['1'], d2: 'd2', e: 2 },
-      { a: [1, 2], b: false, c: ['1'], d1: 'd1', d2: 'd2', e: 1 },
-      { keys: ['a', 'b', 'c', 'd1', 'd2'] }
+      { a: [1], b: true, c: 1, d1: 'd1' },
+      { a: [2], b: false, c: ['1'], d2: 'd2' },
+      { a: [1, 2], b: false, c: ['1'], d1: 'd1', d2: 'd2' }
     )
   })
 
