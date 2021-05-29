@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import cint from 'cint'
-import { Index, Version, VersionDeclaration } from '../types'
+import { Index, Version, VersionSpec } from '../types'
 import { fixPseudoVersion, isSimpleVersion, stringify, isWildCard } from '../version-util'
 import * as semver from 'semver'
 import semverutils from 'semver-utils'
@@ -12,7 +12,7 @@ import semverutils from 'semver-utils'
  * @param latest
  * @returns
  */
-function isUpgradeable(current: VersionDeclaration, latest: Version) {
+function isUpgradeable(current: VersionSpec, latest: Version) {
 
   // do not upgrade non-npm version declarations (such as git tags)
   // do not upgrade wildcards

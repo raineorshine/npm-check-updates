@@ -5,10 +5,10 @@ import parseGithubUrl from 'parse-github-url'
 import semver from 'semver'
 import * as versionUtil from '../version-util'
 import { print } from '../logging'
-import { Options, VersionDeclaration, VersionLevel } from '../types'
+import { Options, VersionSpec, VersionLevel } from '../types'
 
 /** Gets remote versions sorted. */
-const getSortedVersions = async (name: string, declaration: VersionDeclaration, options: Options) => {
+const getSortedVersions = async (name: string, declaration: VersionSpec, options: Options) => {
   // if present, github: is parsed as the protocol. This is not valid when passed into remote-git-tags.
   declaration = declaration.replace(/^github:/, '')
   const { auth, protocol, host, path } = parseGithubUrl(declaration)!
@@ -46,7 +46,7 @@ const getSortedVersions = async (name: string, declaration: VersionDeclaration, 
 }
 
 /** Return the highest non-prerelease numbered tag on a remote Git URL. */
-export const latest = async (name: string, declaration: VersionDeclaration, options: Options) => {
+export const latest = async (name: string, declaration: VersionSpec, options: Options) => {
   const versions = await getSortedVersions(name, declaration, options)
   if (!versions) return null
   const versionsFiltered = options.pre
@@ -59,7 +59,7 @@ export const latest = async (name: string, declaration: VersionDeclaration, opti
 }
 
 /** Return the highest numbered tag on a remote Git URL. */
-export const greatest = async (name: string, declaration: VersionDeclaration, options: Options) => {
+export const greatest = async (name: string, declaration: VersionSpec, options: Options) => {
   const versions = await getSortedVersions(name, declaration, options)
   if (!versions) return null
   const greatestVersion = versions[versions.length - 1]
@@ -69,7 +69,7 @@ export const greatest = async (name: string, declaration: VersionDeclaration, op
 }
 
 /** Returns a function that returns the highest version at the given level. */
-export const greatestLevel = (level: VersionLevel) => async (name: string, declaration: VersionDeclaration, options: Options = {}) => {
+export const greatestLevel = (level: VersionLevel) => async (name: string, declaration: VersionSpec, options: Options = {}) => {
 
   const version = decodeURIComponent(parseGithubUrl(declaration)!.branch)
     .replace(/^semver:/, '')

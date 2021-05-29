@@ -3,7 +3,7 @@ import { satisfies } from 'semver'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
 import queryVersions from './queryVersions'
 import upgradeDependencies from './upgradeDependencies'
-import { Index, Options, VersionDeclaration } from '../types'
+import { Index, Options, VersionSpec } from '../types'
 
 /**
  * Returns an 3-tuple of upgradedDependencies, their latest versions and the resulting peer dependencies.
@@ -12,7 +12,7 @@ import { Index, Options, VersionDeclaration } from '../types'
  * @param options
  * @returns
  */
-export async function upgradePackageDefinitions(currentDependencies: Index<VersionDeclaration>, options: Options): Promise<[Index<VersionDeclaration>, Index<VersionDeclaration>, Index<Index<VersionDeclaration>>?]> {
+export async function upgradePackageDefinitions(currentDependencies: Index<VersionSpec>, options: Options): Promise<[Index<VersionSpec>, Index<VersionSpec>, Index<Index<VersionSpec>>?]> {
   const latestVersions = await queryVersions(currentDependencies, options)
 
   const upgradedDependencies = upgradeDependencies(currentDependencies, latestVersions, {

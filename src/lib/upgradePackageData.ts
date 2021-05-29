@@ -1,7 +1,7 @@
 import prompts from 'prompts'
 import { satisfies } from 'semver'
 import { colorizeDiff } from '../version-util'
-import { Index, Options, Version, VersionDeclaration } from '../types'
+import { Index, Options, Version, VersionSpec } from '../types'
 
 /**
  * @returns String safe for use in `new RegExp()`
@@ -21,7 +21,7 @@ function escapeRegexp(s: string) {
  * @returns The updated package data, as utf8 text
  * @description Side Effect: prompts
  */
-async function upgradePackageData(pkgData: string, oldDependencies: Index<VersionDeclaration>, newDependencies: Index<VersionDeclaration>, newVersions: Index<Version>, options: Options = {}) {
+async function upgradePackageData(pkgData: string, oldDependencies: Index<VersionSpec>, newDependencies: Index<VersionSpec>, newVersions: Index<Version>, options: Options = {}) {
 
   // copy newDependencies for mutation via interactive mode
   const selectedNewDependencies = { ...newDependencies }

@@ -1,4 +1,4 @@
-import { Index, Options, VersionDeclaration } from '../types'
+import { Index, Options, VersionSpec } from '../types'
 import getPackageManager from './getPackageManager'
 import ProgressBar from 'progress'
 
@@ -9,7 +9,7 @@ import ProgressBar from 'progress'
  * @param [options={}] Options.
  * @returns Promised {packageName: peer dependencies} collection
  */
-async function getPeerDependenciesFromRegistry(packageMap: Index<VersionDeclaration>, options: Options) {
+async function getPeerDependenciesFromRegistry(packageMap: Index<VersionSpec>, options: Options) {
   const packageManager = getPackageManager(options.packageManager)
   if (!packageManager.getPeerDependencies) return {}
 

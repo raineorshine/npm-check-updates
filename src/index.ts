@@ -16,7 +16,7 @@ import initOptions from './lib/initOptions'
 import programError from './lib/programError'
 import runGlobal from './lib/runGlobal'
 import runLocal from './lib/runLocal'
-import { Index, Options, PackageFile, VersionDeclaration } from './types'
+import { Index, Options, PackageFile, VersionSpec } from './types'
 
 // exit with non-zero error code when there is an unhandled promise rejection
 process.on('unhandledRejection', err => {
@@ -27,11 +27,11 @@ process.on('unhandledRejection', err => {
  *
  * @returns Promise<
  * PackageFile                    Default returns upgraded package file.
- * | Index<VersionDeclaration>    --jsonUpgraded returns only upgraded dependencies.
+ * | Index<VersionSpec>    --jsonUpgraded returns only upgraded dependencies.
  * | void                         --global upgrade returns void.
  * >
  */
-export async function run(options: Options = {}): Promise<PackageFile | Index<VersionDeclaration> | void> {
+export async function run(options: Options = {}): Promise<PackageFile | Index<VersionSpec> | void> {
 
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
