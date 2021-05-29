@@ -37,6 +37,7 @@ export interface Packument {
 }
 
 export interface PackageFile {
+  repository?: string | { url: string },
   dependencies?: Index<VersionDeclaration>,
   devDependencies?: Index<VersionDeclaration>,
   peerDependencies?: Index<VersionDeclaration>,
