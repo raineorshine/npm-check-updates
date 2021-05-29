@@ -122,7 +122,7 @@ async function spawnYarn(args: string | string[], yarnOptions: YarnOptions = {},
   // use local yarn for tests
   // ncu cannot be mocked in doctor tests because they spawn ncu in a separate process
   const cmd = process.env.NCU_TESTS
-    ? path.resolve('../../../node_modules/yarn/bin', platformCmd)
+    ? path.resolve(__dirname.replace('build/', ''), '../../node_modules/yarn/bin', platformCmd)
     : platformCmd
 
   const fullArgs = ([] as string[]).concat(
@@ -133,7 +133,6 @@ async function spawnYarn(args: string | string[], yarnOptions: YarnOptions = {},
     '--json',
     '--no-progress'
   )
-
   return spawn(cmd, fullArgs, spawnOptions)
 }
 
@@ -290,4 +289,4 @@ export const patch: GetVersion = async (packageName, currentVersion, options = {
   )
 }
 
-export const yarn = spawnYarn
+export default spawnYarn
