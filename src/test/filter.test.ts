@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import chai from 'chai'
-import * as ncu from '../index'
+import ncu from '../index'
 import { Index } from '../types'
 
 chai.should()
@@ -10,7 +10,7 @@ process.env.NCU_TESTS = 'true'
 describe('filter', () => {
 
   it('filter by package name with one arg', async () => {
-    const upgraded = await ncu.run({
+    const upgraded = await ncu({
       packageData: fs.readFileSync(path.join(__dirname, '../../test/ncu/package2.json'), 'utf-8'),
       args: ['lodash.map']
     }) as Index<string>
@@ -19,7 +19,7 @@ describe('filter', () => {
   })
 
   it('filter by package name with multiple args', async () => {
-    const upgraded = await ncu.run({
+    const upgraded = await ncu({
       packageData: fs.readFileSync(path.join(__dirname, '../../test/ncu/package2.json'), 'utf-8'),
       args: ['lodash.map', 'lodash.filter']
     }) as Index<string>
@@ -28,7 +28,7 @@ describe('filter', () => {
   })
 
   it('filter with wildcard', async () => {
-    const upgraded = await ncu.run({
+    const upgraded = await ncu({
       packageData: JSON.stringify({
         dependencies: {
           lodash: '2.0.0',
@@ -43,7 +43,7 @@ describe('filter', () => {
   })
 
   it('filter with negated wildcard', async () => {
-    const upgraded = await ncu.run({
+    const upgraded = await ncu({
       packageData: JSON.stringify({
         dependencies: {
           lodash: '2.0.0',
@@ -57,7 +57,7 @@ describe('filter', () => {
   })
 
   it('filter with regex string', async () => {
-    const upgraded = await ncu.run({
+    const upgraded = await ncu({
       packageData: JSON.stringify({
         dependencies: {
           lodash: '2.0.0',
@@ -72,7 +72,7 @@ describe('filter', () => {
   })
 
   it('filter with array of strings', async () => {
-    const upgraded = await ncu.run({
+    const upgraded = await ncu({
       packageData: JSON.stringify({
         dependencies: {
           lodash: '2.0.0',
@@ -87,7 +87,7 @@ describe('filter', () => {
   })
 
   it('filter with array of regex', async () => {
-    const upgraded = await ncu.run({
+    const upgraded = await ncu({
       packageData: JSON.stringify({
         dependencies: {
           'fp-and-or': '0.1.0',
@@ -104,7 +104,7 @@ describe('filter', () => {
   })
 
   it('filter with array of regex strings', async () => {
-    const upgraded = await ncu.run({
+    const upgraded = await ncu({
       packageData: JSON.stringify({
         dependencies: {
           'fp-and-or': '0.1.0',
