@@ -6,7 +6,8 @@ module.exports = {
     // breaking changes (just need to spend some time to fix them)
     'commander',
 
-    // sindresorhus switched to pure ESM (node >= 12)
+    // "Must use import to load ES Module"
+    // These can be removed once the tests are converted to Typescript
     'get-stdin',
     'p-map',
     'strip-ansi',
