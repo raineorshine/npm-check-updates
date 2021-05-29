@@ -1,29 +1,28 @@
-'use strict'
-
-const fs = require('fs')
-const path = require('path')
-const chai = require('chai')
-const ncu = require('../src/index')
+import fs from 'fs'
+import path from 'path'
+import chai from 'chai'
+import * as ncu from '../index'
+import { Index } from '../types'
 
 chai.should()
-process.env.NCU_TESTS = true
+process.env.NCU_TESTS = 'true'
 
 describe('filter', () => {
 
   it('filter by package name with one arg', async () => {
     const upgraded = await ncu.run({
-      packageData: fs.readFileSync(path.join(__dirname, 'ncu/package2.json'), 'utf-8'),
+      packageData: fs.readFileSync(path.join(__dirname, '../../test/ncu/package2.json'), 'utf-8'),
       args: ['lodash.map']
-    })
+    }) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.not.have.property('lodash.filter')
   })
 
   it('filter by package name with multiple args', async () => {
     const upgraded = await ncu.run({
-      packageData: fs.readFileSync(path.join(__dirname, 'ncu/package2.json'), 'utf-8'),
+      packageData: fs.readFileSync(path.join(__dirname, '../../test/ncu/package2.json'), 'utf-8'),
       args: ['lodash.map', 'lodash.filter']
-    })
+    }) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
   })
@@ -38,7 +37,7 @@ describe('filter', () => {
         }
       }),
       args: ['lodash.*']
-    })
+    }) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
   })
@@ -53,7 +52,7 @@ describe('filter', () => {
         }
       }),
       args: ['!lodash.*']
-    })
+    }) as Index<string>
     upgraded.should.have.property('lodash')
   })
 
@@ -67,7 +66,7 @@ describe('filter', () => {
         }
       }),
       filter: '/lodash\\..*/'
-    })
+    }) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
   })
@@ -82,7 +81,7 @@ describe('filter', () => {
         }
       }),
       filter: ['lodash.map', 'lodash.filter']
-    })
+    }) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
   })
@@ -98,7 +97,7 @@ describe('filter', () => {
         }
       }),
       filter: [/lodash\..*/, /fp.*/]
-    })
+    }) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
     upgraded.should.have.property('fp-and-or')
@@ -115,7 +114,7 @@ describe('filter', () => {
         }
       }),
       filter: ['/lodash\\..*/', '/fp.*/']
-    })
+    }) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
     upgraded.should.have.property('fp-and-or')

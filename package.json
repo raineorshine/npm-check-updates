@@ -38,7 +38,7 @@
     "nyc": "nyc",
     "prepublishOnly": "npm run build",
     "test": "npm run test:src && npm run test:timeout",
-    "test:src": "mocha test test/package-managers/npm/index.ts test/package-managers/yarn/index.ts",
+    "test:src": "mocha test src/__tests__/* test/package-managers/npm/index.ts test/package-managers/yarn/index.ts",
     "test:timeout": "mocha --exit test/timeout",
     "ncu": "node build/src/bin/cli.js"
   },
