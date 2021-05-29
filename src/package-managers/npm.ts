@@ -267,7 +267,6 @@ export const greatest: GetVersion = async (packageName, currentVersion, options 
       .sort(versionUtil.compareVersions)
   ) || null
 }
->>>>>>> 83418c1 (Convert package-managers/npm to typescript.):src/package-managers/npm.ts
 
 /**
  * Requests the list of peer dependencies for a specific package version

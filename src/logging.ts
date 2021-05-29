@@ -7,7 +7,6 @@ import Chalk from 'chalk'
 import { colorizeDiff, isGithubUrl, getGithubUrlTag, isNpmAlias, parseNpmAlias } from './version-util'
 import getRepoUrl from './lib/getRepoUrl'
 import { IgnoredUpgrade, Index, Options, Version, VersionDeclaration } from './types'
->>>>>>> f6856da (Convert getRepoUrl to Typescript.)
 
 // maps string levels to numeric levels
 const logLevels = {
