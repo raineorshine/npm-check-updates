@@ -3,7 +3,6 @@ import path from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import spawn from 'spawn-please'
-import * as yarn from '../../../src/package-managers/yarn'
 
 // mock spawn-please to use local yarn
 // must be mocked before requiring packageManagers
@@ -29,6 +28,8 @@ mock('spawn-please', async (cmd, args, options) => {
 
   return result
 })
+
+const yarn = require('../../../src/package-managers/yarn')
 
 chai.should()
 chai.use(chaiAsPromised)

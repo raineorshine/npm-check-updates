@@ -174,5 +174,4 @@ export async function run(options: Options = {}): Promise<PackageFile | Index<Ve
 }
 
 export { default as getNcuRc } from './lib/getNcuRc'
-export * from './versionmanager'
 export default run

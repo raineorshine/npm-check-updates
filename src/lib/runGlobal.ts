@@ -1,38 +1,9 @@
 import _ from 'lodash'
-import cint from 'cint'
 import Chalk from 'chalk'
 import { print, printJson, printUpgrades } from '../logging'
-import * as versionUtil from '../version-util'
-import filterAndReject from './filterAndReject'
-import getPackageManager from './getPackageManager'
+import getInstalledPackages from './getInstalledPackages'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
-import { Options, Version, VersionDeclaration } from '../types'
-
-/**
- * @param [options]
- * @param options.cwd
- * @param options.filter
- * @param options.global
- * @param options.packageManager
- * @param options.prefix
- * @param options.reject
- */
-async function getInstalledPackages(options: Options = {}) {
-
-  const pkgInfoObj = await getPackageManager(options.packageManager)
-    .list?.({ cwd: options.cwd, prefix: options.prefix, global: options.global })
-
-  if (!pkgInfoObj) {
-    throw new Error('Unable to retrieve NPM package list')
-  }
-
-  // filter out undefined packages or those with a wildcard
-  const filterFunction = filterAndReject(options.filter, options.reject, options.filterVersion, options.rejectVersion)
-  return cint.filterObject(pkgInfoObj, (dep: VersionDeclaration, version: Version) =>
-    !!version && !versionUtil.isWildPart(version) && filterFunction(dep, version)
-  )
-
-}
+import { Options } from '../types'
 
 /** Checks global dependencies for upgrades. */
 async function runGlobal(options: Options): Promise<void> {
