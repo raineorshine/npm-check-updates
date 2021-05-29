@@ -122,12 +122,12 @@ export interface RunOptions {
   /**
    * Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
    */
-  filter?: string | string[] | RegExp,
+  filter?: string | string[] | RegExp | RegExp[],
 
   /**
    * Filter on package version using comma-or-space-delimited list, or /regex/.
    */
-  filterVersion?: string | string[] | RegExp,
+  filterVersion?: string | string[] | RegExp | RegExp[],
 
   /**
    * Enable additional output data, string or comma-delimited list: ownerChanged, repo. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository. (default: [])
