@@ -163,6 +163,9 @@ ncu "/^(?!react-).*$/" # windows
 --jsonUpgraded               Output upgraded dependencies in json.
 -l, --loglevel <n>           Amount to log: silent, error, minimal, warn,
                              info, verbose, silly. (default: "warn")
+--mergeConfig                Merges nested configs with the root config file
+                             for --deep or --packageFile options (default:
+                             false)').
 -m, --minimal                Do not upgrade newer versions that are already
                              satisfied by the version range according to
                              semver.

@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "cute-animals": "^0.1.0",
+    "fp-and-or": "^0.1.0",
+    "ncu-test-v2": "^0.1.0"
+  }
+}

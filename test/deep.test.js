@@ -6,6 +6,7 @@ const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const ncu = require('../lib/')
 const spawn = require('spawn-please')
+const mergeOptions = require('../lib/merge-options')
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -144,6 +145,92 @@ describe('--deep with nested ncurc files', function () {
     deepJsonOut['pkg/sub2/package.json'].should.not.have.property('cute-animals')
     deepJsonOut['pkg/sub2/package.json'].should.have.property('fp-and-or')
     deepJsonOut['pkg/sub2/package.json'].should.have.property('ncu-test-v2')
+
+    // pkg3: reject: ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub3/package.json')
+    deepJsonOut['pkg/sub3/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub3/package.json'].should.have.property('fp-and-or')
+    deepJsonOut['pkg/sub3/package.json'].should.have.property('ncu-test-v2')
+  })
+
+  it('use ncurc of nested packages with --mergeConfig option', async () => {
+
+    const deepJsonOut = await spawn('node', [bin, '--jsonUpgraded', '--deep', '--mergeConfig'], { cwd }).then(JSON.parse)
+
+    // root: reject: ['cute-animals']
+    deepJsonOut.should.have.property('package.json')
+    deepJsonOut['package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['package.json'].should.have.property('fp-and-or')
+
+    // pkg1: reject: ['fp-ando-or', 'cute-animals']
+    deepJsonOut.should.have.property('pkg/sub1/package.json')
+    deepJsonOut['pkg/sub1/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub1/package.json'].should.not.have.property('fp-and-or')
+    deepJsonOut['pkg/sub1/package.json'].should.have.property('ncu-test-return-version')
+
+    // pkg2: reject: ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub2/package.json')
+    deepJsonOut['pkg/sub2/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub2/package.json'].should.have.property('fp-and-or')
+    deepJsonOut['pkg/sub2/package.json'].should.have.property('ncu-test-v2')
+
+    // pkg21: explicit reject: ['fp-ando-or'] and implicit reject ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub2/sub21/package.json')
+    deepJsonOut['pkg/sub2/sub21/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub2/sub21/package.json'].should.not.have.property('fp-and-or')
+    deepJsonOut['pkg/sub2/sub21/package.json'].should.have.property('ncu-test-return-version')
+
+    // pkg22: implicit reject: ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub2/sub22/package.json')
+    deepJsonOut['pkg/sub2/sub22/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub2/sub22/package.json'].should.have.property('fp-and-or')
+    deepJsonOut['pkg/sub2/sub22/package.json'].should.have.property('ncu-test-v2')
+
+    // pkg3: reject: ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub3/package.json')
+    deepJsonOut['pkg/sub3/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub3/package.json'].should.have.property('fp-and-or')
+    deepJsonOut['pkg/sub3/package.json'].should.have.property('ncu-test-v2')
+
+    // pkg31: explicit reject: ['fp-ando-or'] and implicit reject ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub3/sub31/package.json')
+    deepJsonOut['pkg/sub3/sub31/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub3/sub31/package.json'].should.not.have.property('fp-and-or')
+    deepJsonOut['pkg/sub3/sub31/package.json'].should.have.property('ncu-test-return-version')
+
+    // pkg32: implicit reject: ['cute-animals']
+    deepJsonOut.should.have.property('pkg/sub3/sub32/package.json')
+    deepJsonOut['pkg/sub3/sub32/package.json'].should.not.have.property('cute-animals')
+    deepJsonOut['pkg/sub3/sub32/package.json'].should.have.property('fp-and-or')
+    deepJsonOut['pkg/sub3/sub32/package.json'].should.have.property('ncu-test-v2')
+
+  })
+
+  it('merge options', () => {
+    const eq = (o1, o2, result, opts) => chai.expect(mergeOptions(o1, o2)).to.deep.equal(result)
+
+    // trivial cases
+    eq(null, null, {})
+    eq({}, {}, {})
+
+    // standard merge not broken
+    eq({ a: 1 }, {}, { a: 1 })
+    eq({}, { a: 1 }, { a: 1 })
+    eq({ a: 1 }, { a: 2 }, { a: 2 })
+
+    // merge arrays (non standard behavior)
+    eq({ a: [1] }, { a: [2] }, { a: [1, 2] })
+    eq({ a: [1, 2] }, { a: [2, 3] }, { a: [1, 2, 3] })
+
+    // if property types different, then apply standard merge behavior
+    eq({ a: 1 }, { a: [2] }, { a: [2] })
+
+    // all together
+    eq(
+      { a: [1], b: true, c: 1, d1: 'd1' },
+      { a: [2], b: false, c: ['1'], d2: 'd2' },
+      { a: [1, 2], b: false, c: ['1'], d1: 'd1', d2: 'd2' }
+    )
   })
 
 })
