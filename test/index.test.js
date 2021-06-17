@@ -28,6 +28,16 @@ describe('run', function () {
     }).should.eventually.have.property('express')
   })
 
+  it('pass object as packageData', () => {
+    return ncu.run({
+      packageData: {
+        dependencies: {
+          'ncu-test-v2': '1.0.0'
+        }
+      },
+    }).should.eventually.have.property('ncu-test-v2')
+  })
+
   it('suggest upgrades to versions within the specified version range if jsonUpgraded is true', () => {
     const upgraded = ncu.run({
       // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
