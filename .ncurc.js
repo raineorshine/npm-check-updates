@@ -6,8 +6,9 @@ module.exports = {
     // breaking changes (just need to spend some time to fix them)
     'commander',
 
-    // sindresorhus switched to pure ESM (node >= 12)
+    // node >= 12
     'get-stdin',
+    'mocha',
     'p-map',
     'strip-ansi',
 
