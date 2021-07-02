@@ -284,7 +284,7 @@ describe('versionmanager', () => {
 
     it('upgrade simple, non-semver versions', () => {
       vm.upgradeDependencies({ foo: '1' }, { foo: '2' }).should.eql({ foo: '2' })
-      vm.upgradeDependencies({ mongodb: '0.5' }, { mongodb: '1.4.30' }).should.eql({ mongodb: '1.4' })
+      vm.upgradeDependencies({ foo: '1.0' }, { foo: '1.1' }).should.eql({ foo: '1.1' })
       vm.upgradeDependencies({ 'ncu-test-simple-tag': 'v1' }, { 'ncu-test-simple-tag': 'v3' }).should.eql({ 'ncu-test-simple-tag': 'v3' })
     })
 
