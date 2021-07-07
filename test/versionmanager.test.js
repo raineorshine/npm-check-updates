@@ -288,6 +288,10 @@ describe('versionmanager', () => {
       vm.upgradeDependencies({ 'ncu-test-simple-tag': 'v1' }, { 'ncu-test-simple-tag': 'v3' }).should.eql({ 'ncu-test-simple-tag': 'v3' })
     })
 
+    it('upgrade github dependencies', () => {
+      vm.upgradeDependencies({ foo: 'github:foo/bar#v1.0.0' }, { foo: 'github:foo/bar#v2.0.0' }).should.eql({ foo: 'github:foo/bar#v2.0.0' })
+    })
+
     it('upgrade latest versions that already satisfy the specified version', () => {
       vm.upgradeDependencies({ mongodb: '^1.0.0' }, { mongodb: '1.4.30' }).should.eql({
         mongodb: '^1.4.30'
