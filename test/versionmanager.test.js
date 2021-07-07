@@ -289,6 +289,8 @@ describe('versionmanager', () => {
     })
 
     it('upgrade github dependencies', () => {
+      vm.upgradeDependencies({ foo: 'github:foo/bar#v1' }, { foo: 'github:foo/bar#v2' }).should.eql({ foo: 'github:foo/bar#v2' })
+      vm.upgradeDependencies({ foo: 'github:foo/bar#v1.0' }, { foo: 'github:foo/bar#v2.0' }).should.eql({ foo: 'github:foo/bar#v2.0' })
       vm.upgradeDependencies({ foo: 'github:foo/bar#v1.0.0' }, { foo: 'github:foo/bar#v2.0.0' }).should.eql({ foo: 'github:foo/bar#v2.0.0' })
     })
 
