@@ -19,8 +19,16 @@ You may also want to consider [npm-check](https://github.com/dylang/npm-check). 
 
 ## Installation
 
+Install globally:
+
 ```sh
 npm install -g npm-check-updates
+```
+
+Or run with [npx](https://docs.npmjs.com/cli/v7/commands/npx):
+
+```sh
+npx npm-check-updates
 ```
 
 ## Usage
