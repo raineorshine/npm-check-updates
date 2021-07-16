@@ -32,6 +32,7 @@
   },
   "main": "./lib",
   "scripts": {
+    "postpublish": "npx --yes @yarn-tool/changelog",
     "build": "node scripts/build.js",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
