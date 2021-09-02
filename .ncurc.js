@@ -7,9 +7,12 @@ module.exports = {
     'commander',
 
     // node >= 12
+    'find-up',
     'get-stdin',
+    'globby',
     'mocha',
     'p-map',
+    'remote-git-tags',
     'strip-ansi',
 
   ]
