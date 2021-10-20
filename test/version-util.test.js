@@ -46,9 +46,12 @@ describe('version-util', () => {
       versionUtil.upgradeDependencyDeclaration('<1.0', '1.1.0').should.equal('^1.1')
     })
 
-    it('preserve > and >=', () => {
-      versionUtil.upgradeDependencyDeclaration('>1.0', '2.0.0').should.equal('>2.0')
+    it('preserve >=', () => {
       versionUtil.upgradeDependencyDeclaration('>=1.0', '2.0.0').should.equal('>=2.0')
+    })
+
+    it('convert > to >=', () => {
+      versionUtil.upgradeDependencyDeclaration('>1.0.0', '2.0.0').should.equal('>=2.0.0')
     })
 
     it('preserve ^ and ~', () => {
