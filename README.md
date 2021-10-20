@@ -33,7 +33,7 @@ npx npm-check-updates
 
 ## Usage
 
-Show any new dependencies for the project in the current directory:
+Show all new dependencies ([excluding peerDependencies](https://github.com/raineorshine/npm-check-updates/issues/951)) for the project in the current directory:
 
 ```sh
 $ ncu
@@ -136,7 +136,8 @@ ncu "/^(?!react-).*$/" # windows
                              Alias of (--packageFile '**/package.json').
 --dep <value>                Check one or more sections of dependencies only:
                              dev, optional, peer, prod, bundle
-                             (comma-delimited).
+                             (comma-delimited). (default:
+                             "prod,dev,bundle,optional")
 --deprecated                 Include deprecated packages.
 --doctor                     Iteratively installs upgrades and runs tests to
                              identify breaking upgrades. Run "ncu --doctor"

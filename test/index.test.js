@@ -64,7 +64,19 @@ describe('run', function () {
     return upgraded.should.eventually.not.have.property('juggernaut')
   })
 
-  it('only upgrade devDependencies and peerDependencies with --dep dev', () => {
+  it('do not upgrade peerDependencies by default', () => {
+    const upgraded = ncu.run({
+      packageData: fs.readFileSync(path.join(__dirname, '/ncu/package-dep.json'), 'utf-8')
+    })
+
+    return Promise.all([
+      upgraded.should.eventually.have.property('express'),
+      upgraded.should.eventually.have.property('chalk'),
+      upgraded.should.eventually.not.have.property('mocha')
+    ])
+  })
+
+  it('only upgrade devDependencies with --dep dev', () => {
     const upgraded = ncu.run({
       packageData: fs.readFileSync(path.join(__dirname, '/ncu/package-dep.json'), 'utf-8'),
       dep: 'dev'

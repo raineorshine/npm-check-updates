@@ -114,13 +114,12 @@ describe('versionmanager', () => {
       vm.getCurrentDependencies({}, {}).should.eql({})
     })
 
-    it('get dependencies, devDependencies, and optionalDependencies by default', () => {
+    it('get dependencies, devDependencies, bundleDegendencies, and optionalDependencies by default', () => {
       vm.getCurrentDependencies(deps).should.eql({
         mocha: '1.2',
         lodash: '^3.9.3',
         chalk: '^1.1.0',
         bluebird: '^1.0.0',
-        moment: '^1.0.0'
       })
     })
 
@@ -205,12 +204,10 @@ describe('versionmanager', () => {
         vm.getCurrentDependencies(deps, { filter: /o/ }).should.eql({
           lodash: '^3.9.3',
           mocha: '1.2',
-          moment: '^1.0.0'
         })
         vm.getCurrentDependencies(deps, { filter: '/o/' }).should.eql({
           lodash: '^3.9.3',
           mocha: '1.2',
-          moment: '^1.0.0'
         })
       })
 
@@ -228,7 +225,6 @@ describe('versionmanager', () => {
           mocha: '1.2',
           lodash: '^3.9.3',
           bluebird: '^1.0.0',
-          moment: '^1.0.0'
         })
       })
 
@@ -238,7 +234,6 @@ describe('versionmanager', () => {
           lodash: '^3.9.3',
           chalk: '^1.1.0',
           bluebird: '^1.0.0',
-          moment: '^1.0.0'
         })
       })
 
@@ -246,17 +241,14 @@ describe('versionmanager', () => {
         vm.getCurrentDependencies(deps, { reject: 'mocha lodash' }).should.eql({
           chalk: '^1.1.0',
           bluebird: '^1.0.0',
-          moment: '^1.0.0'
         })
         vm.getCurrentDependencies(deps, { reject: 'mocha,lodash' }).should.eql({
           chalk: '^1.1.0',
           bluebird: '^1.0.0',
-          moment: '^1.0.0'
         })
         vm.getCurrentDependencies(deps, { reject: ['mocha', 'lodash'] }).should.eql({
           chalk: '^1.1.0',
           bluebird: '^1.0.0',
-          moment: '^1.0.0'
         })
       })
 
