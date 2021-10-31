@@ -26,7 +26,6 @@
     "node": ">=10.17"
   },
   "main": "build/src/index.js",
-  "types": "build/src/index.d.ts",
   "scripts": {
     "build": "npm run build:ts && npm run build:readme",
     "build:ts": "tsc && chmod u+x ./build/src/bin/cli.js",
