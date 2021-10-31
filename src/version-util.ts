@@ -434,9 +434,11 @@ const revertPseudoVersion = (current: string, latest: string) =>
  * Replaces the version number embedded in a Github URL.
  */
 export const upgradeGithubUrl = (declaration: string, upgraded: string) => {
+  // convert upgraded to a proper semver version if it is a pseudo version, otherwise revertPseudoVersion will return an empty string
+  const upgradedNormalized = fixPseudoVersion(upgraded)
   const parsedUrl = parseGithubUrl(declaration)
   if (!parsedUrl) return declaration
   const tag = decodeURIComponent(parsedUrl.branch)
     .replace(/^semver:/, '')
-  return declaration.replace(tag, upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgraded)))
+  return declaration.replace(tag, upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgradedNormalized)))
 }
