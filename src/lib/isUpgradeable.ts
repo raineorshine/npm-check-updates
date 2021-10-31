@@ -1,7 +1,5 @@
-import _ from 'lodash'
-import cint from 'cint'
-import { Index, Version, VersionSpec } from '../types'
-import { fixPseudoVersion, isSimpleVersion, stringify, isWildCard } from '../version-util'
+import { Version, VersionSpec } from '../types'
+import { fixPseudoVersion, stringify, isWildCard } from '../version-util'
 import * as semver from 'semver'
 import semverutils from 'semver-utils'
 
