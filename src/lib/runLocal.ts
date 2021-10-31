@@ -65,7 +65,7 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
       pkg = jph.parse(pkgData)
     }
   }
-  catch (e) {
+  catch (e: any) {
     programError(options, chalk.red(`Invalid package file${pkgFile ? `: ${pkgFile}` : ' from stdin'}. Error details:\n${e.message}`))
   }
 
