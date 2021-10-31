@@ -23,7 +23,7 @@
   ],
   "preferGlobal": true,
   "engines": {
-    "node": ">=10.17"
+    "node": ">=12"
   },
   "main": "build/src/index.js",
   "scripts": {
