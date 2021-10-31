@@ -205,7 +205,7 @@ ncu "/^(?!react-).*$/" # windows
                              --target" for details.` (default: "latest")
 --timeout <ms>               Global timeout in milliseconds. (default: no
                              global timeout and 30 seconds per
-                             npm-registry-fetch).
+                             npm-registery-fetch).
 -u, --upgrade                Overwrite package file with upgraded versions
                              instead of just outputting to console.
 -V, --version                output the version number

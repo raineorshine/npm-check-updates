@@ -76,7 +76,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
         } as Options)
         versionNew = npmAlias && versionNew ? createNpmAlias(name, versionNew) : versionNew
       }
-      catch (err) {
+      catch (err: any) {
         const errorMessage = err ? (err.message || err).toString() : ''
         if (!errorMessage.match(/E404|ENOTFOUND|404 Not Found/i)) {
           // print a hint about the --timeout option for network timeout errors

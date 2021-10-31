@@ -234,7 +234,7 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
   try {
     prefix = await spawn(cmd, ['config', 'get', 'prefix'])
   }
-  catch (e) {
+  catch (e: any) {
     const message = (e.message || e || '').toString()
     print(options, 'Error executing `npm config get prefix`. Caught and ignored. Unsolved: https://github.com/raineorshine/npm-check-updates/issues/703. ERROR: ' + message, 'verbose', 'error')
   }

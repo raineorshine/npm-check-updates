@@ -269,7 +269,7 @@ export interface RunOptions {
   target?: string,
 
   /**
-   * Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registery-fetch).
+   * Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch).
    */
   timeout?: number,
 
