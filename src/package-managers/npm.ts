@@ -281,7 +281,7 @@ export const getPeerDependencies = async (packageName: string, version: Version)
     npmArgs,
     {},
     { rejectOnError: false })
-    return result ? parseJson(result, { command: `${npmArgs.join(' ')} --json` }) : {}
+  return result ? parseJson(result, { command: `${npmArgs.join(' ')} --json` }) : {}
 }
 
 /**
