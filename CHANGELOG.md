@@ -1,6 +1,21 @@
 # Changelog
 
-This file documents all **major version** releases. For other releases, you'll have to read the [commit history](https://github.com/raineorshine/npm-check-updates/).
+This file documents all **major version** releases. For other releases, please read the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
+
+## [12.0.0] - 2021-11-01
+
+## Breaking
+
+- node >= 12 is required. Time to upgrade that old-ass server you never touch.
+- `peerDependencies` are now excluded by default. Peer dependencies should use the **lowest** possible version that works. The old behavior encouraged a bad practice of uprading peer dependencies. You can use `--dep prod,dev,bundle,optional,peer` for the old behavior ([#951](https://github.com/raineorshine/npm-check-updates/issues/951)).
+- Dependencies with `>` will be converted to `>=`. The old behavior was causing upgrades to `> [latest]` which was impossible ([#957](https://github.com/raineorshine/npm-check-updates/issues/957)).
+
+## Other
+
+- Typescript! There is a new build process, so if you have any issues with the executable or types, please report. It should be a non-breaking change if I did it correctly ([#888](https://github.com/raineorshine/npm-check-updates/issues/888)).
+- WHen using `npm-check-updates` as a module, `vm` (versionmanager) is no longer exported. It was previously exposed for testing purposes, but was never part of the official API.
+
+<https://github.com/raineorshine/npm-check-updates/compare/v11.8.5...v12.0.0>
 
 ## [11.0.0] - 2021-01-20
 
