@@ -6,7 +6,7 @@ import { Index, Options, VersionSpec } from '../types'
 
 /** Get peer dependencies from installed packages */
 function getPeerDependencies(current: Index<VersionSpec>, options: Options) {
-  const basePath = options.cwd || '../'
+  const basePath = options.cwd || './'
   return Object.keys(current).reduce((accum, pkgName) => {
     const path = basePath + 'node_modules/' + pkgName + '/package.json'
     let peers = {}
