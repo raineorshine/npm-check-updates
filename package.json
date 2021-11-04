@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "11.8.5",
+  "version": "12.0.0-1",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -23,28 +23,27 @@
   ],
   "preferGlobal": true,
   "engines": {
-    "node": ">=10.17"
+    "node": ">=12"
   },
-  "eslintConfig": {
-    "extends": [
-      "raine"
-    ]
-  },
-  "main": "./lib",
+  "main": "build/src/index.js",
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "npm run build:ts && npm run build:readme",
+    "build:ts": "tsc && chmod u+x ./build/src/bin/cli.js",
+    "build:readme": "node scripts/buildReadme.js",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
-    "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --config .markdownlint.js",
-    "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
+    "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.js",
+    "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives src",
     "nyc": "nyc",
-    "test": "mocha test test/package-managers/npm test/package-managers/yarn && mocha --exit test/timeout",
-    "watch": "chokidar \"lib/**/*.js\" -c \"npm run test\"",
-    "ncu": "node ./bin/cli.js"
+    "prepublishOnly": "npm run build",
+    "test": "npm run test:src && npm run test:timeout",
+    "test:src": "mocha test src/test/* test/package-managers/npm/index.ts test/package-managers/yarn/index.ts",
+    "test:timeout": "mocha --exit test/timeout",
+    "ncu": "node build/src/bin/cli.js"
   },
   "bin": {
-    "npm-check-updates": "bin/cli.js",
-    "ncu": "bin/cli.js"
+    "npm-check-updates": "build/src/bin/cli.js",
+    "ncu": "build/src/bin/cli.js"
   },
   "repository": {
     "type": "git",
@@ -74,16 +73,36 @@
     "pacote": "^11.3.5",
     "parse-github-url": "^1.0.2",
     "progress": "^2.0.3",
-    "prompts": "^2.4.1",
+    "prompts": "^2.4.2",
     "rc-config-loader": "^4.0.0",
     "remote-git-tags": "^3.0.0",
     "rimraf": "^3.0.2",
     "semver": "^7.3.5",
     "semver-utils": "^1.1.4",
+    "source-map-support": "^0.5.19",
     "spawn-please": "^1.0.0",
     "update-notifier": "^5.1.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.18",
+    "@types/chai-as-promised": "^7.1.4",
+    "@types/cli-table": "^0.3.0",
+    "@types/hosted-git-info": "^3.0.1",
+    "@types/json-parse-helpfulerror": "^1.0.1",
+    "@types/lodash": "^4.14.170",
+    "@types/minimatch": "^3.0.4",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^16.11.6",
+    "@types/pacote": "^11.1.0",
+    "@types/parse-github-url": "^1.0.0",
+    "@types/progress": "^2.0.3",
+    "@types/prompts": "^2.0.12",
+    "@types/rimraf": "^3.0.0",
+    "@types/semver": "^7.3.6",
+    "@types/semver-utils": "^1.1.0",
+    "@types/update-notifier": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.25.0",
+    "@typescript-eslint/parser": "^4.25.0",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-string": "^1.5.0",
@@ -93,24 +112,24 @@
     "eslint-config-raine": "^0.3.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-fp": "^2.3.0",
-    "eslint-plugin-import": "^2.24.2",
-    "eslint-plugin-jsdoc": "^36.0.8",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-jsdoc": "^36.1.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.0",
     "husky": "^7.0.2",
     "lockfile-lint": "^4.6.2",
-    "markdownlint-cli": "^0.28.1",
+    "markdownlint-cli": "^0.29.0",
     "mocha": "^8.4.0",
-    "mock-require": "^3.0.3",
     "npm-run-all": "^4.1.5",
     "nyc": "^15.1.0",
     "should": "^13.2.3",
     "strip-ansi": "^6.0.0",
-    "yarn": "^1.22.11"
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2",
+    "yarn": "^1.22.17"
   },
   "files": [
-    "bin",
-    "lib"
+    "build"
   ],
   "lockfile-lint": {
     "allowed-schemes": [
@@ -125,6 +144,15 @@
   },
   "mocha": {
     "check-leaks": true,
+    "extensions": [
+      "js",
+      "ts"
+    ],
+    "require": [
+      "source-map-support/register",
+      "ts-node/register"
+    ],
+    "timeout": 30000,
     "trace-deprecation": true,
     "trace-warnings": true,
     "use_strict": true
