@@ -10,7 +10,8 @@ import memoize from 'fast-memoize'
 import libnpmconfig from 'libnpmconfig'
 import * as versionUtil from '../version-util'
 import { print } from '../logging'
-import { GetVersion, Index, Maybe, Options, NpmOptions, Packument, Version, VersionSpec } from '../types'
+import { GetVersion, Index, Options, NpmOptions, Packument, Version, VersionSpec } from '../types'
+import { allowDeprecatedOrIsNotDeprecated, allowPreOrIsNotPre, satisfiesNodeEngine, satisfiesPeerDependencies } from './filters'
 
 const TIME_FIELDS = ['modified', 'created']
 
@@ -151,40 +152,11 @@ export async function viewOne(packageName: string, field: string, currentVersion
   return result && result[field as keyof Packument]
 }
 
-/**
- * Returns true if the node engine requirement is satisfied or not specified for a given package version.
- *
- * @param versionResult     Version object returned by pacote.packument.
- * @param nodeEngineVersion The value of engines.node in the package file.
- * @returns                 True if the node engine requirement is satisfied or not specified.
- */
-function satisfiesNodeEngine(versionResult: Packument, nodeEngineVersion: Maybe<string>): boolean {
-  if (!nodeEngineVersion) return true
-  const minVersion = _.get(semver.minVersion(nodeEngineVersion), 'version')
-  if (!minVersion) return true
-  const versionNodeEngine = _.get(versionResult, 'engines.node')
-  return versionNodeEngine && semver.satisfies(minVersion, versionNodeEngine)
-}
-
-/**
- * Returns true if the peer dependencies requirement is satisfied or not specified for a given package version.
- *
- * @param versionResult     Version object returned by pacote.packument.
- * @param peerDependencies  The list of peer dependencies.
- * @returns                 True if the peer dependencies are satisfied or not specified.
- */
-function satisfiesPeerDependencies(versionResult: Packument, peerDependencies: Index<Index<Version>>) {
-  if (!peerDependencies) return true
-  return Object.values(peerDependencies).every(
-    peers => peers[versionResult.name] === undefined || semver.satisfies(versionResult.version, peers[versionResult.name])
-  )
-}
-
 /** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by pacote.packument. */
-function filterPredicate(options: Options): (o: Packument) => boolean {
+export function filterPredicate(options: Options): (o: Packument) => boolean {
   return _.overEvery([
-    options.deprecated ? null! : o => !o.deprecated,
-    options.pre ? null! : o => !versionUtil.isPre(o.version),
+    o => allowDeprecatedOrIsNotDeprecated(o, options),
+    o => allowPreOrIsNotPre(o, options),
     options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null!,
     options.peerDependencies ? o => satisfiesPeerDependencies(o, options.peerDependencies!) : null!,
   ])
