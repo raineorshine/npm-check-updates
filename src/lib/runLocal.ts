@@ -41,7 +41,7 @@ export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersi
     const to = toVersion[dep] || null
     const ownerChanged = await packageManager.packageAuthorChanged!(dep, from!, to!, options)
     return {
-      ...accum,
+      ...await accum,
       [dep]: ownerChanged,
     }
   }, {} as Promise<Index<boolean>>)
