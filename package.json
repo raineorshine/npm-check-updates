@@ -27,7 +27,7 @@
   },
   "main": "build/src/index.js",
   "scripts": {
-    "build": "npm run build:ts && npm run build:readme",
+    "build": "npm-run-all build:*",
     "build:ts": "tsc && chmod u+x ./build/src/bin/cli.js",
     "build:readme": "node scripts/buildReadme.js",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
@@ -36,7 +36,7 @@
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives src",
     "nyc": "nyc",
     "prepublishOnly": "npm run build",
-    "test": "npm run test:src && npm run test:timeout",
+    "test": "npm-run-all test:*",
     "test:src": "mocha test src/test/* test/package-managers/npm/index.ts test/package-managers/yarn/index.ts",
     "test:timeout": "mocha --exit test/timeout",
     "ncu": "node build/src/bin/cli.js"
