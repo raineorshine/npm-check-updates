@@ -20,7 +20,6 @@ build
 yarn.lock
 .DS_store
 
-/.nyc_output/
 /coverage/
 
 # test files
