@@ -45,7 +45,7 @@ jobs:
         if: "!(startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV)"
 
       - name: Run tests with coverage
-        run: npm run nyc -- npm run test
+        run: npm run c8 -- npm run test
         if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
 
       - name: Run Coveralls
