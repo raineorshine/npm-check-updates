@@ -9,8 +9,8 @@ import { Index, Maybe, Options, Packument, Version } from '../types'
  * @returns         True if deprecated versions are allowed or the version is not deprecated
  */
 export function allowDeprecatedOrIsNotDeprecated(versionResult: Packument, options: Options): boolean {
-  if (!!options.deprecated) return true
-  return !versionResult.deprecated;
+  if (options.deprecated) return true
+  return !versionResult.deprecated
 }
 
 /**
@@ -19,7 +19,7 @@ export function allowDeprecatedOrIsNotDeprecated(versionResult: Packument, optio
  * @returns         True if pre-releases are allowed or the version is not a pre-release
  */
 export function allowPreOrIsNotPre(versionResult: Packument, options: Options): boolean {
-  if (!!options.pre) return true
+  if (options.pre) return true
   return !versionUtil.isPre(versionResult.version)
 }
 
