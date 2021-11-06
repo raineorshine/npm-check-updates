@@ -21,7 +21,6 @@
     "management",
     "ncu"
   ],
-  "preferGlobal": true,
   "engines": {
     "node": ">=12"
   },
