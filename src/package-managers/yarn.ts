@@ -79,7 +79,7 @@ async function parseJsonLines(result: string): Promise<{ dependencies: Index<Par
 }
 
 /** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by pacote.packument. */
-export function filterPredicate(options: Options): (o: Packument) => boolean {
+function filterPredicate(options: Options): (o: Packument) => boolean {
   return _.overEvery([
     o => allowDeprecatedOrIsNotDeprecated(o, options),
     o => allowPreOrIsNotPre(o, options),
