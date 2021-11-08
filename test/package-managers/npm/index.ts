@@ -1,4 +1,3 @@
-import path from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import * as npm from '../../../src/package-managers/npm'

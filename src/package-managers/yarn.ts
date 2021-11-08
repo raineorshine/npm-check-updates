@@ -4,13 +4,13 @@
 import { once, EventEmitter } from 'events'
 import _ from 'lodash'
 import cint from 'cint'
-import semver from 'semver'
 import spawn from 'spawn-please'
 import libnpmconfig from 'libnpmconfig'
 import jsonlines from 'jsonlines'
 import * as versionUtil from '../version-util'
 import { viewOne, viewManyMemoized } from './npm'
 import { GetVersion, Index, Options, Packument, SpawnOptions, Version, YarnOptions } from '../types'
+import { allowDeprecatedOrIsNotDeprecated, allowPreOrIsNotPre, satisfiesNodeEngine } from './filters'
 
 interface ParsedDep {
   version: string,
@@ -78,33 +78,13 @@ async function parseJsonLines(result: string): Promise<{ dependencies: Index<Par
 
 }
 
-/**
- * @param versions  Array of all available versions
- * @param pre     Enabled prerelease?
- * @returns         An array of versions with the release versions filtered out
- */
-function filterOutPrereleaseVersions(versions: Version[], pre: boolean) {
-  return pre ? versions : versions.filter(
-    version => !versionUtil.isPre(version))
-}
-
-/**
- * @param versions            Object with all versions
- * @param nodeEngineVersion   Package engines.node range
- * @returns An array of versions which satisfies engines.node range
- */
-function doesSatisfyEnginesNode(versions: Packument[], nodeEngineVersion?: Version) {
-  if (!versions) return []
-  if (!nodeEngineVersion) return Object.keys(versions)
-
-  const minVersion = _.get(semver.minVersion(nodeEngineVersion), 'version')
-  if (!minVersion) return Object.keys(versions)
-
-  return versions.filter(version => {
-    const versionEnginesNode = _.get(version, 'engines.node')
-    return versionEnginesNode &&
-      semver.satisfies(minVersion, versionEnginesNode)
-  })
+/** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by pacote.packument. */
+function filterPredicate(options: Options): (o: Packument) => boolean {
+  return _.overEvery([
+    o => allowDeprecatedOrIsNotDeprecated(o, options),
+    o => allowPreOrIsNotPre(o, options),
+    options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null!,
+  ])
 }
 
 /**
@@ -191,22 +171,25 @@ export const list = async (options: Options = {}, spawnOptions?: SpawnOptions) =
  * @returns
  */
 export const latest: GetVersion = async (packageName: string, currentVersion: Version, options: Options = {}) => {
-  const latest = await viewOne(packageName, 'dist-tags.latest', currentVersion, options) as unknown as Packument
+  const latest = await viewOne(packageName, 'dist-tags.latest', currentVersion, {
+    registry: options.registry,
+    timeout: options.timeout,
+  }) as unknown as Packument // known type based on dist-tags.latest
 
+  // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
   // if latest exists and latest is a prerelease version and --pre is specified, return it
   // if latest exists and latest not satisfies min version of engines.node
-  if (latest && (!versionUtil.isPre(latest.version) || options.pre) &&
-    doesSatisfyEnginesNode([latest], options.nodeEngineVersion).length) {
-    return latest.version
-    // if latest is a prerelease version and --pre is not specified, find the next
-    // version that is not a prerelease
-  }
-  else {
-    const versions = await viewOne(packageName, 'versions', currentVersion) as Packument[]
-    const versionsSatisfyingNodeEngine = doesSatisfyEnginesNode(versions, options.nodeEngineVersion) as string[]
-    return _.last(filterOutPrereleaseVersions(versionsSatisfyingNodeEngine, !!options.pre)) || null
-  }
+  if (latest && filterPredicate(options)(latest)) return latest.version
+
+  // if latest is a prerelease version and --pre is not specified
+  // or latest is deprecated
+  // find the next valid version
+  // known type based on dist-tags.latest
+  const versions = await viewOne(packageName, 'versions', currentVersion) as Packument[]
+  const validVersions = _.filter(versions, filterPredicate(options))
+
+  return _.last(validVersions.map(o => o.version)) || null
 }
 
 /**
@@ -215,18 +198,22 @@ export const latest: GetVersion = async (packageName: string, currentVersion: Ve
  * @param options
  * @returns
  */
-export const newest: GetVersion = (packageName: string, currentVersion, options = {}) => {
-  return viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options).then(result => {
-    // todo
-    const versions = doesSatisfyEnginesNode(result.versions, options.nodeEngineVersion) as Version[]
-    return Object.keys(result.time || {}).reduce((accum: string[], key) =>
-      accum.concat(
-        TIME_FIELDS.includes(key) || versions.includes(key) ? key : []), []
-    )
-  }).then(_.partialRight(_.pullAll, TIME_FIELDS)).then(versions =>
-    _.last(filterOutPrereleaseVersions(versions as Version[],
-      options.pre == null || options.pre)) || null
+export const newest: GetVersion = async (packageName: string, currentVersion, options = {}) => {
+  const result = await viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options)
+
+  const versionsSatisfyingNodeEngine = _.filter(result.versions, version => satisfiesNodeEngine(version, options.nodeEngineVersion))
+    .map((o: Packument) => o.version)
+
+  const versions = Object.keys(result.time || {}).reduce((accum: string[], key: string) =>
+    accum.concat(TIME_FIELDS.includes(key) || versionsSatisfyingNodeEngine.includes(key) ? key : []), []
   )
+
+  const versionsWithTime = _.pullAll(versions, TIME_FIELDS)
+
+  return _.last(options.pre !== false
+    ? versions :
+    versionsWithTime.filter(version => !versionUtil.isPre(version))
+  ) || null
 }
 
 /**
@@ -237,10 +224,12 @@ export const newest: GetVersion = (packageName: string, currentVersion, options 
  */
 export const greatest: GetVersion = async (packageName, currentVersion, options = {}) => {
   const versions = await viewOne(packageName, 'versions', currentVersion, options) as Packument[]
-  // eslint-disable-next-line fp/no-mutating-methods
-  return _.last(filterOutPrereleaseVersions(
-    doesSatisfyEnginesNode(versions, options.nodeEngineVersion) as Version[],
-    options.pre == null || options.pre).sort(versionUtil.compareVersions)
+
+  return _.last(
+    // eslint-disable-next-line fp/no-mutating-methods
+    _.filter(versions, filterPredicate(options))
+      .map(o => o.version)
+      .sort(versionUtil.compareVersions)
   ) || null
 }
 
@@ -253,10 +242,7 @@ export const greatest: GetVersion = async (packageName, currentVersion, options 
 export const minor: GetVersion = async (packageName, currentVersion, options = {}) => {
   const versions = await viewOne(packageName, 'versions', currentVersion, options) as Packument[]
   return versionUtil.findGreatestByLevel(
-    filterOutPrereleaseVersions(
-      doesSatisfyEnginesNode(versions, options.nodeEngineVersion) as Version[],
-      !!options.pre
-    ),
+    _.filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
     'minor'
   )
@@ -271,10 +257,7 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
 export const patch: GetVersion = async (packageName, currentVersion, options = {}) => {
   const versions = await viewOne(packageName, 'versions', currentVersion, options) as Packument[]
   return versionUtil.findGreatestByLevel(
-    filterOutPrereleaseVersions(
-      doesSatisfyEnginesNode(versions, options.nodeEngineVersion) as Version[],
-      !!options.pre
-    ),
+    _.filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
     'patch'
   )
