@@ -21,7 +21,6 @@
     "management",
     "ncu"
   ],
-  "preferGlobal": true,
   "engines": {
     "node": ">=12"
   },
@@ -129,7 +128,8 @@
     "yarn": "^1.22.17"
   },
   "files": [
-    "build"
+    "build/src",
+    "!**/test/**"
   ],
   "lockfile-lint": {
     "allowed-schemes": [
