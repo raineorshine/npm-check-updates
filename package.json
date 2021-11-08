@@ -27,7 +27,7 @@
   },
   "main": "build/src/index.js",
   "scripts": {
-    "build": "npm-run-all build:*",
+    "build": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output build:*",
     "build:ts": "tsc && chmod u+x ./build/src/bin/cli.js",
     "build:readme": "node scripts/buildReadme.js",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
