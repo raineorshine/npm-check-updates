@@ -107,7 +107,7 @@
     "chai-string": "^1.5.0",
     "chokidar-cli": "^3.0.0",
     "cross-env": "^7.0.3",
-    "eslint": "^7.32.0",
+    "eslint": "^8.2.0",
     "eslint-config-raine": "^0.3.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-fp": "^2.3.0",
