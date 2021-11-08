@@ -11,7 +11,7 @@ on:
 
 env:
   FORCE_COLOR: 2
-  NODE_COV: 14
+  NODE_COV: 16
 
 jobs:
   run:
@@ -32,18 +32,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
-
-      - name: Get npm cache directory
-        id: npm-cache
-        run: |
-          echo "::set-output name=dir::$(npm config get cache)"
-      - uses: actions/cache@v2
-        with:
-          path: ${{ steps.npm-cache.outputs.dir }}
-          key: ${{ runner.os }}-node-v${{ matrix.node }}-${{ hashFiles('package.json') }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-v${{ matrix.node }}-${{ hashFiles('package.json') }}-${{ hashFiles('package-lock.json') }}
-            ${{ runner.os }}-node-v${{ matrix.node }}-
+          cache: npm
 
       - name: Install npm dependencies
         run: npm ci
