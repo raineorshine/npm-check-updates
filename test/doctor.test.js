@@ -19,8 +19,7 @@ const doctorTests = path.join(__dirname, 'doctor')
 /** Run the ncu CLI. */
 const ncu = (args, options) => spawn('node', [bin, ...args], options)
 
-// tests that need to be run for npm and yarn
-
+/** Assertions for npm or yarn when tests pass. */
 const testPass = ({ packageManager }) => {
 
   it('upgrade dependencies when tests pass', async function () {
@@ -79,6 +78,7 @@ const testPass = ({ packageManager }) => {
 
 }
 
+/** Assertions for npm or yarn when tests fail. */
 const testFail = ({ packageManager }) => {
 
   it('identify broken upgrade', async function() {

@@ -23,6 +23,7 @@ describe('--deep', function () {
 
   let last = 0
 
+  /** Gets information about the temporary package file. */
   function getTempPackage() {
     ++last
     const pkgDir = path.join(cwd, `tmp/tmp-pkg-${last}`)
@@ -207,6 +208,8 @@ describe('--deep with nested ncurc files', function () {
   })
 
   it('merge options', () => {
+
+    /** Asserts that merging two options object deep equals the given result object. */
     const eq = (o1, o2, result, opts) => chai.expect(mergeOptions(o1, o2)).to.deep.equal(result)
 
     // trivial cases

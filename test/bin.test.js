@@ -19,6 +19,8 @@ const bin = path.join(__dirname, '../build/src/bin/cli.js')
 describe('bin', function () {
 
   let last = 0
+
+  /** Gets the temp package file path. */
   function getTempFile() {
     return `test/temp_package${++last}.json`
   }
