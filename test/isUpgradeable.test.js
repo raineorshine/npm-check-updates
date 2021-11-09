@@ -1,7 +1,6 @@
 'use strict'
 
 const chai = require('chai')
-const ncu = require('../src/index')
 const isUpgradeable = require('../src/lib/isUpgradeable').default
 
 chai.should()

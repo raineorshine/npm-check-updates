@@ -1,7 +1,5 @@
 'use strict'
 
-const fs = require('fs')
-const path = require('path')
 const chai = require('chai')
 const ncu = require('../src/index')
 

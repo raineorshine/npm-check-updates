@@ -2,7 +2,6 @@
 
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
-const ncu = require('../src/index')
 const queryVersions = require('../src/lib/queryVersions').default
 
 chai.should()

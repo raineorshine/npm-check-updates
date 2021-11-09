@@ -2,12 +2,10 @@
 
 const fs = require('fs')
 const path = require('path')
-const rimraf = require('rimraf')
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const chaiString = require('chai-string')
 const ncu = require('../src/')
-const spawnNpm = require('../src/package-managers/npm').default
 
 chai.use(chaiAsPromised)
 chai.use(chaiString)
@@ -17,9 +15,12 @@ process.env.NCU_TESTS = true
 describe('run', function () {
 
   let last = 0
+
+  /** Gets the temporary package file path. */
   function getTempFile() {
     return `test/temp_package${++last}.json`
   }
+
   it('return promised jsonUpgraded', () => {
     return ncu.run({
       packageData: fs.readFileSync(path.join(__dirname, 'ncu/package.json'), 'utf-8')
