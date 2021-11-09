@@ -10,7 +10,6 @@ module.exports = {
     'plugin:import/typescript',
     'raine'
   ],
-  ignorePatterns: ['build'],
   overrides: [
     {
       files: ['**/*.ts'],
