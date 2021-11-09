@@ -32,7 +32,7 @@
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.js",
-    "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives src scripts",
+    "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
     "c8": "c8",
     "prepublishOnly": "npm run build",
     "test": "npm run test:src && npm run test:timeout",

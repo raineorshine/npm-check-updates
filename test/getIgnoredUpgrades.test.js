@@ -30,4 +30,3 @@ describe('getIgnoredUpgrades', function () {
     })
   })
 })
-
