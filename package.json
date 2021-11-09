@@ -128,7 +128,7 @@
     "yarn": "^1.22.17"
   },
   "files": [
-    "build/src",
+    "build",
     "!**/test/**"
   ],
   "lockfile-lint": {
