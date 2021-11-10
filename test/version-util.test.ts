@@ -1,9 +1,7 @@
-'use strict'
-
-const chai = require('chai')
-const chalk = require('chalk')
-const chaiAsPromised = require('chai-as-promised')
-const versionUtil = require('../src/version-util')
+import chai from 'chai'
+import chalk from 'chalk'
+import chaiAsPromised from 'chai-as-promised'
+import * as versionUtil from '../src/version-util'
 
 const should = chai.should()
 
@@ -125,28 +123,28 @@ describe('version-util', () => {
   describe('getPrecision', () => {
 
     it('detect versions as precise as "major"', () => {
-      versionUtil.getPrecision('1').should.equal('major')
+      versionUtil.getPrecision('1')!.should.equal('major')
     })
 
     it('detect versions as precise as "minor"', () => {
-      versionUtil.getPrecision('1.2').should.equal('minor')
+      versionUtil.getPrecision('1.2')!.should.equal('minor')
     })
 
     it('detect versions as precise as "patch"', () => {
-      versionUtil.getPrecision('1.2.3').should.equal('patch')
+      versionUtil.getPrecision('1.2.3')!.should.equal('patch')
     })
 
     it('detect versions as precise as "release"', () => {
-      versionUtil.getPrecision('1.2.3-alpha.1').should.equal('release')
-      versionUtil.getPrecision('1.2.3-beta.1').should.equal('release')
-      versionUtil.getPrecision('1.2.3-rc.1').should.equal('release')
-      versionUtil.getPrecision('1.2.3-alpha').should.equal('release')
-      versionUtil.getPrecision('1.2.3-beta').should.equal('release')
-      versionUtil.getPrecision('1.2.3-rc').should.equal('release')
+      versionUtil.getPrecision('1.2.3-alpha.1')!.should.equal('release')
+      versionUtil.getPrecision('1.2.3-beta.1')!.should.equal('release')
+      versionUtil.getPrecision('1.2.3-rc.1')!.should.equal('release')
+      versionUtil.getPrecision('1.2.3-alpha')!.should.equal('release')
+      versionUtil.getPrecision('1.2.3-beta')!.should.equal('release')
+      versionUtil.getPrecision('1.2.3-rc')!.should.equal('release')
     })
 
     it('detect versions as precise as "build"', () => {
-      versionUtil.getPrecision('1.2.3+build12345').should.equal('build')
+      versionUtil.getPrecision('1.2.3+build12345')!.should.equal('build')
     })
 
   })
@@ -375,12 +373,12 @@ describe('version-util', () => {
     it('find the greatest version at the given semantic versioning level', () => {
       const versions = ['0.1.0', '1.0.0', '1.0.1', '1.1.0', '2.0.1']
 
-      versionUtil.findGreatestByLevel(versions, '1.0.0', 'major').should.equal('2.0.1')
-      versionUtil.findGreatestByLevel(versions, '2.0.0', 'major').should.equal('2.0.1')
-      versionUtil.findGreatestByLevel(versions, '1.0.0', 'minor').should.equal('1.1.0')
-      versionUtil.findGreatestByLevel(versions, '1.1.0', 'minor').should.equal('1.1.0')
-      versionUtil.findGreatestByLevel(versions, '1.0.0', 'patch').should.equal('1.0.1')
-      versionUtil.findGreatestByLevel(versions, '1.0.1', 'patch').should.equal('1.0.1')
+      versionUtil.findGreatestByLevel(versions, '1.0.0', 'major')!.should.equal('2.0.1')
+      versionUtil.findGreatestByLevel(versions, '2.0.0', 'major')!.should.equal('2.0.1')
+      versionUtil.findGreatestByLevel(versions, '1.0.0', 'minor')!.should.equal('1.1.0')
+      versionUtil.findGreatestByLevel(versions, '1.1.0', 'minor')!.should.equal('1.1.0')
+      versionUtil.findGreatestByLevel(versions, '1.0.0', 'patch')!.should.equal('1.0.1')
+      versionUtil.findGreatestByLevel(versions, '1.0.1', 'patch')!.should.equal('1.0.1')
     })
 
     it('handle wildcards', () => {
@@ -395,7 +393,7 @@ describe('version-util', () => {
 
     it('sort version list', () => {
       const versions = ['0.1.0', '0.3.0', '0.2.0']
-      versionUtil.findGreatestByLevel(versions, '0.1.0', 'minor').should.equal('0.3.0')
+      versionUtil.findGreatestByLevel(versions, '0.1.0', 'minor')!.should.equal('0.3.0')
     })
 
   })
@@ -427,7 +425,7 @@ describe('version-util', () => {
     describe('parseNpmAlias', () => {
 
       it('parse an npm alias into [name, version]', () => {
-        versionUtil.parseNpmAlias('npm:chalk@1.0.0').should.eql(['chalk', '1.0.0'])
+        versionUtil.parseNpmAlias('npm:chalk@1.0.0')!.should.eql(['chalk', '1.0.0'])
       })
 
       it('return null if given a non-alias', () => {
@@ -452,7 +450,7 @@ describe('version-util', () => {
     describe('upgradeNpmAlias', () => {
 
       it('replace embedded version', () => {
-        versionUtil.upgradeNpmAlias('npm:chalk@^1.0.0', '2.0.0')
+        versionUtil.upgradeNpmAlias('npm:chalk@^1.0.0', '2.0.0')!
           .should.equal('npm:chalk@2.0.0')
       })
 

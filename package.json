@@ -143,7 +143,7 @@
   },
   "mocha": {
     "check-leaks": true,
-    "extensions": [
+    "extension": [
       "js",
       "ts"
     ],

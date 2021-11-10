@@ -303,7 +303,7 @@ export const upgradeNpmAlias = (declaration: string, upgraded: string) => {
 /**
  * Returns true if a version declaration is a Github URL with a valid semver version.
  */
-export const isGithubUrl = (declaration: string) => {
+export const isGithubUrl = (declaration: string | null) => {
   if (!declaration) return false
   const parsed = parseGithubUrl(declaration)
   if (!parsed || !parsed.branch) return false
@@ -316,7 +316,7 @@ export const isGithubUrl = (declaration: string) => {
 /**
  * Returns the embedded tag in a Github URL.
  */
-export const getGithubUrlTag = (declaration: string) => {
+export const getGithubUrlTag = (declaration: string | null) => {
   if (!declaration) return null
   const parsed = parseGithubUrl(declaration)
   if (!parsed || !parsed.branch) return null
@@ -333,8 +333,12 @@ export const getGithubUrlTag = (declaration: string) => {
  * @param [options={}]
  * @returns The upgraded dependency declaration (e.g. "1.3.x")
  */
-export function upgradeDependencyDeclaration(declaration: string, latestVersion: string, options: UpgradeOptions = {}) {
+export function upgradeDependencyDeclaration(declaration: string, latestVersion: string | null, options: UpgradeOptions = {}) {
   options.wildcard = options.wildcard || DEFAULT_WILDCARD
+
+  if (!latestVersion) {
+    return declaration
+  }
 
   // parse the latestVersion
   // return original declaration if latestSemver is invalid
