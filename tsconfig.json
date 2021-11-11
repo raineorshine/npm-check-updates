@@ -21,9 +21,7 @@
     "noImplicitAny": true,
     "paths": {
       "cint": ["./src/types/cint"],
-      "jsonlines": ["./src/types/jsonlines"],
       "libnpmconfig": ["./src/types/libnpmconfig"],
-      "remote-git-tags": ["./src/types/remote-git-tags"],
       "spawn-please": ["./src/types/spawn-please"]
     },
     "resolveJsonModule": true,
