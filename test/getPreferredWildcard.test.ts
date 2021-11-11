@@ -1,10 +1,8 @@
-'use strict'
-
-const chai = require('chai')
-const getPreferredWildcard = require('../src/lib/getPreferredWildcard').default
+import chai from 'chai'
+import getPreferredWildcard from '../src/lib/getPreferredWildcard'
 
 const should = chai.should()
-process.env.NCU_TESTS = true
+process.env.NCU_TESTS = 'true'
 
 describe('getPreferredWildcard', () => {
 
@@ -16,7 +14,7 @@ describe('getPreferredWildcard', () => {
       commander: '~2.8.1',
       lodash: '^3.2.0'
     }
-    getPreferredWildcard(deps).should.equal('^')
+    getPreferredWildcard(deps)!.should.equal('^')
   })
 
   it('identify ~ when it is preferred', () => {
@@ -27,7 +25,7 @@ describe('getPreferredWildcard', () => {
       commander: '~2.8.1',
       lodash: '^3.2.0'
     }
-    getPreferredWildcard(deps).should.equal('~')
+    getPreferredWildcard(deps)!.should.equal('~')
   })
 
   it('identify .x when it is preferred', () => {
@@ -38,7 +36,7 @@ describe('getPreferredWildcard', () => {
       commander: '~2.8.1',
       lodash: '3.x'
     }
-    getPreferredWildcard(deps).should.equal('.x')
+    getPreferredWildcard(deps)!.should.equal('.x')
   })
 
   it('identify .* when it is preferred', () => {
@@ -49,7 +47,7 @@ describe('getPreferredWildcard', () => {
       commander: '~2.8.1',
       lodash: '3.*'
     }
-    getPreferredWildcard(deps).should.equal('.*')
+    getPreferredWildcard(deps)!.should.equal('.*')
   })
 
   it('do not allow wildcards to be outnumbered by non-wildcards', () => {
@@ -58,7 +56,7 @@ describe('getPreferredWildcard', () => {
       typescript: '3.3.0',
       webpack: '4.30.0'
     }
-    getPreferredWildcard(deps).should.equal('^')
+    getPreferredWildcard(deps)!.should.equal('^')
   })
 
   it('use the first wildcard if there is a tie', () => {
@@ -66,7 +64,7 @@ describe('getPreferredWildcard', () => {
       async: '0.9.x',
       commander: '2.8.*'
     }
-    getPreferredWildcard(deps).should.equal('.x')
+    getPreferredWildcard(deps)!.should.equal('.x')
   })
 
   it('return null when it cannot be determined from other dependencies', () => {
