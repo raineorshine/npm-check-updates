@@ -1,10 +1,8 @@
-'use strict'
-
-const chai = require('chai')
-const getIgnoredUpgrades = require('../src/lib/getIgnoredUpgrades').default
+import chai from 'chai'
+import getIgnoredUpgrades from '../src/lib/getIgnoredUpgrades'
 
 chai.should()
-process.env.NCU_TESTS = true
+process.env.NCU_TESTS = 'true'
 
 describe('getIgnoredUpgrades', function () {
   it('ncu-test-peer-update', async () => {
