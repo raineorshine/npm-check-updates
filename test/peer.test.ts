@@ -1,17 +1,15 @@
-'use strict'
-
-const path = require('path')
-const rimraf = require('rimraf')
-const chai = require('chai')
-const chaiAsPromised = require('chai-as-promised')
-const chaiString = require('chai-string')
-const ncu = require('../src/')
-const spawnNpm = require('../src/package-managers/npm').default
+import path from 'path'
+import rimraf from 'rimraf'
+import chai from 'chai'
+import chaiAsPromised from 'chai-as-promised'
+import chaiString from 'chai-string'
+import * as ncu from '../src/'
+import spawnNpm from '../src/package-managers/npm'
 
 chai.use(chaiAsPromised)
 chai.use(chaiString)
 
-process.env.NCU_TESTS = true
+process.env.NCU_TESTS = 'true'
 
 describe('peer dependencies', function () {
 
@@ -20,7 +18,7 @@ describe('peer dependencies', function () {
     try {
       await spawnNpm('install', {}, { cwd })
       const upgrades = await ncu.run({ cwd })
-      upgrades.should.deep.equal({
+      upgrades!.should.deep.equal({
         'ncu-test-return-version': '2.0.0'
       })
     }
@@ -35,7 +33,7 @@ describe('peer dependencies', function () {
     try {
       await spawnNpm('install', {}, { cwd })
       const upgrades = await ncu.run({ cwd, peer: true })
-      upgrades.should.deep.equal({
+      upgrades!.should.deep.equal({
         'ncu-test-return-version': '1.1.0'
       })
     }
@@ -50,7 +48,7 @@ describe('peer dependencies', function () {
     try {
       await spawnNpm('install', {}, { cwd })
       const upgrades = await ncu.run({ cwd, peer: true })
-      upgrades.should.deep.equal({
+      upgrades!.should.deep.equal({
         'ncu-test-return-version': '1.1.0',
         'ncu-test-peer-update': '1.1.0'
       })
