@@ -1,10 +1,8 @@
-'use strict'
-
-const chai = require('chai')
-const upgradeDependencies = require('../src/lib/upgradeDependencies').default
+import chai from 'chai'
+import upgradeDependencies from '../src/lib/upgradeDependencies'
 
 chai.should()
-process.env.NCU_TESTS = true
+process.env.NCU_TESTS = 'true'
 
 describe('upgradeDependencies', () => {
 

@@ -21,7 +21,7 @@ interface MappedDependencies {
  * @param [options={}]
  * @returns upgraded dependency collection object
  */
-function upgradeDependencies(currentDependencies: Index<VersionSpec>, latestVersions: Index<Version>, options: Options = {}): Index<VersionSpec> {
+function upgradeDependencies(currentDependencies: Index<VersionSpec | null>, latestVersions: Index<Version>, options: Options = {}): Index<VersionSpec> {
   // filter out dependencies with empty values
   currentDependencies = cint.filterObject(currentDependencies, (key, value) => !!value)
 
