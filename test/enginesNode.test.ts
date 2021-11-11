@@ -1,10 +1,9 @@
-'use strict'
-
-const chai = require('chai')
-const ncu = require('../src/index')
+import chai from 'chai'
+import * as ncu from '../src/index'
+import { Index, VersionSpec } from '../src/types'
 
 chai.should()
-process.env.NCU_TESTS = true
+process.env.NCU_TESTS = 'true'
 
 describe('enginesNode', () => {
   it('enable --enginesNode matching ', async () => {
@@ -21,7 +20,7 @@ describe('enginesNode', () => {
       enginesNode: true
     })
 
-    upgradedPkg.should.eql({
+    upgradedPkg!.should.eql({
       dependencies: {
         del: '4.1.1'
       },
@@ -45,9 +44,10 @@ describe('enginesNode', () => {
       enginesNode: true
     })
 
-    upgradedPkg.should.have.property('dependencies')
-    upgradedPkg.dependencies.should.have.property('del')
-    upgradedPkg.dependencies.del.should.equal('4.1.1')
+    upgradedPkg!.should.have.property('dependencies')
+    const deps = upgradedPkg!.dependencies as Index<VersionSpec>
+    deps.should.have.property('del')
+    deps.del.should.equal('4.1.1')
   })
 
   it('enable engines matching if --enginesNode, not update if matches not exists', async () => {
@@ -64,9 +64,10 @@ describe('enginesNode', () => {
       enginesNode: true
     })
 
-    upgradedPkg.should.have.property('dependencies')
-    upgradedPkg.dependencies.should.have.property('del')
-    upgradedPkg.dependencies.del.should.equal('3.0.0')
+    upgradedPkg!.should.have.property('dependencies')
+    const deps = upgradedPkg!.dependencies as Index<VersionSpec>
+    deps.should.have.property('del')
+    deps.del.should.equal('3.0.0')
   })
 
   it('enable engines matching if --enginesNode, update to latest version if engines.node not exists', async () => {
@@ -80,10 +81,11 @@ describe('enginesNode', () => {
       enginesNode: true
     })
 
-    upgradedPkg.should.have.property('dependencies')
-    upgradedPkg.dependencies.should.have.property('del')
-    upgradedPkg.dependencies.del.should.not.equal('3.0.0')
-    upgradedPkg.dependencies.del.should.not.equal('4.1.1')
+    upgradedPkg!.should.have.property('dependencies')
+    const deps = upgradedPkg!.dependencies as Index<VersionSpec>
+    deps.should.have.property('del')
+    deps.del.should.not.equal('3.0.0')
+    deps.del.should.not.equal('4.1.1')
   })
 
 })
