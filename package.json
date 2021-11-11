@@ -36,7 +36,7 @@
     "c8": "c8",
     "prepublishOnly": "npm run build",
     "test": "npm run test:src && npm run test:timeout",
-    "test:src": "mocha test src/test/* test/package-managers/npm/index.ts test/package-managers/yarn/index.ts",
+    "test:src": "mocha test src/test test/package-managers/npm test/package-managers/yarn",
     "test:timeout": "mocha --exit test/timeout",
     "ncu": "node build/src/bin/cli.js"
   },
@@ -146,8 +146,8 @@
   "mocha": {
     "check-leaks": true,
     "extension": [
-      "js",
-      "ts"
+      "test.js",
+      "test.ts"
     ],
     "require": [
       "source-map-support/register",
