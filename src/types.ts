@@ -38,7 +38,7 @@ export interface Packument {
 
 export interface PackageFileRepository {
   url: string,
-  directory?: string
+  directory?: string,
 }
 
 export interface PackageFile {

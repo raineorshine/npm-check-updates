@@ -1,6 +1,6 @@
 import chai from 'chai'
 import getCurrentDependencies from '../src/lib/getCurrentDependencies'
-import {PackageFile} from '../src/types'
+import { PackageFile } from '../src/types'
 
 chai.should()
 

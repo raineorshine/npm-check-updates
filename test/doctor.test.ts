@@ -5,7 +5,7 @@ import chaiAsPromised from 'chai-as-promised'
 import spawn from 'spawn-please'
 import rimraf from 'rimraf'
 import stripAnsi from 'strip-ansi'
-import {doctorHelpText} from '../src/constants'
+import { doctorHelpText } from '../src/constants'
 
 chai.should()
 chai.use(chaiAsPromised)
