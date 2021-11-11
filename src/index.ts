@@ -16,7 +16,7 @@ import initOptions from './lib/initOptions'
 import programError from './lib/programError'
 import runGlobal from './lib/runGlobal'
 import runLocal from './lib/runLocal'
-import { Index, Options, PackageFile, VersionSpec } from './types'
+import { Index, Options, PackageFile, PreInitOptions, VersionSpec } from './types'
 
 // exit with non-zero error code when there is an unhandled promise rejection
 process.on('unhandledRejection', err => {
@@ -31,12 +31,12 @@ process.on('unhandledRejection', err => {
  * | void                         --global upgrade returns void.
  * >
  */
-export async function run(options: Options = {}): Promise<PackageFile | Index<VersionSpec> | void> {
+export async function run(rawOptions: PreInitOptions = {}): Promise<PackageFile | Index<VersionSpec> | void> {
 
-  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
+  const chalk = rawOptions.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   // if not executed on the command-line (i.e. executed as a node module), set some defaults
-  if (!options.cli) {
+  if (!rawOptions.cli) {
     const cliDefaults = cliOptions.reduce((acc, curr) => ({
       ...acc,
       ...curr.default != null ? { [curr.long]: curr.default } : null,
@@ -44,13 +44,13 @@ export async function run(options: Options = {}): Promise<PackageFile | Index<Ve
     const defaultOptions = {
       ...cliDefaults,
       jsonUpgraded: true,
-      silent: options.silent || options.loglevel === undefined,
+      silent: rawOptions.silent || rawOptions.loglevel === undefined,
       args: []
     }
-    options = { ...defaultOptions, ...options }
+    rawOptions = { ...defaultOptions, ...rawOptions }
   }
 
-  options = initOptions(options)
+  const options = initOptions(rawOptions)
 
   const deprecatedOptions = cliOptions.filter(({ long, deprecated }) => deprecated && options[long as keyof Options])
   if (deprecatedOptions.length > 0) {

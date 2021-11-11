@@ -288,3 +288,5 @@ export type Options = RunOptions & {
   peerDependencies?: Index<any>,
   rcConfigPath?: string,
 }
+
+export type PreInitOptions = Omit<Options, 'packageData'> & { packageData?: string | PackageFile }

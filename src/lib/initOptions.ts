@@ -5,10 +5,10 @@ import { deepPatternPrefix } from '../constants'
 import programError from './programError'
 import getPackageFileName from './getPackageFileName'
 import { print } from '../logging'
-import { Options } from '../types'
+import { Options, PreInitOptions } from '../types'
 
 /** Initializes and consolidates program options. */
-function initOptions(options: Options): Options {
+function initOptions(options: PreInitOptions): Options {
 
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
@@ -71,7 +71,7 @@ function initOptions(options: Options): Options {
     // imply upgrade in interactive mode when json is not specified as the output
     ...options.interactive && options.upgrade === undefined ? { upgrade: !json } : null,
     ...!options.packageManager && { packageManager: autoYarn ? 'yarn' : 'npm' },
-  }
+  } as Options // types of PackageData are different: they're not, but this is complex enough I'm not surprised TypeScript can't tell!
 }
 
 export default initOptions
