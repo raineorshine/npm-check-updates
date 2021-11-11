@@ -1,17 +1,15 @@
-'use strict'
-
-const fs = require('fs')
-const path = require('path')
-const chai = require('chai')
-const chaiAsPromised = require('chai-as-promised')
-const chaiString = require('chai-string')
-const ncu = require('../../src/')
+import fs from 'fs'
+import path from 'path'
+import chai from 'chai'
+import chaiAsPromised from 'chai-as-promised'
+import chaiString from 'chai-string'
+import * as ncu from '../../src/'
 
 chai.should()
 chai.use(chaiAsPromised)
 chai.use(chaiString)
 
-process.env.NCU_TESTS = true
+process.env.NCU_TESTS = 'true'
 
 describe('timeout (with --exit)', function () {
 
