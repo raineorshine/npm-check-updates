@@ -1,10 +1,8 @@
-'use strict'
-
-const chai = require('chai')
-const getPeerDependenciesFromRegistry = require('../src/lib/getPeerDependenciesFromRegistry').default
+import chai from 'chai'
+import getPeerDependenciesFromRegistry from '../src/lib/getPeerDependenciesFromRegistry'
 
 chai.should()
-process.env.NCU_TESTS = true
+process.env.NCU_TESTS = 'true'
 
 describe('getPeerDependenciesFromRegistry', function () {
 
