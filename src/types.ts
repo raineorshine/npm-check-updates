@@ -36,8 +36,13 @@ export interface Packument {
   versions: Packument[],
 }
 
+export interface PackageFileRepository {
+  url: string,
+  directory?: string
+}
+
 export interface PackageFile {
-  repository?: string | { url: string },
+  repository?: string | PackageFileRepository,
   dependencies?: Index<VersionSpec>,
   devDependencies?: Index<VersionSpec>,
   peerDependencies?: Index<VersionSpec>,
