@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import program from 'commander'
+import { program } from 'commander'
 import _ from 'lodash'
 import updateNotifier from 'update-notifier'
 import ncu from '../index'
@@ -61,12 +61,14 @@ program.version(pkg.version)
 
 program.parse(process.argv)
 
-const { configFileName, configFilePath, packageFile, mergeConfig } = program
+let programOpts = program.opts()
+
+const { configFileName, configFilePath, packageFile, mergeConfig } = programOpts
 
 // load .ncurc
 // Do not load when global option is set
 // Do not load when tests are running (an be overridden if configFilePath is set explicitly, or --mergeConfig option specified)
-const rcResult = !program.global && (!process.env.NCU_TESTS || configFilePath || mergeConfig)
+const rcResult = !programOpts.global && (!process.env.NCU_TESTS || configFilePath || mergeConfig)
   ? getNcuRc({ configFileName, configFilePath, packageFile })
   : null
 
@@ -80,6 +82,7 @@ const combinedArguments = rcResult
   : process.argv
 
 program.parse(combinedArguments)
+programOpts = program.opts()
 
 // filter out undefined program options and combine cli options with config file options
 const options = {
@@ -88,7 +91,7 @@ const options = {
     : null,
   ..._.pickBy(program.opts(), value => value !== undefined),
   args: program.args,
-  ...program.filter ? { filter: program.filter } : null,
+  ...programOpts.filter ? { filter: programOpts.filter } : null,
   cli: true,
 }
 
