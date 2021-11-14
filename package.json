@@ -1,168 +1,60 @@
 {
-  "name": "npm-check-updates",
-  "version": "12.0.2",
-  "author": "Tomas Junnonen <tomas1@gmail.com>",
-  "license": "Apache-2.0",
-  "contributors": [
-    "Raine Revere (https://github.com/raineorshine)"
-  ],
-  "description": "Find newer versions of dependencies than what your package.json allows",
-  "keywords": [
-    "npm",
-    "check",
-    "find",
-    "discover",
-    "updates",
-    "upgrades",
-    "dependencies",
-    "package.json",
-    "updater",
-    "version",
-    "management",
-    "ncu"
-  ],
-  "engines": {
-    "node": ">=12"
-  },
-  "main": "build/src/index.js",
+  "name": "init-package-json",
+  "version": "2.0.5",
+  "main": "lib/init-package-json.js",
   "scripts": {
-    "build": "npm run build:ts && npm run build:readme",
-    "build:ts": "tsc && chmod u+x ./build/src/bin/cli.js",
-    "build:readme": "node scripts/buildReadme.js",
-    "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
-    "lint:lockfile": "lockfile-lint",
-    "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.js",
-    "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --ignore-path .gitignore --report-unused-disable-directives .",
-    "c8": "c8",
-    "prepublishOnly": "npm run build",
-    "test": "npm run test:src && npm run test:timeout",
-    "test:src": "mocha test src/test/* test/package-managers/npm/index.ts test/package-managers/yarn/index.ts",
-    "test:timeout": "mocha --exit test/timeout",
-    "ncu": "node build/src/bin/cli.js"
-  },
-  "bin": {
-    "npm-check-updates": "build/src/bin/cli.js",
-    "ncu": "build/src/bin/cli.js"
+    "test": "tap",
+    "preversion": "npm test",
+    "postversion": "npm publish",
+    "prepublishOnly": "git push origin --follow-tags",
+    "lint": "eslint '**/*.js'",
+    "postlint": "npm-template-check",
+    "lintfix": "npm run lint -- --fix",
+    "snap": "tap",
+    "posttest": "npm run lint"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/raineorshine/npm-check-updates.git"
+    "url": "https://github.com/npm/init-package-json.git"
   },
-  "homepage": "https://github.com/raineorshine/npm-check-updates",
-  "bugs": {
-    "url": "https://github.com/raineorshine/npm-check-updates/issues"
-  },
+  "author": "GitHub Inc.",
+  "license": "ISC",
+  "description": "A node module to get your node module started",
   "dependencies": {
-    "chalk": "^4.1.2",
-    "cint": "^8.2.1",
-    "cli-table": "^0.3.6",
-    "commander": "^6.2.1",
-    "fast-memoize": "^2.5.2",
-    "find-up": "5.0.0",
-    "fp-and-or": "^0.1.3",
-    "get-stdin": "^8.0.0",
-    "globby": "^11.0.4",
-    "hosted-git-info": "^4.0.2",
-    "json-parse-helpfulerror": "^1.0.3",
-    "jsonlines": "^0.1.1",
-    "libnpmconfig": "^1.2.1",
-    "lodash": "^4.17.21",
-    "minimatch": "^3.0.4",
-    "p-map": "^4.0.0",
-    "pacote": "^12.0.2",
-    "parse-github-url": "^1.0.2",
-    "progress": "^2.0.3",
-    "prompts": "^2.4.2",
-    "rc-config-loader": "^4.0.0",
-    "remote-git-tags": "^3.0.0",
-    "rimraf": "^3.0.2",
+    "npm-package-arg": "^8.1.5",
+    "promzard": "^0.3.0",
+    "read": "~1.0.1",
+    "read-package-json": "^4.1.1",
     "semver": "^7.3.5",
-    "semver-utils": "^1.1.4",
-    "source-map-support": "^0.5.20",
-    "spawn-please": "^1.0.0",
-    "update-notifier": "^5.1.0"
+    "validate-npm-package-license": "^3.0.4",
+    "validate-npm-package-name": "^3.0.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.22",
-    "@types/chai-as-promised": "^7.1.4",
-    "@types/cli-table": "^0.3.0",
-    "@types/hosted-git-info": "^3.0.2",
-    "@types/json-parse-helpfulerror": "^1.0.1",
-    "@types/jsonlines": "^0.1.1",
-    "@types/lodash": "^4.14.176",
-    "@types/minimatch": "^3.0.5",
-    "@types/mocha": "^9.0.0",
-    "@types/node": "^16.11.7",
-    "@types/pacote": "^11.1.1",
-    "@types/parse-github-url": "^1.0.0",
-    "@types/progress": "^2.0.5",
-    "@types/prompts": "^2.4.0",
-    "@types/remote-git-tags": "^4.0.0",
-    "@types/rimraf": "^3.0.2",
-    "@types/semver": "^7.3.9",
-    "@types/semver-utils": "^1.1.1",
-    "@types/update-notifier": "^5.1.0",
-    "@typescript-eslint/eslint-plugin": "^5.3.1",
-    "@typescript-eslint/parser": "^5.3.1",
-    "c8": "^7.10.0",
-    "chai": "^4.3.4",
-    "chai-as-promised": "^7.1.1",
-    "chai-string": "^1.5.0",
-    "cross-env": "^7.0.3",
-    "eslint": "^7.32.0",
-    "eslint-config-raine": "^0.3.0",
-    "eslint-config-standard": "^16.0.3",
-    "eslint-plugin-fp": "^2.3.0",
-    "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-jsdoc": "^37.0.3",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^5.1.1",
-    "husky": "^7.0.4",
-    "lockfile-lint": "^4.6.2",
-    "markdownlint-cli": "^0.29.0",
-    "mocha": "^9.1.3",
-    "npm-run-all": "^4.1.5",
-    "should": "^13.2.3",
-    "strip-ansi": "^6.0.1",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.4.4",
-    "yarn": "^1.22.17"
+    "@npmcli/config": "^2.1.0",
+    "@npmcli/template-oss": "^1.0.3",
+    "tap": "^15.0.9"
   },
-  "files": [
-    "build",
-    "!**/test/**"
+  "engines": {
+    "node": ">=10"
+  },
+  "tap": {
+    "statements": "94",
+    "branches": "83",
+    "lines": "94"
+  },
+  "keywords": [
+    "init",
+    "package.json",
+    "package",
+    "helper",
+    "wizard",
+    "wizerd",
+    "prompt",
+    "start"
   ],
-  "lockfile-lint": {
-    "allowed-schemes": [
-      "https:"
-    ],
-    "allowed-hosts": [
-      "npm"
-    ],
-    "empty-hostname": false,
-    "type": "npm ",
-    "path": "package-lock.json"
-  },
-  "mocha": {
-    "check-leaks": true,
-    "extension": [
-      "js",
-      "ts"
-    ],
-    "require": [
-      "source-map-support/register",
-      "ts-node/register"
-    ],
-    "timeout": 30000,
-    "trace-deprecation": true,
-    "trace-warnings": true,
-    "use_strict": true
-  },
-  "c8": {
-    "reporter": [
-      "html",
-      "lcov",
-      "text-summary"
-    ]
-  }
+  "files": [
+    "bin",
+    "lib"
+  ],
+  "templateVersion": "1.0.3"
 }
