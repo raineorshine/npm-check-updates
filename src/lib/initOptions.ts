@@ -71,7 +71,7 @@ function initOptions(options: Options): Options {
     // imply upgrade in interactive mode when json is not specified as the output
     ...options.interactive && options.upgrade === undefined ? { upgrade: !json } : null,
     ...!options.packageManager && { packageManager: autoYarn ? 'yarn' : 'npm' },
-  } as Options // types of PackageData are different: they're not, but this is complex enough I'm not surprised TypeScript can't tell!
+  }
 }
 
 export default initOptions

@@ -73,7 +73,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
           ...options,
           // upgrade prereleases to newer prereleases by default
           pre: options.pre != null ? options.pre : isPre(version),
-        } as Options)
+        })
         versionNew = npmAlias && versionNew ? createNpmAlias(name, versionNew) : versionNew
       }
       catch (err: any) {
