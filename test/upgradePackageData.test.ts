@@ -1,4 +1,4 @@
-const upgradePackageData = require('../src/lib/upgradePackageData').default
+import upgradePackageData from '../src/lib/upgradePackageData'
 
 describe('upgradePackageData', () => {
   const pkgData = JSON.stringify({

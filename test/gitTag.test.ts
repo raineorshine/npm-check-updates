@@ -1,10 +1,8 @@
-'use strict'
-
-const chai = require('chai')
-const ncu = require('../src/index')
+import chai from 'chai'
+import * as ncu from '../src/index'
 
 chai.should()
-process.env.NCU_TESTS = true
+process.env.NCU_TESTS = 'true'
 
 describe('github urls', () => {
 
@@ -16,7 +14,7 @@ describe('github urls', () => {
         }
       })
     })
-    upgrades.should.deep.equal({
+    upgrades!.should.deep.equal({
       'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#2.0.0'
     })
   })
@@ -29,7 +27,7 @@ describe('github urls', () => {
         }
       })
     })
-    upgrades.should.deep.equal({
+    upgrades!.should.deep.equal({
       'ncu-test-v2': 'github:raineorshine/ncu-test-v2#2.0.0'
     })
   })
@@ -42,7 +40,7 @@ describe('github urls', () => {
         }
       })
     })
-    upgrades.should.deep.equal({
+    upgrades!.should.deep.equal({
       'ncu-test-v2': 'raineorshine/ncu-test-v2#2.0.0'
     })
   })
@@ -55,7 +53,7 @@ describe('github urls', () => {
         }
       })
     })
-    upgrades.should.deep.equal({
+    upgrades!.should.deep.equal({
       'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#semver:^2.0.0'
     })
   })
@@ -69,7 +67,7 @@ describe('github urls', () => {
         }
       })
     })
-    upgrades.should.deep.equal({
+    upgrades!.should.deep.equal({
       'ncu-test-v2': 'git+ssh://git@github.com/raineorshine/ncu-test-v2.git#semver:^2.0.0'
     })
   })

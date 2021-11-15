@@ -1,17 +1,15 @@
-'use strict'
-
-const fs = require('fs')
-const path = require('path')
-const chai = require('chai')
-const chaiAsPromised = require('chai-as-promised')
-const ncu = require('../src/')
-const spawn = require('spawn-please')
-const mergeOptions = require('../src/lib/mergeOptions').default
+import fs from 'fs'
+import path from 'path'
+import chai from 'chai'
+import chaiAsPromised from 'chai-as-promised'
+import * as ncu from '../src/'
+import spawn from 'spawn-please'
+import mergeOptions from '../src/lib/mergeOptions'
 
 chai.should()
 chai.use(chaiAsPromised)
 
-process.env.NCU_TESTS = true
+process.env.NCU_TESTS = 'true'
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
@@ -112,7 +110,7 @@ describe('--deep', function () {
   it('using --cwd is checking files from right location', async () => {
     return spawn('node', [bin, '--jsonAll', '--deep', '--cwd', './test/deep/pkg'])
       .then(JSON.parse)
-      .then(deepJsonOut => {
+      .then((deepJsonOut: Record<string, unknown>) => {
         deepJsonOut.should.not.have.property('package.json')
         deepJsonOut.should.have.property('sub1/package.json')
         deepJsonOut.should.have.property('sub2/package.json')
@@ -210,7 +208,7 @@ describe('--deep with nested ncurc files', function () {
   it('merge options', () => {
 
     /** Asserts that merging two options object deep equals the given result object. */
-    const eq = (o1, o2, result, opts) => chai.expect(mergeOptions(o1, o2)).to.deep.equal(result)
+    const eq = (o1: Record<string, unknown> | null, o2: Record<string, unknown> | null, result: Record<string, unknown>) => chai.expect(mergeOptions(o1, o2)).to.deep.equal(result)
 
     // trivial cases
     eq(null, null, {})

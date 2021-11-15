@@ -1,16 +1,14 @@
-'use strict'
-
-const fs = require('fs')
-const path = require('path')
-const chai = require('chai')
-const chaiAsPromised = require('chai-as-promised')
-const chaiString = require('chai-string')
-const ncu = require('../src/')
+import fs from 'fs'
+import path from 'path'
+import chai from 'chai'
+import chaiAsPromised from 'chai-as-promised'
+import chaiString from 'chai-string'
+import * as ncu from '../src/'
 
 chai.use(chaiAsPromised)
 chai.use(chaiString)
 
-process.env.NCU_TESTS = true
+process.env.NCU_TESTS = 'true'
 
 describe('run', function () {
 
@@ -47,7 +45,7 @@ describe('run', function () {
     return Promise.all([
       upgraded.should.eventually.have.property('juggernaut'),
       upgraded.then(data => {
-        return data.should.eql({ juggernaut: '^2.1.1' })
+        return data!.should.eql({ juggernaut: '^2.1.1' })
       })
     ])
   })
@@ -112,7 +110,7 @@ describe('run', function () {
         jsonUpgraded: true,
         upgrade: true
       })
-      result.should.have.property('express')
+      result!.should.have.property('express')
 
       const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
@@ -133,7 +131,7 @@ describe('run', function () {
         }
       })
     }).then(data => {
-      return data.should.eql({
+      return data!.should.eql({
         dependencies: {
           'ncu-mock-pre': '1.0.0'
         }
@@ -150,7 +148,7 @@ describe('run', function () {
         }
       })
     }).then(data => {
-      return data.should.eql({
+      return data!.should.eql({
         'ncu-test-alpha-latest': '1.0.0-alpha.2'
       })
     })
@@ -159,14 +157,14 @@ describe('run', function () {
   it('do not upgrade prereleases to newer prereleases with --pre 0', () => {
 
     return ncu.run({
-      pre: 0,
+      pre: false,
       packageData: JSON.stringify({
         dependencies: {
           'ncu-test-alpha-latest': '1.0.0-alpha.1'
         }
       })
     }).then(data => {
-      return data.should.eql({})
+      return data!.should.eql({})
     })
   })
 
@@ -179,9 +177,9 @@ describe('run', function () {
           'ncu-mock-pre': '1.0.0'
         }
       }),
-      pre: 1
+      pre: true
     }).then(data => {
-      return data.should.eql({
+      return data!.should.eql({
         dependencies: {
           'ncu-mock-pre': '2.0.0-alpha.0'
         }
@@ -200,7 +198,7 @@ describe('run', function () {
       }),
       target: 'newest'
     }).then(data => {
-      return data.should.eql({
+      return data!.should.eql({
         dependencies: {
           'ncu-mock-pre': '2.0.0-alpha.0'
         }
@@ -219,7 +217,7 @@ describe('run', function () {
       }),
       target: 'greatest'
     }).then(data => {
-      return data.should.eql({
+      return data!.should.eql({
         dependencies: {
           'ncu-mock-pre': '2.0.0-alpha.0'
         }
@@ -237,9 +235,9 @@ describe('run', function () {
         }
       }),
       target: 'newest',
-      pre: 0
+      pre: false
     }).then(data => {
-      return data.should.eql({
+      return data!.should.eql({
         dependencies: {
           'ncu-mock-pre': '1.0.0'
         }
@@ -298,7 +296,7 @@ describe('run', function () {
           }
         })
       })
-      upgrades.should.deep.equal({})
+      upgrades!.should.deep.equal({})
     })
 
     it('deprecated included with option', async () => {
@@ -310,7 +308,7 @@ describe('run', function () {
           }
         })
       })
-      upgrades.should.deep.equal({
+      upgrades!.should.deep.equal({
         'ncu-test-deprecated': '2.0.0'
       })
     })
@@ -340,40 +338,40 @@ describe('run', function () {
 
     it('do not update major versions with --target minor', async () => {
       const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
-      pkgData.should.not.have.property('chalk')
+      pkgData!.should.not.have.property('chalk')
     })
 
     it('update minor versions with --target minor', async () => {
       const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "2.3.0" } }' })
-      pkgData.should.have.property('chalk')
-      pkgData.chalk.should.equal('2.4.2')
+      pkgData!.should.have.property('chalk')
+      ;(pkgData as any).chalk.should.equal('2.4.2')
     })
 
     it('update patch versions with --target minor', async () => {
       const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "2.4.0" } }' })
-      pkgData.should.have.property('chalk')
-      pkgData.chalk.should.equal('2.4.2')
+      pkgData!.should.have.property('chalk')
+      ;(pkgData as any).chalk.should.equal('2.4.2')
     })
 
     it('do not update major versions with --target patch', async () => {
       const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
-      pkgData.should.not.have.property('chalk')
+      pkgData!.should.not.have.property('chalk')
     })
 
     it('do not update minor versions with --target patch', async () => {
       const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.3.2" } }' })
-      pkgData.should.not.have.property('chalk')
+      pkgData!.should.not.have.property('chalk')
     })
 
     it('update patch versions with --target patch', async () => {
       const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.4.1" } }' })
-      pkgData.should.have.property('chalk')
-      pkgData.chalk.should.equal('2.4.2')
+      pkgData!.should.have.property('chalk')
+      ;(pkgData as any).chalk.should.equal('2.4.2')
     })
 
     it('skip non-semver versions with --target', async () => {
       const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "test": "github:a/b" } }' })
-      pkgData.should.not.have.property('test')
+      pkgData!.should.not.have.property('test')
     })
 
   }) // end 'target'
@@ -394,8 +392,8 @@ describe('run', function () {
         filterVersion: '1.0.0',
       })
 
-      upgraded.should.have.property('ncu-test-v2')
-      upgraded.should.not.have.property('ncu-test-return-version')
+      upgraded!.should.have.property('ncu-test-v2')
+      upgraded!.should.not.have.property('ncu-test-return-version')
     })
 
     it('filter by package version with space-delimited list of strings', async () => {
@@ -413,9 +411,9 @@ describe('run', function () {
         filterVersion: '1.0.0 0.1.0',
       })
 
-      upgraded.should.have.property('ncu-test-v2')
-      upgraded.should.not.have.property('ncu-test-return-version')
-      upgraded.should.have.property('fp-and-or')
+      upgraded!.should.have.property('ncu-test-v2')
+      upgraded!.should.not.have.property('ncu-test-return-version')
+      upgraded!.should.have.property('fp-and-or')
     })
 
     it('filter by package version with comma-delimited list of strings', async () => {
@@ -433,9 +431,9 @@ describe('run', function () {
         filterVersion: '1.0.0,0.1.0',
       })
 
-      upgraded.should.have.property('ncu-test-v2')
-      upgraded.should.not.have.property('ncu-test-return-version')
-      upgraded.should.have.property('fp-and-or')
+      upgraded!.should.have.property('ncu-test-v2')
+      upgraded!.should.not.have.property('ncu-test-return-version')
+      upgraded!.should.have.property('fp-and-or')
     })
 
     it('filter by package version with RegExp', async () => {
@@ -453,9 +451,9 @@ describe('run', function () {
         filterVersion: /^1/,
       })
 
-      upgraded.should.have.property('ncu-test-v2')
-      upgraded.should.have.property('ncu-test-return-version')
-      upgraded.should.not.have.property('fp-and-or')
+      upgraded!.should.have.property('ncu-test-v2')
+      upgraded!.should.have.property('ncu-test-return-version')
+      upgraded!.should.not.have.property('fp-and-or')
     })
 
     it('filter by package version with RegExp string', async () => {
@@ -473,9 +471,9 @@ describe('run', function () {
         filterVersion: '/^1/',
       })
 
-      upgraded.should.have.property('ncu-test-v2')
-      upgraded.should.have.property('ncu-test-return-version')
-      upgraded.should.not.have.property('fp-and-or')
+      upgraded!.should.have.property('ncu-test-v2')
+      upgraded!.should.have.property('ncu-test-return-version')
+      upgraded!.should.not.have.property('fp-and-or')
     })
 
   })
@@ -496,8 +494,8 @@ describe('run', function () {
         rejectVersion: '1.0.0',
       })
 
-      upgraded.should.not.have.property('ncu-test-v2')
-      upgraded.should.have.property('ncu-test-return-version')
+      upgraded!.should.not.have.property('ncu-test-v2')
+      upgraded!.should.have.property('ncu-test-return-version')
     })
 
     it('reject by package version with space-delimited list of strings', async () => {
@@ -515,9 +513,9 @@ describe('run', function () {
         rejectVersion: '1.0.0 0.1.0',
       })
 
-      upgraded.should.not.have.property('ncu-test-v2')
-      upgraded.should.have.property('ncu-test-return-version')
-      upgraded.should.not.have.property('fp-and-or')
+      upgraded!.should.not.have.property('ncu-test-v2')
+      upgraded!.should.have.property('ncu-test-return-version')
+      upgraded!.should.not.have.property('fp-and-or')
     })
 
     it('reject by package version with comma-delimited list of strings', async () => {
@@ -535,9 +533,9 @@ describe('run', function () {
         rejectVersion: '1.0.0,0.1.0',
       })
 
-      upgraded.should.not.have.property('ncu-test-v2')
-      upgraded.should.have.property('ncu-test-return-version')
-      upgraded.should.not.have.property('fp-and-or')
+      upgraded!.should.not.have.property('ncu-test-v2')
+      upgraded!.should.have.property('ncu-test-return-version')
+      upgraded!.should.not.have.property('fp-and-or')
     })
 
     it('reject by package version with RegExp', async () => {
@@ -555,9 +553,9 @@ describe('run', function () {
         rejectVersion: /^1/,
       })
 
-      upgraded.should.not.have.property('ncu-test-v2')
-      upgraded.should.not.have.property('ncu-test-return-version')
-      upgraded.should.have.property('fp-and-or')
+      upgraded!.should.not.have.property('ncu-test-v2')
+      upgraded!.should.not.have.property('ncu-test-return-version')
+      upgraded!.should.have.property('fp-and-or')
     })
 
     it('reject by package version with RegExp string', async () => {
@@ -575,9 +573,9 @@ describe('run', function () {
         rejectVersion: '/^1/',
       })
 
-      upgraded.should.not.have.property('ncu-test-v2')
-      upgraded.should.not.have.property('ncu-test-return-version')
-      upgraded.should.have.property('fp-and-or')
+      upgraded!.should.not.have.property('ncu-test-v2')
+      upgraded!.should.not.have.property('ncu-test-return-version')
+      upgraded!.should.have.property('fp-and-or')
     })
 
   })
@@ -590,7 +588,7 @@ describe('run', function () {
         }
       })
     })
-    upgrades.should.deep.equal({})
+    upgrades!.should.deep.equal({})
   })
 
   it('update devDependency when duplicate dependency is up-to-date', async () => {
@@ -604,7 +602,7 @@ describe('run', function () {
         }
       })
     })
-    upgrades.should.deep.equal({
+    upgrades!.should.deep.equal({
       'ncu-test-v2': '^2.0.0'
     })
   })
@@ -620,7 +618,7 @@ describe('run', function () {
         }
       })
     })
-    upgrades.should.deep.equal({
+    upgrades!.should.deep.equal({
       'ncu-test-v2': '^2.0.0'
     })
   })

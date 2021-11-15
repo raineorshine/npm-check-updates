@@ -2,14 +2,14 @@ import fs from 'fs'
 import path from 'path'
 import { URL } from 'url'
 import hostedGitInfo from 'hosted-git-info'
-import { PackageFile } from '../types'
+import { PackageFile, PackageFileRepository } from '../types'
 
 // extract the defaultBranchPath so it can be stripped in the final output
 const defaultBranchPath = hostedGitInfo.fromUrl('user/repo')?.browse('').match(/(\/tree\/[a-z]+)/)?.[0]
 const regexDefaultBranchPath = new RegExp(`${defaultBranchPath}$`)
 
 /** Gets the repo url of an installed package. */
-function getPackageRepo(packageName: string) {
+function getPackageRepo(packageName: string): string | { url: string } | null {
   let nodeModulePaths = require.resolve.paths(packageName)
   const localNodeModules = path.join(process.cwd(), 'node_modules')
   nodeModulePaths = [localNodeModules].concat(nodeModulePaths || [])
@@ -38,7 +38,7 @@ const cleanRepoUrl = (url: string) =>
  */
 function getRepoUrl(packageName: string, packageJson?: PackageFile) {
 
-  const repositoryMetadata =
+  const repositoryMetadata: string | PackageFileRepository | null =
     !packageJson ? getPackageRepo(packageName)
     : packageJson.repository ? packageJson.repository
     : null

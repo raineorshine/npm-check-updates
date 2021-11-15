@@ -1,12 +1,10 @@
-'use strict'
-
-const chai = require('chai')
-const chaiAsPromised = require('chai-as-promised')
-const queryVersions = require('../src/lib/queryVersions').default
+import chai from 'chai'
+import chaiAsPromised from 'chai-as-promised'
+import queryVersions from '../src/lib/queryVersions'
 
 chai.should()
 chai.use(chaiAsPromised)
-process.env.NCU_TESTS = true
+process.env.NCU_TESTS = 'true'
 
 describe('queryVersions', function () {
 

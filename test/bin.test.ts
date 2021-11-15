@@ -1,18 +1,16 @@
-'use strict'
-
-const fs = require('fs')
-const os = require('os')
-const path = require('path')
-const chai = require('chai')
-const chaiAsPromised = require('chai-as-promised')
-const chaiString = require('chai-string')
-const spawn = require('spawn-please')
-const stripAnsi = require('strip-ansi')
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+import chai from 'chai'
+import chaiAsPromised from 'chai-as-promised'
+import chaiString from 'chai-string'
+import spawn from 'spawn-please'
+import stripAnsi from 'strip-ansi'
 
 chai.use(chaiAsPromised)
 chai.use(chaiString)
 
-process.env.NCU_TESTS = true
+process.env.NCU_TESTS = 'true'
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
@@ -27,7 +25,7 @@ describe('bin', function () {
 
   it('accept stdin', () => {
     return spawn('node', [bin], '{ "dependencies": { "express": "1" } }')
-      .then(output => {
+      .then((output: string) => {
         output.trim().should.startWith('express')
       })
   })
@@ -57,16 +55,17 @@ describe('bin', function () {
   it('output json with --jsonAll', () => {
     return spawn('node', [bin, '--jsonAll'], '{ "dependencies": { "express": "1" } }')
       .then(JSON.parse)
-      .then(pkgData => {
+      .then((pkgData: Record<string, unknown>) => {
         pkgData.should.have.property('dependencies')
-        pkgData.dependencies.should.have.property('express')
+        const deps = pkgData.dependencies as Record<string, unknown>
+        deps.should.have.property('express')
       })
   })
 
   it('output only upgraded with --jsonUpgraded', () => {
     return spawn('node', [bin, '--jsonUpgraded'], '{ "dependencies": { "express": "1" } }')
       .then(JSON.parse)
-      .then(pkgData => {
+      .then((pkgData: Record<string, unknown>) => {
         pkgData.should.have.property('express')
       })
   })
@@ -152,7 +151,7 @@ describe('bin', function () {
     it('filter by package name with --filter', () => {
       return spawn('node', [bin, '--jsonUpgraded', '--filter', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
         .then(JSON.parse)
-        .then(pkgData => {
+        .then((pkgData: Record<string, unknown>) => {
           pkgData.should.have.property('express')
           pkgData.should.not.have.property('chalk')
         })
@@ -161,7 +160,7 @@ describe('bin', function () {
     it('filter by package name with -f', () => {
       return spawn('node', [bin, '--jsonUpgraded', '-f', 'express'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
         .then(JSON.parse)
-        .then(pkgData => {
+        .then((pkgData: Record<string, unknown>) => {
           pkgData.should.have.property('express')
           pkgData.should.not.have.property('chalk')
         })
@@ -204,7 +203,7 @@ describe('bin', function () {
     it('reject by package name with --reject', () => {
       return spawn('node', [bin, '--jsonUpgraded', '--reject', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
         .then(JSON.parse)
-        .then(pkgData => {
+        .then((pkgData: Record<string, unknown>) => {
           pkgData.should.have.property('express')
           pkgData.should.not.have.property('chalk')
         })
@@ -213,7 +212,7 @@ describe('bin', function () {
     it('reject by package name with -x', () => {
       return spawn('node', [bin, '--jsonUpgraded', '-x', 'chalk'], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
         .then(JSON.parse)
-        .then(pkgData => {
+        .then((pkgData: Record<string, unknown>) => {
           pkgData.should.have.property('express')
           pkgData.should.not.have.property('chalk')
         })
@@ -223,7 +222,7 @@ describe('bin', function () {
 
   it('suppress stdout when --silent is provided', () => {
     return spawn('node', [bin, '--silent'], '{ "dependencies": { "express": "1" } }')
-      .then(output => {
+      .then((output: string) => {
         output.trim().should.equal('')
       })
   })

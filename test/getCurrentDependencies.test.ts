@@ -1,11 +1,12 @@
-const chai = require('chai')
-const getCurrentDependencies = require('../src/lib/getCurrentDependencies').default
+import chai from 'chai'
+import getCurrentDependencies from '../src/lib/getCurrentDependencies'
+import { PackageFile } from '../src/types'
 
 chai.should()
 
 describe('getCurrentDependencies', () => {
 
-  let deps
+  let deps: PackageFile
   beforeEach(() => {
     deps = {
       dependencies: {

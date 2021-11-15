@@ -1,13 +1,11 @@
-'use strict'
-
-const fs = require('fs')
-const path = require('path')
-const chai = require('chai')
-const chaiAsPromised = require('chai-as-promised')
-const spawn = require('spawn-please')
-const rimraf = require('rimraf')
-const stripAnsi = require('strip-ansi')
-const { doctorHelpText } = require('../src/constants')
+import fs from 'fs'
+import path from 'path'
+import chai from 'chai'
+import chaiAsPromised from 'chai-as-promised'
+import spawn from 'spawn-please'
+import rimraf from 'rimraf'
+import stripAnsi from 'strip-ansi'
+import { doctorHelpText } from '../src/constants'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -17,10 +15,10 @@ const bin = path.join(__dirname, '../build/src/bin/cli.js')
 const doctorTests = path.join(__dirname, 'doctor')
 
 /** Run the ncu CLI. */
-const ncu = (args, options) => spawn('node', [bin, ...args], options)
+const ncu = (args: string[], options?: Record<string, unknown>) => spawn('node', [bin, ...args], options)
 
 /** Assertions for npm or yarn when tests pass. */
-const testPass = ({ packageManager }) => {
+const testPass = ({ packageManager }: { packageManager: string }) => {
 
   it('upgrade dependencies when tests pass', async function () {
 
@@ -41,10 +39,10 @@ const testPass = ({ packageManager }) => {
       // explicitly set packageManager to avoid auto yarn detection
       await ncu(['--doctor', '-u', '-p', packageManager], {
         cwd,
-        stdout: function (data) {
+        stdout: function (data: string) {
           stdout += data
         },
-        stderr: function (data) {
+        stderr: function (data: string) {
           stderr += data
         },
       })
@@ -79,7 +77,7 @@ const testPass = ({ packageManager }) => {
 }
 
 /** Assertions for npm or yarn when tests fail. */
-const testFail = ({ packageManager }) => {
+const testFail = ({ packageManager }: { packageManager: string }) => {
 
   it('identify broken upgrade', async function() {
 
@@ -101,10 +99,10 @@ const testFail = ({ packageManager }) => {
       // explicitly set packageManager to avoid auto yarn detection
       await ncu(['--doctor', '-u', '-p', packageManager], {
         cwd,
-        stdout: function (data) {
+        stdout: function (data: string) {
           stdout += data
         },
-        stderr: function (data) {
+        stderr: function (data: string) {
           stderr += data
         },
       })
@@ -193,10 +191,10 @@ describe('doctor', function() {
         // check only ncu-test-v2 (excluding ncu-return-version)
         await ncu(['--doctor', '-u', '--filter', 'ncu-test-v2'], {
           cwd,
-          stdout: function (data) {
+          stdout: function (data: string) {
             stdout += data
           },
-          stderr: function (data) {
+          stderr: function (data: string) {
             stderr += data
           },
         })

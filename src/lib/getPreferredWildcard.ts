@@ -10,7 +10,7 @@ import { WILDCARDS } from '../version-util'
  * (simply counts the greatest number of occurrences) or `null` if
  * given no dependencies.
  */
-function getPreferredWildcard(dependencies: Index<string>) {
+function getPreferredWildcard(dependencies: Index<string | null>) {
 
   // if there are no dependencies, return null.
   if (Object.keys(dependencies).length === 0) {
