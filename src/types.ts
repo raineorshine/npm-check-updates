@@ -73,7 +73,7 @@ export interface SpawnOptions {
   stderr?: (s: string) => void,
 }
 
-export interface RunOptions {
+interface RunOptions {
 
   /**
    * Force color in terminal
@@ -209,7 +209,7 @@ export interface RunOptions {
   /**
    * Package file data (you can also use stdin).
    */
-  packageData?: string | PackageFile,
+  packageData?: string,
 
   /**
    * Package file(s) location (default: ./package.json).
@@ -290,7 +290,6 @@ export type Options = RunOptions & {
   cli?: boolean,
   json?: boolean,
   nodeEngineVersion?: VersionSpec,
-  packageData?: string,
   peerDependencies?: Index<any>,
   rcConfigPath?: string,
 }
