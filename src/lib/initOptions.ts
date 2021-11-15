@@ -5,10 +5,10 @@ import { deepPatternPrefix } from '../constants'
 import programError from './programError'
 import getPackageFileName from './getPackageFileName'
 import { print } from '../logging'
-import { Options, PreInitOptions } from '../types'
+import { Options } from '../types'
 
 /** Initializes and consolidates program options. */
-function initOptions(options: PreInitOptions): Options {
+function initOptions(options: Options): Options {
 
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 

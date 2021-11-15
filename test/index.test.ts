@@ -27,11 +27,11 @@ describe('run', function () {
 
   it('pass object as packageData', () => {
     return ncu.run({
-      packageData: {
+      packageData: JSON.stringify({
         dependencies: {
           'ncu-test-v2': '1.0.0'
         }
-      },
+      }),
     }).should.eventually.have.property('ncu-test-v2')
   })
 

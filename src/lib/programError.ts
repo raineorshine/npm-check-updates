@@ -1,8 +1,8 @@
 import { print } from '../logging'
-import { Options, PreInitOptions } from '../types'
+import { Options } from '../types'
 
 /** Print an error. Exit the process if in CLI mode. */
-function programError(options: Options | PreInitOptions, message: string) {
+function programError(options: Options, message: string) {
   if (options.cli) {
     print(options, message, null, 'error')
     process.exit(1)

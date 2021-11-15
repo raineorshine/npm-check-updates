@@ -6,7 +6,7 @@ import Table from 'cli-table'
 import Chalk from 'chalk'
 import { colorizeDiff, isGithubUrl, getGithubUrlTag, isNpmAlias, parseNpmAlias } from './version-util'
 import getRepoUrl from './lib/getRepoUrl'
-import { IgnoredUpgrade, Index, Options, PreInitOptions, Version, VersionSpec } from './types'
+import { IgnoredUpgrade, Index, Options, Version, VersionSpec } from './types'
 
 // maps string levels to numeric levels
 const logLevels = {
@@ -27,7 +27,7 @@ const logLevels = {
  * @param loglevel   silent|error|warn|info|verbose|silly
  * @param method     The console method to call. Default: 'log'.
  */
-export function print(options: Options | PreInitOptions, message: any, loglevel: 'silent' | 'error' | 'warn' | 'info' | 'verbose' | 'silly' | null = null, method: 'log' | 'warn' | 'info' | 'error' = 'log') {
+export function print(options: Options, message: any, loglevel: 'silent' | 'error' | 'warn' | 'info' | 'verbose' | 'silly' | null = null, method: 'log' | 'warn' | 'info' | 'error' = 'log') {
   // not in json mode
   // not silent
   // not at a loglevel under minimum specified
