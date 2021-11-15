@@ -89,9 +89,8 @@ const options = {
   ..._.pickBy(program.opts(), value => value !== undefined),
   args: program.args,
   ...program.filter ? { filter: program.filter } : null,
-  cli: true,
 }
 
 // NOTE: Options handling and defaults go in initOptions in index.js
 
-ncu(options)
+ncu(options, { cli: true })

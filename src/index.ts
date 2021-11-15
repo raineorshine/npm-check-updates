@@ -3,7 +3,6 @@ import path from 'path'
 import globby from 'globby'
 import _ from 'lodash'
 import Chalk from 'chalk'
-import cliOptions from './cli-options'
 import packageManagers from './package-managers'
 import { doctorHelpText } from './constants'
 import { print, printJson } from './logging'
@@ -16,7 +15,7 @@ import initOptions from './lib/initOptions'
 import programError from './lib/programError'
 import runGlobal from './lib/runGlobal'
 import runLocal from './lib/runLocal'
-import { Index, Options, PackageFile, VersionSpec } from './types'
+import { Index, PackageFile, RunOptions, VersionSpec } from './types'
 
 // exit with non-zero error code when there is an unhandled promise rejection
 process.on('unhandledRejection', err => {
@@ -31,39 +30,11 @@ process.on('unhandledRejection', err => {
  * | void                         --global upgrade returns void.
  * >
  */
-export async function run(options: Options = {}): Promise<PackageFile | Index<VersionSpec> | void> {
+export async function run(runOptions: RunOptions = {}, { cli }: { cli?: boolean } = {}): Promise<PackageFile | Index<VersionSpec> | void> {
 
-  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
+  const chalk = runOptions.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
-  // if not executed on the command-line (i.e. executed as a node module), set some defaults
-  if (!options.cli) {
-    const cliDefaults = cliOptions.reduce((acc, curr) => ({
-      ...acc,
-      ...curr.default != null ? { [curr.long]: curr.default } : null,
-    }), {})
-    const defaultOptions = {
-      ...cliDefaults,
-      jsonUpgraded: true,
-      silent: options.silent || options.loglevel === undefined,
-      args: []
-    }
-    options = { ...defaultOptions, ...options }
-  }
-
-  options = initOptions(options)
-
-  const deprecatedOptions = cliOptions.filter(({ long, deprecated }) => deprecated && options[long as keyof Options])
-  if (deprecatedOptions.length > 0) {
-    deprecatedOptions.forEach(({ long, description }) => {
-      const deprecationMessage = `--${long}: ${description}`
-      print(options, chalk.yellow(deprecationMessage), 'warn')
-    })
-    print(options, '', 'warn')
-  }
-
-  if (options.rcConfigPath && !options.doctor) {
-    print(options, `Using config file ${options.rcConfigPath}`)
-  }
+  const options = initOptions(runOptions, { cli })
 
   print(options, 'Initializing', 'verbose')
 

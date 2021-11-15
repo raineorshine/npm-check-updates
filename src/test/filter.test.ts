@@ -12,7 +12,7 @@ describe('filter', () => {
   it('filter by package name with one arg', async () => {
     const upgraded = await ncu({
       packageData: fs.readFileSync(path.join(__dirname, '../../test/ncu/package2.json'), 'utf-8'),
-      args: ['lodash.map']
+      filter: ['lodash.map']
     }) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.not.have.property('lodash.filter')
@@ -21,7 +21,7 @@ describe('filter', () => {
   it('filter by package name with multiple args', async () => {
     const upgraded = await ncu({
       packageData: fs.readFileSync(path.join(__dirname, '../../test/ncu/package2.json'), 'utf-8'),
-      args: ['lodash.map', 'lodash.filter']
+      filter: ['lodash.map', 'lodash.filter']
     }) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
@@ -36,7 +36,7 @@ describe('filter', () => {
           'lodash.filter': '2.0.0'
         }
       }),
-      args: ['lodash.*']
+      filter: ['lodash.*']
     }) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
@@ -51,7 +51,7 @@ describe('filter', () => {
           'lodash.filter': '2.0.0'
         }
       }),
-      args: ['!lodash.*']
+      filter: ['!lodash.*']
     }) as Index<string>
     upgraded.should.have.property('lodash')
   })
