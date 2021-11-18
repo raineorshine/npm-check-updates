@@ -70,7 +70,7 @@ function getRepoUrl(packageName: string, packageJson?: PackageFile) {
   
   if (typeof gitURL === 'string' && typeof directory === 'string') {
     const hostedGitURL = hostedGitInfo.fromUrl(gitURL)?.browse(directory)
-    if (hostedGitURL === undefined) {
+    if (hostedGitURL !== undefined) {
       return cleanRepoUrl(hostedGitURL)
     }
   }
