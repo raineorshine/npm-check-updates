@@ -67,7 +67,7 @@ function getRepoUrl(packageName: string, packageJson?: PackageFile) {
       directory = repositoryMetadata.directory
     }
   }
-  
+
   if (typeof gitURL === 'string' && typeof directory === 'string') {
     const hostedGitURL = hostedGitInfo.fromUrl(gitURL)?.browse(directory)
     if (hostedGitURL !== undefined) {
