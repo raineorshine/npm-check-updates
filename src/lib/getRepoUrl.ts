@@ -68,9 +68,13 @@ function getRepoUrl(packageName: string, packageJson?: PackageFile) {
     }
   }
 
-  return typeof gitURL === 'string' && typeof directory === 'string'
-    ? cleanRepoUrl(hostedGitInfo.fromUrl(gitURL)!.browse(directory))
-    : null
+  if (typeof gitURL === 'string' && typeof directory === 'string') {
+    const hostedGitURL = hostedGitInfo.fromUrl(gitURL)?.browse(directory)
+    if (hostedGitURL !== undefined) {
+      return cleanRepoUrl(hostedGitURL)
+    }
+  }
+  return null
 }
 
 export default getRepoUrl
