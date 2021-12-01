@@ -90,7 +90,7 @@
     "@types/hosted-git-info": "^3.0.2",
     "@types/json-parse-helpfulerror": "^1.0.1",
     "@types/jsonlines": "^0.1.1",
-    "@types/lodash": "^4.14.176",
+    "@types/lodash": "^4.14.177",
     "@types/minimatch": "^3.0.5",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.11.7",
