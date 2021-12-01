@@ -78,7 +78,7 @@
     "rimraf": "^3.0.2",
     "semver": "^7.3.5",
     "semver-utils": "^1.1.4",
-    "source-map-support": "^0.5.20",
+    "source-map-support": "^0.5.21",
     "spawn-please": "^1.0.0",
     "update-notifier": "^5.1.0"
   },
