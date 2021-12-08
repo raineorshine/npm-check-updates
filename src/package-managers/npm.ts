@@ -53,6 +53,14 @@ libnpmconfig.read().forEach((value: string, key: string) => {
     npmConfig[key.match(/^[a-z]/i) ? _.camelCase(key) : key] = normalizedValue
   }
 })
+
+// if strict ssl is a string it will not be used by npm
+const booleanKeys = ['strictSSL']
+booleanKeys.forEach(key => {
+  if (typeof npmConfig[key] === 'string' && npmConfig[key] !== '') {
+    npmConfig[key] = npmConfig[key] === 'true'
+  }
+})
 npmConfig.cache = false
 
 /**
