@@ -31,14 +31,21 @@ const npmConfigToPacoteMap = {
   'strict-ssl': 'strictSSL',
 }
 
+// config variables that need to be converted from strings to boolean values
+const booleanKeys = { strictSSL: true, 'strict-ssl': true }
+
+/** Parses a string to a boolean. */
+const stringToBoolean = (s: string) => s && s !== 'false' && s !== '0'
+
 // needed until pacote supports full npm config compatibility
 // See: https://github.com/zkat/pacote/issues/156
 const npmConfig: Index<string | boolean> = {}
 libnpmconfig.read().forEach((value: string, key: string) => {
   // replace env ${VARS} in strings with the process.env value
-  const normalizedValue = typeof value !== 'string' ?
-    value :
-    value.replace(/\${([^}]+)}/, (_, envVar) =>
+  const normalizedValue = typeof value !== 'string' ? value
+    // parse stringified booleans
+    : value in booleanKeys ? stringToBoolean(value)
+    : value.replace(/\${([^}]+)}/, (_, envVar) =>
       process.env[envVar] as string
     )
 
@@ -54,13 +61,6 @@ libnpmconfig.read().forEach((value: string, key: string) => {
   }
 })
 
-// if strict ssl is a string it will not be used by npm
-const booleanKeys = ['strictSSL']
-booleanKeys.forEach(key => {
-  if (typeof npmConfig[key] === 'string' && npmConfig[key] !== '') {
-    npmConfig[key] = npmConfig[key] === 'true'
-  }
-})
 npmConfig.cache = false
 
 /**
