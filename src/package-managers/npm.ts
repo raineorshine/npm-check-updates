@@ -15,53 +15,62 @@ import { allowDeprecatedOrIsNotDeprecated, allowPreOrIsNotPre, satisfiesNodeEngi
 
 const TIME_FIELDS = ['modified', 'created']
 
-const npmConfigToPacoteMap = {
-  cafile: (path: string) => {
-    // load-cafile, based on github.com/npm/cli/blob/40c1b0f/src/config/load-cafile.js
-    if (!path) return
-    const cadata = fs.readFileSync(path, 'utf8')
-    const delim = '-----END CERTIFICATE-----'
-    const output = cadata
-      .split(delim)
-      .filter(xs => !!xs.trim())
-      .map(xs => `${xs.trimLeft()}${delim}`)
-    return { ca: output }
-  },
-  maxsockets: 'maxSockets',
-  'strict-ssl': 'strictSSL',
+/** Reads the local npm config and normalizes keys for pacote. */
+const readNpmConfig = () => {
+
+  const npmConfigToPacoteMap = {
+    cafile: (path: string) => {
+      // load-cafile, based on github.com/npm/cli/blob/40c1b0f/src/config/load-cafile.js
+      if (!path) return
+      const cadata = fs.readFileSync(path, 'utf8')
+      const delim = '-----END CERTIFICATE-----'
+      const output = cadata
+        .split(delim)
+        .filter(xs => !!xs.trim())
+        .map(xs => `${xs.trimLeft()}${delim}`)
+      return { ca: output }
+    },
+    maxsockets: 'maxSockets',
+    'strict-ssl': 'strictSSL',
+  }
+
+  // config variables that need to be converted from strings to boolean values
+  const booleanKeys = { strictSSL: true, 'strict-ssl': true }
+
+  /** Parses a string to a boolean. */
+  const stringToBoolean = (s: string) => s && s !== 'false' && s !== '0'
+
+  // needed until pacote supports full npm config compatibility
+  // See: https://github.com/zkat/pacote/issues/156
+  const config: Index<string | boolean> = {}
+  libnpmconfig.read().forEach((value: string, key: string) => {
+    // replace env ${VARS} in strings with the process.env value
+    const normalizedValue = typeof value !== 'string' ? value
+      // parse stringified booleans
+      : value in booleanKeys ? stringToBoolean(value)
+      : value.replace(/\${([^}]+)}/, (_, envVar) =>
+        process.env[envVar] as string
+      )
+
+    const { [key]: pacoteKey }: Index<string | ((path: string) => any)> = npmConfigToPacoteMap
+    if (_.isString(pacoteKey)) {
+      config[pacoteKey] = normalizedValue
+    }
+    else if (_.isFunction(pacoteKey)) {
+      _.assign(config, pacoteKey(normalizedValue))
+    }
+    else {
+      config[key.match(/^[a-z]/i) ? _.camelCase(key) : key] = normalizedValue
+    }
+  })
+
+  config.cache = false
+
+  return config
+
 }
 
-// config variables that need to be converted from strings to boolean values
-const booleanKeys = { strictSSL: true, 'strict-ssl': true }
-
-/** Parses a string to a boolean. */
-const stringToBoolean = (s: string) => s && s !== 'false' && s !== '0'
-
-// needed until pacote supports full npm config compatibility
-// See: https://github.com/zkat/pacote/issues/156
-const npmConfig: Index<string | boolean> = {}
-libnpmconfig.read().forEach((value: string, key: string) => {
-  // replace env ${VARS} in strings with the process.env value
-  const normalizedValue = typeof value !== 'string' ? value
-    // parse stringified booleans
-    : value in booleanKeys ? stringToBoolean(value)
-    : value.replace(/\${([^}]+)}/, (_, envVar) =>
-      process.env[envVar] as string
-    )
-
-  const { [key]: pacoteKey }: Index<string | ((path: string) => any)> = npmConfigToPacoteMap
-  if (_.isString(pacoteKey)) {
-    npmConfig[pacoteKey] = normalizedValue
-  }
-  else if (_.isFunction(pacoteKey)) {
-    _.assign(npmConfig, pacoteKey(normalizedValue))
-  }
-  else {
-    npmConfig[key.match(/^[a-z]/i) ? _.camelCase(key) : key] = normalizedValue
-  }
-})
-
-npmConfig.cache = false
+const npmConfig = readNpmConfig()
 
 /**
  * @typedef {object} CommandAndPackageName
