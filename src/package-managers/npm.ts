@@ -35,7 +35,8 @@ const readNpmConfig = () => {
   }
 
   // config variables that need to be converted from strings to boolean values
-  const booleanKeys = { strictSSL: true, 'strict-ssl': true }
+  // store in lowercase since they are strictly for comparison purposes
+  const booleanKeys = { strictssl: true }
 
   /** Parses a string to a boolean. */
   const stringToBoolean = (s: string) => s && s !== 'false' && s !== '0'
@@ -47,7 +48,7 @@ const readNpmConfig = () => {
     // replace env ${VARS} in strings with the process.env value
     const normalizedValue = typeof value !== 'string' ? value
       // parse stringified booleans
-      : value in booleanKeys ? stringToBoolean(value)
+      : value.replace(/-/g, '').toLowerCase() in booleanKeys ? stringToBoolean(value)
       : value.replace(/\${([^}]+)}/, (_, envVar) =>
         process.env[envVar] as string
       )
