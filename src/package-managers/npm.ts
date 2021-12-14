@@ -48,7 +48,7 @@ const readNpmConfig = () => {
     // replace env ${VARS} in strings with the process.env value
     const normalizedValue = typeof value !== 'string' ? value
       // parse stringified booleans
-      : value.replace(/-/g, '').toLowerCase() in booleanKeys ? stringToBoolean(value)
+      : key.replace(/-/g, '').toLowerCase() in booleanKeys ? stringToBoolean(value)
       : value.replace(/\${([^}]+)}/, (_, envVar) =>
         process.env[envVar] as string
       )
