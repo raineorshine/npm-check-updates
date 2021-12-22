@@ -110,8 +110,8 @@ const doctor = async (run: Run, options: Options) => {
   // make sure current tests pass before we begin
   try {
     await runTests({
-     stderr: (data: string) => console.error(chalk.red(data.toString()))
-   })
+      stderr: (data: string) => console.error(chalk.red(data.toString()))
+    })
   }
   catch (e) {
     throw new Error('Tests failed before we even got started!')
