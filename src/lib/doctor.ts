@@ -3,6 +3,7 @@ import Chalk from 'chalk'
 import rimraf from 'rimraf'
 import upgradePackageData from './upgradePackageData'
 import { printUpgrades } from '../logging'
+import spawn from 'spawn-please'
 import spawnYarn from '../package-managers/yarn'
 import spawnNpm from '../package-managers/npm'
 import { Index, Options, PackageFile, SpawnOptions, VersionSpec } from '../types'
@@ -46,8 +47,8 @@ const loadPackageFile = async (options: Options) => {
     throw new Error('Missing or invalid package.json')
   }
 
-  // assert npm script "test"
-  if (!pkg.scripts || !pkg.scripts.test) {
+  // assert npm script "test" (unless a custom test script is specified)
+  if (!options.doctorTest && !pkg.scripts?.test) {
     throw new Error('No npm "test" script defined. You must define a "test" script in the "scripts" section of your package.json to use --doctor.')
   }
 
@@ -69,10 +70,35 @@ const doctor = async (run: Run, options: Options) => {
     ...pkg.bundleDependencies,
   }
 
+  /** Install dependencies using "npm run install" or a custom script given by --doctorInstall. */
+  const runInstall = async () => {
+    if (options.doctorInstall) {
+      const [installCommand, ...testArgs] = options.doctorInstall?.split(' ')
+      await spawn(installCommand, testArgs)
+    }
+    else {
+      await npm(['install'], { packageManager: options.packageManager }, true)
+    }
+  }
+
+  /** Run the tests using "npm run test" or a custom script given by --doctorTest. */
+  const runTests = async (spawnOptions?: SpawnOptions) => {
+    if (options.doctorTest) {
+      const [testCommand, ...testArgs] = options.doctorTest?.split(' ')
+      await spawn(testCommand, testArgs, spawnOptions)
+    }
+    else {
+      await npm(['run', 'test'], {
+        packageManager: options.packageManager,
+        ...spawnOptions,
+      }, true)
+    }
+  }
+
   console.log(`Running tests before upgrading`)
 
   // install and load lock file
-  await npm(['install'], { packageManager: options.packageManager }, true)
+  await runInstall()
 
   let lockFile = ''
   try {
@@ -83,10 +109,9 @@ const doctor = async (run: Run, options: Options) => {
 
   // make sure current tests pass before we begin
   try {
-    await npm(['run', 'test'], {
-      packageManager: options.packageManager,
-      stderr: data => console.error(chalk.red(data.toString()))
-    }, true)
+    await runTests({
+     stderr: (data: string) => console.error(chalk.red(data.toString()))
+   })
   }
   catch (e) {
     throw new Error('Tests failed before we even got started!')
@@ -109,14 +134,12 @@ const doctor = async (run: Run, options: Options) => {
   }
 
   // npm install
-  await npm(['install'], { packageManager: options.packageManager }, true)
+  await runInstall()
 
   // run tests on all upgrades
   try {
 
-    await npm(['run', 'test'], {
-      packageManager: options.packageManager
-    }, true)
+    await runTests()
 
     console.log(`${chalk.green('✓')} Tests pass`)
 
@@ -150,7 +173,7 @@ const doctor = async (run: Run, options: Options) => {
     // save the last package file with passing tests
     let lastPkgFile = pkgFile
 
-    await npm(['install'], { packageManager: options.packageManager }, true)
+    await runInstall()
 
     // iterate upgrades
     for (const [name, version] of Object.entries(upgrades)) { // eslint-disable-line fp/no-loops
@@ -159,7 +182,7 @@ const doctor = async (run: Run, options: Options) => {
       await npm([...options.packageManager === 'yarn' ? ['add'] : ['install', '--no-save'], `${name}@${version}`], { packageManager: options.packageManager }, true)
 
       try {
-        await npm(['run', 'test'], { packageManager: options.packageManager }, true)
+        await runTests()
         console.log(`  ${chalk.green('✓')} ${name} ${allDependencies[name]} → ${version}`)
 
         // save upgraded package data so that passing versions can still be saved even when there is a failure
@@ -192,7 +215,7 @@ const doctor = async (run: Run, options: Options) => {
     }
 
     // re-install from restored package.json and lockfile
-    await npm(['install'], { packageManager: options.packageManager }, true)
+    await runInstall()
   }
 }
 

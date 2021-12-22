@@ -142,6 +142,10 @@ ncu "/^(?!react-).*$/" # windows
 --doctor                     Iteratively installs upgrades and runs tests to
                              identify breaking upgrades. Run "ncu --doctor"
                              for detailed help. Add "-u" to execute.
+--doctorInstall <command>    Specifies the install script to use in doctor
+                             mode (default: npm install/yarn).
+--doctorTest <command>       Specifies the test script to use in doctor mode
+                             (default: npm test).
 --enginesNode                Include only packages that satisfy engines.node
                              as specified in the package file.
 -e, --errorLevel <n>         Set the error level. 1: exits with error code 0
@@ -216,11 +220,11 @@ ncu "/^(?!react-).*$/" # windows
 
 Usage: `ncu --doctor [-u] [options]`
 
-Iteratively installs upgrades and runs tests to identify breaking upgrades. Add `-u` to execute (modifies your package file, lock file, and node_modules).
+Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires `-u` to execute (modifies your package file, lock file, and node_modules).
 
 To be more precise:
 
-1. Runs `npm install` and `npm test` to ensure tests are currently passing.
+1. Runs `npm install` (or `yarn`) and `npm test` to ensure tests are currently passing. You can specify your own scripts with `--doctorInstall` and `--doctorTest`.
 2. Runs `ncu -u` to optimistically upgrade all dependencies.
 3. If tests pass, hurray!
 4. If tests fail, restores package file and lock file.

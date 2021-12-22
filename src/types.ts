@@ -121,6 +121,16 @@ export interface RunOptions {
   doctor?: boolean,
 
   /**
+   * Specifies the install script to use in doctor mode (default: npm install/yarn).
+   */
+  doctorInstall?: string,
+
+  /**
+   * Specifies the test script to use in doctor mode (default: npm test).
+   */
+  doctorTest?: string,
+
+  /**
    * Include only packages that satisfy engines.node as specified in the package file.
    */
   enginesNode?: boolean,
