@@ -3,10 +3,10 @@ import Chalk from 'chalk'
 import { print, printJson, printUpgrades } from '../logging'
 import getInstalledPackages from './getInstalledPackages'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
-import { Options } from '../types'
+import { Index, Options } from '../types'
 
 /** Checks global dependencies for upgrades. */
-async function runGlobal(options: Options): Promise<void> {
+async function runGlobal(options: Options): Promise<Index<string>|void> {
 
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
@@ -51,6 +51,7 @@ async function runGlobal(options: Options): Promise<void> {
   if (options.cli && options.errorLevel === 2 && upgradedPackageNames.length > 0) {
     process.exit(1)
   }
+  return upgraded
 }
 
 export default runGlobal
