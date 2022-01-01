@@ -93,7 +93,7 @@
     "@types/lodash": "^4.14.178",
     "@types/minimatch": "^3.0.5",
     "@types/mocha": "^9.0.0",
-    "@types/node": "^16.11.13",
+    "@types/node": "^17.0.6",
     "@types/pacote": "^11.1.1",
     "@types/parse-github-url": "^1.0.0",
     "@types/progress": "^2.0.5",
