@@ -4,7 +4,7 @@
     "ncu-test-v2": "~1.0.0"
   },
   "scripts": {
-    "myinstall": "echo Install Success",
-    "test": "echo Test Success"
+    "myinstall": "echo 'Install Success'",
+    "test": "echo 'Test Success'"
   }
 }
