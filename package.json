@@ -105,7 +105,7 @@
     "@types/update-notifier": "^5.1.0",
     "@typescript-eslint/eslint-plugin": "^5.8.1",
     "@typescript-eslint/parser": "^5.7.0",
-    "c8": "^7.10.0",
+    "c8": "^7.11.0",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-string": "^1.5.0",
