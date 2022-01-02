@@ -226,11 +226,12 @@ describe('doctor', function() {
       const lockfilePath = path.join(cwd, 'package-lock.json')
       const nodeModulesPath = path.join(cwd, 'node_modules')
       const pkgOriginal = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')
+      const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
       let stdout = ''
       let stderr = ''
 
       try {
-        await ncu(['--doctor', '-u', '--doctorInstall', 'npm run myinstall'], {
+        await ncu(['--doctor', '-u', '--doctorInstall', npmCmd + ' run myinstall'], {
           cwd,
           stdout: function (data: string) {
             stdout += data
@@ -266,11 +267,12 @@ describe('doctor', function() {
       const lockfilePath = path.join(cwd, 'package-lock.json')
       const nodeModulesPath = path.join(cwd, 'node_modules')
       const pkgOriginal = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')
+      const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
       let stdout = ''
       let stderr = ''
 
       try {
-        await ncu(['--doctor', '-u', '--doctorTest', 'npm run mytest'], {
+        await ncu(['--doctor', '-u', '--doctorTest', npmCmd + ' run mytest'], {
           cwd,
           stdout: function (data: string) {
             stdout += data
