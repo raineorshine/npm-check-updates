@@ -208,13 +208,94 @@ describe('doctor', function() {
       rimraf.sync(lockfilePath)
       rimraf.sync(nodeModulesPath)
 
-      // stdout should include normal output
+      // stderr should be empty
       stderr.should.equal('')
+
+      // stdout should include normal output
       stripAnsi(stdout).should.include('Tests pass')
       stripAnsi(stdout).should.include('ncu-test-v2  ~1.0.0  →  ~2.0.0')
 
-      // stderr should include first failing upgrade
+      // package file should include upgrades
+      pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
+    })
+
+    it('custom install script with --doctorInstall', async function () {
+
+      const cwd = path.join(doctorTests, 'custominstall')
+      const pkgPath = path.join(cwd, 'package.json')
+      const lockfilePath = path.join(cwd, 'package-lock.json')
+      const nodeModulesPath = path.join(cwd, 'node_modules')
+      const pkgOriginal = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')
+      const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+      let stdout = ''
+      let stderr = ''
+
+      try {
+        await ncu(['--doctor', '-u', '--doctorInstall', npmCmd + ' run myinstall'], {
+          cwd,
+          stdout: function (data: string) {
+            stdout += data
+          },
+          stderr: function (data: string) {
+            stderr += data
+          },
+        })
+      }
+      catch (e) {}
+
+      const pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
+
+      // cleanup before assertions in case they fail
+      fs.writeFileSync(pkgPath, pkgOriginal)
+      rimraf.sync(lockfilePath)
+      rimraf.sync(nodeModulesPath)
+
+      // stderr should be empty
       stderr.should.equal('')
+
+      // stdout should include normal output
+      stripAnsi(stdout).should.include('Tests pass')
+
+      // package file should include upgrades
+      pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
+    })
+
+    it('custom test script with --doctorTest', async function () {
+
+      const cwd = path.join(doctorTests, 'customtest')
+      const pkgPath = path.join(cwd, 'package.json')
+      const lockfilePath = path.join(cwd, 'package-lock.json')
+      const nodeModulesPath = path.join(cwd, 'node_modules')
+      const pkgOriginal = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')
+      const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+      let stdout = ''
+      let stderr = ''
+
+      try {
+        await ncu(['--doctor', '-u', '--doctorTest', npmCmd + ' run mytest'], {
+          cwd,
+          stdout: function (data: string) {
+            stdout += data
+          },
+          stderr: function (data: string) {
+            stderr += data
+          },
+        })
+      }
+      catch (e) {}
+
+      const pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
+
+      // cleanup before assertions in case they fail
+      fs.writeFileSync(pkgPath, pkgOriginal)
+      rimraf.sync(lockfilePath)
+      rimraf.sync(nodeModulesPath)
+
+      // stderr should be empty
+      stderr.should.equal('')
+
+      // stdout should include normal output
+      stripAnsi(stdout).should.include('Tests pass')
 
       // package file should include upgrades
       pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')

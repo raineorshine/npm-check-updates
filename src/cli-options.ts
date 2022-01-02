@@ -136,6 +136,16 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     description: 'Iteratively installs upgrades and runs tests to identify breaking upgrades. Run "ncu --doctor" for detailed help. Add "-u" to execute.',
   },
   {
+    long: 'doctorInstall',
+    arg: 'command',
+    description: 'Specifies the install script to use in doctor mode (default: npm install/yarn).',
+  },
+  {
+    long: 'doctorTest',
+    arg: 'command',
+    description: 'Specifies the test script to use in doctor mode (default: npm test).',
+  },
+  {
     long: 'enginesNode',
     description: 'Include only packages that satisfy engines.node as specified in the package file.',
   },
