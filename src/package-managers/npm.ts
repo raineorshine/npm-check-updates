@@ -287,7 +287,7 @@ export const list = async (options: Options = {}) => {
     ...options.cwd ? { cwd: options.cwd } : null,
     rejectOnError: false
   })
-  const json = parseJson(result, { command: `npm ls --json${options.global ? '--global' : ''}` })
+  const json = parseJson(result, { command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --global' : ''}` })
   return cint.mapObject(json.dependencies, (name, info) => ({
     // unmet peer dependencies have a different structure
     [name]: info.version || (info.required && info.required.version)
