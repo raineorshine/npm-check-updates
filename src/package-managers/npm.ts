@@ -86,14 +86,14 @@ const npmConfig = readNpmConfig()
  * @param data
  * @returns
  */
-function parseJson(result: string, data: { command?: string, packageName?: string }) {
+function parseJson(result: string, data: { command?: string, packageName?: string, stderr?: string }) {
   let json
   // use a try-catch instead of .catch to avoid re-catching upstream errors
   try {
     json = JSON.parse(result)
   }
   catch (err) {
-    throw new Error(`Expected JSON from "${data.command}". This could be due to npm instability${data.packageName ? ` or problems with the ${data.packageName} package` : ''}.\n\n${result}`)
+    throw new Error(`Expected JSON from "${data.command}". This could be due to npm instability${data.packageName ? ` or problems with the ${data.packageName} package` : ''}.\n\n${result}\n${data.stderr || ''}`)
   }
   return json
 }
@@ -283,11 +283,16 @@ export const getPeerDependencies = async (packageName: string, version: Version)
  */
 export const list = async (options: Options = {}) => {
 
+  let stderr = ''
   const result = await spawnNpm('ls', options, {
-    ...options.cwd ? { cwd: options.cwd } : null,
+    cwd: options.cwd,
+    stderr: (data: string) => stderr += data,
     rejectOnError: false
   })
-  const json = parseJson(result, { command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --global' : ''}` })
+  const json = parseJson(result, {
+    command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --global' : ''}`,
+    stderr
+  })
   return cint.mapObject(json.dependencies, (name, info) => ({
     // unmet peer dependencies have a different structure
     [name]: info.version || (info.required && info.required.version)
