@@ -307,6 +307,13 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     description: 'Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch).',
   },
   {
+    long: 'retry',
+    arg: 'rt',
+    description: 'Global request retries.',
+    parse: s => parseInt(s, 10),
+    default: 2,
+  },
+  {
     long: 'upgrade',
     short: 'u',
     description: 'Overwrite package file with upgraded versions instead of just outputting to console.',
