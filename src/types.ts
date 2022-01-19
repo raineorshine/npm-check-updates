@@ -289,6 +289,11 @@ export interface RunOptions {
   timeout?: number,
 
   /**
+   * Global request retries. (default: 3).
+   */
+  retry?: number,
+
+  /**
    * Overwrite package file with upgraded versions instead of just outputting to console.
    */
   upgrade?: boolean,

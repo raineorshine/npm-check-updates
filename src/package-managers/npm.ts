@@ -135,17 +135,29 @@ export async function packageAuthorChanged(packageName: string, currentVersion: 
  * @param               currentVersion
  * @returns             Promised result
  */
-export async function viewMany(packageName: string, fields: string[], currentVersion: Version, { registry, timeout }: { registry?: string, timeout?: number } = {}) {
+export async function viewMany(packageName: string, fields: string[], currentVersion: Version, { registry, timeout, retry }: { registry?: string, timeout?: number, retry?: number } = {}, retryed = 0) {
   if (currentVersion && (!semver.validRange(currentVersion) || versionUtil.isWildCard(currentVersion))) {
     return Promise.resolve({} as Packument)
   }
 
-  const result = await pacote.packument(packageName, {
-    ...npmConfig,
-    fullMetadata: fields.includes('time'),
-    ...registry ? { registry } : null,
-    timeout,
-  })
+  let result: any
+  try {
+    result = await pacote.packument(packageName, {
+      ...npmConfig,
+      fullMetadata: fields.includes('time'),
+      ...registry ? { registry } : null,
+      timeout,
+    })
+  }
+  catch (err: any) {
+    if (retry && ++retryed <= retry) {
+      console.error(`\nFetchError: Request ${packageName} info failed[${retryed} of ${retry}]: \n${err.message}.`)
+      const packument: Packument = await viewMany(packageName, fields, currentVersion, { registry, timeout, retry }, retryed)
+      return packument
+    }
+
+    throw err
+  }
   return fields.reduce((accum, field) => ({
     ...accum,
     [field]: field.startsWith('dist-tags.') && result.versions ?
@@ -305,6 +317,7 @@ export const latest: GetVersion = async (packageName, currentVersion, options = 
   const latest = await viewOne(packageName, 'dist-tags.latest', currentVersion, {
     registry: options.registry,
     timeout: options.timeout,
+    retry: options.retry,
   }) as unknown as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated

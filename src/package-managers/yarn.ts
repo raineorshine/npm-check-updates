@@ -174,6 +174,7 @@ export const latest: GetVersion = async (packageName: string, currentVersion: Ve
   const latest = await viewOne(packageName, 'dist-tags.latest', currentVersion, {
     registry: options.registry,
     timeout: options.timeout,
+    retry: options.retry,
   }) as unknown as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated
