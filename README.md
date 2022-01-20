@@ -202,6 +202,8 @@ ncu "/^(?!react-).*$/" # windows
                              comma-or-space-delimited list, or /regex/.
 --removeRange                Remove version ranges from the final package
                              version.
+--retry <n>                  Number of times to retry failed requests for
+                             package info. (default: 3)
 --semverLevel <value>        DEPRECATED. Renamed to --target.
 -s, --silent                 Don't output anything (--loglevel silent).
 -t, --target <value>         Target version to upgrade to: latest, newest,

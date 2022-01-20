@@ -284,6 +284,13 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     description: 'Remove version ranges from the final package version.'
   },
   {
+    long: 'retry',
+    arg: 'n',
+    description: 'Number of times to retry failed requests for package info.',
+    parse: s => parseInt(s, 10),
+    default: 3,
+  },
+  {
     long: 'semverLevel',
     arg: 'value',
     description: 'DEPRECATED. Renamed to --target.',
@@ -305,13 +312,6 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     long: 'timeout',
     arg: 'ms',
     description: 'Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch).',
-  },
-  {
-    long: 'retry',
-    arg: 'rt',
-    description: 'Global request retries.',
-    parse: s => parseInt(s, 10),
-    default: 2,
   },
   {
     long: 'upgrade',
