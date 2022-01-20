@@ -267,6 +267,11 @@ export interface RunOptions {
   removeRange?: boolean,
 
   /**
+   * Number of times to retry failed requests for package info. (default: 3)
+   */
+  retry?: number,
+
+  /**
    * DEPRECATED. Renamed to --target.
    *
    * @deprecated
@@ -287,11 +292,6 @@ export interface RunOptions {
    * Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch).
    */
   timeout?: number,
-
-  /**
-   * Global request retries. (default: 3).
-   */
-  retry?: number,
 
   /**
    * Overwrite package file with upgraded versions instead of just outputting to console.
