@@ -4,9 +4,11 @@
 import { once, EventEmitter } from 'events'
 import _ from 'lodash'
 import cint from 'cint'
-import spawn from 'spawn-please'
-import libnpmconfig from 'libnpmconfig'
+import fs from 'fs'
 import jsonlines from 'jsonlines'
+import memoize from 'fast-memoize'
+import spawn from 'spawn-please'
+import yaml from 'yaml'
 import * as versionUtil from '../version-util'
 import { viewOne, viewManyMemoized } from './npm'
 import { GetVersion, Index, Options, Packument, SpawnOptions, Version, YarnOptions } from '../types'
@@ -17,20 +19,32 @@ interface ParsedDep {
   from: string,
 }
 
+interface YarnConfig {
+  npmScopes?: Index<{
+    npmAlwaysAuth?: boolean,
+    npmAuthToken?: string,
+    npmRegistryServer?: string,
+  }>
+}
+
 const TIME_FIELDS = ['modified', 'created']
 
-// needed until pacote supports full yarn config compatibility
-// See: https://github.com/zkat/pacote/issues/156
-const yarnConfig: Index<string | boolean> = {}
-libnpmconfig.read().forEach((value: string | boolean, key: string) => {
-  // replace env ${VARS} in strings with the process.env value
-  yarnConfig[key] = typeof value !== 'string' ?
-    value :
-    value.replace(/\${([^}]+)}/, (_, envVar) =>
-      process.env[envVar] as string
-    )
+// If private registry auth is specified in npmScopes in .yarnrc.yml, read them in and convert them to npm config variables.
+// Define as a memoized function to efficiently call existsSync and readFileSync only once, and only if yarn is being used.
+// https://github.com/raineorshine/npm-check-updates/issues/1036
+const npmConfigFromYarn = memoize((): Index<string | boolean> => {
+  let npmConfig: Index<string | boolean> = {}
+  if (!fs.existsSync('.yarnrc.yml')) return {}
+  const yarnrc = fs.readFileSync('.yarnrc.yml', 'utf-8')
+  const yarnConfig: YarnConfig = yaml.parse(yarnrc)
+  Object.entries(yarnConfig!.npmScopes || {}).forEach(([dep, scopedConfig]) => {
+    if (scopedConfig.npmAuthToken && scopedConfig.npmRegistryServer) {
+      npmConfig[`@${dep}:registry`] = scopedConfig.npmRegistryServer
+      npmConfig[`${scopedConfig.npmRegistryServer.replace(/^https?:/, '')}/:_authToken`] = scopedConfig.npmAuthToken
+    }
+  })
+  return npmConfig
 })
-yarnConfig.cache = false
 
 /**
  * @typedef {object} CommandAndPackageName
@@ -175,7 +189,7 @@ export const latest: GetVersion = async (packageName: string, currentVersion: Ve
     registry: options.registry,
     timeout: options.timeout,
     retry: options.retry,
-  }) as unknown as Packument // known type based on dist-tags.latest
+  }, npmConfigFromYarn()) as unknown as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
@@ -187,7 +201,11 @@ export const latest: GetVersion = async (packageName: string, currentVersion: Ve
   // or latest is deprecated
   // find the next valid version
   // known type based on dist-tags.latest
-  const versions = await viewOne(packageName, 'versions', currentVersion) as Packument[]
+  const versions = await viewOne(packageName, 'versions', currentVersion, {
+    registry: options.registry,
+    timeout: options.timeout,
+    retry: options.retry,
+  }, npmConfigFromYarn()) as Packument[]
   const validVersions = _.filter(versions, filterPredicate(options))
 
   return _.last(validVersions.map(o => o.version)) || null
@@ -200,7 +218,7 @@ export const latest: GetVersion = async (packageName: string, currentVersion: Ve
  * @returns
  */
 export const newest: GetVersion = async (packageName: string, currentVersion, options = {}) => {
-  const result = await viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options)
+  const result = await viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options, 0, npmConfigFromYarn())
 
   const versionsSatisfyingNodeEngine = _.filter(result.versions, version => satisfiesNodeEngine(version, options.nodeEngineVersion))
     .map((o: Packument) => o.version)
@@ -224,7 +242,7 @@ export const newest: GetVersion = async (packageName: string, currentVersion, op
  * @returns
  */
 export const greatest: GetVersion = async (packageName, currentVersion, options = {}) => {
-  const versions = await viewOne(packageName, 'versions', currentVersion, options) as Packument[]
+  const versions = await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn()) as Packument[]
 
   return _.last(
     // eslint-disable-next-line fp/no-mutating-methods
@@ -241,7 +259,7 @@ export const greatest: GetVersion = async (packageName, currentVersion, options 
  * @returns
  */
 export const minor: GetVersion = async (packageName, currentVersion, options = {}) => {
-  const versions = await viewOne(packageName, 'versions', currentVersion, options) as Packument[]
+  const versions = await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn()) as Packument[]
   return versionUtil.findGreatestByLevel(
     _.filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
@@ -256,7 +274,7 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
  * @returns
  */
 export const patch: GetVersion = async (packageName, currentVersion, options = {}) => {
-  const versions = await viewOne(packageName, 'versions', currentVersion, options) as Packument[]
+  const versions = await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn()) as Packument[]
   return versionUtil.findGreatestByLevel(
     _.filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
