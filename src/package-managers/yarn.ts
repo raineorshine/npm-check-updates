@@ -29,6 +29,10 @@ interface YarnConfig {
 
 const TIME_FIELDS = ['modified', 'created']
 
+/** Interpolates a string as a template string. */
+const interpolate = (s: string, data: any) =>
+  s.replace(/\$\{([^:-]+)(?:(:)?-([^}]*))?\}/g, (match, key, name, fallbackOnEmpty, fallback) => data[key] || (fallbackOnEmpty ? fallback : ''))
+
 // If private registry auth is specified in npmScopes in .yarnrc.yml, read them in and convert them to npm config variables.
 // Define as a memoized function to efficiently call existsSync and readFileSync only once, and only if yarn is being used.
 // https://github.com/raineorshine/npm-check-updates/issues/1036
@@ -40,7 +44,9 @@ const npmConfigFromYarn = memoize((): Index<string | boolean> => {
   Object.entries(yarnConfig!.npmScopes || {}).forEach(([dep, scopedConfig]) => {
     if (scopedConfig.npmAuthToken && scopedConfig.npmRegistryServer) {
       npmConfig[`@${dep}:registry`] = scopedConfig.npmRegistryServer
-      npmConfig[`${scopedConfig.npmRegistryServer.replace(/^https?:/, '')}/:_authToken`] = scopedConfig.npmAuthToken
+      // interpolate environment variable fallback
+      // https://yarnpkg.com/configuration/yarnrc
+      npmConfig[`${scopedConfig.npmRegistryServer.replace(/^https?:/, '')}/:_authToken`] = interpolate(scopedConfig.npmAuthToken, process.env)
     }
   })
   return npmConfig
