@@ -19,12 +19,14 @@ interface ParsedDep {
   from: string,
 }
 
+interface NpmScope {
+  npmAlwaysAuth?: boolean,
+  npmAuthToken?: string,
+  npmRegistryServer?: string,
+}
+
 interface YarnConfig {
-  npmScopes?: Index<{
-    npmAlwaysAuth?: boolean,
-    npmAuthToken?: string,
-    npmRegistryServer?: string,
-  }>
+  npmScopes?: Index<NpmScope>
 }
 
 const TIME_FIELDS = ['modified', 'created']
@@ -38,25 +40,26 @@ const interpolate = (s: string, data: any) =>
 // https://github.com/raineorshine/npm-check-updates/issues/1036
 const npmConfigFromYarn = memoize((): Index<string | boolean> => {
   let npmConfig: Index<string | boolean> = {}
-  if (!fs.existsSync('.yarnrc.yml')) return {}
-  const yarnrc = fs.readFileSync('.yarnrc.yml', 'utf-8')
-  const yarnConfig: YarnConfig = yaml.parse(yarnrc)
-  Object.entries(yarnConfig!.npmScopes || {}).forEach(([dep, scopedConfig]) => {
+  const yarnrcLocalExists = fs.existsSync('.yarnrc.yml')
+  const yarnrcUserExists = fs.existsSync('~/.yarnrc.yml')
+  const yarnrcLocal = yarnrcLocalExists ? fs.readFileSync('.yarnrc.yml', 'utf-8') : ''
+  const yarnrcUser = yarnrcUserExists ? fs.readFileSync('~/.yarnrc.yml', 'utf-8') : ''
+  const yarnConfigLocal: YarnConfig = yaml.parse(yarnrcLocal)
+  const yarnConfigUser: YarnConfig = yaml.parse(yarnrcLocal)
+
+  /** Reads an NpmScope from a yarn config, interpolates it, and sets it on the npm config. */
+  const setNpmScope = ([dep, scopedConfig]: [string, NpmScope]) => {
     if (scopedConfig.npmAuthToken && scopedConfig.npmRegistryServer) {
       npmConfig[`@${dep}:registry`] = scopedConfig.npmRegistryServer
       // interpolate environment variable fallback
       // https://yarnpkg.com/configuration/yarnrc
       npmConfig[`${scopedConfig.npmRegistryServer.replace(/^https?:/, '')}/:_authToken`] = interpolate(scopedConfig.npmAuthToken, process.env)
     }
-  })
+  }
+  Object.entries(yarnConfigUser?.npmScopes || {}).forEach(setNpmScope)
+  Object.entries(yarnConfigLocal?.npmScopes || {}).forEach(setNpmScope)
   return npmConfig
 })
-
-/**
- * @typedef {object} CommandAndPackageName
- * @property {string} command
- * @property {string} packageName
- */
 
 /**
  * Parse JSON lines and throw an informative error on failure.
