@@ -26,7 +26,7 @@ interface NpmScope {
 }
 
 interface YarnConfig {
-  npmScopes?: Index<NpmScope>
+  npmScopes?: Index<NpmScope>,
 }
 
 const TIME_FIELDS = ['modified', 'created']
@@ -40,15 +40,15 @@ const npmConfigFromYarn = memoize((): Index<string | boolean> => {
   const interpolate = (s: string, data: any) =>
     s.replace(/\$\{([^:-]+)(?:(:)?-([^}]*))?\}/g, (match, key, name, fallbackOnEmpty, fallback) => data[key] || (fallbackOnEmpty ? fallback : ''))
 
-  let npmConfig: Index<string | boolean> = {}
+  const npmConfig: Index<string | boolean> = {}
   const yarnrcLocalExists = fs.existsSync('.yarnrc.yml')
   const yarnrcUserExists = fs.existsSync('~/.yarnrc.yml')
   const yarnrcLocal = yarnrcLocalExists ? fs.readFileSync('.yarnrc.yml', 'utf-8') : ''
   const yarnrcUser = yarnrcUserExists ? fs.readFileSync('~/.yarnrc.yml', 'utf-8') : ''
   const yarnConfigLocal: YarnConfig = yaml.parse(yarnrcLocal)
-  const yarnConfigUser: YarnConfig = yaml.parse(yarnrcLocal)
+  const yarnConfigUser: YarnConfig = yaml.parse(yarnrcUser)
 
-  /** Reads an NpmScope from a yarn config, interpolates it, and sets it on the npm config. */
+  /** Reads an auth token from a yarn config, interpolates it, and sets it on the npm config. */
   const setNpmAuthToken = ([dep, scopedConfig]: [string, NpmScope]) => {
     if (scopedConfig.npmAuthToken) {
       // get registry server from this config or a previous config (assumes setNpmRegistry has already been called on all npm scopes)
@@ -60,6 +60,8 @@ const npmConfigFromYarn = memoize((): Index<string | boolean> => {
       }
     }
   }
+
+  /** Reads a registry from a yarn config. interpolates it, and sets it on the npm config. */
   const setNpmRegistry = ([dep, scopedConfig]: [string, NpmScope]) => {
     if (scopedConfig.npmRegistryServer) {
       npmConfig[`@${dep}:registry`] = scopedConfig.npmRegistryServer

@@ -110,8 +110,8 @@ function parseJson(result: string, data: { command?: string, packageName?: strin
 export async function packageAuthorChanged(packageName: string, currentVersion: VersionSpec, upgradedVersion: VersionSpec, options: Options = {}, npmConfigLocal?: Index<string | boolean>) {
 
   const result = await pacote.packument(packageName, {
-      ...npmConfigLocal,
-      ...npmConfig,
+    ...npmConfigLocal,
+    ...npmConfig,
     fullMetadata: true,
     ...options.registry ? { registry: options.registry } : null,
   })
