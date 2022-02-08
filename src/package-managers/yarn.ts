@@ -31,14 +31,15 @@ interface YarnConfig {
 
 const TIME_FIELDS = ['modified', 'created']
 
-/** Interpolates a string as a template string. */
-const interpolate = (s: string, data: any) =>
-  s.replace(/\$\{([^:-]+)(?:(:)?-([^}]*))?\}/g, (match, key, name, fallbackOnEmpty, fallback) => data[key] || (fallbackOnEmpty ? fallback : ''))
-
 // If private registry auth is specified in npmScopes in .yarnrc.yml, read them in and convert them to npm config variables.
 // Define as a memoized function to efficiently call existsSync and readFileSync only once, and only if yarn is being used.
 // https://github.com/raineorshine/npm-check-updates/issues/1036
 const npmConfigFromYarn = memoize((): Index<string | boolean> => {
+
+  /** Safely interpolates a string as a template string. */
+  const interpolate = (s: string, data: any) =>
+    s.replace(/\$\{([^:-]+)(?:(:)?-([^}]*))?\}/g, (match, key, name, fallbackOnEmpty, fallback) => data[key] || (fallbackOnEmpty ? fallback : ''))
+
   let npmConfig: Index<string | boolean> = {}
   const yarnrcLocalExists = fs.existsSync('.yarnrc.yml')
   const yarnrcUserExists = fs.existsSync('~/.yarnrc.yml')
@@ -48,16 +49,31 @@ const npmConfigFromYarn = memoize((): Index<string | boolean> => {
   const yarnConfigUser: YarnConfig = yaml.parse(yarnrcLocal)
 
   /** Reads an NpmScope from a yarn config, interpolates it, and sets it on the npm config. */
-  const setNpmScope = ([dep, scopedConfig]: [string, NpmScope]) => {
-    if (scopedConfig.npmAuthToken && scopedConfig.npmRegistryServer) {
-      npmConfig[`@${dep}:registry`] = scopedConfig.npmRegistryServer
+  const setNpmAuthToken = ([dep, scopedConfig]: [string, NpmScope]) => {
+    if (scopedConfig.npmAuthToken) {
+      // get registry server from this config or a previous config (assumes setNpmRegistry has already been called on all npm scopes)
+      const registryServer = scopedConfig.npmRegistryServer || npmConfig[`@${dep}:registry`] as string | undefined
       // interpolate environment variable fallback
       // https://yarnpkg.com/configuration/yarnrc
-      npmConfig[`${scopedConfig.npmRegistryServer.replace(/^https?:/, '')}/:_authToken`] = interpolate(scopedConfig.npmAuthToken, process.env)
+      if (registryServer) {
+        npmConfig[`${registryServer.replace(/^https?:/, '')}/:_authToken`] = interpolate(scopedConfig.npmAuthToken, process.env)
+      }
     }
   }
-  Object.entries(yarnConfigUser?.npmScopes || {}).forEach(setNpmScope)
-  Object.entries(yarnConfigLocal?.npmScopes || {}).forEach(setNpmScope)
+  const setNpmRegistry = ([dep, scopedConfig]: [string, NpmScope]) => {
+    if (scopedConfig.npmRegistryServer) {
+      npmConfig[`@${dep}:registry`] = scopedConfig.npmRegistryServer
+    }
+  }
+
+  // set registry for all npm scopes
+  Object.entries(yarnConfigUser?.npmScopes || {}).forEach(setNpmRegistry)
+  Object.entries(yarnConfigLocal?.npmScopes || {}).forEach(setNpmRegistry)
+
+  // set auth token after npm registry, since auth token syntax uses regitry
+  Object.entries(yarnConfigUser?.npmScopes || {}).forEach(setNpmAuthToken)
+  Object.entries(yarnConfigLocal?.npmScopes || {}).forEach(setNpmAuthToken)
+
   return npmConfig
 })
 
