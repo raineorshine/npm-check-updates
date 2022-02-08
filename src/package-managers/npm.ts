@@ -104,11 +104,13 @@ function parseJson(result: string, data: { command?: string, packageName?: strin
  * @param packageName Name of the package
  * @param currentVersion Current version declaration (may be range)
  * @param upgradedVersion Upgraded version declaration (may be range)
+ * @param npmConfigLocal Additional npm config variables that are merged into the system npm config
  * @returns A promise that fullfills with boolean value.
  */
-export async function packageAuthorChanged(packageName: string, currentVersion: VersionSpec, upgradedVersion: VersionSpec, options: Options = {}) {
+export async function packageAuthorChanged(packageName: string, currentVersion: VersionSpec, upgradedVersion: VersionSpec, options: Options = {}, npmConfigLocal?: Index<string | boolean>) {
 
   const result = await pacote.packument(packageName, {
+    ...npmConfigLocal,
     ...npmConfig,
     fullMetadata: true,
     ...options.registry ? { registry: options.registry } : null,
@@ -135,7 +137,7 @@ export async function packageAuthorChanged(packageName: string, currentVersion: 
  * @param               currentVersion
  * @returns             Promised result
  */
-export async function viewMany(packageName: string, fields: string[], currentVersion: Version, { registry, timeout, retry }: { registry?: string, timeout?: number, retry?: number } = {}, retryed = 0) {
+export async function viewMany(packageName: string, fields: string[], currentVersion: Version, { registry, timeout, retry }: { registry?: string, timeout?: number, retry?: number } = {}, retryed = 0, npmConfigLocal?: Index<string | boolean>) {
   if (currentVersion && (!semver.validRange(currentVersion) || versionUtil.isWildCard(currentVersion))) {
     return Promise.resolve({} as Packument)
   }
@@ -143,6 +145,7 @@ export async function viewMany(packageName: string, fields: string[], currentVer
   let result: any
   try {
     result = await pacote.packument(packageName, {
+      ...npmConfigLocal,
       ...npmConfig,
       fullMetadata: fields.includes('time'),
       ...registry ? { registry } : null,
@@ -152,7 +155,7 @@ export async function viewMany(packageName: string, fields: string[], currentVer
   catch (err: any) {
     if (retry && ++retryed <= retry) {
       console.error(`\nFetchError: Request ${packageName} info failed[${retryed} of ${retry}]: \n${err.message}.`)
-      const packument: Packument = await viewMany(packageName, fields, currentVersion, { registry, timeout, retry }, retryed)
+      const packument: Packument = await viewMany(packageName, fields, currentVersion, { registry, timeout, retry }, retryed, npmConfigLocal)
       return packument
     }
 
@@ -177,8 +180,8 @@ export const viewManyMemoized = memoize(viewMany)
  * @param currentVersion
  * @returns            Promised result
  */
-export async function viewOne(packageName: string, field: string, currentVersion: Version, options: Options = {}) {
-  const result = await viewManyMemoized(packageName, [field], currentVersion, options)
+export async function viewOne(packageName: string, field: string, currentVersion: Version, options: Options = {}, npmConfigLocal?: Index<string | boolean>) {
+  const result = await viewManyMemoized(packageName, [field], currentVersion, options, 0, npmConfigLocal)
   return result && result[field as keyof Packument]
 }
 
