@@ -7,7 +7,7 @@ import { FilterPattern, Maybe, Version, VersionSpec } from '../types'
  * Creates a filter function from a given filter string. Supports
  * strings, wildcards, comma-or-space-delimited lists, and regexes.
  *
- * @param [filter]
+ * @param [filterPattern]
  * @returns
  */
 function composeFilter(filterPattern: FilterPattern): (s: string) => boolean {
@@ -51,10 +51,10 @@ function composeFilter(filterPattern: FilterPattern): (s: string) => boolean {
 /**
  * Composes a filter function from filter, reject, filterVersion, and rejectVersion patterns.
  *
- * @param filter
- * @param reject
- * @param filterVersion
- * @param rejectVersion
+ * @param [filter]
+ * @param [reject]
+ * @param [filterVersion]
+ * @param [rejectVersion]
  */
 function filterAndReject(filter: Maybe<FilterPattern>, reject: Maybe<FilterPattern>, filterVersion: Maybe<FilterPattern>, rejectVersion: Maybe<FilterPattern>) {
   return and(
