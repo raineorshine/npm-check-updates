@@ -142,9 +142,9 @@ export interface RunOptions {
   errorLevel?: number,
 
   /**
-   * Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
+   * Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/ or function that returns true.
    */
-  filter?: string | string[] | RegExp | RegExp[],
+  filter?: FilterPattern,
 
   /**
    * Filter on package version using comma-or-space-delimited list, or /regex/.

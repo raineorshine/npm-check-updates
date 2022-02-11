@@ -138,6 +138,13 @@ describe('getCurrentDependencies', () => {
         '@ngrx/store': '4.0.0'
       })
     })
+
+    it('filter dependencies by function', () => {
+      getCurrentDependencies(deps, { filter: (s:string) => s.startsWith('m') }).should.eql({
+        mocha: '1.2',
+        moment: '^1.0.0'
+      })
+    })
   })
 
   describe('reject', () => {
