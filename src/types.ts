@@ -23,7 +23,8 @@ export type Version = string
 export type VersionSpec = string
 export type VersionLevel = 'major' | 'minor' | 'patch'
 
-export type FilterPattern = string | string[] | RegExp | RegExp[]
+type FilterFunction = (s: string) => boolean
+export type FilterPattern = string | string[] | RegExp | RegExp[] | FilterFunction
 
 export interface Packument {
   name: string,

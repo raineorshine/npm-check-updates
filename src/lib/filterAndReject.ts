@@ -41,6 +41,10 @@ function composeFilter(filterPattern: FilterPattern): (s: string) => boolean {
   else if (filterPattern instanceof RegExp) {
     predicate = (s: string) => filterPattern.test(s)
   }
+  // function
+  else if (typeof filterPattern === 'function') {
+    predicate = (s:string) => filterPattern?.(s)
+  }
   else {
     throw new TypeError('Invalid filter. Must be a RegExp, array, or comma-or-space-delimited list.')
   }
