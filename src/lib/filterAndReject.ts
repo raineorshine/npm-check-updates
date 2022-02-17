@@ -1,7 +1,8 @@
 import _ from 'lodash'
 import { and } from 'fp-and-or'
 import minimatch from 'minimatch'
-import { FilterFunction, FilterRejectPattern, Maybe, Version, VersionSpec } from '../types'
+import { SemVer } from 'semver-utils'
+import { FilterFunction, FilterRejectPattern, Maybe, VersionSpec } from '../types'
 
 /**
  * Creates a filter function from a given filter string. Supports
@@ -33,7 +34,7 @@ function composeFilter(filterPattern: FilterRejectPattern): FilterFunction {
   }
   // array
   else if (Array.isArray(filterPattern)) {
-    predicate = (dependencyName: string, version:string) => filterPattern.some(
+    predicate = (dependencyName: string, version: SemVer) => filterPattern.some(
       (subpattern: string | RegExp) => composeFilter(subpattern)(dependencyName, version)
     )
   }
@@ -43,7 +44,7 @@ function composeFilter(filterPattern: FilterRejectPattern): FilterFunction {
   }
   // function
   else if (typeof filterPattern === 'function') {
-    predicate = (dependencyName:string, version:string) => filterPattern?.(dependencyName, version)
+    predicate = (dependencyName: string, version: SemVer) => filterPattern?.(dependencyName, version)
   }
   else {
     throw new TypeError('Invalid filter. Must be a RegExp, array, or comma-or-space-delimited list.')
@@ -63,12 +64,12 @@ function composeFilter(filterPattern: FilterRejectPattern): FilterFunction {
 function filterAndReject(filter: Maybe<FilterRejectPattern>, reject: Maybe<FilterRejectPattern>, filterVersion: Maybe<FilterRejectPattern>, rejectVersion: Maybe<FilterRejectPattern>) {
   return and(
     // filter dep
-    (dep: VersionSpec, version: Version) => and(
+    (dep: VersionSpec, version: SemVer) => and(
       filter ? composeFilter(filter) : _.identity,
       reject ? _.negate(composeFilter(reject)) : _.identity
     )(dep, version),
     // filter version
-    (dep: VersionSpec, version: Version) => and(
+    (dep: VersionSpec, version: SemVer) => and(
       filterVersion ? composeFilter(filterVersion) : _.identity,
       rejectVersion ? _.negate(composeFilter(rejectVersion)) : _.identity
     )(version)

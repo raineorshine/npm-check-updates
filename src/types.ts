@@ -1,3 +1,5 @@
+import { SemVer } from 'semver-utils'
+
 /** A very generic object. */
 export type Index<T = any> = {[key: string]: T}
 
@@ -23,7 +25,7 @@ export type Version = string
 export type VersionSpec = string
 export type VersionLevel = 'major' | 'minor' | 'patch'
 
-export type FilterFunction = (dependencyName: string, version: string) => boolean
+export type FilterFunction = (dependencyName: string, version: SemVer) => boolean
 export type FilterRejectPattern = string | string[] | RegExp | RegExp[] | FilterFunction
 
 export interface Packument {
