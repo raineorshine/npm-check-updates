@@ -43,40 +43,43 @@ describe('getCurrentDependencies', () => {
     })
   })
 
-  it('only get dependencies with --dep prod', () => {
-    getCurrentDependencies(deps, { dep: 'prod' }).should.eql({
-      mocha: '1.2'
-    })
-  })
+  describe('dep', () => {
 
-  it('only get devDependencies with --dep dev', () => {
-    getCurrentDependencies(deps, { dep: 'dev' }).should.eql({
-      lodash: '^3.9.3'
+    it('only get dependencies with --dep prod', () => {
+      getCurrentDependencies(deps, { dep: 'prod' }).should.eql({
+        mocha: '1.2'
+      })
     })
-  })
 
-  it('only get optionalDependencies with --dep optional', () => {
-    getCurrentDependencies(deps, { dep: 'optional' }).should.eql({
-      chalk: '^1.1.0'
+    it('only get devDependencies with --dep dev', () => {
+      getCurrentDependencies(deps, { dep: 'dev' }).should.eql({
+        lodash: '^3.9.3'
+      })
     })
-  })
 
-  it('only get peerDependencies with --dep peer', () => {
-    getCurrentDependencies(deps, { dep: 'peer' }).should.eql({
-      moment: '^1.0.0'
+    it('only get optionalDependencies with --dep optional', () => {
+      getCurrentDependencies(deps, { dep: 'optional' }).should.eql({
+        chalk: '^1.1.0'
+      })
     })
-  })
 
-  it('only get bundleDependencies with --dep bundle', () => {
-    getCurrentDependencies(deps, { dep: 'bundle' }).should.eql({
-      bluebird: '^1.0.0'
+    it('only get peerDependencies with --dep peer', () => {
+      getCurrentDependencies(deps, { dep: 'peer' }).should.eql({
+        moment: '^1.0.0'
+      })
     })
-  })
 
-  it('only get devDependencies and peerDependencies with --dep dev,peer', () => {
-    getCurrentDependencies(deps, { dep: 'dev,peer' }).should.eql({
-      lodash: '^3.9.3',
-      moment: '^1.0.0'
+    it('only get bundleDependencies with --dep bundle', () => {
+      getCurrentDependencies(deps, { dep: 'bundle' }).should.eql({
+        bluebird: '^1.0.0'
+      })
+    })
+
+    it('only get devDependencies and peerDependencies with --dep dev,peer', () => {
+      getCurrentDependencies(deps, { dep: 'dev,peer' }).should.eql({
+        lodash: '^3.9.3',
+        moment: '^1.0.0'
+      })
     })
   })
 
