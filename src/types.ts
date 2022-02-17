@@ -23,7 +23,7 @@ export type Version = string
 export type VersionSpec = string
 export type VersionLevel = 'major' | 'minor' | 'patch'
 
-type FilterFunction = (s: string) => boolean
+export type FilterFunction = (dependencyName: string, version: string) => boolean
 export type FilterRejectPattern = string | string[] | RegExp | RegExp[] | FilterFunction
 
 export interface Packument {

@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { and } from 'fp-and-or'
 import minimatch from 'minimatch'
-import { FilterRejectPattern, Maybe, Version, VersionSpec } from '../types'
+import { FilterFunction, FilterRejectPattern, Maybe, Version, VersionSpec } from '../types'
 
 /**
  * Creates a filter function from a given filter string. Supports
@@ -10,7 +10,7 @@ import { FilterRejectPattern, Maybe, Version, VersionSpec } from '../types'
  * @param [filterPattern]
  * @returns
  */
-function composeFilter(filterPattern: FilterRejectPattern): (s: string) => boolean {
+function composeFilter(filterPattern: FilterRejectPattern): FilterFunction {
 
   let predicate
 
@@ -23,27 +23,27 @@ function composeFilter(filterPattern: FilterRejectPattern): (s: string) => boole
     // RegExp string
     if (filterPattern[0] === '/' && filterPattern[filterPattern.length - 1] === '/') {
       const regexp = new RegExp(filterPattern.slice(1, -1))
-      predicate = (s: string) => regexp.test(s)
+      predicate = (dependencyName: string) => regexp.test(dependencyName)
     }
     // glob string
     else {
       const patterns = filterPattern.split(/[\s,]+/)
-      predicate = (s: string) => patterns.some(pattern => minimatch(s, pattern))
+      predicate = (dependencyName: string) => patterns.some(pattern => minimatch(dependencyName, pattern))
     }
   }
   // array
   else if (Array.isArray(filterPattern)) {
-    predicate = (s: string) => filterPattern.some(
-      (subpattern: string | RegExp) => composeFilter(subpattern)(s)
+    predicate = (dependencyName: string, version:string) => filterPattern.some(
+      (subpattern: string | RegExp) => composeFilter(subpattern)(dependencyName, version)
     )
   }
   // raw RegExp
   else if (filterPattern instanceof RegExp) {
-    predicate = (s: string) => filterPattern.test(s)
+    predicate = (dependencyName: string) => filterPattern.test(dependencyName)
   }
   // function
   else if (typeof filterPattern === 'function') {
-    predicate = (s:string) => filterPattern?.(s)
+    predicate = (dependencyName:string, version:string) => filterPattern?.(dependencyName, version)
   }
   else {
     throw new TypeError('Invalid filter. Must be a RegExp, array, or comma-or-space-delimited list.')
@@ -63,10 +63,10 @@ function composeFilter(filterPattern: FilterRejectPattern): (s: string) => boole
 function filterAndReject(filter: Maybe<FilterRejectPattern>, reject: Maybe<FilterRejectPattern>, filterVersion: Maybe<FilterRejectPattern>, rejectVersion: Maybe<FilterRejectPattern>) {
   return and(
     // filter dep
-    (dep: VersionSpec) => and(
+    (dep: VersionSpec, version: Version) => and(
       filter ? composeFilter(filter) : _.identity,
       reject ? _.negate(composeFilter(reject)) : _.identity
-    )(dep),
+    )(dep, version),
     // filter version
     (dep: VersionSpec, version: Version) => and(
       filterVersion ? composeFilter(filterVersion) : _.identity,
