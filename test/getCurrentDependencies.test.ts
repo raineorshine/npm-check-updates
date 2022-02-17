@@ -5,7 +5,6 @@ import { PackageFile } from '../src/types'
 chai.should()
 
 describe('getCurrentDependencies', () => {
-
   let deps: PackageFile
   beforeEach(() => {
     deps = {
@@ -44,7 +43,6 @@ describe('getCurrentDependencies', () => {
   })
 
   describe('dep', () => {
-
     it('only get dependencies with --dep prod', () => {
       getCurrentDependencies(deps, { dep: 'prod' }).should.eql({
         mocha: '1.2'
@@ -84,7 +82,6 @@ describe('getCurrentDependencies', () => {
   })
 
   describe('filter', () => {
-
     it('filter dependencies by package name', () => {
       getCurrentDependencies(deps, { filter: 'mocha' }).should.eql({
         mocha: '1.2'
@@ -150,8 +147,54 @@ describe('getCurrentDependencies', () => {
     })
   })
 
-  describe('reject', () => {
+  describe('filterVersion', () => {
+    it('filter dependency versions by pinned version', () => {
+      getCurrentDependencies(deps, { filterVersion: '1.2' }).should.eql({
+        mocha: '1.2'
+      })
+    })
 
+    it('filter dependency versions by caret version', () => {
+      getCurrentDependencies(deps, { filterVersion: '^1.0.0' }).should.eql({
+        moment: '^1.0.0',
+        bluebird: '^1.0.0'
+      })
+    })
+
+    it('filter dependencies by multiple versions (comma-or-space-delimited)', () => {
+      getCurrentDependencies(deps, { filterVersion: '^1.0.0,^1.1.0' }).should.eql({
+        chalk: '^1.1.0',
+        moment: '^1.0.0',
+        bluebird: '^1.0.0'
+      })
+      getCurrentDependencies(deps, { filterVersion: '^1.0.0 ^1.1.0' }).should.eql({
+        chalk: '^1.1.0',
+        moment: '^1.0.0',
+        bluebird: '^1.0.0'
+      })
+    })
+
+    it('filter dependency versions by regex', () => {
+      getCurrentDependencies(deps, { filterVersion: '/^\\^1/' }).should.eql({
+        chalk: '^1.1.0',
+        moment: '^1.0.0',
+        bluebird: '^1.0.0'
+      })
+      getCurrentDependencies(deps, { filterVersion: /^\^1/ }).should.eql({
+        chalk: '^1.1.0',
+        moment: '^1.0.0',
+        bluebird: '^1.0.0'
+      })
+    })
+
+    it('filter dependency versions by function', () => {
+      getCurrentDependencies(deps, { filterVersion: (s:string) => s.startsWith('^3') }).should.eql({
+        lodash: '^3.9.3'
+      })
+    })
+  })
+
+  describe('reject', () => {
     it('reject dependencies by package name', () => {
       getCurrentDependencies(deps, { reject: 'chalk' }).should.eql({
         mocha: '1.2',
@@ -215,4 +258,53 @@ describe('getCurrentDependencies', () => {
     })
   })
 
+  describe('rejectVersion', () => {
+    it('reject dependency versions by pinned version', () => {
+      getCurrentDependencies(deps, { rejectVersion: '1.2' }).should.eql({
+        lodash: '^3.9.3',
+        moment: '^1.0.0',
+        chalk: '^1.1.0',
+        bluebird: '^1.0.0'
+      })
+    })
+
+    it('reject dependency versions by caret version', () => {
+      getCurrentDependencies(deps, { rejectVersion: '^1.0.0' }).should.eql({
+        mocha: '1.2',
+        lodash: '^3.9.3',
+        chalk: '^1.1.0',
+      })
+    })
+
+    it('reject dependencies by multiple versions (comma-or-space-delimited)', () => {
+      getCurrentDependencies(deps, { rejectVersion: '^1.0.0,^1.1.0' }).should.eql({
+        mocha: '1.2',
+        lodash: '^3.9.3',
+      })
+      getCurrentDependencies(deps, { rejectVersion: '^1.0.0 ^1.1.0' }).should.eql({
+        mocha: '1.2',
+        lodash: '^3.9.3',
+      })
+    })
+
+    it('reject dependency versions by regex', () => {
+      getCurrentDependencies(deps, { rejectVersion: '/^\\^1/' }).should.eql({
+        mocha: '1.2',
+        lodash: '^3.9.3',
+      })
+      getCurrentDependencies(deps, { rejectVersion: /^\^1/ }).should.eql({
+        mocha: '1.2',
+        lodash: '^3.9.3',
+      })
+    })
+
+    it('reject dependency versions by function', () => {
+      getCurrentDependencies(deps, { rejectVersion: (s:string) => s.startsWith('^3') }).should.eql({
+        mocha: '1.2',
+        moment: '^1.0.0',
+        chalk: '^1.1.0',
+        bluebird: '^1.0.0'
+      })
+    })
+  })
 })

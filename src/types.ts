@@ -147,9 +147,9 @@ export interface RunOptions {
   filter?: FilterRejectPattern,
 
   /**
-   * Filter on package version using comma-or-space-delimited list, or /regex/.
+   * Filter on package version using comma-or-space-delimited list, /regex/ or function that returns true.
    */
-  filterVersion?: string | string[] | RegExp | RegExp[],
+  filterVersion?: FilterRejectPattern,
 
   /**
    * Enable additional output data, string or comma-delimited list: ownerChanged, repo. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository. (default: [])
@@ -253,14 +253,14 @@ export interface RunOptions {
   registry?: string,
 
   /**
-   * Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
+   * Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/ or function that returns true.
    */
   reject?: FilterRejectPattern,
 
   /**
-   * Exclude package.json versions using comma-or-space-delimited list, or /regex/.
+   * Exclude package.json versions using comma-or-space-delimited list, /regex/ or function that returns true.
    */
-  rejectVersion?: string | string[] | RegExp,
+  rejectVersion?: FilterRejectPattern,
 
   /**
    * Remove version ranges from the final package version.
