@@ -17,10 +17,10 @@ export interface CLIOption<T = any> {
 
 /**
  * "newest" means most recently released in terms of release date, even if there are other version numbers that are higher. It includes prereleases.
- * "greatest" means highest version number, regardless of release date. It includes prereleases.
+ * "greatest" means the highest version number, regardless of release date. It includes prereleases.
  * "latest" is whatever the project's "latest" git tag points to. It's usually the non-prerelease version with the highest version number, but is ultimately decided by each project's maintainers.
- * "minor" means highest minor version without incrementing the current major.
- * "patch" means highest patch version without incrementing the current major or minor.
+ * "minor" means the highest minor version without incrementing the current major.
+ * "patch" means the highest patch version without incrementing the current major or minor.
  **/
 const getHelpTargetTable = (): string => {
   /* eslint-disable fp/no-mutating-methods */
