@@ -186,12 +186,20 @@ describe('getCurrentDependencies', () => {
       })
     })
 
-    it('filter dependencies by regex', () => {
+    it('reject dependencies by regex', () => {
       getCurrentDependencies(deps, { reject: /o/ }).should.eql({
         chalk: '^1.1.0',
         bluebird: '^1.0.0'
       })
       getCurrentDependencies(deps, { reject: '/o/' }).should.eql({
+        chalk: '^1.1.0',
+        bluebird: '^1.0.0'
+      })
+    })
+
+    it('reject dependencies by function', () => {
+      getCurrentDependencies(deps, { reject: (s:string) => s.startsWith('m') }).should.eql({
+        lodash: '^3.9.3',
         chalk: '^1.1.0',
         bluebird: '^1.0.0'
       })

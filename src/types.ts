@@ -24,7 +24,7 @@ export type VersionSpec = string
 export type VersionLevel = 'major' | 'minor' | 'patch'
 
 type FilterFunction = (s: string) => boolean
-export type FilterPattern = string | string[] | RegExp | RegExp[] | FilterFunction
+export type FilterRejectPattern = string | string[] | RegExp | RegExp[] | FilterFunction
 
 export interface Packument {
   name: string,
@@ -144,7 +144,7 @@ export interface RunOptions {
   /**
    * Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/ or function that returns true.
    */
-  filter?: FilterPattern,
+  filter?: FilterRejectPattern,
 
   /**
    * Filter on package version using comma-or-space-delimited list, or /regex/.
@@ -255,7 +255,7 @@ export interface RunOptions {
   /**
    * Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
    */
-  reject?: string | string[] | RegExp,
+  reject?: FilterRejectPattern,
 
   /**
    * Exclude package.json versions using comma-or-space-delimited list, or /regex/.

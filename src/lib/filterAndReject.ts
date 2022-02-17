@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { and } from 'fp-and-or'
 import minimatch from 'minimatch'
-import { FilterPattern, Maybe, Version, VersionSpec } from '../types'
+import { FilterRejectPattern, Maybe, Version, VersionSpec } from '../types'
 
 /**
  * Creates a filter function from a given filter string. Supports
@@ -10,7 +10,7 @@ import { FilterPattern, Maybe, Version, VersionSpec } from '../types'
  * @param [filterPattern]
  * @returns
  */
-function composeFilter(filterPattern: FilterPattern): (s: string) => boolean {
+function composeFilter(filterPattern: FilterRejectPattern): (s: string) => boolean {
 
   let predicate
 
@@ -60,7 +60,7 @@ function composeFilter(filterPattern: FilterPattern): (s: string) => boolean {
  * @param [filterVersion]
  * @param [rejectVersion]
  */
-function filterAndReject(filter: Maybe<FilterPattern>, reject: Maybe<FilterPattern>, filterVersion: Maybe<FilterPattern>, rejectVersion: Maybe<FilterPattern>) {
+function filterAndReject(filter: Maybe<FilterRejectPattern>, reject: Maybe<FilterRejectPattern>, filterVersion: Maybe<FilterRejectPattern>, rejectVersion: Maybe<FilterRejectPattern>) {
   return and(
     // filter dep
     (dep: VersionSpec) => and(
