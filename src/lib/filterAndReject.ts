@@ -64,12 +64,12 @@ function composeFilter(filterPattern: FilterRejectPattern): FilterFunction {
 function filterAndReject(filter: Maybe<FilterRejectPattern>, reject: Maybe<FilterRejectPattern>, filterVersion: Maybe<FilterRejectPattern>, rejectVersion: Maybe<FilterRejectPattern>) {
   return and(
     // filter dep
-    (dep: VersionSpec, version: SemVer) => and(
+    (dependencyName: VersionSpec, version: SemVer) => and(
       filter ? composeFilter(filter) : _.identity,
       reject ? _.negate(composeFilter(reject)) : _.identity
-    )(dep, version),
+    )(dependencyName, version),
     // filter version
-    (dep: VersionSpec, version: SemVer) => and(
+    (dependencyName: VersionSpec, version: SemVer) => and(
       filterVersion ? composeFilter(filterVersion) : _.identity,
       rejectVersion ? _.negate(composeFilter(rejectVersion)) : _.identity
     )(version)
