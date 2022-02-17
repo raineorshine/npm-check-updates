@@ -162,13 +162,13 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     short: 'f',
     arg: 'matches',
     description: 'Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.',
-    type: 'string | string[] | RegExp',
+    type: 'string | string[] | RegExp | RegExp[] | Function',
   },
   {
     long: 'filterVersion',
     arg: 'matches',
     description: 'Filter on package version using comma-or-space-delimited list, or /regex/.',
-    type: 'string | string[] | RegExp',
+    type: 'string | string[] | RegExp | RegExp[] | Function',
   },
   {
     long: 'format',
@@ -271,13 +271,13 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     short: 'x',
     arg: 'matches',
     description: 'Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.',
-    type: 'string | string[] | RegExp | RegExp[]',
+    type: 'string | string[] | RegExp | RegExp[] | Function',
   },
   {
     long: 'rejectVersion',
     arg: 'matches',
     description: 'Exclude package.json versions using comma-or-space-delimited list, or /regex/.',
-    type: 'string | string[] | RegExp | RegExp[]',
+    type: 'string | string[] | RegExp | RegExp[] | Function',
   },
   {
     long: 'removeRange',
