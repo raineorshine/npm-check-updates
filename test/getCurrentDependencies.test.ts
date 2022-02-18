@@ -1,4 +1,5 @@
 import chai from 'chai'
+import { SemVer } from 'semver-utils'
 import getCurrentDependencies from '../src/lib/getCurrentDependencies'
 import { PackageFile } from '../src/types'
 
@@ -139,10 +140,21 @@ describe('getCurrentDependencies', () => {
       })
     })
 
-    it('filter dependencies by function', () => {
+    it('filter dependencies by name with a filter function', () => {
       getCurrentDependencies(deps, { filter: (s:string) => s.startsWith('m') }).should.eql({
         mocha: '1.2',
         moment: '^1.0.0'
+      })
+    })
+
+    it('filter dependencies by version spec with a filter function', () => {
+      getCurrentDependencies(deps, {
+        filter: (name: string, versionSpec: SemVer[]) => versionSpec[0].major === '1'
+      }).should.eql({
+        mocha: '1.2',
+        moment: '^1.0.0',
+        chalk: '^1.1.0',
+        bluebird: '^1.0.0',
       })
     })
   })
@@ -187,9 +199,14 @@ describe('getCurrentDependencies', () => {
       })
     })
 
-    it('filter dependency versions by function', () => {
-      getCurrentDependencies(deps, { filterVersion: (s:string) => s.startsWith('^3') }).should.eql({
-        lodash: '^3.9.3'
+    it('filter dependencies by version spec with a filterVersion function', () => {
+      getCurrentDependencies(deps, {
+        filterVersion: (name: string, versionSpec: SemVer[]) => versionSpec[0].major === '1'
+      }).should.eql({
+        mocha: '1.2',
+        moment: '^1.0.0',
+        chalk: '^1.1.0',
+        bluebird: '^1.0.0',
       })
     })
   })
