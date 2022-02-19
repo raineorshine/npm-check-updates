@@ -154,7 +154,7 @@ describe('getCurrentDependencies', () => {
         mocha: '1.2',
         moment: '^1.0.0',
         chalk: '^1.1.0',
-        bluebird: '^1.0.0',
+        bluebird: '^1.0.0'
       })
     })
   })
@@ -206,7 +206,7 @@ describe('getCurrentDependencies', () => {
         mocha: '1.2',
         moment: '^1.0.0',
         chalk: '^1.1.0',
-        bluebird: '^1.0.0',
+        bluebird: '^1.0.0'
       })
     })
   })
@@ -289,18 +289,18 @@ describe('getCurrentDependencies', () => {
       getCurrentDependencies(deps, { rejectVersion: '^1.0.0' }).should.eql({
         mocha: '1.2',
         lodash: '^3.9.3',
-        chalk: '^1.1.0',
+        chalk: '^1.1.0'
       })
     })
 
     it('reject dependencies by multiple versions (comma-or-space-delimited)', () => {
       getCurrentDependencies(deps, { rejectVersion: '^1.0.0,^1.1.0' }).should.eql({
         mocha: '1.2',
-        lodash: '^3.9.3',
+        lodash: '^3.9.3'
       })
       getCurrentDependencies(deps, { rejectVersion: '^1.0.0 ^1.1.0' }).should.eql({
         mocha: '1.2',
-        lodash: '^3.9.3',
+        lodash: '^3.9.3'
       })
     })
 
@@ -311,7 +311,7 @@ describe('getCurrentDependencies', () => {
       })
       getCurrentDependencies(deps, { rejectVersion: /^\^1/ }).should.eql({
         mocha: '1.2',
-        lodash: '^3.9.3',
+        lodash: '^3.9.3'
       })
     })
 

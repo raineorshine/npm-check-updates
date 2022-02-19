@@ -25,7 +25,7 @@ export type Version = string
 export type VersionSpec = string
 export type VersionLevel = 'major' | 'minor' | 'patch'
 
-export type FilterFunction = (packageName: string, version: SemVer[]) => boolean
+type FilterFunction = (packageName: string, version: SemVer[]) => boolean
 export type FilterRejectPattern = string | string[] | RegExp | RegExp[] | FilterFunction
 
 export interface Packument {

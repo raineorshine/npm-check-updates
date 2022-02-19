@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { and } from 'fp-and-or'
 import minimatch from 'minimatch'
-import semverutils, { SemVer } from 'semver-utils'
+import { SemVer, parseRange } from 'semver-utils'
 import { FilterRejectPattern, Maybe, VersionSpec } from '../types'
 
 /**
@@ -44,7 +44,7 @@ function composeFilter(filterPattern: FilterRejectPattern): (name: string, versi
   }
   // function
   else if (typeof filterPattern === 'function') {
-    predicate = (dependencyName: string, versionSpec: string) => filterPattern(dependencyName, semverutils.parseRange(versionSpec ?? dependencyName))
+    predicate = (dependencyName: string, versionSpec: string) => filterPattern(dependencyName, parseRange(versionSpec ?? dependencyName))
   }
   else {
     throw new TypeError('Invalid filter. Must be a RegExp, array, or comma-or-space-delimited list.')
