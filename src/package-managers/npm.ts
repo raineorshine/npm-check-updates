@@ -113,7 +113,7 @@ export async function packageAuthorChanged(packageName: string, currentVersion: 
     ...npmConfigLocal,
     ...npmConfig,
     fullMetadata: true,
-    ...options.registry ? { registry: options.registry } : null,
+    ...options.registry ? { registry: options.registry, silent: true } : null,
   })
   if (result.versions) {
     const pkgVersions = Object.keys(result.versions)
@@ -148,7 +148,7 @@ export async function viewMany(packageName: string, fields: string[], currentVer
       ...npmConfigLocal,
       ...npmConfig,
       fullMetadata: fields.includes('time'),
-      ...registry ? { registry } : null,
+      ...registry ? { registry, silent: true } : null,
       timeout,
     })
   }
