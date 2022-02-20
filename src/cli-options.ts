@@ -17,10 +17,10 @@ export interface CLIOption<T = any> {
 
 /**
  * "newest" means most recently released in terms of release date, even if there are other version numbers that are higher. It includes prereleases.
- * "greatest" means highest version number, regardless of release date. It includes prereleases.
+ * "greatest" means the highest version number, regardless of release date. It includes prereleases.
  * "latest" is whatever the project's "latest" git tag points to. It's usually the non-prerelease version with the highest version number, but is ultimately decided by each project's maintainers.
- * "minor" means highest minor version without incrementing the current major.
- * "patch" means highest patch version without incrementing the current major or minor.
+ * "minor" means the highest minor version without incrementing the current major.
+ * "patch" means the highest patch version without incrementing the current major or minor.
  **/
 const getHelpTargetTable = (): string => {
   /* eslint-disable fp/no-mutating-methods */
@@ -162,13 +162,13 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     short: 'f',
     arg: 'matches',
     description: 'Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.',
-    type: 'string | string[] | RegExp',
+    type: 'string | string[] | RegExp | RegExp[] | Function',
   },
   {
     long: 'filterVersion',
     arg: 'matches',
     description: 'Filter on package version using comma-or-space-delimited list, or /regex/.',
-    type: 'string | string[] | RegExp',
+    type: 'string | string[] | RegExp | RegExp[] | Function',
   },
   {
     long: 'format',
@@ -271,13 +271,13 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     short: 'x',
     arg: 'matches',
     description: 'Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.',
-    type: 'string | string[] | RegExp | RegExp[]',
+    type: 'string | string[] | RegExp | RegExp[] | Function',
   },
   {
     long: 'rejectVersion',
     arg: 'matches',
     description: 'Exclude package.json versions using comma-or-space-delimited list, or /regex/.',
-    type: 'string | string[] | RegExp | RegExp[]',
+    type: 'string | string[] | RegExp | RegExp[] | Function',
   },
   {
     long: 'removeRange',

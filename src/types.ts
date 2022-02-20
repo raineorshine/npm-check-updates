@@ -1,3 +1,5 @@
+import { SemVer } from 'semver-utils'
+
 /** A very generic object. */
 export type Index<T = any> = {[key: string]: T}
 
@@ -23,7 +25,8 @@ export type Version = string
 export type VersionSpec = string
 export type VersionLevel = 'major' | 'minor' | 'patch'
 
-export type FilterPattern = string | string[] | RegExp | RegExp[]
+type FilterFunction = (packageName: string, version: SemVer[]) => boolean
+export type FilterRejectPattern = string | string[] | RegExp | RegExp[] | FilterFunction
 
 export interface Packument {
   name: string,
@@ -141,14 +144,14 @@ export interface RunOptions {
   errorLevel?: number,
 
   /**
-   * Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
+   * Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/ or function that returns true.
    */
-  filter?: string | string[] | RegExp | RegExp[],
+  filter?: FilterRejectPattern,
 
   /**
-   * Filter on package version using comma-or-space-delimited list, or /regex/.
+   * Filter on package version using comma-or-space-delimited list, /regex/ or function that returns true.
    */
-  filterVersion?: string | string[] | RegExp | RegExp[],
+  filterVersion?: FilterRejectPattern,
 
   /**
    * Enable additional output data, string or comma-delimited list: ownerChanged, repo. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository. (default: [])
@@ -252,14 +255,14 @@ export interface RunOptions {
   registry?: string,
 
   /**
-   * Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
+   * Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/ or function that returns true.
    */
-  reject?: string | string[] | RegExp,
+  reject?: FilterRejectPattern,
 
   /**
-   * Exclude package.json versions using comma-or-space-delimited list, or /regex/.
+   * Exclude package.json versions using comma-or-space-delimited list, /regex/ or function that returns true.
    */
-  rejectVersion?: string | string[] | RegExp,
+  rejectVersion?: FilterRejectPattern,
 
   /**
    * Remove version ranges from the final package version.
