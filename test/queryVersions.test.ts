@@ -31,17 +31,17 @@ describe('queryVersions', function () {
   })
 
   it('set the target explicitly to latest', () => {
-    return queryVersions({ async: '1.5.1' }, { target: 'latest', loglevel: 'silent' })
+    return queryVersions({ async: '1.5.1' }, { target: () => 'latest', loglevel: 'silent' })
       .should.eventually.have.property('async')
   })
 
   it('set the target to greatest', () => {
-    return queryVersions({ async: '1.5.1' }, { target: 'greatest', loglevel: 'silent' })
+    return queryVersions({ async: '1.5.1' }, { target: () => 'greatest', loglevel: 'silent' })
       .should.eventually.have.property('async')
   })
 
   it('return an error for an unsupported target', () => {
-    const a = queryVersions({ async: '1.5.1' }, { target: 'foo', loglevel: 'silent' })
+    const a = queryVersions({ async: '1.5.1' }, { target: () => 'foo', loglevel: 'silent' })
     return a.should.be.rejected
   })
 
@@ -143,7 +143,7 @@ describe('queryVersions', function () {
     it('github urls should support --target greatest', async () => {
       const upgrades = await queryVersions({
         'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
-      }, { loglevel: 'silent', target: 'newest' })
+      }, { loglevel: 'silent', target: () => 'newest' })
 
       upgrades.should.deep.equal({
         'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta'
@@ -153,7 +153,7 @@ describe('queryVersions', function () {
     it('github urls should support --target newest', async () => {
       const upgrades = await queryVersions({
         'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
-      }, { loglevel: 'silent', target: 'newest' })
+      }, { loglevel: 'silent', target: () => 'newest' })
 
       upgrades.should.deep.equal({
         'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta'
@@ -163,7 +163,7 @@ describe('queryVersions', function () {
     it('github urls should support --target minor', async () => {
       const upgrades = await queryVersions({
         'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^0.1.0'
-      }, { loglevel: 'silent', target: 'minor' })
+      }, { loglevel: 'silent', target: () => 'minor' })
 
       upgrades.should.deep.equal({
         'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^0.2.0'
@@ -173,7 +173,7 @@ describe('queryVersions', function () {
     it('github urls should support --target patch', async () => {
       const upgrades = await queryVersions({
         'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^1.0.0'
-      }, { loglevel: 'silent', target: 'patch' })
+      }, { loglevel: 'silent', target: () => 'patch' })
 
       upgrades.should.deep.equal({
         'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^1.0.1'
@@ -194,7 +194,7 @@ describe('queryVersions', function () {
 
       const upgradesNewest = await queryVersions({
         'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
-      }, { loglevel: 'silent', target: 'newest' })
+      }, { loglevel: 'silent', target: () => 'newest' })
 
       upgradesNewest.should.deep.equal({
         'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta'
@@ -202,7 +202,7 @@ describe('queryVersions', function () {
 
       const upgradesGreatest = await queryVersions({
         'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.0'
-      }, { loglevel: 'silent', target: 'greatest' })
+      }, { loglevel: 'silent', target: () => 'greatest' })
 
       upgradesGreatest.should.deep.equal({
         'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta'

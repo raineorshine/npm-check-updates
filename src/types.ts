@@ -28,6 +28,8 @@ export type VersionLevel = 'major' | 'minor' | 'patch'
 type FilterFunction = (packageName: string, version: SemVer[]) => boolean
 export type FilterRejectPattern = string | string[] | RegExp | RegExp[] | FilterFunction
 
+export type TargetFunction = (name?: string, versionRange?: SemVer | string) => string
+
 export interface Packument {
   name: string,
   deprecated?: boolean,
@@ -275,21 +277,14 @@ export interface RunOptions {
   retry?: number,
 
   /**
-   * DEPRECATED. Renamed to --target.
-   *
-   * @deprecated
-   */
-  semverLevel?: string,
-
-  /**
    * Don't output anything (--loglevel silent).
    */
   silent?: boolean,
 
   /**
-   * Target version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details.` (default: "latest")
+   * Target function that returns version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details.` (default: "latest")
    */
-  target?: string,
+  target?: TargetFunction,
 
   /**
    * Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch).

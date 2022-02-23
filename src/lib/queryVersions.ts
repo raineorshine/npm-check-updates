@@ -3,7 +3,7 @@ import cint from 'cint'
 import chalk from 'chalk'
 import pMap from 'p-map'
 import ProgressBar from 'progress'
-import { supportedVersionTargets } from '../constants'
+import { supportedVersionTargets, targetFallback } from '../constants'
 import getPackageManager from './getPackageManager'
 import packageManagers from '../package-managers'
 import { createNpmAlias, isGithubUrl, isPre, parseNpmAlias } from '../version-util'
@@ -18,7 +18,7 @@ import { GetVersion, Index, Options, Version, VersionSpec } from '../types'
  */
 async function queryVersions(packageMap: Index<VersionSpec>, options: Options = {}) {
 
-  const target = options.target || 'latest'
+  const target = options.target || targetFallback
   const packageList = Object.keys(packageMap)
   const packageManager = getPackageManager(options.packageManager)
 
@@ -30,7 +30,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
 
   // set the getPackageVersion function from options.target
   // TODO: Remove "as GetVersion" and fix types
-  const getPackageVersion = packageManager[target as keyof typeof packageManager] as GetVersion
+  const getPackageVersion = packageManager[target() as keyof typeof packageManager] as GetVersion
   if (!getPackageVersion) {
     const packageManagerSupportedVersionTargets = supportedVersionTargets.filter(t => t in packageManager)
     return Promise.reject(new Error(`Unsupported target "${target}" for ${options.packageManager || 'npm'}. Supported version targets are: ${packageManagerSupportedVersionTargets.join(', ')}`))
@@ -55,11 +55,11 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
 
       // override packageManager and getPackageVersion just for this dependency
       const packageManager = packageManagers.gitTags
-      const getPackageVersion = packageManager[target as keyof typeof packageManager] as GetVersion
+      const getPackageVersion = packageManager[target(name, version) as keyof typeof packageManager] as GetVersion
 
       if (!getPackageVersion) {
         const packageManagerSupportedVersionTargets = supportedVersionTargets.filter(t => t in packageManager)
-        return Promise.reject(new Error(`Unsupported target "${target}" for github urls. Supported version targets are: ${packageManagerSupportedVersionTargets.join(', ')}`))
+        return Promise.reject(new Error(`Unsupported target "${target(name, version)}" for github urls. Supported version targets are: ${packageManagerSupportedVersionTargets.join(', ')}`))
       }
       versionNew = await getPackageVersion(name, version, {
         ...options,
@@ -71,6 +71,8 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       try {
         versionNew = await getPackageVersion(name, version, {
           ...options,
+          // @ts-expect-error TEMP
+          target: target(name, version),
           // upgrade prereleases to newer prereleases by default
           pre: options.pre != null ? options.pre : isPre(version),
           retry: options.retry ?? 2,

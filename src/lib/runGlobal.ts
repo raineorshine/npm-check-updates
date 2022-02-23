@@ -19,7 +19,7 @@ async function runGlobal(options: Options): Promise<Index<string>|void> {
   print(options, 'globalPackages', 'silly')
   print(options, globalPackages, 'silly')
   print(options, '', 'silly')
-  print(options, `Fetching ${options.target} versions`, 'verbose')
+  print(options, `Fetching ${options.target?.()} versions`, 'verbose')
 
   const [upgraded, latest] = await upgradePackageDefinitions(globalPackages, options)
   print(options, latest, 'silly')

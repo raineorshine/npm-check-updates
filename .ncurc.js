@@ -1,4 +1,14 @@
 module.exports = {
+  target: (name, versionRange) => {
+    let target = 'newest';
+    if (versionRange?.startsWith('^')) {
+      target = 'minor';
+    } else if (versionRange?.startsWith('~')) {
+      target = 'patch';
+    }
+    console.log(' with', name, versionRange, target);
+    return target;
+  },
   reject: [
     // "If you use TypeScript, you will want to stay on Chalk 4 until TypeScript 4.6 is out."
     // https://github.com/microsoft/TypeScript/issues/46452

@@ -196,7 +196,7 @@ describe('run', function () {
           'ncu-mock-pre': '1.0.0'
         }
       }),
-      target: 'newest'
+      target: () => 'newest'
     }).then(data => {
       return data!.should.eql({
         dependencies: {
@@ -215,7 +215,7 @@ describe('run', function () {
           'ncu-mock-pre': '1.0.0'
         }
       }),
-      target: 'greatest'
+      target: () => 'greatest'
     }).then(data => {
       return data!.should.eql({
         dependencies: {
@@ -234,7 +234,7 @@ describe('run', function () {
           'ncu-mock-pre': '1.0.0'
         }
       }),
-      target: 'newest',
+      target: () => 'newest',
       pre: false
     }).then(data => {
       return data!.should.eql({
@@ -249,7 +249,7 @@ describe('run', function () {
     return Promise.all([
       ncu.run({
         jsonAll: true,
-        target: 'newest',
+        target: () => 'newest',
         packageData: JSON.stringify({
           dependencies: {
             del: ''
@@ -258,7 +258,7 @@ describe('run', function () {
       }),
       ncu.run({
         jsonAll: true,
-        target: 'newest',
+        target: () => 'newest',
         packageData: JSON.stringify({
           dependencies: {
             del: 'invalid range'
@@ -267,7 +267,7 @@ describe('run', function () {
       }),
       ncu.run({
         jsonAll: true,
-        target: 'newest',
+        target: () => 'newest',
         packageData: JSON.stringify({
           dependencies: {
             del: '*'
@@ -276,7 +276,7 @@ describe('run', function () {
       }),
       ncu.run({
         jsonAll: true,
-        target: 'newest',
+        target: () => 'newest',
         packageData: JSON.stringify({
           dependencies: {
             del: '~'
@@ -318,59 +318,59 @@ describe('run', function () {
   describe('target', () => {
 
     it('do not allow --greatest and --newest together', async () => {
-      ncu.run({ greatest: true, target: 'newest' })
+      ncu.run({ greatest: true, target: () => 'newest' })
         .should.eventually.be.rejectedWith('Cannot specify both')
-      ncu.run({ target: 'greatest', newest: true })
+      ncu.run({ target: () => 'greatest', newest: true })
         .should.eventually.be.rejectedWith('Cannot specify both')
       ncu.run({ greatest: true, newest: true })
         .should.eventually.be.rejectedWith('Cannot specify both')
     })
 
     it('do not allow --target and --greatest together', async () => {
-      ncu.run({ target: 'greatest', greatest: true })
+      ncu.run({ target: () => 'greatest', greatest: true })
         .should.eventually.be.rejectedWith('Cannot specify both')
     })
 
     it('do not allow --target and --newest together', async () => {
-      ncu.run({ target: 'newest', newest: true })
+      ncu.run({ target: () => 'newest', newest: true })
         .should.eventually.be.rejectedWith('Cannot specify both')
     })
 
     it('do not update major versions with --target minor', async () => {
-      const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
+      const pkgData = await ncu.run({ target: () => 'minor', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
       pkgData!.should.not.have.property('chalk')
     })
 
     it('update minor versions with --target minor', async () => {
-      const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "2.3.0" } }' })
+      const pkgData = await ncu.run({ target: () => 'minor', packageData: '{ "dependencies": { "chalk": "2.3.0" } }' })
       pkgData!.should.have.property('chalk')
       ;(pkgData as any).chalk.should.equal('2.4.2')
     })
 
     it('update patch versions with --target minor', async () => {
-      const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "2.4.0" } }' })
+      const pkgData = await ncu.run({ target: () => 'minor', packageData: '{ "dependencies": { "chalk": "2.4.0" } }' })
       pkgData!.should.have.property('chalk')
       ;(pkgData as any).chalk.should.equal('2.4.2')
     })
 
     it('do not update major versions with --target patch', async () => {
-      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
+      const pkgData = await ncu.run({ target: () => 'patch', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
       pkgData!.should.not.have.property('chalk')
     })
 
     it('do not update minor versions with --target patch', async () => {
-      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.3.2" } }' })
+      const pkgData = await ncu.run({ target: () => 'patch', packageData: '{ "dependencies": { "chalk": "2.3.2" } }' })
       pkgData!.should.not.have.property('chalk')
     })
 
     it('update patch versions with --target patch', async () => {
-      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.4.1" } }' })
+      const pkgData = await ncu.run({ target: () => 'patch', packageData: '{ "dependencies": { "chalk": "2.4.1" } }' })
       pkgData!.should.have.property('chalk')
       ;(pkgData as any).chalk.should.equal('2.4.2')
     })
 
     it('skip non-semver versions with --target', async () => {
-      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "test": "github:a/b" } }' })
+      const pkgData = await ncu.run({ target: () => 'patch', packageData: '{ "dependencies": { "test": "github:a/b" } }' })
       pkgData!.should.not.have.property('test')
     })
 
