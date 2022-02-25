@@ -3,7 +3,7 @@ import cint from 'cint'
 import chalk from 'chalk'
 import pMap from 'p-map'
 import ProgressBar from 'progress'
-import { supportedVersionTargets, targetFallback } from '../constants'
+import { supportedVersionTargets } from '../constants'
 import getPackageManager from './getPackageManager'
 import packageManagers from '../package-managers'
 import { createNpmAlias, isGithubUrl, isPre, parseNpmAlias } from '../version-util'
@@ -18,7 +18,7 @@ import { GetVersion, Index, Options, Version, VersionSpec } from '../types'
  */
 async function queryVersions(packageMap: Index<VersionSpec>, options: Options = {}) {
 
-  const target = options.target || targetFallback
+  const target = options.target || 'latest'
   const packageList = Object.keys(packageMap)
   const packageManager = getPackageManager(options.packageManager)
 

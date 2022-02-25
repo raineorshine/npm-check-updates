@@ -2,7 +2,7 @@ import _ from 'lodash'
 import fs from 'fs'
 import Chalk from 'chalk'
 import cliOptions from '../cli-options'
-import { deepPatternPrefix, targetFallback } from '../constants'
+import { deepPatternPrefix } from '../constants'
 import programError from './programError'
 import getPackageFileName from './getPackageFileName'
 import { print } from '../logging'
@@ -76,14 +76,11 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
     programError(options, chalk.red(`Cannot specify both --packageFile and --deep. --deep is an alias for --packageFile '${deepPatternPrefix}package.json'`))
   }
 
-  const target = options.newest ? () => 'newest'
-    : options.greatest ? () => 'greatest'
-    : options.target || options.semverLevel || targetFallback
+  const target = options.newest ? 'newest'
+    : options.greatest ? 'greatest'
+    : options.target || options.semverLevel || 'latest'
 
-  const targetResult = typeof target === 'string' ? target : targetFallback()
-
-  // include -alpha, -beta, -rc.
-  const autoPre = targetResult === 'newest' || targetResult === 'greatest'
+  const autoPre = target === 'newest' || target === 'greatest'
 
   const format = [
     ...options.format || [],
