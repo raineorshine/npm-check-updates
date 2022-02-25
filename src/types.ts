@@ -278,6 +278,13 @@ export interface RunOptions {
   retry?: number,
 
   /**
+   * DEPRECATED. Renamed to --target.
+   *
+   * @deprecated
+   */
+  semverLevel?: string,
+
+  /**
    * Don't output anything (--loglevel silent).
    */
   silent?: boolean,

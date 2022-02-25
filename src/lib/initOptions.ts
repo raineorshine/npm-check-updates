@@ -78,7 +78,7 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
 
   const target = options.newest ? () => 'newest'
     : options.greatest ? () => 'greatest'
-    : options.target || targetFallback
+    : options.target || options.semverLevel || targetFallback
 
   const targetResult = typeof target === 'string' ? target : targetFallback()
 

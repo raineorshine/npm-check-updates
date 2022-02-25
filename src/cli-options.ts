@@ -291,6 +291,12 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     default: 3,
   },
   {
+    long: 'semverLevel',
+    arg: 'value',
+    description: 'DEPRECATED. Renamed to --target.',
+    deprecated: true,
+  },
+  {
     long: 'silent',
     short: 's',
     description: 'Don\'t output anything (--loglevel silent).',
