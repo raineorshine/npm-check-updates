@@ -137,7 +137,7 @@ export function printUpgrades(options: Options, { current, latest, upgraded, num
       print(options, `All global packages are up-to-date ${smiley}`)
     }
     else {
-      print(options, `All dependencies match the ${options.target?.()} package versions ${smiley}`)
+      print(options, `All dependencies match the ${options.target} package versions ${smiley}`)
     }
   }
   else if (numUpgraded === 0 && total > 0) {

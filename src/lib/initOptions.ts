@@ -80,10 +80,10 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
     : options.greatest ? () => 'greatest'
     : options.target || targetFallback
 
-  console.log('target()', '' + target, target())
+  const targetResult = typeof target === 'string' ? target : targetFallback()
 
   // include -alpha, -beta, -rc.
-  const autoPre = target() === 'newest' || target() === 'greatest'
+  const autoPre = targetResult === 'newest' || targetResult === 'greatest'
 
   const format = [
     ...options.format || [],

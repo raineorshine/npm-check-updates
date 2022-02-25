@@ -74,7 +74,7 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
   print(options, '\nCurrent:', 'verbose')
   print(options, current, 'verbose')
 
-  print(options, `\nFetching ${options.target?.()} versions`, 'verbose')
+  print(options, `\nFetching ${options.target} versions`, 'verbose')
 
   if (options.enginesNode) {
     options.nodeEngineVersion = _.get(pkg, 'engines.node')

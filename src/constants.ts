@@ -1,10 +1,8 @@
-import { TargetFunction } from './types'
-
 export const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch']
 /**
  * default fallback function that returns latest
  */
-export const targetFallback: TargetFunction = () => 'latest'
+export const targetFallback = () => 'latest'
 
 export const doctorHelpText = `Usage: ncu --doctor [-u] [options]
 
