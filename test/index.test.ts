@@ -5,6 +5,7 @@ import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 import * as ncu from '../src/'
 
+chai.should()
 chai.use(chaiAsPromised)
 chai.use(chaiString)
 

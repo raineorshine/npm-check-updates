@@ -7,6 +7,7 @@ import chaiString from 'chai-string'
 import spawn from 'spawn-please'
 import stripAnsi from 'strip-ansi'
 
+chai.should()
 chai.use(chaiAsPromised)
 chai.use(chaiString)
 
