@@ -1,4 +1,7 @@
+import chai from 'chai'
 import upgradePackageData from '../src/lib/upgradePackageData'
+
+chai.should()
 
 describe('upgradePackageData', () => {
   const pkgData = JSON.stringify({

@@ -6,6 +6,7 @@ import chaiString from 'chai-string'
 import * as ncu from '../src/'
 import { TargetFunction } from '../src/types'
 
+chai.should()
 chai.use(chaiAsPromised)
 chai.use(chaiString)
 
