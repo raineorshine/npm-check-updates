@@ -283,7 +283,7 @@ For example, `.ncurc.json`:
 npm-check-updates can be required as a module:
 
 ```js
-const ncu = require('npm-check-updates')
+const ncu = require('npm-check-updates');
 
 (async () => {
 
@@ -294,11 +294,11 @@ const ncu = require('npm-check-updates')
     // Defaults:
     // jsonUpgraded: true,
     // silent: true,
-  }))
+  });
 
   console.log(upgraded) // { "mypackage": "^2.0.0", ... }
 
-})()
+})();
 ```
 
 ## Known Issues
