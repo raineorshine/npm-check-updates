@@ -39,7 +39,24 @@ by each project's maintainers. Default.`])
 other version numbers that are higher. Includes prereleases.`])
   table.push(['patch', `Upgrade to the highest patch version without bumping the minor or major versions.`])
 
-  return `Set the target version that is upgraded to (default: "latest").\n\n${table.toString()}`
+  return `Set the target version that is upgraded to (default: "latest").
+
+${table.toString()}
+
+You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates:
+
+  ${chalk.gray(`/** Custom target.
+    @param dependencyName The name of the dependency.
+    @param parsedVersion A parsed Semver object from semver-utils.
+      (See https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
+    @returns One of the valid target values (specified in the table above).
+  */`)}
+  ${chalk.cyan('target')}: (dependencyName, [{ semver, version, operator, major, minor, patch, release, build }]) ${chalk.cyan('=>')} {
+    ${chalk.red('if')} (major ${chalk.red('===')} ${chalk.blue('0')}) ${chalk.red('return')} ${chalk.yellow('\'minor\'')}
+    ${chalk.red('return')} ${chalk.yellow('\'latest\'')}
+  }
+
+`
 }
 
 // store CLI options separately from bin file so that they can be used to build type definitions
@@ -307,6 +324,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     arg: 'value',
     description: 'Target version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details.` (default: "latest")',
     help: getHelpTargetTable(),
+    type: 'string | TargetFunction',
   },
   {
     long: 'timeout',
