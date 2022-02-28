@@ -3,6 +3,7 @@ import cint from 'cint'
 import chalk from 'chalk'
 import pMap from 'p-map'
 import ProgressBar from 'progress'
+import { parseRange } from 'semver-utils'
 import { supportedVersionTargets } from '../constants'
 import getPackageManager from './getPackageManager'
 import packageManagers from '../package-managers'
@@ -39,7 +40,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
 
     const npmAlias = parseNpmAlias(packageMap[dep])
     const [name, version] = npmAlias || [dep, packageMap[dep]]
-    const targetResult = typeof target === 'string' ? target : target(name, version)
+    const targetResult = typeof target === 'string' ? target : target(name, parseRange(version))
 
     let versionNew: Version | null = null
 

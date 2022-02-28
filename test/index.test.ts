@@ -378,20 +378,23 @@ describe('run', function () {
 
     it('custom target function to mimic semver', async () => {
       // eslint-disable-next-line jsdoc/require-jsdoc
-      const target:TargetFunction = (name, versionRange) => versionRange?.startsWith('^') ? 'minor' : versionRange?.startsWith('~') ? 'patch' : 'latest'
+      const target:TargetFunction = (name, [{ operator }]) => operator === '^' ? 'minor' : operator === '~' ? 'patch' : 'latest'
       const pkgData = await ncu.run({
         target,
         packageData: JSON.stringify({
           dependencies: {
             'eslint-plugin-jsdoc': '~36.1.0',
+            juggernaut: '1.0.0',
             mocha: '^8.3.2',
           }
         })
       })
-      pkgData!.should.have.property('mocha')
-      ;(pkgData as any).mocha.should.equal('^8.4.0')
       pkgData!.should.have.property('eslint-plugin-jsdoc')
       ;(pkgData as any)['eslint-plugin-jsdoc'].should.equal('~36.1.1')
+      pkgData!.should.have.property('mocha')
+      ;(pkgData as any).mocha.should.equal('^8.4.0')
+      pkgData!.should.have.property('juggernaut')
+      ;(pkgData as any).juggernaut.should.equal('2.1.1')
     })
 
   }) // end 'target'
