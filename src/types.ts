@@ -25,8 +25,11 @@ export type Version = string
 export type VersionSpec = string
 export type VersionLevel = 'major' | 'minor' | 'patch'
 
-type FilterFunction = (packageName: string, version: SemVer[]) => boolean
+export type FilterFunction = (packageName: string, versionRange: SemVer[]) => boolean
 export type FilterRejectPattern = string | string[] | RegExp | RegExp[] | FilterFunction
+
+export type TargetFunction = (packageName: string, versionRange: SemVer[]) => string
+export type Target = string | TargetFunction
 
 export interface Packument {
   name: string,
@@ -287,9 +290,9 @@ export interface RunOptions {
   silent?: boolean,
 
   /**
-   * Target version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details.` (default: "latest")
+   * Target function that returns version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details.` (default: "latest")
    */
-  target?: string,
+  target?: Target,
 
   /**
    * Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch).

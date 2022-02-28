@@ -4,6 +4,7 @@ import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 import * as ncu from '../src/'
+import { FilterFunction, TargetFunction } from '../src/types'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -370,9 +371,58 @@ describe('run', function () {
       ;(pkgData as any).chalk.should.equal('2.4.2')
     })
 
-    it('skip non-semver versions with --target', async () => {
+    it('skip non-semver versions with --target patch', async () => {
       const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "test": "github:a/b" } }' })
       pkgData!.should.not.have.property('test')
+    })
+
+    it('custom target function to mimic semver', async () => {
+      // eslint-disable-next-line jsdoc/require-jsdoc
+      const target:TargetFunction = (name, [{ operator }]) => operator === '^' ? 'minor' : operator === '~' ? 'patch' : 'latest'
+      const pkgData = await ncu.run({
+        target,
+        packageData: JSON.stringify({
+          dependencies: {
+            'eslint-plugin-jsdoc': '~36.1.0',
+            jsonlines: '0.1.0',
+            juggernaut: '1.0.0',
+            mocha: '^8.3.2',
+          }
+        })
+      })
+      pkgData!.should.have.property('eslint-plugin-jsdoc')
+      ;(pkgData as any)['eslint-plugin-jsdoc'].should.equal('~36.1.1')
+      pkgData!.should.have.property('jsonlines')
+      ;(pkgData as any).jsonlines.should.equal('0.1.1')
+      pkgData!.should.have.property('juggernaut')
+      ;(pkgData as any).juggernaut.should.equal('2.1.1')
+      pkgData!.should.have.property('mocha')
+      ;(pkgData as any).mocha.should.equal('^8.4.0')
+    })
+
+    it('custom target and filter function to mimic semver', async () => {
+      // eslint-disable-next-line jsdoc/require-jsdoc
+      const target:TargetFunction = (name, [{ operator }]) => operator === '^' ? 'minor' : operator === '~' ? 'patch' : 'latest'
+      // eslint-disable-next-line jsdoc/require-jsdoc
+      const filter:FilterFunction = (_, [{ major, operator }]) => !(major === '0' || major === undefined || operator === undefined)
+      const pkgData = await ncu.run({
+        filter,
+        target,
+        packageData: JSON.stringify({
+          dependencies: {
+            'eslint-plugin-jsdoc': '~36.1.0',
+            jsonlines: '0.1.0',
+            juggernaut: '1.0.0',
+            mocha: '^8.3.2',
+          }
+        })
+      })
+      pkgData!.should.have.property('eslint-plugin-jsdoc')
+      ;(pkgData as any)['eslint-plugin-jsdoc'].should.equal('~36.1.1')
+      pkgData!.should.not.have.property('jsonlines')
+      pkgData!.should.not.have.property('juggernaut')
+      pkgData!.should.have.property('mocha')
+      ;(pkgData as any).mocha.should.equal('^8.4.0')
     })
 
   }) // end 'target'
