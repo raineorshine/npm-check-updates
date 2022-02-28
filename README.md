@@ -280,25 +280,21 @@ For example, `.ncurc.json`:
 
 ## Module/Programmatic Usage
 
-npm-check-updates can be required as a module:
+npm-check-updates can be imported as a module:
 
 ```js
-const ncu = require('npm-check-updates');
+import ncu from 'npm-check-updates'
 
-(async () => {
+const upgraded = await ncu.run({
+  // Pass any cli option
+  packageFile: '../package.json',
+  upgrade: true,
+  // Defaults:
+  // jsonUpgraded: true,
+  // silent: true,
+})
 
-  const upgraded = await ncu.run({
-    // Pass any cli option
-    packageFile: '../package.json',
-    upgrade: true,
-    // Defaults:
-    // jsonUpgraded: true,
-    // silent: true,
-  });
-
-  console.log(upgraded) // { "mypackage": "^2.0.0", ... }
-
-})();
+console.log(upgraded) // { "mypackage": "^2.0.0", ... }
 ```
 
 ## Known Issues
