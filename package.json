@@ -116,7 +116,7 @@
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-fp": "^2.3.0",
     "eslint-plugin-import": "^2.25.4",
-    "eslint-plugin-jsdoc": "^37.9.2",
+    "eslint-plugin-jsdoc": "^37.9.6",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.0.0",
     "husky": "^7.0.4",
