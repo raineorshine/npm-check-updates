@@ -126,6 +126,7 @@ export function printUpgrades(options: Options, { current, latest, upgraded, num
 
   // print everything is up-to-date
   const smiley = chalk.green.bold(':)')
+  const target = typeof options.target === 'string' ? options.target : 'target'
   if (numUpgraded === 0 && total === 0) {
     if (Object.keys(current).length === 0) {
       print(options, 'No dependencies.')
@@ -137,7 +138,7 @@ export function printUpgrades(options: Options, { current, latest, upgraded, num
       print(options, `All global packages are up-to-date ${smiley}`)
     }
     else {
-      print(options, `All dependencies match the ${options.target} package versions ${smiley}`)
+      print(options, `All dependencies match the ${target} package versions ${smiley}`)
     }
   }
   else if (numUpgraded === 0 && total > 0) {
