@@ -44,7 +44,12 @@ const readNpmConfig = () => {
   // needed until pacote supports full npm config compatibility
   // See: https://github.com/zkat/pacote/issues/156
   const config: Index<string | boolean> = {}
-  libnpmconfig.read().forEach((value: string, key: string) => {
+  // libnpmconfig incorrectly (?) ignores NPM_CONFIG_USERCONFIG because it is always overridden by the default builtin.userconfig
+  // set userconfig manually so that it is prioritized
+  const builtinsWithUserConfig = {
+    userconfig: process.env.npm_config_userconfig || process.env.NPM_CONFIG_USERCONFIG
+  }
+  libnpmconfig.read(null, builtinsWithUserConfig).forEach((value: string, key: string) => {
     // replace env ${VARS} in strings with the process.env value
     const normalizedValue = typeof value !== 'string' ? value
       // parse stringified booleans
