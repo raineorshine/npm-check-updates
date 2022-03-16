@@ -73,7 +73,7 @@ const doctor = async (run: Run, options: Options) => {
   /** Install dependencies using "npm run install" or a custom script given by --doctorInstall. */
   const runInstall = async () => {
     if (options.doctorInstall) {
-      const [installCommand, ...testArgs] = options.doctorInstall?.split(' ')
+      const [installCommand, ...testArgs] = options.doctorInstall.split(' ')
       await spawn(installCommand, testArgs)
     }
     else {
@@ -84,7 +84,7 @@ const doctor = async (run: Run, options: Options) => {
   /** Run the tests using "npm run test" or a custom script given by --doctorTest. */
   const runTests = async (spawnOptions?: SpawnOptions) => {
     if (options.doctorTest) {
-      const [testCommand, ...testArgs] = options.doctorTest?.split(' ')
+      const [testCommand, ...testArgs] = options.doctorTest.split(' ')
       await spawn(testCommand, testArgs, spawnOptions)
     }
     else {
