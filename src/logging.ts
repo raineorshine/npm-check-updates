@@ -68,6 +68,17 @@ function createDependencyTable() {
 }
 
 /**
+ * Extract just the version number from a package.json dep
+ *
+ * @param dep Raw dependency, could be version / npm: string / Git url
+ */
+function getVersion(dep: string): string {
+  return isGithubUrl(dep) ? getGithubUrlTag(dep)!
+    : isNpmAlias(dep) ? parseNpmAlias(dep)![1]
+    : dep
+}
+
+/**
  * @param args
  * @param args.from
  * @param args.to
@@ -84,15 +95,13 @@ function toDependencyTable({ from: fromDeps, to: toDeps, ownersChangedDeps, form
   const rows = Object.keys(toDeps).map(dep => {
     const from = fromDeps[dep] || ''
     const toRaw = toDeps[dep] || ''
-    const to = isGithubUrl(toRaw) ? getGithubUrlTag(toRaw)!
-      : isNpmAlias(toRaw) ? parseNpmAlias(toRaw)![1]
-      : toRaw
+    const to = getVersion(toRaw)
     const ownerChanged = ownersChangedDeps
       ? dep in ownersChangedDeps
         ? ownersChangedDeps[dep] ? '*owner changed*' : ''
         : '*unknown*'
       : ''
-    const toColorized = colorizeDiff(from, to)
+    const toColorized = colorizeDiff(getVersion(from), to)
     const repoUrl = format?.includes('repo')
       ? getRepoUrl(dep) || ''
       : ''
