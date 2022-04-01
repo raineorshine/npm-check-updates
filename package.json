@@ -62,7 +62,7 @@
     "fp-and-or": "^0.1.3",
     "get-stdin": "^8.0.0",
     "globby": "^11.0.4",
-    "hosted-git-info": "^4.1.0",
+    "hosted-git-info": "^5.0.0",
     "json-parse-helpfulerror": "^1.0.3",
     "jsonlines": "^0.1.1",
     "libnpmconfig": "^1.2.1",
