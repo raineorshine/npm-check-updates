@@ -10,5 +10,8 @@ module.exports = {
     'p-map',
     'remote-git-tags',
     'strip-ansi',
+    // peer dependency errors on npm install
+    'eslint',
+    'eslint-plugin-jsdoc',
   ]
 }
