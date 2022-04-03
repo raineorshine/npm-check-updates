@@ -69,7 +69,7 @@
     "lodash": "^4.17.21",
     "minimatch": "^5.0.1",
     "p-map": "^4.0.0",
-    "pacote": "^13.0.3",
+    "pacote": "^13.0.5",
     "parse-github-url": "^1.0.2",
     "progress": "^2.0.3",
     "prompts": "^2.4.2",
