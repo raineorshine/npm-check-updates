@@ -1,5 +1,6 @@
 import path from 'path'
 import _ from 'lodash'
+import chalk from 'chalk'
 import { rcFile } from 'rc-config-loader'
 import cliOptions, { CLIOption } from '../cli-options'
 import { Index } from '../types'
@@ -38,7 +39,9 @@ function getNcuRc({ configFileName, configFilePath, packageFile }: Options = {})
   // validate arguments here to provide a better error message
   const unknownOptions = Object.keys(result?.config || {}).filter(arg => !cliOptionMap[arg])
   if (unknownOptions.length > 0) {
-    console.error(`Unknown option${unknownOptions.length === 1 ? '' : 's'} found in rc file:`, unknownOptions.join(', '))
+    console.error(chalk.red(`Unknown option${unknownOptions.length === 1 ? '' : 's'} found in config file:`), chalk.gray(unknownOptions.join(', ')))
+    console.info('Using config file ' + result!.filePath)
+    console.info(`You can change the config file path with ${chalk.blue('--configFilePath')}`)
   }
 
   // flatten config object into command line arguments to be read by commander
