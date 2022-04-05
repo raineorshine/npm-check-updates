@@ -156,7 +156,8 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
           })
       }
       else {
-        print(options, `\nRun ${chalk.cyan('ncu -u')} to upgrade ${getPackageFileName(options)}`)
+        const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'
+        print(options, `\nRun ${chalk.cyan(`${ncuCmd} -u`)} to upgrade ${getPackageFileName(options)}`)
       }
     }
 
