@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "12.5.7",
+  "version": "12.5.8",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -115,7 +115,7 @@
     "eslint-config-raine": "^0.3.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-fp": "^2.3.0",
-    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsdoc": "^38.0.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.0.0",
