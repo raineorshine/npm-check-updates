@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "12.5.7",
+  "version": "12.5.8",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -105,7 +105,7 @@
     "@types/semver-utils": "^1.1.1",
     "@types/update-notifier": "^5.1.0",
     "@typescript-eslint/eslint-plugin": "^5.17.0",
-    "@typescript-eslint/parser": "^5.17.0",
+    "@typescript-eslint/parser": "^5.18.0",
     "c8": "^7.11.0",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
