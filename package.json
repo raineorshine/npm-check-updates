@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "12.5.7",
+  "version": "12.5.8",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -53,7 +53,7 @@
     "url": "https://github.com/raineorshine/npm-check-updates/issues"
   },
   "dependencies": {
-    "chalk": "^4.1.2",
+    "chalk": "^5.0.1",
     "cint": "^8.2.1",
     "cli-table": "^0.3.11",
     "commander": "^9.1.0",
