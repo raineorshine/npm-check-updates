@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "12.5.7",
+  "version": "12.5.8",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -81,7 +81,7 @@
     "source-map-support": "^0.5.21",
     "spawn-please": "^1.0.0",
     "update-notifier": "^5.1.0",
-    "yaml": "^1.10.2"
+    "yaml": "^2.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.0",
