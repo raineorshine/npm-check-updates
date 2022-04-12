@@ -41,7 +41,7 @@ describe('queryVersions', function () {
   })
 
   it('return an error for an unsupported target', () => {
-    const a = queryVersions({ async: '1.5.1' }, { target: 'foo', loglevel: 'silent' })
+    const a = queryVersions({ async: '1.5.1' }, { target: 'foo', loglevel: 'silent' } as any)
     return a.should.be.rejected
   })
 

@@ -29,7 +29,8 @@ export type FilterFunction = (packageName: string, versionRange: SemVer[]) => bo
 export type FilterRejectPattern = string | string[] | RegExp | RegExp[] | FilterFunction
 
 export type TargetFunction = (packageName: string, versionRange: SemVer[]) => string
-export type Target = string | TargetFunction
+export type TargetString = 'latest' | 'newest' | 'greatest' | 'minor' | 'patch'
+export type Target = TargetString | TargetFunction
 
 export interface Packument {
   name: string,
