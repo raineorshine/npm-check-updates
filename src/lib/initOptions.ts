@@ -6,7 +6,7 @@ import { deepPatternPrefix } from '../constants'
 import programError from './programError'
 import getPackageFileName from './getPackageFileName'
 import { print } from '../logging'
-import { Options, RunOptions } from '../types'
+import { Options, RunOptions, Target } from '../types'
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
 function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Options {
@@ -76,9 +76,9 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
     programError(options, chalk.red(`Cannot specify both --packageFile and --deep. --deep is an alias for --packageFile '${deepPatternPrefix}package.json'`))
   }
 
-  const target = options.newest ? 'newest'
+  const target: Target = options.newest ? 'newest'
     : options.greatest ? 'greatest'
-    : options.target || options.semverLevel || 'latest'
+    : options.target || (options as any).semverLevel || 'latest'
 
   const autoPre = target === 'newest' || target === 'greatest'
 

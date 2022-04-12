@@ -145,3 +145,5 @@ export async function run(runOptions: RunOptions = {}, { cli }: { cli?: boolean 
 }
 
 export default run
+
+export type { RunOptions }
