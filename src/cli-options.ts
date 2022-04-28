@@ -2,6 +2,7 @@ import _ from 'lodash'
 import Table from 'cli-table'
 import chalk from 'chalk'
 import { deepPatternPrefix } from './constants'
+import { Index } from './types'
 
 export interface CLIOption<T = any> {
   arg?: string,
@@ -337,6 +338,13 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     description: 'Overwrite package file with upgraded versions instead of just outputting to console.',
   },
 ]
+
+// put cliOptions into an object for O(1) lookups
+export const cliOptionsMap = cliOptions.reduce((accum, option) => ({
+  ...accum,
+  ...option.short ? { [option.short]: option } : null,
+  ...option.long ? { [option.long]: option } : null,
+}), {} as Index<CLIOption>)
 
 const cliOptionsSorted = _.sortBy(cliOptions, 'long')
 

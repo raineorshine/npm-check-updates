@@ -306,6 +306,21 @@ describe('bin', function () {
       }
     })
 
+    it('handle boolean arguments', async () => {
+      const tempFilePath = './test/'
+      const tempFileName = '.ncurc.json'
+      // if boolean arguments are not handled as a special case, ncu will incorrectly pass "--deep false" to commander, which will interpret it as two args, i.e. --deep and --filter false
+      fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "deep": false }', 'utf-8')
+      try {
+        const text = await spawn('node', [bin, '--configFilePath', tempFilePath], '{ "dependencies": { "chalk": "0.1.0" } }')
+        const pkgData = JSON.parse(text)
+        pkgData.should.have.property('chalk')
+      }
+      finally {
+        fs.unlinkSync(tempFilePath + tempFileName)
+      }
+    })
+
   })
 
   describe('with timeout option', () => {
