@@ -2,21 +2,13 @@ import path from 'path'
 import _ from 'lodash'
 import chalk from 'chalk'
 import { rcFile } from 'rc-config-loader'
-import cliOptions, { CLIOption } from '../cli-options'
-import { Index } from '../types'
+import { cliOptionsMap } from '../cli-options'
 
 interface Options {
   configFileName?: string,
   configFilePath?: string,
   packageFile?: string,
 }
-
-// put cliOptions into an object for O(1) lookups
-const cliOptionMap = cliOptions.reduce((accum, option) => ({
-  ...accum,
-  ...option.short ? { [option.short]: option } : null,
-  ...option.long ? { [option.long]: option } : null,
-}), {} as Index<CLIOption>)
 
 /**
  * Loads the .ncurc config file.
@@ -37,7 +29,7 @@ function getNcuRc({ configFileName, configFilePath, packageFile }: Options = {})
   })
 
   // validate arguments here to provide a better error message
-  const unknownOptions = Object.keys(result?.config || {}).filter(arg => !cliOptionMap[arg])
+  const unknownOptions = Object.keys(result?.config || {}).filter(arg => !cliOptionsMap[arg])
   if (unknownOptions.length > 0) {
     console.error(chalk.red(`Unknown option${unknownOptions.length === 1 ? '' : 's'} found in config file:`), chalk.gray(unknownOptions.join(', ')))
     console.info('Using config file ' + result!.filePath)
@@ -47,7 +39,13 @@ function getNcuRc({ configFileName, configFilePath, packageFile }: Options = {})
   // flatten config object into command line arguments to be read by commander
   const args = result ?
     _.flatten(_.map(result.config, (value, name) =>
-      value === true ? [`--${name}`] : [`--${name}`, value]
+      // if a boolean option is true, include only the nullary option --${name}
+      // an option is considered boolean if its type is explicitly set to boolean, or if it is has a proper Javascript boolean value
+      value === true || (cliOptionsMap[name]?.type === 'boolean' && value) ? [`--${name}`]
+      // if a boolean option is false, exclude it
+      : value === false || (cliOptionsMap[name]?.type === 'boolean' && !value) ? []
+      // otherwise render as a 2-tuple
+      : [`--${name}`, value]
     )) : []
 
   return result ? { ...result, args } : null
