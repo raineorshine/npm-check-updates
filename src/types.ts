@@ -291,7 +291,7 @@ export interface RunOptions {
   silent?: boolean,
 
   /**
-   * Target function that returns version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details.` (default: "latest")
+   * Target function that returns version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details. (default: "latest")
    */
   target?: Target,
 
