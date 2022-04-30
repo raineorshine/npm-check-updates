@@ -323,7 +323,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     long: 'target',
     short: 't',
     arg: 'value',
-    description: 'Target version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details. (default: "latest")',
+    description: 'Target version or function that returns version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details. (default: "latest")',
     help: getHelpTargetTable(),
     type: 'string | TargetFunction',
   },

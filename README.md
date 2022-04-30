@@ -206,7 +206,7 @@ ncu "/^(?!react-).*$/" # windows
                              package info. (default: 3)
 --semverLevel <value>        DEPRECATED. Renamed to --target.
 -s, --silent                 Don't output anything (--loglevel silent).
--t, --target <value>         Target version to upgrade to: latest, newest,
+-t, --target <value>         Target version or function that returns version to upgrade to: latest, newest,
                              greatest, minor, patch. Run "ncu --help
                              --target" for details. (default: "latest")
 --timeout <ms>               Global timeout in milliseconds. (default: no
