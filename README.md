@@ -128,7 +128,8 @@ ncu "/^(?!react-).*$/" # windows
 --color                      Force color in terminal
 --concurrency <n>            Max number of concurrent HTTP requests to
                              registry. (default: 8)
---configFileName <filename>  Config file name. (default: .ncurc.{json,yml,js})
+--configFileName <filename>  Config file name. (default:
+                             .ncurc.{json,yml,js})
 --configFilePath <path>      Directory of .ncurc config file. (default:
                              directory of `packageFile`)
 --cwd <path>                 Working directory in which npm will be executed.
@@ -206,9 +207,10 @@ ncu "/^(?!react-).*$/" # windows
                              package info. (default: 3)
 --semverLevel <value>        DEPRECATED. Renamed to --target.
 -s, --silent                 Don't output anything (--loglevel silent).
--t, --target <value>         Target version or function that returns version to upgrade to: latest, newest,
-                             greatest, minor, patch. Run "ncu --help
-                             --target" for details. (default: "latest")
+-t, --target <value>         Target version or function that returns version
+                             to upgrade to: latest, newest, greatest, minor,
+                             patch. Run "ncu --help --target" for details.
+                             (default: "latest")
 --timeout <ms>               Global timeout in milliseconds. (default: no
                              global timeout and 30 seconds per
                              npm-registry-fetch)
