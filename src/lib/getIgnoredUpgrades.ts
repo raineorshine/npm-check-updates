@@ -6,7 +6,7 @@ import { IgnoredUpgrade, Index, Options, Version, VersionSpec } from '../types'
 export async function getIgnoredUpgrades(current: Index<VersionSpec>, upgraded: Index<VersionSpec>, upgradedPeerDependencies: Index<Index<Version>>, options: Options = {}) {
   const [upgradedLatestVersions, latestVersions] = await upgradePackageDefinitions(
     current,
-    { ...options, peer: false, peerDependencies: undefined, loglevel: 'silent' }
+    { ...options, peer: false, peerDependencies: undefined, logLevel: 'silent' }
   )
 
   return Object.entries(upgradedLatestVersions)

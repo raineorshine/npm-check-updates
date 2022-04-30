@@ -20,25 +20,25 @@ const logLevels = {
 }
 
 /**
- * Prints a message if it is included within options.loglevel.
+ * Prints a message if it is included within options.logLevel.
  *
- * @param options    Command line options. These will be compared to the loglevel parameter to determine if the message gets printed.
+ * @param options    Command line options. These will be compared to the logLevel parameter to determine if the message gets printed.
  * @param message    The message to print
- * @param loglevel   silent|error|warn|info|verbose|silly
+ * @param logLevel   silent|error|warn|info|verbose|silly
  * @param method     The console method to call. Default: 'log'.
  */
-export function print(options: Options, message: any, loglevel: 'silent' | 'error' | 'warn' | 'info' | 'verbose' | 'silly' | null = null, method: 'log' | 'warn' | 'info' | 'error' = 'log') {
+export function print(options: Options, message: any, logLevel: 'silent' | 'error' | 'warn' | 'info' | 'verbose' | 'silly' | null = null, method: 'log' | 'warn' | 'info' | 'error' = 'log') {
   // not in json mode
   // not silent
-  // not at a loglevel under minimum specified
-  if (!options.json && options.loglevel !== 'silent' && (loglevel == null || logLevels[options.loglevel as unknown as keyof typeof logLevels] >= logLevels[loglevel])) {
+  // not at a logLevel under minimum specified
+  if (!options.json && options.logLevel !== 'silent' && (logLevel == null || logLevels[options.logLevel as unknown as keyof typeof logLevels] >= logLevels[logLevel])) {
     console[method](message)
   }
 }
 
 /** Pretty print a JSON object. */
 export function printJson(options: Options, object: any) {
-  if (options.loglevel !== 'silent') {
+  if (options.logLevel !== 'silent') {
     console.log(JSON.stringify(object, null, 2))
   }
 }

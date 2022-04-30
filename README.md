@@ -174,7 +174,7 @@ ncu "/^(?!react-).*$/" # windows
                              `devDependencies`, `optionalDependencies`, etc
                              of the new package data.
 --jsonUpgraded               Output upgraded dependencies in json.
--l, --loglevel <n>           Amount to log: silent, error, minimal, warn,
+-l, --logLevel <n>           Amount to log: silent, error, minimal, warn,
                              info, verbose, silly. (default: "warn")
 --mergeConfig                Merges nested configs with the root config file
                              for --deep or --packageFile options (default:
@@ -205,7 +205,7 @@ ncu "/^(?!react-).*$/" # windows
 --retry <n>                  Number of times to retry failed requests for
                              package info. (default: 3)
 --semverLevel <value>        DEPRECATED. Renamed to --target.
--s, --silent                 Don't output anything (--loglevel silent).
+-s, --silent                 Don't output anything (--logLevel silent).
 -t, --target <value>         Target version to upgrade to: latest, newest,
                              greatest, minor, patch. Run "ncu --help
                              --target" for details.` (default: "latest")
@@ -300,7 +300,7 @@ console.log(upgraded) // { "mypackage": "^2.0.0", ... }
 ## Known Issues
 
 - If `ncu` prints output that does not seem related to this package, it may be conflicting with another executable such as `ncu-weather-cli` or Nvidia CUDA. Try using the long name instead: `npm-check-updates`.
-- Windows: If npm-check-updates hangs, try setting the package file explicitly: `ncu --packageFile package.json`. You can run `ncu --loglevel verbose` to confirm that it was incorrectly waiting for stdin. See [#136](https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102).
+- Windows: If npm-check-updates hangs, try setting the package file explicitly: `ncu --packageFile package.json`. You can run `ncu --logLevel verbose` to confirm that it was incorrectly waiting for stdin. See [#136](https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102).
 
 ## Problems?
 

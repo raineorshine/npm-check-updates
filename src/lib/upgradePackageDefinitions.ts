@@ -29,7 +29,7 @@ export async function upgradePackageDefinitions(currentDependencies: Index<Versi
     if (!_.isEqual(options.peerDependencies, peerDependencies)) {
       const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
         { ...currentDependencies, ...filteredUpgradedDependencies },
-        { ...options, peerDependencies, loglevel: 'silent' }
+        { ...options, peerDependencies, logLevel: 'silent' }
       )
       return [
         { ...filteredUpgradedDependencies, ...newUpgradedDependencies },

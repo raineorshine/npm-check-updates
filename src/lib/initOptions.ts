@@ -25,7 +25,7 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
     // set default options that are specific to module usage
     const moduleDefaults: Options = {
       jsonUpgraded: true,
-      silent: runOptions.silent || runOptions.loglevel === undefined,
+      silent: runOptions.silent || runOptions.logLevel === undefined,
       args: []
     }
 
@@ -38,13 +38,13 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
     ...runOptions.packageData && typeof runOptions.packageData !== 'string' ? { packageData: JSON.stringify(runOptions.packageData, null, 2) } : null,
   } as Options
 
-  const loglevel = options.silent ? 'silent' : options.loglevel
+  const logLevel = options.silent ? 'silent' : options.logLevel
 
   const json = Object.keys(options)
     .filter(option => option.startsWith('json'))
     .some(_.propertyOf(options))
 
-  if (!json && loglevel !== 'silent' && options.rcConfigPath && !options.doctor) {
+  if (!json && logLevel !== 'silent' && options.rcConfigPath && !options.doctor) {
     print(options, `Using config file ${options.rcConfigPath}`)
   }
 
@@ -101,8 +101,8 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
     ...format.length > 0 ? { format } : null,
     // add shortcut for any keys that start with 'json'
     json,
-    // convert silent option to loglevel silent
-    loglevel,
+    // convert silent option to logLevel silent
+    logLevel,
     minimal: options.minimal === undefined ? false : options.minimal,
     // default to false, except when newest or greatest are set
     ...options.pre != null || autoPre

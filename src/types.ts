@@ -197,7 +197,7 @@ export interface RunOptions {
   /**
    * Amount to log: silent, error, minimal, warn, info, verbose, silly. (default: "warn")
    */
-  loglevel?: string,
+  logLevel?: string,
 
   /**
    * Merges nested configs with the root config file for --deep or --packageFile options (default: false)
@@ -286,7 +286,7 @@ export interface RunOptions {
   semverLevel?: string,
 
   /**
-   * Don't output anything (--loglevel silent).
+   * Don't output anything (--logLevel silent).
    */
   silent?: boolean,
 

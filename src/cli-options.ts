@@ -226,7 +226,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     description: 'Output upgraded dependencies in json.',
   },
   {
-    long: 'loglevel',
+    long: 'logLevel',
     short: 'l',
     arg: 'n',
     description: 'Amount to log: silent, error, minimal, warn, info, verbose, silly.',
@@ -317,7 +317,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
   {
     long: 'silent',
     short: 's',
-    description: 'Don\'t output anything (--loglevel silent).',
+    description: 'Don\'t output anything (--logLevel silent).',
   },
   {
     long: 'target',

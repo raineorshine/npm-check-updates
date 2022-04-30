@@ -24,7 +24,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   const packageManager = getPackageManager(options.packageManager)
 
   let bar: ProgressBar
-  if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && packageList.length > 0) {
+  if (!options.json && options.logLevel !== 'silent' && options.logLevel !== 'verbose' && packageList.length > 0) {
     bar = new ProgressBar('[:bar] :current/:total :percent', { total: packageList.length, width: 20 })
     bar.render()
   }
