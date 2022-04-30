@@ -93,12 +93,12 @@ export interface RunOptions {
   concurrency?: number,
 
   /**
-   * Config file name (default: .ncurc.{json,yml,js})
+   * Config file name. (default: .ncurc.{json,yml,js})
    */
   configFileName?: string,
 
   /**
-   * Directory of .ncurc config file (default: directory of `packageFile`).
+   * Directory of .ncurc config file. (default: directory of `packageFile`)
    */
   configFilePath?: string,
 
@@ -113,7 +113,7 @@ export interface RunOptions {
   deep?: boolean,
 
   /**
-   * Check one or more sections of dependencies only: dev, optional, peer, prod, bundle (comma-delimited).
+   * Check one or more sections of dependencies only: dev, optional, peer, prod, bundle (comma-delimited). (default: "prod,dev,bundle,optional")
    */
   dep?: string,
 
@@ -128,12 +128,12 @@ export interface RunOptions {
   doctor?: boolean,
 
   /**
-   * Specifies the install script to use in doctor mode (default: npm install/yarn).
+   * Specifies the install script to use in doctor mode. (default: npm install/yarn)
    */
   doctorInstall?: string,
 
   /**
-   * Specifies the test script to use in doctor mode (default: npm test).
+   * Specifies the test script to use in doctor mode. (default: npm test)
    */
   doctorTest?: string,
 
@@ -200,7 +200,7 @@ export interface RunOptions {
   loglevel?: string,
 
   /**
-   * Merges nested configs with the root config file for --deep or --packageFile options (default: false)
+   * Merges nested configs with the root config file for --deep or --packageFile options. (default: false)
    */
   mergeConfig?: boolean,
 
@@ -229,7 +229,7 @@ export interface RunOptions {
   packageData?: string | PackageFile,
 
   /**
-   * Package file(s) location (default: ./package.json).
+   * Package file(s) location. (default: ./package.json)
    */
   packageFile?: string,
 
@@ -244,7 +244,7 @@ export interface RunOptions {
   peer?: boolean,
 
   /**
-   * Include -alpha, -beta, -rc. (default: 0, default with --newest and --greatest: 1).
+   * Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1)
    */
   pre?: boolean,
 
@@ -296,7 +296,7 @@ export interface RunOptions {
   target?: Target,
 
   /**
-   * Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch).
+   * Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch)
    */
   timeout?: number,
 

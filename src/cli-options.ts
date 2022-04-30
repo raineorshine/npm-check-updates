@@ -40,7 +40,7 @@ by each project's maintainers. Default.`])
 other version numbers that are higher. Includes prereleases.`])
   table.push(['patch', `Upgrade to the highest patch version without bumping the minor or major versions.`])
 
-  return `Set the target version that is upgraded to (default: "latest").
+  return `Set the target version that is upgraded to. (default: "latest")
 
 ${table.toString()}
 
@@ -76,12 +76,12 @@ const cliOptions: CLIOption[] = [
   {
     long: 'configFileName',
     arg: 'filename',
-    description: 'Config file name (default: .ncurc.{json,yml,js})',
+    description: 'Config file name. (default: .ncurc.{json,yml,js})',
   },
   {
     long: 'configFilePath',
     arg: 'path',
-    description: 'Directory of .ncurc config file (default: directory of `packageFile`).',
+    description: 'Directory of .ncurc config file. (default: directory of `packageFile`)',
   },
   {
     long: 'cwd',
@@ -110,12 +110,12 @@ const cliOptions: CLIOption[] = [
   {
     long: 'doctorInstall',
     arg: 'command',
-    description: 'Specifies the install script to use in doctor mode (default: npm install/yarn).',
+    description: 'Specifies the install script to use in doctor mode. (default: npm install/yarn)',
   },
   {
     long: 'doctorTest',
     arg: 'command',
-    description: 'Specifies the test script to use in doctor mode (default: npm test).',
+    description: 'Specifies the test script to use in doctor mode. (default: npm test)',
   },
   {
     long: 'enginesNode',
@@ -188,7 +188,7 @@ const cliOptions: CLIOption[] = [
   },
   {
     long: 'mergeConfig',
-    description: `Merges nested configs with the root config file for --deep or --packageFile options (default: false).`,
+    description: `Merges nested configs with the root config file for --deep or --packageFile options. (default: false)`,
     type: 'boolean'
   },
   {
@@ -216,7 +216,7 @@ const cliOptions: CLIOption[] = [
   {
     long: 'packageFile',
     arg: 'path|glob',
-    description: 'Package file(s) location (default: ./package.json).',
+    description: 'Package file(s) location. (default: ./package.json)',
   },
   {
     long: 'packageManager',
@@ -269,7 +269,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
   {
     long: 'pre',
     arg: 'n',
-    description: 'Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1).',
+    description: 'Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1)',
     type: 'number',
     parse: s => !!parseInt(s, 10),
   },
@@ -330,7 +330,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
   {
     long: 'timeout',
     arg: 'ms',
-    description: 'Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch).',
+    description: 'Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch)',
   },
   {
     long: 'upgrade',
