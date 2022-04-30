@@ -136,7 +136,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
   },
   {
     long: 'mergeConfig',
-    description: `Merges nested configs with the root config file for --deep or --packageFile options (default: false)').`,
+    description: `Merges nested configs with the root config file for --deep or --packageFile options (default: false).`,
     type: 'boolean'
   },
   {

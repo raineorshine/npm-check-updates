@@ -178,7 +178,7 @@ ncu "/^(?!react-).*$/" # windows
                              info, verbose, silly. (default: "warn")
 --mergeConfig                Merges nested configs with the root config file
                              for --deep or --packageFile options (default:
-                             false)').
+                             false).
 -m, --minimal                Do not upgrade newer versions that are already
                              satisfied by the version range according to
                              semver.
