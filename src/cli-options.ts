@@ -192,13 +192,13 @@ const cliOptions: CLIOption[] = [
     type: 'boolean'
   },
   {
-    short: 'm',
     long: 'minimal',
+    short: 'm',
     description: 'Do not upgrade newer versions that are already satisfied by the version range according to semver.',
   },
   {
-    short: 'n',
     long: 'newest',
+    short: 'n',
     description: 'DEPRECATED. Renamed to "--target newest".',
     deprecated: true,
   },
