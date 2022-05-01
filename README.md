@@ -128,9 +128,10 @@ ncu "/^(?!react-).*$/" # windows
 --color                      Force color in terminal
 --concurrency <n>            Max number of concurrent HTTP requests to
                              registry. (default: 8)
---configFileName <filename>  Config file name (default: .ncurc.{json,yml,js})
---configFilePath <path>      Directory of .ncurc config file (default:
-                             directory of `packageFile`).
+--configFileName <filename>  Config file name. (default:
+                             .ncurc.{json,yml,js})
+--configFilePath <path>      Directory of .ncurc config file. (default:
+                             directory of `packageFile`)
 --cwd <path>                 Working directory in which npm will be executed.
 --deep                       Run recursively in current working directory.
                              Alias of (--packageFile '**/package.json').
@@ -143,9 +144,9 @@ ncu "/^(?!react-).*$/" # windows
                              identify breaking upgrades. Run "ncu --doctor"
                              for detailed help. Add "-u" to execute.
 --doctorInstall <command>    Specifies the install script to use in doctor
-                             mode (default: npm install/yarn).
---doctorTest <command>       Specifies the test script to use in doctor mode
-                             (default: npm test).
+                             mode. (default: npm install/yarn)
+--doctorTest <command>       Specifies the test script to use in doctor mode.
+                             (default: npm test)
 --enginesNode                Include only packages that satisfy engines.node
                              as specified in the package file.
 -e, --errorLevel <n>         Set the error level. 1: exits with error code 0
@@ -177,22 +178,22 @@ ncu "/^(?!react-).*$/" # windows
 -l, --loglevel <n>           Amount to log: silent, error, minimal, warn,
                              info, verbose, silly. (default: "warn")
 --mergeConfig                Merges nested configs with the root config file
-                             for --deep or --packageFile options (default:
-                             false)').
+                             for --deep or --packageFile options. (default:
+                             false)
 -m, --minimal                Do not upgrade newer versions that are already
                              satisfied by the version range according to
                              semver.
 -n, --newest                 DEPRECATED. Renamed to "--target newest".
 -o, --ownerChanged           DEPRECATED. Renamed to "--format ownerChanged".
 --packageData <value>        Package file data (you can also use stdin).
---packageFile <path|glob>    Package file(s) location (default:
-                             ./package.json).
+--packageFile <path|glob>    Package file(s) location. (default:
+                             ./package.json)
 -p, --packageManager <name>  npm, yarn (default: "npm")
 --peer                       Check peer dependencies of installed packages
                              and filter updates to compatible versions. Run
                              "ncu --help --peer" for details.
 --pre <n>                    Include -alpha, -beta, -rc. (default: 0; default
-                             with --newest and --greatest: 1).
+                             with --newest and --greatest: 1)
 --prefix <path>              Current working directory of npm.
 -r, --registry <url>         Third-party npm registry.
 -x, --reject <matches>       Exclude packages matching the given string,
@@ -206,12 +207,13 @@ ncu "/^(?!react-).*$/" # windows
                              package info. (default: 3)
 --semverLevel <value>        DEPRECATED. Renamed to --target.
 -s, --silent                 Don't output anything (--loglevel silent).
--t, --target <value>         Target version to upgrade to: latest, newest,
-                             greatest, minor, patch. Run "ncu --help
-                             --target" for details.` (default: "latest")
+-t, --target <value>         Target version or function that returns version
+                             to upgrade to: latest, newest, greatest, minor,
+                             patch. Run "ncu --help --target" for details.
+                             (default: "latest")
 --timeout <ms>               Global timeout in milliseconds. (default: no
                              global timeout and 30 seconds per
-                             npm-registry-fetch).
+                             npm-registry-fetch)
 -u, --upgrade                Overwrite package file with upgraded versions
                              instead of just outputting to console.
 -V, --version                output the version number

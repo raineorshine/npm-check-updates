@@ -40,7 +40,7 @@ by each project's maintainers. Default.`])
 other version numbers that are higher. Includes prereleases.`])
   table.push(['patch', `Upgrade to the highest patch version without bumping the minor or major versions.`])
 
-  return `Set the target version that is upgraded to (default: "latest").
+  return `Set the target version that is upgraded to. (default: "latest")
 
 ${table.toString()}
 
@@ -63,47 +63,6 @@ You can also specify a custom function in your .ncurc.js file, or when importing
 // store CLI options separately from bin file so that they can be used to build type definitions
 const cliOptions: CLIOption[] = [
   {
-    long: 'peer',
-    description: 'Check peer dependencies of installed packages and filter updates to compatible versions. Run "ncu --help --peer" for details.',
-    type: 'boolean',
-    help: `Check peer dependencies of installed packages and filter updates to compatible versions.
-
-${chalk.bold('Example')}
-
-The following example demonstrates how --peer works, and how it uses peer dependencies from upgraded modules.
-
-The package ${chalk.bold('ncu-test-peer-update')} has two versions published:
-
-- 1.0.0 has peer dependency "ncu-test-return-version": "1.0.x"
-- 1.1.0 has peer dependency "ncu-test-return-version": "1.1.x"
-
-Our test app has the following dependencies:
-
-    "ncu-test-peer-update": "1.0.0",
-    "ncu-test-return-version": "1.0.0"
-
-The latest versions of these packages are:
-
-    "ncu-test-peer-update": "1.1.0",
-    "ncu-test-return-version": "2.0.0"
-
-${chalk.bold('With --peer')}
-
-ncu upgrades packages to the highest version that still adheres to the peer dependency constraints:
-
-
- ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
- ncu-test-return-version  1.0.0  →  1.${chalk.cyan('1.0')}
-
-${chalk.bold('Without --peer')}
-
-As a comparison: without using the --peer option, ncu will suggest the latest versions, ignoring peer dependencies:
-
- ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
- ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}
-  `
-  },
-  {
     long: 'color',
     description: 'Force color in terminal',
   },
@@ -117,12 +76,12 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
   {
     long: 'configFileName',
     arg: 'filename',
-    description: 'Config file name (default: .ncurc.{json,yml,js})',
+    description: 'Config file name. (default: .ncurc.{json,yml,js})',
   },
   {
     long: 'configFilePath',
     arg: 'path',
-    description: 'Directory of .ncurc config file (default: directory of `packageFile`).',
+    description: 'Directory of .ncurc config file. (default: directory of `packageFile`)',
   },
   {
     long: 'cwd',
@@ -133,11 +92,6 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     long: 'deep',
     description: `Run recursively in current working directory. Alias of (--packageFile '${deepPatternPrefix}package.json').`,
     type: 'boolean',
-  },
-  {
-    long: 'mergeConfig',
-    description: `Merges nested configs with the root config file for --deep or --packageFile options (default: false)').`,
-    type: 'boolean'
   },
   {
     long: 'dep',
@@ -156,12 +110,12 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
   {
     long: 'doctorInstall',
     arg: 'command',
-    description: 'Specifies the install script to use in doctor mode (default: npm install/yarn).',
+    description: 'Specifies the install script to use in doctor mode. (default: npm install/yarn)',
   },
   {
     long: 'doctorTest',
     arg: 'command',
-    description: 'Specifies the test script to use in doctor mode (default: npm test).',
+    description: 'Specifies the test script to use in doctor mode. (default: npm test)',
   },
   {
     long: 'enginesNode',
@@ -233,13 +187,18 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     default: 'warn',
   },
   {
-    short: 'm',
+    long: 'mergeConfig',
+    description: `Merges nested configs with the root config file for --deep or --packageFile options. (default: false)`,
+    type: 'boolean'
+  },
+  {
     long: 'minimal',
+    short: 'm',
     description: 'Do not upgrade newer versions that are already satisfied by the version range according to semver.',
   },
   {
-    short: 'n',
     long: 'newest',
+    short: 'n',
     description: 'DEPRECATED. Renamed to "--target newest".',
     deprecated: true,
   },
@@ -257,7 +216,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
   {
     long: 'packageFile',
     arg: 'path|glob',
-    description: 'Package file(s) location (default: ./package.json).',
+    description: 'Package file(s) location. (default: ./package.json)',
   },
   {
     long: 'packageManager',
@@ -267,9 +226,50 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     description: 'npm, yarn (default: "npm")',
   },
   {
+    long: 'peer',
+    description: 'Check peer dependencies of installed packages and filter updates to compatible versions. Run "ncu --help --peer" for details.',
+    type: 'boolean',
+    help: `Check peer dependencies of installed packages and filter updates to compatible versions.
+
+${chalk.bold('Example')}
+
+The following example demonstrates how --peer works, and how it uses peer dependencies from upgraded modules.
+
+The package ${chalk.bold('ncu-test-peer-update')} has two versions published:
+
+- 1.0.0 has peer dependency "ncu-test-return-version": "1.0.x"
+- 1.1.0 has peer dependency "ncu-test-return-version": "1.1.x"
+
+Our test app has the following dependencies:
+
+    "ncu-test-peer-update": "1.0.0",
+    "ncu-test-return-version": "1.0.0"
+
+The latest versions of these packages are:
+
+    "ncu-test-peer-update": "1.1.0",
+    "ncu-test-return-version": "2.0.0"
+
+${chalk.bold('With --peer')}
+
+ncu upgrades packages to the highest version that still adheres to the peer dependency constraints:
+
+
+ ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
+ ncu-test-return-version  1.0.0  →  1.${chalk.cyan('1.0')}
+
+${chalk.bold('Without --peer')}
+
+As a comparison: without using the --peer option, ncu will suggest the latest versions, ignoring peer dependencies:
+
+ ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
+ ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}
+  `
+  },
+  {
     long: 'pre',
     arg: 'n',
-    description: 'Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1).',
+    description: 'Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1)',
     type: 'number',
     parse: s => !!parseInt(s, 10),
   },
@@ -323,14 +323,14 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     long: 'target',
     short: 't',
     arg: 'value',
-    description: 'Target version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details.` (default: "latest")',
+    description: 'Target version or function that returns version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details. (default: "latest")',
     help: getHelpTargetTable(),
     type: 'string | TargetFunction',
   },
   {
     long: 'timeout',
     arg: 'ms',
-    description: 'Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch).',
+    description: 'Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch)',
   },
   {
     long: 'upgrade',
