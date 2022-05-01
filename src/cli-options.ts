@@ -270,7 +270,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     long: 'pre',
     arg: 'n',
     description: 'Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1).',
-    type: 'boolean',
+    type: 'number',
     parse: s => !!parseInt(s, 10),
   },
   {
