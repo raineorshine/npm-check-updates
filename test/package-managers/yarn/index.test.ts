@@ -2,6 +2,7 @@ import path from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import * as yarn from '../../../src/package-managers/yarn'
+import { Index } from '../../../src/types'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -48,4 +49,28 @@ describe('yarn', function () {
       .should.eventually.be.rejectedWith(lockFileErrorMessage)
   })
 
+  describe('setNpmAuthToken', () => {
+    /** Run the test for the given registry server URL. */
+    function testCore(npmRegistryServer: string): void {
+      const npmConfig: Index<string|boolean> = { '@fortawesome:registry': 'https://npm.fontawesome.com/' }
+      const dep = 'fortawesome'
+      const scopedConfig: yarn.NpmScope = {
+        npmAlwaysAuth: true,
+        npmAuthToken: 'MY-AUTH-TOKEN',
+        npmRegistryServer
+      }
+
+      yarn.setNpmAuthToken(npmConfig, [dep, scopedConfig])
+
+      npmConfig['//npm.fontawesome.com/:_authToken'].should.equal('MY-AUTH-TOKEN')
+    }
+
+    it('npmRegistryServer does not have trailing slash', () => {
+      testCore('https://npm.fontawesome.com')
+    })
+
+    it('npmRegistryServer has trailing slash', () => {
+      testCore('https://npm.fontawesome.com/')
+    })
+  })
 })

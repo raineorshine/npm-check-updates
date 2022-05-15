@@ -134,6 +134,8 @@ export async function packageAuthorChanged(packageName: string, currentVersion: 
   return false
 }
 
+interface ViewOptions { registry?: string, timeout?: number, retry?: number }
+
 /**
  * Returns an object of specified values retrieved by npm view.
  *
@@ -142,7 +144,7 @@ export async function packageAuthorChanged(packageName: string, currentVersion: 
  * @param               currentVersion
  * @returns             Promised result
  */
-export async function viewMany(packageName: string, fields: string[], currentVersion: Version, { registry, timeout, retry }: { registry?: string, timeout?: number, retry?: number } = {}, retryed = 0, npmConfigLocal?: Index<string | boolean>) {
+export async function viewMany(packageName: string, fields: string[], currentVersion: Version, { registry, timeout, retry }: ViewOptions = {}, retryed = 0, npmConfigLocal?: Index<string | boolean>) {
   if (currentVersion && (!semver.validRange(currentVersion) || versionUtil.isWildCard(currentVersion))) {
     return Promise.resolve({} as Packument)
   }
@@ -185,7 +187,7 @@ export const viewManyMemoized = memoize(viewMany)
  * @param currentVersion
  * @returns            Promised result
  */
-export async function viewOne(packageName: string, field: string, currentVersion: Version, options: Options = {}, npmConfigLocal?: Index<string | boolean>) {
+export async function viewOne(packageName: string, field: string, currentVersion: Version, options: ViewOptions = {}, npmConfigLocal?: Index<string | boolean>) {
   const result = await viewManyMemoized(packageName, [field], currentVersion, options, 0, npmConfigLocal)
   return result && result[field as keyof Packument]
 }
