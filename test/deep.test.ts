@@ -30,7 +30,7 @@ describe('--deep', function () {
     return {
       dir: pkgDir,
       file: pkgJson,
-      rel: rel,
+      rel,
       data: {
         name: `tmp-pkg-${last}`,
         dependencies: {
