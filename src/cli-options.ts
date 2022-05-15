@@ -156,11 +156,6 @@ const cliOptions: CLIOption[] = [
     description: 'Check global packages instead of in the current project.',
   },
   {
-    long: 'greatest',
-    description: 'DEPRECATED. Renamed to "--target greatest".',
-    deprecated: true,
-  },
-  {
     long: 'interactive',
     short: 'i',
     description: 'Enable interactive prompts for each dependency; implies -u unless one of the json options are set.',
@@ -195,18 +190,6 @@ const cliOptions: CLIOption[] = [
     long: 'minimal',
     short: 'm',
     description: 'Do not upgrade newer versions that are already satisfied by the version range according to semver.',
-  },
-  {
-    long: 'newest',
-    short: 'n',
-    description: 'DEPRECATED. Renamed to "--target newest".',
-    deprecated: true,
-  },
-  {
-    long: 'ownerChanged',
-    short: 'o',
-    description: 'DEPRECATED. Renamed to "--format ownerChanged".',
-    deprecated: true,
   },
   {
     long: 'packageData',
@@ -307,12 +290,6 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     description: 'Number of times to retry failed requests for package info.',
     parse: s => parseInt(s, 10),
     default: 3,
-  },
-  {
-    long: 'semverLevel',
-    arg: 'value',
-    description: 'DEPRECATED. Renamed to --target.',
-    deprecated: true,
   },
   {
     long: 'silent',

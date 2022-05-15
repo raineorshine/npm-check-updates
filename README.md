@@ -165,7 +165,6 @@ ncu "/^(?!react-).*$/" # windows
                              links to source code repository. (default: [])
 -g, --global                 Check global packages instead of in the current
                              project.
---greatest                   DEPRECATED. Renamed to "--target greatest".
 -i, --interactive            Enable interactive prompts for each dependency;
                              implies -u unless one of the json options are
                              set.
@@ -183,8 +182,6 @@ ncu "/^(?!react-).*$/" # windows
 -m, --minimal                Do not upgrade newer versions that are already
                              satisfied by the version range according to
                              semver.
--n, --newest                 DEPRECATED. Renamed to "--target newest".
--o, --ownerChanged           DEPRECATED. Renamed to "--format ownerChanged".
 --packageData <value>        Package file data (you can also use stdin).
 --packageFile <path|glob>    Package file(s) location. (default:
                              ./package.json)
@@ -205,7 +202,6 @@ ncu "/^(?!react-).*$/" # windows
                              version.
 --retry <n>                  Number of times to retry failed requests for
                              package info. (default: 3)
---semverLevel <value>        DEPRECATED. Renamed to --target.
 -s, --silent                 Don't output anything (--loglevel silent).
 -t, --target <value>         Target version or function that returns version
                              to upgrade to: latest, newest, greatest, minor,
