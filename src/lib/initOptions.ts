@@ -58,34 +58,19 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
     print(options, '', 'warn')
   }
 
-  // disallow combination of --target, --greatest, or --newest
-  if (options.target && options.greatest) {
-    programError(options, chalk.red('Cannot specify both --target and --greatest. --greatest is an alias for "--target greatest".'))
-  }
-  else if (options.target && options.newest) {
-    programError(options, chalk.red('Cannot specify both --target and --newest. --newest is an alias for "--target newest".'))
-  }
-  else if (options.greatest && options.newest) {
-    programError(options, chalk.red('Cannot specify both --greatest and --newest. --greatest is an alias for "--target greatest" and --newest is an alias for "--target newest".'))
-  }
   // disallow non-matching filter and args
-  else if (options.filter && (options.args || []).length > 0 && options.filter !== options.args!.join(' ')) {
+  if (options.filter && (options.args || []).length > 0 && options.filter !== options.args!.join(' ')) {
     programError(options, chalk.red('Cannot specify a filter using both --filter and args. Did you forget to quote an argument?') + '\nSee: https://github.com/raineorshine/npm-check-updates/issues/759#issuecomment-723587297')
   }
   else if (options.packageFile && options.deep) {
     programError(options, chalk.red(`Cannot specify both --packageFile and --deep. --deep is an alias for --packageFile '${deepPatternPrefix}package.json'`))
   }
 
-  const target: Target = options.newest ? 'newest'
-    : options.greatest ? 'greatest'
-    : options.target || (options as any).semverLevel || 'latest'
+  const target: Target = options.target || (options as any).semverLevel || 'latest'
 
   const autoPre = target === 'newest' || target === 'greatest'
 
-  const format = [
-    ...options.format || [],
-    ...options.ownerChanged ? ['ownerChanged'] : []
-  ]
+  const format = options.format || []
 
   // autodetect yarn
   const files = fs.readdirSync(options.cwd || '.')

@@ -168,13 +168,6 @@ export interface RunOptions {
   global?: boolean,
 
   /**
-   * DEPRECATED. Renamed to "--target greatest".
-   *
-   * @deprecated
-   */
-  greatest?: boolean,
-
-  /**
    * Enable interactive prompts for each dependency, implies -u unless one of the json options are set,
    */
   interactive?: boolean,
@@ -208,20 +201,6 @@ export interface RunOptions {
    * Do not upgrade newer versions that are already satisfied by the version range according to semver.
    */
   minimal?: boolean,
-
-  /**
-   * DEPRECATED. Renamed to "--target newest".
-   *
-   * @deprecated
-   */
-  newest?: boolean,
-
-  /**
-   * DEPRECATED. Renamed to "--format ownerChanged".
-   *
-   * @deprecated
-   */
-  ownerChanged?: boolean,
 
   /**
    * Package file data (you can also use stdin).
@@ -277,13 +256,6 @@ export interface RunOptions {
    * Number of times to retry failed requests for package info. (default: 3)
    */
   retry?: number,
-
-  /**
-   * DEPRECATED. Renamed to --target.
-   *
-   * @deprecated
-   */
-  semverLevel?: string,
 
   /**
    * Don't output anything (--loglevel silent).

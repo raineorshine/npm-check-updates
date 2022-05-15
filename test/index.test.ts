@@ -319,25 +319,6 @@ describe('run', function () {
 
   describe('target', () => {
 
-    it('do not allow --greatest and --newest together', async () => {
-      ncu.run({ greatest: true, target: 'newest' })
-        .should.eventually.be.rejectedWith('Cannot specify both')
-      ncu.run({ target: 'greatest', newest: true })
-        .should.eventually.be.rejectedWith('Cannot specify both')
-      ncu.run({ greatest: true, newest: true })
-        .should.eventually.be.rejectedWith('Cannot specify both')
-    })
-
-    it('do not allow --target and --greatest together', async () => {
-      ncu.run({ target: 'greatest', greatest: true })
-        .should.eventually.be.rejectedWith('Cannot specify both')
-    })
-
-    it('do not allow --target and --newest together', async () => {
-      ncu.run({ target: 'newest', newest: true })
-        .should.eventually.be.rejectedWith('Cannot specify both')
-    })
-
     it('do not update major versions with --target minor', async () => {
       const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
       pkgData!.should.not.have.property('chalk')

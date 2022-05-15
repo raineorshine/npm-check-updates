@@ -2,9 +2,22 @@
 
 This file documents all **major version** releases. For other releases, please read the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
 
+## [13.0.0] - 2022-05-15
+
+### Breaking
+
+- node >= 14 is now required
+- Several options which have long been deprecated have been removed:
+  - `--greatest` - Instead use `--target greatest`
+  - `--newest` - Instead use `--target newest`
+  - `--ownerChanged` - Instead use `--format ownerChanged`
+  - `--semverLevel` - Renamed to `--target`
+
+<https://github.com/raineorshine/npm-check-updates/compare/v12.5.12...v13.0.0>
+
 ## [12.0.0] - 2021-11-01
 
-## Breaking
+### Breaking
 
 - node >= 12 is required. Time to upgrade that old-ass server you never touch.
 - `peerDependencies` are now excluded by default. Peer dependencies should use the **lowest** possible version that works. The old behavior encouraged a bad practice of uprading peer dependencies. You can use `--dep prod,dev,bundle,optional,peer` for the old behavior ([#951](https://github.com/raineorshine/npm-check-updates/issues/951)).
