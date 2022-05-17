@@ -340,10 +340,7 @@ export const latest: GetVersion = async (packageName, currentVersion, options = 
   // or latest is deprecated
   // find the next valid version
   // known type based on dist-tags.latest
-  const versions = await viewOne(packageName, 'versions', currentVersion) as Packument[]
-  const validVersions = _.filter(versions, filterPredicate(options))
-
-  return _.last(validVersions.map(o => o.version)) || null
+  return await greatest(packageName, currentVersion, options)
 }
 
 /**
