@@ -66,7 +66,7 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
     programError(options, chalk.red(`Cannot specify both --packageFile and --deep. --deep is an alias for --packageFile '${deepPatternPrefix}package.json'`))
   }
 
-  const target: Target = options.target || (options as any).semverLevel || 'latest'
+  const target: Target = options.target || 'latest'
 
   const autoPre = target === 'newest' || target === 'greatest'
 
