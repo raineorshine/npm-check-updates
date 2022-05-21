@@ -6,15 +6,16 @@ it for use with npm v6 internal dependencies).**
 
 ----
 
-# figgy-pudding [![npm version](https://img.shields.io/npm/v/figgy-pudding.svg)](https://npm.im/figgy-pudding) [![license](https://img.shields.io/npm/l/figgy-pudding.svg)](https://npm.im/figgy-pudding) [![Travis](https://img.shields.io/travis/npm/figgy-pudding.svg)](https://travis-ci.org/npm/figgy-pudding) [![Coverage Status](https://coveralls.io/repos/github/npm/figgy-pudding/badge.svg?branch=latest)](https://coveralls.io/github/npm/figgy-pudding?branch=latest)
+## figgy-pudding [![npm version](https://img.shields.io/npm/v/figgy-pudding.svg)](https://npm.im/figgy-pudding) [![license](https://img.shields.io/npm/l/figgy-pudding.svg)](https://npm.im/figgy-pudding) [![Travis](https://img.shields.io/travis/npm/figgy-pudding.svg)](https://travis-ci.org/npm/figgy-pudding) [![Coverage Status](https://coveralls.io/repos/github/npm/figgy-pudding/badge.svg?branch=latest)](https://coveralls.io/github/npm/figgy-pudding?branch=latest)
 
 [`figgy-pudding`](https://github.com/npm/figgy-pudding) is a small JavaScript
 library for managing and composing cascading options objects -- hiding what
 needs to be hidden from each layer, without having to do a lot of manual munging
 and passing of options.
 
-### The God Object is Dead!
-### Now Bring Us Some Figgy Pudding!
+### The God Object is Dead
+
+### Now Bring Us Some Figgy Pudding
 
 ## Install
 
@@ -101,7 +102,7 @@ module.exports = async function (..., opts) {
 
 ### API
 
-#### <a name="figgy-pudding"></a> `> figgyPudding({ key: { default: val } | String }, [opts]) -> PuddingFactory`
+#### `figgyPudding({ key: { default: val } | String }, [opts]) -> PuddingFactory`
 
 Defines an Options constructor that can be used to collect only the needed
 options.
@@ -124,7 +125,7 @@ const MyAppOpts = figgyPudding({
 })
 ```
 
-#### <a name="pudding-factory"></a> `> PuddingFactory(...providers) -> FiggyPudding{}`
+#### `> PuddingFactory(...providers) -> FiggyPudding{}`
 
 Instantiates an options object defined by `figgyPudding()`, which uses
 `providers`, in order, to find requested properties.
@@ -159,7 +160,7 @@ MoreOpts(opts).log // => npmlog object (passed in from original plain obj)
 MoreOpts(opts).follow // => Error: MoreOpts does not define `follow`
 ```
 
-#### <a name="opts-get"></a> `> opts.get(key) -> Value`
+#### `> opts.get(key) -> Value`
 
 Gets a value from the options object.
 
@@ -171,7 +172,7 @@ opts.get('foo') // value of `foo`
 opts.foo // Proxy-based access through `.get()`
 ```
 
-#### <a name="opts-concat"></a> `> opts.concat(...moreProviders) -> FiggyPudding{}`
+#### `> opts.concat(...moreProviders) -> FiggyPudding{}`
 
 Creates a new opts object of the same type as `opts` with additional providers.
 Providers further to the right shadow providers to the left, with properties in
@@ -186,7 +187,7 @@ opts.concat({x: 2}).get('x') // 2
 opts.get('x') // 1 (original opts object left intact)
 ```
 
-#### <a name="opts-to-json"></a> `> opts.toJSON() -> Value`
+#### `> opts.toJSON() -> Value`
 
 Converts `opts` to a plain, JSON-stringifiable JavaScript value. Used internally
 by JavaScript to get `JSON.stringify()` working.
@@ -201,7 +202,7 @@ opts.toJSON() // {x: 1}
 JSON.stringify(opts) // '{"x":1}'
 ```
 
-#### <a name="opts-for-each"></a> `> opts.forEach((value, key, opts) => {}, thisArg) -> undefined`
+#### `> opts.forEach((value, key, opts) => {}, thisArg) -> undefined`
 
 Iterates over the values of `opts`, limited to the keys readable by the current
 pudding type. `thisArg` will be used to set the `this` argument when calling the
@@ -214,7 +215,7 @@ const opts = MyOpts({x: 1, y: 2})
 opts.forEach((value, key) => console.log(key, '=', value))
 ```
 
-#### <a name="opts-entries"></a> `> opts.entries() -> Iterator<[[key, value], ...]>`
+#### `> opts.entries() -> Iterator<[[key, value], ...]>`
 
 Returns an iterator that iterates over the keys and values in `opts`, limited to
 the keys readable by the current pudding type. Each iteration returns an array
@@ -227,7 +228,7 @@ const opts = MyOpts({x: 1, y: 2})
 [...opts({x: 1, y: 2}).entries()] // [['x', 1], ['y', 2]]
 ```
 
-#### <a name="opts-symbol-iterator"></a> `> opts[Symbol.iterator]() -> Iterator<[[key, value], ...]>`
+#### `> opts[Symbol.iterator]() -> Iterator<[[key, value], ...]>`
 
 Returns an iterator that iterates over the keys and values in `opts`, limited to
 the keys readable by the current pudding type. Each iteration returns an array
@@ -243,7 +244,7 @@ for (let [key, value] of opts({x: 1, y: 2})) {
 }
 ```
 
-#### <a name="opts-keys"></a> `> opts.keys() -> Iterator<[key, ...]>`
+#### `> opts.keys() -> Iterator<[key, ...]>`
 
 Returns an iterator that iterates over the keys in `opts`, limited to the keys
 readable by the current pudding type.
@@ -255,13 +256,13 @@ const opts = MyOpts({x: 1, y: 2})
 [...opts({x: 1, y: 2}).keys()] // ['x', 'y']
 ```
 
-#### <a name="opts-values"></a> `> opts.values() -> Iterator<[value, ...]>`
+#### `> opts.values() -> Iterator<[value, ...]>`
 
 Returns an iterator that iterates over the values in `opts`, limited to the keys
 readable by the current pudding type.
 
 ##### Example
-'
+
 ```js
 const opts = MyOpts({x: 1, y: 2})
 [...opts({x: 1, y: 2}).values()] // [1, 2]

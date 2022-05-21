@@ -49,7 +49,7 @@ Happy hacking!
 
 ### API
 
-##### <a name="read"></a> `> read(cliOpts, builtinOpts)`
+#### `read(cliOpts, builtinOpts)`
 
 Reads configurations from the filesystem and the env and returns a
 [`figgy-pudding`](https://npm.im/figgy-pudding) object with the configuration
