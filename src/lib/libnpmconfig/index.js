@@ -9,7 +9,9 @@ const path = require('path')
 
 const NpmConfig = figgyPudding({}, {
   // Open up the pudding object.
-  other () { return true }
+  other () {
+    return true
+  }
 })
 
 const ConfigOpts = figgyPudding({
@@ -24,28 +26,28 @@ const ConfigOpts = figgyPudding({
 })
 
 module.exports.read = getNpmConfig
+
+/** Gets the npm config. */
 function getNpmConfig (_opts, _builtin) {
   const builtin = ConfigOpts(_builtin)
   const env = {}
-  for (let key of Object.keys(process.env)) {
-    if (!key.match(builtin.envPrefix)) continue
+  Object.keys(process.env).forEach(key => {
+    if (!key.match(builtin.envPrefix)) return
     const newKey = key.toLowerCase()
       .replace(builtin.envPrefix, '')
       .replace(/(?!^)_/g, '-')
     env[newKey] = process.env[key]
-  }
+  })
   const cli = NpmConfig(_opts)
-  const userConfPath = (
+  const userConfPath =
     builtin.userconfig ||
     cli.userconfig ||
     env.userconfig
-  )
   const user = userConfPath && maybeReadIni(userConfPath)
-  const globalConfPath = (
+  const globalConfPath =
     builtin.globalconfig ||
     cli.globalconfig ||
     env.globalconfig
-  )
   const global = globalConfPath && maybeReadIni(globalConfPath)
   const projConfPath = findUp.sync(builtin.configNames, { cwd: builtin.cwd })
   let proj = {}
@@ -56,46 +58,51 @@ function getNpmConfig (_opts, _builtin) {
   if (newOpts.cache) {
     return newOpts.concat({
       cache: path.resolve(
-        (
-          (cli.cache || env.cache)
-            ? builtin.cwd
-            : proj.cache
-              ? path.dirname(projConfPath)
-              : user.cache
-                ? path.dirname(userConfPath)
-                : global.cache
-                  ? path.dirname(globalConfPath)
-                  : path.dirname(userConfPath)
-        ),
+        cli.cache || env.cache
+          ? builtin.cwd
+          : proj.cache
+            ? path.dirname(projConfPath)
+            : user.cache
+              ? path.dirname(userConfPath)
+              : global.cache
+                ? path.dirname(globalConfPath)
+                : path.dirname(userConfPath),
         newOpts.cache
       )
     })
-  } else {
+  }
+  else {
     return newOpts
   }
 }
 
+/** Try to read the given ini file. */
 function maybeReadIni (f) {
   let txt
   try {
     txt = fs.readFileSync(f, 'utf8')
-  } catch (err) {
+  }
+  catch (err) {
     if (err.code === 'ENOENT') {
       return ''
-    } else {
+    }
+    else {
       throw err
     }
   }
   return ini.parse(txt)
 }
 
+/** Get the global node PREFIX. */
 function getGlobalPrefix () {
   if (process.env.PREFIX) {
     return process.env.PREFIX
-  } else if (process.platform === 'win32') {
+  }
+  else if (process.platform === 'win32') {
     // c:\node\node.exe --> prefix=c:\node\
     return path.dirname(process.execPath)
-  } else {
+  }
+  else {
     // /usr/local/bin/node --> prefix=/usr/local
     let pref = path.dirname(path.dirname(process.execPath))
     // destdir only is respected on Unix
