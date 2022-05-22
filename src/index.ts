@@ -15,12 +15,36 @@ import initOptions from './lib/initOptions'
 import programError from './lib/programError'
 import runGlobal from './lib/runGlobal'
 import runLocal from './lib/runLocal'
-import { Index, PackageFile, RunOptions, VersionSpec } from './types'
+import { Index, Options, PackageFile, RunOptions, VersionSpec } from './types'
 
 // exit with non-zero error code when there is an unhandled promise rejection
 process.on('unhandledRejection', err => {
   throw err
 })
+
+/**
+ * Volta is a tool for managing JavaScript tooling like Node and npm. Volta has
+ * its own system for installing global packages which circumvents npm, so
+ * commands like `npm ls -g` do not accurately reflect what is installed.
+ *
+ * The ability to use `npm ls -g` is tracked in this Volta issue: https://github.com/volta-cli/volta/issues/1012
+ */
+function checkIfVolta(options: Options): void {
+  // The first check is for macOS/Linux and the second check is for Windows
+  if (options.global && (!!process.env.VOLTA_HOME || process.env.PATH?.includes('\\Volta'))) {
+    const message =
+      'It appears you are using Volta. `npm-check-updates --global` ' +
+      'cannot be used with Volta because Volta has its own system for ' +
+      'managing global packages which circumvents npm.\n\n' +
+      'If you are still receiving this message after uninstalling Volta, ' +
+      'ensure your PATH does not contain an entry for Volta and your ' +
+      'shell profile does not define VOLTA_HOME. You may need to reboot ' +
+      'for changes to your shell profile to take effect.'
+
+    print(options, message, 'error')
+    process.exit(1)
+  }
+}
 
 /** Main entry point.
  *
@@ -37,6 +61,8 @@ export async function run(
   const chalk = runOptions.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   const options = initOptions(runOptions, { cli })
+
+  checkIfVolta(options)
 
   print(options, 'Initializing', 'verbose')
 
