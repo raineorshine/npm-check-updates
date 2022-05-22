@@ -20,9 +20,8 @@ const writePackageFile = promisify(fs.writeFile)
 
 /** Recreate the options object sorted. */
 function sortOptions(options: Options): Options {
-  // eslint-disable-next-line fp/no-mutating-methods
   return _.transform(
-    Object.keys(options).sort(),
+    Object.keys(options).sort(), // eslint-disable-line fp/no-mutating-methods
     (accum, key) => {
       accum[key] = options[key as keyof Options]
     },

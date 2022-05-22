@@ -178,9 +178,8 @@ const doctor = async (run: Run, options: Options) => {
     await runInstall()
 
     // iterate upgrades
+    // eslint-disable-next-line fp/no-loops
     for (const [name, version] of Object.entries(upgrades)) {
-      // eslint-disable-line fp/no-loops
-
       // install single dependency
       await npm(
         [...(options.packageManager === 'yarn' ? ['add'] : ['install', '--no-save']), `${name}@${version}`],

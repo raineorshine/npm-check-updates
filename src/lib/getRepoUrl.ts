@@ -16,8 +16,9 @@ function getPackageRepo(packageName: string): string | { url: string } | null {
   let nodeModulePaths = require.resolve.paths(packageName)
   const localNodeModules = path.join(process.cwd(), 'node_modules')
   nodeModulePaths = [localNodeModules].concat(nodeModulePaths || [])
+
+  // eslint-disable-next-line fp/no-loops
   for (const basePath of nodeModulePaths) {
-    // eslint-disable-line fp/no-loops
     const packageJsonPath = path.join(basePath, packageName, 'package.json')
     if (fs.existsSync(packageJsonPath)) {
       try {
