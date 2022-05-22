@@ -8,7 +8,8 @@ module.exports = {
     'standard',
     'eslint:recommended',
     'plugin:import/typescript',
-    'raine'
+    'raine',
+    'prettier'
   ],
   overrides: [
     {
@@ -32,26 +33,9 @@ module.exports = {
         'import/prefer-default-export': 0,
         // temporary fix from 'typescript-eslint' docs
         // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-unused-vars.md
-        'no-extra-parens': 0,
         'no-unused-vars': 0,
         'no-use-before-define': 0,
-        '@typescript-eslint/member-delimiter-style': [2,
-          {
-            multiline: {
-              delimiter: 'comma'
-            },
-            singleline: {
-              delimiter: 'comma'
-            }
-          }
-        ],
         '@typescript-eslint/no-explicit-any': 0,
-        '@typescript-eslint/no-extra-parens': [2,
-          'all',
-          {
-            nestedBinaryExpressions: false
-          }
-        ],
         '@typescript-eslint/no-non-null-assertion': 0,
         '@typescript-eslint/no-use-before-define': 2,
         '@typescript-eslint/no-unused-vars': 2,
