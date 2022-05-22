@@ -7,12 +7,15 @@ const ini = require('ini')
 const os = require('os')
 const path = require('path')
 
-const NpmConfig = figgyPudding({}, {
-  // Open up the pudding object.
-  other () {
-    return true
-  }
-})
+const NpmConfig = figgyPudding(
+  {},
+  {
+    // Open up the pudding object.
+    other() {
+      return true
+    },
+  },
+)
 
 const ConfigOpts = figgyPudding({
   cache: { default: path.join(os.homedir(), '.npm') },
@@ -20,34 +23,29 @@ const ConfigOpts = figgyPudding({
   envPrefix: { default: /^npm_config_/i },
   cwd: { default: () => process.cwd() },
   globalconfig: {
-    default: () => path.join(getGlobalPrefix(), 'etc', 'npmrc')
+    default: () => path.join(getGlobalPrefix(), 'etc', 'npmrc'),
   },
-  userconfig: { default: path.join(os.homedir(), '.npmrc') }
+  userconfig: { default: path.join(os.homedir(), '.npmrc') },
 })
 
 module.exports.read = getNpmConfig
 
 /** Gets the npm config. */
-function getNpmConfig (_opts, _builtin) {
+function getNpmConfig(_opts, _builtin) {
   const builtin = ConfigOpts(_builtin)
   const env = {}
   Object.keys(process.env).forEach(key => {
     if (!key.match(builtin.envPrefix)) return
-    const newKey = key.toLowerCase()
+    const newKey = key
+      .toLowerCase()
       .replace(builtin.envPrefix, '')
       .replace(/(?!^)_/g, '-')
     env[newKey] = process.env[key]
   })
   const cli = NpmConfig(_opts)
-  const userConfPath =
-    builtin.userconfig ||
-    cli.userconfig ||
-    env.userconfig
+  const userConfPath = builtin.userconfig || cli.userconfig || env.userconfig
   const user = userConfPath && maybeReadIni(userConfPath)
-  const globalConfPath =
-    builtin.globalconfig ||
-    cli.globalconfig ||
-    env.globalconfig
+  const globalConfPath = builtin.globalconfig || cli.globalconfig || env.globalconfig
   const global = globalConfPath && maybeReadIni(globalConfPath)
   const projConfPath = findUp.sync(builtin.configNames, { cwd: builtin.cwd })
   let proj = {}
@@ -61,32 +59,29 @@ function getNpmConfig (_opts, _builtin) {
         cli.cache || env.cache
           ? builtin.cwd
           : proj.cache
-            ? path.dirname(projConfPath)
-            : user.cache
-              ? path.dirname(userConfPath)
-              : global.cache
-                ? path.dirname(globalConfPath)
-                : path.dirname(userConfPath),
-        newOpts.cache
-      )
+          ? path.dirname(projConfPath)
+          : user.cache
+          ? path.dirname(userConfPath)
+          : global.cache
+          ? path.dirname(globalConfPath)
+          : path.dirname(userConfPath),
+        newOpts.cache,
+      ),
     })
-  }
-  else {
+  } else {
     return newOpts
   }
 }
 
 /** Try to read the given ini file. */
-function maybeReadIni (f) {
+function maybeReadIni(f) {
   let txt
   try {
     txt = fs.readFileSync(f, 'utf8')
-  }
-  catch (err) {
+  } catch (err) {
     if (err.code === 'ENOENT') {
       return ''
-    }
-    else {
+    } else {
       throw err
     }
   }
@@ -94,15 +89,13 @@ function maybeReadIni (f) {
 }
 
 /** Get the global node PREFIX. */
-function getGlobalPrefix () {
+function getGlobalPrefix() {
   if (process.env.PREFIX) {
     return process.env.PREFIX
-  }
-  else if (process.platform === 'win32') {
+  } else if (process.platform === 'win32') {
     // c:\node\node.exe --> prefix=c:\node\
     return path.dirname(process.execPath)
-  }
-  else {
+  } else {
     // /usr/local/bin/node --> prefix=/usr/local
     let pref = path.dirname(path.dirname(process.execPath))
     // destdir only is respected on Unix

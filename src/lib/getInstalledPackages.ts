@@ -14,9 +14,11 @@ import { Options, Version, VersionSpec } from '../types'
  * @param options.reject
  */
 async function getInstalledPackages(options: Options = {}) {
-
-  const pkgInfoObj = await getPackageManager(options.packageManager)
-    .list?.({ cwd: options.cwd, prefix: options.prefix, global: options.global })
+  const pkgInfoObj = await getPackageManager(options.packageManager).list?.({
+    cwd: options.cwd,
+    prefix: options.prefix,
+    global: options.global,
+  })
 
   if (!pkgInfoObj) {
     throw new Error('Unable to retrieve NPM package list')
@@ -24,10 +26,10 @@ async function getInstalledPackages(options: Options = {}) {
 
   // filter out undefined packages or those with a wildcard
   const filterFunction = filterAndReject(options.filter, options.reject, options.filterVersion, options.rejectVersion)
-  return cint.filterObject(pkgInfoObj, (dep: VersionSpec, version: Version) =>
-    !!version && !isWildPart(version) && filterFunction(dep, version)
+  return cint.filterObject(
+    pkgInfoObj,
+    (dep: VersionSpec, version: Version) => !!version && !isWildPart(version) && filterFunction(dep, version),
   )
-
 }
 
 export default getInstalledPackages

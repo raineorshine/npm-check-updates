@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - main
-      - "!dependabot/**"
+      - '!dependabot/**'
   pull_request:
     branches:
-      - "**"
+      - '**'
 
 env:
   FORCE_COLOR: 2
@@ -19,8 +19,8 @@ permissions:
 jobs:
   run:
     permissions:
-      checks: write  # for coverallsapp/github-action to create new checks
-      contents: read  # for actions/checkout to fetch code
+      checks: write # for coverallsapp/github-action to create new checks
+      contents: read # for actions/checkout to fetch code
     name: Node ${{ matrix.node }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
@@ -58,4 +58,4 @@ jobs:
         uses: coverallsapp/github-action@v1.1.2
         if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          github-token: '${{ secrets.GITHUB_TOKEN }}'

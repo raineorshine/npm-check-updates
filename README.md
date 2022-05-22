@@ -4,10 +4,10 @@
 [![Build Status](https://img.shields.io/github/workflow/status/raineorshine/npm-check-updates/Tests/main?label=tests&logo=github)](https://github.com/raineorshine/npm-check-updates/actions?query=workflow%3ATests+branch%3Amain)
 [![Coverage Status](https://img.shields.io/coveralls/github/raineorshine/npm-check-updates/main)](https://coveralls.io/github/raineorshine/npm-check-updates?branch=main)
 
-**npm-check-updates upgrades your package.json dependencies to the *latest* versions, ignoring specified versions.**
+**npm-check-updates upgrades your package.json dependencies to the _latest_ versions, ignoring specified versions.**
 
-- maintains existing semantic versioning *policies*, i.e. `"express": "^4.0.0"` to `"express": "^5.0.0"`.
-- *only* modifies package.json file. Run `npm install` to update your installed packages and package-lock.json.
+- maintains existing semantic versioning _policies_, i.e. `"express": "^4.0.0"` to `"express": "^5.0.0"`.
+- _only_ modifies package.json file. Run `npm install` to update your installed packages and package-lock.json.
 
 ![npm-check-updates-screenshot](https://github.com/raineorshine/npm-check-updates/blob/main/.github/screenshot.png?raw=true)
 
@@ -51,7 +51,7 @@ Run ncu -u to upgrade package.json
 
 Upgrade a project's package file:
 
-> **Make sure your package file is in version control and all changes have been committed. This *will* overwrite your package file.**
+> **Make sure your package file is in version control and all changes have been committed. This _will_ overwrite your package file.**
 
 ```sh
 $ ncu -u
@@ -269,10 +269,7 @@ For example, `.ncurc.json`:
 {
   "upgrade": true,
   "filter": "express",
-  "reject": [
-    "@types/estree",
-    "ts-node"
-  ]
+  "reject": ["@types/estree", "ts-node"]
 }
 ```
 

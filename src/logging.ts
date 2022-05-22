@@ -16,7 +16,7 @@ const logLevels = {
   warn: 3,
   info: 4,
   verbose: 5,
-  silly: 6
+  silly: 6,
 }
 
 /**
@@ -27,11 +27,20 @@ const logLevels = {
  * @param loglevel   silent|error|warn|info|verbose|silly
  * @param method     The console method to call. Default: 'log'.
  */
-export function print(options: Options, message: any, loglevel: 'silent' | 'error' | 'warn' | 'info' | 'verbose' | 'silly' | null = null, method: 'log' | 'warn' | 'info' | 'error' = 'log') {
+export function print(
+  options: Options,
+  message: any,
+  loglevel: 'silent' | 'error' | 'warn' | 'info' | 'verbose' | 'silly' | null = null,
+  method: 'log' | 'warn' | 'info' | 'error' = 'log',
+) {
   // not in json mode
   // not silent
   // not at a loglevel under minimum specified
-  if (!options.json && options.loglevel !== 'silent' && (loglevel == null || logLevels[options.loglevel as unknown as keyof typeof logLevels] >= logLevels[loglevel])) {
+  if (
+    !options.json &&
+    options.loglevel !== 'silent' &&
+    (loglevel == null || logLevels[options.loglevel as unknown as keyof typeof logLevels] >= logLevels[loglevel])
+  ) {
     console[method](message)
   }
 }
@@ -62,8 +71,8 @@ function createDependencyTable() {
       'mid-mid': '',
       right: '',
       'right-mid': '',
-      middle: ''
-    }
+      middle: '',
+    },
   })
 }
 
@@ -73,9 +82,7 @@ function createDependencyTable() {
  * @param dep Raw dependency, could be version / npm: string / Git url
  */
 function getVersion(dep: string): string {
-  return isGithubUrl(dep) ? getGithubUrlTag(dep)!
-    : isNpmAlias(dep) ? parseNpmAlias(dep)![1]
-    : dep
+  return isGithubUrl(dep) ? getGithubUrlTag(dep)! : isNpmAlias(dep) ? parseNpmAlias(dep)![1] : dep
 }
 
 /**
@@ -85,11 +92,16 @@ function getVersion(dep: string): string {
  * @param args.ownersChangedDeps
  * @param args.format Array of strings from the --format CLI arg
  */
-function toDependencyTable({ from: fromDeps, to: toDeps, ownersChangedDeps, format }: {
-  from: Index<VersionSpec>,
-  to: Index<VersionSpec>,
-  ownersChangedDeps?: Index<boolean>,
-  format?: string[],
+function toDependencyTable({
+  from: fromDeps,
+  to: toDeps,
+  ownersChangedDeps,
+  format,
+}: {
+  from: Index<VersionSpec>
+  to: Index<VersionSpec>
+  ownersChangedDeps?: Index<boolean>
+  format?: string[]
 }) {
   const table = createDependencyTable()
   const rows = Object.keys(toDeps).map(dep => {
@@ -98,13 +110,13 @@ function toDependencyTable({ from: fromDeps, to: toDeps, ownersChangedDeps, form
     const to = getVersion(toRaw)
     const ownerChanged = ownersChangedDeps
       ? dep in ownersChangedDeps
-        ? ownersChangedDeps[dep] ? '*owner changed*' : ''
+        ? ownersChangedDeps[dep]
+          ? '*owner changed*'
+          : ''
         : '*unknown*'
       : ''
     const toColorized = colorizeDiff(getVersion(from), to)
-    const repoUrl = format?.includes('repo')
-      ? getRepoUrl(dep) || ''
-      : ''
+    const repoUrl = format?.includes('repo') ? getRepoUrl(dep) || '' : ''
     return [dep, from, '→', toColorized, ownerChanged, repoUrl]
   })
   rows.forEach(row => table.push(row)) // eslint-disable-line fp/no-mutating-methods
@@ -120,15 +132,24 @@ function toDependencyTable({ from: fromDeps, to: toDeps, ownersChangedDeps, form
  * @param args.total - The total number of all possible upgrades
  * @param args.ownersChangedDeps - Boolean flag per dependency which announces if package owner changed.
  */
-export function printUpgrades(options: Options, { current, latest, upgraded, numUpgraded, total, ownersChangedDeps }: {
-  current: Index<VersionSpec>,
-  latest?: Index<Version>,
-  upgraded: Index<VersionSpec>,
-  numUpgraded: number,
-  total: number,
-  ownersChangedDeps?: Index<boolean>,
-}) {
-
+export function printUpgrades(
+  options: Options,
+  {
+    current,
+    latest,
+    upgraded,
+    numUpgraded,
+    total,
+    ownersChangedDeps,
+  }: {
+    current: Index<VersionSpec>
+    latest?: Index<Version>
+    upgraded: Index<VersionSpec>
+    numUpgraded: number
+    total: number
+    ownersChangedDeps?: Index<boolean>
+  },
+) {
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   print(options, '')
@@ -139,18 +160,21 @@ export function printUpgrades(options: Options, { current, latest, upgraded, num
   if (numUpgraded === 0 && total === 0) {
     if (Object.keys(current).length === 0) {
       print(options, 'No dependencies.')
-    }
-    else if (latest && Object.keys(latest).length === 0) {
-      print(options, `No package versions were returned. This is likely a problem with your installed ${options.packageManager}, the npm registry, or your Internet connection. Make sure ${chalk.cyan('npx pacote packument ncu-test-v2')} is working before reporting an issue.`)
-    }
-    else if (options.global) {
+    } else if (latest && Object.keys(latest).length === 0) {
+      print(
+        options,
+        `No package versions were returned. This is likely a problem with your installed ${
+          options.packageManager
+        }, the npm registry, or your Internet connection. Make sure ${chalk.cyan(
+          'npx pacote packument ncu-test-v2',
+        )} is working before reporting an issue.`,
+      )
+    } else if (options.global) {
       print(options, `All global packages are up-to-date ${smiley}`)
-    }
-    else {
+    } else {
       print(options, `All dependencies match the ${target} package versions ${smiley}`)
     }
-  }
-  else if (numUpgraded === 0 && total > 0) {
+  } else if (numUpgraded === 0 && total > 0) {
     print(options, `All dependencies match the desired package versions ${smiley}`)
   }
 
@@ -171,9 +195,11 @@ export function printIgnoredUpdates(options: Options, ignoredUpdates: Index<Igno
   print(options, `\nIgnored incompatible updates (peer dependencies):\n`)
   const table = createDependencyTable()
   const rows = Object.entries(ignoredUpdates).map(([pkgName, { from, to, reason }]) => {
-    const strReason = 'reason: ' + Object.entries(reason)
-      .map(([pkgReason, requirement]) => pkgReason + ' requires ' + requirement)
-      .join(', ')
+    const strReason =
+      'reason: ' +
+      Object.entries(reason)
+        .map(([pkgReason, requirement]) => pkgReason + ' requires ' + requirement)
+        .join(', ')
     return [pkgName, from, '→', colorizeDiff(from, to), strReason]
   })
   rows.forEach(row => table.push(row)) // eslint-disable-line fp/no-mutating-methods

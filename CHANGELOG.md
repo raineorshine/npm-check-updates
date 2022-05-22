@@ -167,7 +167,7 @@ Check if the npm user that published the package has changed between current and
 Output values:
 
 - Owner changed: `*owner changed*`
-- Owner has not changed: *no output*
+- Owner has not changed: _no output_
 - Owner information not available: `*unknown*`
 
 Example:
@@ -284,7 +284,7 @@ The `--packageManager` alias has changed from `-m` to `-p` to make room for `--m
 
 v2 has a few important differences from v1:
 
-- Newer published versions that satisfy the specified range are *not* upgraded by default (e.g. `1.0.0` to `1.1.0`). This change was made because `npm update` handles upgrades within the satisfied range just fine, and npm-check-updates is primarily intended to provide functionality not otherwise provided by npm itself. These satisfied dependencies will still be shown when you run npm-check-updates, albeit with a short explanation. **For the old behavior, add the -ua/--upgradeAll option.**
+- Newer published versions that satisfy the specified range are _not_ upgraded by default (e.g. `1.0.0` to `1.1.0`). This change was made because `npm update` handles upgrades within the satisfied range just fine, and npm-check-updates is primarily intended to provide functionality not otherwise provided by npm itself. These satisfied dependencies will still be shown when you run npm-check-updates, albeit with a short explanation. **For the old behavior, add the -ua/--upgradeAll option.**
 - The command-line argument now specifies a package name filter (e.g. `ncu /^gulp-/`). For the old behavior (specifying an alternative package.json), pipe the package.json through stdin.
 - Use the easier-to-type `ncu` instead of `npm-check-updates`. `npm-check-updates` is preserved for backwards-compatibility.
 - Allow packageData to be specified as an option

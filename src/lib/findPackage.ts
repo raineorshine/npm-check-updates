@@ -27,7 +27,6 @@ const readPackageFile = _.partialRight(promisify(fs.readFile), 'utf8') as any
  * @returns Promise<PkgInfo>
  */
 async function findPackage(options: Options) {
-
   let pkgData
   let pkgFile = null
   let stdinTimer
@@ -45,9 +44,15 @@ async function findPackage(options: Options) {
     if (pkgFile != null) {
       const relPathToPackage = path.resolve(pkgFile)
       print(options, `${options.upgrade ? 'Upgrading' : 'Checking'} ${relPathToPackage}`)
-    }
-    else {
-      programError(options, `${chalk.red(`No ${pkgFileName}`)}\n\nPlease add a ${pkgFileName} to the current directory, specify the ${chalk.cyan('--packageFile')} or ${chalk.cyan('--packageData')} options, or pipe a ${pkgFileName} to stdin.`)
+    } else {
+      programError(
+        options,
+        `${chalk.red(
+          `No ${pkgFileName}`,
+        )}\n\nPlease add a ${pkgFileName} to the current directory, specify the ${chalk.cyan(
+          '--packageFile',
+        )} or ${chalk.cyan('--packageData')} options, or pipe a ${pkgFileName} to stdin.`,
+      )
     }
 
     return readPackageFile(pkgFile)
@@ -57,18 +62,22 @@ async function findPackage(options: Options) {
   if (options.packageData) {
     pkgFile = null
     pkgData = Promise.resolve(options.packageData)
-  }
-  else if (options.packageFile) {
+  } else if (options.packageFile) {
     pkgFile = options.packageFile
     pkgData = getPackageDataFromFile(pkgFile, pkgFileName)
-  }
-  else if (!process.stdin.isTTY) {
+  } else if (!process.stdin.isTTY) {
     print(options, 'Waiting for package data on stdin', 'verbose')
 
     // warn the user after a while if still waiting for stdin
     // this is a way to mitigate #136 where Windows unexpectedly waits for stdin
     stdinTimer = setTimeout(() => {
-      console.log(`Hmmmmm... this is taking a long time. Your console is telling me to wait for input \non stdin, but maybe that is not what you want.\nTry ${chalk.cyan('winpty ncu.cmd')}, or specify a package file explicitly with ${chalk.cyan('--packageFile package.json')}. \nSee https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102`)
+      console.log(
+        `Hmmmmm... this is taking a long time. Your console is telling me to wait for input \non stdin, but maybe that is not what you want.\nTry ${chalk.cyan(
+          'winpty ncu.cmd',
+        )}, or specify a package file explicitly with ${chalk.cyan(
+          '--packageFile package.json',
+        )}. \nSee https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102`,
+      )
     }, stdinWarningTime)
 
     // get data from stdin
@@ -81,8 +90,7 @@ async function findPackage(options: Options) {
     // if no stdin content fall back to searching for package.json from pwd and up to root
     pkgFile = data || !pkgFileName ? null : findUp.sync(pkgFileName)
     pkgData = data || getPackageDataFromFile(await pkgFile, pkgFileName)
-  }
-  else {
+  } else {
     // find the closest package starting from the current working directory and going up to the root
     pkgFile = pkgFileName ? findUp.sync(pkgFileName) : null
     pkgData = getPackageDataFromFile(pkgFile, pkgFileName)

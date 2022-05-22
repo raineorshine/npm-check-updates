@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - main
-      - "!dependabot/**"
+      - '!dependabot/**'
   pull_request:
     branches:
-      - "**"
+      - '**'
 
 env:
   FORCE_COLOR: 2

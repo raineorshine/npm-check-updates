@@ -10,7 +10,6 @@ import { Maybe, PackageManager } from '../types'
  * @returns
  */
 function getPackageManager(packageManagerNameOrObject: Maybe<string | PackageManager>): PackageManager {
-
   /** Get one of the preset package managers or throw an error if there is no match. */
   function getPresetPackageManager(packageManagerName: string): PackageManager {
     if (!(packageManagerName in packageManagers)) {
@@ -20,11 +19,13 @@ function getPackageManager(packageManagerNameOrObject: Maybe<string | PackageMan
     return (packageManagers as any)[key]
   }
 
-  return !packageManagerNameOrObject ? packageManagers.npm : // default to npm
-  // use present package manager if name is specified
-    typeof packageManagerNameOrObject === 'string' ? getPresetPackageManager(packageManagerNameOrObject!)! :
-    // use provided package manager object otherwise
-    packageManagerNameOrObject!
+  return !packageManagerNameOrObject
+    ? packageManagers.npm // default to npm
+    : // use present package manager if name is specified
+    typeof packageManagerNameOrObject === 'string'
+    ? getPresetPackageManager(packageManagerNameOrObject!)!
+    : // use provided package manager object otherwise
+      packageManagerNameOrObject!
 }
 
 export default getPackageManager

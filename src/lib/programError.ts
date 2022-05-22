@@ -6,8 +6,7 @@ function programError(options: Options, message: string) {
   if (options.cli) {
     print(options, message, null, 'error')
     process.exit(1)
-  }
-  else {
+  } else {
     throw new Error(message)
   }
 }

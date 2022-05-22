@@ -1,12 +1,6 @@
 {
-  "include": [
-    "src",
-    "test"
-  ],
-  "exclude": [
-    "test/deep",
-    "test/doctor"
-  ],
+  "include": ["src", "test"],
+  "exclude": ["test/deep", "test/doctor"],
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,

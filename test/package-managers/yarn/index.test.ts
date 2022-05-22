@@ -14,11 +14,10 @@ const localYarnSpawnOptions = {
   env: {
     ...process.env,
     PATH: `${process.env.PATH}:${localBin}`,
-  }
+  },
 }
 
 describe('yarn', function () {
-
   it('list', async () => {
     const testDir = path.join(__dirname, 'default')
     const version = await yarn.latest('chalk', '', { cwd: testDir })
@@ -45,19 +44,18 @@ describe('yarn', function () {
   it('"No lockfile" error should be thrown on list command when there is no lockfile', async () => {
     const testDir = path.join(__dirname, 'nolockfile')
     const lockFileErrorMessage = 'No lockfile in this directory. Run `yarn install` to generate one.'
-    await yarn.list({ cwd: testDir }, localYarnSpawnOptions)
-      .should.eventually.be.rejectedWith(lockFileErrorMessage)
+    await yarn.list({ cwd: testDir }, localYarnSpawnOptions).should.eventually.be.rejectedWith(lockFileErrorMessage)
   })
 
   describe('setNpmAuthToken', () => {
     /** Run the test for the given registry server URL. */
     function testCore(npmRegistryServer: string): void {
-      const npmConfig: Index<string|boolean> = { '@fortawesome:registry': 'https://npm.fontawesome.com/' }
+      const npmConfig: Index<string | boolean> = { '@fortawesome:registry': 'https://npm.fontawesome.com/' }
       const dep = 'fortawesome'
       const scopedConfig: yarn.NpmScope = {
         npmAlwaysAuth: true,
         npmAuthToken: 'MY-AUTH-TOKEN',
-        npmRegistryServer
+        npmRegistryServer,
       }
 
       yarn.setNpmAuthToken(npmConfig, [dep, scopedConfig])

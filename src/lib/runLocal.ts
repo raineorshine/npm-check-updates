@@ -21,9 +21,13 @@ const writePackageFile = promisify(fs.writeFile)
 /** Recreate the options object sorted. */
 function sortOptions(options: Options): Options {
   // eslint-disable-next-line fp/no-mutating-methods
-  return _.transform(Object.keys(options).sort(), (accum, key) => {
-    accum[key] = options[key as keyof Options]
-  }, {} as any)
+  return _.transform(
+    Object.keys(options).sort(),
+    (accum, key) => {
+      accum[key] = options[key as keyof Options]
+    },
+    {} as any,
+  )
 }
 
 /**
@@ -41,15 +45,18 @@ export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersi
     const to = toVersion[dep] || null
     const ownerChanged = await packageManager.packageAuthorChanged!(dep, from!, to!, options)
     return {
-      ...await accum,
+      ...(await accum),
       [dep]: ownerChanged,
     }
   }, {} as Promise<Index<boolean>>)
 }
 
 /** Checks local project dependencies for upgrades. */
-async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: Maybe<string>): Promise<PackageFile | Index<VersionSpec>> {
-
+async function runLocal(
+  options: Options,
+  pkgData?: Maybe<string>,
+  pkgFile?: Maybe<string>,
+): Promise<PackageFile | Index<VersionSpec>> {
   print(options, '\nOptions:', 'verbose')
   print(options, sortOptions(options), 'verbose')
 
@@ -60,13 +67,14 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
   try {
     if (!pkgData) {
       throw new Error('Missing pkgData: ' + pkgData)
-    }
-    else {
+    } else {
       pkg = jph.parse(pkgData)
     }
-  }
-  catch (e: any) {
-    programError(options, chalk.red(`Invalid package file${pkgFile ? `: ${pkgFile}` : ' from stdin'}. Error details:\n${e.message}`))
+  } catch (e: any) {
+    programError(
+      options,
+      chalk.red(`Invalid package file${pkgFile ? `: ${pkgFile}` : ' from stdin'}. Error details:\n${e.message}`),
+    )
   }
 
   const current = getCurrentDependencies(pkg, options)
@@ -99,10 +107,11 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
 
   const { newPkgData, selectedNewDependencies } = await upgradePackageData(pkgData!, current, upgraded, latest, options)
 
-  const output = options.jsonAll ? jph.parse(newPkgData) as PackageFile :
-    options.jsonDeps ?
-      _.pick(jph.parse(newPkgData) as PackageFile, 'dependencies', 'devDependencies', 'optionalDependencies') :
-      selectedNewDependencies
+  const output = options.jsonAll
+    ? (jph.parse(newPkgData) as PackageFile)
+    : options.jsonDeps
+    ? _.pick(jph.parse(newPkgData) as PackageFile, 'dependencies', 'devDependencies', 'optionalDependencies')
+    : selectedNewDependencies
 
   // will be overwritten with the result of writePackageFile so that the return promise waits for the package file to be written
   let writePromise = Promise.resolve()
@@ -110,11 +119,13 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
   // split the deps into satisfied and unsatisfied to display in two separate tables
   const deps = Object.keys(selectedNewDependencies)
   const satisfied = cint.toObject(deps, (dep: string) => ({
-    [dep]: satisfies(latest[dep], current[dep])
+    [dep]: satisfies(latest[dep], current[dep]),
   }))
 
   const isSatisfied = _.propertyOf(satisfied)
-  const filteredUpgraded = options.minimal ? cint.filterObject(selectedNewDependencies, (dep: string) => !isSatisfied(dep)) : selectedNewDependencies
+  const filteredUpgraded = options.minimal
+    ? cint.filterObject(selectedNewDependencies, (dep: string) => !isSatisfied(dep))
+    : selectedNewDependencies
   const numUpgraded = Object.keys(filteredUpgraded).length
 
   const ownersChangedDeps = (options.format || []).includes('ownerChanged')
@@ -126,14 +137,13 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
     // use the selectedNewDependencies dependencies data to generate new package data
     // INVARIANT: we don't need try-catch here because pkgData has already been parsed as valid JSON, and upgradePackageData simply does a find-and-replace on that
     printJson(options, output)
-  }
-  else {
+  } else {
     printUpgrades(options, {
       current,
       upgraded: filteredUpgraded,
       numUpgraded,
       total: Object.keys(upgraded).length,
-      ownersChangedDeps
+      ownersChangedDeps,
     })
     if (options.peer) {
       const ignoredUpdates = await getIgnoredUpgrades(current, upgraded, upgradedPeerDependencies!, options)
@@ -144,18 +154,20 @@ async function runLocal(options: Options, pkgData?: Maybe<string>, pkgFile?: May
   }
 
   if (numUpgraded > 0) {
-
     // if there is a package file, write the new package data
     // otherwise, suggest ncu -u
     if (pkgFile) {
       if (options.upgrade) {
         // do not await until end
-        writePromise = writePackageFile(pkgFile, newPkgData)
-          .then(() => {
-            print(options, `\nRun ${chalk.cyan(options.packageManager === 'yarn' ? 'yarn install' : 'npm install')} to install new versions.\n`)
-          })
-      }
-      else {
+        writePromise = writePackageFile(pkgFile, newPkgData).then(() => {
+          print(
+            options,
+            `\nRun ${chalk.cyan(
+              options.packageManager === 'yarn' ? 'yarn install' : 'npm install',
+            )} to install new versions.\n`,
+          )
+        })
+      } else {
         const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'
         print(options, `\nRun ${chalk.cyan(`${ncuCmd} -u`)} to upgrade ${getPackageFileName(options)}`)
       }

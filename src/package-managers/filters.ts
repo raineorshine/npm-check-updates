@@ -48,6 +48,7 @@ export function satisfiesNodeEngine(versionResult: Packument, nodeEngineVersion:
 export function satisfiesPeerDependencies(versionResult: Packument, peerDependencies: Index<Index<Version>>) {
   if (!peerDependencies) return true
   return Object.values(peerDependencies).every(
-    peers => peers[versionResult.name] === undefined || semver.satisfies(versionResult.version, peers[versionResult.name])
+    peers =>
+      peers[versionResult.name] === undefined || semver.satisfies(versionResult.version, peers[versionResult.name]),
   )
 }

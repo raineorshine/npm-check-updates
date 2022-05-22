@@ -10,8 +10,9 @@ const packageFileNames = {
  * Gets the name of the package file based on --packageFile or --packageManager.
  */
 function getPackageFileName(options: Options) {
-  return options.packageFile ? options.packageFile :
-    packageFileNames[options.packageManager as 'npm' | 'yarn'] || packageFileNames.npm
+  return options.packageFile
+    ? options.packageFile
+    : packageFileNames[options.packageManager as 'npm' | 'yarn'] || packageFileNames.npm
 }
 
 export default getPackageFileName

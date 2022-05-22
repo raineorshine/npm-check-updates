@@ -30,8 +30,10 @@ process.on('unhandledRejection', err => {
  * | void                         --global upgrade returns void.
  * >
  */
-export async function run(runOptions: RunOptions = {}, { cli }: { cli?: boolean } = {}): Promise<PackageFile | Index<VersionSpec> | void> {
-
+export async function run(
+  runOptions: RunOptions = {},
+  { cli }: { cli?: boolean } = {},
+): Promise<PackageFile | Index<VersionSpec> | void> {
   const chalk = runOptions.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   const options = initOptions(runOptions, { cli })
@@ -49,9 +51,7 @@ export async function run(runOptions: RunOptions = {}, { cli }: { cli?: boolean 
   let timeout: NodeJS.Timeout
   let timeoutPromise: Promise<void> = new Promise(() => null)
   if (options.timeout) {
-    const timeoutMs = _.isString(options.timeout)
-      ? Number.parseInt(options.timeout, 10)
-      : options.timeout
+    const timeoutMs = _.isString(options.timeout) ? Number.parseInt(options.timeout, 10) : options.timeout
     timeoutPromise = new Promise((resolve, reject) => {
       timeout = setTimeout(() => {
         // must catch the error and reject explicitly since we are in a setTimeout
@@ -59,8 +59,9 @@ export async function run(runOptions: RunOptions = {}, { cli }: { cli?: boolean 
         reject(error)
         try {
           programError(options, chalk.red(error))
+        } catch (e) {
+          /* noop */
         }
-        catch (e) { /* noop */ }
       }, timeoutMs)
     })
   }
@@ -68,12 +69,14 @@ export async function run(runOptions: RunOptions = {}, { cli }: { cli?: boolean 
   /** Runs the dependency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
   async function runUpgrades(): Promise<Index<string> | PackageFile | void> {
     const defaultPackageFilename = getPackageFileName(options)
-    const pkgs = globby.sync(options.cwd
-      ? path.resolve(options.cwd.replace(/^~/, os.homedir()), defaultPackageFilename)
-        .replace(/\\/g, '/') // convert Windows path to *nix path for globby
-      : defaultPackageFilename, {
-      ignore: ['**/node_modules/**']
-    })
+    const pkgs = globby.sync(
+      options.cwd
+        ? path.resolve(options.cwd.replace(/^~/, os.homedir()), defaultPackageFilename).replace(/\\/g, '/') // convert Windows path to *nix path for globby
+        : defaultPackageFilename,
+      {
+        ignore: ['**/node_modules/**'],
+      },
+    )
     options.deep = options.deep || pkgs.length > 1
 
     let analysis: Index<string> | PackageFile | void
@@ -81,8 +84,7 @@ export async function run(runOptions: RunOptions = {}, { cli }: { cli?: boolean 
       const analysis = await runGlobal(options)
       clearTimeout(timeout)
       return analysis
-    }
-    else if (options.deep) {
+    } else if (options.deep) {
       analysis = await pkgs.reduce(async (previousPromise, packageFile) => {
         const packages = await previousPromise
         // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
@@ -102,18 +104,17 @@ export async function run(runOptions: RunOptions = {}, { cli }: { cli?: boolean 
           ...packages,
           // index by relative path if cwd was specified
           [pkgOptions.cwd
-            ? path.relative(path.resolve(pkgOptions.cwd), pkgFile!)
-              // convert Windows path to *nix path for consistency
-              .replace(/\\/g, '/')
-            : pkgFile!
-          ]: await runLocal(pkgOptions, pkgData, pkgFile)
+            ? path
+                .relative(path.resolve(pkgOptions.cwd), pkgFile!)
+                // convert Windows path to *nix path for consistency
+                .replace(/\\/g, '/')
+            : pkgFile!]: await runLocal(pkgOptions, pkgData, pkgFile),
         }
       }, Promise.resolve({} as Index<string> | PackageFile))
       if (options.json) {
         printJson(options, analysis)
       }
-    }
-    else {
+    } else {
       // Mutate packageFile when glob patern finds only single package
       if (pkgs.length === 1 && pkgs[0] !== defaultPackageFilename) {
         options.packageFile = pkgs[0]
@@ -127,7 +128,6 @@ export async function run(runOptions: RunOptions = {}, { cli }: { cli?: boolean 
 
   // doctor mode
   if (options.doctor) {
-
     // execute with -u
     if (options.upgrade) {
       // we have to pass run directly since it would be a circular require if doctor included this file

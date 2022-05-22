@@ -4,13 +4,7 @@ module.exports = {
     mocha: true,
     node: true,
   },
-  extends: [
-    'standard',
-    'eslint:recommended',
-    'plugin:import/typescript',
-    'raine',
-    'prettier'
-  ],
+  extends: ['standard', 'eslint:recommended', 'plugin:import/typescript', 'raine', 'prettier'],
   overrides: [
     {
       files: ['**/*.ts'],
@@ -20,13 +14,10 @@ module.exports = {
         sourceType: 'module',
         project: './tsconfig.json',
       },
-      extends: [
-        'plugin:@typescript-eslint/eslint-recommended',
-        'plugin:@typescript-eslint/recommended'
-      ],
+      extends: ['plugin:@typescript-eslint/eslint-recommended', 'plugin:@typescript-eslint/recommended'],
       globals: {
         Atomics: 'readonly',
-        SharedArrayBuffer: 'readonly'
+        SharedArrayBuffer: 'readonly',
       },
       plugins: ['@typescript-eslint'],
       rules: {
@@ -41,37 +32,32 @@ module.exports = {
         '@typescript-eslint/no-unused-vars': 2,
         '@typescript-eslint/explicit-function-return-type': 0,
         '@typescript-eslint/explicit-module-boundary-types': 0,
-        '@typescript-eslint/array-type': [2,
+        '@typescript-eslint/array-type': [
+          2,
           {
-            'array-type': 'array'
-          }
+            'array-type': 'array',
+          },
         ],
       },
-    }
+    },
   ],
   // to be removed later
   globals: {
     Atomics: 'readonly',
-    SharedArrayBuffer: 'readonly'
+    SharedArrayBuffer: 'readonly',
   },
-  plugins: [
-    'fp',
-    'jsdoc',
-  ],
+  plugins: ['fp', 'jsdoc'],
   rules: {
-
     // jsdoc
-    'jsdoc/require-jsdoc': [2,
+    'jsdoc/require-jsdoc': [
+      2,
       {
-        contexts: [
-          'VariableDeclarator > ArrowFunctionExpression'
-        ],
+        contexts: ['VariableDeclarator > ArrowFunctionExpression'],
         require: {
           ClassDeclaration: true,
-          ClassExpression: true
-        }
-      }
+          ClassExpression: true,
+        },
+      },
     ],
-
-  }
+  },
 }

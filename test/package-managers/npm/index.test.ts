@@ -6,7 +6,6 @@ chai.should()
 chai.use(chaiAsPromised)
 
 describe('npm', function () {
-
   it('list', async () => {
     const versionObject = await npm.list({ cwd: __dirname })
     versionObject.should.have.property('express')
@@ -31,7 +30,7 @@ describe('npm', function () {
   it('getPeerDependencies', async () => {
     await npm.getPeerDependencies('ncu-test-return-version', '1.0').should.eventually.deep.equal({})
     await npm.getPeerDependencies('ncu-test-peer', '1.0').should.eventually.deep.equal({
-      'ncu-test-return-version': '1.x'
+      'ncu-test-return-version': '1.x',
     })
   })
 })

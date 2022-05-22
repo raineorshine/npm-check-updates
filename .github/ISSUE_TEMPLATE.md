@@ -2,7 +2,7 @@
 - [ ] I am using the latest version of `npm-check-updates`
 - [ ] I am using `node >= 12`
 
----------------------------
+---
 
 ## Steps to Reproduce
 

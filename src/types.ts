@@ -1,7 +1,7 @@
 import { SemVer } from 'semver-utils'
 
 /** A very generic object. */
-export type Index<T = any> = {[key: string]: T}
+export type Index<T = any> = { [key: string]: T }
 
 /** A value that may be null or undefined. */
 export type Maybe<T = any> = T | null | undefined
@@ -10,15 +10,20 @@ export type Maybe<T = any> = T | null | undefined
 export type GetVersion = (packageName: string, currentVersion: Version, options?: Options) => Promise<Version | null>
 
 export interface PackageManager {
-  defaultPrefix?: (options: Options) => Promise<string | undefined>,
-  list?: (options: Options) => Promise<Index<Version>>,
-  latest: GetVersion,
-  major?: GetVersion,
-  minor?: GetVersion,
-  newest?: GetVersion,
-  greatest?: GetVersion,
-  packageAuthorChanged?: (packageName: string, from: VersionSpec, to: VersionSpec, options?: Options) => Promise<boolean>,
-  getPeerDependencies?: (packageName: string, version: Version) => Promise<Index<Version>>,
+  defaultPrefix?: (options: Options) => Promise<string | undefined>
+  list?: (options: Options) => Promise<Index<Version>>
+  latest: GetVersion
+  major?: GetVersion
+  minor?: GetVersion
+  newest?: GetVersion
+  greatest?: GetVersion
+  packageAuthorChanged?: (
+    packageName: string,
+    from: VersionSpec,
+    to: VersionSpec,
+    options?: Options,
+  ) => Promise<boolean>
+  getPeerDependencies?: (packageName: string, version: Version) => Promise<Index<Version>>
 }
 
 export type Version = string
@@ -33,258 +38,256 @@ export type TargetString = 'latest' | 'newest' | 'greatest' | 'minor' | 'patch'
 export type Target = TargetString | TargetFunction
 
 export interface Packument {
-  name: string,
-  deprecated?: boolean,
+  name: string
+  deprecated?: boolean
   engines: {
-    node: string,
-  },
-  time: Index<string>,
-  version: Version,
-  versions: Packument[],
+    node: string
+  }
+  time: Index<string>
+  version: Version
+  versions: Packument[]
 }
 
 export interface PackageFileRepository {
-  url: string,
-  directory?: string,
+  url: string
+  directory?: string
 }
 
 export interface PackageFile {
-  repository?: string | PackageFileRepository,
-  dependencies?: Index<VersionSpec>,
-  devDependencies?: Index<VersionSpec>,
-  peerDependencies?: Index<VersionSpec>,
-  optionalDependencies?: Index<VersionSpec>,
-  bundleDependencies?: Index<VersionSpec>,
+  repository?: string | PackageFileRepository
+  dependencies?: Index<VersionSpec>
+  devDependencies?: Index<VersionSpec>
+  peerDependencies?: Index<VersionSpec>
+  optionalDependencies?: Index<VersionSpec>
+  bundleDependencies?: Index<VersionSpec>
 }
 
 export interface IgnoredUpgrade {
-  from: Version,
-  to: Version,
-  reason: Index<string>,
+  from: Version
+  to: Version
+  reason: Index<string>
 }
 
 export interface NpmOptions {
-  global?: boolean,
-  prefix?: string,
-  registry?: string,
+  global?: boolean
+  prefix?: string
+  registry?: string
 }
 
 export interface YarnOptions {
-  global?: boolean,
-  prefix?: string,
-  registry?: string,
+  global?: boolean
+  prefix?: string
+  registry?: string
 }
 
 export interface SpawnOptions {
-  env?: Index<string>,
-  stderr?: (s: string) => void,
+  env?: Index<string>
+  stderr?: (s: string) => void
 }
 
 export interface RunOptions {
-
   /**
    * Force color in terminal
    */
-  color?: boolean,
+  color?: boolean
 
   /**
    * Max number of concurrent HTTP requests to registry. (default: 8)
    */
-  concurrency?: number,
+  concurrency?: number
 
   /**
    * Config file name. (default: .ncurc.{json,yml,js})
    */
-  configFileName?: string,
+  configFileName?: string
 
   /**
    * Directory of .ncurc config file. (default: directory of `packageFile`)
    */
-  configFilePath?: string,
+  configFilePath?: string
 
   /**
    * Working directory in which npm will be executed.
    */
-  cwd?: string,
+  cwd?: string
 
   /**
    * Run recursively in current working directory. Alias of (--packageFile '**\/package.json').
    */
-  deep?: boolean,
+  deep?: boolean
 
   /**
    * Check one or more sections of dependencies only: dev, optional, peer, prod, bundle (comma-delimited). (default: "prod,dev,bundle,optional")
    */
-  dep?: string,
+  dep?: string
 
   /**
    * Include deprecated packages.
    */
-  deprecated?: boolean,
+  deprecated?: boolean
 
   /**
    * Iteratively installs upgrades and runs tests to identify breaking upgrades. Run "ncu --doctor" for detailed help. Add "-u" to execute.
    */
-  doctor?: boolean,
+  doctor?: boolean
 
   /**
    * Specifies the install script to use in doctor mode. (default: npm install/yarn)
    */
-  doctorInstall?: string,
+  doctorInstall?: string
 
   /**
    * Specifies the test script to use in doctor mode. (default: npm test)
    */
-  doctorTest?: string,
+  doctorTest?: string
 
   /**
    * Include only packages that satisfy engines.node as specified in the package file.
    */
-  enginesNode?: boolean,
+  enginesNode?: boolean
 
   /**
    * Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). (default: 1)
    */
-  errorLevel?: number,
+  errorLevel?: number
 
   /**
    * Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/ or function that returns true.
    */
-  filter?: FilterRejectPattern,
+  filter?: FilterRejectPattern
 
   /**
    * Filter on package version using comma-or-space-delimited list, /regex/ or function that returns true.
    */
-  filterVersion?: FilterRejectPattern,
+  filterVersion?: FilterRejectPattern
 
   /**
    * Enable additional output data, string or comma-delimited list: ownerChanged, repo. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository. (default: [])
    */
-  format?: string[],
+  format?: string[]
 
   /**
    * Check global packages instead of in the current project.
    */
-  global?: boolean,
+  global?: boolean
 
   /**
    * Enable interactive prompts for each dependency, implies -u unless one of the json options are set,
    */
-  interactive?: boolean,
+  interactive?: boolean
 
   /**
    * Output new package file instead of human-readable message.
    */
-  jsonAll?: boolean,
+  jsonAll?: boolean
 
   /**
    * Like `jsonAll` but only lists `dependencies`, `devDependencies`, `optionalDependencies`, etc of the new package data.
    */
-  jsonDeps?: boolean,
+  jsonDeps?: boolean
 
   /**
    * Output upgraded dependencies in json.
    */
-  jsonUpgraded?: boolean,
+  jsonUpgraded?: boolean
 
   /**
    * Amount to log: silent, error, minimal, warn, info, verbose, silly. (default: "warn")
    */
-  loglevel?: string,
+  loglevel?: string
 
   /**
    * Merges nested configs with the root config file for --deep or --packageFile options. (default: false)
    */
-  mergeConfig?: boolean,
+  mergeConfig?: boolean
 
   /**
    * Do not upgrade newer versions that are already satisfied by the version range according to semver.
    */
-  minimal?: boolean,
+  minimal?: boolean
 
   /**
    * Package file data (you can also use stdin).
    */
-  packageData?: string | PackageFile,
+  packageData?: string | PackageFile
 
   /**
    * Package file(s) location. (default: ./package.json)
    */
-  packageFile?: string,
+  packageFile?: string
 
   /**
    * npm, yarn (default: "npm")
    */
-  packageManager?: string,
+  packageManager?: string
 
   /**
    * Check peer dependencies of installed packages and filter updates to compatible versions. Run "ncu --help --peer" for details.
    */
-  peer?: boolean,
+  peer?: boolean
 
   /**
    * Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1)
    */
-  pre?: boolean,
+  pre?: boolean
 
   /**
    * Current working directory of npm.
    */
-  prefix?: string,
+  prefix?: string
 
   /**
    * Third-party npm registry.
    */
-  registry?: string,
+  registry?: string
 
   /**
    * Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/ or function that returns true.
    */
-  reject?: FilterRejectPattern,
+  reject?: FilterRejectPattern
 
   /**
    * Exclude package.json versions using comma-or-space-delimited list, /regex/ or function that returns true.
    */
-  rejectVersion?: FilterRejectPattern,
+  rejectVersion?: FilterRejectPattern
 
   /**
    * Remove version ranges from the final package version.
    */
-  removeRange?: boolean,
+  removeRange?: boolean
 
   /**
    * Number of times to retry failed requests for package info. (default: 3)
    */
-  retry?: number,
+  retry?: number
 
   /**
    * Don't output anything (--loglevel silent).
    */
-  silent?: boolean,
+  silent?: boolean
 
   /**
    * Target version or function that returns version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details. (default: "latest")
    */
-  target?: Target,
+  target?: Target
 
   /**
    * Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch)
    */
-  timeout?: number,
+  timeout?: number
 
   /**
    * Overwrite package file with upgraded versions instead of just outputting to console.
    */
-  upgrade?: boolean,
-
+  upgrade?: boolean
 }
 
 export type Options = RunOptions & {
-  args?: any[],
-  cli?: boolean,
-  json?: boolean,
-  nodeEngineVersion?: VersionSpec,
-  packageData?: string,
-  peerDependencies?: Index<any>,
-  rcConfigPath?: string,
+  args?: any[]
+  cli?: boolean
+  json?: boolean
+  nodeEngineVersion?: VersionSpec
+  packageData?: string
+  peerDependencies?: Index<any>
+  rcConfigPath?: string
 }

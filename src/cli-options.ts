@@ -5,15 +5,15 @@ import { deepPatternPrefix } from './constants'
 import { Index } from './types'
 
 export interface CLIOption<T = any> {
-  arg?: string,
-  default?: T,
-  deprecated?: boolean,
-  description: string,
-  help?: string,
-  parse?: (s: string) => T,
-  long: string,
-  short?: string,
-  type?: string,
+  arg?: string
+  default?: T
+  deprecated?: boolean
+  description: string
+  help?: string
+  parse?: (s: string) => T
+  long: string
+  short?: string
+  type?: string
 }
 
 /**
@@ -30,14 +30,23 @@ const getHelpTargetTable = (): string => {
     colAligns: ['right', 'left'],
   })
 
-  table.push(['greatest', `Upgrade to the highest version number, regardless of release date or tag.
-Includes prereleases.`])
-  table.push(['latest', `Upgrade to whatever the package's "latest" git tag points to. It's usually the
+  table.push([
+    'greatest',
+    `Upgrade to the highest version number, regardless of release date or tag.
+Includes prereleases.`,
+  ])
+  table.push([
+    'latest',
+    `Upgrade to whatever the package's "latest" git tag points to. It's usually the
 non-prerelease version with the highest version number, but is ultimately decided
-by each project's maintainers. Default.`])
+by each project's maintainers. Default.`,
+  ])
   table.push(['minor', 'Upgrade to the highest minor version without bumping the major version.'])
-  table.push(['newest', `Upgrade to the version with the most recent publish date, even if there are
-other version numbers that are higher. Includes prereleases.`])
+  table.push([
+    'newest',
+    `Upgrade to the version with the most recent publish date, even if there are
+other version numbers that are higher. Includes prereleases.`,
+  ])
   table.push(['patch', `Upgrade to the highest patch version without bumping the minor or major versions.`])
 
   return `Set the target version that is upgraded to. (default: "latest")
@@ -52,9 +61,11 @@ You can also specify a custom function in your .ncurc.js file, or when importing
       (See https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
     @returns One of the valid target values (specified in the table above).
   */`)}
-  ${chalk.cyan('target')}: (dependencyName, [{ semver, version, operator, major, minor, patch, release, build }]) ${chalk.cyan('=>')} {
-    ${chalk.red('if')} (major ${chalk.red('===')} ${chalk.blue('0')}) ${chalk.red('return')} ${chalk.yellow('\'minor\'')}
-    ${chalk.red('return')} ${chalk.yellow('\'latest\'')}
+  ${chalk.cyan(
+    'target',
+  )}: (dependencyName, [{ semver, version, operator, major, minor, patch, release, build }]) ${chalk.cyan('=>')} {
+    ${chalk.red('if')} (major ${chalk.red('===')} ${chalk.blue('0')}) ${chalk.red('return')} ${chalk.yellow("'minor'")}
+    ${chalk.red('return')} ${chalk.yellow("'latest'")}
   }
 
 `
@@ -96,8 +107,9 @@ const cliOptions: CLIOption[] = [
   {
     long: 'dep',
     arg: 'value',
-    description: 'Check one or more sections of dependencies only: dev, optional, peer, prod, bundle (comma-delimited).',
-    default: 'prod,dev,bundle,optional'
+    description:
+      'Check one or more sections of dependencies only: dev, optional, peer, prod, bundle (comma-delimited).',
+    default: 'prod,dev,bundle,optional',
   },
   {
     long: 'deprecated',
@@ -105,7 +117,8 @@ const cliOptions: CLIOption[] = [
   },
   {
     long: 'doctor',
-    description: 'Iteratively installs upgrades and runs tests to identify breaking upgrades. Run "ncu --doctor" for detailed help. Add "-u" to execute.',
+    description:
+      'Iteratively installs upgrades and runs tests to identify breaking upgrades. Run "ncu --doctor" for detailed help. Add "-u" to execute.',
   },
   {
     long: 'doctorInstall',
@@ -125,7 +138,8 @@ const cliOptions: CLIOption[] = [
     long: 'errorLevel',
     short: 'e',
     arg: 'n',
-    description: 'Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration).',
+    description:
+      'Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration).',
     parse: s => parseInt(s, 10),
     default: 1,
   },
@@ -133,7 +147,8 @@ const cliOptions: CLIOption[] = [
     long: 'filter',
     short: 'f',
     arg: 'matches',
-    description: 'Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.',
+    description:
+      'Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.',
     type: 'string | string[] | RegExp | RegExp[] | Function',
   },
   {
@@ -145,8 +160,9 @@ const cliOptions: CLIOption[] = [
   {
     long: 'format',
     arg: 'value',
-    description: 'Enable additional output data, string or comma-delimited list: ownerChanged, repo. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository.',
-    parse: value => typeof value === 'string' ? value.split(',') : value,
+    description:
+      'Enable additional output data, string or comma-delimited list: ownerChanged, repo. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository.',
+    parse: value => (typeof value === 'string' ? value.split(',') : value),
     default: [],
     type: 'string[]',
   },
@@ -168,7 +184,8 @@ const cliOptions: CLIOption[] = [
   },
   {
     long: 'jsonDeps',
-    description: 'Like `jsonAll` but only lists `dependencies`, `devDependencies`, `optionalDependencies`, etc of the new package data.',
+    description:
+      'Like `jsonAll` but only lists `dependencies`, `devDependencies`, `optionalDependencies`, etc of the new package data.',
   },
   {
     long: 'jsonUpgraded',
@@ -184,7 +201,7 @@ const cliOptions: CLIOption[] = [
   {
     long: 'mergeConfig',
     description: `Merges nested configs with the root config file for --deep or --packageFile options. (default: false)`,
-    type: 'boolean'
+    type: 'boolean',
   },
   {
     long: 'minimal',
@@ -210,7 +227,8 @@ const cliOptions: CLIOption[] = [
   },
   {
     long: 'peer',
-    description: 'Check peer dependencies of installed packages and filter updates to compatible versions. Run "ncu --help --peer" for details.',
+    description:
+      'Check peer dependencies of installed packages and filter updates to compatible versions. Run "ncu --help --peer" for details.',
     type: 'boolean',
     help: `Check peer dependencies of installed packages and filter updates to compatible versions.
 
@@ -247,7 +265,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
 
  ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
  ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}
-  `
+  `,
   },
   {
     long: 'pre',
@@ -271,7 +289,8 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     long: 'reject',
     short: 'x',
     arg: 'matches',
-    description: 'Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.',
+    description:
+      'Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.',
     type: 'string | string[] | RegExp | RegExp[] | Function',
   },
   {
@@ -282,7 +301,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
   },
   {
     long: 'removeRange',
-    description: 'Remove version ranges from the final package version.'
+    description: 'Remove version ranges from the final package version.',
   },
   {
     long: 'retry',
@@ -294,13 +313,14 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
   {
     long: 'silent',
     short: 's',
-    description: 'Don\'t output anything (--loglevel silent).',
+    description: "Don't output anything (--loglevel silent).",
   },
   {
     long: 'target',
     short: 't',
     arg: 'value',
-    description: 'Target version or function that returns version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details. (default: "latest")',
+    description:
+      'Target version or function that returns version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details. (default: "latest")',
     help: getHelpTargetTable(),
     type: 'string | TargetFunction',
   },
@@ -317,11 +337,14 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
 ]
 
 // put cliOptions into an object for O(1) lookups
-export const cliOptionsMap = cliOptions.reduce((accum, option) => ({
-  ...accum,
-  ...option.short ? { [option.short]: option } : null,
-  ...option.long ? { [option.long]: option } : null,
-}), {} as Index<CLIOption>)
+export const cliOptionsMap = cliOptions.reduce(
+  (accum, option) => ({
+    ...accum,
+    ...(option.short ? { [option.short]: option } : null),
+    ...(option.long ? { [option.long]: option } : null),
+  }),
+  {} as Index<CLIOption>,
+)
 
 const cliOptionsSorted = _.sortBy(cliOptions, 'long')
 

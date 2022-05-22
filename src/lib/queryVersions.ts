@@ -18,7 +18,6 @@ import { GetVersion, Index, Options, Version, VersionSpec } from '../types'
  * @returns Promised {packageName: version} collection
  */
 async function queryVersions(packageMap: Index<VersionSpec>, options: Options = {}) {
-
   const target = options.target || 'latest'
   const packageList = Object.keys(packageMap)
   const packageManager = getPackageManager(options.packageManager)
@@ -37,7 +36,6 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
    * @returns
    */
   async function getPackageVersionProtected(dep: VersionSpec): Promise<Version | null> {
-
     const npmAlias = parseNpmAlias(packageMap[dep])
     const [name, version] = npmAlias || [dep, packageMap[dep]]
     const targetResult = typeof target === 'string' ? target : target(name, parseRange(version))
@@ -46,28 +44,38 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
 
     // use gitTags package manager for git urls
     if (isGithubUrl(packageMap[dep])) {
-
       // override packageManager and getPackageVersion just for this dependency
       const packageManager = packageManagers.gitTags
       const getPackageVersion = packageManager[targetResult as keyof typeof packageManager] as GetVersion
 
       if (!getPackageVersion) {
         const packageManagerSupportedVersionTargets = supportedVersionTargets.filter(t => t in packageManager)
-        return Promise.reject(new Error(`Unsupported target "${targetResult}" for github urls. Supported version targets are: ${packageManagerSupportedVersionTargets.join(', ')}`))
+        return Promise.reject(
+          new Error(
+            `Unsupported target "${targetResult}" for github urls. Supported version targets are: ${packageManagerSupportedVersionTargets.join(
+              ', ',
+            )}`,
+          ),
+        )
       }
       versionNew = await getPackageVersion(name, version, {
         ...options,
         // upgrade prereleases to newer prereleases by default
         pre: options.pre != null ? options.pre : isPre(version),
       })
-    }
-    else {
+    } else {
       // set the getPackageVersion function from options.target
       // TODO: Remove "as GetVersion" and fix types
       const getPackageVersion = packageManager[targetResult as keyof typeof packageManager] as GetVersion
       if (!getPackageVersion) {
         const packageManagerSupportedVersionTargets = supportedVersionTargets.filter(t => t in packageManager)
-        return Promise.reject(new Error(`Unsupported target "${targetResult}" for ${options.packageManager || 'npm'}. Supported version targets are: ${packageManagerSupportedVersionTargets.join(', ')}`))
+        return Promise.reject(
+          new Error(
+            `Unsupported target "${targetResult}" for ${
+              options.packageManager || 'npm'
+            }. Supported version targets are: ${packageManagerSupportedVersionTargets.join(', ')}`,
+          ),
+        )
       }
 
       try {
@@ -78,13 +86,18 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
           retry: options.retry ?? 2,
         })
         versionNew = npmAlias && versionNew ? createNpmAlias(name, versionNew) : versionNew
-      }
-      catch (err: any) {
+      } catch (err: any) {
         const errorMessage = err ? (err.message || err).toString() : ''
         if (!errorMessage.match(/E404|ENOTFOUND|404 Not Found/i)) {
           // print a hint about the --timeout option for network timeout errors
           if (!process.env.NCU_TESTS && /(Response|network) timeout/i.test(errorMessage)) {
-            console.error('\n\n' + chalk.red('FetchError: Request Timeout. npm-registry-fetch defaults to 30000 (30 seconds). Try setting the --timeout option (in milliseconds) to override this.') + '\n')
+            console.error(
+              '\n\n' +
+                chalk.red(
+                  'FetchError: Request Timeout. npm-registry-fetch defaults to 30000 (30 seconds). Try setting the --timeout option (in milliseconds) to override this.',
+                ) +
+                '\n',
+            )
           }
 
           throw err
@@ -107,7 +120,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
    */
   const zipVersions = (versionList: (Version | null)[]) =>
     cint.toObject(versionList, (version, i) => ({
-      [packageList[i]]: version
+      [packageList[i]]: version,
     }))
 
   const versions = await pMap(packageList, getPackageVersionProtected, { concurrency: options.concurrency })

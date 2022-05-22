@@ -5,22 +5,29 @@ chai.should()
 process.env.NCU_TESTS = 'true'
 
 describe('upgradeDependencies', () => {
-
   it('upgrade simple, non-semver versions', () => {
     upgradeDependencies({ foo: '1' }, { foo: '2' }).should.eql({ foo: '2' })
     upgradeDependencies({ foo: '1.0' }, { foo: '1.1' }).should.eql({ foo: '1.1' })
-    upgradeDependencies({ 'ncu-test-simple-tag': 'v1' }, { 'ncu-test-simple-tag': 'v3' }).should.eql({ 'ncu-test-simple-tag': 'v3' })
+    upgradeDependencies({ 'ncu-test-simple-tag': 'v1' }, { 'ncu-test-simple-tag': 'v3' }).should.eql({
+      'ncu-test-simple-tag': 'v3',
+    })
   })
 
   it('upgrade github dependencies', () => {
-    upgradeDependencies({ foo: 'github:foo/bar#v1' }, { foo: 'github:foo/bar#v2' }).should.eql({ foo: 'github:foo/bar#v2' })
-    upgradeDependencies({ foo: 'github:foo/bar#v1.0' }, { foo: 'github:foo/bar#v2.0' }).should.eql({ foo: 'github:foo/bar#v2.0' })
-    upgradeDependencies({ foo: 'github:foo/bar#v1.0.0' }, { foo: 'github:foo/bar#v2.0.0' }).should.eql({ foo: 'github:foo/bar#v2.0.0' })
+    upgradeDependencies({ foo: 'github:foo/bar#v1' }, { foo: 'github:foo/bar#v2' }).should.eql({
+      foo: 'github:foo/bar#v2',
+    })
+    upgradeDependencies({ foo: 'github:foo/bar#v1.0' }, { foo: 'github:foo/bar#v2.0' }).should.eql({
+      foo: 'github:foo/bar#v2.0',
+    })
+    upgradeDependencies({ foo: 'github:foo/bar#v1.0.0' }, { foo: 'github:foo/bar#v2.0.0' }).should.eql({
+      foo: 'github:foo/bar#v2.0.0',
+    })
   })
 
   it('upgrade latest versions that already satisfy the specified version', () => {
     upgradeDependencies({ mongodb: '^1.0.0' }, { mongodb: '1.4.30' }).should.eql({
-      mongodb: '^1.4.30'
+      mongodb: '^1.4.30',
     })
   })
 
@@ -43,10 +50,7 @@ describe('upgradeDependencies', () => {
   })
 
   it('ignore packages with empty values', () => {
-    upgradeDependencies({ mongodb: null }, { mongodb: '1.4.30' })
-      .should.eql({})
-    upgradeDependencies({ mongodb: '' }, { mongodb: '1.4.30' })
-      .should.eql({})
+    upgradeDependencies({ mongodb: null }, { mongodb: '1.4.30' }).should.eql({})
+    upgradeDependencies({ mongodb: '' }, { mongodb: '1.4.30' }).should.eql({})
   })
-
 })

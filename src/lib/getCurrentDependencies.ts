@@ -22,14 +22,11 @@ const isGreaterThanSafe = (spec1: VersionSpec, spec2: VersionSpec) =>
  * @returns Promised {packageName: version} collection
  */
 function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}) {
-
-  const depOptions = options.dep
-    ? (options.dep || '').split(',')
-    : ['dev', 'optional', 'peer', 'prod', 'bundle']
+  const depOptions = options.dep ? (options.dep || '').split(',') : ['dev', 'optional', 'peer', 'prod', 'bundle']
 
   // map the dependency section option to a full dependency section name
-  const depSections = depOptions.map(short =>
-    (short === 'prod' ? 'dependencies' : short + 'Dependencies') as keyof PackageFile
+  const depSections = depOptions.map(
+    short => (short === 'prod' ? 'dependencies' : short + 'Dependencies') as keyof PackageFile,
   )
 
   // get all dependencies from the selected sections
@@ -37,7 +34,7 @@ function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}
   const allDependencies = depSections.reduce((accum, depSection) => {
     return {
       ...accum,
-      ...cint.filterObject(pkgData[depSection], (dep, spec) => !isGreaterThanSafe(spec, accum[dep]))
+      ...cint.filterObject(pkgData[depSection], (dep, spec) => !isGreaterThanSafe(spec, accum[dep])),
     }
   }, {} as Index<VersionSpec>)
 
@@ -48,8 +45,8 @@ function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}
       options.filter || null,
       options.reject || null,
       options.filterVersion || null,
-      options.rejectVersion || null
-    )
+      options.rejectVersion || null,
+    ),
   )
 
   return filteredDependencies
