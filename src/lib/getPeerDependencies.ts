@@ -14,8 +14,7 @@ function getPeerDependencies(current: Index<VersionSpec>, options: Options) {
       const pkgData = fs.readFileSync(path, 'utf-8')
       const pkg = jph.parse(pkgData)
       peers = getCurrentDependencies(pkg, { ...options, dep: 'peer' })
-    }
-    catch (e) {
+    } catch (e) {
       print(options, 'Could not read peer dependencies for package ' + pkgName + '. Is this package installed?', 'warn')
     }
     return { ...accum, [pkgName]: peers }

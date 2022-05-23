@@ -1,10 +1,10 @@
 # Note: pending imminent deprecation
 
-**This module will be deprecated once npm v7 is released.  Please do not rely
+**This module will be deprecated once npm v7 is released. Please do not rely
 on it more than absolutely necessary (ie, only if you are depending on
 it for use with npm v6 internal dependencies).**
 
-----
+---
 
 ## figgy-pudding [![npm version](https://img.shields.io/npm/v/figgy-pudding.svg)](https://npm.im/figgy-pudding) [![license](https://img.shields.io/npm/l/figgy-pudding.svg)](https://npm.im/figgy-pudding) [![Travis](https://img.shields.io/travis/npm/figgy-pudding.svg)](https://travis-ci.org/npm/figgy-pudding) [![Coverage Status](https://coveralls.io/repos/github/npm/figgy-pudding/badge.svg?branch=latest)](https://coveralls.io/github/npm/figgy-pudding?branch=latest)
 
@@ -23,19 +23,19 @@ and passing of options.
 
 ## Table of Contents
 
-* [Example](#example)
-* [Features](#features)
-* [API](#api)
-  * [`figgyPudding(spec)`](#figgy-pudding)
-  * [`PuddingFactory(values)`](#pudding-factory)
-    * [`opts.get()`](#opts-get)
-    * [`opts.concat()`](#opts-concat)
-    * [`opts.toJSON()`](#opts-to-json)
-    * [`opts.forEach()`](#opts-for-each)
-    * [`opts[Symbol.iterator]()`](#opts-symbol-iterator)
-    * [`opts.entries()`](#opts-entries)
-    * [`opts.keys()`](#opts-keys)
-    * [`opts.value()`](#opts-values)
+- [Example](#example)
+- [Features](#features)
+- [API](#api)
+  - [`figgyPudding(spec)`](#figgy-pudding)
+  - [`PuddingFactory(values)`](#pudding-factory)
+    - [`opts.get()`](#opts-get)
+    - [`opts.concat()`](#opts-concat)
+    - [`opts.toJSON()`](#opts-to-json)
+    - [`opts.forEach()`](#opts-for-each)
+    - [`opts[Symbol.iterator]()`](#opts-symbol-iterator)
+    - [`opts.entries()`](#opts-entries)
+    - [`opts.keys()`](#opts-keys)
+    - [`opts.value()`](#opts-values)
 
 ### Example
 
@@ -45,18 +45,21 @@ const fetch = require('./fetch.js')
 const puddin = require('figgy-pudding')
 
 const PrintOpts = puddin({
-  json: { default: false }
+  json: { default: false },
 })
 
-async function printPkg (name, opts) {
+async function printPkg(name, opts) {
   // Expected pattern is to call this in every interface function. If `opts` is
   // not passed in, it will automatically create an (empty) object for it.
   opts = PrintOpts(opts)
   const uri = `https://registry.npmjs.com/${name}`
-  const res = await fetch(uri, opts.concat({
-    // Add or override any passed-in configs and pass them down.
-    log: customLogger
-  }))
+  const res = await fetch(
+    uri,
+    opts.concat({
+      // Add or override any passed-in configs and pass them down.
+      log: customLogger,
+    }),
+  )
   // The following would throw an error, because it's not in PrintOpts:
   // console.log(opts.log)
   if (opts.json) {
@@ -66,11 +69,13 @@ async function printPkg (name, opts) {
   }
 }
 
-console.log(await printPkg('figgy', {
-  // Pass in *all* configs at the toplevel, as a regular object.
-  json: true,
-  cache: './tmp-cache'
-}))
+console.log(
+  await printPkg('figgy', {
+    // Pass in *all* configs at the toplevel, as a regular object.
+    json: true,
+    cache: './tmp-cache',
+  }),
+)
 ```
 
 ```javascript
@@ -89,16 +94,16 @@ module.exports = async function (..., opts) {
 
 ### Features
 
-* hide options from layer that didn't ask for it
-* shared multi-layer options
-* make sure `opts` argument is available
-* transparent key access like normal keys, through a Proxy. No need for`.get()`!
-* default values
-* key aliases
-* arbitrary key filter functions
-* key/value iteration
-* serialization
-* 100% test coverage using `tap --100`
+- hide options from layer that didn't ask for it
+- shared multi-layer options
+- make sure `opts` argument is available
+- transparent key access like normal keys, through a Proxy. No need for`.get()`!
+- default values
+- key aliases
+- arbitrary key filter functions
+- key/value iteration
+- serialization
+- 100% test coverage using `tap --100`
 
 ### API
 
@@ -119,9 +124,9 @@ other key.
 const MyAppOpts = figgyPudding({
   lg: 'log',
   log: {
-    default: () => require('npmlog')
+    default: () => require('npmlog'),
   },
-  cache: {}
+  cache: {},
 })
 ```
 
@@ -142,19 +147,19 @@ values for nested `Opts` parents will be used, if found.
 
 ```javascript
 const ReqOpts = figgyPudding({
-  follow: {}
+  follow: {},
 })
 
 const opts = ReqOpts({
   follow: true,
-  log: require('npmlog')
+  log: require('npmlog'),
 })
 
 opts.follow // => true
 opts.log // => Error: ReqOpts does not define `log`
 
 const MoreOpts = figgyPudding({
-  log: {}
+  log: {},
 })
 MoreOpts(opts).log // => npmlog object (passed in from original plain obj)
 MoreOpts(opts).follow // => Error: MoreOpts does not define `follow`
@@ -181,9 +186,9 @@ the original `opts` being shadows by the new providers.
 ##### Example
 
 ```js
-const opts = MyOpts({x: 1})
+const opts = MyOpts({ x: 1 })
 opts.get('x') // 1
-opts.concat({x: 2}).get('x') // 2
+opts.concat({ x: 2 }).get('x') // 2
 opts.get('x') // 1 (original opts object left intact)
 ```
 
@@ -197,7 +202,7 @@ Only keys that are readable by the current pudding type will be serialized.
 ##### Example
 
 ```js
-const opts = MyOpts({x: 1})
+const opts = MyOpts({ x: 1 })
 opts.toJSON() // {x: 1}
 JSON.stringify(opts) // '{"x":1}'
 ```
@@ -211,7 +216,7 @@ pudding type. `thisArg` will be used to set the `this` argument when calling the
 ##### Example
 
 ```js
-const opts = MyOpts({x: 1, y: 2})
+const opts = MyOpts({ x: 1, y: 2 })
 opts.forEach((value, key) => console.log(key, '=', value))
 ```
 

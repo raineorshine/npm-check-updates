@@ -16,14 +16,12 @@ const VERSION_PART_DELIM: SemVer = {
   minor: '.',
   patch: '.',
   release: '-',
-  build: '+'
+  build: '+',
 }
 export const DEFAULT_WILDCARD = '^'
 export const WILDCARDS = ['^', '~', '.*', '.x']
 const WILDCARDS_PURE = ['^', '~', '^*', '*', 'x', 'x.x', 'x.x.x']
-const WILDCARD_PURE_REGEX = new RegExp(`^(${WILDCARDS_PURE.join('|')
-  .replace(/\^/g, '\\^')
-  .replace(/\*/g, '\\*')})$`)
+const WILDCARD_PURE_REGEX = new RegExp(`^(${WILDCARDS_PURE.join('|').replace(/\^/g, '\\^').replace(/\*/g, '\\*')})$`)
 
 /** Matches an npm alias version declaration. */
 const NPM_ALIAS_REGEX = /^npm:(.*)@(.*)/
@@ -31,8 +29,8 @@ const NPM_ALIAS_REGEX = /^npm:(.*)@(.*)/
 type VersionPart = keyof SemVer
 
 interface UpgradeOptions {
-  wildcard?: string,
-  removeRange?: boolean,
+  wildcard?: string
+  removeRange?: boolean
 }
 
 /**
@@ -40,11 +38,15 @@ interface UpgradeOptions {
  * @returns The number of parts in the version
  */
 export function numParts(version: string) {
-
   const [semver] = semverutils.parseRange(version)
 
   if (!semver) {
-    throw new Error(util.format('semverutils.parseRange returned null when trying to parse "%s". This is probably a problem with the "semver-utils" dependency. Please report an issue at https://github.com/raineorshine/npm-check-updates/issues.', version))
+    throw new Error(
+      util.format(
+        'semverutils.parseRange returned null when trying to parse "%s". This is probably a problem with the "semver-utils" dependency. Please report an issue at https://github.com/raineorshine/npm-check-updates/issues.',
+        version,
+      ),
+    )
   }
 
   return _.intersection(VERSION_PARTS, Object.keys(semver)).length
@@ -58,13 +60,13 @@ export function numParts(version: string) {
  * @returns
  */
 export function precisionAdd(precision: VersionPart, n: number) {
-
   if (n === 0) return precision
 
-  const index =
-    VERSION_BASE_PARTS.includes(precision) ? VERSION_BASE_PARTS.indexOf(precision) + n :
-    VERSION_ADDED_PARTS.includes(precision) ? VERSION_BASE_PARTS.length + n :
-    null
+  const index = VERSION_BASE_PARTS.includes(precision)
+    ? VERSION_BASE_PARTS.indexOf(precision) + n
+    : VERSION_ADDED_PARTS.includes(precision)
+    ? VERSION_BASE_PARTS.length + n
+    : null
 
   if (index === null || !VERSION_PARTS[index]) {
     throw new Error(`Invalid precision: ${precision}`)
@@ -82,7 +84,6 @@ export function precisionAdd(precision: VersionPart, n: number) {
  * @returns
  */
 export function stringify(semver: SemVer, precision?: VersionPart) {
-
   // get a list of the parts up until (and including) the given precision
   // or all of them, if no precision is specified
   const parts = precision ? VERSION_PARTS.slice(0, VERSION_PARTS.indexOf(precision) + 1) : VERSION_PARTS
@@ -128,9 +129,7 @@ export function setPrecision(version: string, precision: VersionPart) {
  * @returns
  */
 export function addWildCard(version: string, wildcard: string) {
-  return wildcard === '^' || wildcard === '~' ?
-    wildcard + version :
-    setPrecision(version, 'major') + wildcard
+  return wildcard === '^' || wildcard === '~' ? wildcard + version : setPrecision(version, 'major') + wildcard
 }
 
 /**
@@ -181,17 +180,12 @@ export function colorizeDiff(from: string, to: string) {
   // major = red (or any change before 1.0.0)
   // minor = cyan
   // patch = green
-  const color = i === 0 || partsToColor[0] === '0' ? 'red' :
-    i === 1 ? 'cyan' :
-    'green'
+  const color = i === 0 || partsToColor[0] === '0' ? 'red' : i === 1 ? 'cyan' : 'green'
 
   // if we are colorizing only part of the word, add a dot in the middle
   const middot = i > 0 && i < partsToColor.length ? '.' : ''
 
-  return leadingWildcard +
-        partsToColor.slice(0, i).join('.') +
-        middot +
-        chalk[color](partsToColor.slice(i).join('.'))
+  return leadingWildcard + partsToColor.slice(0, i).join('.') + middot + chalk[color](partsToColor.slice(i).join('.'))
 }
 
 /** Comparator used to sort semver versions */
@@ -207,9 +201,7 @@ export function compareVersions(a: string, b: string) {
  * @param level     major|minor
  * @returns         String representation of the suggested version.
  */
-export function findGreatestByLevel(versions: string[], current: string, level: VersionLevel): string
- | null {
-
+export function findGreatestByLevel(versions: string[], current: string, level: VersionLevel): string | null {
   if (!semver.validRange(current)) {
     return null
   }
@@ -219,9 +211,11 @@ export function findGreatestByLevel(versions: string[], current: string, level: 
     .sort(compareVersions)
     .filter(v => {
       const parsed = semver.parse(v)
-      return parsed &&
+      return (
+        parsed &&
         (level === 'major' || parsed.major === cur?.major) &&
         (level === 'major' || level === 'minor' || parsed.minor === cur?.minor)
+      )
     })
 
   return _.last(versionsSorted) || null
@@ -245,10 +239,10 @@ const isMissingPatch = (s: string) => /^[vV]?\d+\.\d+$/.test(s)
 const fixLeadingV = (s: string) => s.replace(/^[vV]/, '')
 
 /** Converts a pseudo version that is missing its minor and patch components into a valid semver version. NOOP for valid semver versions. */
-const fixMissingMinorAndPatch = (s: string) => isMissingMinorAndPatch(s) ? s + '.0.0' : s
+const fixMissingMinorAndPatch = (s: string) => (isMissingMinorAndPatch(s) ? s + '.0.0' : s)
 
 /** Converts a pseudo version that is missing its patch component into a valid semver version. NOOP for valid semver versions. */
-const fixMissingPatch = (s: string) => isMissingPatch(s) ? s + '.0' : s
+const fixMissingPatch = (s: string) => (isMissingPatch(s) ? s + '.0' : s)
 
 /** Converts a pseudo version into a valid semver version. NOOP for valid semver versions. */
 export const fixPseudoVersion = _.flow(fixLeadingV, fixMissingMinorAndPatch, fixMissingPatch)
@@ -271,8 +265,7 @@ export function v(str: Maybe<string>) {
  * @returns    "npm:package@x.y.z"
  * @example    createNpmAlias('chalk', '2.0.0') -> 'npm:chalk@2.0.0'
  */
-export const createNpmAlias = (name: string, version: string) =>
-  `npm:${name}@${version}`
+export const createNpmAlias = (name: string, version: string) => `npm:${name}@${version}`
 
 /**
  * Parses an npm alias into a [name, version] 2-tuple.
@@ -288,8 +281,7 @@ export const parseNpmAlias = (alias: string) => {
 /**
  * Returns true if a version declaration is an npm alias.
  */
-export const isNpmAlias = (declaration: string) =>
-  declaration && !!declaration.match(NPM_ALIAS_REGEX)
+export const isNpmAlias = (declaration: string) => declaration && !!declaration.match(NPM_ALIAS_REGEX)
 
 /**
  * Replaces the version number embedded in an npm alias.
@@ -308,8 +300,7 @@ export const isGithubUrl = (declaration: string | null) => {
   const parsed = parseGithubUrl(declaration)
   if (!parsed || !parsed.branch) return false
 
-  const version = decodeURIComponent(parsed.branch)
-    .replace(/^semver:/, '')
+  const version = decodeURIComponent(parsed.branch).replace(/^semver:/, '')
   return !!semver.validRange(version)
 }
 
@@ -320,8 +311,7 @@ export const getGithubUrlTag = (declaration: string | null) => {
   if (!declaration) return null
   const parsed = parseGithubUrl(declaration)
   if (!parsed || !parsed.branch) return null
-  const version = decodeURIComponent(parsed.branch)
-    .replace(/^semver:/, '')
+  const version = decodeURIComponent(parsed.branch).replace(/^semver:/, '')
   return parsed && parsed.branch && semver.validRange(version) ? version : null
 }
 
@@ -333,7 +323,11 @@ export const getGithubUrlTag = (declaration: string | null) => {
  * @param [options={}]
  * @returns The upgraded dependency declaration (e.g. "1.3.x")
  */
-export function upgradeDependencyDeclaration(declaration: string, latestVersion: string | null, options: UpgradeOptions = {}) {
+export function upgradeDependencyDeclaration(
+  declaration: string,
+  latestVersion: string | null,
+  options: UpgradeOptions = {},
+) {
   options.wildcard = options.wildcard || DEFAULT_WILDCARD
 
   if (!latestVersion) {
@@ -350,15 +344,14 @@ export function upgradeDependencyDeclaration(declaration: string, latestVersion:
   // return global wildcards immediately
   if (options.removeRange) {
     return latestVersion
-  }
-  else if (isWildCard(declaration)) {
+  } else if (isWildCard(declaration)) {
     return declaration
   }
 
   // parse the declaration
   // if multiple ranges, use the semver with the least number of parts
   const parsedRange = _(semverutils.parseRange(declaration))
-  // semver-utils includes empty entries for the || and - operators. We can remove them completely
+    // semver-utils includes empty entries for the || and - operators. We can remove them completely
     .reject({ operator: '||' })
     .reject({ operator: '-' })
     .sortBy(_.ary(_.flow(stringify, numParts), 1))
@@ -372,16 +365,20 @@ export function upgradeDependencyDeclaration(declaration: string, latestVersion:
    * anyway.
    */
   function chooseVersion(part: VersionPart): string | null {
-    return (isWildPart(declaredSemver[part]) ? declaredSemver[part] :
-      VERSION_BASE_PARTS.includes(part) && declaredSemver[part] ? latestSemver[part] :
-      VERSION_ADDED_PARTS.includes(part) ? latestSemver[part] :
-      null)
-    || null
+    return (
+      (isWildPart(declaredSemver[part])
+        ? declaredSemver[part]
+        : VERSION_BASE_PARTS.includes(part) && declaredSemver[part]
+        ? latestSemver[part]
+        : VERSION_ADDED_PARTS.includes(part)
+        ? latestSemver[part]
+        : null) || null
+    )
   }
 
   // create a new semver object with major, minor, patch, build, and release parts
   const newSemver = cint.toObject(VERSION_PARTS, (part: VersionPart) => ({
-    [part]: chooseVersion(part)
+    [part]: chooseVersion(part),
   }))
   const newSemverString = stringify(newSemver)
   const version = v(declaredSemver.semver) + newSemverString
@@ -401,38 +398,29 @@ export function upgradeDependencyDeclaration(declaration: string, latestVersion:
 
   // convert versions with </<= or mixed operators into the preferred wildcard
   // only do so if the new version does not already contain a wildcard
-  return !hasWildCard && (isLessThanOrEqual || isMixed) ?
-    addWildCard(version, options.wildcard) :
-    // convert > to >= since there are likely no available versions > latest
-    // https://github.com/raineorshine/npm-check-updates/issues/957
-    (isGreaterThan ? '>=' : operator) + version
+  return !hasWildCard && (isLessThanOrEqual || isMixed)
+    ? addWildCard(version, options.wildcard)
+    : // convert > to >= since there are likely no available versions > latest
+      // https://github.com/raineorshine/npm-check-updates/issues/957
+      (isGreaterThan ? '>=' : operator) + version
 }
 
 /** Reverts a valid semver version to a pseudo version that is missing its minor and patch components. NOOP If the original version was a valid semver version. */
 const revertMissingMinorAndPatch = _.curry((current: string, latest: string) =>
-  isMissingMinorAndPatch(current)
-    ? latest.slice(0, latest.length - '.0.0'.length)
-    : latest)
+  isMissingMinorAndPatch(current) ? latest.slice(0, latest.length - '.0.0'.length) : latest,
+)
 
 /** Reverts a valid semver version to a pseudo version that is missing its patch components. NOOP If the original version was a valid semver version. */
 const revertMissingPatch = _.curry((current: string, latest: string) =>
-  isMissingPatch(current)
-    ? latest.slice(0, latest.length - '.0'.length)
-    : latest)
+  isMissingPatch(current) ? latest.slice(0, latest.length - '.0'.length) : latest,
+)
 
 /** Reverts a valid semver version to a pseudo version with a leading 'v'. NOOP If the original version was a valid semver version. */
-const revertLeadingV = _.curry((current: string, latest: string) =>
-  v(current)
-    ? v(current) + latest
-    : latest)
+const revertLeadingV = _.curry((current: string, latest: string) => (v(current) ? v(current) + latest : latest))
 
 /** Reverts a valid semver version to a pseudo version. NOOP If the original version was a valid semver version. */
 const revertPseudoVersion = (current: string, latest: string) =>
-  _.flow(
-    revertLeadingV(current),
-    revertMissingMinorAndPatch(current),
-    revertMissingPatch(current)
-  )(latest)
+  _.flow(revertLeadingV(current), revertMissingMinorAndPatch(current), revertMissingPatch(current))(latest)
 
 /**
  * Replaces the version number embedded in a Github URL.
@@ -442,7 +430,6 @@ export const upgradeGithubUrl = (declaration: string, upgraded: string) => {
   const upgradedNormalized = fixPseudoVersion(upgraded)
   const parsedUrl = parseGithubUrl(declaration)
   if (!parsedUrl) return declaration
-  const tag = decodeURIComponent(parsedUrl.branch)
-    .replace(/^semver:/, '')
+  const tag = decodeURIComponent(parsedUrl.branch).replace(/^semver:/, '')
   return declaration.replace(tag, upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgradedNormalized)))
 }

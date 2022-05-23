@@ -31,12 +31,10 @@ if (rawArgs.includes('--help') && rawArgs.length > 1) {
       }
       if (option.help) {
         console.log(`\n${option.help}`)
-      }
-      else if (option.description) {
+      } else if (option.description) {
         console.log(`\n${option.description}`)
       }
-    }
-    else {
+    } else {
       console.log(`Unknown option: ${arg}`)
     }
   })
@@ -54,7 +52,13 @@ program
 // add cli options
 cliOptions.forEach(({ long, short, arg, description, default: defaultValue, parse }) =>
   // handle 3rd/4th argument polymorphism
-  program.option(`${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : ''}`, description, parse || defaultValue, parse ? defaultValue : undefined))
+  program.option(
+    `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : ''}`,
+    description,
+    parse || defaultValue,
+    parse ? defaultValue : undefined,
+  ),
+)
 
 // set version option at the end
 program.version(pkg.version)
@@ -68,28 +72,23 @@ const { configFileName, configFilePath, packageFile, mergeConfig } = programOpts
 // load .ncurc
 // Do not load when global option is set
 // Do not load when tests are running (an be overridden if configFilePath is set explicitly, or --mergeConfig option specified)
-const rcResult = !programOpts.global && (!process.env.NCU_TESTS || configFilePath || mergeConfig)
-  ? getNcuRc({ configFileName, configFilePath, packageFile })
-  : null
+const rcResult =
+  !programOpts.global && (!process.env.NCU_TESTS || configFilePath || mergeConfig)
+    ? getNcuRc({ configFileName, configFilePath, packageFile })
+    : null
 
 // insert config arguments into command line arguments so they can all be parsed by commander
-const combinedArguments = [
-  ...process.argv.slice(0, 2),
-  ...rcResult?.args || [],
-  ...process.argv.slice(2),
-]
+const combinedArguments = [...process.argv.slice(0, 2), ...(rcResult?.args || []), ...process.argv.slice(2)]
 
 program.parse(combinedArguments)
 programOpts = program.opts()
 
 // filter out undefined program options and combine cli options with config file options
 const options = {
-  ...rcResult && Object.keys(rcResult.config).length > 0
-    ? { rcConfigPath: rcResult.filePath }
-    : null,
+  ...(rcResult && Object.keys(rcResult.config).length > 0 ? { rcConfigPath: rcResult.filePath } : null),
   ..._.pickBy(program.opts(), value => value !== undefined),
   args: program.args,
-  ...programOpts.filter ? { filter: programOpts.filter } : null,
+  ...(programOpts.filter ? { filter: programOpts.filter } : null),
 }
 
 // NOTE: Options handling and defaults go in initOptions in index.js

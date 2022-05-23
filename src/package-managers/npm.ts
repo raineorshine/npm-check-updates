@@ -11,13 +11,17 @@ import libnpmconfig from '../lib/libnpmconfig'
 import * as versionUtil from '../version-util'
 import { print } from '../logging'
 import { GetVersion, Index, Options, NpmOptions, Packument, Version, VersionSpec } from '../types'
-import { allowDeprecatedOrIsNotDeprecated, allowPreOrIsNotPre, satisfiesNodeEngine, satisfiesPeerDependencies } from './filters'
+import {
+  allowDeprecatedOrIsNotDeprecated,
+  allowPreOrIsNotPre,
+  satisfiesNodeEngine,
+  satisfiesPeerDependencies,
+} from './filters'
 
 const TIME_FIELDS = ['modified', 'created']
 
 /** Reads the local npm config and normalizes keys for pacote. */
 const readNpmConfig = () => {
-
   const npmConfigToPacoteMap = {
     cafile: (path: string) => {
       // load-cafile, based on github.com/npm/cli/blob/40c1b0f/src/config/load-cafile.js
@@ -47,25 +51,24 @@ const readNpmConfig = () => {
   // libnpmconfig incorrectly (?) ignores NPM_CONFIG_USERCONFIG because it is always overridden by the default builtin.userconfig
   // set userconfig manually so that it is prioritized
   const builtinsWithUserConfig = {
-    userconfig: process.env.npm_config_userconfig || process.env.NPM_CONFIG_USERCONFIG
+    userconfig: process.env.npm_config_userconfig || process.env.NPM_CONFIG_USERCONFIG,
   }
   libnpmconfig.read(null, builtinsWithUserConfig).forEach((value: string, key: string) => {
     // replace env ${VARS} in strings with the process.env value
-    const normalizedValue = typeof value !== 'string' ? value
-      // parse stringified booleans
-      : key.replace(/-/g, '').toLowerCase() in booleanKeys ? stringToBoolean(value)
-      : value.replace(/\${([^}]+)}/, (_, envVar) =>
-        process.env[envVar] as string
-      )
+    const normalizedValue =
+      typeof value !== 'string'
+        ? value
+        : // parse stringified booleans
+        key.replace(/-/g, '').toLowerCase() in booleanKeys
+        ? stringToBoolean(value)
+        : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
 
     const { [key]: pacoteKey }: Index<string | ((path: string) => any)> = npmConfigToPacoteMap
     if (_.isString(pacoteKey)) {
       config[pacoteKey] = normalizedValue
-    }
-    else if (_.isFunction(pacoteKey)) {
+    } else if (_.isFunction(pacoteKey)) {
       _.assign(config, pacoteKey(normalizedValue))
-    }
-    else {
+    } else {
       config[key.match(/^[a-z]/i) ? _.camelCase(key) : key] = normalizedValue
     }
   })
@@ -73,7 +76,6 @@ const readNpmConfig = () => {
   config.cache = false
 
   return config
-
 }
 
 const npmConfig = readNpmConfig()
@@ -91,14 +93,17 @@ const npmConfig = readNpmConfig()
  * @param data
  * @returns
  */
-function parseJson(result: string, data: { command?: string, packageName?: string }) {
+function parseJson(result: string, data: { command?: string; packageName?: string }) {
   let json
   // use a try-catch instead of .catch to avoid re-catching upstream errors
   try {
     json = JSON.parse(result)
-  }
-  catch (err) {
-    throw new Error(`Expected JSON from "${data.command}". This could be due to npm instability${data.packageName ? ` or problems with the ${data.packageName} package` : ''}.\n\n${result}`)
+  } catch (err) {
+    throw new Error(
+      `Expected JSON from "${data.command}". This could be due to npm instability${
+        data.packageName ? ` or problems with the ${data.packageName} package` : ''
+      }.\n\n${result}`,
+    )
   }
   return json
 }
@@ -112,13 +117,18 @@ function parseJson(result: string, data: { command?: string, packageName?: strin
  * @param npmConfigLocal Additional npm config variables that are merged into the system npm config
  * @returns A promise that fullfills with boolean value.
  */
-export async function packageAuthorChanged(packageName: string, currentVersion: VersionSpec, upgradedVersion: VersionSpec, options: Options = {}, npmConfigLocal?: Index<string | boolean>) {
-
+export async function packageAuthorChanged(
+  packageName: string,
+  currentVersion: VersionSpec,
+  upgradedVersion: VersionSpec,
+  options: Options = {},
+  npmConfigLocal?: Index<string | boolean>,
+) {
   const result = await pacote.packument(packageName, {
     ...npmConfigLocal,
     ...npmConfig,
     fullMetadata: true,
-    ...options.registry ? { registry: options.registry, silent: true } : null,
+    ...(options.registry ? { registry: options.registry, silent: true } : null),
   })
   if (result.versions) {
     const pkgVersions = Object.keys(result.versions)
@@ -134,7 +144,11 @@ export async function packageAuthorChanged(packageName: string, currentVersion: 
   return false
 }
 
-interface ViewOptions { registry?: string, timeout?: number, retry?: number }
+interface ViewOptions {
+  registry?: string
+  timeout?: number
+  retry?: number
+}
 
 /**
  * Returns an object of specified values retrieved by npm view.
@@ -144,7 +158,14 @@ interface ViewOptions { registry?: string, timeout?: number, retry?: number }
  * @param               currentVersion
  * @returns             Promised result
  */
-export async function viewMany(packageName: string, fields: string[], currentVersion: Version, { registry, timeout, retry }: ViewOptions = {}, retryed = 0, npmConfigLocal?: Index<string | boolean>) {
+export async function viewMany(
+  packageName: string,
+  fields: string[],
+  currentVersion: Version,
+  { registry, timeout, retry }: ViewOptions = {},
+  retryed = 0,
+  npmConfigLocal?: Index<string | boolean>,
+) {
   if (currentVersion && (!semver.validRange(currentVersion) || versionUtil.isWildCard(currentVersion))) {
     return Promise.resolve({} as Packument)
   }
@@ -155,25 +176,35 @@ export async function viewMany(packageName: string, fields: string[], currentVer
       ...npmConfigLocal,
       ...npmConfig,
       fullMetadata: fields.includes('time'),
-      ...registry ? { registry, silent: true } : null,
+      ...(registry ? { registry, silent: true } : null),
       timeout,
     })
-  }
-  catch (err: any) {
+  } catch (err: any) {
     if (retry && ++retryed <= retry) {
       console.error(`\nFetchError: Request ${packageName} info failed[${retryed} of ${retry}]: \n${err.message}.`)
-      const packument: Packument = await viewMany(packageName, fields, currentVersion, { registry, timeout, retry }, retryed, npmConfigLocal)
+      const packument: Packument = await viewMany(
+        packageName,
+        fields,
+        currentVersion,
+        { registry, timeout, retry },
+        retryed,
+        npmConfigLocal,
+      )
       return packument
     }
 
     throw err
   }
-  return fields.reduce((accum, field) => ({
-    ...accum,
-    [field]: field.startsWith('dist-tags.') && result.versions ?
-      result.versions[_.get(result, field) as unknown as string] :
-      result[field]
-  }), {} as Packument)
+  return fields.reduce(
+    (accum, field) => ({
+      ...accum,
+      [field]:
+        field.startsWith('dist-tags.') && result.versions
+          ? result.versions[_.get(result, field) as unknown as string]
+          : result[field],
+    }),
+    {} as Packument,
+  )
 }
 
 /** Memoize viewMany for --deep performance. */
@@ -187,7 +218,13 @@ export const viewManyMemoized = memoize(viewMany)
  * @param currentVersion
  * @returns            Promised result
  */
-export async function viewOne(packageName: string, field: string, currentVersion: Version, options: ViewOptions = {}, npmConfigLocal?: Index<string | boolean>) {
+export async function viewOne(
+  packageName: string,
+  field: string,
+  currentVersion: Version,
+  options: ViewOptions = {},
+  npmConfigLocal?: Index<string | boolean>,
+) {
   const result = await viewManyMemoized(packageName, [field], currentVersion, options, 0, npmConfigLocal)
   return result && result[field as keyof Packument]
 }
@@ -218,7 +255,7 @@ function spawnNpm(args: string | string[], npmOptions: NpmOptions = {}, spawnOpt
     npmOptions.global ? '--global' : [],
     npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : [],
     '--depth=0',
-    '--json'
+    '--json',
   )
   return spawn(cmd, fullArgs, spawnOptions)
 }
@@ -232,7 +269,6 @@ function spawnNpm(args: string | string[], npmOptions: NpmOptions = {}, spawnOpt
  * @returns
  */
 export async function defaultPrefix(options: Options): Promise<string | undefined> {
-
   if (options.prefix) {
     return Promise.resolve(options.prefix)
   }
@@ -245,21 +281,28 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
   // https://github.com/raineorshine/npm-check-updates/issues/703
   try {
     prefix = await spawn(cmd, ['config', 'get', 'prefix'])
-  }
-  catch (e: any) {
+  } catch (e: any) {
     const message = (e.message || e || '').toString()
-    print(options, 'Error executing `npm config get prefix`. Caught and ignored. Unsolved: https://github.com/raineorshine/npm-check-updates/issues/703. ERROR: ' + message, 'verbose', 'error')
+    print(
+      options,
+      'Error executing `npm config get prefix`. Caught and ignored. Unsolved: https://github.com/raineorshine/npm-check-updates/issues/703. ERROR: ' +
+        message,
+      'verbose',
+      'error',
+    )
   }
 
   // FIX: for ncu -g doesn't work on homebrew or windows #146
   // https://github.com/raineorshine/npm-check-updates/issues/146
-  return options.global && prefix.match('Cellar') ? '/usr/local' :
-
-    // Workaround: get prefix on windows for global packages
+  return options.global && prefix.match('Cellar')
+    ? '/usr/local'
+    : // Workaround: get prefix on windows for global packages
     // Only needed when using npm api directly
-    process.platform === 'win32' && options.global && !process.env.prefix ?
-      prefix ? prefix.trim() : `${process.env.AppData}\\npm` :
-      undefined
+    process.platform === 'win32' && options.global && !process.env.prefix
+    ? prefix
+      ? prefix.trim()
+      : `${process.env.AppData}\\npm`
+    : undefined
 }
 
 /**
@@ -270,14 +313,16 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
  */
 export const greatest: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
   // known type based on 'versions'
-  const versions = await viewOne(packageName, 'versions', currentVersion, options) as Packument[]
+  const versions = (await viewOne(packageName, 'versions', currentVersion, options)) as Packument[]
 
-  return _.last(
-    // eslint-disable-next-line fp/no-mutating-methods
-    _.filter(versions, filterPredicate(options))
-      .map(o => o.version)
-      .sort(versionUtil.compareVersions)
-  ) || null
+  return (
+    _.last(
+      // eslint-disable-next-line fp/no-mutating-methods
+      _.filter(versions, filterPredicate(options))
+        .map(o => o.version)
+        .sort(versionUtil.compareVersions),
+    ) || null
+  )
 }
 
 /**
@@ -289,10 +334,7 @@ export const greatest: GetVersion = async (packageName, currentVersion, options 
  */
 export const getPeerDependencies = async (packageName: string, version: Version): Promise<Index<Version>> => {
   const npmArgs = ['view', packageName + '@' + version, 'peerDependencies']
-  const result = await spawnNpm(
-    npmArgs,
-    {},
-    { rejectOnError: false })
+  const result = await spawnNpm(npmArgs, {}, { rejectOnError: false })
   return result ? parseJson(result, { command: `${npmArgs.join(' ')} --json` }) : {}
 }
 
@@ -304,15 +346,16 @@ export const getPeerDependencies = async (packageName: string, version: Version)
  * @returns
  */
 export const list = async (options: Options = {}) => {
-
   const result = await spawnNpm('ls', options, {
-    ...options.cwd ? { cwd: options.cwd } : null,
-    rejectOnError: false
+    ...(options.cwd ? { cwd: options.cwd } : null),
+    rejectOnError: false,
   })
-  const json = parseJson(result, { command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --global' : ''}` })
+  const json = parseJson(result, {
+    command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --global' : ''}`,
+  })
   return cint.mapObject(json.dependencies, (name, info) => ({
     // unmet peer dependencies have a different structure
-    [name]: info.version || (info.required && info.required.version)
+    [name]: info.version || (info.required && info.required.version),
   }))
 }
 
@@ -323,12 +366,11 @@ export const list = async (options: Options = {}) => {
  * @returns
  */
 export const latest: GetVersion = async (packageName, currentVersion, options = {}) => {
-
-  const latest = await viewOne(packageName, 'dist-tags.latest', currentVersion, {
+  const latest = (await viewOne(packageName, 'dist-tags.latest', currentVersion, {
     registry: options.registry,
     timeout: options.timeout,
     retry: options.retry,
-  }) as unknown as Packument // known type based on dist-tags.latest
+  })) as unknown as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
@@ -350,22 +392,23 @@ export const latest: GetVersion = async (packageName, currentVersion, options = 
  * @returns
  */
 export const newest: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
-
   const result = await viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options)
 
-  const versionsSatisfyingNodeEngine = _.filter(result.versions, version => satisfiesNodeEngine(version, options.nodeEngineVersion))
-    .map((o: Packument) => o.version)
+  const versionsSatisfyingNodeEngine = _.filter(result.versions, version =>
+    satisfiesNodeEngine(version, options.nodeEngineVersion),
+  ).map((o: Packument) => o.version)
 
-  const versions = Object.keys(result.time || {}).reduce((accum: string[], key: string) =>
-    accum.concat(TIME_FIELDS.includes(key) || versionsSatisfyingNodeEngine.includes(key) ? key : []), []
+  const versions = Object.keys(result.time || {}).reduce(
+    (accum: string[], key: string) =>
+      accum.concat(TIME_FIELDS.includes(key) || versionsSatisfyingNodeEngine.includes(key) ? key : []),
+    [],
   )
 
   const versionsWithTime = _.pullAll(versions, TIME_FIELDS)
 
-  return _.last(options.pre !== false
-    ? versions :
-    versionsWithTime.filter(version => !versionUtil.isPre(version))
-  ) || null
+  return (
+    _.last(options.pre !== false ? versions : versionsWithTime.filter(version => !versionUtil.isPre(version))) || null
+  )
 }
 
 /**
@@ -375,11 +418,11 @@ export const newest: GetVersion = async (packageName, currentVersion, options = 
  * @returns
  */
 export const minor: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
-  const versions = await viewOne(packageName, 'versions', currentVersion, options) as Packument[]
+  const versions = (await viewOne(packageName, 'versions', currentVersion, options)) as Packument[]
   return versionUtil.findGreatestByLevel(
     _.filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
-    'minor'
+    'minor',
   )
 }
 
@@ -390,11 +433,11 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
  * @returns
  */
 export const patch: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
-  const versions = await viewOne(packageName, 'versions', currentVersion, options) as Packument[]
+  const versions = (await viewOne(packageName, 'versions', currentVersion, options)) as Packument[]
   return versionUtil.findGreatestByLevel(
     _.filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
-    'patch'
+    'patch',
   )
 }
 

@@ -12,11 +12,14 @@ import { Index, Options, VersionSpec } from '../types'
  * @param options
  * @returns
  */
-export async function upgradePackageDefinitions(currentDependencies: Index<VersionSpec>, options: Options): Promise<[Index<VersionSpec>, Index<VersionSpec>, Index<Index<VersionSpec>>?]> {
+export async function upgradePackageDefinitions(
+  currentDependencies: Index<VersionSpec>,
+  options: Options,
+): Promise<[Index<VersionSpec>, Index<VersionSpec>, Index<Index<VersionSpec>>?]> {
   const latestVersions = await queryVersions(currentDependencies, options)
 
   const upgradedDependencies = upgradeDependencies(currentDependencies, latestVersions, {
-    removeRange: options.removeRange
+    removeRange: options.removeRange,
   })
 
   const filteredUpgradedDependencies = _.pickBy(upgradedDependencies, (v, dep) => {
@@ -29,12 +32,12 @@ export async function upgradePackageDefinitions(currentDependencies: Index<Versi
     if (!_.isEqual(options.peerDependencies, peerDependencies)) {
       const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
         { ...currentDependencies, ...filteredUpgradedDependencies },
-        { ...options, peerDependencies, loglevel: 'silent' }
+        { ...options, peerDependencies, loglevel: 'silent' },
       )
       return [
         { ...filteredUpgradedDependencies, ...newUpgradedDependencies },
         { ...latestVersions, ...newLatestVersions },
-        newPeerDependencies
+        newPeerDependencies,
       ]
     }
   }

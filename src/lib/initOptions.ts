@@ -10,23 +10,24 @@ import { Options, RunOptions, Target } from '../types'
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
 function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Options {
-
   const chalk = runOptions.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   // if not executed on the command-line (i.e. executed as a node module), set the defaults
   if (!cli) {
-
     // set cli defaults since they are not set by commander in this case
-    const cliDefaults = cliOptions.reduce((acc, curr) => ({
-      ...acc,
-      ...curr.default != null ? { [curr.long]: curr.default } : null,
-    }), {})
+    const cliDefaults = cliOptions.reduce(
+      (acc, curr) => ({
+        ...acc,
+        ...(curr.default != null ? { [curr.long]: curr.default } : null),
+      }),
+      {},
+    )
 
     // set default options that are specific to module usage
     const moduleDefaults: Options = {
       jsonUpgraded: true,
       silent: runOptions.silent || runOptions.loglevel === undefined,
-      args: []
+      args: [],
     }
 
     runOptions = { ...cliDefaults, ...moduleDefaults, ...runOptions }
@@ -35,7 +36,9 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
   // convert packageData to string to convert RunOptions to Options
   const options = {
     ...runOptions,
-    ...runOptions.packageData && typeof runOptions.packageData !== 'string' ? { packageData: JSON.stringify(runOptions.packageData, null, 2) } : null,
+    ...(runOptions.packageData && typeof runOptions.packageData !== 'string'
+      ? { packageData: JSON.stringify(runOptions.packageData, null, 2) }
+      : null),
   } as Options
 
   const loglevel = options.silent ? 'silent' : options.loglevel
@@ -60,10 +63,18 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
 
   // disallow non-matching filter and args
   if (options.filter && (options.args || []).length > 0 && options.filter !== options.args!.join(' ')) {
-    programError(options, chalk.red('Cannot specify a filter using both --filter and args. Did you forget to quote an argument?') + '\nSee: https://github.com/raineorshine/npm-check-updates/issues/759#issuecomment-723587297')
-  }
-  else if (options.packageFile && options.deep) {
-    programError(options, chalk.red(`Cannot specify both --packageFile and --deep. --deep is an alias for --packageFile '${deepPatternPrefix}package.json'`))
+    programError(
+      options,
+      chalk.red('Cannot specify a filter using both --filter and args. Did you forget to quote an argument?') +
+        '\nSee: https://github.com/raineorshine/npm-check-updates/issues/759#issuecomment-723587297',
+    )
+  } else if (options.packageFile && options.deep) {
+    programError(
+      options,
+      chalk.red(
+        `Cannot specify both --packageFile and --deep. --deep is an alias for --packageFile '${deepPatternPrefix}package.json'`,
+      ),
+    )
   }
 
   const target: Target = options.target || 'latest'
@@ -74,29 +85,28 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
 
   // autodetect yarn
   const files = fs.readdirSync(options.cwd || '.')
-  const autoYarn = !options.packageManager && !options.global && files.includes('yarn.lock') && !files.includes('package-lock.json')
+  const autoYarn =
+    !options.packageManager && !options.global && files.includes('yarn.lock') && !files.includes('package-lock.json')
   if (autoYarn) {
     print(options, 'Using yarn')
   }
 
   return {
     ...options,
-    ...options.deep ? { packageFile: `${deepPatternPrefix}${getPackageFileName(options)}` } : null,
-    ...(options.args || []).length > 0 ? { filter: options.args!.join(' ') } : null,
-    ...format.length > 0 ? { format } : null,
+    ...(options.deep ? { packageFile: `${deepPatternPrefix}${getPackageFileName(options)}` } : null),
+    ...((options.args || []).length > 0 ? { filter: options.args!.join(' ') } : null),
+    ...(format.length > 0 ? { format } : null),
     // add shortcut for any keys that start with 'json'
     json,
     // convert silent option to loglevel silent
     loglevel,
     minimal: options.minimal === undefined ? false : options.minimal,
     // default to false, except when newest or greatest are set
-    ...options.pre != null || autoPre
-      ? { pre: options.pre != null ? !!options.pre : autoPre }
-      : null,
+    ...(options.pre != null || autoPre ? { pre: options.pre != null ? !!options.pre : autoPre } : null),
     target,
     // imply upgrade in interactive mode when json is not specified as the output
-    ...options.interactive && options.upgrade === undefined ? { upgrade: !json } : null,
-    ...!options.packageManager && { packageManager: autoYarn ? 'yarn' : 'npm' },
+    ...(options.interactive && options.upgrade === undefined ? { upgrade: !json } : null),
+    ...(!options.packageManager && { packageManager: autoYarn ? 'yarn' : 'npm' }),
   }
 }
 

@@ -8,7 +8,6 @@ const should = chai.should()
 chai.use(chaiAsPromised)
 
 describe('version-util', () => {
-
   describe('upgradeDependencyDeclaration', () => {
     it('numeric upgrades', () => {
       versionUtil.upgradeDependencyDeclaration('0', '1.0.0').should.equal('1')
@@ -86,13 +85,13 @@ describe('version-util', () => {
       versionUtil.upgradeDependencyDeclaration('1.x < 1.*', '3.1.0').should.equal('3.x')
     })
 
-    it('maintain \'unclean\' semantic versions', () => {
+    it("maintain 'unclean' semantic versions", () => {
       versionUtil.upgradeDependencyDeclaration('v1.0', '1.1').should.equal('v1.1')
       versionUtil.upgradeDependencyDeclaration('=v1.0', '1.1').should.equal('=v1.1')
       versionUtil.upgradeDependencyDeclaration(' =v1.0', '1.1').should.equal('=v1.1')
     })
 
-    it('maintain \'unclean\' semantic versions', () => {
+    it("maintain 'unclean' semantic versions", () => {
       versionUtil.upgradeDependencyDeclaration('v1.0', '1.1').should.equal('v1.1')
       versionUtil.upgradeDependencyDeclaration('=v1.0', '1.1').should.equal('=v1.1')
       versionUtil.upgradeDependencyDeclaration(' =v1.0', '1.1').should.equal('=v1.1')
@@ -107,7 +106,6 @@ describe('version-util', () => {
       versionUtil.upgradeDependencyDeclaration('^1.0.0', '1.0.1', { removeRange: true }).should.equal('1.0.1')
       versionUtil.upgradeDependencyDeclaration('2.2.*', '3.1.1', { removeRange: true }).should.equal('3.1.1')
     })
-
   })
 
   describe('numParts', () => {
@@ -121,7 +119,6 @@ describe('version-util', () => {
   })
 
   describe('getPrecision', () => {
-
     it('detect versions as precise as "major"', () => {
       versionUtil.getPrecision('1')!.should.equal('major')
     })
@@ -146,73 +143,89 @@ describe('version-util', () => {
     it('detect versions as precise as "build"', () => {
       versionUtil.getPrecision('1.2.3+build12345')!.should.equal('build')
     })
-
   })
 
   describe('stringify', () => {
-
     it('build a version string of the given parts', () => {
-
       versionUtil.stringify({ major: '1' }).should.equal('1')
 
-      versionUtil.stringify({
-        major: '1',
-        minor: '2'
-      }).should.equal('1.2')
+      versionUtil
+        .stringify({
+          major: '1',
+          minor: '2',
+        })
+        .should.equal('1.2')
 
-      versionUtil.stringify({
-        major: '1',
-        minor: '2',
-        patch: '3'
-      }).should.equal('1.2.3')
+      versionUtil
+        .stringify({
+          major: '1',
+          minor: '2',
+          patch: '3',
+        })
+        .should.equal('1.2.3')
 
-      versionUtil.stringify({
-        major: '1',
-        minor: '2',
-        patch: '3',
-        release: 'alpha.1'
-      }).should.equal('1.2.3-alpha.1')
+      versionUtil
+        .stringify({
+          major: '1',
+          minor: '2',
+          patch: '3',
+          release: 'alpha.1',
+        })
+        .should.equal('1.2.3-alpha.1')
 
-      versionUtil.stringify({
-        major: '1',
-        minor: '2',
-        patch: '3',
-        build: 'build12345'
-      }).should.equal('1.2.3+build12345')
-
+      versionUtil
+        .stringify({
+          major: '1',
+          minor: '2',
+          patch: '3',
+          build: 'build12345',
+        })
+        .should.equal('1.2.3+build12345')
     })
 
     it('pad the version with an optional precison argument', () => {
-
       versionUtil.stringify({ major: '1' }, 'minor').should.equal('1.0')
       versionUtil.stringify({ major: '1' }, 'patch').should.equal('1.0.0')
     })
 
     it('truncate the version when a precision is provided', () => {
-      versionUtil.stringify({
-        major: '1',
-        minor: '2',
-        patch: '3',
-        build: 'build12345'
-      }, 'patch').should.equal('1.2.3')
-      versionUtil.stringify({
-        major: '1',
-        minor: '2',
-        patch: '3',
-        build: 'build12345'
-      }, 'minor').should.equal('1.2')
-      versionUtil.stringify({
-        major: '1',
-        minor: '2',
-        patch: '3',
-        build: 'build12345'
-      }, 'major').should.equal('1')
+      versionUtil
+        .stringify(
+          {
+            major: '1',
+            minor: '2',
+            patch: '3',
+            build: 'build12345',
+          },
+          'patch',
+        )
+        .should.equal('1.2.3')
+      versionUtil
+        .stringify(
+          {
+            major: '1',
+            minor: '2',
+            patch: '3',
+            build: 'build12345',
+          },
+          'minor',
+        )
+        .should.equal('1.2')
+      versionUtil
+        .stringify(
+          {
+            major: '1',
+            minor: '2',
+            patch: '3',
+            build: 'build12345',
+          },
+          'major',
+        )
+        .should.equal('1')
     })
-
   })
 
   describe('setPrecision', () => {
-
     it('set the precision of a version at "major"', () => {
       versionUtil.setPrecision('1.2.3-alpha.1', 'major').should.equal('1')
     })
@@ -240,7 +253,6 @@ describe('version-util', () => {
     it('set the precision of a version at "build"', () => {
       versionUtil.setPrecision('1.2.3+build12345', 'build').should.equal('1.2.3+build12345')
     })
-
   })
 
   describe('precisionAdd', () => {
@@ -369,7 +381,6 @@ describe('version-util', () => {
   })
 
   describe('findGreatestByLevel', () => {
-
     it('find the greatest version at the given semantic versioning level', () => {
       const versions = ['0.1.0', '1.0.0', '1.0.1', '1.1.0', '2.0.1']
 
@@ -395,11 +406,9 @@ describe('version-util', () => {
       const versions = ['0.1.0', '0.3.0', '0.2.0']
       versionUtil.findGreatestByLevel(versions, '0.1.0', 'minor')!.should.equal('0.3.0')
     })
-
   })
 
   describe('isPre', () => {
-
     it('return false for non-prerelease versions', () => {
       versionUtil.isPre('1.0.0').should.equal(false)
     })
@@ -409,21 +418,16 @@ describe('version-util', () => {
       versionUtil.isPre('1.0.0-beta').should.equal(true)
       versionUtil.isPre('1.0.0-rc').should.equal(true)
     })
-
   })
 
   describe('npm aliases', () => {
-
     describe('createNpmAlias', () => {
-
       it('create an npm alias from a name and version', () => {
         versionUtil.createNpmAlias('chalk', '1.0.0').should.equal('npm:chalk@1.0.0')
       })
-
     })
 
     describe('parseNpmAlias', () => {
-
       it('parse an npm alias into [name, version]', () => {
         versionUtil.parseNpmAlias('npm:chalk@1.0.0')!.should.eql(['chalk', '1.0.0'])
       })
@@ -434,7 +438,6 @@ describe('version-util', () => {
     })
 
     describe('isNpmAlias', () => {
-
       it('return true if an npm alias', () => {
         should.equal(versionUtil.isNpmAlias('npm:chalk@1.0.0'), true)
         should.equal(versionUtil.isNpmAlias('npm:chalk@^1.0.0'), true)
@@ -444,55 +447,43 @@ describe('version-util', () => {
         should.equal(versionUtil.isNpmAlias('1.0.0'), false)
         should.equal(versionUtil.isNpmAlias('npm:chalk'), false)
       })
-
     })
 
     describe('upgradeNpmAlias', () => {
-
       it('replace embedded version', () => {
-        versionUtil.upgradeNpmAlias('npm:chalk@^1.0.0', '2.0.0')!
-          .should.equal('npm:chalk@2.0.0')
+        versionUtil.upgradeNpmAlias('npm:chalk@^1.0.0', '2.0.0')!.should.equal('npm:chalk@2.0.0')
       })
-
     })
-
   })
 
   describe('github urls', () => {
-
     describe('isGithubUrl', () => {
-
       it('return true if a declaration is a Github url with a semver tag and false otherwise', () => {
         should.equal(versionUtil.isGithubUrl(null), false)
         should.equal(versionUtil.isGithubUrl('https://github.com/raineorshine/ncu-test-v2'), false)
         should.equal(versionUtil.isGithubUrl('https://github.com/raineorshine/ncu-test-v2#1.0.0'), true)
         should.equal(versionUtil.isGithubUrl('https://github.com/raineorshine/ncu-test-v2#v1.0.0'), true)
       })
-
     })
 
     describe('getGithubUrlTag', () => {
-
       it('return an embedded tag in a Github URL, or null if not valid', () => {
         should.equal(versionUtil.getGithubUrlTag(null), null)
         should.equal(versionUtil.getGithubUrlTag('https://github.com/raineorshine/ncu-test-v2'), null)
         should.equal(versionUtil.getGithubUrlTag('https://github.com/raineorshine/ncu-test-v2#1.0.0'), '1.0.0')
         should.equal(versionUtil.getGithubUrlTag('https://github.com/raineorshine/ncu-test-v2#v1.0.0'), 'v1.0.0')
       })
-
     })
 
     describe('upgradeGithubUrl', () => {
-
       it('replace embedded version', () => {
-        versionUtil.upgradeGithubUrl('https://github.com/raineorshine/ncu-test-v2#v1.0.0', 'v2.0.0')
+        versionUtil
+          .upgradeGithubUrl('https://github.com/raineorshine/ncu-test-v2#v1.0.0', 'v2.0.0')
           .should.equal('https://github.com/raineorshine/ncu-test-v2#v2.0.0')
-        versionUtil.upgradeGithubUrl('https://github.com/raineorshine/ncu-test-v2#1.0.0', '2.0.0')
+        versionUtil
+          .upgradeGithubUrl('https://github.com/raineorshine/ncu-test-v2#1.0.0', '2.0.0')
           .should.equal('https://github.com/raineorshine/ncu-test-v2#2.0.0')
       })
-
     })
-
   })
-
 })

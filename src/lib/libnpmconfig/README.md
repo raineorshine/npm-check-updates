@@ -10,19 +10,22 @@ programmatically managing npm's configuration files and data.
 
 ## Table of Contents
 
-* [Example](#example)
-* [Install](#install)
-* [Contributing](#contributing)
-* [API](#api)
+- [Example](#example)
+- [Install](#install)
+- [Contributing](#contributing)
+- [API](#api)
 
 ## Example
 
 ```js
 const config = require('libnpmconfig')
 
-console.log('configured registry:', config.read({
-  registry: 'https://default.registry/'
-}))
+console.log(
+  'configured registry:',
+  config.read({
+    registry: 'https://default.registry/',
+  }),
+)
 // => configured registry: https://registry.npmjs.org
 ```
 

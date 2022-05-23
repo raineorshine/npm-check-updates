@@ -16,20 +16,21 @@ const getSortedVersions = async (name: string, declaration: VersionSpec, options
   let tagsPromise = Promise.resolve(tagMap)
   const protocolKnown = protocol != null
   if (protocolKnown) {
-    tagsPromise = tagsPromise.then(() => remoteGitTags(`${protocol ? protocol.replace('git+', '') : 'https:'}//${auth ? auth + '@' : ''}${host}/${path}`))
-  }
-  else {
+    tagsPromise = tagsPromise.then(() =>
+      remoteGitTags(`${protocol ? protocol.replace('git+', '') : 'https:'}//${auth ? auth + '@' : ''}${host}/${path}`),
+    )
+  } else {
     // try ssh first, then https on failure
-    tagsPromise = tagsPromise.then(() => remoteGitTags(`ssh://git@${host}/${path}`))
+    tagsPromise = tagsPromise
+      .then(() => remoteGitTags(`ssh://git@${host}/${path}`))
       .catch(() => remoteGitTags(`https://${auth ? auth + '@' : ''}${host}/${path}`))
   }
 
   // fetch remote tags
   try {
     tagMap = await tagsPromise
-  }
-  // catch a variety of errors that occur on invalid or private repos
-  catch (e) {
+  } catch (e) {
+    // catch a variety of errors that occur on invalid or private repos
     print(options, `Invalid, private repo, or no tags for ${name}: ${declaration}`, 'verbose')
     return null
   }
@@ -49,13 +50,9 @@ const getSortedVersions = async (name: string, declaration: VersionSpec, options
 export const latest = async (name: string, declaration: VersionSpec, options: Options) => {
   const versions = await getSortedVersions(name, declaration, options)
   if (!versions) return null
-  const versionsFiltered = options.pre
-    ? versions
-    : versions.filter(v => !versionUtil.isPre(v))
+  const versionsFiltered = options.pre ? versions : versions.filter(v => !versionUtil.isPre(v))
   const latestVersion = versionsFiltered[versionsFiltered.length - 1]
-  return latestVersion
-    ? versionUtil.upgradeGithubUrl(declaration, latestVersion)
-    : null
+  return latestVersion ? versionUtil.upgradeGithubUrl(declaration, latestVersion) : null
 }
 
 /** Return the highest numbered tag on a remote Git URL. */
@@ -63,29 +60,25 @@ export const greatest = async (name: string, declaration: VersionSpec, options: 
   const versions = await getSortedVersions(name, declaration, options)
   if (!versions) return null
   const greatestVersion = versions[versions.length - 1]
-  return greatestVersion
-    ? versionUtil.upgradeGithubUrl(declaration, greatestVersion)
-    : null
+  return greatestVersion ? versionUtil.upgradeGithubUrl(declaration, greatestVersion) : null
 }
 
 /** Returns a function that returns the highest version at the given level. */
-export const greatestLevel = (level: VersionLevel) => async (name: string, declaration: VersionSpec, options: Options = {}) => {
+export const greatestLevel =
+  (level: VersionLevel) =>
+  async (name: string, declaration: VersionSpec, options: Options = {}) => {
+    const version = decodeURIComponent(parseGithubUrl(declaration)!.branch).replace(/^semver:/, '')
+    const versions = await getSortedVersions(name, declaration, options)
+    if (!versions) return null
 
-  const version = decodeURIComponent(parseGithubUrl(declaration)!.branch)
-    .replace(/^semver:/, '')
-  const versions = await getSortedVersions(name, declaration, options)
-  if (!versions) return null
+    const greatestMinor = versionUtil.findGreatestByLevel(
+      versions.map(v => v.replace(/^v/, '')),
+      version,
+      level,
+    )
 
-  const greatestMinor = versionUtil.findGreatestByLevel(
-    versions.map(v => v.replace(/^v/, '')),
-    version,
-    level
-  )
-
-  return greatestMinor
-    ? versionUtil.upgradeGithubUrl(declaration, greatestMinor)
-    : null
-}
+    return greatestMinor ? versionUtil.upgradeGithubUrl(declaration, greatestMinor) : null
+  }
 
 export const minor = greatestLevel('minor')
 export const patch = greatestLevel('patch')

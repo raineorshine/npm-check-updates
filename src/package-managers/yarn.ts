@@ -15,30 +15,34 @@ import { GetVersion, Index, Options, Packument, SpawnOptions, Version, YarnOptio
 import { allowDeprecatedOrIsNotDeprecated, allowPreOrIsNotPre, satisfiesNodeEngine } from './filters'
 
 interface ParsedDep {
-  version: string,
-  from: string,
+  version: string
+  from: string
 }
 
 export interface NpmScope {
-  npmAlwaysAuth?: boolean,
-  npmAuthToken?: string,
-  npmRegistryServer?: string,
+  npmAlwaysAuth?: boolean
+  npmAuthToken?: string
+  npmRegistryServer?: string
 }
 
 interface YarnConfig {
-  npmScopes?: Index<NpmScope>,
+  npmScopes?: Index<NpmScope>
 }
 
 const TIME_FIELDS = ['modified', 'created']
 
 /** Safely interpolates a string as a template string. */
-const interpolate = (s: string, data: any) => s.replace(/\$\{([^:-]+)(?:(:)?-([^}]*))?\}/g, (match, key, name, fallbackOnEmpty, fallback) => data[key] || (fallbackOnEmpty ? fallback : ''))
+const interpolate = (s: string, data: any) =>
+  s.replace(
+    /\$\{([^:-]+)(?:(:)?-([^}]*))?\}/g,
+    (match, key, name, fallbackOnEmpty, fallback) => data[key] || (fallbackOnEmpty ? fallback : ''),
+  )
 
 /** Reads an auth token from a yarn config, interpolates it, and sets it on the npm config. */
-export const setNpmAuthToken = (npmConfig: Index<string|boolean>, [dep, scopedConfig]: [string, NpmScope]) => {
+export const setNpmAuthToken = (npmConfig: Index<string | boolean>, [dep, scopedConfig]: [string, NpmScope]) => {
   if (scopedConfig.npmAuthToken) {
     // get registry server from this config or a previous config (assumes setNpmRegistry has already been called on all npm scopes)
-    const registryServer = scopedConfig.npmRegistryServer || npmConfig[`@${dep}:registry`] as string | undefined
+    const registryServer = scopedConfig.npmRegistryServer || (npmConfig[`@${dep}:registry`] as string | undefined)
     // interpolate environment variable fallback
     // https://yarnpkg.com/configuration/yarnrc
     if (registryServer) {
@@ -89,7 +93,6 @@ const npmConfigFromYarn = memoize((): Index<string | boolean> => {
  * @param result    Output from `yarn list --json` to be parsed
  */
 async function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep> }> {
-
   const dependencies: Index<ParsedDep> = {}
 
   const parser = jsonlines.parse()
@@ -98,7 +101,6 @@ async function parseJsonLines(result: string): Promise<{ dependencies: Index<Par
     // only parse info data
     // ignore error info, e.g. "Visit https://yarnpkg.com/en/docs/cli/list for documentation about this command."
     if (d.type === 'info' && !d.data.match(/^Visit/)) {
-
       // parse package name and version number from info data, e.g. "nodemon@2.0.4" has binaries
       const [, pkgName, pkgVersion] = d.data.match(/"(@?.*)@(.*)"/) || []
 
@@ -106,9 +108,7 @@ async function parseJsonLines(result: string): Promise<{ dependencies: Index<Par
         version: pkgVersion,
         from: pkgName,
       }
-
-    }
-    else if (d.type === 'error') {
+    } else if (d.type === 'error') {
       throw new Error(d.data)
     }
   })
@@ -120,7 +120,6 @@ async function parseJsonLines(result: string): Promise<{ dependencies: Index<Par
   await once(parser as unknown as EventEmitter, 'end')
 
   return { dependencies }
-
 }
 
 /** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by pacote.packument. */
@@ -140,17 +139,20 @@ function filterPredicate(options: Options): (o: Packument) => boolean {
  * @param [spawnOptions={}]
  * @returns
  */
-async function spawnYarn(args: string | string[], yarnOptions: YarnOptions = {}, spawnOptions?: SpawnOptions): Promise<string> {
-
+async function spawnYarn(
+  args: string | string[],
+  yarnOptions: YarnOptions = {},
+  spawnOptions?: SpawnOptions,
+): Promise<string> {
   const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
 
   const fullArgs = [
-    ...yarnOptions.global ? 'global' : [],
-    ...Array.isArray(args) ? args : [args],
+    ...(yarnOptions.global ? 'global' : []),
+    ...(Array.isArray(args) ? args : [args]),
     '--depth=0',
-    ...yarnOptions.prefix ? `--prefix=${yarnOptions.prefix}` : [],
+    ...(yarnOptions.prefix ? `--prefix=${yarnOptions.prefix}` : []),
     '--json',
-    '--no-progress'
+    '--no-progress',
   ]
 
   return spawn(cmd, fullArgs, spawnOptions)
@@ -165,7 +167,6 @@ async function spawnYarn(args: string | string[], yarnOptions: YarnOptions = {},
  * @returns
  */
 export async function defaultPrefix(options: Options) {
-
   if (options.prefix) {
     return Promise.resolve(options.prefix)
   }
@@ -176,18 +177,22 @@ export async function defaultPrefix(options: Options) {
     // yarn 2.0 does not support yarn global
     // catch error to prevent process from crashing
     // https://github.com/raineorshine/npm-check-updates/issues/873
-    .catch(() => { /* empty */ })
+    .catch(() => {
+      /* empty */
+    })
 
   // FIX: for ncu -g doesn't work on homebrew or windows #146
   // https://github.com/raineorshine/npm-check-updates/issues/146
 
   return options.global && prefix && prefix.match('Cellar')
     ? '/usr/local'
-    // Workaround: get prefix on windows for global packages
+    : // Workaround: get prefix on windows for global packages
     // Only needed when using npm api directly
-    : process.platform === 'win32' && options.global && !process.env.prefix ?
-      prefix ? prefix.trim() : `${process.env.LOCALAPPDATA}\\Yarn\\Data\\global` :
-      null
+    process.platform === 'win32' && options.global && !process.env.prefix
+    ? prefix
+      ? prefix.trim()
+      : `${process.env.LOCALAPPDATA}\\Yarn\\Data\\global`
+    : null
 }
 
 /**
@@ -199,7 +204,7 @@ export async function defaultPrefix(options: Options) {
  */
 export const list = async (options: Options = {}, spawnOptions?: SpawnOptions) => {
   const jsonLines = await spawnYarn('list', options as Index<string>, {
-    ...options.cwd ? { cwd: options.cwd } : {},
+    ...(options.cwd ? { cwd: options.cwd } : {}),
     ...spawnOptions,
   })
   const json = await parseJsonLines(jsonLines)
@@ -216,11 +221,17 @@ export const list = async (options: Options = {}, spawnOptions?: SpawnOptions) =
  * @returns
  */
 export const latest: GetVersion = async (packageName: string, currentVersion: Version, options: Options = {}) => {
-  const latest = await viewOne(packageName, 'dist-tags.latest', currentVersion, {
-    registry: options.registry,
-    timeout: options.timeout,
-    retry: options.retry,
-  }, npmConfigFromYarn()) as unknown as Packument // known type based on dist-tags.latest
+  const latest = (await viewOne(
+    packageName,
+    'dist-tags.latest',
+    currentVersion,
+    {
+      registry: options.registry,
+      timeout: options.timeout,
+      retry: options.retry,
+    },
+    npmConfigFromYarn(),
+  )) as unknown as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
@@ -232,11 +243,17 @@ export const latest: GetVersion = async (packageName: string, currentVersion: Ve
   // or latest is deprecated
   // find the next valid version
   // known type based on dist-tags.latest
-  const versions = await viewOne(packageName, 'versions', currentVersion, {
-    registry: options.registry,
-    timeout: options.timeout,
-    retry: options.retry,
-  }, npmConfigFromYarn()) as Packument[]
+  const versions = (await viewOne(
+    packageName,
+    'versions',
+    currentVersion,
+    {
+      registry: options.registry,
+      timeout: options.timeout,
+      retry: options.retry,
+    },
+    npmConfigFromYarn(),
+  )) as Packument[]
   const validVersions = _.filter(versions, filterPredicate(options))
 
   return _.last(validVersions.map(o => o.version)) || null
@@ -249,21 +266,30 @@ export const latest: GetVersion = async (packageName: string, currentVersion: Ve
  * @returns
  */
 export const newest: GetVersion = async (packageName: string, currentVersion, options = {}) => {
-  const result = await viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options, 0, npmConfigFromYarn())
+  const result = await viewManyMemoized(
+    packageName,
+    ['time', 'versions'],
+    currentVersion,
+    options,
+    0,
+    npmConfigFromYarn(),
+  )
 
-  const versionsSatisfyingNodeEngine = _.filter(result.versions, version => satisfiesNodeEngine(version, options.nodeEngineVersion))
-    .map((o: Packument) => o.version)
+  const versionsSatisfyingNodeEngine = _.filter(result.versions, version =>
+    satisfiesNodeEngine(version, options.nodeEngineVersion),
+  ).map((o: Packument) => o.version)
 
-  const versions = Object.keys(result.time || {}).reduce((accum: string[], key: string) =>
-    accum.concat(TIME_FIELDS.includes(key) || versionsSatisfyingNodeEngine.includes(key) ? key : []), []
+  const versions = Object.keys(result.time || {}).reduce(
+    (accum: string[], key: string) =>
+      accum.concat(TIME_FIELDS.includes(key) || versionsSatisfyingNodeEngine.includes(key) ? key : []),
+    [],
   )
 
   const versionsWithTime = _.pullAll(versions, TIME_FIELDS)
 
-  return _.last(options.pre !== false
-    ? versions :
-    versionsWithTime.filter(version => !versionUtil.isPre(version))
-  ) || null
+  return (
+    _.last(options.pre !== false ? versions : versionsWithTime.filter(version => !versionUtil.isPre(version))) || null
+  )
 }
 
 /**
@@ -273,14 +299,16 @@ export const newest: GetVersion = async (packageName: string, currentVersion, op
  * @returns
  */
 export const greatest: GetVersion = async (packageName, currentVersion, options = {}) => {
-  const versions = await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn()) as Packument[]
+  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn())) as Packument[]
 
-  return _.last(
-    // eslint-disable-next-line fp/no-mutating-methods
-    _.filter(versions, filterPredicate(options))
-      .map(o => o.version)
-      .sort(versionUtil.compareVersions)
-  ) || null
+  return (
+    _.last(
+      // eslint-disable-next-line fp/no-mutating-methods
+      _.filter(versions, filterPredicate(options))
+        .map(o => o.version)
+        .sort(versionUtil.compareVersions),
+    ) || null
+  )
 }
 
 /**
@@ -290,11 +318,11 @@ export const greatest: GetVersion = async (packageName, currentVersion, options 
  * @returns
  */
 export const minor: GetVersion = async (packageName, currentVersion, options = {}) => {
-  const versions = await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn()) as Packument[]
+  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn())) as Packument[]
   return versionUtil.findGreatestByLevel(
     _.filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
-    'minor'
+    'minor',
   )
 }
 
@@ -305,11 +333,11 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
  * @returns
  */
 export const patch: GetVersion = async (packageName, currentVersion, options = {}) => {
-  const versions = await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn()) as Packument[]
+  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn())) as Packument[]
   return versionUtil.findGreatestByLevel(
     _.filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
-    'patch'
+    'patch',
   )
 }
 

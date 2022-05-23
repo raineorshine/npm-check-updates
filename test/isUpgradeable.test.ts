@@ -5,7 +5,6 @@ chai.should()
 process.env.NCU_TESTS = 'true'
 
 describe('isUpgradeable', () => {
-
   it('do not upgrade pure wildcards', () => {
     isUpgradeable('*', '0.5.1').should.equal(false)
   })
@@ -34,5 +33,4 @@ describe('isUpgradeable', () => {
   it('upgrade simple versions', () => {
     isUpgradeable('v1', 'v2').should.equal(true)
   })
-
 })

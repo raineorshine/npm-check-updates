@@ -1,5 +1,3 @@
 module.exports = {
-  reject: [
-    'fp-and-or'
-  ]
+  reject: ['fp-and-or'],
 }

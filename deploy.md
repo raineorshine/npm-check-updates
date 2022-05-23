@@ -10,4 +10,4 @@ npm publish [--tag unstable]
 ```
 
 - Update the release history
-<https://github.com/raineorshine/npm-check-updates/releases>
+  <https://github.com/raineorshine/npm-check-updates/releases>

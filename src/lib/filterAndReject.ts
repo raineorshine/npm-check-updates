@@ -12,7 +12,6 @@ import { FilterRejectPattern, Maybe, VersionSpec } from '../types'
  * @returns
  */
 function composeFilter(filterPattern: FilterRejectPattern): (name: string, versionSpec: VersionSpec) => boolean {
-
   let predicate: (name: string, versionSpec: VersionSpec) => boolean
 
   // no filter
@@ -34,9 +33,8 @@ function composeFilter(filterPattern: FilterRejectPattern): (name: string, versi
   }
   // array
   else if (Array.isArray(filterPattern)) {
-    predicate = (dependencyName: string, versionSpec: string) => filterPattern.some(
-      (subpattern: string | RegExp) => composeFilter(subpattern)(dependencyName, versionSpec)
-    )
+    predicate = (dependencyName: string, versionSpec: string) =>
+      filterPattern.some((subpattern: string | RegExp) => composeFilter(subpattern)(dependencyName, versionSpec))
   }
   // raw RegExp
   else if (filterPattern instanceof RegExp) {
@@ -44,9 +42,9 @@ function composeFilter(filterPattern: FilterRejectPattern): (name: string, versi
   }
   // function
   else if (typeof filterPattern === 'function') {
-    predicate = (dependencyName: string, versionSpec: string) => filterPattern(dependencyName, parseRange(versionSpec ?? dependencyName))
-  }
-  else {
+    predicate = (dependencyName: string, versionSpec: string) =>
+      filterPattern(dependencyName, parseRange(versionSpec ?? dependencyName))
+  } else {
     throw new TypeError('Invalid filter. Must be a RegExp, array, or comma-or-space-delimited list.')
   }
 
@@ -61,18 +59,25 @@ function composeFilter(filterPattern: FilterRejectPattern): (name: string, versi
  * @param [filterVersion]
  * @param [rejectVersion]
  */
-function filterAndReject(filter: Maybe<FilterRejectPattern>, reject: Maybe<FilterRejectPattern>, filterVersion: Maybe<FilterRejectPattern>, rejectVersion: Maybe<FilterRejectPattern>) {
+function filterAndReject(
+  filter: Maybe<FilterRejectPattern>,
+  reject: Maybe<FilterRejectPattern>,
+  filterVersion: Maybe<FilterRejectPattern>,
+  rejectVersion: Maybe<FilterRejectPattern>,
+) {
   return and(
     // filter dep
-    (dependencyName: VersionSpec, version: SemVer[]) => and(
-      filter ? composeFilter(filter) : _.identity,
-      reject ? _.negate(composeFilter(reject)) : _.identity
-    )(dependencyName, version),
+    (dependencyName: VersionSpec, version: SemVer[]) =>
+      and(filter ? composeFilter(filter) : _.identity, reject ? _.negate(composeFilter(reject)) : _.identity)(
+        dependencyName,
+        version,
+      ),
     // filter version
-    (dependencyName: VersionSpec, version: SemVer[]) => and(
-      filterVersion ? composeFilter(filterVersion) : _.identity,
-      rejectVersion ? _.negate(composeFilter(rejectVersion)) : _.identity
-    )(version)
+    (dependencyName: VersionSpec, version: SemVer[]) =>
+      and(
+        filterVersion ? composeFilter(filterVersion) : _.identity,
+        rejectVersion ? _.negate(composeFilter(rejectVersion)) : _.identity,
+      )(version),
   )
 }
 

@@ -21,8 +21,13 @@ function escapeRegexp(s: string) {
  * @returns The updated package data, as utf8 text
  * @description Side Effect: prompts
  */
-async function upgradePackageData(pkgData: string, oldDependencies: Index<VersionSpec>, newDependencies: Index<VersionSpec>, newVersions: Index<Version>, options: Options = {}) {
-
+async function upgradePackageData(
+  pkgData: string,
+  oldDependencies: Index<VersionSpec>,
+  newDependencies: Index<VersionSpec>,
+  newVersions: Index<Version>,
+  options: Options = {},
+) {
   // copy newDependencies for mutation via interactive mode
   const selectedNewDependencies = { ...newDependencies }
   let newPkgData = pkgData
@@ -41,7 +46,7 @@ async function upgradePackageData(pkgData: string, oldDependencies: Index<Versio
             if (state.aborted) {
               process.nextTick(() => process.exit(1))
             }
-          }
+          },
         })
         if (!response.value) {
           // continue loop to next dependency and skip updating newPkgData
@@ -52,7 +57,6 @@ async function upgradePackageData(pkgData: string, oldDependencies: Index<Versio
       const expression = `"${dependency}"\\s*:\\s*"${escapeRegexp(`${oldDependencies[dependency]}"`)}`
       const regExp = new RegExp(expression, 'g')
       newPkgData = newPkgData.replace(regExp, `"${dependency}": "${newDependencies[dependency]}"`)
-
     }
   }
 

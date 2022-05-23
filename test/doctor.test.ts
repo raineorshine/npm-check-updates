@@ -19,9 +19,7 @@ const ncu = (args: string[], options?: Record<string, unknown>) => spawn('node',
 
 /** Assertions for npm or yarn when tests pass. */
 const testPass = ({ packageManager }: { packageManager: string }) => {
-
   it('upgrade dependencies when tests pass', async function () {
-
     const cwd = path.join(doctorTests, 'pass')
     const pkgPath = path.join(cwd, 'package.json')
     const nodeModulesPath = path.join(cwd, 'node_modules')
@@ -46,8 +44,7 @@ const testPass = ({ packageManager }: { packageManager: string }) => {
           stderr += data
         },
       })
-    }
-    catch (e) {}
+    } catch (e) {}
 
     const pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
 
@@ -73,14 +70,11 @@ const testPass = ({ packageManager }: { packageManager: string }) => {
     // package file should include upgrades
     pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
   })
-
 }
 
 /** Assertions for npm or yarn when tests fail. */
 const testFail = ({ packageManager }: { packageManager: string }) => {
-
-  it('identify broken upgrade', async function() {
-
+  it('identify broken upgrade', async function () {
     const cwd = path.join(doctorTests, 'fail')
     const pkgPath = path.join(cwd, 'package.json')
     const nodeModulesPath = path.join(cwd, 'node_modules')
@@ -106,8 +100,7 @@ const testFail = ({ packageManager }: { packageManager: string }) => {
           stderr += data
         },
       })
-    }
-    finally {
+    } finally {
       pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
       fs.writeFileSync(pkgPath, pkgOriginal)
       rimraf.sync(nodeModulesPath)
@@ -138,47 +131,41 @@ const testFail = ({ packageManager }: { packageManager: string }) => {
   })
 }
 
-describe('doctor', function() {
-
+describe('doctor', function () {
   // 3 min timeout
   this.timeout(3 * 60 * 1000)
 
   describe('npm', () => {
-
     it('print instructions when -u is not specified', async () => {
       const cwd = path.join(doctorTests, 'nopackagefile')
-      return ncu(['--doctor'], { cwd })
-        .should.eventually.equal(doctorHelpText + '\n')
+      return ncu(['--doctor'], { cwd }).should.eventually.equal(doctorHelpText + '\n')
     })
 
     it('throw an error if there is no package file', async () => {
       const cwd = path.join(doctorTests, 'nopackagefile')
-      return ncu(['--doctor', '-u'], { cwd })
-        .should.eventually.be.rejectedWith('Missing or invalid package.json')
+      return ncu(['--doctor', '-u'], { cwd }).should.eventually.be.rejectedWith('Missing or invalid package.json')
     })
 
     it('throw an error if there is no test script', async () => {
       const cwd = path.join(doctorTests, 'notestscript')
-      return ncu(['--doctor', '-u'], { cwd })
-        .should.eventually.be.rejectedWith('No npm "test" script')
+      return ncu(['--doctor', '-u'], { cwd }).should.eventually.be.rejectedWith('No npm "test" script')
     })
 
     it('throw an error if --packageData or --packageFile are supplied', async () => {
-
       return Promise.all([
-        ncu(['--doctor', '-u', '--packageFile', 'package.json'])
-          .should.eventually.be.rejectedWith('--packageData and --packageFile are not allowed with --doctor'),
-        ncu(['--doctor', '-u', '--packageData', '{}'])
-          .should.eventually.be.rejectedWith('--packageData and --packageFile are not allowed with --doctor')
+        ncu(['--doctor', '-u', '--packageFile', 'package.json']).should.eventually.be.rejectedWith(
+          '--packageData and --packageFile are not allowed with --doctor',
+        ),
+        ncu(['--doctor', '-u', '--packageData', '{}']).should.eventually.be.rejectedWith(
+          '--packageData and --packageFile are not allowed with --doctor',
+        ),
       ])
-
     })
 
     testPass({ packageManager: 'npm' })
     testFail({ packageManager: 'npm' })
 
     it('pass through options', async function () {
-
       const cwd = path.join(doctorTests, 'options')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -198,8 +185,7 @@ describe('doctor', function() {
             stderr += data
           },
         })
-      }
-      catch (e) {}
+      } catch (e) {}
 
       const pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
 
@@ -220,7 +206,6 @@ describe('doctor', function() {
     })
 
     it('custom install script with --doctorInstall', async function () {
-
       const cwd = path.join(doctorTests, 'custominstall')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -240,8 +225,7 @@ describe('doctor', function() {
             stderr += data
           },
         })
-      }
-      catch (e) {}
+      } catch (e) {}
 
       const pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
 
@@ -261,7 +245,6 @@ describe('doctor', function() {
     })
 
     it('custom test script with --doctorTest', async function () {
-
       const cwd = path.join(doctorTests, 'customtest')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -281,8 +264,7 @@ describe('doctor', function() {
             stderr += data
           },
         })
-      }
-      catch (e) {}
+      } catch (e) {}
 
       const pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
 
@@ -300,14 +282,10 @@ describe('doctor', function() {
       // package file should include upgrades
       pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
     })
-
   })
 
   describe('yarn', () => {
-
     testPass({ packageManager: 'yarn' })
     testFail({ packageManager: 'yarn' })
-
   })
-
 })

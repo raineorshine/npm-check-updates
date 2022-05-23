@@ -11,22 +11,22 @@ describe('enginesNode', () => {
       jsonAll: true,
       packageData: JSON.stringify({
         dependencies: {
-          del: '3.0.0'
+          del: '3.0.0',
         },
         engines: {
-          node: '>=6'
-        }
+          node: '>=6',
+        },
       }),
-      enginesNode: true
+      enginesNode: true,
     })
 
     upgradedPkg!.should.eql({
       dependencies: {
-        del: '4.1.1'
+        del: '4.1.1',
       },
       engines: {
-        node: '>=6'
-      }
+        node: '>=6',
+      },
     })
   })
 
@@ -35,13 +35,13 @@ describe('enginesNode', () => {
       jsonAll: true,
       packageData: JSON.stringify({
         dependencies: {
-          del: '3.0.0'
+          del: '3.0.0',
         },
         engines: {
-          node: '>=6'
-        }
+          node: '>=6',
+        },
       }),
-      enginesNode: true
+      enginesNode: true,
     })
 
     upgradedPkg!.should.have.property('dependencies')
@@ -55,13 +55,13 @@ describe('enginesNode', () => {
       jsonAll: true,
       packageData: JSON.stringify({
         dependencies: {
-          del: '3.0.0'
+          del: '3.0.0',
         },
         engines: {
-          node: '>=1'
-        }
+          node: '>=1',
+        },
       }),
-      enginesNode: true
+      enginesNode: true,
     })
 
     upgradedPkg!.should.have.property('dependencies')
@@ -75,10 +75,10 @@ describe('enginesNode', () => {
       jsonAll: true,
       packageData: JSON.stringify({
         dependencies: {
-          del: '3.0.0'
-        }
+          del: '3.0.0',
+        },
       }),
-      enginesNode: true
+      enginesNode: true,
     })
 
     upgradedPkg!.should.have.property('dependencies')
@@ -87,5 +87,4 @@ describe('enginesNode', () => {
     deps.del.should.not.equal('3.0.0')
     deps.del.should.not.equal('4.1.1')
   })
-
 })
