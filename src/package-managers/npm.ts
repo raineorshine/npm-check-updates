@@ -31,7 +31,7 @@ const readNpmConfig = () => {
       const output = cadata
         .split(delim)
         .filter(xs => !!xs.trim())
-        .map(xs => `${xs.trimLeft()}${delim}`)
+        .map(xs => `${xs.trimStart()}${delim}`)
       return { ca: output }
     },
     maxsockets: 'maxSockets',
