@@ -10,7 +10,7 @@ export interface CLIOption<T = any> {
   deprecated?: boolean
   description: string
   help?: string
-  parse?: (s: string) => T
+  parse?: (s: string, p?: any) => T
   long: string
   short?: string
   type?: string
@@ -292,6 +292,8 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     description:
       'Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.',
     type: 'string | string[] | RegExp | RegExp[] | Function',
+    parse: (s, p) => p.concat([s]),
+    default: [],
   },
   {
     long: 'rejectVersion',
