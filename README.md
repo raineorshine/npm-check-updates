@@ -195,7 +195,7 @@ ncu "/^(?!react-).*$/" # windows
 -r, --registry <url>         Third-party npm registry.
 -x, --reject <matches>       Exclude packages matching the given string,
                              wildcard, glob, comma-or-space-delimited list,
-                             or /regex/.
+                             or /regex/. (default: [])
 --rejectVersion <matches>    Exclude package.json versions using
                              comma-or-space-delimited list, or /regex/.
 --removeRange                Remove version ranges from the final package
