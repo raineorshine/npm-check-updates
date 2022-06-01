@@ -10,7 +10,7 @@ export interface CLIOption<T = any> {
   deprecated?: boolean
   description: string
   help?: string
-  parse?: (s: string, p?: any) => T
+  parse?: (s: string, p?: T) => T
   long: string
   short?: string
   type?: string
