@@ -123,6 +123,38 @@ function toDependencyTable({
   return table
 }
 
+/** Prints errors. */
+function printErrors(options: Options, errors?: Index<string>) {
+  if (!errors) return
+  if (Object.keys(errors).length > 0) {
+    const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
+    const errorTable = new Table({
+      colAligns: ['left', 'right', 'right', 'right', 'left', 'left'],
+      chars: {
+        top: '',
+        'top-mid': '',
+        'top-left': '',
+        'top-right': '',
+        bottom: '',
+        'bottom-mid': '',
+        'bottom-left': '',
+        'bottom-right': '',
+        left: '',
+        'left-mid': '',
+        mid: '',
+        'mid-mid': '',
+        right: '',
+        'right-mid': '',
+        middle: '',
+      },
+    })
+    const rows = Object.entries(errors!).map(([dep, error]) => [dep, chalk.yellow(error)])
+    rows.forEach(row => errorTable.push(row)) // eslint-disable-line fp/no-mutating-methods
+
+    print(options, '\n' + errorTable.toString())
+  }
+}
+
 /**
  * @param options - Options from the configuration
  * @param args - The arguments passed to the function.
@@ -141,6 +173,7 @@ export function printUpgrades(
     numUpgraded,
     total,
     ownersChangedDeps,
+    errors,
   }: {
     current: Index<VersionSpec>
     latest?: Index<Version>
@@ -148,6 +181,7 @@ export function printUpgrades(
     numUpgraded: number
     total: number
     ownersChangedDeps?: Index<boolean>
+    errors?: Index<string>
   },
 ) {
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
@@ -156,8 +190,9 @@ export function printUpgrades(
 
   // print everything is up-to-date
   const smiley = chalk.green.bold(':)')
+  const numErrors = Object.keys(errors || {}).length
   const target = typeof options.target === 'string' ? options.target : 'target'
-  if (numUpgraded === 0 && total === 0) {
+  if (numUpgraded === 0 && total === 0 && numErrors === 0) {
     if (Object.keys(current).length === 0) {
       print(options, 'No dependencies.')
     } else if (latest && Object.keys(latest).length === 0) {
@@ -177,9 +212,8 @@ export function printUpgrades(
   } else if (numUpgraded === 0 && total > 0) {
     print(options, `All dependencies match the desired package versions ${smiley}`)
   }
-
   // print table
-  if (numUpgraded > 0) {
+  else if (numUpgraded > 0) {
     const table = toDependencyTable({
       from: current,
       to: upgraded,
@@ -188,6 +222,8 @@ export function printUpgrades(
     })
     print(options, table.toString())
   }
+
+  printErrors(options, errors)
 }
 
 /** Print updates that were ignored due to incompatible peer dependencies. */

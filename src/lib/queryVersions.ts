@@ -1,5 +1,3 @@
-import _ from 'lodash'
-import cint from 'cint'
 import chalk from 'chalk'
 import pMap from 'p-map'
 import ProgressBar from 'progress'
@@ -8,7 +6,8 @@ import { supportedVersionTargets } from '../constants'
 import getPackageManager from './getPackageManager'
 import packageManagers from '../package-managers'
 import { createNpmAlias, isGithubUrl, isPre, parseNpmAlias } from '../version-util'
-import { GetVersion, Index, Options, Version, VersionSpec } from '../types'
+import keyValueBy from './keyValueBy'
+import { GetVersion, Index, Options, Version, VersionResult, VersionSpec } from '../types'
 
 /**
  * Get the latest or greatest versions from the NPM repository based on the version target.
@@ -17,7 +16,7 @@ import { GetVersion, Index, Options, Version, VersionSpec } from '../types'
  * @param [options={}] Options. Default: { target: 'latest' }.
  * @returns Promised {packageName: version} collection
  */
-async function queryVersions(packageMap: Index<VersionSpec>, options: Options = {}) {
+async function queryVersions(packageMap: Index<VersionSpec>, options: Options = {}): Promise<Index<VersionResult>> {
   const target = options.target || 'latest'
   const packageList = Object.keys(packageMap)
   const packageManager = getPackageManager(options.packageManager)
@@ -35,7 +34,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
    * @param dep
    * @returns
    */
-  async function getPackageVersionProtected(dep: VersionSpec): Promise<Version | null> {
+  async function getPackageVersionProtected(dep: VersionSpec): Promise<VersionResult> {
     const npmAlias = parseNpmAlias(packageMap[dep])
     const [name, version] = npmAlias || [dep, packageMap[dep]]
     const targetResult = typeof target === 'string' ? target : target(name, parseRange(version))
@@ -88,7 +87,16 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
         versionNew = npmAlias && versionNew ? createNpmAlias(name, versionNew) : versionNew
       } catch (err: any) {
         const errorMessage = err ? (err.message || err).toString() : ''
-        if (!errorMessage.match(/E404|ENOTFOUND|404 Not Found/i)) {
+        if (errorMessage.match(/E404|ENOTFOUND|404 Not Found/i)) {
+          return {
+            error: `${errorMessage.replace(
+              / - Not found$/i,
+              '',
+            )}. Either your internet connection is down or unstable and all ${
+              options.retry
+            } retry attempts failed, or the registry is not accessible, or the package does not exist.`,
+          }
+        } else {
           // print a hint about the --timeout option for network timeout errors
           if (!process.env.NCU_TESTS && /(Response|network) timeout/i.test(errorMessage)) {
             console.error(
@@ -109,23 +117,22 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       bar.tick()
     }
 
-    return versionNew
+    return {
+      version: versionNew,
+    }
   }
 
-  /**
-   * Zip up the array of versions into to a nicer object keyed by package name.
-   *
-   * @param versionList
-   * @returns
-   */
-  const zipVersions = (versionList: (Version | null)[]) =>
-    cint.toObject(versionList, (version, i) => ({
-      [packageList[i]]: version,
-    }))
+  const versionResultList = await pMap(packageList, getPackageVersionProtected, { concurrency: options.concurrency })
 
-  const versions = await pMap(packageList, getPackageVersionProtected, { concurrency: options.concurrency })
+  const versionResultObject = keyValueBy(versionResultList, (versionResult, i) =>
+    versionResult.version || versionResult.error
+      ? {
+          [packageList[i]]: versionResult,
+        }
+      : null,
+  )
 
-  return _.pickBy(zipVersions(versions), _.identity)
+  return versionResultObject
 }
 
 export default queryVersions

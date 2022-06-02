@@ -10,6 +10,7 @@ import getCurrentDependencies from './getCurrentDependencies'
 import getIgnoredUpgrades from './getIgnoredUpgrades'
 import getPackageFileName from './getPackageFileName'
 import getPackageManager from './getPackageManager'
+import keyValueBy from './keyValueBy'
 import getPeerDependencies from './getPeerDependencies'
 import programError from './programError'
 import upgradePackageData from './upgradePackageData'
@@ -91,7 +92,9 @@ async function runLocal(
     options.peerDependencies = getPeerDependencies(current, options)
   }
 
-  const [upgraded, latest, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)
+  const [upgraded, latestResults, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)
+  const latest = keyValueBy(latestResults, (key, result) => (result.version ? { [key]: result.version } : null))
+  const errors = keyValueBy(latestResults, (key, result) => (result.error ? { [key]: result.error } : null))
 
   if (options.peer) {
     print(options, '\nupgradedPeerDependencies:', 'verbose')
@@ -143,6 +146,7 @@ async function runLocal(
       numUpgraded,
       total: Object.keys(upgraded).length,
       ownersChangedDeps,
+      errors,
     })
     if (options.peer) {
       const ignoredUpdates = await getIgnoredUpgrades(current, upgraded, upgradedPeerDependencies!, options)

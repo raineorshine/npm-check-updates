@@ -55,7 +55,9 @@ describe('queryVersions', function () {
       },
       { loglevel: 'silent' },
     ).should.eventually.deep.equal({
-      request: 'npm:ncu-test-v2@2.0.0',
+      request: {
+        version: 'npm:ncu-test-v2@2.0.0',
+      },
     })
   })
 
@@ -69,7 +71,9 @@ describe('queryVersions', function () {
       )
 
       upgrades.should.deep.equal({
-        'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#v2.0.0',
+        'ncu-test-v2': {
+          version: 'https://github.com/raineorshine/ncu-test-v2#v2.0.0',
+        },
       })
     })
 
@@ -82,7 +86,9 @@ describe('queryVersions', function () {
       )
 
       upgrades.should.deep.equal({
-        'ncu-test-v2': 'git+https://github.com/raineorshine/ncu-test-v2#v2.0.0',
+        'ncu-test-v2': {
+          version: 'git+https://github.com/raineorshine/ncu-test-v2#v2.0.0',
+        },
       })
     })
 
@@ -96,7 +102,9 @@ describe('queryVersions', function () {
       )
 
       upgrades1.should.deep.equal({
-        'ncu-test-invalid-tag': 'raineorshine/ncu-test-invalid-tag.git#v3.0.5',
+        'ncu-test-invalid-tag': {
+          version: 'raineorshine/ncu-test-invalid-tag.git#v3.0.5',
+        },
       })
 
       // this repo has tag "v0.1.3a" which is not a valid version
@@ -108,7 +116,9 @@ describe('queryVersions', function () {
       )
 
       upgrades2.should.deep.equal({
-        'angular-toasty': 'git+https://github.com/raineorshine/ncu-test-v0.1.3a.git#1.0.7',
+        'angular-toasty': {
+          version: 'git+https://github.com/raineorshine/ncu-test-v0.1.3a.git#1.0.7',
+        },
       })
     })
 
@@ -122,7 +132,9 @@ describe('queryVersions', function () {
       )
 
       upgrades.should.deep.equal({
-        'ncu-test-invalid-tag': 'git+https://github.com/raineorshine/ncu-test-simple-tag#v3',
+        'ncu-test-invalid-tag': {
+          version: 'git+https://github.com/raineorshine/ncu-test-simple-tag#v3',
+        },
       })
     })
 
@@ -149,7 +161,9 @@ describe('queryVersions', function () {
       )
 
       upgrades.should.deep.equal({
-        'ncu-test-v2': '2.0.0',
+        'ncu-test-v2': {
+          version: '2.0.0',
+        },
       })
     })
 
@@ -162,7 +176,9 @@ describe('queryVersions', function () {
       )
 
       upgrades.should.deep.equal({
-        'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#semver:^2.0.0',
+        'ncu-test-v2': {
+          version: 'https://github.com/raineorshine/ncu-test-v2#semver:^2.0.0',
+        },
       })
     })
 
@@ -175,8 +191,9 @@ describe('queryVersions', function () {
       )
 
       upgrades.should.deep.equal({
-        'ncu-test-greatest-not-newest':
-          'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta',
+        'ncu-test-greatest-not-newest': {
+          version: 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta',
+        },
       })
     })
 
@@ -189,8 +206,9 @@ describe('queryVersions', function () {
       )
 
       upgrades.should.deep.equal({
-        'ncu-test-greatest-not-newest':
-          'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta',
+        'ncu-test-greatest-not-newest': {
+          version: 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta',
+        },
       })
     })
 
@@ -203,7 +221,9 @@ describe('queryVersions', function () {
       )
 
       upgrades.should.deep.equal({
-        'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^0.2.0',
+        'ncu-test-return-version': {
+          version: 'https://github.com/raineorshine/ncu-test-return-version#semver:^0.2.0',
+        },
       })
     })
 
@@ -216,7 +236,9 @@ describe('queryVersions', function () {
       )
 
       upgrades.should.deep.equal({
-        'ncu-test-return-version': 'https://github.com/raineorshine/ncu-test-return-version#semver:^1.0.1',
+        'ncu-test-return-version': {
+          version: 'https://github.com/raineorshine/ncu-test-return-version#semver:^1.0.1',
+        },
       })
     })
 
@@ -229,7 +251,9 @@ describe('queryVersions', function () {
       )
 
       upgrades.should.deep.equal({
-        'ncu-test-greatest-not-newest': 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.1',
+        'ncu-test-greatest-not-newest': {
+          version: 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^1.0.1',
+        },
       })
     })
 
@@ -242,8 +266,9 @@ describe('queryVersions', function () {
       )
 
       upgradesNewest.should.deep.equal({
-        'ncu-test-greatest-not-newest':
-          'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta',
+        'ncu-test-greatest-not-newest': {
+          version: 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta',
+        },
       })
 
       const upgradesGreatest = await queryVersions(
@@ -254,8 +279,9 @@ describe('queryVersions', function () {
       )
 
       upgradesGreatest.should.deep.equal({
-        'ncu-test-greatest-not-newest':
-          'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta',
+        'ncu-test-greatest-not-newest': {
+          version: 'https://github.com/raineorshine/ncu-test-greatest-not-newest#semver:^2.0.0-beta',
+        },
       })
     })
   })

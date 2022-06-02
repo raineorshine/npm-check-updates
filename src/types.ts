@@ -29,6 +29,10 @@ export interface PackageManager {
 export type Version = string
 export type VersionSpec = string
 export type VersionLevel = 'major' | 'minor' | 'patch'
+export interface VersionResult {
+  version?: Version | null
+  error?: string
+}
 
 export type FilterFunction = (packageName: string, versionRange: SemVer[]) => boolean
 export type FilterRejectPattern = string | string[] | RegExp | RegExp[] | FilterFunction

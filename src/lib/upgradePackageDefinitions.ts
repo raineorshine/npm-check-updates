@@ -3,7 +3,8 @@ import { satisfies } from 'semver'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
 import queryVersions from './queryVersions'
 import upgradeDependencies from './upgradeDependencies'
-import { Index, Options, VersionSpec } from '../types'
+import keyValueBy from './keyValueBy'
+import { Index, Options, VersionResult, VersionSpec } from '../types'
 
 /**
  * Returns an 3-tuple of upgradedDependencies, their latest versions and the resulting peer dependencies.
@@ -15,8 +16,16 @@ import { Index, Options, VersionSpec } from '../types'
 export async function upgradePackageDefinitions(
   currentDependencies: Index<VersionSpec>,
   options: Options,
-): Promise<[Index<VersionSpec>, Index<VersionSpec>, Index<Index<VersionSpec>>?]> {
-  const latestVersions = await queryVersions(currentDependencies, options)
+): Promise<[Index<VersionSpec>, Index<VersionResult>, Index<Index<VersionSpec>>?]> {
+  const latestVersionResults = await queryVersions(currentDependencies, options)
+
+  const latestVersions = keyValueBy(latestVersionResults, (dep, result) =>
+    result?.version
+      ? {
+          [dep]: result.version,
+        }
+      : null,
+  )
 
   const upgradedDependencies = upgradeDependencies(currentDependencies, latestVersions, {
     removeRange: options.removeRange,
@@ -36,12 +45,12 @@ export async function upgradePackageDefinitions(
       )
       return [
         { ...filteredUpgradedDependencies, ...newUpgradedDependencies },
-        { ...latestVersions, ...newLatestVersions },
+        { ...latestVersionResults, ...newLatestVersions },
         newPeerDependencies,
       ]
     }
   }
-  return [filteredUpgradedDependencies, latestVersions, options.peerDependencies]
+  return [filteredUpgradedDependencies, latestVersionResults, options.peerDependencies]
 }
 
 export default upgradePackageDefinitions

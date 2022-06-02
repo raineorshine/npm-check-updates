@@ -9,7 +9,7 @@ export async function getIgnoredUpgrades(
   upgradedPeerDependencies: Index<Index<Version>>,
   options: Options = {},
 ) {
-  const [upgradedLatestVersions, latestVersions] = await upgradePackageDefinitions(current, {
+  const [upgradedLatestVersions, latestVersionResults] = await upgradePackageDefinitions(current, {
     ...options,
     peer: false,
     peerDependencies: undefined,
@@ -25,7 +25,12 @@ export async function getIgnoredUpgrades(
           from: current[pkgName],
           to: newVersion,
           reason: Object.entries(upgradedPeerDependencies)
-            .filter(([, peers]) => peers[pkgName] !== undefined && !satisfies(latestVersions[pkgName], peers[pkgName]))
+            .filter(
+              ([, peers]) =>
+                peers[pkgName] !== undefined &&
+                latestVersionResults[pkgName]?.version &&
+                !satisfies(latestVersionResults[pkgName].version!, peers[pkgName]),
+            )
             .reduce(
               (accumReason, [peerPkg, peers]) => ({ ...accumReason, [peerPkg]: peers[pkgName] }),
               {} as Index<string>,

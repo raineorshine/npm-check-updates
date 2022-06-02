@@ -163,7 +163,7 @@ export async function viewMany(
   fields: string[],
   currentVersion: Version,
   { registry, timeout, retry }: ViewOptions = {},
-  retryed = 0,
+  retried = 0,
   npmConfigLocal?: Index<string | boolean>,
 ) {
   if (currentVersion && (!semver.validRange(currentVersion) || versionUtil.isWildCard(currentVersion))) {
@@ -180,14 +180,13 @@ export async function viewMany(
       timeout,
     })
   } catch (err: any) {
-    if (retry && ++retryed <= retry) {
-      console.error(`\nFetchError: Request ${packageName} info failed[${retryed} of ${retry}]: \n${err.message}.`)
+    if (retry && ++retried <= retry) {
       const packument: Packument = await viewMany(
         packageName,
         fields,
         currentVersion,
         { registry, timeout, retry },
-        retryed,
+        retried,
         npmConfigLocal,
       )
       return packument
