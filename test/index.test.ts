@@ -647,4 +647,19 @@ describe('run', function () {
       'ncu-test-v2': '^2.0.0',
     })
   })
+
+  // https://github.com/raineorshine/npm-check-updates/issues/1129
+  it('ignore invalid semver version', async () => {
+    const upgrades = await ncu.run({
+      // needed to cause the npm package handler to use greatest or newest and compare all published versions
+      target: 'minor',
+      packageData: {
+        dependencies: {
+          // grunt-contrib-requirejs contains 0.4.0rc7 which is not valid semver
+          'grunt-contrib-requirejs': '0.3.0',
+        },
+      },
+    })
+    upgrades!.should.haveOwnProperty('grunt-contrib-requirejs')
+  })
 })

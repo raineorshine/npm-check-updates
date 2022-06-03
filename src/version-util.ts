@@ -190,7 +190,9 @@ export function colorizeDiff(from: string, to: string) {
 
 /** Comparator used to sort semver versions */
 export function compareVersions(a: string, b: string) {
-  return semver.gt(a, b) ? 1 : a === b ? 0 : -1
+  const isValid = semver.valid(a) && semver.valid(b)
+  const isGreater = isValid ? semver.gt(a, b) : a > b
+  return isGreater ? 1 : a === b ? 0 : -1
 }
 
 /**
