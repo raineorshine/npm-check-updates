@@ -11,7 +11,7 @@ import { Index, Options, PackageFile, SpawnOptions, VersionSpec } from '../types
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
 
 /** Run the npm CLI in CI mode. */
-const npm = (args: string[], options: Options & SpawnOptions, print?: boolean) => {
+const npm = (args: string[], options: Options, print?: boolean) => {
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   if (print) {
@@ -21,10 +21,14 @@ const npm = (args: string[], options: Options & SpawnOptions, print?: boolean) =
   const spawnOptions = {
     cwd: options.cwd || process.cwd(),
     env: { ...process.env, CI: '1' },
-    ...options,
   }
 
-  return (options.packageManager === 'yarn' ? spawnYarn : spawnNpm)(args, options, spawnOptions)
+  const npmOptions = {
+    ...(options.global ? { global: options.global } : null),
+    ...(options.prefix ? { prefix: options.prefix } : null),
+  }
+
+  return (options.packageManager === 'yarn' ? spawnYarn : spawnNpm)(args, npmOptions, spawnOptions)
 }
 
 /** Load and validate package file and tests. */

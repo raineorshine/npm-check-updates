@@ -78,12 +78,6 @@ export interface NpmOptions {
   registry?: string
 }
 
-export interface YarnOptions {
-  global?: boolean
-  prefix?: string
-  registry?: string
-}
-
 export interface SpawnOptions {
   env?: Index<string>
   stderr?: (s: string) => void

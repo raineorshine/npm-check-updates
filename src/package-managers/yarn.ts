@@ -11,7 +11,7 @@ import spawn from 'spawn-please'
 import yaml from 'yaml'
 import * as versionUtil from '../version-util'
 import { viewOne, viewManyMemoized } from './npm'
-import { GetVersion, Index, Options, Packument, SpawnOptions, Version, YarnOptions } from '../types'
+import { GetVersion, Index, Options, Packument, SpawnOptions, Version, NpmOptions } from '../types'
 import { allowDeprecatedOrIsNotDeprecated, allowPreOrIsNotPre, satisfiesNodeEngine } from './filters'
 
 interface ParsedDep {
@@ -141,7 +141,7 @@ function filterPredicate(options: Options): (o: Packument) => boolean {
  */
 async function spawnYarn(
   args: string | string[],
-  yarnOptions: YarnOptions = {},
+  yarnOptions: NpmOptions = {},
   spawnOptions?: SpawnOptions,
 ): Promise<string> {
   const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'

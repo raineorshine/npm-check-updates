@@ -246,7 +246,7 @@ function filterPredicate(options: Options): (o: Packument) => boolean {
  * @param [spawnOptions={}]
  * @returns
  */
-function spawnNpm(args: string | string[], npmOptions: NpmOptions = {}, spawnOptions = {}) {
+function spawnNpm(args: string | string[], npmOptions: NpmOptions = {}, spawnOptions: Index<any> = {}): Promise<any> {
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
   args = Array.isArray(args) ? args : [args]
 
