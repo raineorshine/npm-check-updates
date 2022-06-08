@@ -24,7 +24,7 @@ const npm = (args: string[], options: Options, print?: boolean) => {
   }
 
   const npmOptions = {
-    ...(options.global ? { global: options.global } : null),
+    ...(options.global ? { location: 'global' } : null),
     ...(options.prefix ? { prefix: options.prefix } : null),
   }
 

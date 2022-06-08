@@ -251,7 +251,7 @@ function spawnNpm(args: string | string[], npmOptions: NpmOptions = {}, spawnOpt
   args = Array.isArray(args) ? args : [args]
 
   const fullArgs = args.concat(
-    npmOptions.global ? '--global' : [],
+    npmOptions.global ? '--location=global' : [],
     npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : [],
     '--depth=0',
     '--json',
@@ -350,7 +350,7 @@ export const list = async (options: Options = {}) => {
     rejectOnError: false,
   })
   const json = parseJson(result, {
-    command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --global' : ''}`,
+    command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --location=global' : ''}`,
   })
   return cint.mapObject(json.dependencies, (name, info) => ({
     // unmet peer dependencies have a different structure
