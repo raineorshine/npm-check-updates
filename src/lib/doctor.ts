@@ -149,13 +149,10 @@ const doctor = async (run: Run, options: Options) => {
 
     console.log(`${chalk.green('✓')} Tests pass`)
 
-    const numUpgraded = Object.keys(upgrades || {}).length
-
     printUpgrades(options, {
       current: allDependencies,
       upgraded: upgrades,
-      numUpgraded,
-      total: numUpgraded,
+      total: Object.keys(upgrades || {}).length,
     })
 
     console.log('\nAll dependencies upgraded and installed ' + chalk.green(':)'))

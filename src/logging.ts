@@ -170,7 +170,6 @@ export function printUpgrades(
     current,
     latest,
     upgraded,
-    numUpgraded,
     total,
     ownersChangedDeps,
     errors,
@@ -178,7 +177,6 @@ export function printUpgrades(
     current: Index<VersionSpec>
     latest?: Index<Version>
     upgraded: Index<VersionSpec>
-    numUpgraded: number
     total: number
     ownersChangedDeps?: Index<boolean>
     errors?: Index<string>
@@ -192,6 +190,7 @@ export function printUpgrades(
   const smiley = chalk.green.bold(':)')
   const numErrors = Object.keys(errors || {}).length
   const target = typeof options.target === 'string' ? options.target : 'target'
+  const numUpgraded = Object.keys(upgraded).length
   if (numUpgraded === 0 && total === 0 && numErrors === 0) {
     if (Object.keys(current).length === 0) {
       print(options, 'No dependencies.')

@@ -36,8 +36,6 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
   printUpgrades(options, {
     current: globalPackages,
     upgraded,
-    // since an interactive upgrade of globals is not available, the numUpgraded is always all
-    numUpgraded: upgradedPackageNames.length,
     total: upgradedPackageNames.length,
   })
 

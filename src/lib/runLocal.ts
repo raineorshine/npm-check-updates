@@ -119,13 +119,10 @@ async function runLocal(
     ? await getOwnerPerDependency(current, filteredUpgraded, options)
     : undefined
 
-  const numUpgraded = Object.keys(filteredUpgraded).length
-
   if (!options.json || options.deep) {
     printUpgrades(options, {
       current,
       upgraded: filteredUpgraded,
-      numUpgraded,
       total: Object.keys(upgraded).length,
       ownersChangedDeps,
       errors,
@@ -153,7 +150,7 @@ async function runLocal(
     printJson(options, output)
   }
 
-  if (numUpgraded > 0) {
+  if (Object.keys(upgraded).length > 0) {
     // if there is a package file, write the new package data
     // otherwise, suggest ncu -u
     if (pkgFile) {
