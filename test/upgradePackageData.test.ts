@@ -31,7 +31,7 @@ describe('upgradePackageData', () => {
   }
 
   it('upgrade the dependencies in the given package data (including satisfied)', async () => {
-    const { newPkgData } = await upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions)
+    const newPkgData = await upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions)
     JSON.parse(newPkgData).should.eql({
       name: 'npm-check-updates',
       dependencies: {
@@ -45,7 +45,7 @@ describe('upgradePackageData', () => {
   })
 
   it('upgrade the dependencies in the given package data (except for satisfied)', async () => {
-    const { newPkgData } = await upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions, {
+    const newPkgData = await upgradePackageData(pkgData, oldDependencies, newDependencies, newVersions, {
       minimal: true,
     })
     JSON.parse(newPkgData).should.eql({
@@ -66,7 +66,7 @@ describe('upgradePackageData', () => {
     const newVersions = { foo: 'ncu-test-v2@2.0.0' }
     const oldPkgData = JSON.stringify({ dependencies: oldDependencies })
 
-    const { newPkgData } = await upgradePackageData(oldPkgData, oldDependencies, newDependencies, newVersions)
+    const newPkgData = await upgradePackageData(oldPkgData, oldDependencies, newDependencies, newVersions)
 
     JSON.parse(newPkgData).should.eql({
       dependencies: {

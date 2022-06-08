@@ -1,6 +1,7 @@
 import prompts from 'prompts'
 import { satisfies } from 'semver'
 import { colorizeDiff } from '../version-util'
+import { print } from '../logging'
 import { Index, Options, Version, VersionSpec } from '../types'
 
 /**
@@ -28,9 +29,12 @@ async function upgradePackageData(
   newVersions: Index<Version>,
   options: Options = {},
 ) {
-  // copy newDependencies for mutation via interactive mode
-  const selectedNewDependencies = { ...newDependencies }
   let newPkgData = pkgData
+
+  // interactive mode needs a newline before prompts
+  if (options.interactive) {
+    print(options, '')
+  }
 
   // eslint-disable-next-line fp/no-loops
   for (const dependency in newDependencies) {
@@ -50,7 +54,6 @@ async function upgradePackageData(
         })
         if (!response.value) {
           // continue loop to next dependency and skip updating newPkgData
-          delete selectedNewDependencies[dependency] // eslint-disable-line fp/no-delete
           continue
         }
       }
@@ -60,7 +63,7 @@ async function upgradePackageData(
     }
   }
 
-  return { newPkgData, selectedNewDependencies }
+  return newPkgData
 }
 
 export default upgradePackageData

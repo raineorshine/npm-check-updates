@@ -107,39 +107,21 @@ async function runLocal(
   print(options, '\nUpgraded:', 'verbose')
   print(options, upgraded, 'verbose')
 
-  const { newPkgData, selectedNewDependencies } = await upgradePackageData(pkgData!, current, upgraded, latest, options)
-
-  const output = options.jsonAll
-    ? (jph.parse(newPkgData) as PackageFile)
-    : options.jsonDeps
-    ? _.pick(jph.parse(newPkgData) as PackageFile, 'dependencies', 'devDependencies', 'optionalDependencies')
-    : selectedNewDependencies
-
-  // will be overwritten with the result of writePackageFile so that the return promise waits for the package file to be written
-  let writePromise = Promise.resolve()
-
   // split the deps into satisfied and unsatisfied to display in two separate tables
-  const deps = Object.keys(selectedNewDependencies)
+  const deps = Object.keys(upgraded)
   const satisfied = cint.toObject(deps, (dep: string) => ({
     [dep]: satisfies(latest[dep], current[dep]),
   }))
 
   const isSatisfied = _.propertyOf(satisfied)
-  const filteredUpgraded = options.minimal
-    ? cint.filterObject(selectedNewDependencies, (dep: string) => !isSatisfied(dep))
-    : selectedNewDependencies
-  const numUpgraded = Object.keys(filteredUpgraded).length
-
+  const filteredUpgraded = options.minimal ? cint.filterObject(upgraded, (dep: string) => !isSatisfied(dep)) : upgraded
   const ownersChangedDeps = (options.format || []).includes('ownerChanged')
     ? await getOwnerPerDependency(current, filteredUpgraded, options)
     : undefined
 
-  // print
-  if (options.json && !options.deep) {
-    // use the selectedNewDependencies dependencies data to generate new package data
-    // INVARIANT: we don't need try-catch here because pkgData has already been parsed as valid JSON, and upgradePackageData simply does a find-and-replace on that
-    printJson(options, output)
-  } else {
+  const numUpgraded = Object.keys(filteredUpgraded).length
+
+  if (!options.json || options.deep) {
     printUpgrades(options, {
       current,
       upgraded: filteredUpgraded,
@@ -154,6 +136,21 @@ async function runLocal(
         printIgnoredUpdates(options, ignoredUpdates)
       }
     }
+  }
+
+  const newPkgData = await upgradePackageData(pkgData!, current, upgraded, latest, options)
+
+  const output = options.jsonAll
+    ? (jph.parse(newPkgData) as PackageFile)
+    : options.jsonDeps
+    ? _.pick(jph.parse(newPkgData) as PackageFile, 'dependencies', 'devDependencies', 'optionalDependencies')
+    : upgraded
+
+  // will be overwritten with the result of writePackageFile so that the return promise waits for the package file to be written
+  let writePromise = Promise.resolve()
+
+  if (options.json && !options.deep) {
+    printJson(options, output)
   }
 
   if (numUpgraded > 0) {
