@@ -48,6 +48,7 @@ by each project's maintainers. Default.`,
 other version numbers that are higher. Includes prereleases.`,
   ])
   table.push(['patch', `Upgrade to the highest patch version without bumping the minor or major versions.`])
+  table.push(['@[dist-tag]', `Upgrade to the latest version within given distribution tag.`])
 
   return `Set the target version that is upgraded to. (default: "latest")
 
@@ -349,7 +350,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     short: 't',
     arg: 'value',
     description:
-      'Target version or function that returns version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details. (default: "latest")',
+      'Target version strategy, distribution tag or a function that returns version strategy to upgrade with: latest, newest, greatest, minor, patch, @[dist-tag]. Run "ncu --help --target" for details. (default: "latest")',
     help: getHelpTargetTable(),
     type: `'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | TargetFunction`,
   },

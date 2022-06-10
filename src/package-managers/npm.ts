@@ -370,8 +370,8 @@ export const list = async (options: Options = {}) => {
  * @param options
  * @returns
  */
-export const latest: GetVersion = async (packageName, currentVersion, options = {}) => {
-  const latest = (await viewOne(packageName, 'dist-tags.latest', currentVersion, {
+export const distTag: GetVersion = async (packageName, currentVersion, options: Options = {}) => {
+  const revision = (await viewOne(packageName, `dist-tags.${options.distTag}`, currentVersion, {
     registry: options.registry,
     timeout: options.timeout,
     retry: options.retry,
@@ -381,7 +381,10 @@ export const latest: GetVersion = async (packageName, currentVersion, options = 
   // if latest exists and latest is not a prerelease version, return it
   // if latest exists and latest is a prerelease version and --pre is specified, return it
   // if latest exists and latest not satisfies min version of engines.node
-  if (latest && filterPredicate(options)(latest)) return latest.version
+  if (revision && filterPredicate(options)(revision)) return revision.version
+
+  // If we use a custom dist-tag, we do not want to get other 'pre' versions, just the ones from this dist-tag
+  if (options.distTag && options.distTag !== 'latest') return null
 
   // if latest is a prerelease version and --pre is not specified
   // or latest is deprecated
@@ -389,6 +392,15 @@ export const latest: GetVersion = async (packageName, currentVersion, options = 
   // known type based on dist-tags.latest
   return await greatest(packageName, currentVersion, options)
 }
+
+/**
+ * @param packageName
+ * @param currentVersion
+ * @param options
+ * @returns
+ */
+export const latest: GetVersion = async (packageName: string, currentVersion: Version, options: Options = {}) =>
+  distTag(packageName, currentVersion, { ...options, distTag: 'latest' })
 
 /**
  * @param packageName
