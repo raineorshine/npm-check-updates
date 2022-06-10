@@ -43,7 +43,7 @@ const readNpmConfig = () => {
   const booleanKeys = { strictssl: true }
 
   /** Parses a string to a boolean. */
-  const stringToBoolean = (s: string) => s && s !== 'false' && s !== '0'
+  const stringToBoolean = (s: string) => !!s && s !== 'false' && s !== '0'
 
   // needed until pacote supports full npm config compatibility
   // See: https://github.com/zkat/pacote/issues/156
