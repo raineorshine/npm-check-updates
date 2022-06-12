@@ -96,6 +96,7 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
     ...(options.deep ? { packageFile: `${deepPatternPrefix}${getPackageFileName(options)}` } : null),
     ...((options.args || []).length > 0 ? { filter: options.args!.join(' ') } : null),
     ...(format.length > 0 ? { format } : null),
+    cli,
     // add shortcut for any keys that start with 'json'
     json,
     // convert silent option to loglevel silent
