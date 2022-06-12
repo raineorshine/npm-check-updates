@@ -33,14 +33,14 @@ jobs:
         # https://github.com/actions/setup-node/issues/515
         exclude:
           - os: windows-latest
-            node: 18
+            node: [16, 18]
 
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3.1.0
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
           cache: npm
