@@ -29,6 +29,11 @@ jobs:
       matrix:
         node: [14, 16, 18]
         os: [ubuntu-latest, windows-latest]
+        # --doctorTest breaks due to an npm warning in setup-node
+        # https://github.com/actions/setup-node/issues/515
+        exclude:
+          - os: windows-latest
+            version: 18
 
     steps:
       - name: Clone repository
