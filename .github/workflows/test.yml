@@ -33,7 +33,7 @@ jobs:
         # https://github.com/actions/setup-node/issues/515
         exclude:
           - os: windows-latest
-            version: 18
+            node: 18
 
     steps:
       - name: Clone repository
