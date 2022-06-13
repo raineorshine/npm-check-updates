@@ -22,25 +22,34 @@ jobs:
       checks: write # for coverallsapp/github-action to create new checks
       contents: read # for actions/checkout to fetch code
 
-    name: Node ${{ matrix.node }} on Ubuntu
-    runs-on: ubuntu-latest
+    name: Node ${{ matrix.node }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
 
-    # --doctorTest breaks on Windows due to an npm warning in setup-node v3, so test Windows in a separate action
-    # https://github.com/actions/setup-node/issues/515
     strategy:
       fail-fast: false
       matrix:
         node: [14, 16, 18]
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v3.1.0
         with:
           node-version: ${{ matrix.node }}
           cache: npm
+
+      # --doctorTest breaks due to an npm warning in npm < 8.12.1
+      # https://github.com/actions/setup-node/issues/515
+      - name: Upgrade npm on Windows
+        run: |
+          $WhereNode = Get-Command node | Select-Object -ExpandProperty Definition
+          $NodeDirPath = Split-Path $WhereNode -Parent
+          cd $NodeDirPath
+          npm install npm@^8.12.1
+        if: (matrix.node == '16' || matrix.node == '18') && matrix.os == 'windows-latest'
 
       - name: Install npm dependencies
         run: npm ci
@@ -48,10 +57,16 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Run tests
+        run: npm run test
+        if: "!(startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV)"
+
       - name: Run tests with coverage
         run: npm run c8 -- npm run test
+        if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
 
       - name: Run Coveralls
         uses: coverallsapp/github-action@v1.1.2
+        if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
