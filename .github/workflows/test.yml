@@ -21,6 +21,7 @@ jobs:
     permissions:
       checks: write # for coverallsapp/github-action to create new checks
       contents: read # for actions/checkout to fetch code
+
     name: Node ${{ matrix.node }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
@@ -29,11 +30,6 @@ jobs:
       matrix:
         node: [14, 16, 18]
         os: [ubuntu-latest, windows-latest]
-        # --doctorTest breaks due to an npm warning in setup-node
-        # https://github.com/actions/setup-node/issues/515
-        exclude:
-          - os: windows-latest
-            node: 18
 
     steps:
       - name: Clone repository
@@ -44,6 +40,16 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
+
+      # --doctorTest breaks due to an npm warning in npm < 8.12.1
+      # https://github.com/actions/setup-node/issues/515
+      - name: Upgrade npm on Windows
+        run: |
+          $WhereNode = Get-Command node | Select-Object -ExpandProperty Definition
+          $NodeDirPath = Split-Path $WhereNode -Parent
+          cd $NodeDirPath
+          npm install npm@^8.12.1
+        if: (matrix.node == '16' || matrix.node == '18') && matrix.os == 'windows-latest'
 
       - name: Install npm dependencies
         run: npm ci
