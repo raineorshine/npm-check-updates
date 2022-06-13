@@ -150,7 +150,7 @@ async function runLocal(
     printJson(options, output)
   }
 
-  if (Object.keys(upgraded).length > 0) {
+  if (Object.keys(filteredUpgraded).length > 0) {
     // if there is a package file, write the new package data
     // otherwise, suggest ncu -u
     if (pkgFile) {
