@@ -155,9 +155,10 @@ ncu "/^(?!react-).*$/" # windows
                              continuous integration). (default: 1)
 -f, --filter <matches>       Include only package names matching the given
                              string, wildcard, glob, comma-or-space-delimited
-                             list, or /regex/.
+                             list, /regex/, or predicate function.
 --filterVersion <matches>    Filter on package version using
-                             comma-or-space-delimited list, or /regex/.
+                             comma-or-space-delimited list, /regex/, or
+                             predicate function.
 --format <value>             Enable additional output data, string or
                              comma-delimited list: ownerChanged, repo.
                              ownerChanged: shows if the package owner changed
@@ -195,9 +196,10 @@ ncu "/^(?!react-).*$/" # windows
 -r, --registry <url>         Third-party npm registry.
 -x, --reject <matches>       Exclude packages matching the given string,
                              wildcard, glob, comma-or-space-delimited list,
-                             or /regex/. (default: [])
+                             /regex/, or predicate function. (default: [])
 --rejectVersion <matches>    Exclude package.json versions using
-                             comma-or-space-delimited list, or /regex/.
+                             comma-or-space-delimited list, /regex/, or
+                             predicate function.
 --removeRange                Remove version ranges from the final package
                              version.
 --retry <n>                  Number of times to retry failed requests for

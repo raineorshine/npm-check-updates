@@ -1,5 +1,6 @@
 import fs from 'fs'
 import spawn from 'spawn-please'
+import cliOptions, { CLIOption } from '../cli-options'
 
 /** Extracts CLI options from the bin output. */
 const readOptions = async () => {
@@ -16,7 +17,7 @@ const readOptions = async () => {
 }
 
 /** Replaces the "Options" section of the README with direct output from "ncu --help". */
-const writeReadme = (helpOptionsNew: string) => {
+const injectReadme = (helpOptions: string) => {
   const optionsLabelStart = '## Options\n\n```text\n'
   const optionsLabelEnd = '```'
 
@@ -27,11 +28,53 @@ const writeReadme = (helpOptionsNew: string) => {
   const optionsEnd = readme.indexOf(optionsLabelEnd, optionsStart)
 
   // insert new options into README
-  const readmeNew = readme.slice(0, optionsStart) + helpOptionsNew + readme.slice(optionsEnd)
-  fs.writeFileSync('README.md', readmeNew)
+  const readmeNew = readme.slice(0, optionsStart) + helpOptions + readme.slice(optionsEnd)
+  return readmeNew
+}
+
+/** Renders a single CLI option for a type definition file. */
+const renderOption = (option: CLIOption<unknown>) => {
+  // deepPatternFix needs to be escaped, otherwise it will break the block comment
+  const description = option.long === 'deep' ? option.description.replace('**/', '**\\/') : option.description
+
+  // pre must be internally typed as number and externally typed as boolean to maintain compatibility with the CLI option and the RunOption
+  const type = option.long === 'pre' ? 'boolean' : option.type
+
+  const defaults =
+    // do not render default empty arrays
+    option.default && (!Array.isArray(option.default) || option.default.length > 0)
+      ? ` (default: ${JSON.stringify(option.default)})`
+      : ''
+
+  // all options are optional
+  return `  /** ${description}${defaults} */
+  ${option.long}?: ${type}
+`
+}
+
+/** Generate /src/types/RunOptions from cli-options so there is a single source of truth. */
+const renderRunOptions = (options: CLIOption<unknown>[]) => {
+  const header = `/** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build:options" to build. */
+
+import { FilterFunction } from './FilterFunction'
+import { PackageFile } from './PackageFile'
+import { TargetFunction } from './TargetFunction'
+
+/** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
+export interface RunOptions {
+`
+
+  const footer = '}\n'
+
+  const optionsTypeCode = options.map(renderOption).join('\n')
+
+  const output = `${header}${optionsTypeCode}${footer}`
+
+  return output
 }
 
 ;(async () => {
-  const helpOptionsNew = await readOptions()
-  writeReadme(helpOptionsNew)
+  const helpOptionsString = await readOptions()
+  fs.writeFileSync('README.md', injectReadme(helpOptionsString))
+  fs.writeFileSync('src/types/RunOptions.ts', renderRunOptions(cliOptions))
 })()

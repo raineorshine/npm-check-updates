@@ -28,7 +28,7 @@
   "scripts": {
     "build": "npm run build:ts && npm run build:options",
     "build:ts": "tsc",
-    "build:options": "node build/src/scripts/build-options.js",
+    "build:options": "node build/src/scripts/build-options.js && tsc",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.js",

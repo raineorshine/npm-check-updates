@@ -13,7 +13,7 @@ export interface CLIOption<T = any> {
   parse?: (s: string, p?: T) => T
   long: string
   short?: string
-  type?: string
+  type: string
 }
 
 /**
@@ -76,6 +76,7 @@ const cliOptions: CLIOption[] = [
   {
     long: 'color',
     description: 'Force color in terminal',
+    type: 'boolean',
   },
   {
     long: 'concurrency',
@@ -83,21 +84,25 @@ const cliOptions: CLIOption[] = [
     description: 'Max number of concurrent HTTP requests to registry.',
     parse: s => parseInt(s, 10),
     default: 8,
+    type: 'number',
   },
   {
     long: 'configFileName',
     arg: 'filename',
     description: 'Config file name. (default: .ncurc.{json,yml,js})',
+    type: 'string',
   },
   {
     long: 'configFilePath',
     arg: 'path',
     description: 'Directory of .ncurc config file. (default: directory of `packageFile`)',
+    type: 'string',
   },
   {
     long: 'cwd',
     arg: 'path',
     description: 'Working directory in which npm will be executed.',
+    type: 'string',
   },
   {
     long: 'deep',
@@ -110,29 +115,35 @@ const cliOptions: CLIOption[] = [
     description:
       'Check one or more sections of dependencies only: dev, optional, peer, prod, bundle (comma-delimited).',
     default: 'prod,dev,bundle,optional',
+    type: 'string',
   },
   {
     long: 'deprecated',
     description: 'Include deprecated packages.',
+    type: 'boolean',
   },
   {
     long: 'doctor',
     description:
       'Iteratively installs upgrades and runs tests to identify breaking upgrades. Run "ncu --doctor" for detailed help. Add "-u" to execute.',
+    type: 'boolean',
   },
   {
     long: 'doctorInstall',
     arg: 'command',
     description: 'Specifies the install script to use in doctor mode. (default: npm install/yarn)',
+    type: 'string',
   },
   {
     long: 'doctorTest',
     arg: 'command',
     description: 'Specifies the test script to use in doctor mode. (default: npm test)',
+    type: 'string',
   },
   {
     long: 'enginesNode',
     description: 'Include only packages that satisfy engines.node as specified in the package file.',
+    type: 'boolean',
   },
   {
     long: 'errorLevel',
@@ -142,20 +153,21 @@ const cliOptions: CLIOption[] = [
       'Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration).',
     parse: s => parseInt(s, 10),
     default: 1,
+    type: 'number',
   },
   {
     long: 'filter',
     short: 'f',
     arg: 'matches',
     description:
-      'Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.',
-    type: 'string | string[] | RegExp | RegExp[] | Function',
+      'Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
+    type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
   },
   {
     long: 'filterVersion',
     arg: 'matches',
-    description: 'Filter on package version using comma-or-space-delimited list, or /regex/.',
-    type: 'string | string[] | RegExp | RegExp[] | Function',
+    description: 'Filter on package version using comma-or-space-delimited list, /regex/, or predicate function.',
+    type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
   },
   {
     long: 'format',
@@ -170,26 +182,31 @@ const cliOptions: CLIOption[] = [
     long: 'global',
     short: 'g',
     description: 'Check global packages instead of in the current project.',
+    type: 'boolean',
   },
   {
     long: 'interactive',
     short: 'i',
     description: 'Enable interactive prompts for each dependency; implies -u unless one of the json options are set.',
+    type: 'boolean',
   },
   {
     // program.json is set to true in programInit if any options that begin with 'json' are true
     long: 'jsonAll',
     short: 'j',
     description: 'Output new package file instead of human-readable message.',
+    type: 'boolean',
   },
   {
     long: 'jsonDeps',
     description:
       'Like `jsonAll` but only lists `dependencies`, `devDependencies`, `optionalDependencies`, etc of the new package data.',
+    type: 'boolean',
   },
   {
     long: 'jsonUpgraded',
     description: 'Output upgraded dependencies in json.',
+    type: 'boolean',
   },
   {
     long: 'loglevel',
@@ -197,6 +214,7 @@ const cliOptions: CLIOption[] = [
     arg: 'n',
     description: 'Amount to log: silent, error, minimal, warn, info, verbose, silly.',
     default: 'warn',
+    type: 'string',
   },
   {
     long: 'mergeConfig',
@@ -207,16 +225,19 @@ const cliOptions: CLIOption[] = [
     long: 'minimal',
     short: 'm',
     description: 'Do not upgrade newer versions that are already satisfied by the version range according to semver.',
+    type: 'boolean',
   },
   {
     long: 'packageData',
     arg: 'value',
     description: 'Package file data (you can also use stdin).',
+    type: 'string | PackageFile',
   },
   {
     long: 'packageFile',
     arg: 'path|glob',
     description: 'Package file(s) location. (default: ./package.json)',
+    type: 'string',
   },
   {
     long: 'packageManager',
@@ -224,6 +245,7 @@ const cliOptions: CLIOption[] = [
     arg: 'name',
     // manual default to allow overriding auto yarn detection
     description: 'npm, yarn (default: "npm")',
+    type: 'string',
   },
   {
     long: 'peer',
@@ -271,39 +293,42 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     long: 'pre',
     arg: 'n',
     description: 'Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1)',
-    type: 'number',
     parse: s => !!parseInt(s, 10),
+    type: 'number',
   },
   {
     long: 'prefix',
     arg: 'path',
     description: 'Current working directory of npm.',
+    type: 'string',
   },
   {
     long: 'registry',
     short: 'r',
     arg: 'url',
     description: 'Third-party npm registry.',
+    type: 'string',
   },
   {
     long: 'reject',
     short: 'x',
     arg: 'matches',
     description:
-      'Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.',
-    type: 'string | string[] | RegExp | RegExp[] | Function',
+      'Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
     parse: (s, p) => p.concat([s]),
     default: [],
+    type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
   },
   {
     long: 'rejectVersion',
     arg: 'matches',
-    description: 'Exclude package.json versions using comma-or-space-delimited list, or /regex/.',
-    type: 'string | string[] | RegExp | RegExp[] | Function',
+    description: 'Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function.',
+    type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
   },
   {
     long: 'removeRange',
     description: 'Remove version ranges from the final package version.',
+    type: 'boolean',
   },
   {
     long: 'retry',
@@ -311,11 +336,13 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     description: 'Number of times to retry failed requests for package info.',
     parse: s => parseInt(s, 10),
     default: 3,
+    type: 'number',
   },
   {
     long: 'silent',
     short: 's',
     description: "Don't output anything (--loglevel silent).",
+    type: 'boolean',
   },
   {
     long: 'target',
@@ -324,17 +351,19 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     description:
       'Target version or function that returns version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details. (default: "latest")',
     help: getHelpTargetTable(),
-    type: 'string | TargetFunction',
+    type: `'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | TargetFunction`,
   },
   {
     long: 'timeout',
     arg: 'ms',
     description: 'Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch)',
+    type: 'number',
   },
   {
     long: 'upgrade',
     short: 'u',
     description: 'Overwrite package file with upgraded versions instead of just outputting to console.',
+    type: 'boolean',
   },
 ]
 

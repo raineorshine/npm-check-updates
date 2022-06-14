@@ -1,3 +1,5 @@
+/** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build:options" to build. */
+
 import { FilterFunction } from './FilterFunction'
 import { PackageFile } from './PackageFile'
 import { TargetFunction } from './TargetFunction'
@@ -43,19 +45,19 @@ export interface RunOptions {
   /** Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). (default: 1) */
   errorLevel?: number
 
-  /** Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/ or function that returns true. */
+  /** Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. */
   filter?: string | string[] | RegExp | RegExp[] | FilterFunction
 
-  /** Filter on package version using comma-or-space-delimited list, /regex/ or function that returns true. */
+  /** Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. */
   filterVersion?: string | string[] | RegExp | RegExp[] | FilterFunction
 
-  /** Enable additional output data, string or comma-delimited list: ownerChanged, repo. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository. (default: []) */
+  /** Enable additional output data, string or comma-delimited list: ownerChanged, repo. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository. */
   format?: string[]
 
   /** Check global packages instead of in the current project. */
   global?: boolean
 
-  /** Enable interactive prompts for each dependency, implies -u unless one of the json options are set, */
+  /** Enable interactive prompts for each dependency; implies -u unless one of the json options are set. */
   interactive?: boolean
 
   /** Output new package file instead of human-readable message. */
@@ -97,10 +99,10 @@ export interface RunOptions {
   /** Third-party npm registry. */
   registry?: string
 
-  /** Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/ or function that returns true. */
+  /** Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. */
   reject?: string | string[] | RegExp | RegExp[] | FilterFunction
 
-  /** Exclude package.json versions using comma-or-space-delimited list, /regex/ or function that returns true. */
+  /** Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function. */
   rejectVersion?: string | string[] | RegExp | RegExp[] | FilterFunction
 
   /** Remove version ranges from the final package version. */
