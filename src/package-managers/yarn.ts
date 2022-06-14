@@ -153,7 +153,7 @@ async function spawnYarn(
   const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
 
   const fullArgs = [
-    ...(yarnOptions.global ? 'global' : []),
+    ...(yarnOptions.location === 'global' ? 'global' : []),
     ...(Array.isArray(args) ? args : [args]),
     '--depth=0',
     ...(yarnOptions.prefix ? `--prefix=${yarnOptions.prefix}` : []),

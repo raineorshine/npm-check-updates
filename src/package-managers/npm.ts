@@ -257,7 +257,7 @@ function spawnNpm(args: string | string[], npmOptions: NpmOptions = {}, spawnOpt
   args = Array.isArray(args) ? args : [args]
 
   const fullArgs = args.concat(
-    npmOptions.global ? '--location=global' : [],
+    npmOptions.location ? `--location=${npmOptions.location}` : [],
     npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : [],
     '--depth=0',
     '--json',
