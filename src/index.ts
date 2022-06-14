@@ -15,7 +15,11 @@ import initOptions from './lib/initOptions'
 import programError from './lib/programError'
 import runGlobal from './lib/runGlobal'
 import runLocal from './lib/runLocal'
-import { Index, Options, PackageFile, RunOptions, VersionSpec } from './types'
+import { Index } from './types/IndexType'
+import { Options } from './types/Options'
+import { PackageFile } from './types/PackageFile'
+import { RunOptions } from './types/RunOptions'
+import { VersionSpec } from './types/VersionSpec'
 
 // exit with non-zero error code when there is an unhandled promise rejection
 process.on('unhandledRejection', err => {

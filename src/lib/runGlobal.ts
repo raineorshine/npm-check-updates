@@ -3,7 +3,8 @@ import Chalk from 'chalk'
 import { print, printJson, printUpgrades } from '../logging'
 import getInstalledPackages from './getInstalledPackages'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
-import { Index, Options } from '../types'
+import { Index } from '../types/IndexType'
+import { Options } from '../types/Options'
 
 /** Checks global dependencies for upgrades. */
 async function runGlobal(options: Options): Promise<Index<string> | void> {

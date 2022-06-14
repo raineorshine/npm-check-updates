@@ -2,7 +2,7 @@ import _ from 'lodash'
 import Table from 'cli-table'
 import chalk from 'chalk'
 import { deepPatternPrefix } from './constants'
-import { Index } from './types'
+import { Index } from './types/IndexType'
 
 export interface CLIOption<T = any> {
   arg?: string

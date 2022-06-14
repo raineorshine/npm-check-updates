@@ -1,7 +1,7 @@
 import chai from 'chai'
 import { SemVer } from 'semver-utils'
 import getCurrentDependencies from '../src/lib/getCurrentDependencies'
-import { PackageFile } from '../src/types'
+import { PackageFile } from '../src/types/PackageFile'
 
 chai.should()
 

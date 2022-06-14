@@ -5,7 +5,9 @@ import parseGithubUrl from 'parse-github-url'
 import semver from 'semver'
 import * as versionUtil from '../version-util'
 import { print } from '../logging'
-import { Options, VersionSpec, VersionLevel } from '../types'
+import { Options } from '../types/Options'
+import { VersionSpec } from '../types/VersionSpec'
+import { VersionLevel } from '../types/VersionLevel'
 
 /** Gets remote versions sorted. */
 const getSortedVersions = async (name: string, declaration: VersionSpec, options: Options) => {

@@ -15,7 +15,12 @@ import getPeerDependencies from './getPeerDependencies'
 import programError from './programError'
 import upgradePackageData from './upgradePackageData'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
-import { Index, Maybe, Options, PackageFile, Version, VersionSpec } from '../types'
+import { Index } from '../types/IndexType'
+import { Maybe } from '../types/Maybe'
+import { Options } from '../types/Options'
+import { PackageFile } from '../types/PackageFile'
+import { Version } from '../types/Version'
+import { VersionSpec } from '../types/VersionSpec'
 
 const writePackageFile = promisify(fs.writeFile)
 

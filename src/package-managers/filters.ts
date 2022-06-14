@@ -1,7 +1,11 @@
 import _ from 'lodash'
 import semver from 'semver'
 import * as versionUtil from '../version-util'
-import { Index, Maybe, Options, Packument, Version } from '../types'
+import { Index } from '../types/IndexType'
+import { Maybe } from '../types/Maybe'
+import { Options } from '../types/Options'
+import { Packument } from '../types/Packument'
+import { Version } from '../types/Version'
 
 /**
  * @param versionResult  Available version

@@ -1,5 +1,6 @@
 import packageManagers from '../package-managers'
-import { Maybe, PackageManager } from '../types'
+import { Maybe } from '../types/Maybe'
+import { PackageManager } from '../types/PackageManager'
 
 /**
  * Initialize the version manager with the given package manager.

@@ -6,7 +6,11 @@ import { printUpgrades } from '../logging'
 import spawn from 'spawn-please'
 import spawnYarn from '../package-managers/yarn'
 import spawnNpm from '../package-managers/npm'
-import { Index, Options, PackageFile, SpawnOptions, VersionSpec } from '../types'
+import { Index } from '../types/IndexType'
+import { Options } from '../types/Options'
+import { PackageFile } from '../types/PackageFile'
+import { SpawnOptions } from '../types/SpawnOptions'
+import { VersionSpec } from '../types/VersionSpec'
 
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
 

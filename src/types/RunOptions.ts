@@ -1,88 +1,8 @@
-import { SemVer } from 'semver-utils'
+import { FilterRejectPattern } from './FilterRejectPattern'
+import { PackageFile } from './PackageFile'
+import { Target } from './Target'
 
-/** A very generic object. */
-export type Index<T = any> = { [key: string]: T }
-
-/** A value that may be null or undefined. */
-export type Maybe<T = any> = T | null | undefined
-
-/** A function that gets a target version of a dependency. */
-export type GetVersion = (packageName: string, currentVersion: Version, options?: Options) => Promise<Version | null>
-
-export interface PackageManager {
-  defaultPrefix?: (options: Options) => Promise<string | undefined>
-  list?: (options: Options) => Promise<Index<Version>>
-  latest: GetVersion
-  major?: GetVersion
-  minor?: GetVersion
-  newest?: GetVersion
-  greatest?: GetVersion
-  packageAuthorChanged?: (
-    packageName: string,
-    from: VersionSpec,
-    to: VersionSpec,
-    options?: Options,
-  ) => Promise<boolean>
-  getPeerDependencies?: (packageName: string, version: Version) => Promise<Index<Version>>
-}
-
-export type Version = string
-export type VersionSpec = string
-export type VersionLevel = 'major' | 'minor' | 'patch'
-export interface VersionResult {
-  version?: Version | null
-  error?: string
-}
-
-export type FilterFunction = (packageName: string, versionRange: SemVer[]) => boolean
-export type FilterRejectPattern = string | string[] | RegExp | RegExp[] | FilterFunction
-
-export type TargetFunction = (packageName: string, versionRange: SemVer[]) => string
-export type TargetString = 'latest' | 'newest' | 'greatest' | 'minor' | 'patch'
-export type Target = TargetString | TargetFunction
-
-export interface Packument {
-  name: string
-  deprecated?: boolean
-  engines: {
-    node: string
-  }
-  time: Index<string>
-  version: Version
-  versions: Packument[]
-}
-
-export interface PackageFileRepository {
-  url: string
-  directory?: string
-}
-
-export interface PackageFile {
-  repository?: string | PackageFileRepository
-  dependencies?: Index<VersionSpec>
-  devDependencies?: Index<VersionSpec>
-  peerDependencies?: Index<VersionSpec>
-  optionalDependencies?: Index<VersionSpec>
-  bundleDependencies?: Index<VersionSpec>
-}
-
-export interface IgnoredUpgrade {
-  from: Version
-  to: Version
-  reason: Index<string>
-}
-
-export interface NpmOptions {
-  global?: boolean
-  prefix?: string
-  registry?: string
-}
-
-export interface SpawnOptions {
-  env?: Index<string>
-  stderr?: (s: string) => void
-}
-
+/** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
 export interface RunOptions {
   /**
    * Force color in terminal
@@ -278,14 +198,4 @@ export interface RunOptions {
    * Overwrite package file with upgraded versions instead of just outputting to console.
    */
   upgrade?: boolean
-}
-
-export type Options = RunOptions & {
-  args?: any[]
-  cli?: boolean
-  json?: boolean
-  nodeEngineVersion?: VersionSpec
-  packageData?: string
-  peerDependencies?: Index<any>
-  rcConfigPath?: string
 }

@@ -2,7 +2,10 @@ import prompts from 'prompts'
 import { satisfies } from 'semver'
 import { colorizeDiff } from '../version-util'
 import { print } from '../logging'
-import { Index, Options, Version, VersionSpec } from '../types'
+import { Index } from '../types/IndexType'
+import { Options } from '../types/Options'
+import { Version } from '../types/Version'
+import { VersionSpec } from '../types/VersionSpec'
 
 /**
  * @returns String safe for use in `new RegExp()`

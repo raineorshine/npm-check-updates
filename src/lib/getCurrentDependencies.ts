@@ -1,7 +1,10 @@
 import cint from 'cint'
 import * as semver from 'semver'
 import filterAndReject from './filterAndReject'
-import { Index, Options, PackageFile, VersionSpec } from '../types'
+import { Index } from '../types/IndexType'
+import { Options } from '../types/Options'
+import { PackageFile } from '../types/PackageFile'
+import { VersionSpec } from '../types/VersionSpec'
 
 /** Returns true if spec1 is greater than spec2, ignoring invalid version ranges. */
 const isGreaterThanSafe = (spec1: VersionSpec, spec2: VersionSpec) =>

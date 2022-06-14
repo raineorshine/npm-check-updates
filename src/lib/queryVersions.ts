@@ -7,7 +7,12 @@ import getPackageManager from './getPackageManager'
 import packageManagers from '../package-managers'
 import { createNpmAlias, isGithubUrl, isPre, parseNpmAlias } from '../version-util'
 import keyValueBy from './keyValueBy'
-import { GetVersion, Index, Options, Version, VersionResult, VersionSpec } from '../types'
+import { GetVersion } from '../types/GetVersion'
+import { Index } from '../types/IndexType'
+import { Options } from '../types/Options'
+import { Version } from '../types/Version'
+import { VersionResult } from '../types/VersionResult'
+import { VersionSpec } from '../types/VersionSpec'
 
 /**
  * Get the latest or greatest versions from the NPM repository based on the version target.
