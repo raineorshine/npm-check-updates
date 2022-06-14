@@ -1,26 +1,22 @@
-#!/usr/bin/env node
-
-'use strict'
-
-const fs = require('fs')
-const spawn = require('spawn-please')
+import fs from 'fs'
+import spawn from 'spawn-please'
 
 /** Extracts CLI options from the bin output. */
 const readOptions = async () => {
   const optionsBinLabel = 'Options:\n'
-  const helpOutput = await spawn('node', ['./build/src/bin/cli.js', '--help'])
+  const helpOutput: string = await spawn('node', ['./build/src/bin/cli.js', '--help'])
   return (
     helpOutput
       .slice(helpOutput.indexOf(optionsBinLabel) + optionsBinLabel.length)
       // outdent
       .split('\n')
-      .map(s => s.slice(2))
+      .map((s: string) => s.slice(2))
       .join('\n')
   )
 }
 
 /** Replaces the "Options" section of the README with direct output from "ncu --help". */
-const writeReadme = helpOptionsNew => {
+const writeReadme = (helpOptionsNew: string) => {
   const optionsLabelStart = '## Options\n\n```text\n'
   const optionsLabelEnd = '```'
 
