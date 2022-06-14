@@ -294,6 +294,10 @@ const upgraded = await ncu.run({
 console.log(upgraded) // { "mypackage": "^2.0.0", ... }
 ```
 
+## Contributing
+
+Contributions are happily accepted. I respond to all PR's and can offer guidance on where to make changes. For contributing tips see [CONTRIBUTING.md](https://github.com/raineorshine/npm-check-updates/blob/main/.github/CONTRIBUTING.md).
+
 ## Known Issues
 
 - If `ncu` prints output that does not seem related to this package, it may be conflicting with another executable such as `ncu-weather-cli` or Nvidia CUDA. Try using the long name instead: `npm-check-updates`.
