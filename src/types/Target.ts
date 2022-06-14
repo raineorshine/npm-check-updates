@@ -1,6 +1,5 @@
 import { TargetFunction } from './TargetFunction'
 
-
 /** Valid strings for the --target option. Indicates the desired version to upgrade to. */
 type TargetString = 'latest' | 'newest' | 'greatest' | 'minor' | 'patch'
 
