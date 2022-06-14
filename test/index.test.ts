@@ -4,7 +4,8 @@ import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 import * as ncu from '../src/'
-import { FilterFunction, TargetFunction } from '../src/types'
+import { FilterFunction } from '../src/types/FilterFunction'
+import { TargetFunction } from '../src/types/TargetFunction'
 
 chai.should()
 chai.use(chaiAsPromised)

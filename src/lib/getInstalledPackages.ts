@@ -2,7 +2,9 @@ import cint from 'cint'
 import { isWildPart } from '../version-util'
 import getPackageManager from './getPackageManager'
 import filterAndReject from './filterAndReject'
-import { Options, Version, VersionSpec } from '../types'
+import { Options } from '../types/Options'
+import { Version } from '../types/Version'
+import { VersionSpec } from '../types/VersionSpec'
 
 /**
  * @param [options]

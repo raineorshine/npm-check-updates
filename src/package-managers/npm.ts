@@ -10,7 +10,13 @@ import memoize from 'fast-memoize'
 import libnpmconfig from '../lib/libnpmconfig'
 import * as versionUtil from '../version-util'
 import { print } from '../logging'
-import { GetVersion, Index, Options, NpmOptions, Packument, Version, VersionSpec } from '../types'
+import { GetVersion } from '../types/GetVersion'
+import { Index } from '../types/IndexType'
+import { Options } from '../types/Options'
+import { NpmOptions } from '../types/NpmOptions'
+import { Packument } from '../types/Packument'
+import { Version } from '../types/Version'
+import { VersionSpec } from '../types/VersionSpec'
 import {
   allowDeprecatedOrIsNotDeprecated,
   allowPreOrIsNotPre,
@@ -251,7 +257,7 @@ function spawnNpm(args: string | string[], npmOptions: NpmOptions = {}, spawnOpt
   args = Array.isArray(args) ? args : [args]
 
   const fullArgs = args.concat(
-    npmOptions.global ? '--location=global' : [],
+    npmOptions.location ? `--location=${npmOptions.location}` : [],
     npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : [],
     '--depth=0',
     '--json',

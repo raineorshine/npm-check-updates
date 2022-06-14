@@ -1,4 +1,6 @@
-import { Index, Options, VersionSpec } from '../types'
+import { Index } from '../types/IndexType'
+import { Options } from '../types/Options'
+import { VersionSpec } from '../types/VersionSpec'
 import getPackageManager from './getPackageManager'
 import ProgressBar from 'progress'
 

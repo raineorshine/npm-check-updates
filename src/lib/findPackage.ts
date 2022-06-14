@@ -8,7 +8,7 @@ import getstdin from 'get-stdin'
 import getPackageFileName from './getPackageFileName'
 import programError from './programError'
 import { print } from '../logging'
-import { Options } from '../types'
+import { Options } from '../types/Options'
 
 // time to wait for stdin before printing a warning
 const stdinWarningTime = 5000

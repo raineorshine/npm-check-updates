@@ -6,7 +6,11 @@ import Table from 'cli-table'
 import Chalk from 'chalk'
 import { colorizeDiff, isGithubUrl, getGithubUrlTag, isNpmAlias, parseNpmAlias } from './version-util'
 import getRepoUrl from './lib/getRepoUrl'
-import { IgnoredUpgrade, Index, Options, Version, VersionSpec } from './types'
+import { IgnoredUpgrade } from './types/IgnoredUpgrade'
+import { Index } from './types/IndexType'
+import { Options } from './types/Options'
+import { Version } from './types/Version'
+import { VersionSpec } from './types/VersionSpec'
 
 // maps string levels to numeric levels
 const logLevels = {

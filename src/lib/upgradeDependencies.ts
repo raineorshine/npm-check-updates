@@ -4,7 +4,10 @@ import { parseRange } from 'semver-utils'
 import * as versionUtil from '../version-util'
 import getPreferredWildcard from './getPreferredWildcard'
 import isUpgradeable from './isUpgradeable'
-import { Index, Options, Version, VersionSpec } from '../types'
+import { Index } from '../types/IndexType'
+import { Options } from '../types/Options'
+import { Version } from '../types/Version'
+import { VersionSpec } from '../types/VersionSpec'
 
 interface MappedDependencies {
   current: VersionSpec

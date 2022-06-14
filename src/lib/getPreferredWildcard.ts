@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import cint from 'cint'
-import { Index } from '../types'
+import { Index } from '../types/IndexType'
 import { WILDCARDS } from '../version-util'
 
 /**

@@ -1,5 +1,5 @@
 import chai from 'chai'
-import * as ncu from '../src/index'
+import * as ncu from '../src'
 
 chai.should()
 process.env.NCU_TESTS = 'true'

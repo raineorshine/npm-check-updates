@@ -1,4 +1,4 @@
-import { Options } from '../types'
+import { Options } from '../types/Options'
 
 // maps package managers to package file names
 const packageFileNames = {

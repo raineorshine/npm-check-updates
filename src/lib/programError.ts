@@ -1,5 +1,5 @@
 import { print } from '../logging'
-import { Options } from '../types'
+import { Options } from '../types/Options'
 
 /** Print an error. Exit the process if in CLI mode. */
 function programError(options: Options, message: string) {

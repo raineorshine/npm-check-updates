@@ -2,7 +2,7 @@ import path from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import * as yarn from '../../../src/package-managers/yarn'
-import { Index } from '../../../src/types'
+import { Index } from '../../../src/types/IndexType'
 
 chai.should()
 chai.use(chaiAsPromised)

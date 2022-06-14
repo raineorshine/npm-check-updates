@@ -6,7 +6,9 @@ import { deepPatternPrefix } from '../constants'
 import programError from './programError'
 import getPackageFileName from './getPackageFileName'
 import { print } from '../logging'
-import { Options, RunOptions, Target } from '../types'
+import { Options } from '../types/Options'
+import { RunOptions } from '../types/RunOptions'
+import { Target } from '../types/Target'
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
 function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Options {
