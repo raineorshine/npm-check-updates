@@ -345,6 +345,11 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     type: 'boolean',
   },
   {
+    long: 'stdin',
+    description: 'Read package.json from stdin.',
+    type: 'string',
+  },
+  {
     long: 'target',
     short: 't',
     arg: 'value',

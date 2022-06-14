@@ -205,6 +205,7 @@ ncu "/^(?!react-).*$/" # windows
 --retry <n>                  Number of times to retry failed requests for
                              package info. (default: 3)
 -s, --silent                 Don't output anything (--loglevel silent).
+--stdin                      Read package.json from stdin.
 -t, --target <value>         Target version or function that returns version
                              to upgrade to: latest, newest, greatest, minor,
                              patch. Run "ncu --help --target" for details.
