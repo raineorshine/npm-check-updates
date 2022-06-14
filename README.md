@@ -122,7 +122,6 @@ ncu "/^(?!react-).*$/" # windows
 - With `--target patch`, only update patch:
   - `0.1.0` → `0.1.2`
 - With `--target @next`, latest version with dist-tag=next is used
-  _NOTE: pre: true is required if you want to upgrade from a stable version to a dist-tag_
   - `0.1.0` -> `0.1.1-next.1
 
 ## Options
