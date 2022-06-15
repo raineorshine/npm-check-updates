@@ -347,6 +347,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     description:
       'Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. Run "ncu --help --target" for details. (default: "latest")',
     help: getHelpTargetTable(),
+    // eslint-disable-next-line no-template-curly-in-string
     type: `'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | ${'`@${string}`'} | TargetFunction`,
   },
   {
