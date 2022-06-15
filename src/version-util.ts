@@ -190,6 +190,17 @@ export function colorizeDiff(from: string, to: string) {
 }
 
 /**
+ * Extract prerelease tag, omitting build number
+ * Example: 1.0.0-next.alpha.2 -> next.alpha
+ *
+ * @param version
+ */
+const getPre = (version: string) => {
+  const pre = semver.prerelease(version)
+  return pre && pre.slice(0, -1).join('.')
+}
+
+/**
  * Check if it is allowed to compare two versions based on their prerelease tag
  *
  * SemVer both states that different prerelease versions can`t be compared
@@ -200,9 +211,9 @@ export function colorizeDiff(from: string, to: string) {
  * @returns True if two versions can be compared by the means of SemVer
  */
 export function isComparable(a: string, b: string) {
-  const preA = semver.prerelease(a)
-  const preB = semver.prerelease(b)
-  return !preA || !preB || preA[0] === preB[0]
+  const preA = getPre(a)
+  const preB = getPre(b)
+  return typeof preA !== 'string' || typeof preB !== 'string' || preA === preB
 }
 
 /** Comparator used to sort semver versions */

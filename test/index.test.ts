@@ -6,6 +6,7 @@ import chaiString from 'chai-string'
 import * as ncu from '../src/'
 import { FilterFunction } from '../src/types/FilterFunction'
 import { TargetFunction } from '../src/types/TargetFunction'
+import { Target } from '../src/types/Target'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -415,6 +416,62 @@ describe('run', function () {
       ;(pkgData as any).mocha.should.equal('^8.4.0')
     })
   }) // end 'target'
+
+  describe('distTag as target', () => {
+    /** Compact function to test ncu */
+    const testNcuTargetUpgrade = async (target: Target, currentVersion: string, upgradeVersion: string) => {
+      const packageName = 'ncu-test-tag'
+      const pkgData = await ncu.run({
+        target,
+        packageData: `{ "dependencies": { "${packageName}": "${currentVersion}" } }`,
+      })
+
+      if (currentVersion === upgradeVersion) {
+        pkgData!.should.not.have.property(packageName)
+      } else {
+        // A conflict between eslint and prettier up ahead
+        // eslint-disable-next-line @typescript-eslint/no-extra-semi
+        ;(pkgData as any)[packageName].should.equal(upgradeVersion)
+      }
+    }
+
+    it('latest <--> empty dist-tag', async () => {
+      // FIXME: uncomment once 1.0.0-1 and 1.0.0.0 are uploaded
+      // await testNcuTargetUpgrade('@next', '0.1.0', '1.0.0-1')
+      // await testNcuTargetUpgrade('@next', '0.1.0', '1.0.0-1')
+      //
+      // await testNcuTargetUpgrade('@next', '0.1.0', '1.0.0-1')
+      // await testNcuTargetUpgrade('@next', '0.2.0-0', '1.0.0-1')
+      await testNcuTargetUpgrade('latest', '1.0.0-1', '1.1.0')
+    })
+
+    it('upgrade to higher semver between dist-tags', async () => {
+      await testNcuTargetUpgrade('@beta', '1.0.0-task-42.0', '1.0.1-beta.0')
+    })
+
+    it('upgrade to same semver between dist-tags', async () => {
+      // can't detect which prerelease is higher, so just allow switching
+      await testNcuTargetUpgrade('@task-42', '1.0.0-beta.0', '1.0.0-task-42.0')
+
+      // same here, major/minor/patch is the same, can't determine which one is bigger task-42 or next
+      // await testNcuTargetUpgrade('@next', '1.0.0-task-42.0', '1.0.0-1')
+      await testNcuTargetUpgrade('@next', '1.0.0-task-42.0', '0.2.0-0')
+    })
+
+    it('upgrade to lower semver between dist-tags', async () => {
+      // comparing semver between different dist-tags is incorrect, both versions could be released from the same latest
+      // so instead of looking at numbers, we should focus on intention of the user upgrading to specific dist-tag
+      await testNcuTargetUpgrade('@task-42', '1.0.1-beta.0', '1.0.0-task-42.0')
+    })
+
+    it('refuse upgrade to lower semver with dist-tag from latest', async () => {
+      await testNcuTargetUpgrade('@next', '1.1.0', '1.1.0')
+    })
+
+    it('refuse upgrade to lower semver latest from dist-tag', async () => {
+      await testNcuTargetUpgrade('latest', '1.1.1-beta.0', '1.1.1-beta.0')
+    })
+  }) // end 'distTAg as target'
 
   describe('filterVersion', () => {
     it('filter by package version with string', async () => {

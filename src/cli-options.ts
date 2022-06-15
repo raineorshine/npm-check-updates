@@ -352,7 +352,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     description:
       'Target version strategy, distribution tag or a function that returns version strategy to upgrade with: latest, newest, greatest, minor, patch, @[dist-tag]. Run "ncu --help --target" for details. (default: "latest")',
     help: getHelpTargetTable(),
-    type: `'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | TargetFunction`,
+    type: `'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | TargetDistTag | TargetFunction`,
   },
   {
     long: 'timeout',

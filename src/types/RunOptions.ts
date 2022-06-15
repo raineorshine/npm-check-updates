@@ -3,6 +3,7 @@
 import { FilterFunction } from './FilterFunction'
 import { PackageFile } from './PackageFile'
 import { TargetFunction } from './TargetFunction'
+import { TargetDistTag } from './Target'
 
 /** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
 export interface RunOptions {
@@ -114,8 +115,8 @@ export interface RunOptions {
   /** Don't output anything (--loglevel silent). */
   silent?: boolean
 
-  /** Target version or function that returns version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details. (default: "latest") */
-  target?: 'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | TargetFunction
+  /** Target version strategy, distribution tag or a function that returns version strategy to upgrade with: latest, newest, greatest, minor, patch, @[dist-tag]. Run "ncu --help --target" for details. (default: "latest") */
+  target?: 'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | TargetDistTag | TargetFunction
 
   /** Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch) */
   timeout?: number
