@@ -256,28 +256,22 @@ describe('version-util', () => {
   })
 
   describe('isComparable', () => {
-    it('pass if one or both versions are latest', () => {
+    it('a version without a preid is comparable to any version', () => {
       versionUtil.isComparable('1.2.3-alpha.1', '1.2.3').should.equal(true)
-      versionUtil.isComparable('1.3.3', '1.2.3-alpha.2').should.equal(true)
-      versionUtil.isComparable('2.0.1', '0.0.1').should.equal(true)
-    })
-
-    it('handle empty prerelease', () => {
       versionUtil.isComparable('1.2.3-1', '1.2.3').should.equal(true)
+      versionUtil.isComparable('1.3.3', '1.2.3-alpha.2').should.equal(true)
       versionUtil.isComparable('1.3.3', '1.2.3-2').should.equal(true)
+      versionUtil.isComparable('2.0.1', '0.0.1').should.equal(true)
       versionUtil.isComparable('2.0.1-1', '0.0.1-2').should.equal(true)
-    })
-
-    it('ban comparison between dist-tags', () => {
-      versionUtil.isComparable('1.2.3-1', '1.2.3-dev.1').should.equal(false)
-      versionUtil.isComparable('1.3.3-next.1', '1.2.3-dev.2').should.equal(false)
-      versionUtil.isComparable('2.0.1-next.1', '0.0.1-task-42.2').should.equal(false)
-    })
-
-    it('support multi-component dist-tags', () => {
       versionUtil.isComparable('1.2.3-.dev.1', '1.2.3').should.equal(true)
       versionUtil.isComparable('1.2.3', '1.2.3-next.dev.1').should.equal(true)
       versionUtil.isComparable('1.2.3-next.dev.5', '1.2.3-next.dev.1').should.equal(true)
+    })
+
+    it('versions with non-matching preids are not comparable', () => {
+      versionUtil.isComparable('1.2.3-1', '1.2.3-dev.1').should.equal(false)
+      versionUtil.isComparable('1.3.3-next.1', '1.2.3-dev.2').should.equal(false)
+      versionUtil.isComparable('2.0.1-next.1', '0.0.1-task-42.2').should.equal(false)
       versionUtil.isComparable('1.2.3-next.0', '1.2.3-next.dev.0').should.equal(false)
       versionUtil.isComparable('1.2.3-alpha.0', '1.2.3-next.dev.0').should.equal(false)
     })

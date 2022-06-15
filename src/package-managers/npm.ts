@@ -311,6 +311,8 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
 }
 
 /**
+ * Fetches the highest version number, regardless of tag or publish time.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -331,7 +333,7 @@ export const greatest: GetVersion = async (packageName, currentVersion, options 
 }
 
 /**
- * Requests the list of peer dependencies for a specific package version
+ * Fetches the list of peer dependencies for a specific package version.
  *
  * @param packageName
  * @param version
@@ -344,6 +346,8 @@ export const getPeerDependencies = async (packageName: string, version: Version)
 }
 
 /**
+ * Fetches the list of all installed packages.
+ *
  * @param [options]
  * @param [options.cwd]
  * @param [options.global]
@@ -365,6 +369,8 @@ export const list = async (options: Options = {}) => {
 }
 
 /**
+ * Fetches the version of a package published to options.distTag.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -394,6 +400,8 @@ export const distTag: GetVersion = async (packageName, currentVersion, options: 
 }
 
 /**
+ * Fetches the version published to the latest tag.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -403,6 +411,8 @@ export const latest: GetVersion = async (packageName: string, currentVersion: Ve
   distTag(packageName, currentVersion, { ...options, distTag: 'latest' })
 
 /**
+ * Fetches the most recently published version, regardless of version number.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -429,6 +439,8 @@ export const newest: GetVersion = async (packageName, currentVersion, options = 
 }
 
 /**
+ * Fetches the highest version with the same major version as currentVersion.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -444,6 +456,8 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
 }
 
 /**
+ * Fetches the highest version with the same minor and major version as currentVersion.
+ *
  * @param packageName
  * @param currentVersion
  * @param options

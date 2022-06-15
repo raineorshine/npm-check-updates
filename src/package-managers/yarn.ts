@@ -202,6 +202,8 @@ export async function defaultPrefix(options: Options) {
 }
 
 /**
+ * Fetches the list of all installed packages.
+ *
  * @param [options]
  * @param [options.cwd]
  * @param [options.global]
@@ -221,6 +223,8 @@ export const list = async (options: Options = {}, spawnOptions?: SpawnOptions) =
 }
 
 /**
+ * Fetches the highest version number, regardless of tag or publish time.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -275,6 +279,8 @@ export const distTag: GetVersion = async (packageName, currentVersion, options: 
 }
 
 /**
+ * Fetches the version published to the latest tag.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -284,6 +290,8 @@ export const latest: GetVersion = async (packageName: string, currentVersion: Ve
   distTag(packageName, currentVersion, { ...options, distTag: 'latest' })
 
 /**
+ * Fetches the most recently published version, regardless of version number.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -317,6 +325,8 @@ export const newest: GetVersion = async (packageName: string, currentVersion, op
 }
 
 /**
+ * Fetches the highest version with the same major version as currentVersion.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -332,6 +342,8 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
 }
 
 /**
+ * Fetches the highest version with the same minor and major version as currentVersion.
+ *
  * @param packageName
  * @param currentVersion
  * @param options

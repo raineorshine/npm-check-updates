@@ -59,7 +59,6 @@ const renderRunOptions = (options: CLIOption<unknown>[]) => {
 import { FilterFunction } from './FilterFunction'
 import { PackageFile } from './PackageFile'
 import { TargetFunction } from './TargetFunction'
-import { TargetDistTag } from './Target'
 
 /** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
 export interface RunOptions {

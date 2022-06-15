@@ -435,21 +435,24 @@ describe('run', function () {
       }
     }
 
-    it('latest <--> empty dist-tag', async () => {
+    it('upgrade nonprerelease version to specific tag', async () => {
       // FIXME: uncomment once 1.0.0-1 and 1.0.0.0 are uploaded
       // await testNcuTargetUpgrade('@next', '0.1.0', '1.0.0-1')
       // await testNcuTargetUpgrade('@next', '0.1.0', '1.0.0-1')
       //
       // await testNcuTargetUpgrade('@next', '0.1.0', '1.0.0-1')
+    })
+
+    it('upgrade prerelease version without preid to specific tag', async () => {
       // await testNcuTargetUpgrade('@next', '0.2.0-0', '1.0.0-1')
       await testNcuTargetUpgrade('latest', '1.0.0-1', '1.1.0')
     })
 
-    it('upgrade to higher semver between dist-tags', async () => {
+    it('upgrade prerelease version with preid to higher version on a specific tag', async () => {
       await testNcuTargetUpgrade('@beta', '1.0.0-task-42.0', '1.0.1-beta.0')
     })
 
-    it('upgrade to same semver between dist-tags', async () => {
+    it('upgrade to tag with same major.minor.patch and non-matching preid', async () => {
       // can't detect which prerelease is higher, so just allow switching
       await testNcuTargetUpgrade('@task-42', '1.0.0-beta.0', '1.0.0-task-42.0')
 
@@ -458,17 +461,17 @@ describe('run', function () {
       await testNcuTargetUpgrade('@next', '1.0.0-task-42.0', '0.2.0-0')
     })
 
-    it('upgrade to lower semver between dist-tags', async () => {
+    it('downgrade to tag with a non-matching preid', async () => {
       // comparing semver between different dist-tags is incorrect, both versions could be released from the same latest
       // so instead of looking at numbers, we should focus on intention of the user upgrading to specific dist-tag
       await testNcuTargetUpgrade('@task-42', '1.0.1-beta.0', '1.0.0-task-42.0')
     })
 
-    it('refuse upgrade to lower semver with dist-tag from latest', async () => {
+    it('do not downgrade to tag without preid', async () => {
       await testNcuTargetUpgrade('@next', '1.1.0', '1.1.0')
     })
 
-    it('refuse upgrade to lower semver latest from dist-tag', async () => {
+    it('do not downgrade to lower version with matching preid', async () => {
       await testNcuTargetUpgrade('latest', '1.1.1-beta.0', '1.1.1-beta.0')
     })
   }) // end 'distTAg as target'

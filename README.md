@@ -121,8 +121,8 @@ ncu "/^(?!react-).*$/" # windows
   - `0.1.0` → `0.2.1`
 - With `--target patch`, only update patch:
   - `0.1.0` → `0.1.2`
-- With `--target @next`, latest version with dist-tag=next is used
-  - `0.1.0` -> `0.1.1-next.1
+- With `--target @next`, update to the version published on the `next` tag:
+  - `0.1.0` -> `0.1.1-next.1`
 
 ## Options
 
@@ -207,11 +207,10 @@ ncu "/^(?!react-).*$/" # windows
 --retry <n>                  Number of times to retry failed requests for
                              package info. (default: 3)
 -s, --silent                 Don't output anything (--loglevel silent).
--t, --target <value>         Target version strategy, distribution tag or a
-                             function that returns version strategy to
-                             upgrade with: latest, newest, greatest, minor,
-                             patch, @[dist-tag]. Run "ncu --help --target"
-                             for details. (default: "latest")
+-t, --target <value>         Determines the version to upgrade to: latest,
+                             newest, greatest, minor, patch, @[tag], or
+                             [function]. Run "ncu --help --target" for
+                             details. (default: "latest")
 --timeout <ms>               Global timeout in milliseconds. (default: no
                              global timeout and 30 seconds per
                              npm-registry-fetch)
