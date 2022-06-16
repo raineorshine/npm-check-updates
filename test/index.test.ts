@@ -6,7 +6,6 @@ import chaiString from 'chai-string'
 import * as ncu from '../src/'
 import { FilterFunction } from '../src/types/FilterFunction'
 import { TargetFunction } from '../src/types/TargetFunction'
-import { Target } from '../src/types/Target'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -418,61 +417,126 @@ describe('run', function () {
   }) // end 'target'
 
   describe('distTag as target', () => {
-    /** Compact function to test ncu */
-    const testNcuTargetUpgrade = async (target: Target, currentVersion: string, upgradeVersion: string) => {
-      const packageName = 'ncu-test-tag'
-      const pkgData = await ncu.run({
-        target,
-        packageData: `{ "dependencies": { "${packageName}": "${currentVersion}" } }`,
+    it('upgrade nonprerelease version to specific tag', async () => {
+      const upgraded = await ncu.run({
+        target: '@next',
+        packageData: JSON.stringify({
+          dependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+        }),
       })
 
-      if (currentVersion === upgradeVersion) {
-        pkgData!.should.not.have.property(packageName)
-      } else {
-        // A conflict between eslint and prettier up ahead
-        // eslint-disable-next-line @typescript-eslint/no-extra-semi
-        ;(pkgData as any)[packageName].should.equal(upgradeVersion)
-      }
-    }
-
-    it('upgrade nonprerelease version to specific tag', async () => {
-      // FIXME: uncomment once 1.0.0-1 and 1.0.0.0 are uploaded
-      // await testNcuTargetUpgrade('@next', '0.1.0', '1.0.0-1')
-      // await testNcuTargetUpgrade('@next', '0.1.0', '1.0.0-1')
-      //
-      // await testNcuTargetUpgrade('@next', '0.1.0', '1.0.0-1')
+      ;(upgraded as any)['ncu-test-tag'].should.equal('1.0.0-1')
     })
 
-    it('upgrade prerelease version without preid to specific tag', async () => {
-      // await testNcuTargetUpgrade('@next', '0.2.0-0', '1.0.0-1')
-      await testNcuTargetUpgrade('latest', '1.0.0-1', '1.1.0')
+    it('upgrade prerelease version without preid to nonprerelease', async () => {
+      const upgraded = await ncu.run({
+        target: 'latest',
+        packageData: JSON.stringify({
+          dependencies: {
+            'ncu-test-tag': '1.0.0-1',
+          },
+        }),
+      })
+
+      ;(upgraded as any)['ncu-test-tag'].should.equal('1.1.0')
     })
 
     it('upgrade prerelease version with preid to higher version on a specific tag', async () => {
-      await testNcuTargetUpgrade('@beta', '1.0.0-task-42.0', '1.0.1-beta.0')
+      const upgraded = await ncu.run({
+        target: '@beta',
+        packageData: JSON.stringify({
+          dependencies: {
+            'ncu-test-tag': '1.0.0-task-42.0',
+          },
+        }),
+      })
+
+      ;(upgraded as any)['ncu-test-tag'].should.equal('1.0.1-beta.0')
     })
 
+    // can't detect which prerelease is higher, so just allow switching
     it('upgrade to tag with same major.minor.patch and non-matching preid', async () => {
-      // can't detect which prerelease is higher, so just allow switching
-      await testNcuTargetUpgrade('@task-42', '1.0.0-beta.0', '1.0.0-task-42.0')
+      const upgraded = await ncu.run({
+        target: '@task-42',
+        packageData: JSON.stringify({
+          dependencies: {
+            'ncu-test-tag': '1.0.0-beta.0',
+          },
+        }),
+      })
 
-      // same here, major/minor/patch is the same, can't determine which one is bigger task-42 or next
-      // await testNcuTargetUpgrade('@next', '1.0.0-task-42.0', '1.0.0-1')
-      await testNcuTargetUpgrade('@next', '1.0.0-task-42.0', '0.2.0-0')
+      ;(upgraded as any)['ncu-test-tag'].should.equal('1.0.0-task-42.0')
     })
 
-    it('downgrade to tag with a non-matching preid', async () => {
-      // comparing semver between different dist-tags is incorrect, both versions could be released from the same latest
-      // so instead of looking at numbers, we should focus on intention of the user upgrading to specific dist-tag
-      await testNcuTargetUpgrade('@task-42', '1.0.1-beta.0', '1.0.0-task-42.0')
+    // need to test reverse order too, because by base semver logic preid are sorted alphabetically
+    it('upgrade to tag with same major.minor.patch and non-matching preid reverse', async () => {
+      const upgraded = await ncu.run({
+        target: '@next',
+        packageData: JSON.stringify({
+          dependencies: {
+            'ncu-test-tag': '1.0.0-task-42.0',
+          },
+        }),
+      })
+
+      ;(upgraded as any)['ncu-test-tag'].should.equal('1.0.0-1')
     })
 
-    it('do not downgrade to tag without preid', async () => {
-      await testNcuTargetUpgrade('@next', '1.1.0', '1.1.0')
+    // comparing semver between different dist-tags is incorrect, both versions could be released from the same latest
+    // so instead of looking at numbers, we should focus on intention of the user upgrading to specific dist-tag
+    it('downgrade to tag with a non-matching preid and lower patch', async () => {
+      const upgraded = await ncu.run({
+        target: '@task-42',
+        packageData: JSON.stringify({
+          dependencies: {
+            'ncu-test-tag': '1.0.1-beta.0',
+          },
+        }),
+      })
+
+      ;(upgraded as any)['ncu-test-tag'].should.equal('1.0.0-task-42.0')
     })
 
-    it('do not downgrade to lower version with matching preid', async () => {
-      await testNcuTargetUpgrade('latest', '1.1.1-beta.0', '1.1.1-beta.0')
+    // same as previous, doesn't matter if it's patch, minor or major, comparing different dist-tags is incorrect
+    it('downgrade to tag with a non-matching preid and lower minor', async () => {
+      const upgraded = await ncu.run({
+        target: '@next',
+        packageData: JSON.stringify({
+          dependencies: {
+            'ncu-test-tag': '1.2.0-dev.0',
+          },
+        }),
+      })
+
+      ;(upgraded as any)['ncu-test-tag'].should.equal('1.0.0-1')
+    })
+
+    it('do not downgrade nonprerelease version to lower version with with specific tag', async () => {
+      const upgraded = await ncu.run({
+        target: '@next',
+        packageData: JSON.stringify({
+          dependencies: {
+            'ncu-test-tag': '1.1.0',
+          },
+        }),
+      })
+
+      upgraded!.should.not.have.property('ncu-test-tag')
+    })
+
+    it('do not downgrade to latest with lower version', async () => {
+      const upgraded = await ncu.run({
+        target: 'latest',
+        packageData: JSON.stringify({
+          dependencies: {
+            'ncu-test-tag': '1.1.1-beta.0',
+          },
+        }),
+      })
+
+      upgraded!.should.not.have.property('ncu-test-tag')
     })
   }) // end 'distTAg as target'
 
