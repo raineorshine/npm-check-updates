@@ -2,6 +2,24 @@
 
 This file documents all **major version** releases. For other releases, please read the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
 
+## [14.0.0] - 2022-06-16
+
+### Breaking
+
+Prerelease versions are now "upgraded" to versions with a different [preid](https://docs.npmjs.com/cli/v8/commands/npm-version#preid).
+
+For example, if you have a dependency at `1.3.3-next.1` and the version fetched by ncu is `1.2.3-dev.2`, ncu **will** suggest an "upgrade" to `1.2.3-dev.2`. This is because prerelease versions with different preids are incomparable. Since they are incomparable, ncu now assumes the fetched version is desired.
+
+Since this change affects only prereleases, there is no impact on default `ncu` usage that fetches the `latest` version. With `--pre` or `--target newest` or `--target greatest`, this change could affect which version is suggested if versions with different preids are published. The change was made to support the new `--target @[tag]` feature.
+
+If you have a use case where this change is not what is desired, please [report an issue](https://github.com/raineorshine/npm-check-updates/issues/new). The intention is for zero disruption to current usage.
+
+### Features
+
+- You can now upgrade to a specific tag, e.g. `--target @next`. Thanks to [IMalyugin](https://github.com/IMalyugin).
+
+<https://github.com/raineorshine/npm-check-updates/compare/v13.1.5...v14.0.0>
+
 ## [13.0.0] - 2022-05-15
 
 ### Breaking
