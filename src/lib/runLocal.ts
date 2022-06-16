@@ -124,7 +124,9 @@ async function runLocal(
     ? await getOwnerPerDependency(current, filteredUpgraded, options)
     : undefined
 
-  if (!options.json || options.deep) {
+  // do not print upgrades for interactive mode
+  // interactive mode handles its own output
+  if (!options.interactive && (!options.json || options.deep)) {
     printUpgrades(options, {
       current,
       upgraded: filteredUpgraded,

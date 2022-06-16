@@ -100,7 +100,7 @@ function getVersion(dep: string): string {
  * @param args.ownersChangedDeps
  * @param args.format Array of strings from the --format CLI arg
  */
-function toDependencyTable({
+export function toDependencyTable({
   from: fromDeps,
   to: toDeps,
   ownersChangedDeps,

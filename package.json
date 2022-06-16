@@ -99,7 +99,7 @@
     "@types/pacote": "^11.1.4",
     "@types/parse-github-url": "^1.0.0",
     "@types/progress": "^2.0.5",
-    "@types/prompts": "^2.4.0",
+    "@types/prompts": "^2.0.14",
     "@types/remote-git-tags": "^4.0.0",
     "@types/rimraf": "^3.0.2",
     "@types/semver": "^7.3.10",

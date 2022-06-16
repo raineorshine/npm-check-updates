@@ -1,7 +1,7 @@
-import prompts from 'prompts'
+import prompts, { PromptObject } from 'prompts'
 import { satisfies } from 'semver'
-import { colorizeDiff } from '../version-util'
-import { print } from '../logging'
+import { print, printUpgrades, toDependencyTable } from '../logging'
+import keyValueBy from '../lib/keyValueBy'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { Version } from '../types/Version'
@@ -39,31 +39,60 @@ async function upgradePackageData(
     print(options, '')
   }
 
-  // eslint-disable-next-line fp/no-loops
-  for (const dependency in newDependencies) {
-    if (!options.minimal || !satisfies(newVersions[dependency], oldDependencies[dependency])) {
-      if (options.interactive) {
-        const to = colorizeDiff(oldDependencies[dependency], newDependencies[dependency] || '')
-        const response = await prompts({
-          type: 'confirm',
-          name: 'value',
-          message: `Do you want to upgrade: ${dependency} ${oldDependencies[dependency]} → ${to}?`,
-          initial: true,
-          onState: state => {
-            if (state.aborted) {
-              process.nextTick(() => process.exit(1))
-            }
-          },
-        })
-        if (!response.value) {
-          // continue loop to next dependency and skip updating newPkgData
-          continue
-        }
+  let newDependenciesFiltered = keyValueBy(newDependencies, (dep, version) =>
+    !options.minimal || !satisfies(newVersions[dep], oldDependencies[dep]) ? { [dep]: version } : null,
+  )
+
+  if (options.interactive) {
+    // use toDependencyTable to create choices that are properly padded to align vertically
+    const table = toDependencyTable({
+      from: oldDependencies,
+      to: newDependencies,
+      format: options.format,
+    })
+
+    const formattedLines = keyValueBy(table.toString().split('\n'), line => {
+      const dep = line.trim().split(' ')[0]
+      return {
+        [dep]: line.trim(),
       }
-      const expression = `"${dependency}"\\s*:\\s*"${escapeRegexp(`${oldDependencies[dependency]}"`)}`
-      const regExp = new RegExp(expression, 'g')
-      newPkgData = newPkgData.replace(regExp, `"${dependency}": "${newDependencies[dependency]}"`)
-    }
+    })
+
+    const choices = Object.keys(newDependenciesFiltered).map(dep => ({
+      title: formattedLines[dep],
+      value: dep,
+      selected: true,
+    }))
+
+    const response = await prompts({
+      choices,
+      hint: 'Space to deselect. Enter to upgrade.',
+      instructions: false,
+      message: 'Choose which packages to update',
+      name: 'value',
+      optionsPerPage: 50,
+      type: 'multiselect',
+      onState: (state: any) => {
+        if (state.aborted) {
+          process.nextTick(() => process.exit(1))
+        }
+      },
+    } as PromptObject) // coerce to PromptObject until optionsPerPage is added to @types/prompts
+
+    newDependenciesFiltered = keyValueBy(response.value, (dep: string) => ({ [dep]: newDependencies[dep] }))
+
+    printUpgrades(options, {
+      current: oldDependencies,
+      upgraded: newDependenciesFiltered,
+      total: Object.keys(newDependencies).length,
+    })
+  }
+
+  // eslint-disable-next-line fp/no-loops
+  for (const dependency in newDependenciesFiltered) {
+    const expression = `"${dependency}"\\s*:\\s*"${escapeRegexp(`${oldDependencies[dependency]}"`)}`
+    const regExp = new RegExp(expression, 'g')
+    newPkgData = newPkgData.replace(regExp, `"${dependency}": "${newDependencies[dependency]}"`)
   }
 
   return newPkgData
