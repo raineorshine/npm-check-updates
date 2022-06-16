@@ -17,14 +17,8 @@ export interface CLIOption<T = any> {
   type: string
 }
 
-/**
- * "newest" means most recently released in terms of release date, even if there are other version numbers that are higher. It includes prereleases.
- * "greatest" means the highest version number, regardless of release date. It includes prereleases.
- * "latest" is whatever the project's "latest" git tag points to. It's usually the non-prerelease version with the highest version number, but is ultimately decided by each project's maintainers.
- * "minor" means the highest minor version without incrementing the current major.
- * "patch" means the highest patch version without incrementing the current major or minor.
- **/
-const getHelpTargetTable = (): string => {
+/** Extended help for the --target option. */
+const extendedHelpTarget = (): string => {
   /* eslint-disable fp/no-mutating-methods */
 
   const table = new Table({
@@ -65,6 +59,23 @@ You can also specify a custom function in your .ncurc.js file, or when importing
     ${chalk.red('return')} ${chalk.yellow("'latest'")}
   }
 
+`
+}
+
+/** Extended help for the --format option. */
+const extendedHelpFormat = (): string => {
+  /* eslint-disable fp/no-mutating-methods */
+
+  const table = new Table({
+    colAligns: ['right', 'left'],
+  })
+
+  table.push(['repo', `Infers and displays links to the package's source code repository.`])
+  table.push(['ownerChanged', `Shows if the package owner has changed.`])
+
+  return `Modify the output formatting or show additional information. Specify one or more comma-delimited values.
+
+${table.toString()}
 `
 }
 
@@ -170,11 +181,12 @@ const cliOptions: CLIOption[] = [
     long: 'format',
     arg: 'value',
     description:
-      'Enable additional output data, string or comma-delimited list. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository.',
+      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: repo, ownerChanged. Run "ncu --help --format" for details.',
     parse: value => (typeof value === 'string' ? value.split(',') : value),
     default: [],
     type: 'string[]',
     choices: ['ownerChanged', 'repo'],
+    help: extendedHelpFormat(),
   },
   {
     long: 'global',
@@ -353,7 +365,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     arg: 'value',
     description:
       'Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. Run "ncu --help --target" for details. (default: "latest")',
-    help: getHelpTargetTable(),
+    help: extendedHelpTarget(),
     // eslint-disable-next-line no-template-curly-in-string
     type: `'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | ${'`@${string}`'} | TargetFunction`,
   },
