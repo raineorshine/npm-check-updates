@@ -6,16 +6,19 @@
 
 **npm-check-updates upgrades your package.json dependencies to the _latest_ versions, ignoring specified versions.**
 
-- maintains existing semantic versioning _policies_, i.e. `"express": "^4.0.0"` to `"express": "^5.0.0"`.
+- maintains existing semantic versioning _policies_, i.e. `"react": "^16.0.4"` to `"react": "^18.2.0"`.
 - _only_ modifies package.json file. Run `npm install` to update your installed packages and package-lock.json.
+- clean output
+- sensible defaults
+- lots of options for custom behavior
+- CLI and module usage
+- compatible with `npm`, `yarn`, and `pnpm`
 
 ![npm-check-updates-screenshot](https://github.com/raineorshine/npm-check-updates/blob/main/.github/screenshot.png?raw=true)
 
 - Red = major upgrade (and all [major version zero](https://semver.org/#spec-item-4))
 - Cyan = minor upgrade
 - Green = patch upgrade
-
-You may also want to consider [npm-check](https://github.com/dylang/npm-check). Similar purpose, different features.
 
 ## Installation
 
