@@ -121,6 +121,8 @@ ncu "/^(?!react-).*$/" # windows
   - `0.1.0` → `0.2.1`
 - With `--target patch`, only update patch:
   - `0.1.0` → `0.1.2`
+- With `--target @next`, update to the version published on the `next` tag:
+  - `0.1.0` -> `0.1.1-next.1`
 
 ## Options
 
@@ -206,10 +208,10 @@ ncu "/^(?!react-).*$/" # windows
                              package info. (default: 3)
 -s, --silent                 Don't output anything (--loglevel silent).
 --stdin                      Read package.json from stdin.
--t, --target <value>         Target version or function that returns version
-                             to upgrade to: latest, newest, greatest, minor,
-                             patch. Run "ncu --help --target" for details.
-                             (default: "latest")
+-t, --target <value>         Determines the version to upgrade to: latest,
+                             newest, greatest, minor, patch, @[tag], or
+                             [function]. Run "ncu --help --target" for
+                             details. (default: "latest")
 --timeout <ms>               Global timeout in milliseconds. (default: no
                              global timeout and 30 seconds per
                              npm-registry-fetch)

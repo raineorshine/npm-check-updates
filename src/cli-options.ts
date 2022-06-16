@@ -32,15 +32,10 @@ const getHelpTargetTable = (): string => {
 
   table.push([
     'greatest',
-    `Upgrade to the highest version number, regardless of release date or tag.
+    `Upgrade to the highest version number published, regardless of release date or tag.
 Includes prereleases.`,
   ])
-  table.push([
-    'latest',
-    `Upgrade to whatever the package's "latest" git tag points to. It's usually the
-non-prerelease version with the highest version number, but is ultimately decided
-by each project's maintainers. Default.`,
-  ])
+  table.push(['latest', `Upgrade to whatever the package's "latest" git tag points to. Excludes pre is specified.`])
   table.push(['minor', 'Upgrade to the highest minor version without bumping the major version.'])
   table.push([
     'newest',
@@ -48,8 +43,9 @@ by each project's maintainers. Default.`,
 other version numbers that are higher. Includes prereleases.`,
   ])
   table.push(['patch', `Upgrade to the highest patch version without bumping the minor or major versions.`])
+  table.push(['@[tag]', `Upgrade to the version published to a specific tag, e.g. 'next' or 'beta'.`])
 
-  return `Set the target version that is upgraded to. (default: "latest")
+  return `Determines the version to upgrade to. (default: "latest")
 
 ${table.toString()}
 
@@ -354,9 +350,10 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     short: 't',
     arg: 'value',
     description:
-      'Target version or function that returns version to upgrade to: latest, newest, greatest, minor, patch. Run "ncu --help --target" for details. (default: "latest")',
+      'Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. Run "ncu --help --target" for details. (default: "latest")',
     help: getHelpTargetTable(),
-    type: `'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | TargetFunction`,
+    // eslint-disable-next-line no-template-curly-in-string
+    type: `'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | ${'`@${string}`'} | TargetFunction`,
   },
   {
     long: 'timeout',

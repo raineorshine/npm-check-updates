@@ -202,6 +202,8 @@ export async function defaultPrefix(options: Options) {
 }
 
 /**
+ * Fetches the list of all installed packages.
+ *
  * @param [options]
  * @param [options.cwd]
  * @param [options.global]
@@ -221,15 +223,36 @@ export const list = async (options: Options = {}, spawnOptions?: SpawnOptions) =
 }
 
 /**
+ * Fetches the highest version number, regardless of tag or publish time.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
  * @returns
  */
-export const latest: GetVersion = async (packageName: string, currentVersion: Version, options: Options = {}) => {
-  const latest = (await viewOne(
+export const greatest: GetVersion = async (packageName, currentVersion, options = {}) => {
+  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn())) as Packument[]
+
+  return (
+    _.last(
+      // eslint-disable-next-line fp/no-mutating-methods
+      _.filter(versions, filterPredicate(options))
+        .map(o => o.version)
+        .sort(versionUtil.compareVersions),
+    ) || null
+  )
+}
+
+/**
+ * @param packageName
+ * @param currentVersion
+ * @param options
+ * @returns
+ */
+export const distTag: GetVersion = async (packageName, currentVersion, options: Options = {}) => {
+  const revision = (await viewOne(
     packageName,
-    'dist-tags.latest',
+    `dist-tags.${options.distTag}`,
     currentVersion,
     {
       registry: options.registry,
@@ -243,29 +266,32 @@ export const latest: GetVersion = async (packageName: string, currentVersion: Ve
   // if latest exists and latest is not a prerelease version, return it
   // if latest exists and latest is a prerelease version and --pre is specified, return it
   // if latest exists and latest not satisfies min version of engines.node
-  if (latest && filterPredicate(options)(latest)) return latest.version
+  if (revision && filterPredicate(options)(revision)) return revision.version
+
+  // If we use a custom dist-tag, we do not want to get other 'pre' versions, just the ones from this dist-tag
+  if (options.distTag && options.distTag !== 'latest') return null
 
   // if latest is a prerelease version and --pre is not specified
   // or latest is deprecated
   // find the next valid version
   // known type based on dist-tags.latest
-  const versions = (await viewOne(
-    packageName,
-    'versions',
-    currentVersion,
-    {
-      registry: options.registry,
-      timeout: options.timeout,
-      retry: options.retry,
-    },
-    npmConfigFromYarn(),
-  )) as Packument[]
-  const validVersions = _.filter(versions, filterPredicate(options))
-
-  return _.last(validVersions.map(o => o.version)) || null
+  return greatest(packageName, currentVersion, options)
 }
 
 /**
+ * Fetches the version published to the latest tag.
+ *
+ * @param packageName
+ * @param currentVersion
+ * @param options
+ * @returns
+ */
+export const latest: GetVersion = async (packageName: string, currentVersion: Version, options: Options = {}) =>
+  distTag(packageName, currentVersion, { ...options, distTag: 'latest' })
+
+/**
+ * Fetches the most recently published version, regardless of version number.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -299,25 +325,8 @@ export const newest: GetVersion = async (packageName: string, currentVersion, op
 }
 
 /**
- * @param packageName
- * @param currentVersion
- * @param options
- * @returns
- */
-export const greatest: GetVersion = async (packageName, currentVersion, options = {}) => {
-  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn())) as Packument[]
-
-  return (
-    _.last(
-      // eslint-disable-next-line fp/no-mutating-methods
-      _.filter(versions, filterPredicate(options))
-        .map(o => o.version)
-        .sort(versionUtil.compareVersions),
-    ) || null
-  )
-}
-
-/**
+ * Fetches the highest version with the same major version as currentVersion.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -333,6 +342,8 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
 }
 
 /**
+ * Fetches the highest version with the same minor and major version as currentVersion.
+ *
  * @param packageName
  * @param currentVersion
  * @param options

@@ -1,6 +1,6 @@
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
-import { fixPseudoVersion, stringify, isWildCard } from '../version-util'
+import { fixPseudoVersion, stringify, isWildCard, isComparable } from '../version-util'
 import * as semver from 'semver'
 import semverutils from 'semver-utils'
 
@@ -40,8 +40,10 @@ function isUpgradeable(current: VersionSpec, latest: Version) {
   return (
     isValidCurrent &&
     isValidLatest &&
-    !semver.satisfies(latestNormalized, range.operator === '<' ? current : version) &&
-    !semver.ltr(latestNormalized, version)
+    // allow an upgrade if two prerelease versions can't be compared by semver
+    (!isComparable(latestNormalized, version) ||
+      (!semver.satisfies(latestNormalized, range.operator === '<' ? current : version) &&
+        !semver.ltr(latestNormalized, version)))
   )
 }
 

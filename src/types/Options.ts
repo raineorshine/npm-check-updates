@@ -6,6 +6,7 @@ import { VersionSpec } from './VersionSpec'
 export type Options = RunOptions & {
   args?: any[]
   cli?: boolean
+  distTag?: string
   json?: boolean
   nodeEngineVersion?: VersionSpec
   packageData?: string

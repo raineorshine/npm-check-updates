@@ -311,6 +311,8 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
 }
 
 /**
+ * Fetches the highest version number, regardless of tag or publish time.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -331,7 +333,7 @@ export const greatest: GetVersion = async (packageName, currentVersion, options 
 }
 
 /**
- * Requests the list of peer dependencies for a specific package version
+ * Fetches the list of peer dependencies for a specific package version.
  *
  * @param packageName
  * @param version
@@ -344,6 +346,8 @@ export const getPeerDependencies = async (packageName: string, version: Version)
 }
 
 /**
+ * Fetches the list of all installed packages.
+ *
  * @param [options]
  * @param [options.cwd]
  * @param [options.global]
@@ -365,13 +369,15 @@ export const list = async (options: Options = {}) => {
 }
 
 /**
+ * Fetches the version of a package published to options.distTag.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
  * @returns
  */
-export const latest: GetVersion = async (packageName, currentVersion, options = {}) => {
-  const latest = (await viewOne(packageName, 'dist-tags.latest', currentVersion, {
+export const distTag: GetVersion = async (packageName, currentVersion, options: Options = {}) => {
+  const revision = (await viewOne(packageName, `dist-tags.${options.distTag}`, currentVersion, {
     registry: options.registry,
     timeout: options.timeout,
     retry: options.retry,
@@ -381,7 +387,10 @@ export const latest: GetVersion = async (packageName, currentVersion, options = 
   // if latest exists and latest is not a prerelease version, return it
   // if latest exists and latest is a prerelease version and --pre is specified, return it
   // if latest exists and latest not satisfies min version of engines.node
-  if (latest && filterPredicate(options)(latest)) return latest.version
+  if (revision && filterPredicate(options)(revision)) return revision.version
+
+  // If we use a custom dist-tag, we do not want to get other 'pre' versions, just the ones from this dist-tag
+  if (options.distTag && options.distTag !== 'latest') return null
 
   // if latest is a prerelease version and --pre is not specified
   // or latest is deprecated
@@ -391,6 +400,19 @@ export const latest: GetVersion = async (packageName, currentVersion, options = 
 }
 
 /**
+ * Fetches the version published to the latest tag.
+ *
+ * @param packageName
+ * @param currentVersion
+ * @param options
+ * @returns
+ */
+export const latest: GetVersion = async (packageName: string, currentVersion: Version, options: Options = {}) =>
+  distTag(packageName, currentVersion, { ...options, distTag: 'latest' })
+
+/**
+ * Fetches the most recently published version, regardless of version number.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -417,6 +439,8 @@ export const newest: GetVersion = async (packageName, currentVersion, options = 
 }
 
 /**
+ * Fetches the highest version with the same major version as currentVersion.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
@@ -432,6 +456,8 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
 }
 
 /**
+ * Fetches the highest version with the same minor and major version as currentVersion.
+ *
  * @param packageName
  * @param currentVersion
  * @param options
