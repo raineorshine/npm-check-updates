@@ -19,26 +19,27 @@ export interface CLIOption<T = any> {
 
 /** Extended help for the --target option. */
 const extendedHelpTarget = (): string => {
-  /* eslint-disable fp/no-mutating-methods */
-
   const table = new Table({
     colAligns: ['right', 'left'],
-  })
-
-  table.push([
-    'greatest',
-    `Upgrade to the highest version number published, regardless of release date or tag.
+    rows: [
+      [
+        'greatest',
+        `Upgrade to the highest version number published, regardless of release date or tag.
 Includes prereleases.`,
-  ])
-  table.push(['latest', `Upgrade to whatever the package's "latest" git tag points to. Excludes pre is specified.`])
-  table.push(['minor', 'Upgrade to the highest minor version without bumping the major version.'])
-  table.push([
-    'newest',
-    `Upgrade to the version with the most recent publish date, even if there are
+      ],
+      ['latest', `Upgrade to whatever the package's "latest" git tag points to. Excludes pre is specified.`],
+      ['minor', 'Upgrade to the highest minor version without bumping the major version.'],
+      [
+        'newest',
+        `Upgrade to the version with the most recent publish date, even if there are
 other version numbers that are higher. Includes prereleases.`,
-  ])
-  table.push(['patch', `Upgrade to the highest patch version without bumping the minor or major versions.`])
-  table.push(['@[tag]', `Upgrade to the version published to a specific tag, e.g. 'next' or 'beta'.`])
+      ],
+      ['patch', `Upgrade to the highest patch version without bumping the minor or major versions.`],
+      ['@[tag]', `Upgrade to the version published to a specific tag, e.g. 'next' or 'beta'.`],
+    ],
+    // coerce type until rows is added @types/cli-table
+    // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
+  } as any)
 
   return `Determines the version to upgrade to. (default: "latest")
 
@@ -64,14 +65,15 @@ You can also specify a custom function in your .ncurc.js file, or when importing
 
 /** Extended help for the --format option. */
 const extendedHelpFormat = (): string => {
-  /* eslint-disable fp/no-mutating-methods */
-
   const table = new Table({
     colAligns: ['right', 'left'],
-  })
-
-  table.push(['repo', `Infers and displays links to the package's source code repository.`])
-  table.push(['ownerChanged', `Shows if the package owner has changed.`])
+    rows: [
+      ['repo', `Infers and displays links to the package's source code repository.`],
+      ['ownerChanged', `Shows if the package owner has changed.`],
+    ],
+    // coerce type until rows is added @types/cli-table
+    // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
+  } as any)
 
   return `Modify the output formatting or show additional information. Specify one or more comma-delimited values.
 

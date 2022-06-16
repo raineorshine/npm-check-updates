@@ -57,7 +57,7 @@ export function printJson(options: Options, object: any) {
 }
 
 /** Create a table with the appropriate columns and alignment to render dependency upgrades. */
-function createDependencyTable() {
+function createDependencyTable(rows: string[][]) {
   return new Table({
     colAligns: ['left', 'right', 'right', 'right', 'left', 'left'],
     chars: {
@@ -77,7 +77,10 @@ function createDependencyTable() {
       'right-mid': '',
       middle: '',
     },
-  })
+    rows,
+    // coerce type until rows is added @types/cli-table
+    // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
+  } as any)
 }
 
 /**
@@ -107,24 +110,23 @@ function toDependencyTable({
   ownersChangedDeps?: Index<boolean>
   format?: string[]
 }) {
-  const table = createDependencyTable()
-  const rows = Object.keys(toDeps).map(dep => {
-    const from = fromDeps[dep] || ''
-    const toRaw = toDeps[dep] || ''
-    const to = getVersion(toRaw)
-    const ownerChanged = ownersChangedDeps
-      ? dep in ownersChangedDeps
-        ? ownersChangedDeps[dep]
-          ? '*owner changed*'
-          : ''
-        : '*unknown*'
-      : ''
-    const toColorized = colorizeDiff(getVersion(from), to)
-    const repoUrl = format?.includes('repo') ? getRepoUrl(dep) || '' : ''
-    return [dep, from, '→', toColorized, ownerChanged, repoUrl]
-  })
-  rows.forEach(row => table.push(row)) // eslint-disable-line fp/no-mutating-methods
-  return table
+  return createDependencyTable(
+    Object.keys(toDeps).map(dep => {
+      const from = fromDeps[dep] || ''
+      const toRaw = toDeps[dep] || ''
+      const to = getVersion(toRaw)
+      const ownerChanged = ownersChangedDeps
+        ? dep in ownersChangedDeps
+          ? ownersChangedDeps[dep]
+            ? '*owner changed*'
+            : ''
+          : '*unknown*'
+        : ''
+      const toColorized = colorizeDiff(getVersion(from), to)
+      const repoUrl = format?.includes('repo') ? getRepoUrl(dep) || '' : ''
+      return [dep, from, '→', toColorized, ownerChanged, repoUrl]
+    }),
+  )
 }
 
 /** Prints errors. */
@@ -151,9 +153,10 @@ function printErrors(options: Options, errors?: Index<string>) {
         'right-mid': '',
         middle: '',
       },
-    })
-    const rows = Object.entries(errors!).map(([dep, error]) => [dep, chalk.yellow(error)])
-    rows.forEach(row => errorTable.push(row)) // eslint-disable-line fp/no-mutating-methods
+      rows: Object.entries(errors!).map(([dep, error]) => [dep, chalk.yellow(error)]),
+      // coerce type until rows is added @types/cli-table
+      // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
+    } as any)
 
     print(options, '\n' + errorTable.toString())
   }
@@ -232,15 +235,15 @@ export function printUpgrades(
 /** Print updates that were ignored due to incompatible peer dependencies. */
 export function printIgnoredUpdates(options: Options, ignoredUpdates: Index<IgnoredUpgrade>) {
   print(options, `\nIgnored incompatible updates (peer dependencies):\n`)
-  const table = createDependencyTable()
-  const rows = Object.entries(ignoredUpdates).map(([pkgName, { from, to, reason }]) => {
-    const strReason =
-      'reason: ' +
-      Object.entries(reason)
-        .map(([pkgReason, requirement]) => pkgReason + ' requires ' + requirement)
-        .join(', ')
-    return [pkgName, from, '→', colorizeDiff(from, to), strReason]
-  })
-  rows.forEach(row => table.push(row)) // eslint-disable-line fp/no-mutating-methods
+  const table = createDependencyTable(
+    Object.entries(ignoredUpdates).map(([pkgName, { from, to, reason }]) => {
+      const strReason =
+        'reason: ' +
+        Object.entries(reason)
+          .map(([pkgReason, requirement]) => pkgReason + ' requires ' + requirement)
+          .join(', ')
+      return [pkgName, from, '→', colorizeDiff(from, to), strReason]
+    }),
+  )
   print(options, table.toString())
 }
