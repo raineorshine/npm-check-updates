@@ -94,11 +94,13 @@ function getVersion(dep: string): string {
 }
 
 /**
+ * Renders a color-coded table of upgrades.
+ *
  * @param args
  * @param args.from
  * @param args.to
  * @param args.ownersChangedDeps
- * @param args.format Array of strings from the --format CLI arg
+ * @param args.format
  */
 export function toDependencyTable({
   from: fromDeps,
@@ -111,7 +113,7 @@ export function toDependencyTable({
   ownersChangedDeps?: Index<boolean>
   format?: string[]
 }) {
-  return createDependencyTable(
+  const table = createDependencyTable(
     Object.keys(toDeps).map(dep => {
       const from = fromDeps[dep] || ''
       const toRaw = toDeps[dep] || ''
@@ -128,6 +130,107 @@ export function toDependencyTable({
       return [dep, from, '→', toColorized, ownerChanged, repoUrl]
     }),
   )
+  return table.toString()
+}
+
+/**
+ * Renders one or more color-coded tables with all upgrades. Supports different formats from the --format option.
+ *
+ * @param args
+ * @param args.from
+ * @param args.to
+ * @param args.ownersChangedDeps
+ * @param options
+ */
+export function printUpgradesTable(
+  {
+    current,
+    upgraded,
+    ownersChangedDeps,
+  }: {
+    current: Index<VersionSpec>
+    upgraded: Index<VersionSpec>
+    ownersChangedDeps?: Index<boolean>
+  },
+  options: Options,
+) {
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
+  // group
+  if (options.format?.includes('group')) {
+    const groups = keyValueBy<string, Index<string>>(upgraded, (dep, to, accum) => {
+      const from = current[dep]
+      const partUpgraded = partChanged(from, to)
+      return {
+        ...accum,
+        [partUpgraded]: {
+          ...accum[partUpgraded],
+          [dep]: to,
+        },
+      }
+    })
+
+    if (groups.patch) {
+      print(options, '\n' + chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes.'))
+      print(
+        options,
+        toDependencyTable({
+          from: current,
+          to: groups.patch,
+          ownersChangedDeps,
+          format: options.format,
+        }),
+      )
+    }
+
+    if (groups.minor) {
+      print(options, '\n' + chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features.'))
+      print(
+        options,
+        toDependencyTable({
+          from: current,
+          to: groups.minor,
+          ownersChangedDeps,
+          format: options.format,
+        }),
+      )
+    }
+
+    if (groups.major) {
+      print(options, '\n' + chalk.red(chalk.bold('Major') + '   Potentially breaking API changes.'))
+      print(
+        options,
+        toDependencyTable({
+          from: current,
+          to: groups.major,
+          ownersChangedDeps,
+          format: options.format,
+        }),
+      )
+    }
+
+    if (groups['pre-v1']) {
+      print(options, '\n' + chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0.'))
+      print(
+        options,
+        toDependencyTable({
+          from: current,
+          to: groups['pre-v1'],
+          ownersChangedDeps,
+          format: options.format,
+        }),
+      )
+    }
+  } else {
+    print(
+      options,
+      toDependencyTable({
+        from: current,
+        to: upgraded,
+        ownersChangedDeps,
+        format: options.format,
+      }),
+    )
+  }
 }
 
 /** Prints errors. */
@@ -223,72 +326,14 @@ export function printUpgrades(
   }
   // print table
   else if (numUpgraded > 0) {
-    // group
-    if (options.format?.includes('group')) {
-      const groups = keyValueBy<string, Index<string>>(upgraded, (dep, to, accum) => {
-        const from = current[dep]
-        const partUpgraded = partChanged(from, to)
-        return {
-          ...accum,
-          [partUpgraded]: {
-            ...accum[partUpgraded],
-            [dep]: to,
-          },
-        }
-      })
-
-      if (groups.patch) {
-        print(options, '\n' + chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes.'))
-        const table = toDependencyTable({
-          from: current,
-          to: groups.patch,
-          ownersChangedDeps,
-          format: options.format,
-        })
-        print(options, table.toString())
-      }
-
-      if (groups.minor) {
-        print(options, '\n' + chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features.'))
-        const table = toDependencyTable({
-          from: current,
-          to: groups.minor,
-          ownersChangedDeps,
-          format: options.format,
-        })
-        print(options, table.toString())
-      }
-
-      if (groups.major) {
-        print(options, '\n' + chalk.red(chalk.bold('Major') + '   Potentially breaking API changes.'))
-        const table = toDependencyTable({
-          from: current,
-          to: groups.major,
-          ownersChangedDeps,
-          format: options.format,
-        })
-        print(options, table.toString())
-      }
-
-      if (groups['pre-v1']) {
-        print(options, '\n' + chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0.'))
-        const table = toDependencyTable({
-          from: current,
-          to: groups['pre-v1'],
-          ownersChangedDeps,
-          format: options.format,
-        })
-        print(options, table.toString())
-      }
-    } else {
-      const table = toDependencyTable({
-        from: current,
-        to: upgraded,
+    printUpgradesTable(
+      {
+        current,
+        upgraded,
         ownersChangedDeps,
-        format: options.format,
-      })
-      print(options, table.toString())
-    }
+      },
+      options,
+    )
   }
 
   printErrors(options, errors)
@@ -307,5 +352,5 @@ export function printIgnoredUpdates(options: Options, ignoredUpdates: Index<Igno
       return [pkgName, from, '→', colorizeDiff(from, to), strReason]
     }),
   )
-  print(options, table.toString())
+  print(options, table)
 }
