@@ -375,6 +375,29 @@ describe('version-util', () => {
     })
   })
 
+  describe('partChanged', () => {
+    it('nothing changed', () => {
+      versionUtil.partChanged('1.0.0', '1.0.0')!.should.equal('none')
+    })
+    it('patch changed', () => {
+      versionUtil.partChanged('1.0.0', '1.0.1')!.should.equal('patch')
+      versionUtil.partChanged('1.0.10', '1.0.11')!.should.equal('patch')
+    })
+    it('minor changed', () => {
+      versionUtil.partChanged('1.0.0', '1.1.0')!.should.equal('minor')
+    })
+    it('major changed', () => {
+      versionUtil.partChanged('1.0.0', '2.0.0')!.should.equal('major')
+      versionUtil.partChanged('^1.0.0', '^2.0.0')!.should.equal('major')
+      versionUtil.partChanged('~1.0.0', '~2.0.0')!.should.equal('major')
+    })
+    it('pre v1', () => {
+      versionUtil.partChanged('0.1.0', '0.2.0')!.should.equal('pre-v1')
+      versionUtil.partChanged('0.1.0', '0.1.1')!.should.equal('pre-v1')
+      versionUtil.partChanged('~0.1.0', '~0.1.1')!.should.equal('pre-v1')
+    })
+  })
+
   describe('colorizeDiff', () => {
     it('do not colorize unchanged versions', () => {
       versionUtil.colorizeDiff('1.0.0', '1.0.0').should.equal('1.0.0')

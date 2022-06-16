@@ -4,8 +4,9 @@
 
 import Table from 'cli-table'
 import Chalk from 'chalk'
-import { colorizeDiff, isGithubUrl, getGithubUrlTag, isNpmAlias, parseNpmAlias } from './version-util'
+import { colorizeDiff, isGithubUrl, getGithubUrlTag, isNpmAlias, parseNpmAlias, partChanged } from './version-util'
 import getRepoUrl from './lib/getRepoUrl'
+import keyValueBy from './lib/keyValueBy'
 import { IgnoredUpgrade } from './types/IgnoredUpgrade'
 import { Index } from './types/IndexType'
 import { Options } from './types/Options'
@@ -191,7 +192,9 @@ export function printUpgrades(
 ) {
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
-  print(options, '')
+  if (!options.format?.includes('group')) {
+    print(options, '')
+  }
 
   // print everything is up-to-date
   const smiley = chalk.green.bold(':)')
@@ -220,13 +223,72 @@ export function printUpgrades(
   }
   // print table
   else if (numUpgraded > 0) {
-    const table = toDependencyTable({
-      from: current,
-      to: upgraded,
-      ownersChangedDeps,
-      format: options.format,
-    })
-    print(options, table.toString())
+    // group
+    if (options.format?.includes('group')) {
+      const groups = keyValueBy<string, Index<string>>(upgraded, (dep, to, accum) => {
+        const from = current[dep]
+        const partUpgraded = partChanged(from, to)
+        return {
+          ...accum,
+          [partUpgraded]: {
+            ...accum[partUpgraded],
+            [dep]: to,
+          },
+        }
+      })
+
+      if (groups.patch) {
+        print(options, '\n' + chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes.'))
+        const table = toDependencyTable({
+          from: current,
+          to: groups.patch,
+          ownersChangedDeps,
+          format: options.format,
+        })
+        print(options, table.toString())
+      }
+
+      if (groups.minor) {
+        print(options, '\n' + chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features.'))
+        const table = toDependencyTable({
+          from: current,
+          to: groups.minor,
+          ownersChangedDeps,
+          format: options.format,
+        })
+        print(options, table.toString())
+      }
+
+      if (groups.major) {
+        print(options, '\n' + chalk.red(chalk.bold('Major') + '   Potentially breaking API changes.'))
+        const table = toDependencyTable({
+          from: current,
+          to: groups.major,
+          ownersChangedDeps,
+          format: options.format,
+        })
+        print(options, table.toString())
+      }
+
+      if (groups['pre-v1']) {
+        print(options, '\n' + chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0.'))
+        const table = toDependencyTable({
+          from: current,
+          to: groups['pre-v1'],
+          ownersChangedDeps,
+          format: options.format,
+        })
+        print(options, table.toString())
+      }
+    } else {
+      const table = toDependencyTable({
+        from: current,
+        to: upgraded,
+        ownersChangedDeps,
+        format: options.format,
+      })
+      print(options, table.toString())
+    }
   }
 
   printErrors(options, errors)

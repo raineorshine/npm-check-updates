@@ -68,8 +68,9 @@ const extendedHelpFormat = (): string => {
   const table = new Table({
     colAligns: ['right', 'left'],
     rows: [
-      ['repo', `Infers and displays links to the package's source code repository.`],
+      ['group', `Groups packages by major, minor, patch, and non-semver updates.`],
       ['ownerChanged', `Shows if the package owner has changed.`],
+      ['repo', `Infers and displays links to the package's source code repository.`],
     ],
     // coerce type until rows is added @types/cli-table
     // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
@@ -183,11 +184,11 @@ const cliOptions: CLIOption[] = [
     long: 'format',
     arg: 'value',
     description:
-      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: repo, ownerChanged. Run "ncu --help --format" for details.',
+      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo. Run "ncu --help --format" for details.',
     parse: value => (typeof value === 'string' ? value.split(',') : value),
     default: [],
     type: 'string[]',
-    choices: ['ownerChanged', 'repo'],
+    choices: ['group', 'ownerChanged', 'repo'],
     help: extendedHelpFormat(),
   },
   {
