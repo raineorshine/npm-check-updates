@@ -66,6 +66,9 @@ async function findPackage(options: Options) {
     pkgFile = options.packageFile
     pkgData = getPackageDataFromFile(pkgFile, pkgFileName)
   } else if (!process.stdin.isTTY) {
+    if (!options.stdin) {
+      print(options, chalk.yellow('Default stdin handling is deprecated. Please add the --stdin option.'), 'warn')
+    }
     print(options, 'Waiting for package data on stdin', 'verbose')
 
     // warn the user after a while if still waiting for stdin

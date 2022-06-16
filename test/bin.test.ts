@@ -24,7 +24,7 @@ describe('bin', function () {
   }
 
   it('accept stdin', () => {
-    return spawn('node', [bin], '{ "dependencies": { "express": "1" } }').then((output: string) => {
+    return spawn('node', [bin, '--stdin'], '{ "dependencies": { "express": "1" } }').then((output: string) => {
       output.trim().should.startWith('express')
     })
   })
@@ -32,13 +32,13 @@ describe('bin', function () {
   it('reject out-of-date stdin with errorLevel 2', () => {
     return spawn(
       'node',
-      [bin, '--errorLevel', '2'],
+      [bin, '--stdin', '--errorLevel', '2'],
       '{ "dependencies": { "express": "1" } }',
     ).should.eventually.be.rejectedWith('Dependencies not up-to-date')
   })
 
   it('fall back to package.json search when receiving empty content on stdin', async () => {
-    const stdout = await spawn('node', [bin])
+    const stdout = await spawn('node', [bin, '--stdin'])
     stdout
       .toString()
       .trim()
@@ -141,7 +141,7 @@ describe('bin', function () {
     const tempFile = getTempFile()
     fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
-      await spawn('node', [bin, '-u', '--packageFile', tempFile], '{ "dependencies": {}}')
+      await spawn('node', [bin, '-u', '--stdin', '--packageFile', tempFile], '{ "dependencies": {}}')
       const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
@@ -373,7 +373,7 @@ describe('bin', function () {
       const dependencies = {
         'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0',
       }
-      const output = await spawn('node', [bin], JSON.stringify({ dependencies }))
+      const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
       stripAnsi(output)
         .trim()
         .should.equal('ncu-test-v2  https://github.com/raineorshine/ncu-test-v2.git#v1.0.0  →  v2.0.0')
@@ -383,7 +383,7 @@ describe('bin', function () {
       const dependencies = {
         request: 'npm:ncu-test-v2@1.0.0',
       }
-      const output = await spawn('node', [bin], JSON.stringify({ dependencies }))
+      const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
       stripAnsi(output).trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  2.0.0')
     })
   })
