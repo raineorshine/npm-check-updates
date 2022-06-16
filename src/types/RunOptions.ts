@@ -51,7 +51,7 @@ export interface RunOptions {
   /** Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. */
   filterVersion?: string | string[] | RegExp | RegExp[] | FilterFunction
 
-  /** Enable additional output data, string or comma-delimited list: ownerChanged, repo. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository. */
+  /** Enable additional output data, string or comma-delimited list. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository. */
   format?: string[]
 
   /** Check global packages instead of in the current project. */

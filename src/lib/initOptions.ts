@@ -36,12 +36,13 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
   }
 
   // convert packageData to string to convert RunOptions to Options
-  const options = {
+  const options: Options = {
     ...runOptions,
     ...(runOptions.packageData && typeof runOptions.packageData !== 'string'
-      ? { packageData: JSON.stringify(runOptions.packageData, null, 2) }
+      ? { packageData: JSON.stringify(runOptions.packageData, null, 2) as any }
       : null),
-  } as Options
+    cli,
+  }
 
   const loglevel = options.silent ? 'silent' : options.loglevel
 
@@ -63,6 +64,22 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
     print(options, '', 'warn')
   }
 
+  // validate options with predefined choices
+  cliOptions.forEach(({ long, choices }) => {
+    if (!choices || choices.length === 0) return
+    const value = options[long as keyof Options]
+    const values = ([] as typeof value[]).concat(value)
+    if (values.length === 0) return
+    // make sure the option value is valid
+    // if an array of values is given, make sure each one is a valid choice
+    if (values.every(value => !choices.includes(value))) {
+      programError(
+        options,
+        chalk.red(`Invalid option value: --${long} ${value}. Valid values are: ${choices.join(', ')}.`),
+      )
+    }
+  })
+
   // disallow non-matching filter and args
   if (options.filter && (options.args || []).length > 0 && options.filter !== options.args!.join(' ')) {
     programError(
@@ -70,7 +87,9 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
       chalk.red('Cannot specify a filter using both --filter and args. Did you forget to quote an argument?') +
         '\nSee: https://github.com/raineorshine/npm-check-updates/issues/759#issuecomment-723587297',
     )
-  } else if (options.packageFile && options.deep) {
+  }
+  // disallow packageFile and --deep
+  else if (options.packageFile && options.deep) {
     programError(
       options,
       chalk.red(
@@ -98,7 +117,6 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
     ...(options.deep ? { packageFile: `${deepPatternPrefix}${getPackageFileName(options)}` } : null),
     ...((options.args || []).length > 0 ? { filter: options.args!.join(' ') } : null),
     ...(format.length > 0 ? { format } : null),
-    cli,
     // add shortcut for any keys that start with 'json'
     json,
     // convert silent option to loglevel silent

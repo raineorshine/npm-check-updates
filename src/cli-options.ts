@@ -6,6 +6,7 @@ import { Index } from './types/IndexType'
 
 export interface CLIOption<T = any> {
   arg?: string
+  choices?: T[]
   default?: T
   deprecated?: boolean
   description: string
@@ -169,10 +170,11 @@ const cliOptions: CLIOption[] = [
     long: 'format',
     arg: 'value',
     description:
-      'Enable additional output data, string or comma-delimited list: ownerChanged, repo. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository.',
+      'Enable additional output data, string or comma-delimited list. ownerChanged: shows if the package owner changed between versions. repo: infers and displays links to source code repository.',
     parse: value => (typeof value === 'string' ? value.split(',') : value),
     default: [],
     type: 'string[]',
+    choices: ['ownerChanged', 'repo'],
   },
   {
     long: 'global',

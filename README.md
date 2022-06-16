@@ -165,10 +165,10 @@ ncu "/^(?!react-).*$/" # windows
                              comma-or-space-delimited list, /regex/, or
                              predicate function.
 --format <value>             Enable additional output data, string or
-                             comma-delimited list: ownerChanged, repo.
-                             ownerChanged: shows if the package owner changed
-                             between versions. repo: infers and displays
-                             links to source code repository. (default: [])
+                             comma-delimited list. ownerChanged: shows if the
+                             package owner changed between versions. repo:
+                             infers and displays links to source code
+                             repository. (default: [])
 -g, --global                 Check global packages instead of in the current
                              project.
 -i, --interactive            Enable interactive prompts for each dependency;
