@@ -355,10 +355,17 @@ export const getPeerDependencies = async (packageName: string, version: Version)
  * @returns
  */
 export const list = async (options: Options = {}) => {
-  const result = await spawnNpm('ls', options, {
-    ...(options.cwd ? { cwd: options.cwd } : null),
-    rejectOnError: false,
-  })
+  const result = await spawnNpm(
+    'ls',
+    {
+      ...(options.global ? { location: 'global' } : null),
+      ...(options.prefix ? { prefix: options.prefix } : null),
+    },
+    {
+      ...(options.cwd ? { cwd: options.cwd } : null),
+      rejectOnError: false,
+    },
+  )
   const json = parseJson(result, {
     command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --location=global' : ''}`,
   })
