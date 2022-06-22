@@ -1,7 +1,9 @@
+import Chalk from 'chalk'
 import prompts, { PromptObject } from 'prompts'
 import { satisfies } from 'semver'
 import { print, printUpgrades, toDependencyTable } from '../logging'
 import keyValueBy from '../lib/keyValueBy'
+import { partChanged } from '../version-util'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { Version } from '../types/Version'
@@ -32,6 +34,8 @@ async function upgradePackageData(
   newVersions: Index<Version>,
   options: Options = {},
 ) {
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
+
   let newPkgData = pkgData
 
   // interactive mode needs a newline before prompts
@@ -58,34 +62,108 @@ async function upgradePackageData(
       }
     })
 
-    const choices = Object.keys(newDependenciesFiltered).map(dep => ({
-      title: formattedLines[dep],
-      value: dep,
-      selected: true,
-    }))
+    let depsSelected: string[] = []
 
-    const response = await prompts({
-      choices,
-      hint: 'Space to deselect. Enter to upgrade.',
-      instructions: false,
-      message: 'Choose which packages to update',
-      name: 'value',
-      optionsPerPage: 50,
-      type: 'multiselect',
-      onState: (state: any) => {
-        if (state.aborted) {
-          process.nextTick(() => process.exit(1))
+    if (options.format?.includes('group')) {
+      depsSelected = []
+
+      const groups = keyValueBy<string, Index<string>>(newDependenciesFiltered, (dep, to, accum) => {
+        const from = oldDependencies[dep]
+        const partUpgraded = partChanged(from, to)
+        return {
+          ...accum,
+          [partUpgraded]: {
+            ...accum[partUpgraded],
+            [dep]: to,
+          },
         }
+      })
+
+      const choicesPatch = Object.keys(groups.patch || {}).map(dep => ({
+        title: formattedLines[dep],
+        value: dep,
+        selected: true,
+      }))
+
+      const choicesMinor = Object.keys(groups.minor || {}).map(dep => ({
+        title: formattedLines[dep],
+        value: dep,
+        selected: true,
+      }))
+
+      const choicesMajor = Object.keys(groups.major || {}).map(dep => ({
+        title: formattedLines[dep],
+        value: dep,
+        selected: false,
+      }))
+
+      const choicesNonsemver = Object.keys(groups.nonsemver || {}).map(dep => ({
+        title: formattedLines[dep],
+        value: dep,
+        selected: false,
+      }))
+
+      const response = await prompts({
+        choices: [
+          { title: chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes.'), disabled: true },
+          ...choicesPatch,
+          { title: chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features.'), disabled: true },
+          ...choicesMinor,
+          { title: chalk.red(chalk.bold('Major') + '   Potentially breaking API changes.'), disabled: true },
+          ...choicesMajor,
+          { title: chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0.'), disabled: true },
+          ...choicesNonsemver,
+        ],
+        hint: 'Space to deselect. Enter to upgrade.',
+        instructions: false,
+        message: 'Choose which packages to update',
+        name: 'value',
+        optionsPerPage: 50,
+        type: 'multiselect',
+        onState: (state: any) => {
+          if (state.aborted) {
+            process.nextTick(() => process.exit(1))
+          }
+        },
+      } as PromptObject) // coerce to PromptObject until optionsPerPage is added to @types/prompts
+
+      depsSelected = response.value
+    } else {
+      const choices = Object.keys(newDependenciesFiltered).map(dep => ({
+        title: formattedLines[dep],
+        value: dep,
+        selected: true,
+      }))
+
+      const response = await prompts({
+        choices,
+        hint: 'Space to deselect. Enter to upgrade.',
+        instructions: false,
+        message: 'Choose which packages to update',
+        name: 'value',
+        optionsPerPage: 50,
+        type: 'multiselect',
+        onState: (state: any) => {
+          if (state.aborted) {
+            process.nextTick(() => process.exit(1))
+          }
+        },
+      } as PromptObject) // coerce to PromptObject until optionsPerPage is added to @types/prompts
+
+      depsSelected = response.value
+    }
+
+    newDependenciesFiltered = keyValueBy(depsSelected, (dep: string) => ({ [dep]: newDependencies[dep] }))
+
+    // in interactive mode, do not group upgrades afterwards since the prompts are grouped
+    printUpgrades(
+      { ...options, format: (options.format || []).filter(formatType => formatType !== 'group') },
+      {
+        current: oldDependencies,
+        upgraded: newDependenciesFiltered,
+        total: Object.keys(newDependencies).length,
       },
-    } as PromptObject) // coerce to PromptObject until optionsPerPage is added to @types/prompts
-
-    newDependenciesFiltered = keyValueBy(response.value, (dep: string) => ({ [dep]: newDependencies[dep] }))
-
-    printUpgrades(options, {
-      current: oldDependencies,
-      upgraded: newDependenciesFiltered,
-      total: Object.keys(newDependencies).length,
-    })
+    )
   }
 
   // eslint-disable-next-line fp/no-loops
