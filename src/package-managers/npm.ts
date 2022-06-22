@@ -86,6 +86,18 @@ const readNpmConfig = () => {
 
 const npmConfig = readNpmConfig()
 
+/** A promise that returns true if --global is deprecated on the system npm. Spawns "npm --version". */
+const isGlobalDeprecated = new Promise((resolve, reject) => {
+  const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+  return spawn(cmd, ['--version'])
+    .then((output: string) => {
+      const npmVersion = output.trim()
+      // --global was deprecated in npm v8.11.0.
+      resolve(semver.valid(npmVersion) && semver.gte(npmVersion, '8.11.0'))
+    })
+    .catch(reject)
+})
+
 /**
  * @typedef {object} CommandAndPackageName
  * @property {string} command
@@ -245,19 +257,29 @@ function filterPredicate(options: Options): (o: Packument) => boolean {
 }
 
 /**
- * Spawn npm requires a different command on Windows.
+ * Spawns npm. Handles different commands for Window and Linux/OSX, and automatically converts --location=global to --global on node < 8.11.0.
  *
  * @param args
  * @param [npmOptions={}]
  * @param [spawnOptions={}]
  * @returns
  */
-function spawnNpm(args: string | string[], npmOptions: NpmOptions = {}, spawnOptions: Index<any> = {}): Promise<any> {
+async function spawnNpm(
+  args: string | string[],
+  npmOptions: NpmOptions = {},
+  spawnOptions: Index<any> = {},
+): Promise<any> {
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
   args = Array.isArray(args) ? args : [args]
 
   const fullArgs = args.concat(
-    npmOptions.location ? `--location=${npmOptions.location}` : [],
+    npmOptions.location
+      ? (await isGlobalDeprecated)
+        ? `--location=${npmOptions.location}`
+        : npmOptions.location === 'global'
+        ? '--global'
+        : ''
+      : [],
     npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : [],
     '--depth=0',
     '--json',
@@ -358,6 +380,7 @@ export const list = async (options: Options = {}) => {
   const result = await spawnNpm(
     'ls',
     {
+      // spawnNpm takes the modern --location option and converts it to --global on older versions of npm
       ...(options.global ? { location: 'global' } : null),
       ...(options.prefix ? { prefix: options.prefix } : null),
     },
