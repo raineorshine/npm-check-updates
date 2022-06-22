@@ -9,6 +9,6 @@ describe('staticRegistry', function () {
   it('latest', async () => {
     const registry = './test/package-managers/staticRegistry/staticRegistry.json'
     const version = await staticRegistry.latest('express', '', { cwd: __dirname, registry })
-    parseInt(version!, 10).should.be.above(1)
+    version!.should.equal('4.1.2')
   })
 })

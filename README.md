@@ -198,7 +198,7 @@ ncu "/^(?!react-).*$/" # windows
 --pre <n>                    Include -alpha, -beta, -rc. (default: 0; default
                              with --newest and --greatest: 1)
 --prefix <path>              Current working directory of npm.
--r, --registry <url>         Third-party npm registry.
+-r, --registry <uri>         Third-party npm registry.
 -x, --reject <matches>       Exclude packages matching the given string,
                              wildcard, glob, comma-or-space-delimited list,
                              /regex/, or predicate function. (default: [])

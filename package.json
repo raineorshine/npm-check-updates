@@ -120,7 +120,6 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsdoc": "^39.3.2",
     "eslint-plugin-n": "^15.2.3",
-    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.0.0",
     "husky": "^8.0.1",
     "lockfile-lint": "^4.7.5",
