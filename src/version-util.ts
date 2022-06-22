@@ -154,6 +154,34 @@ export function isWildPart(versionPartValue: Maybe<string>) {
 }
 
 /**
+ * Determines the part of a version string that has changed when comparing two versions. Assumes that the two version strings are in the same format. Returns null if no parts have changed.
+ *
+ * @param from
+ * @param to
+ */
+export function partChanged(from: string, to: string): 'major' | 'minor' | 'patch' | 'pre-v1' | 'none' {
+  if (from === to) return 'none'
+
+  // separate out leading ^ or ~
+  if (/^[~^]/.test(to) && to[0] === from[0]) {
+    to = to.slice(1)
+    from = from.slice(1)
+  }
+
+  // split into parts
+  const partsTo = to.split('.')
+  const partsFrom = from.split('.')
+
+  let i = partsTo.findIndex((partto, i) => partto !== partsFrom[i])
+  i = i >= 0 ? i : partsTo.length
+
+  // major = red (or any change before 1.0.0)
+  // minor = cyan
+  // patch = green
+  return partsTo[0] === '0' ? 'pre-v1' : i === 0 ? 'major' : i === 1 ? 'minor' : 'patch'
+}
+
+/**
  * Colorize the parts of a version string (to) that are different than
  * another (from). Assumes that the two verson strings are in the same format.
  *

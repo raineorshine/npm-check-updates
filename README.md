@@ -164,11 +164,10 @@ ncu "/^(?!react-).*$/" # windows
 --filterVersion <matches>    Filter on package version using
                              comma-or-space-delimited list, /regex/, or
                              predicate function.
---format <value>             Enable additional output data, string or
-                             comma-delimited list: ownerChanged, repo.
-                             ownerChanged: shows if the package owner changed
-                             between versions. repo: infers and displays
-                             links to source code repository. (default: [])
+--format <value>             Modify the output formatting or show additional
+                             information. Specify one or more comma-delimited
+                             values: repo, ownerChanged. Run "ncu --help
+                             --format" for details. (default: [])
 -g, --global                 Check global packages instead of in the current
                              project.
 -i, --interactive            Enable interactive prompts for each dependency;
