@@ -4,8 +4,9 @@
 
 import Table from 'cli-table'
 import Chalk from 'chalk'
-import { colorizeDiff, isGithubUrl, getGithubUrlTag, isNpmAlias, parseNpmAlias } from './version-util'
+import { colorizeDiff, isGithubUrl, getGithubUrlTag, isNpmAlias, parseNpmAlias, partChanged } from './version-util'
 import getRepoUrl from './lib/getRepoUrl'
+import keyValueBy from './lib/keyValueBy'
 import { IgnoredUpgrade } from './types/IgnoredUpgrade'
 import { Index } from './types/IndexType'
 import { Options } from './types/Options'
@@ -57,7 +58,7 @@ export function printJson(options: Options, object: any) {
 }
 
 /** Create a table with the appropriate columns and alignment to render dependency upgrades. */
-function createDependencyTable() {
+function createDependencyTable(rows: string[][]) {
   return new Table({
     colAligns: ['left', 'right', 'right', 'right', 'left', 'left'],
     chars: {
@@ -77,7 +78,10 @@ function createDependencyTable() {
       'right-mid': '',
       middle: '',
     },
-  })
+    rows,
+    // coerce type until rows is added @types/cli-table
+    // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
+  } as any)
 }
 
 /**
@@ -107,24 +111,23 @@ function toDependencyTable({
   ownersChangedDeps?: Index<boolean>
   format?: string[]
 }) {
-  const table = createDependencyTable()
-  const rows = Object.keys(toDeps).map(dep => {
-    const from = fromDeps[dep] || ''
-    const toRaw = toDeps[dep] || ''
-    const to = getVersion(toRaw)
-    const ownerChanged = ownersChangedDeps
-      ? dep in ownersChangedDeps
-        ? ownersChangedDeps[dep]
-          ? '*owner changed*'
-          : ''
-        : '*unknown*'
-      : ''
-    const toColorized = colorizeDiff(getVersion(from), to)
-    const repoUrl = format?.includes('repo') ? getRepoUrl(dep) || '' : ''
-    return [dep, from, '→', toColorized, ownerChanged, repoUrl]
-  })
-  rows.forEach(row => table.push(row)) // eslint-disable-line fp/no-mutating-methods
-  return table
+  return createDependencyTable(
+    Object.keys(toDeps).map(dep => {
+      const from = fromDeps[dep] || ''
+      const toRaw = toDeps[dep] || ''
+      const to = getVersion(toRaw)
+      const ownerChanged = ownersChangedDeps
+        ? dep in ownersChangedDeps
+          ? ownersChangedDeps[dep]
+            ? '*owner changed*'
+            : ''
+          : '*unknown*'
+        : ''
+      const toColorized = colorizeDiff(getVersion(from), to)
+      const repoUrl = format?.includes('repo') ? getRepoUrl(dep) || '' : ''
+      return [dep, from, '→', toColorized, ownerChanged, repoUrl]
+    }),
+  )
 }
 
 /** Prints errors. */
@@ -151,9 +154,10 @@ function printErrors(options: Options, errors?: Index<string>) {
         'right-mid': '',
         middle: '',
       },
-    })
-    const rows = Object.entries(errors!).map(([dep, error]) => [dep, chalk.yellow(error)])
-    rows.forEach(row => errorTable.push(row)) // eslint-disable-line fp/no-mutating-methods
+      rows: Object.entries(errors!).map(([dep, error]) => [dep, chalk.yellow(error)]),
+      // coerce type until rows is added @types/cli-table
+      // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
+    } as any)
 
     print(options, '\n' + errorTable.toString())
   }
@@ -188,7 +192,9 @@ export function printUpgrades(
 ) {
   const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
-  print(options, '')
+  if (!options.format?.includes('group')) {
+    print(options, '')
+  }
 
   // print everything is up-to-date
   const smiley = chalk.green.bold(':)')
@@ -217,13 +223,72 @@ export function printUpgrades(
   }
   // print table
   else if (numUpgraded > 0) {
-    const table = toDependencyTable({
-      from: current,
-      to: upgraded,
-      ownersChangedDeps,
-      format: options.format,
-    })
-    print(options, table.toString())
+    // group
+    if (options.format?.includes('group')) {
+      const groups = keyValueBy<string, Index<string>>(upgraded, (dep, to, accum) => {
+        const from = current[dep]
+        const partUpgraded = partChanged(from, to)
+        return {
+          ...accum,
+          [partUpgraded]: {
+            ...accum[partUpgraded],
+            [dep]: to,
+          },
+        }
+      })
+
+      if (groups.patch) {
+        print(options, '\n' + chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes.'))
+        const table = toDependencyTable({
+          from: current,
+          to: groups.patch,
+          ownersChangedDeps,
+          format: options.format,
+        })
+        print(options, table.toString())
+      }
+
+      if (groups.minor) {
+        print(options, '\n' + chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features.'))
+        const table = toDependencyTable({
+          from: current,
+          to: groups.minor,
+          ownersChangedDeps,
+          format: options.format,
+        })
+        print(options, table.toString())
+      }
+
+      if (groups.major) {
+        print(options, '\n' + chalk.red(chalk.bold('Major') + '   Potentially breaking API changes.'))
+        const table = toDependencyTable({
+          from: current,
+          to: groups.major,
+          ownersChangedDeps,
+          format: options.format,
+        })
+        print(options, table.toString())
+      }
+
+      if (groups['pre-v1']) {
+        print(options, '\n' + chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0.'))
+        const table = toDependencyTable({
+          from: current,
+          to: groups['pre-v1'],
+          ownersChangedDeps,
+          format: options.format,
+        })
+        print(options, table.toString())
+      }
+    } else {
+      const table = toDependencyTable({
+        from: current,
+        to: upgraded,
+        ownersChangedDeps,
+        format: options.format,
+      })
+      print(options, table.toString())
+    }
   }
 
   printErrors(options, errors)
@@ -232,15 +297,15 @@ export function printUpgrades(
 /** Print updates that were ignored due to incompatible peer dependencies. */
 export function printIgnoredUpdates(options: Options, ignoredUpdates: Index<IgnoredUpgrade>) {
   print(options, `\nIgnored incompatible updates (peer dependencies):\n`)
-  const table = createDependencyTable()
-  const rows = Object.entries(ignoredUpdates).map(([pkgName, { from, to, reason }]) => {
-    const strReason =
-      'reason: ' +
-      Object.entries(reason)
-        .map(([pkgReason, requirement]) => pkgReason + ' requires ' + requirement)
-        .join(', ')
-    return [pkgName, from, '→', colorizeDiff(from, to), strReason]
-  })
-  rows.forEach(row => table.push(row)) // eslint-disable-line fp/no-mutating-methods
+  const table = createDependencyTable(
+    Object.entries(ignoredUpdates).map(([pkgName, { from, to, reason }]) => {
+      const strReason =
+        'reason: ' +
+        Object.entries(reason)
+          .map(([pkgReason, requirement]) => pkgReason + ' requires ' + requirement)
+          .join(', ')
+      return [pkgName, from, '→', colorizeDiff(from, to), strReason]
+    }),
+  )
   print(options, table.toString())
 }
