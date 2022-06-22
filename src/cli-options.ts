@@ -240,7 +240,7 @@ const cliOptions: CLIOption[] = [
     short: 'p',
     arg: 'name',
     // manual default to allow overriding auto yarn detection
-    description: 'npm, yarn (default: "npm")',
+    description: 'npm, yarn, staticRegistry (default: "npm")',
     type: 'string',
   },
   {
@@ -301,7 +301,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
   {
     long: 'registry',
     short: 'r',
-    arg: 'url',
+    arg: 'url' || 'path',
     description: 'Third-party npm registry.',
     type: 'string',
   },

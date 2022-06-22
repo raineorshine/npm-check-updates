@@ -191,7 +191,7 @@ ncu "/^(?!react-).*$/" # windows
 --packageData <value>        Package file data (you can also use stdin).
 --packageFile <path|glob>    Package file(s) location. (default:
                              ./package.json)
--p, --packageManager <name>  npm, yarn (default: "npm")
+-p, --packageManager <name>  npm, yarn, staticRegistry (default: "npm")
 --peer                       Check peer dependencies of installed packages
                              and filter updates to compatible versions. Run
                              "ncu --help --peer" for details.

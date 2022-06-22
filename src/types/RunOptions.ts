@@ -84,7 +84,7 @@ export interface RunOptions {
   /** Package file(s) location. (default: ./package.json) */
   packageFile?: string
 
-  /** npm, yarn (default: "npm") */
+  /** npm, yarn, staticRegistry (default: "npm") */
   packageManager?: string
 
   /** Check peer dependencies of installed packages and filter updates to compatible versions. Run "ncu --help --peer" for details. */
