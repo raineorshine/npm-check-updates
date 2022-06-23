@@ -1,5 +1,5 @@
 import Chalk from 'chalk'
-import prompts, { PromptObject } from 'prompts'
+import prompts from 'prompts-ncu'
 import { satisfies } from 'semver'
 import { print, printUpgrades, toDependencyTable } from '../logging'
 import keyValueBy from '../lib/keyValueBy'
@@ -138,7 +138,7 @@ async function upgradePackageData(
             process.nextTick(() => process.exit(1))
           }
         },
-      } as PromptObject) // coerce to PromptObject until optionsPerPage is added to @types/prompts
+      })
 
       depsSelected = response.value
     } else {
@@ -161,7 +161,7 @@ async function upgradePackageData(
             process.nextTick(() => process.exit(1))
           }
         },
-      } as PromptObject) // coerce to PromptObject until optionsPerPage is added to @types/prompts
+      })
 
       depsSelected = response.value
     }
