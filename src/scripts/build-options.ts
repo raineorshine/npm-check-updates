@@ -47,7 +47,7 @@ const renderOption = (option: CLIOption<unknown>) => {
       : ''
 
   // all options are optional
-  return `  /** ${description}${defaults} */
+  return `  /** ${description}${option.help ? ` Run "ncu --help --${option.long}" for details.` : ''}${defaults} */
   ${option.long}?: ${type}
 `
 }

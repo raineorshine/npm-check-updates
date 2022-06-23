@@ -30,7 +30,7 @@ export interface RunOptions {
   /** Include deprecated packages. */
   deprecated?: boolean
 
-  /** Iteratively installs upgrades and runs tests to identify breaking upgrades. Run "ncu --doctor" for detailed help. Add "-u" to execute. */
+  /** Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires "-u" to execute. Run "ncu --help --doctor" for details. */
   doctor?: boolean
 
   /** Specifies the install script to use in doctor mode. (default: npm install/yarn) */
@@ -96,7 +96,7 @@ export interface RunOptions {
   /** Current working directory of npm. */
   prefix?: string
 
-  /** Third-party npm registry. */
+  /** Third-party npm registry. Run "ncu --help --registry" for details. */
   registry?: string
 
   /** Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. */
@@ -117,7 +117,7 @@ export interface RunOptions {
   /** Read package.json from stdin. */
   stdin?: string
 
-  /** Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. Run "ncu --help --target" for details. (default: "latest") */
+  /** Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. (default: latest). Run "ncu --help --target" for details. */
   target?: 'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | `@${string}` | TargetFunction
 
   /** Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch) */

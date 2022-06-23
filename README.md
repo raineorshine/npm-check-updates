@@ -146,8 +146,8 @@ ncu "/^(?!react-).*$/" # windows
                              "prod,dev,bundle,optional")
 --deprecated                 Include deprecated packages.
 --doctor                     Iteratively installs upgrades and runs tests to
-                             identify breaking upgrades. Run "ncu --doctor"
-                             for detailed help. Add "-u" to execute.
+                             identify breaking upgrades. Requires "-u" to
+                             execute. Run "ncu --help --doctor" for details.
 --doctorInstall <command>    Specifies the install script to use in doctor
                              mode. (default: npm install/yarn)
 --doctorTest <command>       Specifies the test script to use in doctor mode.
@@ -198,7 +198,8 @@ ncu "/^(?!react-).*$/" # windows
 --pre <n>                    Include -alpha, -beta, -rc. (default: 0; default
                              with --newest and --greatest: 1)
 --prefix <path>              Current working directory of npm.
--r, --registry <uri>         Third-party npm registry.
+-r, --registry <uri>         Third-party npm registry. Run "ncu --help
+                             --registry" for details.
 -x, --reject <matches>       Exclude packages matching the given string,
                              wildcard, glob, comma-or-space-delimited list,
                              /regex/, or predicate function. (default: [])
@@ -213,8 +214,8 @@ ncu "/^(?!react-).*$/" # windows
 --stdin                      Read package.json from stdin.
 -t, --target <value>         Determines the version to upgrade to: latest,
                              newest, greatest, minor, patch, @[tag], or
-                             [function]. Run "ncu --help --target" for
-                             details. (default: "latest")
+                             [function]. (default: latest). Run "ncu --help
+                             --target" for details.
 --timeout <ms>               Global timeout in milliseconds. (default: no
                              global timeout and 30 seconds per
                              npm-registry-fetch)

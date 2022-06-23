@@ -50,11 +50,12 @@ program
   .usage('[options] [filter]')
 
 // add cli options
-cliOptions.forEach(({ long, short, arg, description, default: defaultValue, parse }) =>
+cliOptions.forEach(({ long, short, arg, description, default: defaultValue, help, parse }) =>
   // handle 3rd/4th argument polymorphism
   program.option(
     `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : ''}`,
-    description,
+    // point to help in description if extended help text is available
+    `${description}${help ? ` Run "ncu --help --${long}" for details.` : ''}`,
     parse || defaultValue,
     parse ? defaultValue : undefined,
   ),

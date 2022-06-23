@@ -260,7 +260,7 @@ const cliOptions: CLIOption[] = [
   {
     long: 'doctor',
     description:
-      'Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires "-u" to execute. Run "ncu --help --doctor" for details.',
+      'Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires "-u" to execute.',
     type: 'boolean',
     help: extendedHelpDoctor(),
   },
@@ -309,7 +309,7 @@ const cliOptions: CLIOption[] = [
     long: 'format',
     arg: 'value',
     description:
-      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo. Run "ncu --help --format" for details.',
+      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo.',
     parse: value => (typeof value === 'string' ? value.split(',') : value),
     default: [],
     type: 'string[]',
@@ -382,14 +382,13 @@ const cliOptions: CLIOption[] = [
     short: 'p',
     arg: 'name',
     // manual default to allow overriding auto yarn detection
-    description: 'npm, yarn, staticRegistry (default: npm). Run "ncu --help --packageManager" for details.',
+    description: 'npm, yarn, staticRegistry (default: npm).',
     help: extendedHelpPackageManager(),
     type: 'string',
   },
   {
     long: 'peer',
-    description:
-      'Check peer dependencies of installed packages and filter updates to compatible versions. Run "ncu --help --peer" for details.',
+    description: 'Check peer dependencies of installed packages and filter updates to compatible versions.',
     type: 'boolean',
     help: `Check peer dependencies of installed packages and filter updates to compatible versions.
 
@@ -448,7 +447,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     description: 'Third-party npm registry.',
     help: wrap(`Specify the registry to use when looking up package version numbers.
 
-When --packageManager staticRegistry is set, --registry must specify a path to a JSON registry file. Run "ncu --help --packageManager" for details.`),
+When --packageManager staticRegistry is set, --registry must specify a path to a JSON registry file.`),
     type: 'string',
   },
   {
@@ -496,7 +495,7 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     short: 't',
     arg: 'value',
     description:
-      'Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. Run "ncu --help --target" for details. (default: "latest")',
+      'Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. (default: latest).',
     help: extendedHelpTarget(),
     // eslint-disable-next-line no-template-curly-in-string
     type: `'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | ${'`@${string}`'} | TargetFunction`,
