@@ -2,7 +2,6 @@ import _ from 'lodash'
 import fs from 'fs'
 import Chalk from 'chalk'
 import cliOptions from '../cli-options'
-import { deepPatternPrefix } from '../constants'
 import programError from './programError'
 import getPackageFileName from './getPackageFileName'
 import { print } from '../logging'
@@ -92,9 +91,7 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
   else if (options.packageFile && options.deep) {
     programError(
       options,
-      chalk.red(
-        `Cannot specify both --packageFile and --deep. --deep is an alias for --packageFile '${deepPatternPrefix}package.json'`,
-      ),
+      chalk.red(`Cannot specify both --packageFile and --deep. --deep is an alias for --packageFile '**/package.json'`),
     )
   }
 
@@ -128,7 +125,7 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
 
   return {
     ...options,
-    ...(options.deep ? { packageFile: `${deepPatternPrefix}${getPackageFileName(options)}` } : null),
+    ...(options.deep ? { packageFile: `**/${getPackageFileName(options)}` } : null),
     ...((options.args || []).length > 0 ? { filter: options.args!.join(' ') } : null),
     ...(format.length > 0 ? { format } : null),
     // add shortcut for any keys that start with 'json'

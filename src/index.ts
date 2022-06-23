@@ -4,8 +4,8 @@ import globby from 'globby'
 import _ from 'lodash'
 import Chalk from 'chalk'
 import packageManagers from './package-managers'
-import { doctorHelpText } from './constants'
 import { print, printJson } from './logging'
+import { cliOptionsMap } from './cli-options'
 import findPackage from './lib/findPackage'
 import doctor from './lib/doctor'
 import getNcuRc from './lib/getNcuRc'
@@ -165,7 +165,7 @@ export async function run(
     }
     // print help otherwise
     else {
-      print(options, doctorHelpText, 'warn')
+      print(options, `Usage: ncu --doctor\n\n${cliOptionsMap.doctor.help}`, 'warn')
     }
   }
   // normal mode

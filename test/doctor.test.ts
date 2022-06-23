@@ -1,11 +1,12 @@
 import fs from 'fs'
 import path from 'path'
 import chai from 'chai'
+import chalk from 'chalk'
 import chaiAsPromised from 'chai-as-promised'
 import spawn from 'spawn-please'
 import rimraf from 'rimraf'
 import stripAnsi from 'strip-ansi'
-import { doctorHelpText } from '../src/constants'
+import { cliOptionsMap } from '../src/cli-options'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -138,7 +139,11 @@ describe('doctor', function () {
   describe('npm', () => {
     it('print instructions when -u is not specified', async () => {
       const cwd = path.join(doctorTests, 'nopackagefile')
-      return ncu(['--doctor'], { cwd }).should.eventually.equal(doctorHelpText + '\n')
+      const output = await ncu(['--doctor'], { cwd })
+      // output does not include chalk formatting
+      // chalk.reset does not seem to work, so just format the expected bold text in the output before comparing
+      const outputFormatted = output.replace('Add "-u" to execute', chalk.bold('Add "-u" to execute'))
+      return outputFormatted.should.equal(`Usage: ncu --doctor\n\n${cliOptionsMap.doctor.help}\n`)
     })
 
     it('throw an error if there is no package file', async () => {

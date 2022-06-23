@@ -2,7 +2,6 @@ import chalk from 'chalk'
 import pMap from 'p-map'
 import ProgressBar from 'progress'
 import { parseRange } from 'semver-utils'
-import { supportedVersionTargets } from '../constants'
 import getPackageManager from './getPackageManager'
 import packageManagers from '../package-managers'
 import { createNpmAlias, isGithubUrl, isPre, parseNpmAlias } from '../version-util'
@@ -13,6 +12,8 @@ import { Options } from '../types/Options'
 import { Version } from '../types/Version'
 import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
+
+const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch']
 
 /**
  * Get the latest or greatest versions from the NPM repository based on the version target.
