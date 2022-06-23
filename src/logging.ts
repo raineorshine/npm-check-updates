@@ -170,7 +170,7 @@ export function printUpgradesTable(
     })
 
     if (groups.patch) {
-      print(options, '\n' + chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes.'))
+      print(options, '\n' + chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'))
       print(
         options,
         toDependencyTable({
@@ -183,7 +183,7 @@ export function printUpgradesTable(
     }
 
     if (groups.minor) {
-      print(options, '\n' + chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features.'))
+      print(options, '\n' + chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'))
       print(
         options,
         toDependencyTable({
@@ -196,7 +196,7 @@ export function printUpgradesTable(
     }
 
     if (groups.major) {
-      print(options, '\n' + chalk.red(chalk.bold('Major') + '   Potentially breaking API changes.'))
+      print(options, '\n' + chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'))
       print(
         options,
         toDependencyTable({
@@ -209,7 +209,7 @@ export function printUpgradesTable(
     }
 
     if (groups['pre-v1']) {
-      print(options, '\n' + chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0.'))
+      print(options, '\n' + chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0'))
       print(
         options,
         toDependencyTable({

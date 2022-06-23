@@ -105,16 +105,29 @@ async function upgradePackageData(
 
       const response = await prompts({
         choices: [
-          { title: chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes.'), disabled: true },
+          ...(choicesPatch.length > 0
+            ? [{ title: '\n' + chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'), heading: true }]
+            : []),
           ...choicesPatch,
-          { title: chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features.'), disabled: true },
+          ...(choicesMinor.length > 0
+            ? [{ title: '\n' + chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'), heading: true }]
+            : []),
           ...choicesMinor,
-          { title: chalk.red(chalk.bold('Major') + '   Potentially breaking API changes.'), disabled: true },
+          ...(choicesMajor.length > 0
+            ? [{ title: '\n' + chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'), heading: true }]
+            : []),
           ...choicesMajor,
-          { title: chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0.'), disabled: true },
+          ...(choicesNonsemver.length > 0
+            ? [{ title: '\n' + chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0'), heading: true }]
+            : []),
           ...choicesNonsemver,
+          { title: ' ', heading: true },
         ],
-        hint: 'Space to deselect. Enter to upgrade.',
+        hint: `
+  ↑/↓: Select a package
+  Space: Toggle selection
+  a: Select all
+  Enter: Upgrade`,
         instructions: false,
         message: 'Choose which packages to update',
         name: 'value',
