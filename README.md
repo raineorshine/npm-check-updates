@@ -225,6 +225,23 @@ ncu "/^(?!react-).*$/" # windows
 -h, --help                   display help for command
 ```
 
+## Interactive Mode
+
+Choose exactly which upgrades to make in interactive mode:
+
+```sh
+ncu --interactive
+ncu -i
+```
+
+Select which upgrades you want:
+
+![ncu --interactive](https://user-images.githubusercontent.com/750276/175337598-cdbb2c46-64f8-44f5-b54e-4ad74d7b52b4.png)
+
+Combine with `--format group` for a truly _luxe_ experience:
+
+![ncu --interactive --format group](https://user-images.githubusercontent.com/750276/175336533-539261e4-5cf1-458f-9fbb-a7be2b477ebb.png)
+
 ## Doctor Mode
 
 Usage: `ncu --doctor [-u] [options]`
@@ -266,7 +283,7 @@ npm run test
 Saving partially upgraded package.json
 ```
 
-## Configuration Files
+## Config File
 
 Use a `.ncurc.{json,yml,js}` file to specify configuration information.
 You can specify file name and path using `--configFileName` and `--configFilePath`
