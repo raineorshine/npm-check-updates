@@ -38,7 +38,7 @@
     "prepublishOnly": "npm run build",
     "prettier": "prettier .",
     "test": "npm run test:src && npm run test:timeout",
-    "test:src": "mocha test src/test test/package-managers/npm test/package-managers/yarn",
+    "test:src": "mocha test src/test test/package-managers/npm test/package-managers/yarn test/package-managers/staticRegistry",
     "test:timeout": "mocha --exit test/timeout",
     "ncu": "node build/src/bin/cli.js"
   },
@@ -119,7 +119,7 @@
     "eslint-plugin-fp": "^2.3.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsdoc": "^39.3.2",
-    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-n": "^15.2.3",
     "eslint-plugin-promise": "^6.0.0",
     "husky": "^8.0.1",
     "lockfile-lint": "^4.7.5",

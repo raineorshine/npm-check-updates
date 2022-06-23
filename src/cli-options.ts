@@ -257,7 +257,8 @@ const cliOptions: CLIOption[] = [
     short: 'p',
     arg: 'name',
     // manual default to allow overriding auto yarn detection
-    description: 'npm, yarn (default: "npm")',
+    description: 'npm, yarn, staticRegistry (default: "npm")',
+    help: 'When selecting staticRegistry as packageManager, include --registry option as well, providing path to a JSON formatted static registry',
     type: 'string',
   },
   {
@@ -318,8 +319,9 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
   {
     long: 'registry',
     short: 'r',
-    arg: 'url',
+    arg: 'uri',
     description: 'Third-party npm registry.',
+    help: 'Static registry is a JSON formatted file (keys=dependencies, values=versions)',
     type: 'string',
   },
   {

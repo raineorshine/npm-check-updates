@@ -98,6 +98,20 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
     )
   }
 
+  // disallow incorrect or missing registry path when selecting staticRegistry as packageManager
+  if (options.packageManager === 'staticRegistry') {
+    if (options.registry === undefined || options.registry === null) {
+      programError(
+        options,
+        chalk.red(
+          'When --package-manager staticRegistry is specified, you must provide the path for the registry file with --registry. Run "ncu --help --packageManager" for details.',
+        ),
+      )
+    }
+    if (!fs.existsSync(options.registry!)) {
+      programError(options, chalk.red(`The specified static registry file does not exist: ${options.registry}`))
+    }
+  }
   const target: Target = options.target || 'latest'
 
   const autoPre = target === 'newest' || target === 'greatest'

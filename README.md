@@ -190,14 +190,14 @@ ncu "/^(?!react-).*$/" # windows
 --packageData <value>        Package file data (you can also use stdin).
 --packageFile <path|glob>    Package file(s) location. (default:
                              ./package.json)
--p, --packageManager <name>  npm, yarn (default: "npm")
+-p, --packageManager <name>  npm, yarn, staticRegistry (default: "npm")
 --peer                       Check peer dependencies of installed packages
                              and filter updates to compatible versions. Run
                              "ncu --help --peer" for details.
 --pre <n>                    Include -alpha, -beta, -rc. (default: 0; default
                              with --newest and --greatest: 1)
 --prefix <path>              Current working directory of npm.
--r, --registry <url>         Third-party npm registry.
+-r, --registry <uri>         Third-party npm registry.
 -x, --reject <matches>       Exclude packages matching the given string,
                              wildcard, glob, comma-or-space-delimited list,
                              /regex/, or predicate function. (default: [])
