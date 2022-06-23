@@ -17,31 +17,79 @@ export interface CLIOption<T = any> {
   type: string
 }
 
+/** Wraps a string by inserting newlines every n characters. Wraps on word break. Default: 92 chars. */
+const wrap = (s: string, maxLineLength = 92) => {
+  /* eslint-disable fp/no-mutating-methods */
+  const linesIn = s.split('\n')
+  const linesOut: string[] = []
+  linesIn.forEach(lineIn => {
+    let i = 0
+    if (lineIn.length === 0) {
+      linesOut.push('')
+      return
+    }
+
+    // eslint-disable-next-line fp/no-loops
+    while (i < lineIn.length) {
+      const lineFull = lineIn.slice(i, i + maxLineLength + 1)
+
+      // if the line is within the line length, push it as the last line and break
+      const lineTrimmed = lineFull.trimEnd()
+      if (lineTrimmed.length <= maxLineLength) {
+        linesOut.push(lineTrimmed)
+        break
+      }
+
+      // otherwise, wrap before the last word that exceeds the wrap length
+      // do not wrap in the middle of a word
+      // reverse the string and use match to find the first non-word character to wrap on
+      const wrapOffset =
+        lineFull
+          .split('')
+          .reverse()
+          .join('')
+          // add [^\W] to not break in the middle of --registry
+          .match(/[ -][^\W]/)?.index || 0
+      const line = lineFull.slice(0, lineFull.length - wrapOffset)
+
+      // make sure we do not end up in an infinite loop
+      if (line.length === 0) break
+
+      linesOut.push(line.trimEnd())
+      i += line.length
+    }
+    i = 0
+  })
+  return linesOut.join('\n').trim()
+}
+
+/** Wraps the second column in a list of 2-column cli-table rows. */
+const wrapRows = (rows: string[][]) => rows.map(([col1, col2]) => [col1, wrap(col2)])
+
 /** Extended help for the --target option. */
 const extendedHelpTarget = (): string => {
+  const header = 'Determines the version to upgrade to. (default: "latest")'
   const table = new Table({
     colAligns: ['right', 'left'],
-    rows: [
+    rows: wrapRows([
       [
         'greatest',
-        `Upgrade to the highest version number published, regardless of release date or tag.
-Includes prereleases.`,
+        `Upgrade to the highest version number published, regardless of release date or tag. Includes prereleases.`,
       ],
       ['latest', `Upgrade to whatever the package's "latest" git tag points to. Excludes pre is specified.`],
       ['minor', 'Upgrade to the highest minor version without bumping the major version.'],
       [
         'newest',
-        `Upgrade to the version with the most recent publish date, even if there are
-other version numbers that are higher. Includes prereleases.`,
+        `Upgrade to the version with the most recent publish date, even if there are other version numbers that are higher. Includes prereleases.`,
       ],
       ['patch', `Upgrade to the highest patch version without bumping the minor or major versions.`],
       ['@[tag]', `Upgrade to the version published to a specific tag, e.g. 'next' or 'beta'.`],
-    ],
+    ]),
     // coerce type until rows is added @types/cli-table
     // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
   } as any)
 
-  return `Determines the version to upgrade to. (default: "latest")
+  return `${header}
 
 ${table.toString()}
 
@@ -65,20 +113,53 @@ You can also specify a custom function in your .ncurc.js file, or when importing
 
 /** Extended help for the --format option. */
 const extendedHelpFormat = (): string => {
+  const header =
+    'Modify the output formatting or show additional information. Specify one or more comma-delimited values.'
   const table = new Table({
     colAligns: ['right', 'left'],
-    rows: [
+    rows: wrapRows([
       ['group', `Groups packages by major, minor, patch, and non-semver updates.`],
       ['ownerChanged', `Shows if the package owner has changed.`],
       ['repo', `Infers and displays links to the package's source code repository.`],
-    ],
+    ]),
     // coerce type until rows is added @types/cli-table
     // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
   } as any)
 
-  return `Modify the output formatting or show additional information. Specify one or more comma-delimited values.
+  return `${header}\n\n${table.toString()}
+`
+}
 
-${table.toString()}
+/** Extended help for the --format option. */
+const extendedHelpPackageManager = (): string => {
+  const header = 'Specifies the package manager to use when looking up version numbers.'
+  const table = new Table({
+    colAligns: ['right', 'left'],
+    rows: wrapRows([
+      ['npm', `System-installed npm. Default.`],
+      ['yarn', `System-installed yarn. Automatically used if yarn.lock is present.`],
+      [
+        'staticRegistry',
+        `Checks versions from a static file. Must include the --registry option with the path to a JSON registry file.
+
+Example:
+
+${chalk.cyan('$')} ncu --packageManager staticRegistry --registry ./my-registry.json
+
+my-registry.json:
+
+{
+  "prettier": "2.7.1",
+  "typescript": "4.7.4"
+}
+      `,
+      ],
+    ]),
+    // coerce type until rows is added @types/cli-table
+    // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
+  } as any)
+
+  return `${header}\n\n${table.toString()}
 `
 }
 
@@ -257,8 +338,8 @@ const cliOptions: CLIOption[] = [
     short: 'p',
     arg: 'name',
     // manual default to allow overriding auto yarn detection
-    description: 'npm, yarn, staticRegistry (default: "npm")',
-    help: 'When selecting staticRegistry as packageManager, include --registry option as well, providing path to a JSON formatted static registry',
+    description: 'npm, yarn, staticRegistry (default: npm). Run "ncu --help --packageManager" for details.',
+    help: extendedHelpPackageManager(),
     type: 'string',
   },
   {
@@ -321,7 +402,9 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
     short: 'r',
     arg: 'uri',
     description: 'Third-party npm registry.',
-    help: 'Static registry is a JSON formatted file (keys=dependencies, values=versions)',
+    help: wrap(`Specify the registry to use when looking up package version numbers.
+
+When --packageManager staticRegistry is set, --registry must specify a path to a JSON registry file. Run "ncu --help --packageManager" for details.`),
     type: 'string',
   },
   {

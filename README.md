@@ -166,8 +166,8 @@ ncu "/^(?!react-).*$/" # windows
                              predicate function.
 --format <value>             Modify the output formatting or show additional
                              information. Specify one or more comma-delimited
-                             values: repo, ownerChanged. Run "ncu --help
-                             --format" for details. (default: [])
+                             values: group, ownerChanged, repo. Run "ncu
+                             --help --format" for details. (default: [])
 -g, --global                 Check global packages instead of in the current
                              project.
 -i, --interactive            Enable interactive prompts for each dependency;
@@ -190,7 +190,8 @@ ncu "/^(?!react-).*$/" # windows
 --packageData <value>        Package file data (you can also use stdin).
 --packageFile <path|glob>    Package file(s) location. (default:
                              ./package.json)
--p, --packageManager <name>  npm, yarn, staticRegistry (default: "npm")
+-p, --packageManager <name>  npm, yarn, staticRegistry (default: npm). Run
+                             "ncu --help --packageManager" for details.
 --peer                       Check peer dependencies of installed packages
                              and filter updates to compatible versions. Run
                              "ncu --help --peer" for details.
