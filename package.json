@@ -37,6 +37,7 @@
     "prepare": "husky install",
     "prepublishOnly": "npm run build",
     "prettier": "prettier .",
+    "mocha": "mocha",
     "test": "npm run test:src && npm run test:timeout",
     "test:src": "mocha test src/test test/package-managers/npm test/package-managers/yarn test/package-managers/staticRegistry",
     "test:timeout": "mocha --exit test/timeout",
