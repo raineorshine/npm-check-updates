@@ -55,7 +55,7 @@ export const setNpmAuthToken = (npmConfig: Index<string | boolean>, [dep, scoped
       let trimmedRegistryServer = registryServer.replace(/^https?:/, '')
 
       if (trimmedRegistryServer.endsWith('/')) {
-        trimmedRegistryServer = trimmedRegistryServer.substring(0, trimmedRegistryServer.length - 1)
+        trimmedRegistryServer = trimmedRegistryServer.slice(0, -1)
       }
 
       npmConfig[`${trimmedRegistryServer}/:_authToken`] = interpolate(scopedConfig.npmAuthToken, process.env)
