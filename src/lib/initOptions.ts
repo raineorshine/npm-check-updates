@@ -8,7 +8,7 @@ import { print } from '../logging'
 import { Options } from '../types/Options'
 import { RunOptions } from '../types/RunOptions'
 import { Target } from '../types/Target'
-import { determinePackageManager } from './determinePackageManager'
+import { determinePackageManager } from './findLockAndConfigFiles'
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
 function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Options {
