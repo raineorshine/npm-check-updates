@@ -5,6 +5,8 @@ import { once, EventEmitter } from 'events'
 import _ from 'lodash'
 import cint from 'cint'
 import fs from 'fs'
+import os from 'os'
+import path from 'path'
 import jsonlines from 'jsonlines'
 import memoize from 'fast-memoize'
 import spawn from 'spawn-please'
@@ -69,14 +71,16 @@ export const setNpmAuthToken = (npmConfig: Index<string | boolean>, [dep, scoped
 // https://github.com/raineorshine/npm-check-updates/issues/1036
 const npmConfigFromYarn = memoize(
   (options: Pick<Options, 'global' | 'cwd' | 'packageFile'>): Index<string | boolean> => {
-    const npmConfig: Index<string | boolean> = {}
     const yarnrcLocalPath = getPathToLookForYarnrc(options)
+    const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
     const yarnrcLocalExists = typeof yarnrcLocalPath === 'string' && fs.existsSync(yarnrcLocalPath)
-    const yarnrcUserExists = fs.existsSync('~/.yarnrc.yml')
+    const yarnrcUserExists = fs.existsSync(yarnrcUserPath)
     const yarnrcLocal = yarnrcLocalExists ? fs.readFileSync(yarnrcLocalPath, 'utf-8') : ''
-    const yarnrcUser = yarnrcUserExists ? fs.readFileSync('~/.yarnrc.yml', 'utf-8') : ''
+    const yarnrcUser = yarnrcUserExists ? fs.readFileSync(yarnrcUserPath, 'utf-8') : ''
     const yarnConfigLocal: YarnConfig = yaml.parse(yarnrcLocal)
     const yarnConfigUser: YarnConfig = yaml.parse(yarnrcUser)
+
+    const npmConfig: Index<string | boolean> = {}
 
     /** Reads a registry from a yarn config. interpolates it, and sets it on the npm config. */
     const setNpmRegistry = ([dep, scopedConfig]: [string, NpmScope]) => {
