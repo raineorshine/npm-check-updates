@@ -44,7 +44,8 @@ export function print(
   if (
     !options.json &&
     options.loglevel !== 'silent' &&
-    (loglevel == null || logLevels[options.loglevel as unknown as keyof typeof logLevels] >= logLevels[loglevel])
+    (loglevel == null ||
+      logLevels[(options.loglevel ?? 'warn') as unknown as keyof typeof logLevels] >= logLevels[loglevel])
   ) {
     console[method](message)
   }

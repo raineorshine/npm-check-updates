@@ -43,7 +43,7 @@ export default function findLockfile(
       currentPath = newPath
     }
   } catch (e) {
-    print(options, `Encountered error while determining package manager: ${e}`, 'verbose', 'warn')
+    print(options, `Encountered error while determining package manager: ${e}`, 'warn', 'warn')
   }
 
   return undefined
