@@ -1,8 +1,9 @@
 import path from 'path'
-import chai from 'chai'
+import chai, { should } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import * as yarn from '../../../src/package-managers/yarn'
 import { Index } from '../../../src/types/IndexType'
+import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -70,5 +71,33 @@ describe('yarn', function () {
     it('npmRegistryServer has trailing slash', () => {
       testCore('https://npm.fontawesome.com/')
     })
+  })
+})
+
+describe('getPathToLookForLocalYarnrc', () => {
+  it('returns the correct path when using Yarn workspaces', () => {
+    /** Mock for filesystem calls. */
+    function readdirSyncMock(path: string): string[] {
+      switch (path) {
+        case '/home/test-repo/packages/package-a':
+          return ['index.ts']
+        case '/home/test-repo/packages':
+          return []
+        case '/home/test-repo':
+          return ['yarn.lock']
+      }
+
+      throw new Error(`Mock cannot handle path: ${path}.`)
+    }
+
+    const yarnrcPath = getPathToLookForYarnrc(
+      {
+        cwd: '/home/test-repo/packages/package-a',
+      },
+      readdirSyncMock,
+    )
+
+    should().exist(yarnrcPath)
+    yarnrcPath!.should.equal('/home/test-repo/.yarnrc.yml')
   })
 })

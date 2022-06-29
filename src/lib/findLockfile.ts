@@ -10,7 +10,7 @@ import { Options } from '../types/Options'
  * @returns The path of the directory that contains the lockfile and the
  * filename of the lockfile.
  */
-function findLockfile(
+export default function findLockfile(
   options: Pick<Options, 'cwd' | 'packageFile'>,
   readdirSync: (_path: string) => string[] = fs.readdirSync,
 ): { directoryPath: string; filename: string } | undefined {
@@ -47,43 +47,4 @@ function findLockfile(
   }
 
   return undefined
-}
-
-const defaultPackageManager = 'npm'
-
-/**
- * If the packageManager option was not provided, look at the lockfiles to
- * determine which package manager is being used.
- *
- * @param readdirSync This is only a parameter so that it can be used in tests.
- */
-export function determinePackageManager(
-  options: Options,
-  readdirSync: (_path: string) => string[] = fs.readdirSync,
-): string {
-  if (options.packageManager) return options.packageManager
-  if (options.global) return defaultPackageManager
-
-  const lockfileName = findLockfile(options, readdirSync)?.filename
-
-  if (lockfileName === 'package-lock.json') return 'npm'
-  if (lockfileName === 'yarn.lock') return 'yarn'
-
-  return defaultPackageManager
-}
-
-/**
- * Returns the path to the local .yarnrc.yml, or undefined. This doesn't
- * actually check that the .yarnrc.yml file exists.
- */
-export function getPathToLookForYarnrc(
-  options: Pick<Options, 'global' | 'cwd' | 'packageFile'>,
-  readdirSync: (_path: string) => string[] = fs.readdirSync,
-): string | undefined {
-  if (options.global) return undefined
-
-  const directoryPath = findLockfile(options, readdirSync)?.directoryPath
-  if (!directoryPath) return undefined
-
-  return path.join(directoryPath, '.yarnrc.yml')
 }

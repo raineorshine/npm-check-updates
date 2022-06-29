@@ -21,7 +21,7 @@ import { SpawnOptions } from '../types/SpawnOptions'
 import { Version } from '../types/Version'
 import { NpmOptions } from '../types/NpmOptions'
 import { allowDeprecatedOrIsNotDeprecated, allowPreOrIsNotPre, satisfiesNodeEngine } from './filters'
-import { getPathToLookForYarnrc } from '../lib/findLockAndConfigFiles'
+import findLockfile from '../lib/findLockfile'
 
 interface ParsedDep {
   version: string
@@ -64,6 +64,26 @@ export const setNpmAuthToken = (npmConfig: Index<string | boolean>, [dep, scoped
       npmConfig[`${trimmedRegistryServer}/:_authToken`] = interpolate(scopedConfig.npmAuthToken, process.env)
     }
   }
+}
+
+/**
+ * Returns the path to the local .yarnrc.yml, or undefined. This doesn't
+ * actually check that the .yarnrc.yml file exists.
+ *
+ * Exported for test purposes only.
+ *
+ * @param readdirSync This is only a parameter so that it can be used in tests.
+ */
+export function getPathToLookForYarnrc(
+  options: Pick<Options, 'global' | 'cwd' | 'packageFile'>,
+  readdirSync: (_path: string) => string[] = fs.readdirSync,
+): string | undefined {
+  if (options.global) return undefined
+
+  const directoryPath = findLockfile(options, readdirSync)?.directoryPath
+  if (!directoryPath) return undefined
+
+  return path.join(directoryPath, '.yarnrc.yml')
 }
 
 // If private registry auth is specified in npmScopes in .yarnrc.yml, read them in and convert them to npm config variables.

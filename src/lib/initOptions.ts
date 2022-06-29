@@ -4,11 +4,11 @@ import Chalk from 'chalk'
 import cliOptions from '../cli-options'
 import programError from './programError'
 import getPackageFileName from './getPackageFileName'
+import determinePackageManager from './determinePackageManager'
 import { print } from '../logging'
 import { Options } from '../types/Options'
 import { RunOptions } from '../types/RunOptions'
 import { Target } from '../types/Target'
-import { determinePackageManager } from './findLockAndConfigFiles'
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
 function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Options {
@@ -118,7 +118,7 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
 
   const packageManager = determinePackageManager(options)
 
-  if (!options.packageManager && packageManager === 'yarn') {
+  if (packageManager === 'yarn') {
     print(options, 'Using yarn')
   }
 
