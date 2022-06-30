@@ -1,12 +1,15 @@
 import path from 'path'
-import chai from 'chai'
+import chai, { should } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import * as yarn from '../../../src/package-managers/yarn'
 import { Index } from '../../../src/types/IndexType'
+import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn'
 
 chai.should()
 chai.use(chaiAsPromised)
 process.env.NCU_TESTS = 'true'
+
+const isWindows = process.platform === 'win32'
 
 // append the local node_modules bin directory to process.env.PATH so local yarn is used during tests
 const localBin = path.resolve(__dirname.replace('build/', ''), '../../../node_modules/.bin')
@@ -70,5 +73,36 @@ describe('yarn', function () {
     it('npmRegistryServer has trailing slash', () => {
       testCore('https://npm.fontawesome.com/')
     })
+  })
+})
+
+describe('getPathToLookForLocalYarnrc', () => {
+  it('returns the correct path when using Yarn workspaces', () => {
+    /** Mock for filesystem calls. */
+    function readdirSyncMock(path: string): string[] {
+      switch (path) {
+        case '/home/test-repo/packages/package-a':
+        case 'C:\\home\\test-repo\\packages\\package-a':
+          return ['index.ts']
+        case '/home/test-repo/packages':
+        case 'C:\\home\\test-repo\\packages':
+          return []
+        case '/home/test-repo':
+        case 'C:\\home\\test-repo':
+          return ['yarn.lock']
+      }
+
+      throw new Error(`Mock cannot handle path: ${path}.`)
+    }
+
+    const yarnrcPath = getPathToLookForYarnrc(
+      {
+        cwd: isWindows ? 'C:\\home\\test-repo\\packages\\package-a' : '/home/test-repo/packages/package-a',
+      },
+      readdirSyncMock,
+    )
+
+    should().exist(yarnrcPath)
+    yarnrcPath!.should.equal(isWindows ? 'C:\\home\\test-repo\\.yarnrc.yml' : '/home/test-repo/.yarnrc.yml')
   })
 })

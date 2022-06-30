@@ -5,6 +5,8 @@ import { once, EventEmitter } from 'events'
 import _ from 'lodash'
 import cint from 'cint'
 import fs from 'fs'
+import os from 'os'
+import path from 'path'
 import jsonlines from 'jsonlines'
 import memoize from 'fast-memoize'
 import spawn from 'spawn-please'
@@ -19,6 +21,7 @@ import { SpawnOptions } from '../types/SpawnOptions'
 import { Version } from '../types/Version'
 import { NpmOptions } from '../types/NpmOptions'
 import { allowDeprecatedOrIsNotDeprecated, allowPreOrIsNotPre, satisfiesNodeEngine } from './filters'
+import findLockfile from '../lib/findLockfile'
 
 interface ParsedDep {
   version: string
@@ -55,7 +58,7 @@ export const setNpmAuthToken = (npmConfig: Index<string | boolean>, [dep, scoped
       let trimmedRegistryServer = registryServer.replace(/^https?:/, '')
 
       if (trimmedRegistryServer.endsWith('/')) {
-        trimmedRegistryServer = trimmedRegistryServer.substring(0, trimmedRegistryServer.length - 1)
+        trimmedRegistryServer = trimmedRegistryServer.slice(0, -1)
       }
 
       npmConfig[`${trimmedRegistryServer}/:_authToken`] = interpolate(scopedConfig.npmAuthToken, process.env)
@@ -63,35 +66,60 @@ export const setNpmAuthToken = (npmConfig: Index<string | boolean>, [dep, scoped
   }
 }
 
+/**
+ * Returns the path to the local .yarnrc.yml, or undefined. This doesn't
+ * actually check that the .yarnrc.yml file exists.
+ *
+ * Exported for test purposes only.
+ *
+ * @param readdirSync This is only a parameter so that it can be used in tests.
+ */
+export function getPathToLookForYarnrc(
+  options: Pick<Options, 'global' | 'cwd' | 'packageFile'>,
+  readdirSync: (_path: string) => string[] = fs.readdirSync,
+): string | undefined {
+  if (options.global) return undefined
+
+  const directoryPath = findLockfile(options, readdirSync)?.directoryPath
+  if (!directoryPath) return undefined
+
+  return path.join(directoryPath, '.yarnrc.yml')
+}
+
 // If private registry auth is specified in npmScopes in .yarnrc.yml, read them in and convert them to npm config variables.
 // Define as a memoized function to efficiently call existsSync and readFileSync only once, and only if yarn is being used.
 // https://github.com/raineorshine/npm-check-updates/issues/1036
-const npmConfigFromYarn = memoize((): Index<string | boolean> => {
-  const npmConfig: Index<string | boolean> = {}
-  const yarnrcLocalExists = fs.existsSync('.yarnrc.yml')
-  const yarnrcUserExists = fs.existsSync('~/.yarnrc.yml')
-  const yarnrcLocal = yarnrcLocalExists ? fs.readFileSync('.yarnrc.yml', 'utf-8') : ''
-  const yarnrcUser = yarnrcUserExists ? fs.readFileSync('~/.yarnrc.yml', 'utf-8') : ''
-  const yarnConfigLocal: YarnConfig = yaml.parse(yarnrcLocal)
-  const yarnConfigUser: YarnConfig = yaml.parse(yarnrcUser)
+const npmConfigFromYarn = memoize(
+  (options: Pick<Options, 'global' | 'cwd' | 'packageFile'>): Index<string | boolean> => {
+    const yarnrcLocalPath = getPathToLookForYarnrc(options)
+    const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
+    const yarnrcLocalExists = typeof yarnrcLocalPath === 'string' && fs.existsSync(yarnrcLocalPath)
+    const yarnrcUserExists = fs.existsSync(yarnrcUserPath)
+    const yarnrcLocal = yarnrcLocalExists ? fs.readFileSync(yarnrcLocalPath, 'utf-8') : ''
+    const yarnrcUser = yarnrcUserExists ? fs.readFileSync(yarnrcUserPath, 'utf-8') : ''
+    const yarnConfigLocal: YarnConfig = yaml.parse(yarnrcLocal)
+    const yarnConfigUser: YarnConfig = yaml.parse(yarnrcUser)
 
-  /** Reads a registry from a yarn config. interpolates it, and sets it on the npm config. */
-  const setNpmRegistry = ([dep, scopedConfig]: [string, NpmScope]) => {
-    if (scopedConfig.npmRegistryServer) {
-      npmConfig[`@${dep}:registry`] = scopedConfig.npmRegistryServer
+    const npmConfig: Index<string | boolean> = {}
+
+    /** Reads a registry from a yarn config. interpolates it, and sets it on the npm config. */
+    const setNpmRegistry = ([dep, scopedConfig]: [string, NpmScope]) => {
+      if (scopedConfig.npmRegistryServer) {
+        npmConfig[`@${dep}:registry`] = scopedConfig.npmRegistryServer
+      }
     }
-  }
 
-  // set registry for all npm scopes
-  Object.entries(yarnConfigUser?.npmScopes || {}).forEach(setNpmRegistry)
-  Object.entries(yarnConfigLocal?.npmScopes || {}).forEach(setNpmRegistry)
+    // set registry for all npm scopes
+    Object.entries(yarnConfigUser?.npmScopes || {}).forEach(setNpmRegistry)
+    Object.entries(yarnConfigLocal?.npmScopes || {}).forEach(setNpmRegistry)
 
-  // set auth token after npm registry, since auth token syntax uses regitry
-  Object.entries(yarnConfigUser?.npmScopes || {}).forEach(s => setNpmAuthToken(npmConfig, s))
-  Object.entries(yarnConfigLocal?.npmScopes || {}).forEach(s => setNpmAuthToken(npmConfig, s))
+    // set auth token after npm registry, since auth token syntax uses regitry
+    Object.entries(yarnConfigUser?.npmScopes || {}).forEach(s => setNpmAuthToken(npmConfig, s))
+    Object.entries(yarnConfigLocal?.npmScopes || {}).forEach(s => setNpmAuthToken(npmConfig, s))
 
-  return npmConfig
-})
+    return npmConfig
+  },
+)
 
 /**
  * Parse JSON lines and throw an informative error on failure.
@@ -230,8 +258,14 @@ export const list = async (options: Options = {}, spawnOptions?: SpawnOptions) =
  * @param options
  * @returns
  */
-export const greatest: GetVersion = async (packageName, currentVersion, options = {}) => {
-  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn())) as Packument[]
+export const greatest: GetVersion = async (packageName, currentVersion, options: Options = {}) => {
+  const versions = (await viewOne(
+    packageName,
+    'versions',
+    currentVersion,
+    options,
+    npmConfigFromYarn(options),
+  )) as Packument[]
 
   return (
     _.last(
@@ -259,7 +293,7 @@ export const distTag: GetVersion = async (packageName, currentVersion, options: 
       timeout: options.timeout,
       retry: options.retry,
     },
-    npmConfigFromYarn(),
+    npmConfigFromYarn(options),
   )) as unknown as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated
@@ -304,7 +338,7 @@ export const newest: GetVersion = async (packageName: string, currentVersion, op
     currentVersion,
     options,
     0,
-    npmConfigFromYarn(),
+    npmConfigFromYarn(options),
   )
 
   const versionsSatisfyingNodeEngine = _.filter(result.versions, version =>
@@ -333,7 +367,13 @@ export const newest: GetVersion = async (packageName: string, currentVersion, op
  * @returns
  */
 export const minor: GetVersion = async (packageName, currentVersion, options = {}) => {
-  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn())) as Packument[]
+  const versions = (await viewOne(
+    packageName,
+    'versions',
+    currentVersion,
+    options,
+    npmConfigFromYarn(options),
+  )) as Packument[]
   return versionUtil.findGreatestByLevel(
     _.filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
@@ -350,7 +390,13 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
  * @returns
  */
 export const patch: GetVersion = async (packageName, currentVersion, options = {}) => {
-  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfigFromYarn())) as Packument[]
+  const versions = (await viewOne(
+    packageName,
+    'versions',
+    currentVersion,
+    options,
+    npmConfigFromYarn(options),
+  )) as Packument[]
   return versionUtil.findGreatestByLevel(
     _.filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,

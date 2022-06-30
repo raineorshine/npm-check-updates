@@ -4,6 +4,7 @@ import Chalk from 'chalk'
 import cliOptions from '../cli-options'
 import programError from './programError'
 import getPackageFileName from './getPackageFileName'
+import determinePackageManager from './determinePackageManager'
 import { print } from '../logging'
 import { Options } from '../types/Options'
 import { RunOptions } from '../types/RunOptions'
@@ -115,11 +116,10 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
 
   const format = options.format || []
 
-  // autodetect yarn
-  const files = fs.readdirSync(options.cwd || '.')
-  const autoYarn =
-    !options.packageManager && !options.global && files.includes('yarn.lock') && !files.includes('package-lock.json')
-  if (autoYarn) {
+  const packageManager = determinePackageManager(options)
+
+  // only print 'Using yarn' when autodetected
+  if (!options.packageManager && packageManager === 'yarn') {
     print(options, 'Using yarn')
   }
 
@@ -138,7 +138,7 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
     target,
     // imply upgrade in interactive mode when json is not specified as the output
     ...(options.interactive && options.upgrade === undefined ? { upgrade: !json } : null),
-    ...(!options.packageManager && { packageManager: autoYarn ? 'yarn' : 'npm' }),
+    packageManager,
   }
 }
 
