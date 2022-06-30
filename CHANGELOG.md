@@ -2,6 +2,18 @@
 
 This file documents all **major version** releases. For other releases, please read the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
 
+## [15.0.0] - 2022-06-30
+
+### Breaking
+
+- node >= 14.14 is now required (#1145)
+  - Needed to upgrade `update-notifier` with has a moderate severity vulnerability
+- yarn autodetect has been improved (#1148)
+  - This is a patch, though _technically_ it is breaking. In the obscure case where `--packageManager` is not given, there is no `package-lock.json` in the current folder, and there is a `yarn.lock` in an ancestor directory, npm-check-updates will now use yarn.
+  - More practically, if you needed to specify `--packageManager yarn` explicitly before, you may not have to now
+
+<https://github.com/raineorshine/npm-check-updates/compare/v14.1.1...v15.0.0>
+
 ## [14.0.0] - 2022-06-16
 
 ### Breaking
