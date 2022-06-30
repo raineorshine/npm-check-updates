@@ -1,6 +1,5 @@
 import fs from 'fs'
 import path from 'path'
-import { print } from '../logging'
 import { Options } from '../types/Options'
 
 /**
@@ -13,17 +12,12 @@ import { Options } from '../types/Options'
 export default function findLockfile(
   options: Pick<Options, 'cwd' | 'packageFile'>,
   readdirSync: (_path: string) => string[] = fs.readdirSync,
-): { directoryPath: string; filename: string } | undefined {
+): { directoryPath: string; filename: string } | null {
   try {
-    let currentPath: string
-
-    if (options.cwd) {
-      currentPath = options.cwd
-    } else if (options.packageFile) {
-      currentPath = path.dirname(options.packageFile)
-    } else {
-      currentPath = '.'
-    }
+    // 1. explicit cwd
+    // 2. same directory as package file
+    // 3. current directory
+    let currentPath = options.cwd ? options.cwd : options.packageFile ? path.dirname(options.packageFile) : '.'
 
     // eslint-disable-next-line fp/no-loops
     while (true) {
@@ -37,14 +31,14 @@ export default function findLockfile(
         return { directoryPath: currentPath, filename: 'yarn.lock' }
       }
 
-      const newPath = path.resolve(currentPath, '..')
-      if (newPath === currentPath) break
+      const pathParent = path.resolve(currentPath, '..')
+      if (pathParent === currentPath) break
 
-      currentPath = newPath
+      currentPath = pathParent
     }
   } catch (e) {
-    print(options, `Encountered error while determining package manager: ${e}`, 'warn', 'warn')
+    // if readdirSync fails, return null
   }
 
-  return undefined
+  return null
 }
