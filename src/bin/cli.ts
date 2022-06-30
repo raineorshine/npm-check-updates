@@ -8,8 +8,7 @@ import cliOptions, { cliOptionsMap } from '../cli-options'
 import getNcuRc from '../lib/getNcuRc'
 
 // async global contexts are only available in esm modules -> function
-// eslint-disable-next-line jsdoc/require-jsdoc
-async function cli() {
+;(async () => {
   // importing update-notifier dynamically as esm modules are only
   // allowed to be dynamically imported inside of cjs modules.
   const { default: updateNotifier } = await import('update-notifier')
@@ -101,6 +100,4 @@ async function cli() {
   // NOTE: Options handling and defaults go in initOptions in index.js
 
   ncu(options, { cli: true })
-}
-
-cli()
+})()
