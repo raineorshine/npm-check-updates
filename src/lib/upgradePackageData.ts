@@ -64,106 +64,123 @@ async function upgradePackageData(
 
     let depsSelected: string[] = []
 
-    if (options.format?.includes('group')) {
-      depsSelected = []
+    // do not prompt if there are no dependencies
+    // prompts will crash if passed an empty list of choices
+    if (Object.keys(newDependenciesFiltered).length > 0) {
+      if (options.format?.includes('group')) {
+        const groups = keyValueBy<string, Index<string>>(newDependenciesFiltered, (dep, to, accum) => {
+          const from = oldDependencies[dep]
+          const partUpgraded = partChanged(from, to)
+          return {
+            ...accum,
+            [partUpgraded]: {
+              ...accum[partUpgraded],
+              [dep]: to,
+            },
+          }
+        })
 
-      const groups = keyValueBy<string, Index<string>>(newDependenciesFiltered, (dep, to, accum) => {
-        const from = oldDependencies[dep]
-        const partUpgraded = partChanged(from, to)
-        return {
-          ...accum,
-          [partUpgraded]: {
-            ...accum[partUpgraded],
-            [dep]: to,
-          },
-        }
-      })
+        const choicesPatch = Object.keys(groups.patch || {}).map(dep => ({
+          title: formattedLines[dep],
+          value: dep,
+          selected: true,
+        }))
 
-      const choicesPatch = Object.keys(groups.patch || {}).map(dep => ({
-        title: formattedLines[dep],
-        value: dep,
-        selected: true,
-      }))
+        const choicesMinor = Object.keys(groups.minor || {}).map(dep => ({
+          title: formattedLines[dep],
+          value: dep,
+          selected: true,
+        }))
 
-      const choicesMinor = Object.keys(groups.minor || {}).map(dep => ({
-        title: formattedLines[dep],
-        value: dep,
-        selected: true,
-      }))
+        const choicesMajor = Object.keys(groups.major || {}).map(dep => ({
+          title: formattedLines[dep],
+          value: dep,
+          selected: false,
+        }))
 
-      const choicesMajor = Object.keys(groups.major || {}).map(dep => ({
-        title: formattedLines[dep],
-        value: dep,
-        selected: false,
-      }))
+        const choicesNonsemver = Object.keys(groups.nonsemver || {}).map(dep => ({
+          title: formattedLines[dep],
+          value: dep,
+          selected: false,
+        }))
 
-      const choicesNonsemver = Object.keys(groups.nonsemver || {}).map(dep => ({
-        title: formattedLines[dep],
-        value: dep,
-        selected: false,
-      }))
-
-      const response = await prompts({
-        choices: [
-          ...(choicesPatch.length > 0
-            ? [{ title: '\n' + chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'), heading: true }]
-            : []),
-          ...choicesPatch,
-          ...(choicesMinor.length > 0
-            ? [{ title: '\n' + chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'), heading: true }]
-            : []),
-          ...choicesMinor,
-          ...(choicesMajor.length > 0
-            ? [{ title: '\n' + chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'), heading: true }]
-            : []),
-          ...choicesMajor,
-          ...(choicesNonsemver.length > 0
-            ? [{ title: '\n' + chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0'), heading: true }]
-            : []),
-          ...choicesNonsemver,
-          { title: ' ', heading: true },
-        ],
-        hint: `
+        const response = await prompts({
+          choices: [
+            ...(choicesPatch.length > 0
+              ? [
+                  {
+                    title: '\n' + chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'),
+                    heading: true,
+                  },
+                ]
+              : []),
+            ...choicesPatch,
+            ...(choicesMinor.length > 0
+              ? [{ title: '\n' + chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'), heading: true }]
+              : []),
+            ...choicesMinor,
+            ...(choicesMajor.length > 0
+              ? [
+                  {
+                    title: '\n' + chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'),
+                    heading: true,
+                  },
+                ]
+              : []),
+            ...choicesMajor,
+            ...(choicesNonsemver.length > 0
+              ? [
+                  {
+                    title: '\n' + chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0'),
+                    heading: true,
+                  },
+                ]
+              : []),
+            ...choicesNonsemver,
+            { title: ' ', heading: true },
+          ],
+          hint: `
   ↑/↓: Select a package
   Space: Toggle selection
   a: Select all
   Enter: Upgrade`,
-        instructions: false,
-        message: 'Choose which packages to update',
-        name: 'value',
-        optionsPerPage: 50,
-        type: 'multiselect',
-        onState: (state: any) => {
-          if (state.aborted) {
-            process.nextTick(() => process.exit(1))
-          }
-        },
-      })
+          instructions: false,
+          message: 'Choose which packages to update',
+          name: 'value',
+          optionsPerPage: 50,
+          type: 'multiselect',
+          onState: (state: any) => {
+            if (state.aborted) {
+              process.nextTick(() => process.exit(1))
+            }
+          },
+        })
 
-      depsSelected = response.value
-    } else {
-      const choices = Object.keys(newDependenciesFiltered).map(dep => ({
-        title: formattedLines[dep],
-        value: dep,
-        selected: true,
-      }))
+        depsSelected = response.value
+      } else {
+        const choices = Object.keys(newDependenciesFiltered).map(dep => ({
+          title: formattedLines[dep],
+          value: dep,
+          selected: true,
+        }))
 
-      const response = await prompts({
-        choices,
-        hint: 'Space to deselect. Enter to upgrade.',
-        instructions: false,
-        message: 'Choose which packages to update',
-        name: 'value',
-        optionsPerPage: 50,
-        type: 'multiselect',
-        onState: (state: any) => {
-          if (state.aborted) {
-            process.nextTick(() => process.exit(1))
-          }
-        },
-      })
+        const response = await prompts({
+          choices,
+          hint: 'Space to deselect. Enter to upgrade.',
+          instructions: false,
+          message: 'Choose which packages to update',
+          name: 'value',
+          optionsPerPage: 50,
+          type: 'multiselect',
+          onState: (state: any) => {
+            if (state.aborted) {
+              process.nextTick(() => process.exit(1))
+            }
+          },
+        })
 
-      depsSelected = response.value
+        depsSelected = response.value
+      }
     }
 
     newDependenciesFiltered = keyValueBy(depsSelected, (dep: string) => ({ [dep]: newDependencies[dep] }))
