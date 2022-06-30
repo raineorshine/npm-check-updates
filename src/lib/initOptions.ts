@@ -118,7 +118,8 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
 
   const packageManager = determinePackageManager(options)
 
-  if (packageManager === 'yarn') {
+  // only print 'Using yarn' when autodetected
+  if (!options.packageManager && packageManager === 'yarn') {
     print(options, 'Using yarn')
   }
 
