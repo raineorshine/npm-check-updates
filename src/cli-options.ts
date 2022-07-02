@@ -103,7 +103,7 @@ You can also specify a custom function in your .ncurc.js file, or when importing
   ${chalk.cyan(
     'target',
   )}: (dependencyName, [{ semver, version, operator, major, minor, patch, release, build }]) ${chalk.cyan('=>')} {
-    ${chalk.red('if')} (major ${chalk.red('===')} ${chalk.blue('0')}) ${chalk.red('return')} ${chalk.yellow("'minor'")}
+    ${chalk.red('if')} (major ${chalk.red('===')} ${chalk.blue("'0'")}) ${chalk.red('return')} ${chalk.yellow("'minor'")}
     ${chalk.red('return')} ${chalk.yellow("'latest'")}
   }
 
