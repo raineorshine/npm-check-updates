@@ -2,96 +2,102 @@
 
 import { program } from 'commander'
 import _ from 'lodash'
-import updateNotifier from 'update-notifier'
 import ncu from '../index'
 import pkg from '../../package.json'
 import cliOptions, { cliOptionsMap } from '../cli-options'
 import getNcuRc from '../lib/getNcuRc'
 
-// check if a new version of ncu is available and print an update notification
-const notifier = updateNotifier({ pkg })
-if (notifier.update && notifier.update.latest !== pkg.version) {
-  notifier.notify({ defer: false, isGlobal: true })
-}
+// async global contexts are only available in esm modules -> function
+;(async () => {
+  // importing update-notifier dynamically as esm modules are only
+  // allowed to be dynamically imported inside of cjs modules.
+  const { default: updateNotifier } = await import('update-notifier')
 
-// manually detect option-specific help
-// https://github.com/raineorshine/npm-check-updates/issues/787
-const rawArgs = process.argv.slice(2)
-if (rawArgs.includes('--help') && rawArgs.length > 1) {
-  const nonHelpArgs = rawArgs.filter(arg => arg !== '--help')
-  nonHelpArgs.forEach(arg => {
-    const option = cliOptionsMap[arg.slice(2)]
-    if (option) {
-      console.log(`Usage: ncu --${option.long}`)
-      if (option.short) {
-        console.log(`       ncu -${option.short}`)
-      }
-      if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
-        console.log(`Default: ${option.default}`)
-      }
-      if (option.help) {
-        console.log(`\n${option.help}`)
-      } else if (option.description) {
-        console.log(`\n${option.description}`)
-      }
-    } else {
-      console.log(`Unknown option: ${arg}`)
-    }
-  })
-  if (rawArgs.length - nonHelpArgs.length > 1) {
-    console.log('Would you like some help with your help?')
+  // check if a new version of ncu is available and print an update notification
+  const notifier = updateNotifier({ pkg })
+  if (notifier.update && notifier.update.latest !== pkg.version) {
+    notifier.notify({ defer: false, isGlobal: true })
   }
-  process.exit(0)
-}
 
-// start commander program
-program
-  .description('[filter] is a list or regex of package names to check (all others will be ignored).')
-  .usage('[options] [filter]')
+  // manually detect option-specific help
+  // https://github.com/raineorshine/npm-check-updates/issues/787
+  const rawArgs = process.argv.slice(2)
+  if (rawArgs.includes('--help') && rawArgs.length > 1) {
+    const nonHelpArgs = rawArgs.filter(arg => arg !== '--help')
+    nonHelpArgs.forEach(arg => {
+      const option = cliOptionsMap[arg.slice(2)]
+      if (option) {
+        console.log(`Usage: ncu --${option.long}`)
+        if (option.short) {
+          console.log(`       ncu -${option.short}`)
+        }
+        if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
+          console.log(`Default: ${option.default}`)
+        }
+        if (option.help) {
+          console.log(`\n${option.help}`)
+        } else if (option.description) {
+          console.log(`\n${option.description}`)
+        }
+      } else {
+        console.log(`Unknown option: ${arg}`)
+      }
+    })
+    if (rawArgs.length - nonHelpArgs.length > 1) {
+      console.log('Would you like some help with your help?')
+    }
+    process.exit(0)
+  }
 
-// add cli options
-cliOptions.forEach(({ long, short, arg, description, default: defaultValue, help, parse }) =>
-  // handle 3rd/4th argument polymorphism
-  program.option(
-    `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : ''}`,
-    // point to help in description if extended help text is available
-    `${description}${help ? ` Run "ncu --help --${long}" for details.` : ''}`,
-    parse || defaultValue,
-    parse ? defaultValue : undefined,
-  ),
-)
+  // start commander program
+  program
+    .description('[filter] is a list or regex of package names to check (all others will be ignored).')
+    .usage('[options] [filter]')
 
-// set version option at the end
-program.version(pkg.version)
+  // add cli options
+  cliOptions.forEach(({ long, short, arg, description, default: defaultValue, help, parse }) =>
+    // handle 3rd/4th argument polymorphism
+    program.option(
+      `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : ''}`,
+      // point to help in description if extended help text is available
+      `${description}${help ? ` Run "ncu --help --${long}" for details.` : ''}`,
+      parse || defaultValue,
+      parse ? defaultValue : undefined,
+    ),
+  )
 
-program.parse(process.argv)
+  // set version option at the end
+  program.version(pkg.version)
 
-let programOpts = program.opts()
+  program.parse(process.argv)
 
-const { configFileName, configFilePath, packageFile, mergeConfig } = programOpts
+  let programOpts = program.opts()
 
-// load .ncurc
-// Do not load when global option is set
-// Do not load when tests are running (an be overridden if configFilePath is set explicitly, or --mergeConfig option specified)
-const rcResult =
-  !programOpts.global && (!process.env.NCU_TESTS || configFilePath || mergeConfig)
-    ? getNcuRc({ configFileName, configFilePath, packageFile })
-    : null
+  const { configFileName, configFilePath, packageFile, mergeConfig } = programOpts
 
-// insert config arguments into command line arguments so they can all be parsed by commander
-const combinedArguments = [...process.argv.slice(0, 2), ...(rcResult?.args || []), ...process.argv.slice(2)]
+  // load .ncurc
+  // Do not load when global option is set
+  // Do not load when tests are running (an be overridden if configFilePath is set explicitly, or --mergeConfig option specified)
+  const rcResult =
+    !programOpts.global && (!process.env.NCU_TESTS || configFilePath || mergeConfig)
+      ? getNcuRc({ configFileName, configFilePath, packageFile })
+      : null
 
-program.parse(combinedArguments)
-programOpts = program.opts()
+  // insert config arguments into command line arguments so they can all be parsed by commander
+  const combinedArguments = [...process.argv.slice(0, 2), ...(rcResult?.args || []), ...process.argv.slice(2)]
 
-// filter out undefined program options and combine cli options with config file options
-const options = {
-  ...(rcResult && Object.keys(rcResult.config).length > 0 ? { rcConfigPath: rcResult.filePath } : null),
-  ..._.pickBy(program.opts(), value => value !== undefined),
-  args: program.args,
-  ...(programOpts.filter ? { filter: programOpts.filter } : null),
-}
+  program.parse(combinedArguments)
+  programOpts = program.opts()
 
-// NOTE: Options handling and defaults go in initOptions in index.js
+  // filter out undefined program options and combine cli options with config file options
+  const options = {
+    ...(rcResult && Object.keys(rcResult.config).length > 0 ? { rcConfigPath: rcResult.filePath } : null),
+    ..._.pickBy(program.opts(), value => value !== undefined),
+    args: program.args,
+    ...(programOpts.filter ? { filter: programOpts.filter } : null),
+  }
 
-ncu(options, { cli: true })
+  // NOTE: Options handling and defaults go in initOptions in index.js
+
+  ncu(options, { cli: true })
+})()

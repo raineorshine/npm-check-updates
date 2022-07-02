@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import chai from 'chai'
-import chalk from 'chalk'
 import chaiAsPromised from 'chai-as-promised'
 import spawn from 'spawn-please'
 import rimraf from 'rimraf'
@@ -14,6 +13,12 @@ process.env.NCU_TESTS = 'true'
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 const doctorTests = path.join(__dirname, 'doctor')
+
+/** Strips ANSI formatting from a string. */
+// https://stackoverflow.com/a/29497680/480608
+const stripColors = (s: string) =>
+  // eslint-disable-next-line no-control-regex
+  s.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '')
 
 /** Run the ncu CLI. */
 const ncu = (args: string[], options?: Record<string, unknown>) => spawn('node', [bin, ...args], options)
@@ -140,10 +145,7 @@ describe('doctor', function () {
     it('print instructions when -u is not specified', async () => {
       const cwd = path.join(doctorTests, 'nopackagefile')
       const output = await ncu(['--doctor'], { cwd })
-      // output does not include chalk formatting
-      // chalk.reset does not seem to work, so just format the expected bold text in the output before comparing
-      const outputFormatted = output.replace('Add "-u" to execute', chalk.bold('Add "-u" to execute'))
-      return outputFormatted.should.equal(`Usage: ncu --doctor\n\n${cliOptionsMap.doctor.help}\n`)
+      return stripColors(output).should.equal(`Usage: ncu --doctor\n\n${stripColors(cliOptionsMap.doctor.help!)}\n`)
     })
 
     it('throw an error if there is no package file', async () => {

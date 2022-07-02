@@ -1,7 +1,9 @@
-import prompts from 'prompts'
+import Chalk from 'chalk'
+import prompts from 'prompts-ncu'
 import { satisfies } from 'semver'
-import { colorizeDiff } from '../version-util'
-import { print } from '../logging'
+import { print, printUpgrades, toDependencyTable } from '../logging'
+import keyValueBy from '../lib/keyValueBy'
+import { partChanged } from '../version-util'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { Version } from '../types/Version'
@@ -32,6 +34,8 @@ async function upgradePackageData(
   newVersions: Index<Version>,
   options: Options = {},
 ) {
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
+
   let newPkgData = pkgData
 
   // interactive mode needs a newline before prompts
@@ -39,31 +43,164 @@ async function upgradePackageData(
     print(options, '')
   }
 
-  // eslint-disable-next-line fp/no-loops
-  for (const dependency in newDependencies) {
-    if (!options.minimal || !satisfies(newVersions[dependency], oldDependencies[dependency])) {
-      if (options.interactive) {
-        const to = colorizeDiff(oldDependencies[dependency], newDependencies[dependency] || '')
+  let newDependenciesFiltered = keyValueBy(newDependencies, (dep, version) =>
+    !options.minimal || !satisfies(newVersions[dep], oldDependencies[dep]) ? { [dep]: version } : null,
+  )
+
+  if (options.interactive) {
+    // use toDependencyTable to create choices that are properly padded to align vertically
+    const table = toDependencyTable({
+      from: oldDependencies,
+      to: newDependencies,
+      format: options.format,
+    })
+
+    const formattedLines = keyValueBy(table.toString().split('\n'), line => {
+      const dep = line.trim().split(' ')[0]
+      return {
+        [dep]: line.trim(),
+      }
+    })
+
+    let depsSelected: string[] = []
+
+    // do not prompt if there are no dependencies
+    // prompts will crash if passed an empty list of choices
+    if (Object.keys(newDependenciesFiltered).length > 0) {
+      if (options.format?.includes('group')) {
+        const groups = keyValueBy<string, Index<string>>(newDependenciesFiltered, (dep, to, accum) => {
+          const from = oldDependencies[dep]
+          const partUpgraded = partChanged(from, to)
+          return {
+            ...accum,
+            [partUpgraded]: {
+              ...accum[partUpgraded],
+              [dep]: to,
+            },
+          }
+        })
+
+        const choicesPatch = Object.keys(groups.patch || {}).map(dep => ({
+          title: formattedLines[dep],
+          value: dep,
+          selected: true,
+        }))
+
+        const choicesMinor = Object.keys(groups.minor || {}).map(dep => ({
+          title: formattedLines[dep],
+          value: dep,
+          selected: true,
+        }))
+
+        const choicesMajor = Object.keys(groups.major || {}).map(dep => ({
+          title: formattedLines[dep],
+          value: dep,
+          selected: false,
+        }))
+
+        const choicesNonsemver = Object.keys(groups.nonsemver || {}).map(dep => ({
+          title: formattedLines[dep],
+          value: dep,
+          selected: false,
+        }))
+
         const response = await prompts({
-          type: 'confirm',
+          choices: [
+            ...(choicesPatch.length > 0
+              ? [
+                  {
+                    title: '\n' + chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'),
+                    heading: true,
+                  },
+                ]
+              : []),
+            ...choicesPatch,
+            ...(choicesMinor.length > 0
+              ? [{ title: '\n' + chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'), heading: true }]
+              : []),
+            ...choicesMinor,
+            ...(choicesMajor.length > 0
+              ? [
+                  {
+                    title: '\n' + chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'),
+                    heading: true,
+                  },
+                ]
+              : []),
+            ...choicesMajor,
+            ...(choicesNonsemver.length > 0
+              ? [
+                  {
+                    title: '\n' + chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0'),
+                    heading: true,
+                  },
+                ]
+              : []),
+            ...choicesNonsemver,
+            { title: ' ', heading: true },
+          ],
+          hint: `
+  ↑/↓: Select a package
+  Space: Toggle selection
+  a: Select all
+  Enter: Upgrade`,
+          instructions: false,
+          message: 'Choose which packages to update',
           name: 'value',
-          message: `Do you want to upgrade: ${dependency} ${oldDependencies[dependency]} → ${to}?`,
-          initial: true,
-          onState: state => {
+          optionsPerPage: 50,
+          type: 'multiselect',
+          onState: (state: any) => {
             if (state.aborted) {
               process.nextTick(() => process.exit(1))
             }
           },
         })
-        if (!response.value) {
-          // continue loop to next dependency and skip updating newPkgData
-          continue
-        }
+
+        depsSelected = response.value
+      } else {
+        const choices = Object.keys(newDependenciesFiltered).map(dep => ({
+          title: formattedLines[dep],
+          value: dep,
+          selected: true,
+        }))
+
+        const response = await prompts({
+          choices,
+          hint: 'Space to deselect. Enter to upgrade.',
+          instructions: false,
+          message: 'Choose which packages to update',
+          name: 'value',
+          optionsPerPage: 50,
+          type: 'multiselect',
+          onState: (state: any) => {
+            if (state.aborted) {
+              process.nextTick(() => process.exit(1))
+            }
+          },
+        })
+
+        depsSelected = response.value
       }
-      const expression = `"${dependency}"\\s*:\\s*"${escapeRegexp(`${oldDependencies[dependency]}"`)}`
-      const regExp = new RegExp(expression, 'g')
-      newPkgData = newPkgData.replace(regExp, `"${dependency}": "${newDependencies[dependency]}"`)
     }
+
+    newDependenciesFiltered = keyValueBy(depsSelected, (dep: string) => ({ [dep]: newDependencies[dep] }))
+
+    // in interactive mode, do not group upgrades afterwards since the prompts are grouped
+    printUpgrades(
+      { ...options, format: (options.format || []).filter(formatType => formatType !== 'group') },
+      {
+        current: oldDependencies,
+        upgraded: newDependenciesFiltered,
+        total: Object.keys(newDependencies).length,
+      },
+    )
+  }
+
+  // eslint-disable-next-line fp/no-loops
+  for (const dependency in newDependenciesFiltered) {
+    const expression = `"${dependency}"\\s*:\\s*"${escapeRegexp(`${oldDependencies[dependency]}"`)}`
+    const regExp = new RegExp(expression, 'g')
+    newPkgData = newPkgData.replace(regExp, `"${dependency}": "${newDependencies[dependency]}"`)
   }
 
   return newPkgData
