@@ -195,7 +195,7 @@ export async function viewMany(
       ...npmConfig,
       fullMetadata: fields.includes('time'),
       ...(registry ? { registry, silent: true } : null),
-      timeout,
+      ...(timeout ? { timeout } : null),
     })
   } catch (err: any) {
     if (retry && ++retried <= retry) {
