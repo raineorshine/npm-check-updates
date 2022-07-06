@@ -1,5 +1,7 @@
 import fs from 'fs'
 import path from 'path'
+import prompts from 'prompts-ncu'
+import spawn from 'spawn-please'
 import { promisify } from 'util'
 import * as cint from 'cint'
 import _ from 'lodash'
@@ -182,8 +184,32 @@ async function runLocal(
         writePromise = Promise.all([
           getPackageManagerForInstall(options, pkgFile),
           writePackageFile(pkgFile, newPkgData),
-        ]).then(([packageManager]) => {
-          print(options, `\nRun ${chalk.cyan(packageManager + ' install')} to install new versions.\n`)
+        ]).then(async ([packageManager]) => {
+          const installMessage = `${chalk.cyan(packageManager + ' install')} to install new versions`
+
+          // prompt the user if they want ncu to run "npm install"
+          if (options.interactive) {
+            console.log('')
+            const response = await prompts({
+              type: 'confirm',
+              name: 'value',
+              message: `${installMessage}?`,
+              initial: true,
+              // allow Ctrl+C to kill the process
+              onState: (state: any) => {
+                if (state.aborted) {
+                  process.nextTick(() => process.exit(1))
+                }
+              },
+            })
+            if (response.value) {
+              await spawn(packageManager, ['install'])
+            }
+          }
+          // otherwise just offer the install command as a suggestion
+          else {
+            print(options, `\nRun ${installMessage}.`)
+          }
         })
       } else {
         const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'

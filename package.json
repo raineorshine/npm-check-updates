@@ -73,7 +73,7 @@
     "pacote": "^13.6.1",
     "parse-github-url": "^1.0.2",
     "progress": "^2.0.3",
-    "prompts-ncu": "^2.5.0",
+    "prompts-ncu": "^2.5.1",
     "rc-config-loader": "^4.1.0",
     "remote-git-tags": "^3.0.0",
     "rimraf": "^3.0.2",

@@ -145,7 +145,7 @@ async function upgradePackageData(
         }))
 
         const response = await prompts({
-          choices,
+          choices: [...choices, { title: ' ', heading: true }],
           hint: 'Space to deselect. Enter to upgrade.',
           instructions: false,
           message: 'Choose which packages to update',
