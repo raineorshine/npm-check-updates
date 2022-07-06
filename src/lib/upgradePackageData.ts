@@ -1,7 +1,6 @@
-import Chalk from 'chalk'
 import prompts from 'prompts-ncu'
 import { satisfies } from 'semver'
-import { print, printUpgrades, toDependencyTable } from '../logging'
+import { getGroupHeadings, print, printUpgrades, toDependencyTable } from '../logging'
 import keyValueBy from '../lib/keyValueBy'
 import { partChanged } from '../version-util'
 import { Index } from '../types/IndexType'
@@ -34,8 +33,6 @@ async function upgradePackageData(
   newVersions: Index<Version>,
   options: Options = {},
 ) {
-  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
-
   let newPkgData = pkgData
 
   // interactive mode needs a newline before prompts
@@ -108,38 +105,17 @@ async function upgradePackageData(
           selected: false,
         }))
 
+        const headings = getGroupHeadings(options)
+
         const response = await prompts({
           choices: [
-            ...(choicesPatch.length > 0
-              ? [
-                  {
-                    title: '\n' + chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'),
-                    heading: true,
-                  },
-                ]
-              : []),
+            ...(choicesPatch.length > 0 ? [{ title: '\n' + headings.patch, heading: true }] : []),
             ...choicesPatch,
-            ...(choicesMinor.length > 0
-              ? [{ title: '\n' + chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'), heading: true }]
-              : []),
+            ...(choicesMinor.length > 0 ? [{ title: '\n' + headings.minor, heading: true }] : []),
             ...choicesMinor,
-            ...(choicesMajor.length > 0
-              ? [
-                  {
-                    title: '\n' + chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'),
-                    heading: true,
-                  },
-                ]
-              : []),
+            ...(choicesMajor.length > 0 ? [{ title: '\n' + headings.major, heading: true }] : []),
             ...choicesMajor,
-            ...(choicesMajorVersionZero.length > 0
-              ? [
-                  {
-                    title: '\n' + chalk.magenta(chalk.bold('Major version zero') + '  Anything may change'),
-                    heading: true,
-                  },
-                ]
-              : []),
+            ...(choicesMajorVersionZero.length > 0 ? [{ title: '\n' + headings.majorVersionZero, heading: true }] : []),
             ...choicesMajorVersionZero,
             { title: ' ', heading: true },
           ],

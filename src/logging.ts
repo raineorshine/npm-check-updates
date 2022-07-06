@@ -24,6 +24,17 @@ const logLevels = {
   silly: 6,
 }
 
+/** Gets the text for the default group headings. */
+export const getGroupHeadings = ({ color }: { color?: boolean }) => {
+  const chalk = color ? new Chalk.Instance({ level: 1 }) : Chalk
+  return {
+    patch: chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'),
+    minor: chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'),
+    major: chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'),
+    majorVersionZero: chalk.magenta(chalk.bold('Major version zero') + '  Anything may change'),
+  }
+}
+
 /**
  * Prints a message if it is included within options.loglevel.
  *
@@ -155,7 +166,6 @@ export function printUpgradesTable(
   },
   options: Options,
 ) {
-  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
   // group
   if (options.format?.includes('group')) {
     const groups = keyValueBy<string, Index<string>>(upgraded, (dep, to, accum) => {
@@ -170,8 +180,10 @@ export function printUpgradesTable(
       }
     }) as Record<ReturnType<typeof partChanged>, Index<string>>
 
+    const headings = getGroupHeadings(options)
+
     if (groups.patch) {
-      print(options, '\n' + chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'))
+      print(options, '\n' + headings.patch)
       print(
         options,
         toDependencyTable({
@@ -184,7 +196,7 @@ export function printUpgradesTable(
     }
 
     if (groups.minor) {
-      print(options, '\n' + chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'))
+      print(options, '\n' + headings.minor)
       print(
         options,
         toDependencyTable({
@@ -197,7 +209,7 @@ export function printUpgradesTable(
     }
 
     if (groups.major) {
-      print(options, '\n' + chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'))
+      print(options, '\n' + headings.major)
       print(
         options,
         toDependencyTable({
@@ -210,7 +222,7 @@ export function printUpgradesTable(
     }
 
     if (groups.majorVersionZero) {
-      print(options, '\n' + chalk.magenta(chalk.bold('Major version zero') + '  Anything may change'))
+      print(options, '\n' + headings.majorVersionZero)
       print(
         options,
         toDependencyTable({
