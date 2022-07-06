@@ -119,7 +119,7 @@ const extendedHelpFormat = (): string => {
   const table = new Table({
     colAligns: ['right', 'left'],
     rows: wrapRows([
-      ['group', `Groups packages by major, minor, patch, and non-semver updates.`],
+      ['group', `Groups packages by major, minor, patch, and major version zero updates.`],
       ['ownerChanged', `Shows if the package owner has changed.`],
       ['repo', `Infers and displays links to the package's source code repository.`],
     ]),

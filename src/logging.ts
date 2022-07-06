@@ -168,7 +168,7 @@ export function printUpgradesTable(
           [dep]: to,
         },
       }
-    })
+    }) as Record<ReturnType<typeof partChanged>, Index<string>>
 
     if (groups.patch) {
       print(options, '\n' + chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'))
@@ -209,13 +209,13 @@ export function printUpgradesTable(
       )
     }
 
-    if (groups['pre-v1']) {
-      print(options, '\n' + chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0'))
+    if (groups.majorVersionZero) {
+      print(options, '\n' + chalk.magenta(chalk.bold('Major version zero') + '  Anything may change'))
       print(
         options,
         toDependencyTable({
           from: current,
-          to: groups['pre-v1'],
+          to: groups.majorVersionZero,
           ownersChangedDeps,
           format: options.format,
         }),

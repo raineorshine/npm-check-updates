@@ -102,7 +102,7 @@ async function upgradePackageData(
           selected: false,
         }))
 
-        const choicesNonsemver = Object.keys(groups['pre-v1'] || {}).map(dep => ({
+        const choicesMajorVersionZero = Object.keys(groups.majorVersionZero || {}).map(dep => ({
           title: formattedLines[dep],
           value: dep,
           selected: false,
@@ -132,15 +132,15 @@ async function upgradePackageData(
                 ]
               : []),
             ...choicesMajor,
-            ...(choicesNonsemver.length > 0
+            ...(choicesMajorVersionZero.length > 0
               ? [
                   {
-                    title: '\n' + chalk.magenta(chalk.bold('Non-Semver') + '  Versions less than 1.0.0'),
+                    title: '\n' + chalk.magenta(chalk.bold('Major version zero') + '  Anything may change'),
                     heading: true,
                   },
                 ]
               : []),
-            ...choicesNonsemver,
+            ...choicesMajorVersionZero,
             { title: ' ', heading: true },
           ],
           hint: `

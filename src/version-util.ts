@@ -159,7 +159,7 @@ export function isWildPart(versionPartValue: Maybe<string>) {
  * @param from
  * @param to
  */
-export function partChanged(from: string, to: string): 'major' | 'minor' | 'patch' | 'pre-v1' | 'none' {
+export function partChanged(from: string, to: string): 'major' | 'minor' | 'patch' | 'majorVersionZero' | 'none' {
   if (from === to) return 'none'
 
   // separate out leading ^ or ~
@@ -178,7 +178,7 @@ export function partChanged(from: string, to: string): 'major' | 'minor' | 'patc
   // major = red (or any change before 1.0.0)
   // minor = cyan
   // patch = green
-  return partsTo[0] === '0' ? 'pre-v1' : i === 0 ? 'major' : i === 1 ? 'minor' : 'patch'
+  return partsTo[0] === '0' ? 'majorVersionZero' : i === 0 ? 'major' : i === 1 ? 'minor' : 'patch'
 }
 
 /**
