@@ -11,6 +11,7 @@ import { Options } from './types/Options'
 import { Version } from './types/Version'
 import { VersionSpec } from './types/VersionSpec'
 import { colorizeDiff, getGithubUrlTag, isGithubUrl, isNpmAlias, parseNpmAlias, partChanged } from './version-util'
+import { parseRange, parse } from 'semver-utils'
 
 // maps string levels to numeric levels
 const logLevels = {
@@ -159,8 +160,9 @@ export async function toDependencyTable({
  * Renders one or more color-coded tables with all upgrades. Supports different formats from the --format option.
  *
  * @param args
- * @param args.from
- * @param args.to
+ * @param args.current
+ * @param args.upgraded
+ * @param args.latest
  * @param args.ownersChangedDeps
  * @param options
  */
@@ -168,10 +170,12 @@ export async function printUpgradesTable(
   {
     current,
     upgraded,
+    latest,
     ownersChangedDeps,
   }: {
     current: Index<VersionSpec>
     upgraded: Index<VersionSpec>
+    latest: Index<Version>
     ownersChangedDeps?: Index<boolean>
   },
   options: Options,
@@ -180,11 +184,14 @@ export async function printUpgradesTable(
   if (options.format?.includes('group')) {
     const groups = keyValueBy<string, Index<string>>(upgraded, (dep, to, accum) => {
       const from = current[dep]
-      const partUpgraded = partChanged(from, to)
+      const defaultGroup = partChanged(from, to)
+      const userDefinedUpgradeGroup =
+        options.customizeGroups?.(dep, parseRange(from), parseRange(to), parse(latest[dep]), defaultGroup) ??
+        defaultGroup
       return {
         ...accum,
-        [partUpgraded]: {
-          ...accum[partUpgraded],
+        [userDefinedUpgradeGroup]: {
+          ...accum[userDefinedUpgradeGroup],
           [dep]: to,
         },
       }
@@ -309,7 +316,7 @@ export async function printUpgrades(
     errors,
   }: {
     current: Index<VersionSpec>
-    latest?: Index<Version>
+    latest: Index<Version>
     upgraded: Index<VersionSpec>
     total: number
     ownersChangedDeps?: Index<boolean>
@@ -353,6 +360,7 @@ export async function printUpgrades(
       {
         current,
         upgraded,
+        latest,
         ownersChangedDeps,
       },
       options,

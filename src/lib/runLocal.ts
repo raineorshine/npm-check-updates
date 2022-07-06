@@ -262,6 +262,7 @@ async function runLocal(
         current,
         upgraded: chosenUpgraded,
         total: Object.keys(upgraded).length,
+        latest,
         ownersChangedDeps,
         errors,
       },

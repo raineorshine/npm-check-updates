@@ -1,5 +1,6 @@
 /** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build:options" to build. */
 import { FilterFunction } from './FilterFunction'
+import { GroupFunction } from './GroupFunction'
 import { PackageFile } from './PackageFile'
 import { TargetFunction } from './TargetFunction'
 
@@ -16,6 +17,9 @@ export interface RunOptions {
 
   /** Directory of .ncurc config file. (default: directory of `packageFile`) */
   configFilePath?: string
+
+  /** Customize how packages are divided into groups when using '--format group'. Must use the .ncurc.js file to define this function: (name: string, currentVersionSpec: SemVer[], upgradedVersionSpec: SemVer[], upgradedVersion: SemVer | null, defaultGroup: 'major' | 'minor' | 'patch' | 'pre-v1' | 'none') => 'major' | 'minor' | 'patch' | 'pre-v1' | 'none' */
+  customizeGroups?: GroupFunction
 
   /** Working directory in which npm will be executed. */
   cwd?: string

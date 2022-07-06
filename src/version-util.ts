@@ -33,6 +33,8 @@ interface UpgradeOptions {
   removeRange?: boolean
 }
 
+export type UpgradeGroup = 'major' | 'minor' | 'patch' | 'pre-v1' | 'none'
+
 /**
  * @param version
  * @returns The number of parts in the version
@@ -158,7 +160,7 @@ export function isWildPart(versionPartValue: Maybe<string>) {
  * @param from
  * @param to
  */
-export function partChanged(from: string, to: string): 'major' | 'minor' | 'patch' | 'majorVersionZero' | 'none' {
+export function partChanged(from: string, to: string): UpgradeGroup {
   if (from === to) return 'none'
 
   // separate out leading ^ or ~

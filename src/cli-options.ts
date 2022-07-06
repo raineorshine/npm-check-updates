@@ -325,6 +325,12 @@ const cliOptions: CLIOption[] = [
     type: 'boolean',
   },
   {
+    long: 'customizeGroups',
+    arg: 'fn',
+    description: `Customize how packages are divided into groups when using '--format group'. Must use the .ncurc.js file to define this function: (name: string, currentVersionSpec: SemVer[], upgradedVersionSpec: SemVer[], upgradedVersion: SemVer | null, defaultGroup: 'major' | 'minor' | 'patch' | 'pre-v1' | 'none') => 'major' | 'minor' | 'patch' | 'pre-v1' | 'none'`,
+    type: 'GroupFunction',
+  },
+  {
     long: 'interactive',
     short: 'i',
     description: 'Enable interactive prompts for each dependency; implies -u unless one of the json options are set.',
