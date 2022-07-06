@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path'
 import { promisify } from 'util'
 import * as cint from 'cint'
 import _ from 'lodash'
@@ -33,6 +34,21 @@ function sortOptions(options: Options): Options {
     },
     {} as any,
   )
+}
+
+/** Returns true if a file exists. */
+const exists = (path: string) =>
+  fs.promises.stat(path).then(
+    () => true,
+    () => false,
+  )
+
+/** Returns the package manager that should be used to install packages after running "ncu -u". Detects pnpm via pnpm-lock.yarn. This is the one place that pnpm needs to be detected, since otherwise it is backwards compatible with npm. */
+const getPackageManagerForInstall = async (options: Options, pkgFile: string) => {
+  if (options.packageManager === 'yarn') return 'yarn'
+  const pnpmLockFile = path.resolve(pkgFile, '../pnpm-lock.yaml')
+  const pnpm = await exists(pnpmLockFile)
+  return pnpm ? 'pnpm' : 'npm'
 }
 
 /**
@@ -163,13 +179,11 @@ async function runLocal(
     if (pkgFile) {
       if (options.upgrade) {
         // do not await until end
-        writePromise = writePackageFile(pkgFile, newPkgData).then(() => {
-          print(
-            options,
-            `\nRun ${chalk.cyan(
-              options.packageManager === 'yarn' ? 'yarn install' : 'npm install',
-            )} to install new versions.\n`,
-          )
+        writePromise = Promise.all([
+          getPackageManagerForInstall(options, pkgFile),
+          writePackageFile(pkgFile, newPkgData),
+        ]).then(([packageManager]) => {
+          print(options, `\nRun ${chalk.cyan(packageManager + ' install')} to install new versions.\n`)
         })
       } else {
         const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'
