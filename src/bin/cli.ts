@@ -4,7 +4,7 @@ import { program } from 'commander'
 import _ from 'lodash'
 import ncu from '../index'
 import pkg from '../../package.json'
-import cliOptions, { cliOptionsMap } from '../cli-options'
+import cliOptions from '../cli-options'
 import getNcuRc from '../lib/getNcuRc'
 
 // async global contexts are only available in esm modules -> function
@@ -25,7 +25,9 @@ import getNcuRc from '../lib/getNcuRc'
   if (rawArgs.includes('--help') && rawArgs.length > 1) {
     const nonHelpArgs = rawArgs.filter(arg => arg !== '--help')
     nonHelpArgs.forEach(arg => {
-      const option = cliOptionsMap[arg.slice(2)]
+      // match option by long or short
+      const query = arg.replace(/^-*/, '')
+      const option = cliOptions.find(option => option.long === query || option.short === query)
       if (option) {
         console.log(`Usage: ncu --${option.long}`)
         if (option.short) {

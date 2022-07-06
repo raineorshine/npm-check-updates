@@ -389,8 +389,23 @@ describe('bin', function () {
   })
 
   describe('option-specific help', () => {
-    it('regular option', async () => {
+    it('long option', async () => {
       const output = await spawn('node', [bin, '--help', '--filter'])
+      output.trim().should.startWith('Usage: ncu --filter')
+    })
+
+    it('long option without "--" prefix', async () => {
+      const output = await spawn('node', [bin, '--help', '-f'])
+      output.trim().should.startWith('Usage: ncu --filter')
+    })
+
+    it('short option', async () => {
+      const output = await spawn('node', [bin, '--help', 'filter'])
+      output.trim().should.startWith('Usage: ncu --filter')
+    })
+
+    it('short option without "-" prefix', async () => {
+      const output = await spawn('node', [bin, '--help', 'f'])
       output.trim().should.startWith('Usage: ncu --filter')
     })
 
