@@ -391,10 +391,10 @@ describe('version-util', () => {
       versionUtil.partChanged('^1.0.0', '^2.0.0')!.should.equal('major')
       versionUtil.partChanged('~1.0.0', '~2.0.0')!.should.equal('major')
     })
-    it('pre v1', () => {
-      versionUtil.partChanged('0.1.0', '0.2.0')!.should.equal('pre-v1')
-      versionUtil.partChanged('0.1.0', '0.1.1')!.should.equal('pre-v1')
-      versionUtil.partChanged('~0.1.0', '~0.1.1')!.should.equal('pre-v1')
+    it('major version zero changed', () => {
+      versionUtil.partChanged('0.1.0', '0.2.0')!.should.equal('majorVersionZero')
+      versionUtil.partChanged('0.1.0', '0.1.1')!.should.equal('majorVersionZero')
+      versionUtil.partChanged('~0.1.0', '~0.1.1')!.should.equal('majorVersionZero')
     })
   })
 
