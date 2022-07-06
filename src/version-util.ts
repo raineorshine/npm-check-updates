@@ -7,6 +7,7 @@ import util from 'util'
 import { keyValueBy } from './lib/keyValueBy'
 import { Maybe } from './types/Maybe'
 import { VersionLevel } from './types/VersionLevel'
+import { UpgradeGroup } from './types/UpgradeGroup'
 
 const VERSION_BASE_PARTS = ['major', 'minor', 'patch'] as VersionPart[]
 const VERSION_ADDED_PARTS = ['release', 'build'] as VersionPart[]
@@ -32,8 +33,6 @@ interface UpgradeOptions {
   wildcard?: string
   removeRange?: boolean
 }
-
-export type UpgradeGroup = 'major' | 'minor' | 'patch' | 'pre-v1' | 'none'
 
 /**
  * @param version
