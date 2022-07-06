@@ -68,17 +68,21 @@ async function upgradePackageData(
     // prompts will crash if passed an empty list of choices
     if (Object.keys(newDependenciesFiltered).length > 0) {
       if (options.format?.includes('group')) {
-        const groups = keyValueBy<string, Index<string>>(newDependenciesFiltered, (dep, to, accum) => {
-          const from = oldDependencies[dep]
-          const partUpgraded = partChanged(from, to)
-          return {
-            ...accum,
-            [partUpgraded]: {
-              ...accum[partUpgraded],
-              [dep]: to,
-            },
-          }
-        })
+        const groups = keyValueBy<string, Index<string>>(
+          newDependenciesFiltered,
+          (dep, to, accum) => {
+            const from = oldDependencies[dep]
+            const partUpgraded = partChanged(from, to)
+            return {
+              ...accum,
+              [partUpgraded]: {
+                ...accum[partUpgraded],
+                [dep]: to,
+              },
+            }
+          },
+          // narrow the type of the group index signature
+        ) as Record<ReturnType<typeof partChanged>, Index<string>>
 
         const choicesPatch = Object.keys(groups.patch || {}).map(dep => ({
           title: formattedLines[dep],
@@ -98,7 +102,7 @@ async function upgradePackageData(
           selected: false,
         }))
 
-        const choicesNonsemver = Object.keys(groups.nonsemver || {}).map(dep => ({
+        const choicesNonsemver = Object.keys(groups['pre-v1'] || {}).map(dep => ({
           title: formattedLines[dep],
           value: dep,
           selected: false,
