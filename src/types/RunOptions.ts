@@ -18,7 +18,7 @@ export interface RunOptions {
   /** Directory of .ncurc config file. (default: directory of `packageFile`) */
   configFilePath?: string
 
-  /** Customize how packages are divided into groups when using '--format group'. Must use the .ncurc.js file to define this function: (name: string, currentVersionSpec: SemVer[], upgradedVersionSpec: SemVer[], upgradedVersion: SemVer | null, defaultGroup: 'major' | 'minor' | 'patch' | 'pre-v1' | 'none') => 'major' | 'minor' | 'patch' | 'pre-v1' | 'none' */
+  /** Customize how packages are divided into groups when using '--format group'. Must use the .ncurc.js file to define this function: (name: string, currentVersionSpec: SemVer[], upgradedVersionSpec: SemVer[], upgradedVersion: SemVer | null, defaultGroup: 'major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') => 'major' | 'minor' | 'patch' | 'majorVersionZero' | 'none' */
   customizeGroups?: GroupFunction
 
   /** Working directory in which npm will be executed. */

@@ -1,1 +1,1 @@
-export type UpgradeGroup = 'major' | 'minor' | 'patch' | 'pre-v1' | 'none'
+export type UpgradeGroup = 'major' | 'minor' | 'patch' | 'majorVersionZero' | 'none'

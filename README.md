@@ -143,8 +143,9 @@ ncu "/^(?!react-).*$/" # windows
                              string, currentVersionSpec: SemVer[],
                              upgradedVersionSpec: SemVer[], upgradedVersion:
                              SemVer | null, defaultGroup: 'major' | 'minor' |
-                             'patch' | 'pre-v1' | 'none') => 'major' |
-                             'minor' | 'patch' | 'pre-v1' | 'none'
+                             'patch' | 'majorVersionZero' | 'none') =>
+                             'major' | 'minor' | 'patch' | 'majorVersionZero'
+                             | 'none'
 --cwd <path>                 Working directory in which npm will be executed.
 --deep                       Run recursively in current working directory.
                              Alias of (--packageFile '**/package.json').
