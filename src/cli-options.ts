@@ -92,7 +92,7 @@ const extendedHelpTarget = (): string => {
 
 ${table.toString()}
 
-You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates:
+You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module:
 
   ${chalk.gray(`/** Custom target.
     @param dependencyName The name of the dependency.
@@ -128,6 +128,23 @@ const extendedHelpFormat = (): string => {
   } as any)
 
   return `${header}\n\n${table.toString()}
+`
+}
+
+/** Extended help for the --group option. */
+const extendedHelpGroup = (): string => {
+  return `Customize how packages are divided into groups when using '--format group'. Only available in .ncurc.js or when importing npm-check-updates as a module:
+
+  ${chalk.gray(`/**
+    @param name             The name of the dependency.
+    @param currentSpec      The current version range in your package.json.
+    @param upgradedSpec     The upgraded version range that will be written to your package.json.
+    @param upgradedVersion  The upgraded version number returned by the registry.
+    @param defaultGroup     The default grouping: major, minor, patch, majorVersionZero.
+  */`)}
+  ${chalk.cyan('target')}: (name, currentSpec, upgradedSpec, upgradedVersion, defaultGroup} {
+    return name.startsWith('@myorg') ? 'My Org' : defaultGroup
+  }
 `
 }
 
@@ -325,10 +342,11 @@ const cliOptions: CLIOption[] = [
     type: 'boolean',
   },
   {
-    long: 'customizeGroups',
+    long: 'group',
     arg: 'fn',
-    description: `Customize how packages are divided into groups when using '--format group'. Must use the .ncurc.js file to define this function: (name: string, currentVersionSpec: SemVer[], upgradedVersionSpec: SemVer[], upgradedVersion: SemVer | null, defaultGroup: 'major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') => 'major' | 'minor' | 'patch' | 'majorVersionZero' | 'none'`,
+    description: `Customize how packages are divided into groups when using '--format group'.`,
     type: 'GroupFunction',
+    help: extendedHelpGroup(),
   },
   {
     long: 'interactive',

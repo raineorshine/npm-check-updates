@@ -186,8 +186,7 @@ export async function printUpgradesTable(
       const from = current[dep]
       const defaultGroup = partChanged(from, to)
       const userDefinedUpgradeGroup =
-        options.customizeGroups?.(dep, parseRange(from), parseRange(to), parse(latest[dep]), defaultGroup) ??
-        defaultGroup
+        options.group?.(dep, parseRange(from), parseRange(to), parse(latest[dep]), defaultGroup) ?? defaultGroup
       return {
         ...accum,
         [userDefinedUpgradeGroup]: {

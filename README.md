@@ -137,15 +137,6 @@ ncu "/^(?!react-).*$/" # windows
                              .ncurc.{json,yml,js})
 --configFilePath <path>      Directory of .ncurc config file. (default:
                              directory of `packageFile`)
---customizeGroups <fn>       Customize how packages are divided into groups
-                             when using '--format group'. Must use the
-                             .ncurc.js file to define this function: (name:
-                             string, currentVersionSpec: SemVer[],
-                             upgradedVersionSpec: SemVer[], upgradedVersion:
-                             SemVer | null, defaultGroup: 'major' | 'minor' |
-                             'patch' | 'majorVersionZero' | 'none') =>
-                             'major' | 'minor' | 'patch' | 'majorVersionZero'
-                             | 'none'
 --cwd <path>                 Working directory in which npm will be executed.
 --deep                       Run recursively in current working directory.
                              Alias of (--packageFile '**/package.json').
@@ -179,6 +170,9 @@ ncu "/^(?!react-).*$/" # windows
                              --help --format" for details. (default: [])
 -g, --global                 Check global packages instead of in the current
                              project.
+--group <fn>                 Customize how packages are divided into groups
+                             when using '--format group'. Run "ncu --help
+                             --group" for details.
 -i, --interactive            Enable interactive prompts for each dependency;
                              implies -u unless one of the json options are
                              set.

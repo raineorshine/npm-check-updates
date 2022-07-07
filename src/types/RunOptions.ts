@@ -18,9 +18,6 @@ export interface RunOptions {
   /** Directory of .ncurc config file. (default: directory of `packageFile`) */
   configFilePath?: string
 
-  /** Customize how packages are divided into groups when using '--format group'. Must use the .ncurc.js file to define this function: (name: string, currentVersionSpec: SemVer[], upgradedVersionSpec: SemVer[], upgradedVersion: SemVer | null, defaultGroup: 'major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') => 'major' | 'minor' | 'patch' | 'majorVersionZero' | 'none' */
-  customizeGroups?: GroupFunction
-
   /** Working directory in which npm will be executed. */
   cwd?: string
 
@@ -59,6 +56,9 @@ export interface RunOptions {
 
   /** Check global packages instead of in the current project. */
   global?: boolean
+
+  /** Customize how packages are divided into groups when using '--format group'. Run "ncu --help --group" for details. */
+  group?: GroupFunction
 
   /** Enable interactive prompts for each dependency; implies -u unless one of the json options are set. */
   interactive?: boolean
