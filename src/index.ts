@@ -3,6 +3,7 @@ import path from 'path'
 import globby from 'globby'
 import _ from 'lodash'
 import Chalk from 'chalk'
+import prompts from 'prompts-ncu'
 import packageManagers from './package-managers'
 import { print, printJson } from './logging'
 import { cliOptionsMap } from './cli-options'
@@ -20,6 +21,11 @@ import { Options } from './types/Options'
 import { PackageFile } from './types/PackageFile'
 import { RunOptions } from './types/RunOptions'
 import { VersionSpec } from './types/VersionSpec'
+
+// allow prompt injection from environment variable for testing purposes
+if (process.env.INJECT_PROMPTS) {
+  prompts.inject(JSON.parse(process.env.INJECT_PROMPTS))
+}
 
 // exit with non-zero error code when there is an unhandled promise rejection
 process.on('unhandledRejection', err => {
