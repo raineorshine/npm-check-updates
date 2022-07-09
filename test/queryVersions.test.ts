@@ -7,40 +7,39 @@ chai.use(chaiAsPromised)
 process.env.NCU_TESTS = 'true'
 
 describe('queryVersions', function () {
-  it('valid single package', () => {
-    const latestVersions = queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })
-    return latestVersions.should.eventually.have.property('async')
+  it('valid single package', async () => {
+    const latestVersions = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })
+    return latestVersions.should.have.property('async')
   })
 
-  it('valid packages', () => {
-    const latestVersions = queryVersions({ async: '1.5.1', npm: '3.10.3' }, { loglevel: 'silent' })
-    latestVersions.should.eventually.have.property('async')
-    latestVersions.should.eventually.have.property('npm')
+  it('valid packages', async () => {
+    const latestVersions = await queryVersions({ async: '1.5.1', npm: '3.10.3' }, { loglevel: 'silent' })
+    latestVersions.should.have.property('async')
+    latestVersions.should.have.property('npm')
     return latestVersions
   })
 
-  it('unavailable packages should be ignored', () => {
-    return queryVersions({ abchdefntofknacuifnt: '1.2.3' }, { loglevel: 'silent' }).should.eventually.deep.equal({})
+  it('unavailable packages should be ignored', async () => {
+    const result = await queryVersions({ abchdefntofknacuifnt: '1.2.3' }, { loglevel: 'silent' })
+    result.should.deep.equal({})
   })
 
-  it('local file urls should be ignored', () => {
-    return queryVersions(
+  it('local file urls should be ignored', async () => {
+    const result = await queryVersions(
       { 'eslint-plugin-internal': 'file:devtools/eslint-rules' },
       { loglevel: 'silent' },
-    ).should.eventually.deep.equal({})
-  })
-
-  it('set the target explicitly to latest', () => {
-    return queryVersions({ async: '1.5.1' }, { target: 'latest', loglevel: 'silent' }).should.eventually.have.property(
-      'async',
     )
+    result.should.deep.equal({})
   })
 
-  it('set the target to greatest', () => {
-    return queryVersions(
-      { async: '1.5.1' },
-      { target: 'greatest', loglevel: 'silent' },
-    ).should.eventually.have.property('async')
+  it('set the target explicitly to latest', async () => {
+    const result = await queryVersions({ async: '1.5.1' }, { target: 'latest', loglevel: 'silent' })
+    result.should.have.property('async')
+  })
+
+  it('set the target to greatest', async () => {
+    const result = await queryVersions({ async: '1.5.1' }, { target: 'greatest', loglevel: 'silent' })
+    result.should.have.property('async')
   })
 
   it('return an error for an unsupported target', () => {
@@ -48,13 +47,14 @@ describe('queryVersions', function () {
     return a.should.be.rejected
   })
 
-  it('npm aliases should upgrade the installed package', () => {
-    return queryVersions(
+  it('npm aliases should upgrade the installed package', async () => {
+    const result = await queryVersions(
       {
         request: 'npm:ncu-test-v2@1.0.0',
       },
       { loglevel: 'silent' },
-    ).should.eventually.deep.equal({
+    )
+    result.should.deep.equal({
       request: {
         version: 'npm:ncu-test-v2@2.0.0',
       },
