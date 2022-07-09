@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'fs/promises'
 import spawn from 'spawn-please'
 import cliOptions, { CLIOption } from '../cli-options'
 
@@ -17,12 +17,12 @@ const readOptions = async () => {
 }
 
 /** Replaces the "Options" section of the README with direct output from "ncu --help". */
-const injectReadme = (helpOptions: string) => {
+const injectReadme = async (helpOptions: string) => {
   const optionsLabelStart = '## Options\n\n```text\n'
   const optionsLabelEnd = '```'
 
   // find insertion point for options into README
-  const readme = fs.readFileSync('README.md', 'utf8')
+  const readme = await fs.readFile('README.md', 'utf8')
   const optionsLabelStartIndex = readme.indexOf(optionsLabelStart)
   const optionsStart = optionsLabelStartIndex + optionsLabelStart.length
   const optionsEnd = readme.indexOf(optionsLabelEnd, optionsStart)
@@ -75,6 +75,6 @@ export interface RunOptions {
 
 ;(async () => {
   const helpOptionsString = await readOptions()
-  fs.writeFileSync('README.md', injectReadme(helpOptionsString))
-  fs.writeFileSync('src/types/RunOptions.ts', renderRunOptions(cliOptions))
+  await fs.writeFile('README.md', await injectReadme(helpOptionsString))
+  await fs.writeFile('src/types/RunOptions.ts', renderRunOptions(cliOptions))
 })()

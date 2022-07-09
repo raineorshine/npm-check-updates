@@ -1,9 +1,10 @@
-import fs from 'fs'
+import fs from 'fs/promises'
 import path from 'path'
 import { URL } from 'url'
 import hostedGitInfo from 'hosted-git-info'
 import { PackageFile } from '../types/PackageFile'
 import { PackageFileRepository } from '../types/PackageFileRepository'
+import exists from './exists'
 
 // extract the defaultBranchPath so it can be stripped in the final output
 const defaultBranchPath = hostedGitInfo
@@ -13,7 +14,7 @@ const defaultBranchPath = hostedGitInfo
 const regexDefaultBranchPath = new RegExp(`${defaultBranchPath}$`)
 
 /** Gets the repo url of an installed package. */
-function getPackageRepo(packageName: string): string | { url: string } | null {
+async function getPackageRepo(packageName: string): Promise<string | { url: string } | null> {
   let nodeModulePaths = require.resolve.paths(packageName)
   const localNodeModules = path.join(process.cwd(), 'node_modules')
   nodeModulePaths = [localNodeModules].concat(nodeModulePaths || [])
@@ -21,9 +22,9 @@ function getPackageRepo(packageName: string): string | { url: string } | null {
   // eslint-disable-next-line fp/no-loops
   for (const basePath of nodeModulePaths) {
     const packageJsonPath = path.join(basePath, packageName, 'package.json')
-    if (fs.existsSync(packageJsonPath)) {
+    if (await exists(packageJsonPath)) {
       try {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+        const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
         return packageJson.repository
       } catch (e) {}
     }
@@ -40,9 +41,9 @@ const cleanRepoUrl = (url: string) => url.replace(/\/$/, '').replace(regexDefaul
  * @param packageJson Optional param to specify a object representation of a package.json file instead of loading from node_modules
  * @returns A valid url to the root of the package's source or null if a url could not be determined
  */
-function getRepoUrl(packageName: string, packageJson?: PackageFile) {
+async function getRepoUrl(packageName: string, packageJson?: PackageFile) {
   const repositoryMetadata: string | PackageFileRepository | null = !packageJson
-    ? getPackageRepo(packageName)
+    ? await getPackageRepo(packageName)
     : packageJson.repository
     ? packageJson.repository
     : null

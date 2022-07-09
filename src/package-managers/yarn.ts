@@ -4,7 +4,7 @@
 import { once, EventEmitter } from 'events'
 import _ from 'lodash'
 import cint from 'cint'
-import fs from 'fs'
+import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import jsonlines from 'jsonlines'
@@ -22,6 +22,7 @@ import { Version } from '../types/Version'
 import { NpmOptions } from '../types/NpmOptions'
 import { allowDeprecatedOrIsNotDeprecated, allowPreOrIsNotPre, satisfiesNodeEngine } from './filters'
 import findLockfile from '../lib/findLockfile'
+import exists from '../lib/exists'
 
 interface ParsedDep {
   version: string
@@ -74,13 +75,13 @@ export const setNpmAuthToken = (npmConfig: Index<string | boolean>, [dep, scoped
  *
  * @param readdirSync This is only a parameter so that it can be used in tests.
  */
-export function getPathToLookForYarnrc(
+export async function getPathToLookForYarnrc(
   options: Pick<Options, 'global' | 'cwd' | 'packageFile'>,
-  readdirSync: (_path: string) => string[] = fs.readdirSync,
-): string | undefined {
+  readdir: (_path: string) => Promise<string[]> = fs.readdir,
+): Promise<string | undefined> {
   if (options.global) return undefined
 
-  const directoryPath = findLockfile(options, readdirSync)?.directoryPath
+  const directoryPath = (await findLockfile(options, readdir))?.directoryPath
   if (!directoryPath) return undefined
 
   return path.join(directoryPath, '.yarnrc.yml')
@@ -90,13 +91,13 @@ export function getPathToLookForYarnrc(
 // Define as a memoized function to efficiently call existsSync and readFileSync only once, and only if yarn is being used.
 // https://github.com/raineorshine/npm-check-updates/issues/1036
 const npmConfigFromYarn = memoize(
-  (options: Pick<Options, 'global' | 'cwd' | 'packageFile'>): Index<string | boolean> => {
-    const yarnrcLocalPath = getPathToLookForYarnrc(options)
+  async (options: Pick<Options, 'global' | 'cwd' | 'packageFile'>): Promise<Index<string | boolean>> => {
+    const yarnrcLocalPath = await getPathToLookForYarnrc(options)
     const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
-    const yarnrcLocalExists = typeof yarnrcLocalPath === 'string' && fs.existsSync(yarnrcLocalPath)
-    const yarnrcUserExists = fs.existsSync(yarnrcUserPath)
-    const yarnrcLocal = yarnrcLocalExists ? fs.readFileSync(yarnrcLocalPath, 'utf-8') : ''
-    const yarnrcUser = yarnrcUserExists ? fs.readFileSync(yarnrcUserPath, 'utf-8') : ''
+    const yarnrcLocalExists = typeof yarnrcLocalPath === 'string' && (await exists(yarnrcLocalPath))
+    const yarnrcUserExists = await exists(yarnrcUserPath)
+    const yarnrcLocal = yarnrcLocalExists ? await fs.readFile(yarnrcLocalPath, 'utf-8') : ''
+    const yarnrcUser = yarnrcUserExists ? await fs.readFile(yarnrcUserPath, 'utf-8') : ''
     const yarnConfigLocal: YarnConfig = yaml.parse(yarnrcLocal)
     const yarnConfigUser: YarnConfig = yaml.parse(yarnrcUser)
 
@@ -264,7 +265,7 @@ export const greatest: GetVersion = async (packageName, currentVersion, options:
     'versions',
     currentVersion,
     options,
-    npmConfigFromYarn(options),
+    await npmConfigFromYarn(options),
   )) as Packument[]
 
   return (
@@ -293,7 +294,7 @@ export const distTag: GetVersion = async (packageName, currentVersion, options: 
       timeout: options.timeout,
       retry: options.retry,
     },
-    npmConfigFromYarn(options),
+    await npmConfigFromYarn(options),
   )) as unknown as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated
@@ -338,7 +339,7 @@ export const newest: GetVersion = async (packageName: string, currentVersion, op
     currentVersion,
     options,
     0,
-    npmConfigFromYarn(options),
+    await npmConfigFromYarn(options),
   )
 
   const versionsSatisfyingNodeEngine = _.filter(result.versions, version =>
@@ -372,7 +373,7 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
     'versions',
     currentVersion,
     options,
-    npmConfigFromYarn(options),
+    await npmConfigFromYarn(options),
   )) as Packument[]
   return versionUtil.findGreatestByLevel(
     _.filter(versions, filterPredicate(options)).map(o => o.version),
@@ -395,7 +396,7 @@ export const patch: GetVersion = async (packageName, currentVersion, options = {
     'versions',
     currentVersion,
     options,
-    npmConfigFromYarn(options),
+    await npmConfigFromYarn(options),
   )) as Packument[]
   return versionUtil.findGreatestByLevel(
     _.filter(versions, filterPredicate(options)).map(o => o.version),

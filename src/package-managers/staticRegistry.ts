@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'fs/promises'
 import memoize from 'fast-memoize'
 import { GetVersion } from '../types/GetVersion'
 import { Version } from '../types/Version'
@@ -11,9 +11,7 @@ import { StaticRegistry } from '../types/StaticRegistry'
  * @param path
  * @returns a registry object
  */
-const readStaticRegistry = (path: string): StaticRegistry => {
-  return JSON.parse(fs.readFileSync(path, 'utf8'))
-}
+const readStaticRegistry = async (path: string): Promise<StaticRegistry> => JSON.parse(await fs.readFile(path, 'utf8'))
 
 const registryMemoized = memoize(readStaticRegistry)
 
@@ -25,7 +23,7 @@ const registryMemoized = memoize(readStaticRegistry)
  * @param options
  * @returns A promise that fulfills to string value or null
  */
-export const latest: GetVersion = (packageName: string, currentVersion: Version, options: Options = {}) => {
-  const registry: { [key: string]: string } = registryMemoized(options.registry!)
-  return Promise.resolve(registry[packageName] || null)
+export const latest: GetVersion = async (packageName: string, currentVersion: Version, options: Options = {}) => {
+  const registry: { [key: string]: string } = await registryMemoized(options.registry!)
+  return registry[packageName] || null
 }

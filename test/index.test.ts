@@ -1,5 +1,5 @@
 import os from 'os'
-import fs from 'fs'
+import fs from 'fs/promises'
 import path from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
@@ -17,10 +17,10 @@ chai.use(chaiString)
 process.env.NCU_TESTS = 'true'
 
 describe('run', function () {
-  it('return promised jsonUpgraded', () => {
+  it('return promised jsonUpgraded', async () => {
     return ncu
       .run({
-        packageData: fs.readFileSync(path.join(__dirname, 'ncu/package.json'), 'utf-8'),
+        packageData: await fs.readFile(path.join(__dirname, 'ncu/package.json'), 'utf-8'),
       })
       .should.eventually.have.property('express')
   })
@@ -63,9 +63,9 @@ describe('run', function () {
     return upgraded.should.eventually.not.have.property('juggernaut')
   })
 
-  it('do not upgrade peerDependencies by default', () => {
+  it('do not upgrade peerDependencies by default', async () => {
     const upgraded = ncu.run({
-      packageData: fs.readFileSync(path.join(__dirname, '/ncu/package-dep.json'), 'utf-8'),
+      packageData: await fs.readFile(path.join(__dirname, '/ncu/package-dep.json'), 'utf-8'),
     })
 
     return Promise.all([
@@ -75,9 +75,9 @@ describe('run', function () {
     ])
   })
 
-  it('only upgrade devDependencies with --dep dev', () => {
+  it('only upgrade devDependencies with --dep dev', async () => {
     const upgraded = ncu.run({
-      packageData: fs.readFileSync(path.join(__dirname, 'ncu/package-dep.json'), 'utf-8'),
+      packageData: await fs.readFile(path.join(__dirname, 'ncu/package-dep.json'), 'utf-8'),
       dep: 'dev',
     })
 
@@ -88,9 +88,9 @@ describe('run', function () {
     ])
   })
 
-  it('only upgrade devDependencies and peerDependencies with --dep dev,peer', () => {
+  it('only upgrade devDependencies and peerDependencies with --dep dev,peer', async () => {
     const upgraded = ncu.run({
-      packageData: fs.readFileSync(path.join(__dirname, 'ncu/package-dep.json'), 'utf-8'),
+      packageData: await fs.readFile(path.join(__dirname, 'ncu/package-dep.json'), 'utf-8'),
       dep: 'dev,peer',
     })
 
@@ -102,9 +102,9 @@ describe('run', function () {
   })
 
   it('write to --packageFile and output jsonUpgraded', async () => {
-    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.resolve(tempDir, 'package.json')
-    fs.writeFileSync(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
 
     try {
       const result = await ncu.run({
@@ -114,11 +114,11 @@ describe('run', function () {
       })
       result!.should.have.property('express')
 
-      const upgradedPkg = JSON.parse(fs.readFileSync(pkgFile, 'utf-8'))
+      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
     } finally {
-      fs.unlinkSync(pkgFile)
+      await fs.unlink(pkgFile)
     }
   })
 

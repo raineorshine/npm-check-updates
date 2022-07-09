@@ -1,7 +1,5 @@
-import _ from 'lodash'
+import fs from 'fs/promises'
 import path from 'path'
-import fs from 'fs'
-import { promisify } from 'util'
 import Chalk from 'chalk'
 import findUp from 'find-up'
 import getstdin from 'get-stdin'
@@ -12,8 +10,6 @@ import { Options } from '../types/Options'
 
 // time to wait for stdin before printing a warning
 const stdinWarningTime = 5000
-
-const readPackageFile = _.partialRight(promisify(fs.readFile), 'utf8') as any
 
 /**
  * Finds the package file and data.
@@ -39,7 +35,7 @@ async function findPackage(options: Options) {
   const pkgFileName = getPackageFileName(options)
 
   /** Reads the contents of a package file. */
-  function getPackageDataFromFile(pkgFile: string | null | undefined, pkgFileName: string): string {
+  function getPackageDataFromFile(pkgFile: string | null | undefined, pkgFileName: string): Promise<string> {
     // exit if no pkgFile to read from fs
     if (pkgFile != null) {
       const relPathToPackage = path.resolve(pkgFile)
@@ -55,7 +51,7 @@ async function findPackage(options: Options) {
       )
     }
 
-    return readPackageFile(pkgFile)
+    return fs.readFile(pkgFile!, 'utf-8')
   }
 
   // get the package data from the various input possibilities

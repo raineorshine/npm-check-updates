@@ -1,6 +1,5 @@
-import fs from 'fs'
+import fs from 'fs/promises'
 import prompts from 'prompts-ncu'
-import { promisify } from 'util'
 import _ from 'lodash'
 import Chalk from 'chalk'
 import jph from 'json-parse-helpfulerror'
@@ -22,8 +21,6 @@ import { PackageFile } from '../types/PackageFile'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
 import { partChanged } from '../version-util'
-
-const writePackageFile = promisify(fs.writeFile)
 
 /** Recreate the options object sorted. */
 function sortOptions(options: Options): Options {
@@ -68,7 +65,7 @@ const chooseUpgrades = async (
   print(options, '')
 
   // use toDependencyTable to create choices that are properly padded to align vertically
-  const table = toDependencyTable({
+  const table = await toDependencyTable({
     from: oldDependencies,
     to: newDependencies,
     format: options.format,
@@ -224,7 +221,7 @@ async function runLocal(
   }
 
   if (options.peer) {
-    options.peerDependencies = getPeerDependencies(current, options)
+    options.peerDependencies = await getPeerDependencies(current, options)
   }
 
   const [upgraded, latestResults, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)
@@ -254,7 +251,7 @@ async function runLocal(
   const chosenUpgraded = options.interactive ? await chooseUpgrades(current, latest, options) : upgraded
 
   if (!options.json || options.deep) {
-    printUpgrades(
+    await printUpgrades(
       // in interactive mode, do not group upgrades afterwards since the prompts are grouped
       options.interactive
         ? { ...options, format: (options.format || []).filter(formatType => formatType !== 'group') }
@@ -283,7 +280,7 @@ async function runLocal(
     ? _.pick(jph.parse(newPkgData) as PackageFile, 'dependencies', 'devDependencies', 'optionalDependencies')
     : chosenUpgraded
 
-  // will be overwritten with the result of writePackageFile so that the return promise waits for the package file to be written
+  // will be overwritten with the result of fs.writeFile so that the return promise waits for the package file to be written
   let writePromise = Promise.resolve()
 
   if (options.json && !options.deep) {
@@ -295,8 +292,8 @@ async function runLocal(
     // otherwise, suggest ncu -u
     if (pkgFile) {
       if (options.upgrade) {
-        // do not await
-        writePromise = writePackageFile(pkgFile, newPkgData)
+        // do not await until the end
+        writePromise = fs.writeFile(pkgFile, newPkgData)
       } else {
         const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'
         const argv = process.argv.slice(2).join(' ')

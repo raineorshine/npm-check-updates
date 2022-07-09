@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'fs/promises'
 import Chalk from 'chalk'
 import rimraf from 'rimraf'
 import upgradePackageData from './upgradePackageData'
@@ -48,7 +48,7 @@ const loadPackageFile = async (options: Options) => {
 
   // assert package.json
   try {
-    pkgFile = fs.readFileSync('package.json', 'utf-8')
+    pkgFile = await fs.readFile('package.json', 'utf-8')
     pkg = JSON.parse(pkgFile)
   } catch (e) {
     throw new Error('Missing or invalid package.json')
@@ -112,7 +112,7 @@ const doctor = async (run: Run, options: Options) => {
 
   let lockFile = ''
   try {
-    lockFile = fs.readFileSync(lockFileName, 'utf-8')
+    lockFile = await fs.readFile(lockFileName, 'utf-8')
   } catch (e) {}
 
   // make sure current tests pass before we begin
@@ -157,7 +157,7 @@ const doctor = async (run: Run, options: Options) => {
 
     console.log(`${chalk.green('✓')} Tests pass`)
 
-    printUpgrades(options, {
+    await printUpgrades(options, {
       current: allDependencies,
       upgraded: upgrades,
       total: Object.keys(upgrades || {}).length,
@@ -169,10 +169,10 @@ const doctor = async (run: Run, options: Options) => {
     console.log(`Identifying broken dependencies`)
 
     // restore package file, lockFile and re-install
-    fs.writeFileSync('package.json', pkgFile)
+    await fs.writeFile('package.json', pkgFile)
 
     if (lockFile) {
-      fs.writeFileSync(lockFileName, lockFile)
+      await fs.writeFile(lockFileName, lockFile)
     } else {
       rimraf.sync(lockFileName)
     }
@@ -200,18 +200,18 @@ const doctor = async (run: Run, options: Options) => {
         lastPkgFile = await upgradePackageData(lastPkgFile, { [name]: allDependencies[name] }, { [name]: version })
 
         // save working lock file
-        lockFile = fs.readFileSync(lockFileName, 'utf-8')
+        lockFile = await fs.readFile(lockFileName, 'utf-8')
       } catch (e) {
         // print failing package
         console.error(`  ${chalk.red('✗')} ${name} ${allDependencies[name]} → ${version}\n`)
         console.error(chalk.red(e))
 
         // restore last good lock file
-        fs.writeFileSync(lockFileName, lockFile)
+        await fs.writeFile(lockFileName, lockFile)
 
         // restore package.json since yarn doesn't have --no-save option
         if (options.packageManager === 'yarn') {
-          fs.writeFileSync('package.json', lastPkgFile)
+          await fs.writeFile('package.json', lastPkgFile)
         }
       }
     }
@@ -220,7 +220,7 @@ const doctor = async (run: Run, options: Options) => {
     // only print message if package file is updated
     if (lastPkgFile !== pkgFile) {
       console.log('Saving partially upgraded package.json')
-      fs.writeFileSync('package.json', lastPkgFile)
+      await fs.writeFile('package.json', lastPkgFile)
     }
 
     // re-install from restored package.json and lockfile

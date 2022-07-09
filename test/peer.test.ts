@@ -6,6 +6,7 @@ import chaiString from 'chai-string'
 import * as ncu from '../src/'
 import spawnNpm from '../src/package-managers/npm'
 
+chai.should()
 chai.use(chaiAsPromised)
 chai.use(chaiString)
 

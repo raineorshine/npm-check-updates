@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'fs/promises'
 import path from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
@@ -30,13 +30,13 @@ const testPass = ({ packageManager }: { packageManager: string }) => {
     const pkgPath = path.join(cwd, 'package.json')
     const nodeModulesPath = path.join(cwd, 'node_modules')
     const lockfilePath = path.join(cwd, packageManager === 'npm' ? 'package-lock.json' : 'yarn.lock')
-    const pkgOriginal = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')
+    const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
     let stderr = ''
 
     // touch yarn.lock (see pass/README)
     if (packageManager === 'yarn') {
-      fs.writeFileSync(lockfilePath, '')
+      await fs.writeFile(lockfilePath, '')
     }
 
     try {
@@ -52,10 +52,10 @@ const testPass = ({ packageManager }: { packageManager: string }) => {
       })
     } catch (e) {}
 
-    const pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
+    const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
     // cleanup before assertions in case they fail
-    fs.writeFileSync(pkgPath, pkgOriginal)
+    await fs.writeFile(pkgPath, pkgOriginal)
     rimraf.sync(nodeModulesPath)
     rimraf.sync(lockfilePath)
 
@@ -85,14 +85,14 @@ const testFail = ({ packageManager }: { packageManager: string }) => {
     const pkgPath = path.join(cwd, 'package.json')
     const nodeModulesPath = path.join(cwd, 'node_modules')
     const lockfilePath = path.join(cwd, packageManager === 'npm' ? 'package-lock.json' : 'yarn.lock')
-    const pkgOriginal = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')
+    const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
     let stderr = ''
     let pkgUpgraded
 
     // touch yarn.lock (see fail/README)
     if (packageManager === 'yarn') {
-      fs.writeFileSync(lockfilePath, '')
+      await fs.writeFile(lockfilePath, '')
     }
 
     try {
@@ -107,8 +107,8 @@ const testFail = ({ packageManager }: { packageManager: string }) => {
         },
       })
     } finally {
-      pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
-      fs.writeFileSync(pkgPath, pkgOriginal)
+      pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
+      await fs.writeFile(pkgPath, pkgOriginal)
       rimraf.sync(nodeModulesPath)
       rimraf.sync(lockfilePath)
 
@@ -177,7 +177,7 @@ describe('doctor', function () {
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
       const nodeModulesPath = path.join(cwd, 'node_modules')
-      const pkgOriginal = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')
+      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       let stdout = ''
       let stderr = ''
 
@@ -194,10 +194,10 @@ describe('doctor', function () {
         })
       } catch (e) {}
 
-      const pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
+      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // cleanup before assertions in case they fail
-      fs.writeFileSync(pkgPath, pkgOriginal)
+      await fs.writeFile(pkgPath, pkgOriginal)
       rimraf.sync(lockfilePath)
       rimraf.sync(nodeModulesPath)
 
@@ -217,7 +217,7 @@ describe('doctor', function () {
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
       const nodeModulesPath = path.join(cwd, 'node_modules')
-      const pkgOriginal = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')
+      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
       let stdout = ''
       let stderr = ''
@@ -234,10 +234,10 @@ describe('doctor', function () {
         })
       } catch (e) {}
 
-      const pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
+      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // cleanup before assertions in case they fail
-      fs.writeFileSync(pkgPath, pkgOriginal)
+      await fs.writeFile(pkgPath, pkgOriginal)
       rimraf.sync(lockfilePath)
       rimraf.sync(nodeModulesPath)
 
@@ -256,7 +256,7 @@ describe('doctor', function () {
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
       const nodeModulesPath = path.join(cwd, 'node_modules')
-      const pkgOriginal = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8')
+      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
       let stdout = ''
       let stderr = ''
@@ -273,10 +273,10 @@ describe('doctor', function () {
         })
       } catch (e) {}
 
-      const pkgUpgraded = fs.readFileSync(pkgPath, 'utf-8')
+      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // cleanup before assertions in case they fail
-      fs.writeFileSync(pkgPath, pkgOriginal)
+      await fs.writeFile(pkgPath, pkgOriginal)
       rimraf.sync(lockfilePath)
       rimraf.sync(nodeModulesPath)
 

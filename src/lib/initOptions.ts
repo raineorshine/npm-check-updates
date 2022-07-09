@@ -1,7 +1,7 @@
 import _ from 'lodash'
-import fs from 'fs'
 import Chalk from 'chalk'
 import cliOptions from '../cli-options'
+import exists from './exists'
 import programError from './programError'
 import getPackageFileName from './getPackageFileName'
 import determinePackageManager from './determinePackageManager'
@@ -11,7 +11,7 @@ import { RunOptions } from '../types/RunOptions'
 import { Target } from '../types/Target'
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
-function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Options {
+async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Promise<Options> {
   const chalk = runOptions.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   // if not executed on the command-line (i.e. executed as a node module), set the defaults
@@ -106,7 +106,7 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
         ),
       )
     }
-    if (!fs.existsSync(options.registry!)) {
+    if (!(await exists(options.registry!))) {
       programError(options, chalk.red(`The specified static registry file does not exist: ${options.registry}`))
     }
   }
@@ -116,7 +116,7 @@ function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): O
 
   const format = options.format || []
 
-  const packageManager = determinePackageManager(options)
+  const packageManager = await determinePackageManager(options)
 
   // only print 'Using yarn' when autodetected
   if (!options.packageManager && packageManager === 'yarn') {

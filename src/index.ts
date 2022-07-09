@@ -1,4 +1,3 @@
-import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import globby from 'globby'
@@ -13,6 +12,7 @@ import findPackage from './lib/findPackage'
 import doctor from './lib/doctor'
 import getNcuRc from './lib/getNcuRc'
 import getPackageFileName from './lib/getPackageFileName'
+import exists from './lib/exists'
 import mergeOptions from './lib/mergeOptions'
 import initOptions from './lib/initOptions'
 import programError from './lib/programError'
@@ -57,13 +57,6 @@ function checkIfVolta(options: Options): void {
     process.exit(1)
   }
 }
-
-/** Returns true if a file exists. */
-const exists = (path: string) =>
-  fs.promises.stat(path).then(
-    () => true,
-    () => false,
-  )
 
 /** Returns the package manager that should be used to install packages after running "ncu -u". Detects pnpm via pnpm-lock.yarn. This is the one place that pnpm needs to be detected, since otherwise it is backwards compatible with npm. */
 const getPackageManagerForInstall = async (options: Options, pkgFile: string) => {
@@ -149,7 +142,7 @@ export async function run(
 ): Promise<PackageFile | Index<VersionSpec> | void> {
   const chalk = runOptions.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
-  const options = initOptions(runOptions, { cli })
+  const options = await initOptions(runOptions, { cli })
 
   checkIfVolta(options)
 
@@ -243,7 +236,7 @@ export async function run(
 
     // suggest install command or autoinstall
     if (options.upgrade) {
-      npmInstallHint(pkgs, analysis, options)
+      await npmInstallHint(pkgs, analysis, options)
     }
 
     return analysis

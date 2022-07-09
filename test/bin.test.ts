@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import chai from 'chai'
@@ -68,37 +68,37 @@ describe('bin', function () {
   })
 
   it('read --packageFile', async () => {
-    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.resolve(tempDir, 'package.json')
-    fs.writeFileSync(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
       const text = await spawn('node', [bin, '--jsonUpgraded', '--packageFile', pkgFile])
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('express')
     } finally {
-      fs.unlinkSync(pkgFile)
+      await fs.unlink(pkgFile)
     }
   })
 
   it('write to --packageFile', async () => {
-    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.resolve(tempDir, 'package.json')
-    fs.writeFileSync(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
       await spawn('node', [bin, '-u', '--packageFile', pkgFile])
-      const upgradedPkg = JSON.parse(fs.readFileSync(pkgFile, 'utf-8'))
+      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      fs.unlinkSync(pkgFile)
+      await fs.unlink(pkgFile)
     }
   })
 
   it('write to --packageFile if errorLevel=2 and upgrades', async () => {
-    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.resolve(tempDir, 'package.json')
-    fs.writeFileSync(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
 
     try {
       const result = await spawn('node', [
@@ -109,43 +109,43 @@ describe('bin', function () {
         '--packageFile',
         pkgFile,
       ]).should.eventually.be.rejectedWith('Dependencies not up-to-date')
-      const upgradedPkg = JSON.parse(fs.readFileSync(pkgFile, 'utf-8'))
+      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
       return result
     } finally {
-      fs.unlinkSync(pkgFile)
+      await fs.unlink(pkgFile)
     }
   })
 
   it('write to --packageFile with jsonUpgraded flag', async () => {
-    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.resolve(tempDir, 'package.json')
-    fs.writeFileSync(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
       await spawn('node', [bin, '-u', '--jsonUpgraded', '--packageFile', pkgFile])
-      const ugradedPkg = JSON.parse(fs.readFileSync(pkgFile, 'utf-8'))
+      const ugradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       ugradedPkg.should.have.property('dependencies')
       ugradedPkg.dependencies.should.have.property('express')
       ugradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      fs.unlinkSync(pkgFile)
+      await fs.unlink(pkgFile)
     }
   })
 
   it('ignore stdin if --packageFile is specified', async () => {
-    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.resolve(tempDir, 'package.json')
-    fs.writeFileSync(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
       await spawn('node', [bin, '-u', '--stdin', '--packageFile', pkgFile], '{ "dependencies": {}}')
-      const upgradedPkg = JSON.parse(fs.readFileSync(pkgFile, 'utf-8'))
+      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      fs.unlinkSync(pkgFile)
+      await fs.unlink(pkgFile)
     }
   })
 
@@ -245,7 +245,7 @@ describe('bin', function () {
     it('print rcConfigPath when there is a non-empty rc config file', async () => {
       const tempFilePath = './test/'
       const tempFileName = '.ncurc.json'
-      fs.writeFileSync(tempFilePath + tempFileName, '{"filter": "express"}', 'utf-8')
+      await fs.writeFile(tempFilePath + tempFileName, '{"filter": "express"}', 'utf-8')
       try {
         const text = await spawn(
           'node',
@@ -254,7 +254,7 @@ describe('bin', function () {
         )
         text.should.include(`Using config file ${path.resolve(tempFilePath, tempFileName)}`)
       } finally {
-        fs.unlinkSync(tempFilePath + tempFileName)
+        await fs.unlink(tempFilePath + tempFileName)
       }
     })
 
@@ -266,7 +266,7 @@ describe('bin', function () {
     it('do not print rcConfigPath when there is an empty rc config file', async () => {
       const tempFilePath = './test/'
       const tempFileName = '.ncurc.json'
-      fs.writeFileSync(tempFilePath + tempFileName, '{}', 'utf-8')
+      await fs.writeFile(tempFilePath + tempFileName, '{}', 'utf-8')
       try {
         const text = await spawn(
           'node',
@@ -275,14 +275,14 @@ describe('bin', function () {
         )
         text.should.not.include('Using config file')
       } finally {
-        fs.unlinkSync(tempFilePath + tempFileName)
+        await fs.unlink(tempFilePath + tempFileName)
       }
     })
 
     it('read --configFilePath', async () => {
       const tempFilePath = './test/'
       const tempFileName = '.ncurc.json'
-      fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
+      await fs.writeFile(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
       try {
         const text = await spawn(
           'node',
@@ -293,14 +293,14 @@ describe('bin', function () {
         pkgData.should.have.property('express')
         pkgData.should.not.have.property('chalk')
       } finally {
-        fs.unlinkSync(tempFilePath + tempFileName)
+        await fs.unlink(tempFilePath + tempFileName)
       }
     })
 
     it('read --configFileName', async () => {
       const tempFilePath = './test/'
       const tempFileName = '.rctemp.json'
-      fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
+      await fs.writeFile(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
       try {
         const text = await spawn(
           'node',
@@ -311,14 +311,14 @@ describe('bin', function () {
         pkgData.should.have.property('express')
         pkgData.should.not.have.property('chalk')
       } finally {
-        fs.unlinkSync(tempFilePath + tempFileName)
+        await fs.unlink(tempFilePath + tempFileName)
       }
     })
 
     it('override config with arguments', async () => {
       const tempFilePath = './test/'
       const tempFileName = '.ncurc.json'
-      fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
+      await fs.writeFile(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
       try {
         const text = await spawn(
           'node',
@@ -329,7 +329,7 @@ describe('bin', function () {
         pkgData.should.have.property('chalk')
         pkgData.should.not.have.property('express')
       } finally {
-        fs.unlinkSync(tempFilePath + tempFileName)
+        await fs.unlink(tempFilePath + tempFileName)
       }
     })
 
@@ -337,7 +337,7 @@ describe('bin', function () {
       const tempFilePath = './test/'
       const tempFileName = '.ncurc.json'
       // if boolean arguments are not handled as a special case, ncu will incorrectly pass "--deep false" to commander, which will interpret it as two args, i.e. --deep and --filter false
-      fs.writeFileSync(tempFilePath + tempFileName, '{"jsonUpgraded": true, "deep": false }', 'utf-8')
+      await fs.writeFile(tempFilePath + tempFileName, '{"jsonUpgraded": true, "deep": false }', 'utf-8')
       try {
         const text = await spawn(
           'node',
@@ -347,7 +347,7 @@ describe('bin', function () {
         const pkgData = JSON.parse(text)
         pkgData.should.have.property('chalk')
       } finally {
-        fs.unlinkSync(tempFilePath + tempFileName)
+        await fs.unlink(tempFilePath + tempFileName)
       }
     })
   })

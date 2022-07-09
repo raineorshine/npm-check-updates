@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'fs/promises'
 import jph from 'json-parse-helpfulerror'
 import { print } from '../logging'
 import getCurrentDependencies from './getCurrentDependencies'
@@ -7,20 +7,25 @@ import { Options } from '../types/Options'
 import { VersionSpec } from '../types/VersionSpec'
 
 /** Get peer dependencies from installed packages */
-function getPeerDependencies(current: Index<VersionSpec>, options: Options) {
+async function getPeerDependencies(current: Index<VersionSpec>, options: Options): Promise<Index<Index<string>>> {
   const basePath = options.cwd || './'
-  return Object.keys(current).reduce((accum, pkgName) => {
-    const path = basePath + 'node_modules/' + pkgName + '/package.json'
-    let peers = {}
+  const accum: Index<Index<string>> = {}
+
+  // eslint-disable-next-line fp/no-loops
+  for (const dep in current) {
+    const path = basePath + `node_modules/${dep}/package.json`
+    let peers: Index<string> = {}
     try {
-      const pkgData = fs.readFileSync(path, 'utf-8')
+      const pkgData = await fs.readFile(path, 'utf-8')
       const pkg = jph.parse(pkgData)
       peers = getCurrentDependencies(pkg, { ...options, dep: 'peer' })
     } catch (e) {
-      print(options, 'Could not read peer dependencies for package ' + pkgName + '. Is this package installed?', 'warn')
+      print(options, `Could not read peer dependencies for package ${dep}. Is this package installed?`, 'warn')
     }
-    return { ...accum, [pkgName]: peers }
-  }, {})
+    accum[dep] = peers
+  }
+
+  return accum
 }
 
 export default getPeerDependencies

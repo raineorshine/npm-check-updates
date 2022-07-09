@@ -2,7 +2,7 @@
 
 import _ from 'lodash'
 import cint from 'cint'
-import fs from 'fs'
+import fs from 'fs/promises'
 import semver from 'semver'
 import spawn from 'spawn-please'
 import pacote from 'pacote'
@@ -29,10 +29,10 @@ const TIME_FIELDS = ['modified', 'created']
 /** Reads the local npm config and normalizes keys for pacote. */
 const readNpmConfig = () => {
   const npmConfigToPacoteMap = {
-    cafile: (path: string) => {
+    cafile: async (path: string) => {
       // load-cafile, based on github.com/npm/cli/blob/40c1b0f/lib/config/load-cafile.js
       if (!path) return
-      const cadata = fs.readFileSync(path, 'utf8')
+      const cadata = await fs.readFile(path, 'utf8')
       const delim = '-----END CERTIFICATE-----'
       const output = cadata
         .split(delim)

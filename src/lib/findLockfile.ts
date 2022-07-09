@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'fs/promises'
 import path from 'path'
 import { Options } from '../types/Options'
 
@@ -9,10 +9,10 @@ import { Options } from '../types/Options'
  * @returns The path of the directory that contains the lockfile and the
  * filename of the lockfile.
  */
-export default function findLockfile(
+export default async function findLockfile(
   options: Pick<Options, 'cwd' | 'packageFile'>,
-  readdirSync: (_path: string) => string[] = fs.readdirSync,
-): { directoryPath: string; filename: string } | null {
+  readdir: (_path: string) => Promise<string[]> = fs.readdir,
+): Promise<{ directoryPath: string; filename: string } | null> {
   try {
     // 1. explicit cwd
     // 2. same directory as package file
@@ -21,7 +21,7 @@ export default function findLockfile(
 
     // eslint-disable-next-line fp/no-loops
     while (true) {
-      const files = readdirSync(currentPath)
+      const files = await readdir(currentPath)
 
       if (files.includes('package-lock.json')) {
         return { directoryPath: currentPath, filename: 'package-lock.json' }

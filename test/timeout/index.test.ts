@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'fs/promises'
 import path from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
@@ -14,11 +14,11 @@ process.env.NCU_TESTS = 'true'
 describe('timeout (with --exit)', function () {
   // this must be executed as a separate process with --exit to prevent delayed test completion
   // https://github.com/raineorshine/npm-check-updates/issues/721
-  it('throw an exception instead of printing to the console when timeout is exceeded', () => {
+  it('throw an exception instead of printing to the console when timeout is exceeded', async () => {
     const pkgPath = path.join(__dirname, '../ncu/package-large.json')
     return ncu
       .run({
-        packageData: fs.readFileSync(pkgPath, 'utf-8'),
+        packageData: await fs.readFile(pkgPath, 'utf-8'),
         timeout: 1,
       })
       .should.eventually.be.rejectedWith('Exceeded global timeout of 1ms')

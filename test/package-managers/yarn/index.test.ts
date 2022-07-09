@@ -77,29 +77,29 @@ describe('yarn', function () {
 })
 
 describe('getPathToLookForLocalYarnrc', () => {
-  it('returns the correct path when using Yarn workspaces', () => {
+  it('returns the correct path when using Yarn workspaces', async () => {
     /** Mock for filesystem calls. */
-    function readdirSyncMock(path: string): string[] {
+    function readdirMock(path: string): Promise<string[]> {
       switch (path) {
         case '/home/test-repo/packages/package-a':
         case 'C:\\home\\test-repo\\packages\\package-a':
-          return ['index.ts']
+          return Promise.resolve(['index.ts'])
         case '/home/test-repo/packages':
         case 'C:\\home\\test-repo\\packages':
-          return []
+          return Promise.resolve([])
         case '/home/test-repo':
         case 'C:\\home\\test-repo':
-          return ['yarn.lock']
+          return Promise.resolve(['yarn.lock'])
       }
 
       throw new Error(`Mock cannot handle path: ${path}.`)
     }
 
-    const yarnrcPath = getPathToLookForYarnrc(
+    const yarnrcPath = await getPathToLookForYarnrc(
       {
         cwd: isWindows ? 'C:\\home\\test-repo\\packages\\package-a' : '/home/test-repo/packages/package-a',
       },
-      readdirSyncMock,
+      readdirMock,
     )
 
     should().exist(yarnrcPath)

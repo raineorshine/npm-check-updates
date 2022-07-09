@@ -34,7 +34,7 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
   print(options, latest, 'silly')
 
   const upgradedPackageNames = Object.keys(upgraded)
-  printUpgrades(options, {
+  await printUpgrades(options, {
     current: globalPackages,
     upgraded,
     total: upgradedPackageNames.length,

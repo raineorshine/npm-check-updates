@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'fs/promises'
 import path from 'path'
 import chai from 'chai'
 import ncu from '../'
@@ -10,7 +10,7 @@ process.env.NCU_TESTS = 'true'
 describe('filter', () => {
   it('filter by package name with one arg', async () => {
     const upgraded = (await ncu({
-      packageData: fs.readFileSync(path.join(__dirname, '../../test/ncu/package2.json'), 'utf-8'),
+      packageData: await fs.readFile(path.join(__dirname, '../../test/ncu/package2.json'), 'utf-8'),
       filter: ['lodash.map'],
     })) as Index<string>
     upgraded.should.have.property('lodash.map')
@@ -19,7 +19,7 @@ describe('filter', () => {
 
   it('filter by package name with multiple args', async () => {
     const upgraded = (await ncu({
-      packageData: fs.readFileSync(path.join(__dirname, '../../test/ncu/package2.json'), 'utf-8'),
+      packageData: await fs.readFile(path.join(__dirname, '../../test/ncu/package2.json'), 'utf-8'),
       filter: ['lodash.map', 'lodash.filter'],
     })) as Index<string>
     upgraded.should.have.property('lodash.map')

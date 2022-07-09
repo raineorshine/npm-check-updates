@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'fs/promises'
 import path from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
@@ -55,28 +55,28 @@ describe('--deep', function () {
 
   it('ignore stdin if --packageFile glob is specified', async () => {
     const pkg = getTempPackage()
-    fs.mkdirSync(pkg.dir, { recursive: true })
-    fs.writeFileSync(pkg.file, JSON.stringify(pkg.data))
+    await fs.mkdir(pkg.dir, { recursive: true })
+    await fs.writeFile(pkg.file, JSON.stringify(pkg.data))
     try {
       await spawn('node', [bin, '-u', '--packageFile', './tmp/**/package.json'], '{ "dependencies": {}}', { cwd })
-      const upgradedPkg = JSON.parse(fs.readFileSync(pkg.file, 'utf-8'))
+      const upgradedPkg = JSON.parse(await fs.readFile(pkg.file, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      fs.unlinkSync(pkg.file)
-      fs.rmSync(pkg.dir, { recursive: true })
-      fs.rmSync(path.join(cwd, 'tmp'), { recursive: true })
+      await fs.unlink(pkg.file)
+      await fs.rm(pkg.dir, { recursive: true })
+      await fs.rm(path.join(cwd, 'tmp'), { recursive: true })
     }
   })
 
   it('update multiple packages', async () => {
     const pkg1 = getTempPackage()
-    fs.mkdirSync(pkg1.dir, { recursive: true })
-    fs.writeFileSync(pkg1.file, JSON.stringify(pkg1.data))
+    await fs.mkdir(pkg1.dir, { recursive: true })
+    await fs.writeFile(pkg1.file, JSON.stringify(pkg1.data))
     const pkg2 = getTempPackage()
-    fs.mkdirSync(pkg2.dir, { recursive: true })
-    fs.writeFileSync(pkg2.file, JSON.stringify(pkg2.data))
+    await fs.mkdir(pkg2.dir, { recursive: true })
+    await fs.writeFile(pkg2.file, JSON.stringify(pkg2.data))
     try {
       const output = await spawn(
         'node',
@@ -85,12 +85,12 @@ describe('--deep', function () {
         { cwd },
       )
 
-      const upgradedPkg1 = JSON.parse(fs.readFileSync(pkg1.file, 'utf-8'))
+      const upgradedPkg1 = JSON.parse(await fs.readFile(pkg1.file, 'utf-8'))
       upgradedPkg1.should.have.property('dependencies')
       upgradedPkg1.dependencies.should.have.property('express')
       upgradedPkg1.dependencies.express.should.not.equal('1')
 
-      const upgradedPkg2 = JSON.parse(fs.readFileSync(pkg2.file, 'utf-8'))
+      const upgradedPkg2 = JSON.parse(await fs.readFile(pkg2.file, 'utf-8'))
       upgradedPkg2.should.have.property('dependencies')
       upgradedPkg2.dependencies.should.have.property('express')
       upgradedPkg2.dependencies.express.should.not.equal('1')
@@ -100,11 +100,11 @@ describe('--deep', function () {
       json.should.have.property(pkg2.rel)
       json.should.not.have.property('package.json')
     } finally {
-      fs.unlinkSync(pkg1.file)
-      fs.unlinkSync(pkg2.file)
-      fs.rmSync(pkg1.dir, { recursive: true })
-      fs.rmSync(pkg2.dir, { recursive: true })
-      fs.rmSync(path.join(cwd, 'tmp'), { recursive: true })
+      await fs.unlink(pkg1.file)
+      await fs.unlink(pkg2.file)
+      await fs.rm(pkg1.dir, { recursive: true })
+      await fs.rm(pkg2.dir, { recursive: true })
+      await fs.rm(path.join(cwd, 'tmp'), { recursive: true })
     }
   })
 

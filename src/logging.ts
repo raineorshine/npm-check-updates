@@ -114,7 +114,7 @@ function getVersion(dep: string): string {
  * @param args.ownersChangedDeps
  * @param args.format
  */
-export function toDependencyTable({
+export async function toDependencyTable({
   from: fromDeps,
   to: toDeps,
   ownersChangedDeps,
@@ -126,21 +126,23 @@ export function toDependencyTable({
   format?: string[]
 }) {
   const table = createDependencyTable(
-    Object.keys(toDeps).map(dep => {
-      const from = fromDeps[dep] || ''
-      const toRaw = toDeps[dep] || ''
-      const to = getVersion(toRaw)
-      const ownerChanged = ownersChangedDeps
-        ? dep in ownersChangedDeps
-          ? ownersChangedDeps[dep]
-            ? '*owner changed*'
-            : ''
-          : '*unknown*'
-        : ''
-      const toColorized = colorizeDiff(getVersion(from), to)
-      const repoUrl = format?.includes('repo') ? getRepoUrl(dep) || '' : ''
-      return [dep, from, '→', toColorized, ownerChanged, repoUrl]
-    }),
+    await Promise.all(
+      Object.keys(toDeps).map(async dep => {
+        const from = fromDeps[dep] || ''
+        const toRaw = toDeps[dep] || ''
+        const to = getVersion(toRaw)
+        const ownerChanged = ownersChangedDeps
+          ? dep in ownersChangedDeps
+            ? ownersChangedDeps[dep]
+              ? '*owner changed*'
+              : ''
+            : '*unknown*'
+          : ''
+        const toColorized = colorizeDiff(getVersion(from), to)
+        const repoUrl = format?.includes('repo') ? (await getRepoUrl(dep)) || '' : ''
+        return [dep, from, '→', toColorized, ownerChanged, repoUrl]
+      }),
+    ),
   )
   return table.toString()
 }
@@ -154,7 +156,7 @@ export function toDependencyTable({
  * @param args.ownersChangedDeps
  * @param options
  */
-export function printUpgradesTable(
+export async function printUpgradesTable(
   {
     current,
     upgraded,
@@ -186,7 +188,7 @@ export function printUpgradesTable(
       print(options, '\n' + headings.patch)
       print(
         options,
-        toDependencyTable({
+        await toDependencyTable({
           from: current,
           to: groups.patch,
           ownersChangedDeps,
@@ -199,7 +201,7 @@ export function printUpgradesTable(
       print(options, '\n' + headings.minor)
       print(
         options,
-        toDependencyTable({
+        await toDependencyTable({
           from: current,
           to: groups.minor,
           ownersChangedDeps,
@@ -212,7 +214,7 @@ export function printUpgradesTable(
       print(options, '\n' + headings.major)
       print(
         options,
-        toDependencyTable({
+        await toDependencyTable({
           from: current,
           to: groups.major,
           ownersChangedDeps,
@@ -225,7 +227,7 @@ export function printUpgradesTable(
       print(options, '\n' + headings.majorVersionZero)
       print(
         options,
-        toDependencyTable({
+        await toDependencyTable({
           from: current,
           to: groups.majorVersionZero,
           ownersChangedDeps,
@@ -236,7 +238,7 @@ export function printUpgradesTable(
   } else {
     print(
       options,
-      toDependencyTable({
+      await toDependencyTable({
         from: current,
         to: upgraded,
         ownersChangedDeps,
@@ -288,7 +290,7 @@ function printErrors(options: Options, errors?: Index<string>) {
  * @param args.total - The total number of all possible upgrades
  * @param args.ownersChangedDeps - Boolean flag per dependency which announces if package owner changed.
  */
-export function printUpgrades(
+export async function printUpgrades(
   options: Options,
   {
     current,
@@ -339,7 +341,7 @@ export function printUpgrades(
   }
   // print table
   else if (numUpgraded > 0) {
-    printUpgradesTable(
+    await printUpgradesTable(
       {
         current,
         upgraded,
