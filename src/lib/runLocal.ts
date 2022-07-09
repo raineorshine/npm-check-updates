@@ -248,7 +248,9 @@ async function runLocal(
     ? await getOwnerPerDependency(current, filteredUpgraded, options)
     : undefined
 
-  const chosenUpgraded = options.interactive ? await chooseUpgrades(current, latest, options) : upgraded
+  const chosenUpgraded = options.interactive
+    ? await chooseUpgrades(current, filteredUpgraded, options)
+    : filteredUpgraded
 
   if (!options.json || options.deep) {
     await printUpgrades(
@@ -258,7 +260,7 @@ async function runLocal(
         : options,
       {
         current,
-        upgraded: options.interactive ? chosenUpgraded : filteredUpgraded,
+        upgraded: chosenUpgraded,
         total: Object.keys(upgraded).length,
         ownersChangedDeps,
         errors,
