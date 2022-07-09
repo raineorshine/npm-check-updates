@@ -1,4 +1,3 @@
-import cint from 'cint'
 import _ from 'lodash'
 import { Index } from '../types/IndexType'
 import { WILDCARDS } from '../version-util'
@@ -23,14 +22,7 @@ function getPreferredWildcard(dependencies: Index<string | null>) {
 
   delete groups.undefined // eslint-disable-line fp/no-delete
 
-  // convert to an array of objects that can be sorted
-  const arrOfGroups = cint.toArray<string[], { wildcard: string; instances: string[] }>(
-    groups,
-    (wildcard, instances) => ({
-      wildcard,
-      instances,
-    }),
-  )
+  const arrOfGroups = Object.entries(groups).map(([wildcard, instances]) => ({ wildcard, instances }))
 
   // reverse sort the groups so that the wildcard with the most appearances is at the head, then return it.
   const sorted = _.sortBy(arrOfGroups, wildcardObject => -wildcardObject.instances.length)

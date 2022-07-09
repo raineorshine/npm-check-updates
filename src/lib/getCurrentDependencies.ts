@@ -1,10 +1,10 @@
-import cint from 'cint'
 import * as semver from 'semver'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { VersionSpec } from '../types/VersionSpec'
 import filterAndReject from './filterAndReject'
+import filterObject from './filterObject'
 
 /** Returns true if spec1 is greater than spec2, ignoring invalid version ranges. */
 const isGreaterThanSafe = (spec1: VersionSpec, spec2: VersionSpec) =>
@@ -37,12 +37,15 @@ function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}
   const allDependencies = depSections.reduce((accum, depSection) => {
     return {
       ...accum,
-      ...cint.filterObject(pkgData[depSection], (dep, spec) => !isGreaterThanSafe(spec, accum[dep])),
+      ...filterObject(
+        (pkgData[depSection] as Index<string>) || {},
+        (dep, spec) => !isGreaterThanSafe(spec, accum[dep]),
+      ),
     }
   }, {} as Index<VersionSpec>)
 
   // filter & reject dependencies and versions
-  const filteredDependencies = cint.filterObject(
+  const filteredDependencies = filterObject(
     allDependencies,
     filterAndReject(
       options.filter || null,

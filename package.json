@@ -56,7 +56,6 @@
   },
   "dependencies": {
     "chalk": "^4.1.2",
-    "cint": "^8.2.1",
     "cli-table": "^0.3.11",
     "commander": "^9.3.0",
     "fast-memoize": "^2.5.2",

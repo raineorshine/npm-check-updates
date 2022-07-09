@@ -1,10 +1,10 @@
-import cint from 'cint'
 import memoize from 'fast-memoize'
 import fs from 'fs/promises'
 import _ from 'lodash'
 import pacote from 'pacote'
 import semver from 'semver'
 import spawn from 'spawn-please'
+import { keyValueBy } from '../lib/keyValueBy'
 import libnpmconfig from '../lib/libnpmconfig'
 import { print } from '../logging'
 import { GetVersion } from '../types/GetVersion'
@@ -21,8 +21,6 @@ import {
   satisfiesNodeEngine,
   satisfiesPeerDependencies,
 } from './filters'
-
-;('use strict')
 
 const TIME_FIELDS = ['modified', 'created']
 
@@ -391,10 +389,10 @@ export const list = async (options: Options = {}) => {
   )
   const json = parseJson(result, {
     command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --location=global' : ''}`,
-  })
-  return cint.mapObject(json.dependencies, (name, info) => ({
+  }) as { dependencies: Index<any> }
+  return keyValueBy(json.dependencies, (name, info) => ({
     // unmet peer dependencies have a different structure
-    [name]: info.version || (info.required && info.required.version),
+    [name]: info.version || info.required?.version,
   }))
 }
 

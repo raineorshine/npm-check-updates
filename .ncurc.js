@@ -3,7 +3,6 @@ module.exports = {
     // ESM only modules
     // https://github.com/microsoft/TypeScript/issues/46452
     'chalk',
-    'cint',
     'find-up',
     'get-stdin',
     'globby',

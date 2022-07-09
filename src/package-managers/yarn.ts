@@ -1,5 +1,4 @@
 // eslint-disable-next-line fp/no-events
-import cint from 'cint'
 import { EventEmitter, once } from 'events'
 import memoize from 'fast-memoize'
 import fs from 'fs/promises'
@@ -11,6 +10,7 @@ import spawn from 'spawn-please'
 import yaml from 'yaml'
 import exists from '../lib/exists'
 import findLockfile from '../lib/findLockfile'
+import { keyValueBy } from '../lib/keyValueBy'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
 import { NpmOptions } from '../types/NpmOptions'
@@ -22,11 +22,12 @@ import * as versionUtil from '../version-util'
 import { allowDeprecatedOrIsNotDeprecated, allowPreOrIsNotPre, satisfiesNodeEngine } from './filters'
 import { viewManyMemoized, viewOne } from './npm'
 
-;('use strict')
-
 interface ParsedDep {
   version: string
   from: string
+  required?: {
+    version: string
+  }
 }
 
 export interface NpmScope {
@@ -245,9 +246,9 @@ export const list = async (options: Options = {}, spawnOptions?: SpawnOptions) =
     ...spawnOptions,
   })
   const json = await parseJsonLines(jsonLines)
-  return cint.mapObject(json.dependencies, (name, info) => ({
+  return keyValueBy(json.dependencies, (name, info) => ({
     // unmet peer dependencies have a different structure
-    [name]: info.version || (info.required && info.required.version),
+    [name]: info.version || info.required?.version,
   }))
 }
 

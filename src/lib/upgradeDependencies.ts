@@ -1,4 +1,3 @@
-import cint from 'cint'
 import _ from 'lodash'
 import { parseRange } from 'semver-utils'
 import { Index } from '../types/IndexType'
@@ -6,6 +5,7 @@ import { Options } from '../types/Options'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
 import * as versionUtil from '../version-util'
+import filterObject from './filterObject'
 import getPreferredWildcard from './getPreferredWildcard'
 import isUpgradeable from './isUpgradeable'
 
@@ -30,7 +30,7 @@ function upgradeDependencies(
   options: Options = {},
 ): Index<VersionSpec> {
   // filter out dependencies with empty values
-  currentDependencies = cint.filterObject(currentDependencies, (key, value) => !!value)
+  currentDependencies = filterObject(currentDependencies, (key, value) => !!value)
 
   // get the preferred wildcard and bind it to upgradeDependencyDeclaration
   const wildcard = getPreferredWildcard(currentDependencies) || versionUtil.DEFAULT_WILDCARD

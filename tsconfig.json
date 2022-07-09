@@ -14,7 +14,6 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "paths": {
-      "cint": ["./src/types/cint"],
       "libnpmconfig": ["./src/types/libnpmconfig"],
       "prompts-ncu": ["./src/types/prompts-ncu"],
       "spawn-please": ["./src/types/spawn-please"]

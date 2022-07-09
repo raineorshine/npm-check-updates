@@ -1,10 +1,10 @@
 import chalk from 'chalk'
-import cint from 'cint'
 import _ from 'lodash'
 import parseGithubUrl from 'parse-github-url'
 import semver from 'semver'
 import semverutils, { SemVer } from 'semver-utils'
 import util from 'util'
+import { keyValueBy } from './lib/keyValueBy'
 import { Maybe } from './types/Maybe'
 import { VersionLevel } from './types/VersionLevel'
 
@@ -434,7 +434,7 @@ export function upgradeDependencyDeclaration(
   }
 
   // create a new semver object with major, minor, patch, build, and release parts
-  const newSemver = cint.toObject(VERSION_PARTS, (part: VersionPart) => ({
+  const newSemver = keyValueBy(VERSION_PARTS, (part: VersionPart) => ({
     [part]: chooseVersion(part),
   }))
   const newSemverString = stringify(newSemver)
