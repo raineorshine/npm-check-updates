@@ -8,6 +8,5 @@ module.exports = {
     'globby',
     'p-map',
     'remote-git-tags',
-    'strip-ansi',
   ],
 }
