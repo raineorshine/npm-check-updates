@@ -1,14 +1,11 @@
 import fs from 'fs'
-import path from 'path'
 import prompts from 'prompts-ncu'
-import spawn from 'spawn-please'
 import { promisify } from 'util'
-import * as cint from 'cint'
 import _ from 'lodash'
 import Chalk from 'chalk'
 import jph from 'json-parse-helpfulerror'
 import { satisfies } from 'semver'
-import { print, printJson, printUpgrades, printIgnoredUpdates } from '../logging'
+import { getGroupHeadings, print, printJson, printUpgrades, printIgnoredUpdates, toDependencyTable } from '../logging'
 import getCurrentDependencies from './getCurrentDependencies'
 import getIgnoredUpgrades from './getIgnoredUpgrades'
 import getPackageFileName from './getPackageFileName'
@@ -24,6 +21,7 @@ import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
+import { partChanged } from '../version-util'
 
 const writePackageFile = promisify(fs.writeFile)
 
@@ -36,21 +34,6 @@ function sortOptions(options: Options): Options {
     },
     {} as any,
   )
-}
-
-/** Returns true if a file exists. */
-const exists = (path: string) =>
-  fs.promises.stat(path).then(
-    () => true,
-    () => false,
-  )
-
-/** Returns the package manager that should be used to install packages after running "ncu -u". Detects pnpm via pnpm-lock.yarn. This is the one place that pnpm needs to be detected, since otherwise it is backwards compatible with npm. */
-const getPackageManagerForInstall = async (options: Options, pkgFile: string) => {
-  if (options.packageManager === 'yarn') return 'yarn'
-  const pnpmLockFile = path.resolve(pkgFile, '../pnpm-lock.yaml')
-  const pnpm = await exists(pnpmLockFile)
-  return pnpm ? 'pnpm' : 'npm'
 }
 
 /**
@@ -72,6 +55,135 @@ export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersi
       [dep]: ownerChanged,
     }
   }, {} as Promise<Index<boolean>>)
+}
+
+/** Prompts the user to choose which upgrades to upgrade. */
+const chooseUpgrades = async (
+  oldDependencies: Index<string>,
+  newDependencies: Index<string>,
+  options: Options,
+): Promise<Index<string>> => {
+  let chosenDeps: string[] = []
+
+  print(options, '')
+
+  // use toDependencyTable to create choices that are properly padded to align vertically
+  const table = toDependencyTable({
+    from: oldDependencies,
+    to: newDependencies,
+    format: options.format,
+  })
+
+  const formattedLines = keyValueBy(table.toString().split('\n'), line => {
+    const dep = line.trim().split(' ')[0]
+    return {
+      [dep]: line.trim(),
+    }
+  })
+
+  // do not prompt if there are no dependencies
+  // prompts will crash if passed an empty list of choices
+  if (Object.keys(newDependencies).length > 0) {
+    if (options.format?.includes('group')) {
+      const groups = keyValueBy<string, Index<string>>(
+        newDependencies,
+        (dep, to, accum) => {
+          const from = oldDependencies[dep]
+          const partUpgraded = partChanged(from, to)
+          return {
+            ...accum,
+            [partUpgraded]: {
+              ...accum[partUpgraded],
+              [dep]: to,
+            },
+          }
+        },
+        // narrow the type of the group index signature
+      ) as Record<ReturnType<typeof partChanged>, Index<string>>
+
+      const choicesPatch = Object.keys(groups.patch || {}).map(dep => ({
+        title: formattedLines[dep],
+        value: dep,
+        selected: true,
+      }))
+
+      const choicesMinor = Object.keys(groups.minor || {}).map(dep => ({
+        title: formattedLines[dep],
+        value: dep,
+        selected: true,
+      }))
+
+      const choicesMajor = Object.keys(groups.major || {}).map(dep => ({
+        title: formattedLines[dep],
+        value: dep,
+        selected: false,
+      }))
+
+      const choicesMajorVersionZero = Object.keys(groups.majorVersionZero || {}).map(dep => ({
+        title: formattedLines[dep],
+        value: dep,
+        selected: false,
+      }))
+
+      const headings = getGroupHeadings(options)
+
+      const response = await prompts({
+        choices: [
+          ...(choicesPatch.length > 0 ? [{ title: '\n' + headings.patch, heading: true }] : []),
+          ...choicesPatch,
+          ...(choicesMinor.length > 0 ? [{ title: '\n' + headings.minor, heading: true }] : []),
+          ...choicesMinor,
+          ...(choicesMajor.length > 0 ? [{ title: '\n' + headings.major, heading: true }] : []),
+          ...choicesMajor,
+          ...(choicesMajorVersionZero.length > 0 ? [{ title: '\n' + headings.majorVersionZero, heading: true }] : []),
+          ...choicesMajorVersionZero,
+          { title: ' ', heading: true },
+        ],
+        hint: `
+  ↑/↓: Select a package
+  Space: Toggle selection
+  a: Select all
+  Enter: Upgrade`,
+        instructions: false,
+        message: 'Choose which packages to update',
+        name: 'value',
+        optionsPerPage: 50,
+        type: 'multiselect',
+        onState: (state: any) => {
+          if (state.aborted) {
+            process.nextTick(() => process.exit(1))
+          }
+        },
+      })
+
+      chosenDeps = response.value
+    } else {
+      const choices = Object.keys(newDependencies).map(dep => ({
+        title: formattedLines[dep],
+        value: dep,
+        selected: true,
+      }))
+
+      const response = await prompts({
+        choices: [...choices, { title: ' ', heading: true }],
+        hint: 'Space to deselect. Enter to upgrade.',
+        instructions: false,
+        message: 'Choose which packages to update',
+        name: 'value',
+        optionsPerPage: 50,
+        type: 'multiselect',
+        onState: (state: any) => {
+          if (state.aborted) {
+            process.nextTick(() => process.exit(1))
+          }
+        },
+      })
+
+      chosenDeps = response.value
+    }
+  }
+
+  return keyValueBy(chosenDeps, dep => ({ [dep]: newDependencies[dep] }))
 }
 
 /** Checks local project dependencies for upgrades. */
@@ -130,28 +242,31 @@ async function runLocal(
   print(options, '\nUpgraded:', 'verbose')
   print(options, upgraded, 'verbose')
 
-  // split the deps into satisfied and unsatisfied to display in two separate tables
-  const deps = Object.keys(upgraded)
-  const satisfied = cint.toObject(deps, (dep: string) => ({
-    [dep]: satisfies(latest[dep], current[dep]),
-  }))
+  // filter out satisfied deps when using --minimal
+  const filteredUpgraded = options.minimal
+    ? keyValueBy(upgraded, (dep, version) => (!satisfies(latest[dep], current[dep]) ? { [dep]: version } : null))
+    : upgraded
 
-  const isSatisfied = _.propertyOf(satisfied)
-  const filteredUpgraded = options.minimal ? cint.filterObject(upgraded, (dep: string) => !isSatisfied(dep)) : upgraded
   const ownersChangedDeps = (options.format || []).includes('ownerChanged')
     ? await getOwnerPerDependency(current, filteredUpgraded, options)
     : undefined
 
-  // do not print upgrades for interactive mode
-  // interactive mode handles its own output
-  if (!options.interactive && (!options.json || options.deep)) {
-    printUpgrades(options, {
-      current,
-      upgraded: filteredUpgraded,
-      total: Object.keys(upgraded).length,
-      ownersChangedDeps,
-      errors,
-    })
+  const chosenUpgraded = options.interactive ? await chooseUpgrades(current, latest, options) : upgraded
+
+  if (!options.json || options.deep) {
+    printUpgrades(
+      // in interactive mode, do not group upgrades afterwards since the prompts are grouped
+      options.interactive
+        ? { ...options, format: (options.format || []).filter(formatType => formatType !== 'group') }
+        : options,
+      {
+        current,
+        upgraded: options.interactive ? chosenUpgraded : filteredUpgraded,
+        total: Object.keys(upgraded).length,
+        ownersChangedDeps,
+        errors,
+      },
+    )
     if (options.peer) {
       const ignoredUpdates = await getIgnoredUpgrades(current, upgraded, upgradedPeerDependencies!, options)
       if (!_.isEmpty(ignoredUpdates)) {
@@ -160,13 +275,13 @@ async function runLocal(
     }
   }
 
-  const newPkgData = await upgradePackageData(pkgData!, current, upgraded, latest, options)
+  const newPkgData = await upgradePackageData(pkgData!, current, chosenUpgraded)
 
   const output = options.jsonAll
     ? (jph.parse(newPkgData) as PackageFile)
     : options.jsonDeps
     ? _.pick(jph.parse(newPkgData) as PackageFile, 'dependencies', 'devDependencies', 'optionalDependencies')
-    : upgraded
+    : chosenUpgraded
 
   // will be overwritten with the result of writePackageFile so that the return promise waits for the package file to be written
   let writePromise = Promise.resolve()
@@ -180,47 +295,8 @@ async function runLocal(
     // otherwise, suggest ncu -u
     if (pkgFile) {
       if (options.upgrade) {
-        // do not await until end
-        writePromise = Promise.all([
-          getPackageManagerForInstall(options, pkgFile),
-          writePackageFile(pkgFile, newPkgData),
-        ]).then(async ([packageManager]) => {
-          // by default, show an install hint after upgrading
-          // this will be disabled in interactive mode if the user chooses to have npm-check-updates execute the install command
-          let showInstallHint = true
-          const installHint = `${chalk.cyan(packageManager + ' install')} to install new versions`
-
-          // prompt the user if they want ncu to run "npm install"
-          if (options.interactive) {
-            console.info('')
-            const response = await prompts({
-              type: 'confirm',
-              name: 'value',
-              message: `${installHint}?`,
-              initial: true,
-              // allow Ctrl+C to kill the process
-              onState: (state: any) => {
-                if (state.aborted) {
-                  process.nextTick(() => process.exit(1))
-                }
-              },
-            })
-
-            // autoinstall
-            if (response.value) {
-              showInstallHint = false
-              const cmd = packageManager + (process.platform === 'win32' ? '.cmd' : '')
-              const cwd = options.cwd || path.resolve(pkgFile, '..')
-              const stdout = await spawn(cmd, ['install'], { cwd })
-              print(options, stdout, 'verbose')
-            }
-          }
-
-          // show the install hint unless autoinstall occurred
-          if (showInstallHint) {
-            print(options, `\nRun ${installHint}.`)
-          }
-        })
+        // do not await
+        writePromise = writePackageFile(pkgFile, newPkgData)
       } else {
         const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'
         const argv = process.argv.slice(2).join(' ')

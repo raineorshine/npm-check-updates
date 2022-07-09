@@ -1,6 +1,8 @@
+import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import globby from 'globby'
+import spawn from 'spawn-please'
 import _ from 'lodash'
 import Chalk from 'chalk'
 import prompts from 'prompts-ncu'
@@ -53,6 +55,83 @@ function checkIfVolta(options: Options): void {
 
     print(options, message, 'error')
     process.exit(1)
+  }
+}
+
+/** Returns true if a file exists. */
+const exists = (path: string) =>
+  fs.promises.stat(path).then(
+    () => true,
+    () => false,
+  )
+
+/** Returns the package manager that should be used to install packages after running "ncu -u". Detects pnpm via pnpm-lock.yarn. This is the one place that pnpm needs to be detected, since otherwise it is backwards compatible with npm. */
+const getPackageManagerForInstall = async (options: Options, pkgFile: string) => {
+  if (options.packageManager === 'yarn') return 'yarn'
+  const pnpmLockFile = path.resolve(pkgFile, '../pnpm-lock.yaml')
+  const pnpm = await exists(pnpmLockFile)
+  return pnpm ? 'pnpm' : 'npm'
+}
+
+/** Either suggest an install command based on the package manager, or in interactive mode, prompt to autoinstall. */
+const npmInstallHint = async (
+  pkgs: string[],
+  analysis: Index<PackageFile> | PackageFile,
+  options: Options,
+): Promise<unknown> => {
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
+
+  // if no packages were upgraded (i.e. all dependendencies deselected in interactive mode), then bail without suggesting an install.
+  // normalize the analysis for one or many packages
+  const analysisNormalized =
+    pkgs.length === 1 ? { [pkgs[0]]: analysis as PackageFile } : (analysis as Index<PackageFile>)
+  const someUpgraded = Object.values(analysisNormalized).some(upgrades => Object.keys(upgrades).length > 0)
+  if (!someUpgraded) return
+
+  let showInstallHint = true
+
+  // for the purpose of the install hint, just use the package manager used in the first subproject
+  // if autoinstalling, the actual package manager in each subproject will be used
+  const packageManager = await getPackageManagerForInstall(options, pkgs[0])
+
+  // by default, show an install hint after upgrading
+  // this will be disabled in interactive mode if the user chooses to have npm-check-updates execute the install command
+  const installHint = `${chalk.cyan(packageManager + ' install')}${
+    pkgs.length > 1 ? ' in each project directory' : ''
+  } to install new versions`
+
+  // prompt the user if they want ncu to run "npm install"
+  if (options.interactive) {
+    console.info('')
+    const response = await prompts({
+      type: 'confirm',
+      name: 'value',
+      message: `${installHint}?`,
+      initial: true,
+      // allow Ctrl+C to kill the process
+      onState: (state: any) => {
+        if (state.aborted) {
+          process.nextTick(() => process.exit(1))
+        }
+      },
+    })
+
+    // autoinstall
+    if (response.value) {
+      showInstallHint = false
+      pkgs.forEach(async pkgFile => {
+        const packageManager = await getPackageManagerForInstall(options, pkgFile)
+        const cmd = packageManager + (process.platform === 'win32' ? '.cmd' : '')
+        const cwd = options.cwd || path.resolve(pkgFile, '..')
+        const stdout = await spawn(cmd, ['install'], { cwd })
+        print(options, stdout, 'verbose')
+      })
+    }
+  }
+
+  // show the install hint unless autoinstall occurred
+  if (showInstallHint) {
+    print(options, `\nRun ${installHint}.`)
   }
 }
 
@@ -113,9 +192,11 @@ export async function run(
         ignore: ['**/node_modules/**'],
       },
     )
+
+    // enable --deep if multiple package files are found
     options.deep = options.deep || pkgs.length > 1
 
-    let analysis: Index<string> | PackageFile | void
+    let analysis: Index<PackageFile> | PackageFile | void
     if (options.global) {
       const analysis = await runGlobal(options)
       clearTimeout(timeout)
@@ -146,7 +227,7 @@ export async function run(
                 .replace(/\\/g, '/')
             : pkgFile!]: await runLocal(pkgOptions, pkgData, pkgFile),
         }
-      }, Promise.resolve({} as Index<string> | PackageFile))
+      }, Promise.resolve({} as Index<PackageFile> | PackageFile))
       if (options.json) {
         printJson(options, analysis)
       }
@@ -159,6 +240,12 @@ export async function run(
       analysis = await runLocal(options, pkgData, pkgFile)
     }
     clearTimeout(timeout)
+
+    // suggest install command or autoinstall
+    if (options.upgrade) {
+      npmInstallHint(pkgs, analysis, options)
+    }
+
     return analysis
   }
 

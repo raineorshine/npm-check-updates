@@ -335,7 +335,7 @@ export function printUpgrades(
       print(options, `All dependencies match the ${target} package versions ${smiley}`)
     }
   } else if (numUpgraded === 0 && total > 0) {
-    print(options, `All dependencies match the desired package versions ${smiley}`)
+    print(options, `No dependencies upgraded ${smiley}`)
   }
   // print table
   else if (numUpgraded > 0) {
