@@ -1,3 +1,4 @@
+import os from 'os'
 import fs from 'fs'
 import path from 'path'
 import chai from 'chai'
@@ -16,13 +17,6 @@ chai.use(chaiString)
 process.env.NCU_TESTS = 'true'
 
 describe('run', function () {
-  let last = 0
-
-  /** Gets the temporary package file path. */
-  function getTempFile() {
-    return `test/temp_package${++last}.json`
-  }
-
   it('return promised jsonUpgraded', () => {
     return ncu
       .run({
@@ -108,22 +102,23 @@ describe('run', function () {
   })
 
   it('write to --packageFile and output jsonUpgraded', async () => {
-    const tempFile = getTempFile()
-    fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.resolve(tempDir, 'package.json')
+    fs.writeFileSync(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
 
     try {
       const result = await ncu.run({
-        packageFile: tempFile,
+        packageFile: pkgFile,
         jsonUpgraded: true,
         upgrade: true,
       })
       result!.should.have.property('express')
 
-      const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'))
+      const upgradedPkg = JSON.parse(fs.readFileSync(pkgFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
     } finally {
-      fs.unlinkSync(tempFile)
+      fs.unlinkSync(pkgFile)
     }
   })
 

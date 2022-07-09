@@ -16,13 +16,6 @@ process.env.NCU_TESTS = 'true'
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('bin', function () {
-  let last = 0
-
-  /** Gets the temp package file path. */
-  function getTempFile() {
-    return `test/temp_package${++last}.json`
-  }
-
   it('accept stdin', () => {
     return spawn('node', [bin, '--stdin'], '{ "dependencies": { "express": "1" } }').then((output: string) => {
       output.trim().should.startWith('express')
@@ -75,34 +68,37 @@ describe('bin', function () {
   })
 
   it('read --packageFile', async () => {
-    const tempFile = getTempFile()
-    fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.resolve(tempDir, 'package.json')
+    fs.writeFileSync(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
-      const text = await spawn('node', [bin, '--jsonUpgraded', '--packageFile', tempFile])
+      const text = await spawn('node', [bin, '--jsonUpgraded', '--packageFile', pkgFile])
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('express')
     } finally {
-      fs.unlinkSync(tempFile)
+      fs.unlinkSync(pkgFile)
     }
   })
 
   it('write to --packageFile', async () => {
-    const tempFile = getTempFile()
-    fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.resolve(tempDir, 'package.json')
+    fs.writeFileSync(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
-      await spawn('node', [bin, '-u', '--packageFile', tempFile])
-      const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'))
+      await spawn('node', [bin, '-u', '--packageFile', pkgFile])
+      const upgradedPkg = JSON.parse(fs.readFileSync(pkgFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      fs.unlinkSync(tempFile)
+      fs.unlinkSync(pkgFile)
     }
   })
 
   it('write to --packageFile if errorLevel=2 and upgrades', async () => {
-    const tempFile = getTempFile()
-    fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.resolve(tempDir, 'package.json')
+    fs.writeFileSync(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
 
     try {
       const result = await spawn('node', [
@@ -111,43 +107,45 @@ describe('bin', function () {
         '--errorLevel',
         '2',
         '--packageFile',
-        tempFile,
+        pkgFile,
       ]).should.eventually.be.rejectedWith('Dependencies not up-to-date')
-      const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'))
+      const upgradedPkg = JSON.parse(fs.readFileSync(pkgFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
       return result
     } finally {
-      fs.unlinkSync(tempFile)
+      fs.unlinkSync(pkgFile)
     }
   })
 
   it('write to --packageFile with jsonUpgraded flag', async () => {
-    const tempFile = getTempFile()
-    fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.resolve(tempDir, 'package.json')
+    fs.writeFileSync(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
-      await spawn('node', [bin, '-u', '--jsonUpgraded', '--packageFile', tempFile])
-      const ugradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'))
+      await spawn('node', [bin, '-u', '--jsonUpgraded', '--packageFile', pkgFile])
+      const ugradedPkg = JSON.parse(fs.readFileSync(pkgFile, 'utf-8'))
       ugradedPkg.should.have.property('dependencies')
       ugradedPkg.dependencies.should.have.property('express')
       ugradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      fs.unlinkSync(tempFile)
+      fs.unlinkSync(pkgFile)
     }
   })
 
   it('ignore stdin if --packageFile is specified', async () => {
-    const tempFile = getTempFile()
-    fs.writeFileSync(tempFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.resolve(tempDir, 'package.json')
+    fs.writeFileSync(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
-      await spawn('node', [bin, '-u', '--stdin', '--packageFile', tempFile], '{ "dependencies": {}}')
-      const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'))
+      await spawn('node', [bin, '-u', '--stdin', '--packageFile', pkgFile], '{ "dependencies": {}}')
+      const upgradedPkg = JSON.parse(fs.readFileSync(pkgFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      fs.unlinkSync(tempFile)
+      fs.unlinkSync(pkgFile)
     }
   })
 
