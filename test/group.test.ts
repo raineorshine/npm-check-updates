@@ -5,6 +5,7 @@ import spawn from 'spawn-please'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
+import stripAnsi from 'strip-ansi'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -28,7 +29,7 @@ describe('--format group', () => {
         cwd: tempDir,
       })
       // TODO: trimEnd
-      stdout.should.include(
+      stripAnsi(stdout).should.include(
         `Minor   Backwards-compatible features
  ncu-test-tag  1.0.0  →  1.1.0     ${''}
 

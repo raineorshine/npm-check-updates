@@ -2,6 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
+import stripAnsi from 'strip-ansi'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
@@ -32,7 +33,7 @@ describe('--interactive', () => {
         },
       })
 
-      should.equal(/^Upgrading .*\/package\.json$/m.test(stdout), true)
+      should.equal(/^Upgrading/m.test(stdout), true)
 
       // do not show install hint when choosing autoinstall
       should.equal(/^Run npm install to install new versions.$/m.test(stdout), false)
@@ -70,7 +71,7 @@ describe('--interactive', () => {
       })
 
       // show install hint when autoinstall is declined
-      should.equal(/^Run npm install to install new versions.$/m.test(stdout), true)
+      should.equal(/^Run npm install to install new versions.$/m.test(stripAnsi(stdout)), true)
     } finally {
       fs.unlinkSync(pkgFile)
     }
