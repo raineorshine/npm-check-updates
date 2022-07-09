@@ -2,9 +2,9 @@ import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 import fs from 'fs/promises'
+import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import { dir } from 'tmp-promise'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -18,8 +18,8 @@ describe('--format group', () => {
   it('group upgrades by type', async () => {
     // use dynamic import for ESM module
     const { default: stripAnsi } = await import('strip-ansi')
-    const tempDir = await dir({ unsafeCleanup: true })
-    const pkgFile = path.join(tempDir.path, 'package.json')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
       JSON.stringify({
@@ -29,7 +29,7 @@ describe('--format group', () => {
     )
     try {
       const stdout = await spawn('node', [bin, '--format', 'group'], {
-        cwd: tempDir.path,
+        cwd: tempDir,
       })
       // TODO: trimEnd
       stripAnsi(stdout).should.include(
@@ -41,7 +41,7 @@ Major   Potentially breaking API changes
  ncu-test-return-version  1.0.0  →  2.0.0`,
       )
     } finally {
-      await tempDir.cleanup()
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 })

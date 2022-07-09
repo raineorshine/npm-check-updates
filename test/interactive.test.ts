@@ -5,7 +5,6 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import { dir } from 'tmp-promise'
 
 const should = chai.should()
 chai.use(chaiAsPromised)
@@ -15,8 +14,8 @@ const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('--interactive', () => {
   it('prompt for each upgraded dependency', async () => {
-    const tempDir = await dir({ unsafeCleanup: true })
-    const pkgFile = path.join(tempDir.path, 'package.json')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
       JSON.stringify({
@@ -26,7 +25,7 @@ describe('--interactive', () => {
     )
     try {
       const stdout = await spawn('node', [bin, '--interactive'], {
-        cwd: tempDir.path,
+        cwd: tempDir,
         env: {
           ...process.env,
           INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
@@ -47,21 +46,15 @@ describe('--interactive', () => {
         'ncu-test-tag': '1.0.0',
       })
     } finally {
-      await tempDir.cleanup()
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
   it('show suggested install command when declining autoinstall', async () => {
     // use dynamic import for ESM module
     const { default: stripAnsi } = await import('strip-ansi')
-    // const tempDir = await dir({ unsafeCleanup: true })
-    const tempDir = {
-      path: await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-')),
-      cleanup: () => {
-        console.log('cleanup')
-      },
-    }
-    const pkgFile = path.join(tempDir.path, 'package.json')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
       JSON.stringify({
@@ -71,7 +64,7 @@ describe('--interactive', () => {
     )
     try {
       const stdout = await spawn('node', [bin, '--interactive'], {
-        cwd: tempDir.path,
+        cwd: tempDir,
         env: {
           ...process.env,
           INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], false]),
@@ -81,13 +74,13 @@ describe('--interactive', () => {
       // show install hint when autoinstall is declined
       should.equal(/^Run npm install to install new versions.$/m.test(stripAnsi(stdout)), true)
     } finally {
-      await tempDir.cleanup()
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
   it('with --format group', async () => {
-    const tempDir = await dir({ unsafeCleanup: true })
-    const pkgFile = path.join(tempDir.path, 'package.json')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
       JSON.stringify({
@@ -97,7 +90,7 @@ describe('--interactive', () => {
     )
     try {
       await spawn('node', [bin, '--interactive', '--format', 'group'], {
-        cwd: tempDir.path,
+        cwd: tempDir,
         env: {
           ...process.env,
           INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
@@ -115,18 +108,18 @@ describe('--interactive', () => {
 
       // prompts does not print during injection, so we cannot assert the output in interactive mode
     } finally {
-      await tempDir.cleanup()
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
   it('prompt for autoinstall once at the end if there are multiple package files', async () => {
     // use dynamic import for ESM module
     const { default: stripAnsi } = await import('strip-ansi')
-    const tempDir = await dir({ unsafeCleanup: true })
-    await fs.mkdir(path.join(tempDir.path, 'packages/a'), { recursive: true })
-    await fs.mkdir(path.join(tempDir.path, 'packages/b'), { recursive: true })
-    const pkgFileA = path.join(tempDir.path, 'packages/a/package.json')
-    const pkgFileB = path.join(tempDir.path, 'packages/b/package.json')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+    await fs.mkdir(path.join(tempDir, 'packages/b'), { recursive: true })
+    const pkgFileA = path.join(tempDir, 'packages/a/package.json')
+    const pkgFileB = path.join(tempDir, 'packages/b/package.json')
     await fs.writeFile(pkgFileA, JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }), 'utf-8')
     await fs.writeFile(pkgFileB, JSON.stringify({ dependencies: { 'ncu-test-tag': '1.0.0' } }), 'utf-8')
 
@@ -136,7 +129,7 @@ describe('--interactive', () => {
         // verbose to output stdout from npm install
         [bin, '--loglevel', 'verbose', '--interactive', '--packageFile', 'packages/*/package.json'],
         {
-          cwd: tempDir.path,
+          cwd: tempDir,
           env: {
             ...process.env,
             // autoinstall is prompted once at the end
@@ -151,7 +144,7 @@ describe('--interactive', () => {
       // e.g. added 1 package, and audited 2 packages in 386ms
       stripAnsi(stdout).should.not.include('added')
     } finally {
-      await tempDir.cleanup()
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 })

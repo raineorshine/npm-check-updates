@@ -5,7 +5,6 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import { dir } from 'tmp-promise'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -63,21 +62,21 @@ describe('bin', async function () {
   })
 
   it('read --packageFile', async () => {
-    const tempDir = await dir({ unsafeCleanup: true })
-    const pkgFile = path.join(tempDir.path, 'package.json')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
       const text = await spawn('node', [bin, '--jsonUpgraded', '--packageFile', pkgFile])
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('express')
     } finally {
-      await tempDir.cleanup()
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
   it('write to --packageFile', async () => {
-    const tempDir = await dir({ unsafeCleanup: true })
-    const pkgFile = path.join(tempDir.path, 'package.json')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
       await spawn('node', [bin, '-u', '--packageFile', pkgFile])
@@ -86,13 +85,13 @@ describe('bin', async function () {
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await tempDir.cleanup()
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
   it('write to --packageFile if errorLevel=2 and upgrades', async () => {
-    const tempDir = await dir({ unsafeCleanup: true })
-    const pkgFile = path.join(tempDir.path, 'package.json')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
 
     try {
@@ -104,13 +103,13 @@ describe('bin', async function () {
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await tempDir.cleanup()
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
   it('write to --packageFile with jsonUpgraded flag', async () => {
-    const tempDir = await dir({ unsafeCleanup: true })
-    const pkgFile = path.join(tempDir.path, 'package.json')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
       await spawn('node', [bin, '-u', '--jsonUpgraded', '--packageFile', pkgFile])
@@ -119,13 +118,13 @@ describe('bin', async function () {
       ugradedPkg.dependencies.should.have.property('express')
       ugradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await tempDir.cleanup()
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
   it('ignore stdin if --packageFile is specified', async () => {
-    const tempDir = await dir({ unsafeCleanup: true })
-    const pkgFile = path.join(tempDir.path, 'package.json')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
     try {
       await spawn('node', [bin, '-u', '--stdin', '--packageFile', pkgFile], '{ "dependencies": {}}')
@@ -134,7 +133,7 @@ describe('bin', async function () {
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await tempDir.cleanup()
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 

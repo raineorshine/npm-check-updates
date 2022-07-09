@@ -102,8 +102,8 @@ describe('--deep', function () {
     } finally {
       await fs.unlink(pkg1.file)
       await fs.unlink(pkg2.file)
-      await fs.rm(pkg1.dir, { recursive: true })
-      await fs.rm(pkg2.dir, { recursive: true })
+      await fs.rm(pkg1.dir, { recursive: true, force: true })
+      await fs.rm(pkg2.dir, { recursive: true, force: true })
       await fs.rm(path.join(cwd, 'tmp'), { recursive: true })
     }
   })

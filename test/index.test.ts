@@ -2,8 +2,8 @@ import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 import fs from 'fs/promises'
+import os from 'os'
 import path from 'path'
-import { dir } from 'tmp-promise'
 import * as ncu from '../src/'
 import { FilterFunction } from '../src/types/FilterFunction'
 import { Index } from '../src/types/IndexType'
@@ -90,8 +90,8 @@ describe('run', function () {
   })
 
   it('write to --packageFile and output jsonUpgraded', async () => {
-    const tempDir = await dir({ unsafeCleanup: true })
-    const pkgFile = path.join(tempDir.path, 'package.json')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
 
     try {
@@ -106,7 +106,7 @@ describe('run', function () {
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
     } finally {
-      await tempDir.cleanup()
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
