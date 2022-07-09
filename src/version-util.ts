@@ -1,11 +1,10 @@
-import _ from 'lodash'
-
-import util from 'util'
-import semverutils, { SemVer } from 'semver-utils'
 import chalk from 'chalk'
 import cint from 'cint'
-import semver from 'semver'
+import _ from 'lodash'
 import parseGithubUrl from 'parse-github-url'
+import semver from 'semver'
+import semverutils, { SemVer } from 'semver-utils'
+import util from 'util'
 import { Maybe } from './types/Maybe'
 import { VersionLevel } from './types/VersionLevel'
 

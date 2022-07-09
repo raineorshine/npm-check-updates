@@ -1,10 +1,10 @@
 import fs from 'fs/promises'
 import jph from 'json-parse-helpfulerror'
 import { print } from '../logging'
-import getCurrentDependencies from './getCurrentDependencies'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { VersionSpec } from '../types/VersionSpec'
+import getCurrentDependencies from './getCurrentDependencies'
 
 /** Get peer dependencies from installed packages */
 async function getPeerDependencies(current: Index<VersionSpec>, options: Options): Promise<Index<Index<string>>> {

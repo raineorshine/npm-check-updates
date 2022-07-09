@@ -1,5 +1,4 @@
 /** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build:options" to build. */
-
 import { FilterFunction } from './FilterFunction'
 import { PackageFile } from './PackageFile'
 import { TargetFunction } from './TargetFunction'

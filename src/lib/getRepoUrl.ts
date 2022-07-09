@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
+import hostedGitInfo from 'hosted-git-info'
 import path from 'path'
 import { URL } from 'url'
-import hostedGitInfo from 'hosted-git-info'
 import { PackageFile } from '../types/PackageFile'
 import { PackageFileRepository } from '../types/PackageFileRepository'
 import exists from './exists'

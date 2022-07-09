@@ -1,14 +1,14 @@
-import _ from 'lodash'
 import Chalk from 'chalk'
+import _ from 'lodash'
 import cliOptions from '../cli-options'
-import exists from './exists'
-import programError from './programError'
-import getPackageFileName from './getPackageFileName'
-import determinePackageManager from './determinePackageManager'
 import { print } from '../logging'
 import { Options } from '../types/Options'
 import { RunOptions } from '../types/RunOptions'
 import { Target } from '../types/Target'
+import determinePackageManager from './determinePackageManager'
+import exists from './exists'
+import getPackageFileName from './getPackageFileName'
+import programError from './programError'
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
 async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Promise<Options> {

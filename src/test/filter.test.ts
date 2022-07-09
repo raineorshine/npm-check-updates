@@ -1,6 +1,6 @@
+import chai from 'chai'
 import fs from 'fs/promises'
 import path from 'path'
-import chai from 'chai'
 import ncu from '../'
 import { Index } from '../types/IndexType'
 

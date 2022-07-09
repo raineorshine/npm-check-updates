@@ -1,9 +1,9 @@
-import path from 'path'
 import chai, { should } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
+import path from 'path'
 import * as yarn from '../../../src/package-managers/yarn'
-import { Index } from '../../../src/types/IndexType'
 import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn'
+import { Index } from '../../../src/types/IndexType'
 
 chai.should()
 chai.use(chaiAsPromised)

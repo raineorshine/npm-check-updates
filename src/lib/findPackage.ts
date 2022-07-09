@@ -1,12 +1,12 @@
-import fs from 'fs/promises'
-import path from 'path'
 import Chalk from 'chalk'
 import findUp from 'find-up'
+import fs from 'fs/promises'
 import getstdin from 'get-stdin'
-import getPackageFileName from './getPackageFileName'
-import programError from './programError'
+import path from 'path'
 import { print } from '../logging'
 import { Options } from '../types/Options'
+import getPackageFileName from './getPackageFileName'
+import programError from './programError'
 
 // time to wait for stdin before printing a warning
 const stdinWarningTime = 5000

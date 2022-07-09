@@ -1,6 +1,6 @@
-import _ from 'lodash'
-import Table from 'cli-table'
 import chalk from 'chalk'
+import Table from 'cli-table'
+import _ from 'lodash'
 import { Index } from './types/IndexType'
 
 export interface CLIOption<T = any> {

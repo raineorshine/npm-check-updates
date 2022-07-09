@@ -1,8 +1,8 @@
-import fs from 'fs/promises'
-import path from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
+import fs from 'fs/promises'
+import path from 'path'
 import * as ncu from '../../src/'
 
 chai.should()

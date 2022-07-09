@@ -1,6 +1,6 @@
 import chai from 'chai'
-import chalk from 'chalk'
 import chaiAsPromised from 'chai-as-promised'
+import chalk from 'chalk'
 import * as versionUtil from '../src/version-util'
 
 const should = chai.should()

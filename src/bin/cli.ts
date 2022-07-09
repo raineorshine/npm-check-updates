@@ -1,13 +1,11 @@
 #!/usr/bin/env node
-
 import { program } from 'commander'
 import _ from 'lodash'
-import ncu from '../index'
 import pkg from '../../package.json'
 import cliOptions from '../cli-options'
-import getNcuRc from '../lib/getNcuRc'
+import ncu from '../index'
+import getNcuRc from '../lib/getNcuRc' // async global contexts are only available in esm modules -> function
 
-// async global contexts are only available in esm modules -> function
 ;(async () => {
   // importing update-notifier dynamically as esm modules are only
   // allowed to be dynamically imported inside of cjs modules.

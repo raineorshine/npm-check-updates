@@ -1,9 +1,9 @@
-import fs from 'fs/promises'
-import os from 'os'
-import path from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
+import fs from 'fs/promises'
+import os from 'os'
+import path from 'path'
 import spawn from 'spawn-please'
 import stripAnsi from 'strip-ansi'
 

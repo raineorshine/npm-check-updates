@@ -1,10 +1,10 @@
 import cint from 'cint'
-import { isWildPart } from '../version-util'
-import getPackageManager from './getPackageManager'
-import filterAndReject from './filterAndReject'
 import { Options } from '../types/Options'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
+import { isWildPart } from '../version-util'
+import filterAndReject from './filterAndReject'
+import getPackageManager from './getPackageManager'
 
 /**
  * @param [options]

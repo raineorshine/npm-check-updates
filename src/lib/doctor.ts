@@ -1,16 +1,16 @@
-import fs from 'fs/promises'
 import Chalk from 'chalk'
+import fs from 'fs/promises'
 import rimraf from 'rimraf'
-import upgradePackageData from './upgradePackageData'
-import { printUpgrades } from '../logging'
 import spawn from 'spawn-please'
-import spawnYarn from '../package-managers/yarn'
+import { printUpgrades } from '../logging'
 import spawnNpm from '../package-managers/npm'
+import spawnYarn from '../package-managers/yarn'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { SpawnOptions } from '../types/SpawnOptions'
 import { VersionSpec } from '../types/VersionSpec'
+import upgradePackageData from './upgradePackageData'
 
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
 

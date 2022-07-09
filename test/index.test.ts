@@ -1,13 +1,13 @@
-import os from 'os'
-import fs from 'fs/promises'
-import path from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
+import fs from 'fs/promises'
+import os from 'os'
+import path from 'path'
 import * as ncu from '../src/'
 import { FilterFunction } from '../src/types/FilterFunction'
-import { TargetFunction } from '../src/types/TargetFunction'
 import { Index } from '../src/types/IndexType'
+import { TargetFunction } from '../src/types/TargetFunction'
 import { Version } from '../src/types/Version'
 
 chai.should()

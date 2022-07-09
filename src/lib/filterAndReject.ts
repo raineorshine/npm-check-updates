@@ -1,5 +1,5 @@
-import _ from 'lodash'
 import { and } from 'fp-and-or'
+import _ from 'lodash'
 import minimatch from 'minimatch'
 import { SemVer, parseRange } from 'semver-utils'
 import { FilterRejectPattern } from '../types/FilterRejectPattern'

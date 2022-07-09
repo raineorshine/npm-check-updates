@@ -1,6 +1,6 @@
-import path from 'path'
-import _ from 'lodash'
 import chalk from 'chalk'
+import _ from 'lodash'
+import path from 'path'
 import { rcFile } from 'rc-config-loader'
 import { cliOptionsMap } from '../cli-options'
 

@@ -85,6 +85,7 @@
     "yaml": "^2.1.1"
   },
   "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^3.2.0",
     "@types/chai": "^4.3.1",
     "@types/chai-as-promised": "^7.1.5",
     "@types/chai-string": "^1.4.2",

@@ -1,9 +1,9 @@
-import fs from 'fs/promises'
 import memoize from 'fast-memoize'
+import fs from 'fs/promises'
 import { GetVersion } from '../types/GetVersion'
-import { Version } from '../types/Version'
 import { Options } from '../types/Options'
 import { StaticRegistry } from '../types/StaticRegistry'
+import { Version } from '../types/Version'
 
 /**
  * Returns registry object given a valid path

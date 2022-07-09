@@ -1,28 +1,28 @@
-'use strict'
-
 // eslint-disable-next-line fp/no-events
-import { once, EventEmitter } from 'events'
-import _ from 'lodash'
 import cint from 'cint'
+import { EventEmitter, once } from 'events'
+import memoize from 'fast-memoize'
 import fs from 'fs/promises'
+import jsonlines from 'jsonlines'
+import _ from 'lodash'
 import os from 'os'
 import path from 'path'
-import jsonlines from 'jsonlines'
-import memoize from 'fast-memoize'
 import spawn from 'spawn-please'
 import yaml from 'yaml'
-import * as versionUtil from '../version-util'
-import { viewOne, viewManyMemoized } from './npm'
+import exists from '../lib/exists'
+import findLockfile from '../lib/findLockfile'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
+import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { Packument } from '../types/Packument'
 import { SpawnOptions } from '../types/SpawnOptions'
 import { Version } from '../types/Version'
-import { NpmOptions } from '../types/NpmOptions'
+import * as versionUtil from '../version-util'
 import { allowDeprecatedOrIsNotDeprecated, allowPreOrIsNotPre, satisfiesNodeEngine } from './filters'
-import findLockfile from '../lib/findLockfile'
-import exists from '../lib/exists'
+import { viewManyMemoized, viewOne } from './npm'
+
+;('use strict')
 
 interface ParsedDep {
   version: string

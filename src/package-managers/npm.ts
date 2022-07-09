@@ -1,28 +1,28 @@
-'use strict'
-
-import _ from 'lodash'
 import cint from 'cint'
+import memoize from 'fast-memoize'
 import fs from 'fs/promises'
+import _ from 'lodash'
+import pacote from 'pacote'
 import semver from 'semver'
 import spawn from 'spawn-please'
-import pacote from 'pacote'
-import memoize from 'fast-memoize'
 import libnpmconfig from '../lib/libnpmconfig'
-import * as versionUtil from '../version-util'
 import { print } from '../logging'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
 import { NpmOptions } from '../types/NpmOptions'
+import { Options } from '../types/Options'
 import { Packument } from '../types/Packument'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
+import * as versionUtil from '../version-util'
 import {
   allowDeprecatedOrIsNotDeprecated,
   allowPreOrIsNotPre,
   satisfiesNodeEngine,
   satisfiesPeerDependencies,
 } from './filters'
+
+;('use strict')
 
 const TIME_FIELDS = ['modified', 'created']
 

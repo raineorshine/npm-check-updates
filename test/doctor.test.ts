@@ -1,9 +1,9 @@
-import fs from 'fs/promises'
-import path from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import spawn from 'spawn-please'
+import fs from 'fs/promises'
+import path from 'path'
 import rimraf from 'rimraf'
+import spawn from 'spawn-please'
 import stripAnsi from 'strip-ansi'
 import { cliOptionsMap } from '../src/cli-options'
 

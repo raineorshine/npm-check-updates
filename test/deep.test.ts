@@ -1,9 +1,9 @@
-import fs from 'fs/promises'
-import path from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import * as ncu from '../src/'
+import fs from 'fs/promises'
+import path from 'path'
 import spawn from 'spawn-please'
+import * as ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
 
 chai.should()
