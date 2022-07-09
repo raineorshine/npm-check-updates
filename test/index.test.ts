@@ -2,8 +2,8 @@ import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 import fs from 'fs/promises'
-import os from 'os'
 import path from 'path'
+import { dir } from 'tmp-promise'
 import * as ncu from '../src/'
 import { FilterFunction } from '../src/types/FilterFunction'
 import { Index } from '../src/types/IndexType'
@@ -18,92 +18,80 @@ process.env.NCU_TESTS = 'true'
 
 describe('run', function () {
   it('return promised jsonUpgraded', async () => {
-    return ncu
-      .run({
-        packageData: await fs.readFile(path.join(__dirname, 'ncu/package.json'), 'utf-8'),
-      })
-      .should.eventually.have.property('express')
+    const output = await ncu.run({
+      packageData: await fs.readFile(path.join(__dirname, 'ncu/package.json'), 'utf-8'),
+    })
+    output!.should.have.property('express')
   })
 
-  it('pass object as packageData', () => {
-    return ncu
-      .run({
-        packageData: {
-          dependencies: {
-            'ncu-test-v2': '1.0.0',
-          },
+  it('pass object as packageData', async () => {
+    const output = await ncu.run({
+      packageData: {
+        dependencies: {
+          'ncu-test-v2': '1.0.0',
         },
-      })
-      .should.eventually.have.property('ncu-test-v2')
+      },
+    })
+    output!.should.have.property('ncu-test-v2')
   })
 
-  it('suggest upgrades to versions within the specified version range if jsonUpgraded is true', () => {
-    const upgraded = ncu.run({
+  it('suggest upgrades to versions within the specified version range if jsonUpgraded is true', async () => {
+    const upgraded = await ncu.run({
       // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
       packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
       jsonUpgraded: true,
     })
 
-    return Promise.all([
-      upgraded.should.eventually.have.property('juggernaut'),
-      upgraded.then(data => {
-        return data!.should.eql({ juggernaut: '^2.1.1' })
-      }),
-    ])
+    upgraded!.should.have.property('juggernaut')
+    upgraded!.should.eql({ juggernaut: '^2.1.1' })
   })
 
-  it('do not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimial is true', () => {
-    const upgraded = ncu.run({
+  it('do not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimial is true', async () => {
+    const upgraded = await ncu.run({
       // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
       packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
       jsonUpgraded: true,
       minimal: true,
     })
 
-    return upgraded.should.eventually.not.have.property('juggernaut')
+    return upgraded!.should.not.have.property('juggernaut')
   })
 
   it('do not upgrade peerDependencies by default', async () => {
-    const upgraded = ncu.run({
+    const upgraded = await ncu.run({
       packageData: await fs.readFile(path.join(__dirname, '/ncu/package-dep.json'), 'utf-8'),
     })
 
-    return Promise.all([
-      upgraded.should.eventually.have.property('express'),
-      upgraded.should.eventually.have.property('chalk'),
-      upgraded.should.eventually.not.have.property('mocha'),
-    ])
+    upgraded!.should.have.property('express')
+    upgraded!.should.have.property('chalk')
+    upgraded!.should.not.have.property('mocha')
   })
 
   it('only upgrade devDependencies with --dep dev', async () => {
-    const upgraded = ncu.run({
+    const upgraded = await ncu.run({
       packageData: await fs.readFile(path.join(__dirname, 'ncu/package-dep.json'), 'utf-8'),
       dep: 'dev',
     })
 
-    return Promise.all([
-      upgraded.should.eventually.not.have.property('express'),
-      upgraded.should.eventually.have.property('chalk'),
-      upgraded.should.eventually.not.have.property('mocha'),
-    ])
+    upgraded!.should.not.have.property('express')
+    upgraded!.should.have.property('chalk')
+    upgraded!.should.not.have.property('mocha')
   })
 
   it('only upgrade devDependencies and peerDependencies with --dep dev,peer', async () => {
-    const upgraded = ncu.run({
+    const upgraded = await ncu.run({
       packageData: await fs.readFile(path.join(__dirname, 'ncu/package-dep.json'), 'utf-8'),
       dep: 'dev,peer',
     })
 
-    return Promise.all([
-      upgraded.should.eventually.not.have.property('express'),
-      upgraded.should.eventually.have.property('chalk'),
-      upgraded.should.eventually.have.property('mocha'),
-    ])
+    upgraded!.should.not.have.property('express')
+    upgraded!.should.have.property('chalk')
+    upgraded!.should.have.property('mocha')
   })
 
   it('write to --packageFile and output jsonUpgraded', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-    const pkgFile = path.resolve(tempDir, 'package.json')
+    const tempDir = await dir({ unsafeCleanup: true })
+    const pkgFile = path.join(tempDir.path, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
 
     try {
@@ -118,7 +106,7 @@ describe('run', function () {
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
     } finally {
-      await fs.unlink(pkgFile)
+      await tempDir.cleanup()
     }
   })
 
