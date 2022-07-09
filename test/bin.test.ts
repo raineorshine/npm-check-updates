@@ -223,18 +223,18 @@ it('suppress stdout when --silent is provided', async () => {
 
 describe('rc-config', () => {
   it('print rcConfigPath when there is a non-empty rc config file', async () => {
-    const tempFilePath = './test/'
-    const tempFileName = '.ncurc.json'
-    await fs.writeFile(tempFilePath + tempFileName, '{"filter": "express"}', 'utf-8')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempConfigFile = path.join(tempDir, '.ncurc.json')
+    await fs.writeFile(tempConfigFile, '{"filter": "express"}', 'utf-8')
     try {
       const text = await spawn(
         'node',
-        [bin, '--configFilePath', tempFilePath],
+        [bin, '--configFilePath', tempDir],
         '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       )
-      text.should.include(`Using config file ${path.resolve(tempFilePath, tempFileName)}`)
+      text.should.include(`Using config file ${tempConfigFile}`)
     } finally {
-      await fs.unlink(tempFilePath + tempFileName)
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
@@ -244,90 +244,87 @@ describe('rc-config', () => {
   })
 
   it('do not print rcConfigPath when there is an empty rc config file', async () => {
-    const tempFilePath = './test/'
-    const tempFileName = '.ncurc.json'
-    await fs.writeFile(tempFilePath + tempFileName, '{}', 'utf-8')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempConfigFile = path.join(tempDir, '.ncurc.json')
+    await fs.writeFile(tempConfigFile, '{}', 'utf-8')
     try {
       const text = await spawn(
         'node',
-        [bin, '--configFilePath', tempFilePath],
+        [bin, '--configFilePath', tempDir],
         '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       )
       text.should.not.include('Using config file')
     } finally {
-      await fs.unlink(tempFilePath + tempFileName)
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
   it('read --configFilePath', async () => {
-    const tempFilePath = './test/'
-    const tempFileName = '.ncurc.json'
-    await fs.writeFile(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempConfigFile = path.join(tempDir, '.ncurc.json')
+    await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
     try {
       const text = await spawn(
         'node',
-        [bin, '--configFilePath', tempFilePath],
+        [bin, '--configFilePath', tempDir],
         '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       )
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('express')
       pkgData.should.not.have.property('chalk')
     } finally {
-      await fs.unlink(tempFilePath + tempFileName)
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
   it('read --configFileName', async () => {
-    const tempFilePath = './test/'
-    const tempFileName = '.rctemp.json'
-    await fs.writeFile(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempConfigFileName = '.rctemp.json'
+    const tempConfigFile = path.join(tempDir, tempConfigFileName)
+    await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
     try {
       const text = await spawn(
         'node',
-        [bin, '--configFilePath', tempFilePath, '--configFileName', tempFileName],
+        [bin, '--configFilePath', tempDir, '--configFileName', tempConfigFileName],
         '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       )
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('express')
       pkgData.should.not.have.property('chalk')
     } finally {
-      await fs.unlink(tempFilePath + tempFileName)
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
   it('override config with arguments', async () => {
-    const tempFilePath = './test/'
-    const tempFileName = '.ncurc.json'
-    await fs.writeFile(tempFilePath + tempFileName, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempConfigFile = path.join(tempDir, '.ncurc.json')
+    await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
     try {
       const text = await spawn(
         'node',
-        [bin, '--configFilePath', tempFilePath, '--filter', 'chalk'],
+        [bin, '--configFilePath', tempDir, '--filter', 'chalk'],
         '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       )
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('chalk')
       pkgData.should.not.have.property('express')
     } finally {
-      await fs.unlink(tempFilePath + tempFileName)
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
   it('handle boolean arguments', async () => {
-    const tempFilePath = './test/'
-    const tempFileName = '.ncurc.json'
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempConfigFile = path.join(tempDir, '.ncurc.json')
     // if boolean arguments are not handled as a special case, ncu will incorrectly pass "--deep false" to commander, which will interpret it as two args, i.e. --deep and --filter false
-    await fs.writeFile(tempFilePath + tempFileName, '{"jsonUpgraded": true, "deep": false }', 'utf-8')
+    await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true, "deep": false }', 'utf-8')
     try {
-      const text = await spawn(
-        'node',
-        [bin, '--configFilePath', tempFilePath],
-        '{ "dependencies": { "chalk": "0.1.0" } }',
-      )
+      const text = await spawn('node', [bin, '--configFilePath', tempDir], '{ "dependencies": { "chalk": "0.1.0" } }')
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('chalk')
     } finally {
-      await fs.unlink(tempFilePath + tempFileName)
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
