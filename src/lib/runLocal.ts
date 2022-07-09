@@ -185,15 +185,18 @@ async function runLocal(
           getPackageManagerForInstall(options, pkgFile),
           writePackageFile(pkgFile, newPkgData),
         ]).then(async ([packageManager]) => {
-          const installMessage = `${chalk.cyan(packageManager + ' install')} to install new versions`
+          // by default, show an install hint after upgrading
+          // this will be disabled in interactive mode if the user chooses to have npm-check-updates execute the install command
+          let showInstallHint = true
+          const installHint = `${chalk.cyan(packageManager + ' install')} to install new versions`
 
           // prompt the user if they want ncu to run "npm install"
           if (options.interactive) {
-            console.log('')
+            console.info('')
             const response = await prompts({
               type: 'confirm',
               name: 'value',
-              message: `${installMessage}?`,
+              message: `${installHint}?`,
               initial: true,
               // allow Ctrl+C to kill the process
               onState: (state: any) => {
@@ -202,13 +205,20 @@ async function runLocal(
                 }
               },
             })
+
+            // autoinstall
             if (response.value) {
-              await spawn(packageManager, ['install'])
+              showInstallHint = false
+              const cmd = packageManager + (process.platform === 'win32' ? '.cmd' : '')
+              const cwd = options.cwd || path.resolve(pkgFile, '..')
+              const stdout = await spawn(cmd, ['install'], { cwd })
+              print(options, stdout, 'verbose')
             }
           }
-          // otherwise just offer the install command as a suggestion
-          else {
-            print(options, `\nRun ${installMessage}.`)
+
+          // show the install hint unless autoinstall occurred
+          if (showInstallHint) {
+            print(options, `\nRun ${installHint}.`)
           }
         })
       } else {

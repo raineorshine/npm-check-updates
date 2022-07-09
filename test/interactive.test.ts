@@ -1,40 +1,43 @@
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 
-chai.should()
+const should = chai.should()
 chai.use(chaiAsPromised)
 chai.use(chaiString)
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('--interactive', () => {
-  let last = 0
-
-  /** Gets the temporary package file path. */
-  const getTempFile = () => `test/temp_package${++last}.json`
-
-  it('prompt for each dependency', async () => {
-    const tempFile = getTempFile()
+  it('prompt for each upgraded dependency', async () => {
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.resolve(tempDir, 'package.json')
     fs.writeFileSync(
-      tempFile,
+      pkgFile,
       JSON.stringify({
         dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
       }),
       'utf-8',
     )
     try {
-      await spawn('node', [bin, '--interactive', '--packageFile', tempFile], {
+      const stdout = await spawn('node', [bin, '--interactive'], {
+        cwd: tempDir,
         env: {
           ...process.env,
-          INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version']]),
+          INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
         },
       })
 
-      const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'))
+      should.equal(/^Upgrading .*\/package\.json$/m.test(stdout), true)
+
+      // do not show install hint when choosing autoinstall
+      should.equal(/^Run npm install to install new versions.$/m.test(stdout), false)
+
+      const upgradedPkg = JSON.parse(fs.readFileSync(pkgFile, 'utf-8'))
       upgradedPkg.dependencies.should.deep.equal({
         // upgraded
         'ncu-test-v2': '2.0.0',
@@ -43,28 +46,56 @@ describe('--interactive', () => {
         'ncu-test-tag': '1.0.0',
       })
     } finally {
-      fs.unlinkSync(tempFile)
+      fs.unlinkSync(pkgFile)
+    }
+  })
+
+  it('show suggested install command when declining autoinstall', async () => {
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.resolve(tempDir, 'package.json')
+    fs.writeFileSync(
+      pkgFile,
+      JSON.stringify({
+        dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
+      }),
+      'utf-8',
+    )
+    try {
+      const stdout = await spawn('node', [bin, '--interactive'], {
+        cwd: tempDir,
+        env: {
+          ...process.env,
+          INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], false]),
+        },
+      })
+
+      // show install hint when autoinstall is declined
+      should.equal(/^Run npm install to install new versions.$/m.test(stdout), true)
+    } finally {
+      fs.unlinkSync(pkgFile)
     }
   })
 
   it('with --format group', async () => {
-    const tempFile = getTempFile()
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.resolve(tempDir, 'package.json')
     fs.writeFileSync(
-      tempFile,
+      pkgFile,
       JSON.stringify({
         dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
       }),
       'utf-8',
     )
     try {
-      await spawn('node', [bin, '--interactive', '--format', 'group', '--packageFile', tempFile], {
+      await spawn('node', [bin, '--interactive', '--format', 'group'], {
+        cwd: tempDir,
         env: {
           ...process.env,
-          INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version']]),
+          INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
         },
       })
 
-      const upgradedPkg = JSON.parse(fs.readFileSync(tempFile, 'utf-8'))
+      const upgradedPkg = JSON.parse(fs.readFileSync(pkgFile, 'utf-8'))
       upgradedPkg.dependencies.should.deep.equal({
         // upgraded
         'ncu-test-v2': '2.0.0',
@@ -72,8 +103,10 @@ describe('--interactive', () => {
         // no upgraded
         'ncu-test-tag': '1.0.0',
       })
+
+      // prompts does not print during injection, so we cannot assert the output in interactive mode
     } finally {
-      fs.unlinkSync(tempFile)
+      await fs.promises.unlink(pkgFile)
     }
   })
 })
