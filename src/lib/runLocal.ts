@@ -62,8 +62,6 @@ const chooseUpgrades = async (
 ): Promise<Index<string>> => {
   let chosenDeps: string[] = []
 
-  print(options, '')
-
   // use toDependencyTable to create choices that are properly padded to align vertically
   const table = await toDependencyTable({
     from: oldDependencies,
@@ -81,6 +79,8 @@ const chooseUpgrades = async (
   // do not prompt if there are no dependencies
   // prompts will crash if passed an empty list of choices
   if (Object.keys(newDependencies).length > 0) {
+    print(options, '')
+
     if (options.format?.includes('group')) {
       const groups = keyValueBy<string, Index<string>>(
         newDependencies,

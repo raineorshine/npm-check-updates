@@ -55,7 +55,6 @@ const renderOption = (option: CLIOption<unknown>) => {
 /** Generate /src/types/RunOptions from cli-options so there is a single source of truth. */
 const renderRunOptions = (options: CLIOption<unknown>[]) => {
   const header = `/** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build:options" to build. */
-
 import { FilterFunction } from './FilterFunction'
 import { PackageFile } from './PackageFile'
 import { TargetFunction } from './TargetFunction'
