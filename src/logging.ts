@@ -3,6 +3,7 @@
  */
 import Chalk from 'chalk'
 import Table from 'cli-table'
+import { parse, parseRange } from 'semver-utils'
 import getRepoUrl from './lib/getRepoUrl'
 import keyValueBy from './lib/keyValueBy'
 import { IgnoredUpgrade } from './types/IgnoredUpgrade'
@@ -11,7 +12,6 @@ import { Options } from './types/Options'
 import { Version } from './types/Version'
 import { VersionSpec } from './types/VersionSpec'
 import { colorizeDiff, getGithubUrlTag, isGithubUrl, isNpmAlias, parseNpmAlias, partChanged } from './version-util'
-import { parseRange, parse } from 'semver-utils'
 
 // maps string levels to numeric levels
 const logLevels = {
@@ -186,7 +186,10 @@ export async function printUpgradesTable(
       const from = current[dep]
       const defaultGroup = partChanged(from, to)
       const userDefinedUpgradeGroup =
-        options.group?.(dep, parseRange(from), parseRange(to), parse(latest[dep]), defaultGroup) ?? defaultGroup
+        options.group?.(dep, parseRange(from), parseRange(to), parse(latest[dep])) ?? defaultGroup
+      if (userDefinedUpgradeGroup === 'none') {
+        return accum
+      }
       return {
         ...accum,
         [userDefinedUpgradeGroup]: {
@@ -198,52 +201,15 @@ export async function printUpgradesTable(
 
     const headings = getGroupHeadings(options)
 
-    if (groups.patch) {
-      print(options, '\n' + headings.patch)
+    // eslint-disable-next-line fp/no-loops -- We must await in each iteration of the loop
+    for (const [groupName, groupContents] of Object.entries(groups)) {
+      const heading = groupName in headings ? headings[groupName as keyof typeof headings] : groupName
+      print(options, '\n' + heading)
       print(
         options,
         await toDependencyTable({
           from: current,
-          to: groups.patch,
-          ownersChangedDeps,
-          format: options.format,
-        }),
-      )
-    }
-
-    if (groups.minor) {
-      print(options, '\n' + headings.minor)
-      print(
-        options,
-        await toDependencyTable({
-          from: current,
-          to: groups.minor,
-          ownersChangedDeps,
-          format: options.format,
-        }),
-      )
-    }
-
-    if (groups.major) {
-      print(options, '\n' + headings.major)
-      print(
-        options,
-        await toDependencyTable({
-          from: current,
-          to: groups.major,
-          ownersChangedDeps,
-          format: options.format,
-        }),
-      )
-    }
-
-    if (groups.majorVersionZero) {
-      print(options, '\n' + headings.majorVersionZero)
-      print(
-        options,
-        await toDependencyTable({
-          from: current,
-          to: groups.majorVersionZero,
+          to: groupContents,
           ownersChangedDeps,
           format: options.format,
         }),

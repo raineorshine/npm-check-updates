@@ -6,8 +6,8 @@ import semverutils, { SemVer } from 'semver-utils'
 import util from 'util'
 import { keyValueBy } from './lib/keyValueBy'
 import { Maybe } from './types/Maybe'
-import { VersionLevel } from './types/VersionLevel'
 import { UpgradeGroup } from './types/UpgradeGroup'
+import { VersionLevel } from './types/VersionLevel'
 
 const VERSION_BASE_PARTS = ['major', 'minor', 'patch'] as VersionPart[]
 const VERSION_ADDED_PARTS = ['release', 'build'] as VersionPart[]
