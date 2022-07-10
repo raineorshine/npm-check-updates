@@ -12,8 +12,6 @@ chai.use(chaiString)
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
-// use dynamic import for ESM module
-
 describe('--format group', () => {
   it('group upgrades by type', async () => {
     // use dynamic import for ESM module
@@ -31,13 +29,12 @@ describe('--format group', () => {
       const stdout = await spawn('node', [bin, '--format', 'group'], {
         cwd: tempDir,
       })
-      // TODO: trimEnd
       stripAnsi(stdout).should.include(
         `Minor   Backwards-compatible features
- ncu-test-tag  1.0.0  →  1.1.0     ${''}
+ ncu-test-tag  1.0.0  →  1.1.0
 
 Major   Potentially breaking API changes
- ncu-test-v2              1.0.0  →  2.0.0     ${''}
+ ncu-test-v2              1.0.0  →  2.0.0
  ncu-test-return-version  1.0.0  →  2.0.0`,
       )
     } finally {

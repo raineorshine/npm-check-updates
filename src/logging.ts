@@ -69,8 +69,8 @@ export function printJson(options: Options, object: any) {
 }
 
 /** Create a table with the appropriate columns and alignment to render dependency upgrades. */
-function createDependencyTable(rows: string[][]) {
-  return new Table({
+function renderDependencyTable(rows: string[][]) {
+  const table = new Table({
     colAligns: ['left', 'right', 'right', 'right', 'left', 'left'],
     chars: {
       top: '',
@@ -90,9 +90,18 @@ function createDependencyTable(rows: string[][]) {
       middle: '',
     },
     rows,
-    // coerce type until rows is added @types/cli-table
+    // TODO: Submit a PR for rows in @types/cli-table
     // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
   } as any)
+
+  // when border is removed, whitespace remains
+  // trim the end of each line to remove whitespace
+  // this makes no difference visually, but the whitespace interacts poorly with .editorconfig in tests
+  return table
+    .toString()
+    .split('\n')
+    .map(line => line.trimEnd())
+    .join('\n')
 }
 
 /**
@@ -124,7 +133,7 @@ export async function toDependencyTable({
   ownersChangedDeps?: Index<boolean>
   format?: string[]
 }) {
-  const table = createDependencyTable(
+  const table = renderDependencyTable(
     await Promise.all(
       Object.keys(toDeps).map(async dep => {
         const from = fromDeps[dep] || ''
@@ -143,7 +152,7 @@ export async function toDependencyTable({
       }),
     ),
   )
-  return table.toString()
+  return table
 }
 
 /**
@@ -356,7 +365,7 @@ export async function printUpgrades(
 /** Print updates that were ignored due to incompatible peer dependencies. */
 export function printIgnoredUpdates(options: Options, ignoredUpdates: Index<IgnoredUpgrade>) {
   print(options, `\nIgnored incompatible updates (peer dependencies):\n`)
-  const table = createDependencyTable(
+  const table = renderDependencyTable(
     Object.entries(ignoredUpdates).map(([pkgName, { from, to, reason }]) => {
       const strReason =
         'reason: ' +
