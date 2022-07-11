@@ -3,6 +3,7 @@
  */
 import Chalk from 'chalk'
 import Table from 'cli-table'
+import _ from 'lodash'
 import { parse, parseRange } from 'semver-utils'
 import getRepoUrl from './lib/getRepoUrl'
 import keyValueBy from './lib/keyValueBy'
@@ -31,7 +32,7 @@ export const getGroupHeadings = ({ color }: { color?: boolean }) => {
     patch: chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'),
     minor: chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'),
     major: chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'),
-    majorVersionZero: chalk.magenta(chalk.bold('Major version zero') + '  Anything may change'),
+    majorVersionZero: chalk.magenta(chalk.bold('Major version zero') + '   Anything may change'),
   }
 }
 
@@ -197,12 +198,17 @@ export async function printUpgradesTable(
           [dep]: to,
         },
       }
-    }) as Record<ReturnType<typeof partChanged>, Index<string>>
+    })
 
     const headings = getGroupHeadings(options)
+    const groupOrder = _.uniq(['patch', 'minor', 'major', 'majorVersionZero', ..._.sortBy(Object.keys(groups))])
 
     // eslint-disable-next-line fp/no-loops -- We must await in each iteration of the loop
-    for (const [groupName, groupContents] of Object.entries(groups)) {
+    for (const groupName of groupOrder) {
+      if (!(groupName in groups)) {
+        continue
+      }
+      const groupContents = groups[groupName]
       const heading = groupName in headings ? headings[groupName as keyof typeof headings] : groupName
       print(options, '\n' + heading)
       print(

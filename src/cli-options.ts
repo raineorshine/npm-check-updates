@@ -140,7 +140,7 @@ const extendedHelpGroup = (): string => {
     @param currentSpec      The current version range in your package.json.
     @param upgradedSpec     The upgraded version range that will be written to your package.json.
     @param upgradedVersion  The upgraded version number returned by the registry.
-    @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or null to use the default group.
+    @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none'), null to use the default group, or a custom string to create your own group.
   */`)}
   ${chalk.cyan('target')}: (name, currentSpec, upgradedSpec, upgradedVersion} {
     return name.startsWith('@myorg') ? 'My Org' : null

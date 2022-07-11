@@ -7,4 +7,4 @@ export type GroupFunction = (
   currentVersionSpec: SemVer[],
   upgradedVersionSpec: SemVer[],
   upgradedVersion: SemVer | null,
-) => UpgradeGroup | string
+) => UpgradeGroup | string | null
