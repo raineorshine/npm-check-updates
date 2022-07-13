@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { program } from 'commander'
-import _ from 'lodash'
+import pickBy from 'lodash/pickBy'
 import pkg from '../../package.json'
 import cliOptions from '../cli-options'
 import ncu from '../index'
@@ -100,7 +100,7 @@ import getNcuRc from '../lib/getNcuRc' // async global contexts are only availab
   // filter out undefined program options and combine cli options with config file options
   const options = {
     ...(rcResult && Object.keys(rcResult.config).length > 0 ? { rcConfigPath: rcResult.filePath } : null),
-    ..._.pickBy(program.opts(), value => value !== undefined),
+    ...pickBy(program.opts(), value => value !== undefined),
     args: program.args,
     ...(programOpts.filter ? { filter: programOpts.filter } : null),
   }

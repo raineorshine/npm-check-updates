@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import get from 'lodash/get'
 import semver from 'semver'
 import { Index } from '../types/IndexType'
 import { Maybe } from '../types/Maybe'
@@ -36,9 +36,9 @@ export function allowPreOrIsNotPre(versionResult: Packument, options: Options): 
  */
 export function satisfiesNodeEngine(versionResult: Packument, nodeEngineVersion: Maybe<string>): boolean {
   if (!nodeEngineVersion) return true
-  const minVersion = _.get(semver.minVersion(nodeEngineVersion), 'version')
+  const minVersion = get(semver.minVersion(nodeEngineVersion), 'version')
   if (!minVersion) return true
-  const versionNodeEngine = _.get(versionResult, 'engines.node')
+  const versionNodeEngine = get(versionResult, 'engines.node')
   return versionNodeEngine && semver.satisfies(minVersion, versionNodeEngine)
 }
 

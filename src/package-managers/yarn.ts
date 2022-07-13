@@ -3,7 +3,10 @@ import { EventEmitter, once } from 'events'
 import memoize from 'fast-memoize'
 import fs from 'fs/promises'
 import jsonlines from 'jsonlines'
-import _ from 'lodash'
+import filter from 'lodash/filter'
+import last from 'lodash/last'
+import overEvery from 'lodash/overEvery'
+import pullAll from 'lodash/pullAll'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
@@ -160,7 +163,7 @@ async function parseJsonLines(result: string): Promise<{ dependencies: Index<Par
 
 /** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by pacote.packument. */
 function filterPredicate(options: Options): (o: Packument) => boolean {
-  return _.overEvery([
+  return overEvery([
     o => allowDeprecatedOrIsNotDeprecated(o, options),
     o => allowPreOrIsNotPre(o, options),
     options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null!,
@@ -270,9 +273,9 @@ export const greatest: GetVersion = async (packageName, currentVersion, options:
   )) as Packument[]
 
   return (
-    _.last(
+    last(
       // eslint-disable-next-line fp/no-mutating-methods
-      _.filter(versions, filterPredicate(options))
+      filter(versions, filterPredicate(options))
         .map(o => o.version)
         .sort(versionUtil.compareVersions),
     ) || null
@@ -343,7 +346,7 @@ export const newest: GetVersion = async (packageName: string, currentVersion, op
     await npmConfigFromYarn(options),
   )
 
-  const versionsSatisfyingNodeEngine = _.filter(result.versions, version =>
+  const versionsSatisfyingNodeEngine = filter(result.versions, version =>
     satisfiesNodeEngine(version, options.nodeEngineVersion),
   ).map((o: Packument) => o.version)
 
@@ -353,10 +356,10 @@ export const newest: GetVersion = async (packageName: string, currentVersion, op
     [],
   )
 
-  const versionsWithTime = _.pullAll(versions, TIME_FIELDS)
+  const versionsWithTime = pullAll(versions, TIME_FIELDS)
 
   return (
-    _.last(options.pre !== false ? versions : versionsWithTime.filter(version => !versionUtil.isPre(version))) || null
+    last(options.pre !== false ? versions : versionsWithTime.filter(version => !versionUtil.isPre(version))) || null
   )
 }
 
@@ -377,7 +380,7 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
     await npmConfigFromYarn(options),
   )) as Packument[]
   return versionUtil.findGreatestByLevel(
-    _.filter(versions, filterPredicate(options)).map(o => o.version),
+    filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
     'minor',
   )
@@ -400,7 +403,7 @@ export const patch: GetVersion = async (packageName, currentVersion, options = {
     await npmConfigFromYarn(options),
   )) as Packument[]
   return versionUtil.findGreatestByLevel(
-    _.filter(versions, filterPredicate(options)).map(o => o.version),
+    filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
     'patch',
   )

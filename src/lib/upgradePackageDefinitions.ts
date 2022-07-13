@@ -1,4 +1,6 @@
-import _ from 'lodash'
+import isEmpty from 'lodash/isEmpty'
+import isEqual from 'lodash/isEqual'
+import pickBy from 'lodash/pickBy'
 import { satisfies } from 'semver'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -34,14 +36,14 @@ export async function upgradePackageDefinitions(
     removeRange: options.removeRange,
   })
 
-  const filteredUpgradedDependencies = _.pickBy(upgradedDependencies, (v, dep) => {
+  const filteredUpgradedDependencies = pickBy(upgradedDependencies, (v, dep) => {
     return !options.jsonUpgraded || !options.minimal || !satisfies(latestVersions[dep], currentDependencies[dep])
   })
 
-  if (options.peer && !_.isEmpty(filteredUpgradedDependencies)) {
+  if (options.peer && !isEmpty(filteredUpgradedDependencies)) {
     const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredUpgradedDependencies, options)
     const peerDependencies = { ...options.peerDependencies, ...upgradedPeerDependencies }
-    if (!_.isEqual(options.peerDependencies, peerDependencies)) {
+    if (!isEqual(options.peerDependencies, peerDependencies)) {
       const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
         { ...currentDependencies, ...filteredUpgradedDependencies },
         { ...options, peerDependencies, loglevel: 'silent' },

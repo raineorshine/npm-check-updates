@@ -1,4 +1,6 @@
-import _ from 'lodash'
+import flow from 'lodash/flow'
+import mapValues from 'lodash/mapValues'
+import pickBy from 'lodash/pickBy'
 import { parseRange } from 'semver-utils'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -42,12 +44,12 @@ function upgradeDependencies(
       removeRange: options.removeRange,
     })
 
-  return (
-    _(currentDependencies)
-      // only include packages for which a latest version was fetched
-      .pickBy((current, packageName) => packageName in latestVersions)
-      // unpack npm alias and git urls
-      .mapValues((current: string, packageName: string) => {
+  return flow([
+    // only include packages for which a latest version was fetched
+    deps => pickBy(deps, (current, packageName) => packageName in latestVersions),
+    // unpack npm alias and git urls
+    deps =>
+      mapValues(deps, (current: string, packageName: string) => {
         const latest = latestVersions[packageName]
         let currentParsed = null
         let latestParsed = null
@@ -70,23 +72,23 @@ function upgradeDependencies(
         }
 
         return { current, currentParsed, latest, latestParsed }
-      })
-      // pick the packages that are upgradeable
-      .pickBy(({ current, currentParsed, latest, latestParsed }: any) =>
+      }),
+    // pick the packages that are upgradeable
+    deps =>
+      pickBy(deps, ({ current, currentParsed, latest, latestParsed }: any) =>
         isUpgradeable(currentParsed || current, latestParsed || latest),
-      )
-      // pack embedded versions: npm aliases and git urls
-      .mapValues(({ current, currentParsed, latest, latestParsed }: MappedDependencies) => {
+      ),
+    // pack embedded versions: npm aliases and git urls
+    deps =>
+      mapValues(deps, ({ current, currentParsed, latest, latestParsed }: MappedDependencies) => {
         const upgraded = upgradeDep(currentParsed || current, latestParsed || latest)
         return versionUtil.isNpmAlias(current)
           ? versionUtil.upgradeNpmAlias(current, upgraded)
           : versionUtil.isGithubUrl(current)
           ? versionUtil.upgradeGithubUrl(current, upgraded)
           : upgraded
-      })
-      // TODO: type
-      .value() as unknown as Index<VersionSpec>
-  )
+      }),
+  ])(currentDependencies)
 }
 
 export default upgradeDependencies

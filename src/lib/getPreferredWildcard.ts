@@ -1,4 +1,5 @@
-import _ from 'lodash'
+import groupBy from 'lodash/groupBy'
+import sortBy from 'lodash/sortBy'
 import { Index } from '../types/IndexType'
 import { WILDCARDS } from '../version-util'
 
@@ -16,7 +17,7 @@ function getPreferredWildcard(dependencies: Index<string | null>) {
   }
 
   // group the dependencies by wildcard
-  const groups = _.groupBy(Object.values(dependencies), dep =>
+  const groups = groupBy(Object.values(dependencies), dep =>
     WILDCARDS.find((wildcard: string) => dep && dep.includes(wildcard)),
   )
 
@@ -25,7 +26,7 @@ function getPreferredWildcard(dependencies: Index<string | null>) {
   const arrOfGroups = Object.entries(groups).map(([wildcard, instances]) => ({ wildcard, instances }))
 
   // reverse sort the groups so that the wildcard with the most appearances is at the head, then return it.
-  const sorted = _.sortBy(arrOfGroups, wildcardObject => -wildcardObject.instances.length)
+  const sorted = sortBy(arrOfGroups, wildcardObject => -wildcardObject.instances.length)
 
   return sorted.length > 0 ? sorted[0].wildcard : null
 }

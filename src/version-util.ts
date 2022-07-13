@@ -1,4 +1,12 @@
-import _ from 'lodash'
+import ary from 'lodash/ary'
+import curry from 'lodash/curry'
+import flow from 'lodash/flow'
+import intersection from 'lodash/intersection'
+import last from 'lodash/last'
+import propertyOf from 'lodash/propertyOf'
+import reject from 'lodash/reject'
+import sortBy from 'lodash/sortBy'
+import uniq from 'lodash/uniq'
 import parseGithubUrl from 'parse-github-url'
 import semver from 'semver'
 import semverutils, { SemVer, parse, parseRange } from 'semver-utils'
@@ -52,7 +60,7 @@ export function numParts(version: string) {
     )
   }
 
-  return _.intersection(VERSION_PARTS, Object.keys(semver)).length
+  return intersection(VERSION_PARTS, Object.keys(semver)).length
 }
 
 /**
@@ -108,7 +116,7 @@ export function getPrecision(version: string) {
   const [semver] = semverutils.parseRange(version)
   // expects VERSION_PARTS to be in correct order
   // eslint-disable-next-line fp/no-mutating-methods
-  return VERSION_PARTS.slice().reverse().find(_.propertyOf(semver))
+  return VERSION_PARTS.slice().reverse().find(propertyOf(semver))
 }
 
 /**
@@ -218,7 +226,7 @@ export function getDependencyGroups(
     majorVersionZero: chalk.magenta(chalk.bold('Major version zero') + '   Anything may change'),
   }
 
-  const groupOrder = _.uniq(['patch', 'minor', 'major', 'majorVersionZero', ..._.sortBy(Object.keys(groups))])
+  const groupOrder = uniq(['patch', 'minor', 'major', 'majorVersionZero', ...sortBy(Object.keys(groups))])
 
   return groupOrder
     .filter(groupName => {
@@ -328,7 +336,7 @@ export function findGreatestByLevel(versions: string[], current: string, level: 
       )
     })
 
-  return _.last(versionsSorted) || null
+  return last(versionsSorted) || null
 }
 
 /**
@@ -355,7 +363,7 @@ const fixMissingMinorAndPatch = (s: string) => (isMissingMinorAndPatch(s) ? s + 
 const fixMissingPatch = (s: string) => (isMissingPatch(s) ? s + '.0' : s)
 
 /** Converts a pseudo version into a valid semver version. NOOP for valid semver versions. */
-export const fixPseudoVersion = _.flow(fixLeadingV, fixMissingMinorAndPatch, fixMissingPatch)
+export const fixPseudoVersion = flow(fixLeadingV, fixMissingMinorAndPatch, fixMissingPatch)
 
 /**
  * Returns 'v' if the string starts with a v, otherwise returns empty string.
@@ -460,12 +468,12 @@ export function upgradeDependencyDeclaration(
 
   // parse the declaration
   // if multiple ranges, use the semver with the least number of parts
-  const parsedRange = _(semverutils.parseRange(declaration))
+  const parsedRange: SemVer[] = flow([
     // semver-utils includes empty entries for the || and - operators. We can remove them completely
-    .reject({ operator: '||' })
-    .reject({ operator: '-' })
-    .sortBy(_.ary(_.flow(stringify, numParts), 1))
-    .value()
+    ranges => reject(ranges, { operator: '||' }),
+    ranges => reject(ranges, { operator: '-' }),
+    ranges => sortBy(ranges, ary(flow(stringify, numParts), 1)),
+  ])(semverutils.parseRange(declaration))
   const [declaredSemver] = parsedRange
 
   /**
@@ -495,10 +503,7 @@ export function upgradeDependencyDeclaration(
 
   // determine the operator
   // do not compact, because [undefined, '<'] must be differentiated from ['<']
-  const uniqueOperators = _(parsedRange)
-    .map(range => range.operator)
-    .uniq()
-    .value()
+  const uniqueOperators = uniq(parsedRange.map(range => range.operator))
   const operator = uniqueOperators[0] || ''
 
   const hasWildCard = WILDCARDS.some(wildcard => newSemverString.includes(wildcard))
@@ -516,21 +521,21 @@ export function upgradeDependencyDeclaration(
 }
 
 /** Reverts a valid semver version to a pseudo version that is missing its minor and patch components. NOOP If the original version was a valid semver version. */
-const revertMissingMinorAndPatch = _.curry((current: string, latest: string) =>
+const revertMissingMinorAndPatch = curry((current: string, latest: string) =>
   isMissingMinorAndPatch(current) ? latest.slice(0, latest.length - '.0.0'.length) : latest,
 )
 
 /** Reverts a valid semver version to a pseudo version that is missing its patch components. NOOP If the original version was a valid semver version. */
-const revertMissingPatch = _.curry((current: string, latest: string) =>
+const revertMissingPatch = curry((current: string, latest: string) =>
   isMissingPatch(current) ? latest.slice(0, latest.length - '.0'.length) : latest,
 )
 
 /** Reverts a valid semver version to a pseudo version with a leading 'v'. NOOP If the original version was a valid semver version. */
-const revertLeadingV = _.curry((current: string, latest: string) => (v(current) ? v(current) + latest : latest))
+const revertLeadingV = curry((current: string, latest: string) => (v(current) ? v(current) + latest : latest))
 
 /** Reverts a valid semver version to a pseudo version. NOOP If the original version was a valid semver version. */
 const revertPseudoVersion = (current: string, latest: string) =>
-  _.flow(revertLeadingV(current), revertMissingMinorAndPatch(current), revertMissingPatch(current))(latest)
+  flow(revertLeadingV(current), revertMissingMinorAndPatch(current), revertMissingPatch(current))(latest)
 
 /**
  * Replaces the version number embedded in a Github URL.

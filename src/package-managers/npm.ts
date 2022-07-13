@@ -1,6 +1,13 @@
 import memoize from 'fast-memoize'
 import fs from 'fs/promises'
-import _ from 'lodash'
+import assign from 'lodash/assign'
+import camelCase from 'lodash/camelCase'
+import filter from 'lodash/filter'
+import get from 'lodash/get'
+import isEqual from 'lodash/isEqual'
+import last from 'lodash/last'
+import overEvery from 'lodash/overEvery'
+import pullAll from 'lodash/pullAll'
 import pacote from 'pacote'
 import semver from 'semver'
 import spawn from 'spawn-please'
@@ -68,12 +75,12 @@ const readNpmConfig = () => {
         : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
 
     const { [key]: pacoteKey }: Index<string | ((path: string) => any)> = npmConfigToPacoteMap
-    if (_.isString(pacoteKey)) {
+    if (typeof pacoteKey === 'string') {
       config[pacoteKey] = normalizedValue
-    } else if (_.isFunction(pacoteKey)) {
-      _.assign(config, pacoteKey(normalizedValue))
+    } else if (typeof pacoteKey === 'function') {
+      assign(config, pacoteKey(normalizedValue.toString()))
     } else {
-      config[key.match(/^[a-z]/i) ? _.camelCase(key) : key] = normalizedValue
+      config[key.match(/^[a-z]/i) ? camelCase(key) : key] = normalizedValue
     }
   })
 
@@ -153,7 +160,7 @@ export async function packageAuthorChanged(
     if (current && upgraded && result.versions[current]._npmUser && result.versions[upgraded]._npmUser) {
       const currentAuthor = result.versions[current]._npmUser?.name
       const latestAuthor = result.versions[upgraded]._npmUser?.name
-      return !_.isEqual(currentAuthor, latestAuthor)
+      return !isEqual(currentAuthor, latestAuthor)
     }
   }
 
@@ -215,7 +222,7 @@ export async function viewMany(
       ...accum,
       [field]:
         field.startsWith('dist-tags.') && result.versions
-          ? result.versions[_.get(result, field) as unknown as string]
+          ? result.versions[get(result, field) as unknown as string]
           : result[field],
     }),
     {} as Packument,
@@ -246,7 +253,7 @@ export async function viewOne(
 
 /** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by pacote.packument. */
 function filterPredicate(options: Options): (o: Packument) => boolean {
-  return _.overEvery([
+  return overEvery([
     o => allowDeprecatedOrIsNotDeprecated(o, options),
     o => allowPreOrIsNotPre(o, options),
     options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null!,
@@ -343,9 +350,9 @@ export const greatest: GetVersion = async (packageName, currentVersion, options 
   const versions = (await viewOne(packageName, 'versions', currentVersion, options)) as Packument[]
 
   return (
-    _.last(
+    last(
       // eslint-disable-next-line fp/no-mutating-methods
-      _.filter(versions, filterPredicate(options))
+      filter(versions, filterPredicate(options))
         .map(o => o.version)
         .sort(versionUtil.compareVersions),
     ) || null
@@ -449,7 +456,7 @@ export const latest: GetVersion = async (packageName: string, currentVersion: Ve
 export const newest: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
   const result = await viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options)
 
-  const versionsSatisfyingNodeEngine = _.filter(result.versions, version =>
+  const versionsSatisfyingNodeEngine = filter(result.versions, version =>
     satisfiesNodeEngine(version, options.nodeEngineVersion),
   ).map((o: Packument) => o.version)
 
@@ -459,10 +466,10 @@ export const newest: GetVersion = async (packageName, currentVersion, options = 
     [],
   )
 
-  const versionsWithTime = _.pullAll(versions, TIME_FIELDS)
+  const versionsWithTime = pullAll(versions, TIME_FIELDS)
 
   return (
-    _.last(options.pre !== false ? versions : versionsWithTime.filter(version => !versionUtil.isPre(version))) || null
+    last(options.pre !== false ? versions : versionsWithTime.filter(version => !versionUtil.isPre(version))) || null
   )
 }
 
@@ -477,7 +484,7 @@ export const newest: GetVersion = async (packageName, currentVersion, options = 
 export const minor: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
   const versions = (await viewOne(packageName, 'versions', currentVersion, options)) as Packument[]
   return versionUtil.findGreatestByLevel(
-    _.filter(versions, filterPredicate(options)).map(o => o.version),
+    filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
     'minor',
   )
@@ -494,7 +501,7 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
 export const patch: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
   const versions = (await viewOne(packageName, 'versions', currentVersion, options)) as Packument[]
   return versionUtil.findGreatestByLevel(
-    _.filter(versions, filterPredicate(options)).map(o => o.version),
+    filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
     'patch',
   )

@@ -1,4 +1,5 @@
-import _ from 'lodash'
+import flatten from 'lodash/flatten'
+import map from 'lodash/map'
 import path from 'path'
 import { rcFile } from 'rc-config-loader'
 import { cliOptionsMap } from '../cli-options'
@@ -42,8 +43,8 @@ async function getNcuRc({ color, configFileName, configFilePath, packageFile }: 
 
   // flatten config object into command line arguments to be read by commander
   const args = result
-    ? _.flatten(
-        _.map(result.config, (value, name) =>
+    ? flatten(
+        map(result.config, (value, name) =>
           // if a boolean option is true, include only the nullary option --${name}
           // an option is considered boolean if its type is explicitly set to boolean, or if it is has a proper Javascript boolean value
           value === true || (cliOptionsMap[name]?.type === 'boolean' && value)

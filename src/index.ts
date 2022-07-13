@@ -1,5 +1,5 @@
 import globby from 'globby'
-import _ from 'lodash'
+import isString from 'lodash/isString'
 import os from 'os'
 import path from 'path'
 import prompts from 'prompts-ncu'
@@ -160,7 +160,7 @@ export async function run(
   let timeout: NodeJS.Timeout
   let timeoutPromise: Promise<void> = new Promise(() => null)
   if (options.timeout) {
-    const timeoutMs = _.isString(options.timeout) ? Number.parseInt(options.timeout, 10) : options.timeout
+    const timeoutMs = isString(options.timeout) ? Number.parseInt(options.timeout, 10) : options.timeout
     timeoutPromise = new Promise((resolve, reject) => {
       timeout = setTimeout(() => {
         // must catch the error and reject explicitly since we are in a setTimeout

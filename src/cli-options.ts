@@ -1,5 +1,5 @@
 import Table from 'cli-table'
-import _ from 'lodash'
+import sortBy from 'lodash/sortBy'
 import chalk from './lib/chalk'
 import { Index } from './types/IndexType'
 
@@ -557,6 +557,6 @@ export const cliOptionsMap = cliOptions.reduce(
   {} as Index<CLIOption>,
 )
 
-const cliOptionsSorted = _.sortBy(cliOptions, 'long')
+const cliOptionsSorted = sortBy(cliOptions, 'long')
 
 export default cliOptionsSorted

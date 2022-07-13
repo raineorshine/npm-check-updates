@@ -1,5 +1,6 @@
 import { and } from 'fp-and-or'
-import _ from 'lodash'
+import identity from 'lodash/identity'
+import negate from 'lodash/negate'
 import minimatch from 'minimatch'
 import { SemVer, parseRange } from 'semver-utils'
 import { FilterRejectPattern } from '../types/FilterRejectPattern'
@@ -18,7 +19,7 @@ function composeFilter(filterPattern: FilterRejectPattern): (name: string, versi
 
   // no filter
   if (!filterPattern) {
-    predicate = _.identity
+    predicate = identity
   }
   // string
   else if (typeof filterPattern === 'string') {
@@ -70,15 +71,15 @@ function filterAndReject(
   return and(
     // filter dep
     (dependencyName: VersionSpec, version: SemVer[]) =>
-      and(filter ? composeFilter(filter) : _.identity, reject ? _.negate(composeFilter(reject)) : _.identity)(
+      and(filter ? composeFilter(filter) : identity, reject ? negate(composeFilter(reject)) : identity)(
         dependencyName,
         version,
       ),
     // filter version
     (dependencyName: VersionSpec, version: SemVer[]) =>
       and(
-        filterVersion ? composeFilter(filterVersion) : _.identity,
-        rejectVersion ? _.negate(composeFilter(rejectVersion)) : _.identity,
+        filterVersion ? composeFilter(filterVersion) : identity,
+        rejectVersion ? negate(composeFilter(rejectVersion)) : identity,
       )(version),
   )
 }

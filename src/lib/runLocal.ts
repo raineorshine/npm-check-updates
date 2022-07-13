@@ -1,6 +1,9 @@
 import fs from 'fs/promises'
 import jph from 'json-parse-helpfulerror'
-import _ from 'lodash'
+import get from 'lodash/get'
+import isEmpty from 'lodash/isEmpty'
+import pick from 'lodash/pick'
+import transform from 'lodash/transform'
 import prompts from 'prompts-ncu'
 import { satisfies } from 'semver'
 import { print, printIgnoredUpdates, printJson, printUpgrades, toDependencyTable } from '../logging'
@@ -24,7 +27,7 @@ import upgradePackageDefinitions from './upgradePackageDefinitions'
 
 /** Recreate the options object sorted. */
 function sortOptions(options: Options): Options {
-  return _.transform(
+  return transform(
     Object.keys(options).sort(), // eslint-disable-line fp/no-mutating-methods
     (accum, key) => {
       accum[key] = options[key as keyof Options]
@@ -176,7 +179,7 @@ async function runLocal(
   print(options, `\nFetching ${options.target} versions`, 'verbose')
 
   if (options.enginesNode) {
-    options.nodeEngineVersion = _.get(pkg, 'engines.node')
+    options.nodeEngineVersion = get(pkg, 'engines.node')
   }
 
   if (options.peer) {
@@ -228,7 +231,7 @@ async function runLocal(
     )
     if (options.peer) {
       const ignoredUpdates = await getIgnoredUpgrades(current, upgraded, upgradedPeerDependencies!, options)
-      if (!_.isEmpty(ignoredUpdates)) {
+      if (!isEmpty(ignoredUpdates)) {
         printIgnoredUpdates(options, ignoredUpdates)
       }
     }
@@ -239,7 +242,7 @@ async function runLocal(
   const output = options.jsonAll
     ? (jph.parse(newPkgData) as PackageFile)
     : options.jsonDeps
-    ? _.pick(jph.parse(newPkgData) as PackageFile, 'dependencies', 'devDependencies', 'optionalDependencies')
+    ? pick(jph.parse(newPkgData) as PackageFile, 'dependencies', 'devDependencies', 'optionalDependencies')
     : chosenUpgraded
 
   // will be overwritten with the result of fs.writeFile so that the return promise waits for the package file to be written

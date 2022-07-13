@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import propertyOf from 'lodash/propertyOf'
 import cliOptions from '../cli-options'
 import { print } from '../logging'
 import { Options } from '../types/Options'
@@ -48,7 +48,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
 
   const json = Object.keys(options)
     .filter(option => option.startsWith('json'))
-    .some(_.propertyOf(options))
+    .some(propertyOf(options))
 
   if (!json && loglevel !== 'silent' && options.rcConfigPath && !options.doctor) {
     print(options, `Using config file ${options.rcConfigPath}`)
