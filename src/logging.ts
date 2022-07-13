@@ -4,13 +4,19 @@
 import Chalk from 'chalk'
 import Table from 'cli-table'
 import getRepoUrl from './lib/getRepoUrl'
-import keyValueBy from './lib/keyValueBy'
 import { IgnoredUpgrade } from './types/IgnoredUpgrade'
 import { Index } from './types/IndexType'
 import { Options } from './types/Options'
 import { Version } from './types/Version'
 import { VersionSpec } from './types/VersionSpec'
-import { colorizeDiff, getGithubUrlTag, isGithubUrl, isNpmAlias, parseNpmAlias, partChanged } from './version-util'
+import {
+  colorizeDiff,
+  getDependencyGroups,
+  getGithubUrlTag,
+  isGithubUrl,
+  isNpmAlias,
+  parseNpmAlias,
+} from './version-util'
 
 // maps string levels to numeric levels
 const logLevels = {
@@ -21,17 +27,6 @@ const logLevels = {
   info: 4,
   verbose: 5,
   silly: 6,
-}
-
-/** Gets the text for the default group headings. */
-export const getGroupHeadings = ({ color }: { color?: boolean }) => {
-  const chalk = color ? new Chalk.Instance({ level: 1 }) : Chalk
-  return {
-    patch: chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'),
-    minor: chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'),
-    major: chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'),
-    majorVersionZero: chalk.magenta(chalk.bold('Major version zero') + '  Anything may change'),
-  }
 }
 
 /**
@@ -159,8 +154,8 @@ export async function toDependencyTable({
  * Renders one or more color-coded tables with all upgrades. Supports different formats from the --format option.
  *
  * @param args
- * @param args.from
- * @param args.to
+ * @param args.current
+ * @param args.upgraded
  * @param args.ownersChangedDeps
  * @param options
  */
@@ -178,66 +173,16 @@ export async function printUpgradesTable(
 ) {
   // group
   if (options.format?.includes('group')) {
-    const groups = keyValueBy<string, Index<string>>(upgraded, (dep, to, accum) => {
-      const from = current[dep]
-      const partUpgraded = partChanged(from, to)
-      return {
-        ...accum,
-        [partUpgraded]: {
-          ...accum[partUpgraded],
-          [dep]: to,
-        },
-      }
-    }) as Record<ReturnType<typeof partChanged>, Index<string>>
+    const groups = getDependencyGroups(upgraded, current, options)
 
-    const headings = getGroupHeadings(options)
-
-    if (groups.patch) {
-      print(options, '\n' + headings.patch)
+    // eslint-disable-next-line fp/no-loops -- We must await in each iteration of the loop
+    for (const { heading, packages } of groups) {
+      print(options, '\n' + heading)
       print(
         options,
         await toDependencyTable({
           from: current,
-          to: groups.patch,
-          ownersChangedDeps,
-          format: options.format,
-        }),
-      )
-    }
-
-    if (groups.minor) {
-      print(options, '\n' + headings.minor)
-      print(
-        options,
-        await toDependencyTable({
-          from: current,
-          to: groups.minor,
-          ownersChangedDeps,
-          format: options.format,
-        }),
-      )
-    }
-
-    if (groups.major) {
-      print(options, '\n' + headings.major)
-      print(
-        options,
-        await toDependencyTable({
-          from: current,
-          to: groups.major,
-          ownersChangedDeps,
-          format: options.format,
-        }),
-      )
-    }
-
-    if (groups.majorVersionZero) {
-      print(options, '\n' + headings.majorVersionZero)
-      print(
-        options,
-        await toDependencyTable({
-          from: current,
-          to: groups.majorVersionZero,
+          to: packages,
           ownersChangedDeps,
           format: options.format,
         }),
@@ -309,7 +254,7 @@ export async function printUpgrades(
     errors,
   }: {
     current: Index<VersionSpec>
-    latest?: Index<Version>
+    latest: Index<Version>
     upgraded: Index<VersionSpec>
     total: number
     ownersChangedDeps?: Index<boolean>

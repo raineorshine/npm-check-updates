@@ -1,5 +1,6 @@
 /** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build:options" to build. */
 import { FilterFunction } from './FilterFunction'
+import { GroupFunction } from './GroupFunction'
 import { PackageFile } from './PackageFile'
 import { TargetFunction } from './TargetFunction'
 
@@ -55,6 +56,9 @@ export interface RunOptions {
 
   /** Check global packages instead of in the current project. */
   global?: boolean
+
+  /** Customize how packages are divided into groups when using '--format group'. Run "ncu --help --groupFunction" for details. */
+  groupFunction?: GroupFunction
 
   /** Enable interactive prompts for each dependency; implies -u unless one of the json options are set. */
   interactive?: boolean

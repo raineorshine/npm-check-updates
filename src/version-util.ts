@@ -1,11 +1,14 @@
-import chalk from 'chalk'
+import Chalk from 'chalk'
 import _ from 'lodash'
 import parseGithubUrl from 'parse-github-url'
 import semver from 'semver'
-import semverutils, { SemVer } from 'semver-utils'
+import semverutils, { SemVer, parse, parseRange } from 'semver-utils'
 import util from 'util'
 import { keyValueBy } from './lib/keyValueBy'
+import { Index } from './types/IndexType'
 import { Maybe } from './types/Maybe'
+import { Options } from './types/Options'
+import { UpgradeGroup } from './types/UpgradeGroup'
 import { VersionLevel } from './types/VersionLevel'
 
 const VERSION_BASE_PARTS = ['major', 'minor', 'patch'] as VersionPart[]
@@ -158,7 +161,7 @@ export function isWildPart(versionPartValue: Maybe<string>) {
  * @param from
  * @param to
  */
-export function partChanged(from: string, to: string): 'major' | 'minor' | 'patch' | 'majorVersionZero' | 'none' {
+export function partChanged(from: string, to: string): UpgradeGroup {
   if (from === to) return 'none'
 
   // separate out leading ^ or ~
@@ -178,6 +181,57 @@ export function partChanged(from: string, to: string): 'major' | 'minor' | 'patc
   // minor = cyan
   // patch = green
   return partsTo[0] === '0' ? 'majorVersionZero' : i === 0 ? 'major' : i === 1 ? 'minor' : 'patch'
+}
+
+/**
+ * Returns a list of group heading and a map of package names and versions.
+ * Used with --format group and takes into account the custom --group function.
+ */
+export function getDependencyGroups(
+  newDependencies: Index<string>,
+  oldDependencies: Index<string>,
+  options: Options,
+): { heading: string; groupName: string; packages: Index<string> }[] {
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
+  const groups = keyValueBy<string, Index<string>>(newDependencies, (dep, to, accum) => {
+    const from = oldDependencies[dep]
+    const defaultGroup = partChanged(from, to)
+    const userDefinedUpgradeGroup =
+      options.groupFunction?.(dep, defaultGroup, parseRange(from), parseRange(to), parse(newDependencies[dep])) ??
+      defaultGroup
+    if (userDefinedUpgradeGroup === 'none') {
+      return accum
+    }
+    return {
+      ...accum,
+      [userDefinedUpgradeGroup]: {
+        ...accum[userDefinedUpgradeGroup],
+        [dep]: to,
+      },
+    }
+  })
+
+  // get the the text for the default group headings
+  const headings = {
+    patch: chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'),
+    minor: chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'),
+    major: chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'),
+    majorVersionZero: chalk.magenta(chalk.bold('Major version zero') + '   Anything may change'),
+  }
+
+  const groupOrder = _.uniq(['patch', 'minor', 'major', 'majorVersionZero', ..._.sortBy(Object.keys(groups))])
+
+  return groupOrder
+    .filter(groupName => {
+      return groupName in groups
+    })
+    .map(groupName => {
+      return {
+        groupName,
+        heading: groupName in headings ? headings[groupName as keyof typeof headings] : groupName,
+        packages: groups[groupName],
+      }
+    })
 }
 
 /**
@@ -213,7 +267,7 @@ export function colorizeDiff(from: string, to: string) {
   // if we are colorizing only part of the word, add a dot in the middle
   const middot = i > 0 && i < partsToColor.length ? '.' : ''
 
-  return leadingWildcard + partsToColor.slice(0, i).join('.') + middot + chalk[color](partsToColor.slice(i).join('.'))
+  return leadingWildcard + partsToColor.slice(0, i).join('.') + middot + Chalk[color](partsToColor.slice(i).join('.'))
 }
 
 /**

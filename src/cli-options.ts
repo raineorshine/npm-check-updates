@@ -92,7 +92,7 @@ const extendedHelpTarget = (): string => {
 
 ${table.toString()}
 
-You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates:
+You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module:
 
   ${chalk.gray(`/** Custom target.
     @param dependencyName The name of the dependency.
@@ -128,6 +128,30 @@ const extendedHelpFormat = (): string => {
   } as any)
 
   return `${header}\n\n${table.toString()}
+`
+}
+
+/** Extended help for the --group option. */
+const extendedHelpGroup = (): string => {
+  return `Customize how packages are divided into groups when using '--format group'. Only available in .ncurc.js or when importing npm-check-updates as a module:
+
+  ${chalk.gray(`/**
+    @param name             The name of the dependency.
+    @param defaultGroup     The predefined group name which will be used by default.
+    @param currentSpec      The current version range in your package.json.
+    @param upgradedSpec     The upgraded version range that will be written to your package.json.
+    @param upgradedVersion  The upgraded version number returned by the registry.
+    @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
+  */`)}
+  ${chalk.cyan('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion} {
+    if (name === 'typescript' && defaultGroup === 'minor') {
+      return 'major'
+    }
+    if (name.startsWith('@myorg/')) {
+      return 'My Org'
+    }
+    return defaultGroup
+  }
 `
 }
 
@@ -323,6 +347,13 @@ const cliOptions: CLIOption[] = [
     short: 'g',
     description: 'Check global packages instead of in the current project.',
     type: 'boolean',
+  },
+  {
+    long: 'groupFunction',
+    arg: 'fn',
+    description: `Customize how packages are divided into groups when using '--format group'.`,
+    type: 'GroupFunction',
+    help: extendedHelpGroup(),
   },
   {
     long: 'interactive',

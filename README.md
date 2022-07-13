@@ -170,6 +170,9 @@ ncu "/^(?!react-).*$/" # windows
                              --help --format" for details. (default: [])
 -g, --global                 Check global packages instead of in the current
                              project.
+--groupFunction <fn>         Customize how packages are divided into groups
+                             when using '--format group'. Run "ncu --help
+                             --groupFunction" for details.
 -i, --interactive            Enable interactive prompts for each dependency;
                              implies -u unless one of the json options are
                              set.

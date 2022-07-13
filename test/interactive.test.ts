@@ -112,6 +112,42 @@ describe('--interactive', () => {
     }
   })
 
+  it('with --format group and custom group function', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({
+        dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
+      }),
+      'utf-8',
+    )
+    const configFile = path.join(tempDir, '.ncurc.js')
+    await fs.writeFile(configFile, `module.exports = { groupFunction: () => 'minor' }`, 'utf-8')
+    try {
+      await spawn('node', [bin, '--interactive', '--format', 'group', '--configFilePath', tempDir], {
+        cwd: tempDir,
+        env: {
+          ...process.env,
+          INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
+        },
+      })
+
+      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+      upgradedPkg.dependencies.should.deep.equal({
+        // upgraded
+        'ncu-test-v2': '2.0.0',
+        'ncu-test-return-version': '2.0.0',
+        // no upgraded
+        'ncu-test-tag': '1.0.0',
+      })
+
+      // prompts does not print during injection, so we cannot assert the output in interactive mode
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
   it('prompt for autoinstall once at the end if there are multiple package files', async () => {
     // use dynamic import for ESM module
     const { default: stripAnsi } = await import('strip-ansi')
