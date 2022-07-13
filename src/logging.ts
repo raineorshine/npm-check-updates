@@ -3,16 +3,20 @@
  */
 import Chalk from 'chalk'
 import Table from 'cli-table'
-import _ from 'lodash'
-import { parse, parseRange } from 'semver-utils'
 import getRepoUrl from './lib/getRepoUrl'
-import keyValueBy from './lib/keyValueBy'
 import { IgnoredUpgrade } from './types/IgnoredUpgrade'
 import { Index } from './types/IndexType'
 import { Options } from './types/Options'
 import { Version } from './types/Version'
 import { VersionSpec } from './types/VersionSpec'
-import { colorizeDiff, getGithubUrlTag, isGithubUrl, isNpmAlias, parseNpmAlias, partChanged } from './version-util'
+import {
+  colorizeDiff,
+  getDependencyGroups,
+  getGithubUrlTag,
+  isGithubUrl,
+  isNpmAlias,
+  parseNpmAlias,
+} from './version-util'
 
 // maps string levels to numeric levels
 const logLevels = {
@@ -183,39 +187,16 @@ export async function printUpgradesTable(
 ) {
   // group
   if (options.format?.includes('group')) {
-    const groups = keyValueBy<string, Index<string>>(upgraded, (dep, to, accum) => {
-      const from = current[dep]
-      const defaultGroup = partChanged(from, to)
-      const userDefinedUpgradeGroup =
-        options.group?.(dep, parseRange(from), parseRange(to), parse(latest[dep])) ?? defaultGroup
-      if (userDefinedUpgradeGroup === 'none') {
-        return accum
-      }
-      return {
-        ...accum,
-        [userDefinedUpgradeGroup]: {
-          ...accum[userDefinedUpgradeGroup],
-          [dep]: to,
-        },
-      }
-    })
-
-    const headings = getGroupHeadings(options)
-    const groupOrder = _.uniq(['patch', 'minor', 'major', 'majorVersionZero', ..._.sortBy(Object.keys(groups))])
+    const groups = getDependencyGroups(latest, current, options)
 
     // eslint-disable-next-line fp/no-loops -- We must await in each iteration of the loop
-    for (const groupName of groupOrder) {
-      if (!(groupName in groups)) {
-        continue
-      }
-      const groupContents = groups[groupName]
-      const heading = groupName in headings ? headings[groupName as keyof typeof headings] : groupName
+    for (const { heading, packages } of groups) {
       print(options, '\n' + heading)
       print(
         options,
         await toDependencyTable({
           from: current,
-          to: groupContents,
+          to: packages,
           ownersChangedDeps,
           format: options.format,
         }),

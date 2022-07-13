@@ -4,14 +4,14 @@ import jph from 'json-parse-helpfulerror'
 import _ from 'lodash'
 import prompts from 'prompts-ncu'
 import { satisfies } from 'semver'
-import { getGroupHeadings, print, printIgnoredUpdates, printJson, printUpgrades, toDependencyTable } from '../logging'
+import { print, printIgnoredUpdates, printJson, printUpgrades, toDependencyTable } from '../logging'
 import { Index } from '../types/IndexType'
 import { Maybe } from '../types/Maybe'
 import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
-import { partChanged } from '../version-util'
+import { getDependencyGroups } from '../version-util'
 import getCurrentDependencies from './getCurrentDependencies'
 import getIgnoredUpgrades from './getIgnoredUpgrades'
 import getPackageFileName from './getPackageFileName'
@@ -82,60 +82,21 @@ const chooseUpgrades = async (
     print(options, '')
 
     if (options.format?.includes('group')) {
-      const groups = keyValueBy<string, Index<string>>(
-        newDependencies,
-        (dep, to, accum) => {
-          const from = oldDependencies[dep]
-          const partUpgraded = partChanged(from, to)
-          return {
-            ...accum,
-            [partUpgraded]: {
-              ...accum[partUpgraded],
-              [dep]: to,
-            },
-          }
-        },
-        // narrow the type of the group index signature
-      ) as Record<ReturnType<typeof partChanged>, Index<string>>
+      const groups = getDependencyGroups(newDependencies, oldDependencies, options)
 
-      const choicesPatch = Object.keys(groups.patch || {}).map(dep => ({
-        title: formattedLines[dep],
-        value: dep,
-        selected: true,
-      }))
-
-      const choicesMinor = Object.keys(groups.minor || {}).map(dep => ({
-        title: formattedLines[dep],
-        value: dep,
-        selected: true,
-      }))
-
-      const choicesMajor = Object.keys(groups.major || {}).map(dep => ({
-        title: formattedLines[dep],
-        value: dep,
-        selected: false,
-      }))
-
-      const choicesMajorVersionZero = Object.keys(groups.majorVersionZero || {}).map(dep => ({
-        title: formattedLines[dep],
-        value: dep,
-        selected: false,
-      }))
-
-      const headings = getGroupHeadings(options)
+      const choices = groups.flatMap(({ heading, groupName, packages }) => {
+        return [
+          { title: '\n' + heading, heading: true },
+          ...Object.keys(packages).map(dep => ({
+            title: formattedLines[dep],
+            value: dep,
+            selected: ['patch', 'minor'].includes(groupName),
+          })),
+        ]
+      })
 
       const response = await prompts({
-        choices: [
-          ...(choicesPatch.length > 0 ? [{ title: '\n' + headings.patch, heading: true }] : []),
-          ...choicesPatch,
-          ...(choicesMinor.length > 0 ? [{ title: '\n' + headings.minor, heading: true }] : []),
-          ...choicesMinor,
-          ...(choicesMajor.length > 0 ? [{ title: '\n' + headings.major, heading: true }] : []),
-          ...choicesMajor,
-          ...(choicesMajorVersionZero.length > 0 ? [{ title: '\n' + headings.majorVersionZero, heading: true }] : []),
-          ...choicesMajorVersionZero,
-          { title: ' ', heading: true },
-        ],
+        choices: [...choices, { title: ' ', heading: true }],
         hint: `
   ↑/↓: Select a package
   Space: Toggle selection

@@ -2,10 +2,13 @@ import chalk from 'chalk'
 import _ from 'lodash'
 import parseGithubUrl from 'parse-github-url'
 import semver from 'semver'
-import semverutils, { SemVer } from 'semver-utils'
+import semverutils, { SemVer, parse, parseRange } from 'semver-utils'
 import util from 'util'
 import { keyValueBy } from './lib/keyValueBy'
+import { getGroupHeadings } from './logging'
+import { Index } from './types/IndexType'
 import { Maybe } from './types/Maybe'
+import { Options } from './types/Options'
 import { UpgradeGroup } from './types/UpgradeGroup'
 import { VersionLevel } from './types/VersionLevel'
 
@@ -179,6 +182,48 @@ export function partChanged(from: string, to: string): UpgradeGroup {
   // minor = cyan
   // patch = green
   return partsTo[0] === '0' ? 'majorVersionZero' : i === 0 ? 'major' : i === 1 ? 'minor' : 'patch'
+}
+
+/**
+ * Returns a list of group heading and a map of package names and versions.
+ * Used with --format group and takes into account the custom --group function.
+ */
+export function getDependencyGroups(
+  newDependencies: Index<string>,
+  oldDependencies: Index<string>,
+  options: Options,
+): { heading: string; groupName: string; packages: Index<string> }[] {
+  const groups = keyValueBy<string, Index<string>>(newDependencies, (dep, to, accum) => {
+    const from = oldDependencies[dep]
+    const defaultGroup = partChanged(from, to)
+    const userDefinedUpgradeGroup =
+      options.group?.(dep, parseRange(from), parseRange(to), parse(newDependencies[dep])) ?? defaultGroup
+    if (userDefinedUpgradeGroup === 'none') {
+      return accum
+    }
+    return {
+      ...accum,
+      [userDefinedUpgradeGroup]: {
+        ...accum[userDefinedUpgradeGroup],
+        [dep]: to,
+      },
+    }
+  })
+
+  const headings = getGroupHeadings(options)
+  const groupOrder = _.uniq(['patch', 'minor', 'major', 'majorVersionZero', ..._.sortBy(Object.keys(groups))])
+
+  return groupOrder
+    .filter(groupName => {
+      return groupName in groups
+    })
+    .map(groupName => {
+      return {
+        groupName,
+        heading: groupName in headings ? headings[groupName as keyof typeof headings] : groupName,
+        packages: groups[groupName],
+      }
+    })
 }
 
 /**
