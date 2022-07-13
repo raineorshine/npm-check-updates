@@ -123,7 +123,7 @@ describe('--interactive', () => {
       'utf-8',
     )
     const configFile = path.join(tempDir, '.ncurc.js')
-    await fs.writeFile(configFile, `module.exports = { group: () => 'minor' }`, 'utf-8')
+    await fs.writeFile(configFile, `module.exports = { groupFunction: () => 'minor' }`, 'utf-8')
     try {
       await spawn('node', [bin, '--interactive', '--format', 'group', '--configFilePath', tempDir], {
         cwd: tempDir,

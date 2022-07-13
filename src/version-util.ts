@@ -197,7 +197,8 @@ export function getDependencyGroups(
     const from = oldDependencies[dep]
     const defaultGroup = partChanged(from, to)
     const userDefinedUpgradeGroup =
-      options.group?.(dep, defaultGroup, parseRange(from), parseRange(to), parse(newDependencies[dep])) ?? defaultGroup
+      options.groupFunction?.(dep, defaultGroup, parseRange(from), parseRange(to), parse(newDependencies[dep])) ??
+      defaultGroup
     if (userDefinedUpgradeGroup === 'none') {
       return accum
     }

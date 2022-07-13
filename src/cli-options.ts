@@ -143,7 +143,7 @@ const extendedHelpGroup = (): string => {
     @param upgradedVersion  The upgraded version number returned by the registry.
     @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
   */`)}
-  ${chalk.cyan('group')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion} {
+  ${chalk.cyan('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion} {
     if (name === 'typescript' && defaultGroup === 'minor') {
       return 'major'
     }
@@ -349,7 +349,7 @@ const cliOptions: CLIOption[] = [
     type: 'boolean',
   },
   {
-    long: 'group',
+    long: 'groupFunction',
     arg: 'fn',
     description: `Customize how packages are divided into groups when using '--format group'.`,
     type: 'GroupFunction',

@@ -57,8 +57,8 @@ export interface RunOptions {
   /** Check global packages instead of in the current project. */
   global?: boolean
 
-  /** Customize how packages are divided into groups when using '--format group'. Run "ncu --help --group" for details. */
-  group?: GroupFunction
+  /** Customize how packages are divided into groups when using '--format group'. Run "ncu --help --groupFunction" for details. */
+  groupFunction?: GroupFunction
 
   /** Enable interactive prompts for each dependency; implies -u unless one of the json options are set. */
   interactive?: boolean
