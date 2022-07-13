@@ -1,11 +1,10 @@
-import chalk from 'chalk'
+import Chalk from 'chalk'
 import _ from 'lodash'
 import parseGithubUrl from 'parse-github-url'
 import semver from 'semver'
 import semverutils, { SemVer, parse, parseRange } from 'semver-utils'
 import util from 'util'
 import { keyValueBy } from './lib/keyValueBy'
-import { getGroupHeadings } from './logging'
 import { Index } from './types/IndexType'
 import { Maybe } from './types/Maybe'
 import { Options } from './types/Options'
@@ -193,6 +192,7 @@ export function getDependencyGroups(
   oldDependencies: Index<string>,
   options: Options,
 ): { heading: string; groupName: string; packages: Index<string> }[] {
+  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
   const groups = keyValueBy<string, Index<string>>(newDependencies, (dep, to, accum) => {
     const from = oldDependencies[dep]
     const defaultGroup = partChanged(from, to)
@@ -210,7 +210,14 @@ export function getDependencyGroups(
     }
   })
 
-  const headings = getGroupHeadings(options)
+  // get the the text for the default group headings
+  const headings = {
+    patch: chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'),
+    minor: chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'),
+    major: chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'),
+    majorVersionZero: chalk.magenta(chalk.bold('Major version zero') + '   Anything may change'),
+  }
+
   const groupOrder = _.uniq(['patch', 'minor', 'major', 'majorVersionZero', ..._.sortBy(Object.keys(groups))])
 
   return groupOrder
@@ -259,7 +266,7 @@ export function colorizeDiff(from: string, to: string) {
   // if we are colorizing only part of the word, add a dot in the middle
   const middot = i > 0 && i < partsToColor.length ? '.' : ''
 
-  return leadingWildcard + partsToColor.slice(0, i).join('.') + middot + chalk[color](partsToColor.slice(i).join('.'))
+  return leadingWildcard + partsToColor.slice(0, i).join('.') + middot + Chalk[color](partsToColor.slice(i).join('.'))
 }
 
 /**

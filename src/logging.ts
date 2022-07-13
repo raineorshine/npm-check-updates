@@ -29,17 +29,6 @@ const logLevels = {
   silly: 6,
 }
 
-/** Gets the text for the default group headings. */
-export const getGroupHeadings = ({ color }: { color?: boolean }) => {
-  const chalk = color ? new Chalk.Instance({ level: 1 }) : Chalk
-  return {
-    patch: chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'),
-    minor: chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'),
-    major: chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'),
-    majorVersionZero: chalk.magenta(chalk.bold('Major version zero') + '   Anything may change'),
-  }
-}
-
 /**
  * Prints a message if it is included within options.loglevel.
  *
