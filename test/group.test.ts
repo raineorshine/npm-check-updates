@@ -48,7 +48,7 @@ describe('--format group', () => {
   it('group upgrades by type', async () => {
     await groupTestScaffold(
       { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
-      () => null,
+      (packageName, defaultGroup) => defaultGroup,
       `Minor   Backwards-compatible features
  ncu-test-tag  1.0.0  →  1.1.0
 
@@ -61,7 +61,7 @@ Major   Potentially breaking API changes
   it('preserve version ranges', async () => {
     await groupTestScaffold(
       { 'ncu-test-v2': '^1.0.0' },
-      () => null,
+      (packageName, defaultGroup) => defaultGroup,
       `Major   Potentially breaking API changes
  ncu-test-v2  ^1.0.0  →  ^2.0.0`,
     )
@@ -70,7 +70,7 @@ Major   Potentially breaking API changes
   it('moves package to major group', async () => {
     await groupTestScaffold(
       { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
-      packageName => (packageName === 'ncu-test-tag' ? 'major' : null),
+      (packageName, defaultGroup) => (packageName === 'ncu-test-tag' ? 'major' : defaultGroup),
       `Major   Potentially breaking API changes
  ncu-test-v2              1.0.0  →  2.0.0
  ncu-test-return-version  1.0.0  →  2.0.0
@@ -81,7 +81,7 @@ Major   Potentially breaking API changes
   it('moves package to minor group', async () => {
     await groupTestScaffold(
       { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
-      packageName => (packageName === 'ncu-test-v2' ? 'minor' : null),
+      (packageName, defaultGroup) => (packageName === 'ncu-test-v2' ? 'minor' : defaultGroup),
       `Minor   Backwards-compatible features
  ncu-test-v2   1.0.0  →  2.0.0
  ncu-test-tag  1.0.0  →  1.1.0
@@ -94,7 +94,7 @@ Major   Potentially breaking API changes
   it('moves package to patch group', async () => {
     await groupTestScaffold(
       { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
-      packageName => (packageName === 'ncu-test-v2' ? 'patch' : null),
+      (packageName, defaultGroup) => (packageName === 'ncu-test-v2' ? 'patch' : defaultGroup),
       `Patch   Backwards-compatible bug fixes
  ncu-test-v2  1.0.0  →  2.0.0
 
@@ -109,7 +109,7 @@ Major   Potentially breaking API changes
   it('moves package to majorVersionZero group', async () => {
     await groupTestScaffold(
       { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
-      packageName => (packageName === 'ncu-test-v2' ? 'majorVersionZero' : null),
+      (packageName, defaultGroup) => (packageName === 'ncu-test-v2' ? 'majorVersionZero' : defaultGroup),
       `Minor   Backwards-compatible features
  ncu-test-tag  1.0.0  →  1.1.0
 
@@ -124,7 +124,7 @@ Major version zero   Anything may change
   it('creates custom groups', async () => {
     await groupTestScaffold(
       { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
-      (packageName, currentVersionSpec, upgradedVersionSpec, upgradedVersion) =>
+      (packageName, defaultGroup, currentVersionSpec, upgradedVersionSpec, upgradedVersion) =>
         `Custom Group for ${packageName} ${JSON.stringify(currentVersionSpec)} ${JSON.stringify(
           upgradedVersionSpec,
         )} ${JSON.stringify(upgradedVersion)}`,

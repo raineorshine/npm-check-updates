@@ -137,13 +137,20 @@ const extendedHelpGroup = (): string => {
 
   ${chalk.gray(`/**
     @param name             The name of the dependency.
+    @param defaultGroup     The predefined group name which will be used by default.
     @param currentSpec      The current version range in your package.json.
     @param upgradedSpec     The upgraded version range that will be written to your package.json.
     @param upgradedVersion  The upgraded version number returned by the registry.
-    @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none'), null to use the default group, or a custom string to create your own group.
+    @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
   */`)}
-  ${chalk.cyan('target')}: (name, currentSpec, upgradedSpec, upgradedVersion} {
-    return name.startsWith('@myorg') ? 'My Org' : null
+  ${chalk.cyan('group')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion} {
+    if (name === 'typescript' && defaultGroup === 'minor') {
+      return 'major'
+    }
+    if (name.startsWith('@myorg/')) {
+      return 'My Org'
+    }
+    return defaultGroup
   }
 `
 }

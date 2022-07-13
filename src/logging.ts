@@ -156,7 +156,6 @@ export async function toDependencyTable({
  * @param args
  * @param args.current
  * @param args.upgraded
- * @param args.latest
  * @param args.ownersChangedDeps
  * @param options
  */
@@ -164,19 +163,17 @@ export async function printUpgradesTable(
   {
     current,
     upgraded,
-    latest,
     ownersChangedDeps,
   }: {
     current: Index<VersionSpec>
     upgraded: Index<VersionSpec>
-    latest: Index<Version>
     ownersChangedDeps?: Index<boolean>
   },
   options: Options,
 ) {
   // group
   if (options.format?.includes('group')) {
-    const groups = getDependencyGroups(latest, current, options)
+    const groups = getDependencyGroups(upgraded, current, options)
 
     // eslint-disable-next-line fp/no-loops -- We must await in each iteration of the loop
     for (const { heading, packages } of groups) {
@@ -301,7 +298,6 @@ export async function printUpgrades(
       {
         current,
         upgraded,
-        latest,
         ownersChangedDeps,
       },
       options,
