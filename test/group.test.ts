@@ -58,6 +58,15 @@ Major   Potentially breaking API changes
     )
   })
 
+  it('preserve version ranges', async () => {
+    await groupTestScaffold(
+      { 'ncu-test-v2': '^1.0.0' },
+      () => null,
+      `Major   Potentially breaking API changes
+ ncu-test-v2  ^1.0.0  →  ^2.0.0`,
+    )
+  })
+
   it('moves package to major group', async () => {
     await groupTestScaffold(
       { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
