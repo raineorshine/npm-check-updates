@@ -414,10 +414,4 @@ describe('rc-config', () => {
       output.trim().should.not.include('Usage')
     })
   })
-
-  // TODO: Hangs on Windows
-  // it('global should run', async () => {
-  //   this.timeout(3 * 60 * 1000)
-  //   await spawn('node', [bin, '--global'])
-  // })
 })
