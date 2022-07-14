@@ -1,10 +1,10 @@
 import { Options } from '../types/Options'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
-import { isWildPart } from '../version-util'
 import filterAndReject from './filterAndReject'
 import filterObject from './filterObject'
 import getPackageManager from './getPackageManager'
+import { isWildPart } from './version-util'
 
 /**
  * @param [options]

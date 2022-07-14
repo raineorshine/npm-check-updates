@@ -2,11 +2,11 @@
 import parseGithubUrl from 'parse-github-url'
 import remoteGitTags from 'remote-git-tags'
 import semver from 'semver'
-import { print } from '../logging'
+import { print } from '../lib/logging'
+import * as versionUtil from '../lib/version-util'
 import { Options } from '../types/Options'
 import { VersionLevel } from '../types/VersionLevel'
 import { VersionSpec } from '../types/VersionSpec'
-import * as versionUtil from '../version-util'
 
 /** Gets remote versions sorted. */
 const getSortedVersions = async (name: string, declaration: VersionSpec, options: Options) => {

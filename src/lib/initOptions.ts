@@ -1,6 +1,6 @@
 import propertyOf from 'lodash/propertyOf'
 import cliOptions from '../cli-options'
-import { print } from '../logging'
+import { print } from '../lib/logging'
 import { Options } from '../types/Options'
 import { RunOptions } from '../types/RunOptions'
 import { Target } from '../types/Target'

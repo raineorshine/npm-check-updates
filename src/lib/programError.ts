@@ -1,4 +1,4 @@
-import { print } from '../logging'
+import { print } from '../lib/logging'
 import { Options } from '../types/Options'
 
 /** Print an error. Exit the process if in CLI mode. */

@@ -2,13 +2,13 @@
  * Loggin functions.
  */
 import Table from 'cli-table'
-import chalk from './lib/chalk'
-import getRepoUrl from './lib/getRepoUrl'
-import { IgnoredUpgrade } from './types/IgnoredUpgrade'
-import { Index } from './types/IndexType'
-import { Options } from './types/Options'
-import { Version } from './types/Version'
-import { VersionSpec } from './types/VersionSpec'
+import { IgnoredUpgrade } from '../types/IgnoredUpgrade'
+import { Index } from '../types/IndexType'
+import { Options } from '../types/Options'
+import { Version } from '../types/Version'
+import { VersionSpec } from '../types/VersionSpec'
+import chalk from './chalk'
+import getRepoUrl from './getRepoUrl'
 import {
   colorizeDiff,
   getDependencyGroups,

@@ -13,7 +13,8 @@ import semver from 'semver'
 import spawn from 'spawn-please'
 import { keyValueBy } from '../lib/keyValueBy'
 import libnpmconfig from '../lib/libnpmconfig'
-import { print } from '../logging'
+import { print } from '../lib/logging'
+import * as versionUtil from '../lib/version-util'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
 import { NpmOptions } from '../types/NpmOptions'
@@ -21,7 +22,6 @@ import { Options } from '../types/Options'
 import { Packument } from '../types/Packument'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
-import * as versionUtil from '../version-util'
 import {
   allowDeprecatedOrIsNotDeprecated,
   allowPreOrIsNotPre,

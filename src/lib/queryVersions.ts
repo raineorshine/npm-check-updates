@@ -8,9 +8,9 @@ import { Options } from '../types/Options'
 import { Version } from '../types/Version'
 import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
-import { createNpmAlias, isGithubUrl, isPre, parseNpmAlias } from '../version-util'
 import getPackageManager from './getPackageManager'
 import keyValueBy from './keyValueBy'
+import { createNpmAlias, isGithubUrl, isPre, parseNpmAlias } from './version-util'
 
 const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch']
 

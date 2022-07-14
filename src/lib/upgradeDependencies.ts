@@ -6,10 +6,10 @@ import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
-import * as versionUtil from '../version-util'
 import filterObject from './filterObject'
 import getPreferredWildcard from './getPreferredWildcard'
 import isUpgradeable from './isUpgradeable'
+import * as versionUtil from './version-util'
 
 interface MappedDependencies {
   current: VersionSpec

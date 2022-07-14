@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import jph from 'json-parse-helpfulerror'
-import { print } from '../logging'
+import { print } from '../lib/logging'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { VersionSpec } from '../types/VersionSpec'

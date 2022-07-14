@@ -1,5 +1,5 @@
 import pick from 'lodash/pick'
-import { print, printJson, printUpgrades } from '../logging'
+import { print, printJson, printUpgrades } from '../lib/logging'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import chalk from './chalk'
