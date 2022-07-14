@@ -4,6 +4,7 @@ import _ from 'lodash'
 import pkg from '../../package.json'
 import cliOptions from '../cli-options'
 import ncu from '../index'
+import { chalkInit } from '../lib/chalk'
 import getNcuRc from '../lib/getNcuRc' // async global contexts are only available in esm modules -> function
 
 ;(async () => {
@@ -21,6 +22,8 @@ import getNcuRc from '../lib/getNcuRc' // async global contexts are only availab
   // https://github.com/raineorshine/npm-check-updates/issues/787
   const rawArgs = process.argv.slice(2)
   if (rawArgs.includes('--help') && rawArgs.length > 1) {
+    const color = rawArgs.includes('--color')
+    await chalkInit(color)
     const nonHelpArgs = rawArgs.filter(arg => arg !== '--help')
     nonHelpArgs.forEach(arg => {
       // match option by long or short
@@ -35,7 +38,8 @@ import getNcuRc from '../lib/getNcuRc' // async global contexts are only availab
           console.log(`Default: ${option.default}`)
         }
         if (option.help) {
-          console.log(`\n${option.help}`)
+          const helpText = typeof option.help === 'function' ? option.help() : option.help
+          console.log(`\n${helpText}`)
         } else if (option.description) {
           console.log(`\n${option.description}`)
         }
@@ -73,14 +77,18 @@ import getNcuRc from '../lib/getNcuRc' // async global contexts are only availab
 
   let programOpts = program.opts()
 
-  const { configFileName, configFilePath, packageFile, mergeConfig } = programOpts
+  const { color, configFileName, configFilePath, packageFile, mergeConfig } = programOpts
+
+  // Force color on all chalk instances.
+  // See: /src/lib/chalk.ts
+  await chalkInit(color)
 
   // load .ncurc
   // Do not load when global option is set
   // Do not load when tests are running (an be overridden if configFilePath is set explicitly, or --mergeConfig option specified)
   const rcResult =
     !programOpts.global && (!process.env.NCU_TESTS || configFilePath || mergeConfig)
-      ? getNcuRc({ configFileName, configFilePath, packageFile })
+      ? await getNcuRc({ configFileName, configFilePath, packageFile, color })
       : null
 
   // insert config arguments into command line arguments so they can all be parsed by commander

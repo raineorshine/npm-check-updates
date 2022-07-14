@@ -1,6 +1,6 @@
-import chalk from 'chalk'
 import Table from 'cli-table'
 import _ from 'lodash'
+import chalk from './lib/chalk'
 import { Index } from './types/IndexType'
 
 export interface CLIOption<T = any> {
@@ -9,7 +9,7 @@ export interface CLIOption<T = any> {
   default?: T
   deprecated?: boolean
   description: string
-  help?: string
+  help?: string | (() => string)
   parse?: (s: string, p?: T) => T
   long: string
   short?: string
@@ -288,7 +288,7 @@ const cliOptions: CLIOption[] = [
     description:
       'Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires "-u" to execute.',
     type: 'boolean',
-    help: extendedHelpDoctor(),
+    help: extendedHelpDoctor,
   },
   {
     long: 'doctorInstall',
@@ -340,7 +340,7 @@ const cliOptions: CLIOption[] = [
     default: [],
     type: 'string[]',
     choices: ['group', 'ownerChanged', 'repo'],
-    help: extendedHelpFormat(),
+    help: extendedHelpFormat,
   },
   {
     long: 'global',
@@ -353,7 +353,7 @@ const cliOptions: CLIOption[] = [
     arg: 'fn',
     description: `Customize how packages are divided into groups when using '--format group'.`,
     type: 'GroupFunction',
-    help: extendedHelpGroup(),
+    help: extendedHelpGroup,
   },
   {
     long: 'interactive',
@@ -416,14 +416,14 @@ const cliOptions: CLIOption[] = [
     arg: 'name',
     // manual default to allow overriding auto yarn detection
     description: 'npm, yarn, staticRegistry (default: npm).',
-    help: extendedHelpPackageManager(),
+    help: extendedHelpPackageManager,
     type: 'string',
   },
   {
     long: 'peer',
     description: 'Check peer dependencies of installed packages and filter updates to compatible versions.',
     type: 'boolean',
-    help: `Check peer dependencies of installed packages and filter updates to compatible versions.
+    help: () => `Check peer dependencies of installed packages and filter updates to compatible versions.
 
 ${chalk.bold('Example')}
 
@@ -529,7 +529,7 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     arg: 'value',
     description:
       'Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. (default: latest).',
-    help: extendedHelpTarget(),
+    help: extendedHelpTarget,
     // eslint-disable-next-line no-template-curly-in-string
     type: `'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | ${'`@${string}`'} | TargetFunction`,
   },

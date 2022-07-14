@@ -1,8 +1,8 @@
 /**
  * Loggin functions.
  */
-import Chalk from 'chalk'
 import Table from 'cli-table'
+import chalk from './lib/chalk'
 import getRepoUrl from './lib/getRepoUrl'
 import { IgnoredUpgrade } from './types/IgnoredUpgrade'
 import { Index } from './types/IndexType'
@@ -205,7 +205,6 @@ export async function printUpgradesTable(
 function printErrors(options: Options, errors?: Index<string>) {
   if (!errors) return
   if (Object.keys(errors).length > 0) {
-    const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
     const errorTable = new Table({
       colAligns: ['left', 'right', 'right', 'right', 'left', 'left'],
       chars: {
@@ -261,8 +260,6 @@ export async function printUpgrades(
     errors?: Index<string>
   },
 ) {
-  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
-
   if (!options.format?.includes('group')) {
     print(options, '')
   }

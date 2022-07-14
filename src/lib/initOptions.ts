@@ -1,4 +1,3 @@
-import Chalk from 'chalk'
 import _ from 'lodash'
 import cliOptions from '../cli-options'
 import { print } from '../logging'
@@ -12,7 +11,8 @@ import programError from './programError'
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
 async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Promise<Options> {
-  const chalk = runOptions.color ? new Chalk.Instance({ level: 1 }) : Chalk
+  const { default: chalkDefault, Chalk } = await import('chalk')
+  const chalk = runOptions.color ? new Chalk({ level: 1 }) : chalkDefault
 
   // if not executed on the command-line (i.e. executed as a node module), set the defaults
   if (!cli) {

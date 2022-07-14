@@ -1,4 +1,3 @@
-import chalk from 'chalk'
 import pMap from 'p-map'
 import ProgressBar from 'progress'
 import { parseRange } from 'semver-utils'
@@ -23,6 +22,8 @@ const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch
  * @returns Promised {packageName: version} collection
  */
 async function queryVersions(packageMap: Index<VersionSpec>, options: Options = {}): Promise<Index<VersionResult>> {
+  const { default: chalkDefault, Chalk } = await import('chalk')
+  const chalk = options.color ? new Chalk({ level: 1 }) : chalkDefault
   const target = options.target || 'latest'
   const packageList = Object.keys(packageMap)
   const globalPackageManager = getPackageManager(options.packageManager)

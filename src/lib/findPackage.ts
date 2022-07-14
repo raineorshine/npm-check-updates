@@ -1,10 +1,10 @@
-import Chalk from 'chalk'
 import findUp from 'find-up'
 import fs from 'fs/promises'
 import getstdin from 'get-stdin'
 import path from 'path'
 import { print } from '../logging'
 import { Options } from '../types/Options'
+import chalk from './chalk'
 import getPackageFileName from './getPackageFileName'
 import programError from './programError'
 
@@ -26,8 +26,6 @@ async function findPackage(options: Options) {
   let pkgData
   let pkgFile = null
   let stdinTimer
-
-  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
 
   print(options, 'Running in local mode', 'verbose')
   print(options, 'Finding package file data', 'verbose')

@@ -142,7 +142,9 @@ describe('doctor', function () {
       const { default: stripAnsi } = await import('strip-ansi')
       const cwd = path.join(doctorTests, 'nopackagefile')
       const output = await ncu(['--doctor'], { cwd })
-      return stripAnsi(output).should.equal(`Usage: ncu --doctor\n\n${stripAnsi(cliOptionsMap.doctor.help!)}\n`)
+      return stripAnsi(output).should.equal(
+        `Usage: ncu --doctor\n\n${stripAnsi((cliOptionsMap.doctor.help as () => string)())}\n`,
+      )
     })
 
     it('throw an error if there is no package file', async () => {

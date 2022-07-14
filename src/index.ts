@@ -1,4 +1,3 @@
-import Chalk from 'chalk'
 import globby from 'globby'
 import _ from 'lodash'
 import os from 'os'
@@ -6,6 +5,7 @@ import path from 'path'
 import prompts from 'prompts-ncu'
 import spawn from 'spawn-please'
 import { cliOptionsMap } from './cli-options'
+import chalk, { chalkInit } from './lib/chalk'
 import doctor from './lib/doctor'
 import exists from './lib/exists'
 import findPackage from './lib/findPackage'
@@ -73,8 +73,6 @@ const npmInstallHint = async (
   analysis: Index<PackageFile> | PackageFile,
   options: Options,
 ): Promise<unknown> => {
-  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
-
   // if no packages were upgraded (i.e. all dependendencies deselected in interactive mode), then bail without suggesting an install.
   // normalize the analysis for one or many packages
   const analysisNormalized =
@@ -141,9 +139,11 @@ export async function run(
   runOptions: RunOptions = {},
   { cli }: { cli?: boolean } = {},
 ): Promise<PackageFile | Index<VersionSpec> | void> {
-  const chalk = runOptions.color ? new Chalk.Instance({ level: 1 }) : Chalk
-
   const options = await initOptions(runOptions, { cli })
+
+  // chalk may already have been intialized in cli.ts, but when imported as a module
+  // chalkInit is idempotent
+  await chalkInit(options.color)
 
   checkIfVolta(options)
 
@@ -199,7 +199,7 @@ export async function run(
       analysis = await pkgs.reduce(async (previousPromise, packageFile) => {
         const packages = await previousPromise
         // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
-        const rcResult = getNcuRc({ packageFile })
+        const rcResult = await getNcuRc({ packageFile, color: options.color })
         let rcConfig = rcResult && rcResult.config ? rcResult.config : {}
         if (options.mergeConfig && Object.keys(rcConfig).length) {
           // Merge config options.
@@ -252,7 +252,7 @@ export async function run(
     }
     // print help otherwise
     else {
-      print(options, `Usage: ncu --doctor\n\n${cliOptionsMap.doctor.help}`, 'warn')
+      print(options, `Usage: ncu --doctor\n\n${(cliOptionsMap.doctor.help as () => string)()}`, 'warn')
     }
   }
   // normal mode

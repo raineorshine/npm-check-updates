@@ -1,4 +1,3 @@
-import Chalk from 'chalk'
 import fs from 'fs/promises'
 import jph from 'json-parse-helpfulerror'
 import _ from 'lodash'
@@ -12,6 +11,7 @@ import { PackageFile } from '../types/PackageFile'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
 import { getDependencyGroups } from '../version-util'
+import chalk from './chalk'
 import getCurrentDependencies from './getCurrentDependencies'
 import getIgnoredUpgrades from './getIgnoredUpgrades'
 import getPackageFileName from './getPackageFileName'
@@ -155,8 +155,6 @@ async function runLocal(
 
   let pkg
 
-  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
-
   try {
     if (!pkgData) {
       throw new Error('Missing pkgData: ' + pkgData)
@@ -166,7 +164,7 @@ async function runLocal(
   } catch (e: any) {
     programError(
       options,
-      chalk.red(`Invalid package file${pkgFile ? `: ${pkgFile}` : ' from stdin'}. Error details:\n${e.message}`),
+      await chalk.red(`Invalid package file${pkgFile ? `: ${pkgFile}` : ' from stdin'}. Error details:\n${e.message}`),
     )
   }
 

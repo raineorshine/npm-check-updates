@@ -1,10 +1,10 @@
-import chalk from 'chalk'
 import _ from 'lodash'
 import path from 'path'
 import { rcFile } from 'rc-config-loader'
 import { cliOptionsMap } from '../cli-options'
 
 interface Options {
+  color?: boolean
   configFileName?: string
   configFilePath?: string
   packageFile?: string
@@ -19,7 +19,10 @@ interface Options {
  * @param [cfg.packageFile]
  * @returns
  */
-function getNcuRc({ configFileName, configFilePath, packageFile }: Options = {}) {
+async function getNcuRc({ color, configFileName, configFilePath, packageFile }: Options = {}) {
+  const { default: chalkDefault, Chalk } = await import('chalk')
+  const chalk = color ? new Chalk({ level: 1 }) : chalkDefault
+
   const result = rcFile('ncurc', {
     configFileName: configFileName || '.ncurc',
     defaultExtension: ['.json', '.yml', '.js'],

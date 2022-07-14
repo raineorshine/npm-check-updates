@@ -1,6 +1,6 @@
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import chalk from 'chalk'
+import chalk, { chalkInit } from '../src/lib/chalk'
 import * as versionUtil from '../src/version-util'
 
 const should = chai.should()
@@ -398,7 +398,8 @@ describe('version-util', () => {
     })
   })
 
-  describe('colorizeDiff', () => {
+  describe('colorizeDiff', async () => {
+    await chalkInit()
     it('do not colorize unchanged versions', () => {
       versionUtil.colorizeDiff('1.0.0', '1.0.0').should.equal('1.0.0')
     })

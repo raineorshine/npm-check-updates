@@ -1,15 +1,13 @@
-import Chalk from 'chalk'
 import _ from 'lodash'
 import { print, printJson, printUpgrades } from '../logging'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
+import chalk from './chalk'
 import getInstalledPackages from './getInstalledPackages'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
 
 /** Checks global dependencies for upgrades. */
 async function runGlobal(options: Options): Promise<Index<string> | void> {
-  const chalk = options.color ? new Chalk.Instance({ level: 1 }) : Chalk
-
   print(options, 'Getting installed packages', 'verbose')
 
   const globalPackages = await getInstalledPackages(
