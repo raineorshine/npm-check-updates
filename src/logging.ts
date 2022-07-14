@@ -234,13 +234,11 @@ function printErrors(options: Options, errors?: Index<string>) {
 }
 
 /**
- * @param options - Options from the configuration
- * @param args - The arguments passed to the function.
- * @param args.current - The current packages.
- * @param args.upgraded - The packages that should be upgraded.
- * @param args.numUpgraded - The number of upgraded packages
- * @param args.total - The total number of all possible upgrades
- * @param args.ownersChangedDeps - Boolean flag per dependency which announces if package owner changed.
+ * @param args.current -
+ * @param args.latest -
+ * @param args.upgraded -
+ * @param args.total -
+ * @param args.ownersChangedDeps -
  */
 export async function printUpgrades(
   options: Options,
@@ -252,11 +250,17 @@ export async function printUpgrades(
     ownersChangedDeps,
     errors,
   }: {
+    // Current package versions
     current: Index<VersionSpec>
-    latest: Index<Version>
+    // Latest package versions according to the target. This is only used to detect an empty result from npm/pacote.
+    latest?: Index<Version>
+    // Upgraded package specifications
     upgraded: Index<VersionSpec>
+    // The total number of all possible upgrades. This is used to differentiate "no dependencies" from "no upgrades"
     total: number
+    // Boolean flag per dependency which announces if package owner changed. Only used by --format ownerChanged
     ownersChangedDeps?: Index<boolean>
+    // Any errors that were encountered when fetching versions.
     errors?: Index<string>
   },
 ) {
@@ -264,7 +268,6 @@ export async function printUpgrades(
     print(options, '')
   }
 
-  // print everything is up-to-date
   const smiley = chalk.green.bold(':)')
   const numErrors = Object.keys(errors || {}).length
   const target = typeof options.target === 'string' ? options.target : 'target'

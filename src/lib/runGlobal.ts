@@ -4,6 +4,7 @@ import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import chalk from './chalk'
 import getInstalledPackages from './getInstalledPackages'
+import { keyValueBy } from './keyValueBy'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
 
 /** Checks global dependencies for upgrades. */
@@ -14,19 +15,21 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
     pick(options, ['cwd', 'filter', 'filterVersion', 'global', 'packageManager', 'prefix', 'reject', 'rejectVersion']),
   )
 
-  print(options, 'globalPackages', 'silly')
-  print(options, globalPackages, 'silly')
-  print(options, '', 'silly')
+  print(options, 'globalPackages:', 'verbose')
+  print(options, globalPackages, 'verbose')
+  print(options, '', 'verbose')
   print(options, `Fetching ${options.target} versions`, 'verbose')
 
   const [upgraded, latest] = await upgradePackageDefinitions(globalPackages, options)
-  print(options, latest, 'silly')
+  print(options, latest, 'verbose')
+
+  const latestVersions = keyValueBy(latest, (key, value) => (value.version ? { [key]: value.version } : null))
 
   const upgradedPackageNames = Object.keys(upgraded)
   await printUpgrades(options, {
     current: globalPackages,
     upgraded,
-    latest: {},
+    latest: latestVersions,
     total: upgradedPackageNames.length,
   })
 

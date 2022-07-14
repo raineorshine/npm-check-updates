@@ -157,7 +157,6 @@ const doctor = async (run: Run, options: Options) => {
     await printUpgrades(options, {
       current: allDependencies,
       upgraded: upgrades,
-      latest: {},
       total: Object.keys(upgrades || {}).length,
     })
 
