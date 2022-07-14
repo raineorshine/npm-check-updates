@@ -28,7 +28,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     // set default options that are specific to module usage
     const moduleDefaults: Options = {
       jsonUpgraded: true,
-      silent: runOptions.silent || runOptions.loglevel === undefined,
+      silent: runOptions.silent || (runOptions.loglevel === undefined && !runOptions.verbose),
       args: [],
     }
 
@@ -44,7 +44,8 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     cli,
   }
 
-  const loglevel = options.silent ? 'silent' : options.loglevel
+  // consolidate loglevel
+  const loglevel = options.silent ? 'silent' : options.verbose ? 'verbose' : options.loglevel
 
   const json = Object.keys(options)
     .filter(option => option.startsWith('json'))
@@ -130,7 +131,6 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     ...(format.length > 0 ? { format } : null),
     // add shortcut for any keys that start with 'json'
     json,
-    // convert silent option to loglevel silent
     loglevel,
     minimal: options.minimal === undefined ? false : options.minimal,
     // default to false, except when newest or greatest are set

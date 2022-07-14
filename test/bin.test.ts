@@ -15,6 +15,30 @@ process.env.NCU_TESTS = 'true'
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('bin', async function () {
+  it('runs from the command line', async () => {
+    await spawn('node', [bin], '{}')
+  })
+
+  it('output only upgraded with --jsonUpgraded', async () => {
+    const output = await spawn('node', [bin, '--jsonUpgraded'], '{ "dependencies": { "express": "1" } }')
+    const pkgData = JSON.parse(output) as Record<string, unknown>
+    pkgData.should.have.property('express')
+  })
+
+  it('--loglevel verbose', async () => {
+    const output = await spawn('node', [bin, '--loglevel', 'verbose'], '{ "dependencies": { "ncu-test-v2": "1.0.0" } }')
+    output.should.include('Initializing')
+    output.should.include('Running in local mode')
+    output.should.include('Finding package file data')
+  })
+
+  it('--verbose', async () => {
+    const output = await spawn('node', [bin, '--verbose'], '{ "dependencies": { "ncu-test-v2": "1.0.0" } }')
+    output.should.include('Initializing')
+    output.should.include('Running in local mode')
+    output.should.include('Finding package file data')
+  })
+
   it('accept stdin', async () => {
     const output = await spawn('node', [bin, '--stdin'], '{ "dependencies": { "express": "1" } }')
     output.trim().should.startWith('express')
@@ -45,20 +69,6 @@ describe('bin', async function () {
   it('handle no package.json to analyze when receiving empty content on stdin', async () => {
     // run from tmp dir to avoid ncu analyzing the project's package.json
     return spawn('node', [bin], { cwd: os.tmpdir() }).should.eventually.be.rejectedWith('No package.json')
-  })
-
-  it('output json with --jsonAll', async () => {
-    const output = await spawn('node', [bin, '--jsonAll'], '{ "dependencies": { "express": "1" } }')
-    const pkgData = JSON.parse(output) as Record<string, unknown>
-    pkgData.should.have.property('dependencies')
-    const deps = pkgData.dependencies as Record<string, unknown>
-    deps.should.have.property('express')
-  })
-
-  it('output only upgraded with --jsonUpgraded', async () => {
-    const output = await spawn('node', [bin, '--jsonUpgraded'], '{ "dependencies": { "express": "1" } }')
-    const pkgData = JSON.parse(output) as Record<string, unknown>
-    pkgData.should.have.property('express')
   })
 
   it('read --packageFile', async () => {
@@ -137,6 +147,11 @@ describe('bin', async function () {
     }
   })
 
+  it('suppress stdout when --silent is provided', async () => {
+    const output = await spawn('node', [bin, '--silent'], '{ "dependencies": { "express": "1" } }')
+    output.trim().should.equal('')
+  })
+
   describe('filter', () => {
     it('filter by package name with --filter', async () => {
       const output = await spawn(
@@ -203,22 +218,17 @@ describe('reject', () => {
     pkgData.should.have.property('express')
     pkgData.should.not.have.property('chalk')
   })
-})
 
-it('reject by package name with -x', async () => {
-  const output = await spawn(
-    'node',
-    [bin, '--jsonUpgraded', '-x', 'chalk'],
-    '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
-  )
-  const pkgData = JSON.parse(output)
-  pkgData.should.have.property('express')
-  pkgData.should.not.have.property('chalk')
-})
-
-it('suppress stdout when --silent is provided', async () => {
-  const output = await spawn('node', [bin, '--silent'], '{ "dependencies": { "express": "1" } }')
-  output.trim().should.equal('')
+  it('reject by package name with -x', async () => {
+    const output = await spawn(
+      'node',
+      [bin, '--jsonUpgraded', '-x', 'chalk'],
+      '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
+    )
+    const pkgData = JSON.parse(output)
+    pkgData.should.have.property('express')
+    pkgData.should.not.have.property('chalk')
+  })
 })
 
 describe('rc-config', () => {

@@ -128,4 +128,7 @@ export interface RunOptions {
 
   /** Overwrite package file with upgraded versions instead of just outputting to console. */
   upgrade?: boolean
+
+  /** Log additional information for debugging. Alias for --loglevel verbose. */
+  verbose?: boolean
 }

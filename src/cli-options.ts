@@ -518,7 +518,7 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
   {
     long: 'silent',
     short: 's',
-    description: "Don't output anything (--loglevel silent).",
+    description: "Don't output anything. Alias for --loglevel silent.",
     type: 'boolean',
   },
   {
@@ -546,6 +546,11 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     long: 'upgrade',
     short: 'u',
     description: 'Overwrite package file with upgraded versions instead of just outputting to console.',
+    type: 'boolean',
+  },
+  {
+    long: 'verbose',
+    description: 'Log additional information for debugging. Alias for --loglevel verbose.',
     type: 'boolean',
   },
 ]

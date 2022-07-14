@@ -224,6 +224,8 @@ ncu "/^(?!react-).*$/" # windows
                              npm-registry-fetch)
 -u, --upgrade                Overwrite package file with upgraded versions
                              instead of just outputting to console.
+--verbose                    Log additional information for debugging. Alias
+                             for --loglevel verbose.
 -V, --version                output the version number
 -h, --help                   display help for command
 ```
