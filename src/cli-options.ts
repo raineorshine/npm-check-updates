@@ -65,6 +65,93 @@ const wrap = (s: string, maxLineLength = 92) => {
 /** Wraps the second column in a list of 2-column cli-table rows. */
 const wrapRows = (rows: string[][]) => rows.map(([col1, col2]) => [col1, wrap(col2)])
 
+/** Extended help for the --doctor option. */
+const extendedHelpDoctor = () => `Iteratively installs upgrades and runs tests to identify breaking upgrades.
+
+${chalk.bold('Add "-u" to execute')} (modifies your package file, lock file, and node_modules)
+
+To be more precise:
+1. Runs "npm install" and "npm test" to ensure tests are currently passing.
+2. Runs "ncu -u" to optimistically upgrade all dependencies.
+3. If tests pass, hurray!
+4. If tests fail, restores package file and lock file.
+5. For each dependency, install upgrade and run tests.
+6. Prints broken upgrades with test error.
+7. Saves working upgrades to package.json.
+
+Example:
+
+$ ncu --doctor -u
+Running tests before upgrading
+npm install
+npm run test
+Upgrading all dependencies and re-running tests
+ncu -u
+npm install
+npm run test
+Tests failed
+Identifying broken dependencies
+npm install
+npm install --no-save react@16.0.0
+npm run test
+  ✓ react 15.0.0 → 16.0.0
+npm install --no-save react-redux@7.0.0
+npm run test
+  ✗ react-redux 6.0.0 → 7.0.0
+
+/projects/myproject/test.js:13
+  throw new Error('Test failed!')
+  ^
+
+npm install --no-save react-dnd@11.1.3
+npm run test
+  ✓ react-dnd 10.0.0 → 11.1.3
+Saving partially upgraded package.json
+`
+
+/** Extended help for the --format option. */
+const extendedHelpFormat = (): string => {
+  const header =
+    'Modify the output formatting or show additional information. Specify one or more comma-delimited values.'
+  const table = new Table({
+    colAligns: ['right', 'left'],
+    rows: wrapRows([
+      ['group', `Groups packages by major, minor, patch, and major version zero updates.`],
+      ['ownerChanged', `Shows if the package owner has changed.`],
+      ['repo', `Infers and displays links to the package's source code repository.`],
+    ]),
+    // coerce type until rows is added @types/cli-table
+    // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
+  } as any)
+
+  return `${header}\n\n${table.toString()}
+`
+}
+
+/** Extended help for the --group option. */
+const extendedHelpGroup = (): string => {
+  return `Customize how packages are divided into groups when using '--format group'. Only available in .ncurc.js or when importing npm-check-updates as a module:
+
+  ${chalk.gray(`/**
+    @param name             The name of the dependency.
+    @param defaultGroup     The predefined group name which will be used by default.
+    @param currentSpec      The current version range in your package.json.
+    @param upgradedSpec     The upgraded version range that will be written to your package.json.
+    @param upgradedVersion  The upgraded version number returned by the registry.
+    @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
+  */`)}
+  ${chalk.cyan('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion} {
+    if (name === 'typescript' && defaultGroup === 'minor') {
+      return 'major'
+    }
+    if (name.startsWith('@myorg/')) {
+      return 'My Org'
+    }
+    return defaultGroup
+  }
+`
+}
+
 /** Extended help for the --target option. */
 const extendedHelpTarget = (): string => {
   const header = 'Determines the version to upgrade to. (default: "latest")'
@@ -113,49 +200,6 @@ You can also specify a custom function in your .ncurc.js file, or when importing
 }
 
 /** Extended help for the --format option. */
-const extendedHelpFormat = (): string => {
-  const header =
-    'Modify the output formatting or show additional information. Specify one or more comma-delimited values.'
-  const table = new Table({
-    colAligns: ['right', 'left'],
-    rows: wrapRows([
-      ['group', `Groups packages by major, minor, patch, and major version zero updates.`],
-      ['ownerChanged', `Shows if the package owner has changed.`],
-      ['repo', `Infers and displays links to the package's source code repository.`],
-    ]),
-    // coerce type until rows is added @types/cli-table
-    // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
-  } as any)
-
-  return `${header}\n\n${table.toString()}
-`
-}
-
-/** Extended help for the --group option. */
-const extendedHelpGroup = (): string => {
-  return `Customize how packages are divided into groups when using '--format group'. Only available in .ncurc.js or when importing npm-check-updates as a module:
-
-  ${chalk.gray(`/**
-    @param name             The name of the dependency.
-    @param defaultGroup     The predefined group name which will be used by default.
-    @param currentSpec      The current version range in your package.json.
-    @param upgradedSpec     The upgraded version range that will be written to your package.json.
-    @param upgradedVersion  The upgraded version number returned by the registry.
-    @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
-  */`)}
-  ${chalk.cyan('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion} {
-    if (name === 'typescript' && defaultGroup === 'minor') {
-      return 'major'
-    }
-    if (name.startsWith('@myorg/')) {
-      return 'My Org'
-    }
-    return defaultGroup
-  }
-`
-}
-
-/** Extended help for the --format option. */
 const extendedHelpPackageManager = (): string => {
   const header = 'Specifies the package manager to use when looking up version numbers.'
   const table = new Table({
@@ -188,49 +232,43 @@ my-registry.json:
 `
 }
 
-/** Extended help for the --doctor option. */
-const extendedHelpDoctor = () => `Iteratively installs upgrades and runs tests to identify breaking upgrades.
+/** Extended help for the --peer option. */
+const extendedHelpPeer = () => `Check peer dependencies of installed packages and filter updates to compatible versions.
 
-${chalk.bold('Add "-u" to execute')} (modifies your package file, lock file, and node_modules)
+${chalk.bold('Example')}
 
-To be more precise:
-1. Runs "npm install" and "npm test" to ensure tests are currently passing.
-2. Runs "ncu -u" to optimistically upgrade all dependencies.
-3. If tests pass, hurray!
-4. If tests fail, restores package file and lock file.
-5. For each dependency, install upgrade and run tests.
-6. Prints broken upgrades with test error.
-7. Saves working upgrades to package.json.
+The following example demonstrates how --peer works, and how it uses peer dependencies from upgraded modules.
 
-Example:
+The package ${chalk.bold('ncu-test-peer-update')} has two versions published:
 
-$ ncu --doctor -u
-Running tests before upgrading
-npm install
-npm run test
-Upgrading all dependencies and re-running tests
-ncu -u
-npm install
-npm run test
-Tests failed
-Identifying broken dependencies
-npm install
-npm install --no-save react@16.0.0
-npm run test
-  ✓ react 15.0.0 → 16.0.0
-npm install --no-save react-redux@7.0.0
-npm run test
-  ✗ react-redux 6.0.0 → 7.0.0
+- 1.0.0 has peer dependency "ncu-test-return-version": "1.0.x"
+- 1.1.0 has peer dependency "ncu-test-return-version": "1.1.x"
 
-/projects/myproject/test.js:13
-  throw new Error('Test failed!')
-  ^
+Our test app has the following dependencies:
 
-npm install --no-save react-dnd@11.1.3
-npm run test
-  ✓ react-dnd 10.0.0 → 11.1.3
-Saving partially upgraded package.json
-`
+    "ncu-test-peer-update": "1.0.0",
+    "ncu-test-return-version": "1.0.0"
+
+The latest versions of these packages are:
+
+    "ncu-test-peer-update": "1.1.0",
+    "ncu-test-return-version": "2.0.0"
+
+${chalk.bold('With --peer')}
+
+ncu upgrades packages to the highest version that still adheres to the peer dependency constraints:
+
+
+ ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
+ ncu-test-return-version  1.0.0  →  1.${chalk.cyan('1.0')}
+
+${chalk.bold('Without --peer')}
+
+As a comparison: without using the --peer option, ncu will suggest the latest versions, ignoring peer dependencies:
+
+ ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
+ ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}
+  `
 
 // store CLI options separately from bin file so that they can be used to build type definitions
 const cliOptions: CLIOption[] = [
@@ -423,42 +461,7 @@ const cliOptions: CLIOption[] = [
     long: 'peer',
     description: 'Check peer dependencies of installed packages and filter updates to compatible versions.',
     type: 'boolean',
-    help: () => `Check peer dependencies of installed packages and filter updates to compatible versions.
-
-${chalk.bold('Example')}
-
-The following example demonstrates how --peer works, and how it uses peer dependencies from upgraded modules.
-
-The package ${chalk.bold('ncu-test-peer-update')} has two versions published:
-
-- 1.0.0 has peer dependency "ncu-test-return-version": "1.0.x"
-- 1.1.0 has peer dependency "ncu-test-return-version": "1.1.x"
-
-Our test app has the following dependencies:
-
-    "ncu-test-peer-update": "1.0.0",
-    "ncu-test-return-version": "1.0.0"
-
-The latest versions of these packages are:
-
-    "ncu-test-peer-update": "1.1.0",
-    "ncu-test-return-version": "2.0.0"
-
-${chalk.bold('With --peer')}
-
-ncu upgrades packages to the highest version that still adheres to the peer dependency constraints:
-
-
- ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
- ncu-test-return-version  1.0.0  →  1.${chalk.cyan('1.0')}
-
-${chalk.bold('Without --peer')}
-
-As a comparison: without using the --peer option, ncu will suggest the latest versions, ignoring peer dependencies:
-
- ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
- ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}
-  `,
+    help: extendedHelpPeer,
   },
   {
     long: 'pre',

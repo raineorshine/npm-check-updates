@@ -395,6 +395,13 @@ describe('rc-config', () => {
     it('option with extended help', async () => {
       const output = await spawn('node', [bin, '--help', '--target'])
       output.trim().should.include('Upgrade to the highest version number')
+
+      // run extended help on other options for test coverage
+      await spawn('node', [bin, '--help', 'doctor'])
+      await spawn('node', [bin, '--help', 'format'])
+      await spawn('node', [bin, '--help', 'group'])
+      await spawn('node', [bin, '--help', 'packageManager'])
+      await spawn('node', [bin, '--help', 'peer'])
     })
 
     it('unknown option', async () => {
