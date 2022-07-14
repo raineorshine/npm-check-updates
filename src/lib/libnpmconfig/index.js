@@ -1,4 +1,10 @@
-// https://github.com/npm/libnpmconfig
+/*
+
+This is a copy of the deprecated libnpmconfig library. It has been brought into the codebase to avoid deprecation warnings.
+
+https://github.com/npm/libnpmconfig
+
+*/
 
 const fs = require('fs')
 const figgyPudding = require('../figgy-pudding')
