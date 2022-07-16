@@ -167,7 +167,7 @@ export async function packageAuthorChanged(
   return false
 }
 
-interface ViewOptions {
+export interface ViewOptions {
   registry?: string
   timeout?: number
   retry?: number

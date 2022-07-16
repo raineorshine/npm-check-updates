@@ -9,6 +9,7 @@ import { FilterFunction } from '../src/types/FilterFunction'
 import { Index } from '../src/types/IndexType'
 import { TargetFunction } from '../src/types/TargetFunction'
 import { Version } from '../src/types/Version'
+import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -18,46 +19,50 @@ process.env.NCU_TESTS = 'true'
 
 describe('run', function () {
   it('return jsonUpgraded by default', async () => {
+    const stub = stubNpmView('99.9.9')
+
     const output = await ncu.run({
       packageData: await fs.readFile(path.join(__dirname, 'ncu/package.json'), 'utf-8'),
     })
-    output!.should.have.property('express')
+    output!.should.deep.equal({
+      express: '^99.9.9',
+    })
+
+    stub.restore()
   })
 
   it('pass object as packageData', async () => {
+    const stub = stubNpmView('99.9.9')
+
     const output = await ncu.run({
       packageData: {
         dependencies: {
-          'ncu-test-v2': '1.0.0',
+          MOCK_PACKAGE: '1.0.0',
         },
       },
     })
-    output!.should.have.property('ncu-test-v2')
-  })
+    output!.should.have.property('MOCK_PACKAGE')
 
-  it('suggest upgrades to versions within the specified version range if jsonUpgraded is true', async () => {
-    const upgraded = await ncu.run({
-      // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
-      packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
-      jsonUpgraded: true,
-    })
-
-    upgraded!.should.have.property('juggernaut')
-    upgraded!.should.eql({ juggernaut: '^2.1.1' })
+    stub.restore()
   })
 
   it('do not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimial is true', async () => {
+    const stub = stubNpmView('2.1.1')
+
     const upgraded = await ncu.run({
-      // juggernaut has been deprecated at v2.1.1 so it is unlikely to invalidate this test
-      packageData: '{ "dependencies": { "juggernaut": "^2.1.0" } }',
+      packageData: { dependencies: { MOCK_PACKAGE: '^2.1.0' } },
       jsonUpgraded: true,
       minimal: true,
     })
 
-    return upgraded!.should.not.have.property('juggernaut')
+    upgraded!.should.not.have.property('MOCK_PACKAGE')
+
+    stub.restore()
   })
 
   it('do not upgrade peerDependencies by default', async () => {
+    const stub = stubNpmView('99.9.9')
+
     const upgraded = await ncu.run({
       packageData: await fs.readFile(path.join(__dirname, '/ncu/package-dep.json'), 'utf-8'),
     })
@@ -65,9 +70,13 @@ describe('run', function () {
     upgraded!.should.have.property('express')
     upgraded!.should.have.property('chalk')
     upgraded!.should.not.have.property('mocha')
+
+    stub.restore()
   })
 
   it('only upgrade devDependencies with --dep dev', async () => {
+    const stub = stubNpmView('99.9.9')
+
     const upgraded = await ncu.run({
       packageData: await fs.readFile(path.join(__dirname, 'ncu/package-dep.json'), 'utf-8'),
       dep: 'dev',
@@ -76,6 +85,8 @@ describe('run', function () {
     upgraded!.should.not.have.property('express')
     upgraded!.should.have.property('chalk')
     upgraded!.should.not.have.property('mocha')
+
+    stub.restore()
   })
 
   it('only upgrade devDependencies and peerDependencies with --dep dev,peer', async () => {
