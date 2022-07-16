@@ -10,14 +10,14 @@ describe('enginesNode', () => {
   it('enable --enginesNode matching ', async () => {
     const upgradedPkg = await ncu.run({
       jsonAll: true,
-      packageData: JSON.stringify({
+      packageData: {
         dependencies: {
           del: '3.0.0',
         },
         engines: {
           node: '>=6',
         },
-      }),
+      },
       enginesNode: true,
     })
 
@@ -34,14 +34,14 @@ describe('enginesNode', () => {
   it('enable engines matching if --enginesNode', async () => {
     const upgradedPkg = await ncu.run({
       jsonAll: true,
-      packageData: JSON.stringify({
+      packageData: {
         dependencies: {
           del: '3.0.0',
         },
         engines: {
           node: '>=6',
         },
-      }),
+      },
       enginesNode: true,
     })
 
@@ -54,14 +54,14 @@ describe('enginesNode', () => {
   it('enable engines matching if --enginesNode, not update if matches not exists', async () => {
     const upgradedPkg = await ncu.run({
       jsonAll: true,
-      packageData: JSON.stringify({
+      packageData: {
         dependencies: {
           del: '3.0.0',
         },
         engines: {
           node: '>=1',
         },
-      }),
+      },
       enginesNode: true,
     })
 
@@ -74,11 +74,11 @@ describe('enginesNode', () => {
   it('enable engines matching if --enginesNode, update to latest version if engines.node not exists', async () => {
     const upgradedPkg = await ncu.run({
       jsonAll: true,
-      packageData: JSON.stringify({
+      packageData: {
         dependencies: {
           del: '3.0.0',
         },
-      }),
+      },
       enginesNode: true,
     })
 

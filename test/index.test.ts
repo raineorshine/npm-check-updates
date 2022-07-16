@@ -17,7 +17,7 @@ chai.use(chaiString)
 process.env.NCU_TESTS = 'true'
 
 describe('run', function () {
-  it('return promised jsonUpgraded', async () => {
+  it('return jsonUpgraded by default', async () => {
     const output = await ncu.run({
       packageData: await fs.readFile(path.join(__dirname, 'ncu/package.json'), 'utf-8'),
     })
@@ -114,11 +114,11 @@ describe('run', function () {
     return ncu
       .run({
         jsonAll: true,
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-mock-pre': '1.0.0',
           },
-        }),
+        },
       })
       .then(data => {
         return data!.should.eql({
@@ -132,11 +132,11 @@ describe('run', function () {
   it('upgrade prereleases to newer prereleases', () => {
     return ncu
       .run({
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-test-alpha-latest': '1.0.0-alpha.1',
           },
-        }),
+        },
       })
       .then(data => {
         return data!.should.eql({
@@ -149,11 +149,11 @@ describe('run', function () {
     return ncu
       .run({
         pre: false,
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-test-alpha-latest': '1.0.0-alpha.1',
           },
-        }),
+        },
       })
       .then(data => {
         return data!.should.eql({})
@@ -164,11 +164,11 @@ describe('run', function () {
     return ncu
       .run({
         jsonAll: true,
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-mock-pre': '1.0.0',
           },
-        }),
+        },
         pre: true,
       })
       .then(data => {
@@ -184,11 +184,11 @@ describe('run', function () {
     return ncu
       .run({
         jsonAll: true,
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-mock-pre': '1.0.0',
           },
-        }),
+        },
         target: 'newest',
       })
       .then(data => {
@@ -204,11 +204,11 @@ describe('run', function () {
     return ncu
       .run({
         jsonAll: true,
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-mock-pre': '1.0.0',
           },
-        }),
+        },
         target: 'greatest',
       })
       .then(data => {
@@ -224,11 +224,11 @@ describe('run', function () {
     return ncu
       .run({
         jsonAll: true,
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-mock-pre': '1.0.0',
           },
-        }),
+        },
         target: 'newest',
         pre: false,
       })
@@ -246,38 +246,38 @@ describe('run', function () {
       ncu.run({
         jsonAll: true,
         target: 'newest',
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             del: '',
           },
-        }),
+        },
       }),
       ncu.run({
         jsonAll: true,
         target: 'newest',
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             del: 'invalid range',
           },
-        }),
+        },
       }),
       ncu.run({
         jsonAll: true,
         target: 'newest',
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             del: '*',
           },
-        }),
+        },
       }),
       ncu.run({
         jsonAll: true,
         target: 'newest',
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             del: '~',
           },
-        }),
+        },
       }),
     ])
   })
@@ -285,11 +285,11 @@ describe('run', function () {
   describe('deprecated', () => {
     it('deprecated excluded by default', async () => {
       const upgrades = await ncu.run({
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-test-deprecated': '1.0.0',
           },
-        }),
+        },
       })
       upgrades!.should.deep.equal({})
     })
@@ -297,11 +297,11 @@ describe('run', function () {
     it('deprecated included with option', async () => {
       const upgrades = await ncu.run({
         deprecated: true,
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-test-deprecated': '1.0.0',
           },
-        }),
+        },
       })
       upgrades!.should.deep.equal({
         'ncu-test-deprecated': '2.0.0',
@@ -311,14 +311,14 @@ describe('run', function () {
 
   describe('target', () => {
     it('do not update major versions with --target minor', async () => {
-      const pkgData = await ncu.run({ target: 'minor', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
+      const pkgData = await ncu.run({ target: 'minor', packageData: { dependencies: { chalk: '3.0.0' } } })
       pkgData!.should.not.have.property('chalk')
     })
 
     it('update minor versions with --target minor', async () => {
       const pkgData = (await ncu.run({
         target: 'minor',
-        packageData: '{ "dependencies": { "chalk": "2.3.0" } }',
+        packageData: { dependencies: { chalk: '2.3.0' } },
       })) as Index<Version>
       pkgData!.should.have.property('chalk')
       pkgData.chalk.should.equal('2.4.2')
@@ -327,33 +327,33 @@ describe('run', function () {
     it('update patch versions with --target minor', async () => {
       const pkgData = (await ncu.run({
         target: 'minor',
-        packageData: '{ "dependencies": { "chalk": "2.4.0" } }',
+        packageData: { dependencies: { chalk: '2.4.0' } },
       })) as Index<Version>
       pkgData!.should.have.property('chalk')
       pkgData.chalk.should.equal('2.4.2')
     })
 
     it('do not update major versions with --target patch', async () => {
-      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "3.0.0" } }' })
+      const pkgData = await ncu.run({ target: 'patch', packageData: { dependencies: { chalk: '3.0.0' } } })
       pkgData!.should.not.have.property('chalk')
     })
 
     it('do not update minor versions with --target patch', async () => {
-      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "chalk": "2.3.2" } }' })
+      const pkgData = await ncu.run({ target: 'patch', packageData: { dependencies: { chalk: '2.3.2' } } })
       pkgData!.should.not.have.property('chalk')
     })
 
     it('update patch versions with --target patch', async () => {
       const pkgData = (await ncu.run({
         target: 'patch',
-        packageData: '{ "dependencies": { "chalk": "2.4.1" } }',
+        packageData: { dependencies: { chalk: '2.4.1' } },
       })) as Index<Version>
       pkgData!.should.have.property('chalk')
       pkgData.chalk.should.equal('2.4.2')
     })
 
     it('skip non-semver versions with --target patch', async () => {
-      const pkgData = await ncu.run({ target: 'patch', packageData: '{ "dependencies": { "test": "github:a/b" } }' })
+      const pkgData = await ncu.run({ target: 'patch', packageData: { dependencies: { test: 'github:a/b' } } })
       pkgData!.should.not.have.property('test')
     })
 
@@ -363,14 +363,14 @@ describe('run', function () {
         operator === '^' ? 'minor' : operator === '~' ? 'patch' : 'latest'
       const pkgData = (await ncu.run({
         target,
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'eslint-plugin-jsdoc': '~36.1.0',
             jsonlines: '0.1.0',
             juggernaut: '1.0.0',
             mocha: '^8.3.2',
           },
-        }),
+        },
       })) as Index<Version>
       pkgData!.should.have.property('eslint-plugin-jsdoc')
       pkgData['eslint-plugin-jsdoc'].should.equal('~36.1.1')
@@ -392,14 +392,14 @@ describe('run', function () {
       const pkgData = (await ncu.run({
         filter,
         target,
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'eslint-plugin-jsdoc': '~36.1.0',
             jsonlines: '0.1.0',
             juggernaut: '1.0.0',
             mocha: '^8.3.2',
           },
-        }),
+        },
       })) as Index<Version>
       pkgData!.should.have.property('eslint-plugin-jsdoc')
       pkgData['eslint-plugin-jsdoc'].should.equal('~36.1.1')
@@ -414,11 +414,11 @@ describe('run', function () {
     it('upgrade nonprerelease version to specific tag', async () => {
       const upgraded = (await ncu.run({
         target: '@next',
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-test-tag': '0.1.0',
           },
-        }),
+        },
       })) as Index<Version>
 
       upgraded['ncu-test-tag'].should.equal('1.0.0-1')
@@ -427,11 +427,11 @@ describe('run', function () {
     it('upgrade prerelease version without preid to nonprerelease', async () => {
       const upgraded = (await ncu.run({
         target: 'latest',
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-test-tag': '1.0.0-1',
           },
-        }),
+        },
       })) as Index<Version>
 
       upgraded['ncu-test-tag'].should.equal('1.1.0')
@@ -440,11 +440,11 @@ describe('run', function () {
     it('upgrade prerelease version with preid to higher version on a specific tag', async () => {
       const upgraded = (await ncu.run({
         target: '@beta',
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-test-tag': '1.0.0-task-42.0',
           },
-        }),
+        },
       })) as Index<Version>
 
       upgraded['ncu-test-tag'].should.equal('1.0.1-beta.0')
@@ -454,11 +454,11 @@ describe('run', function () {
     it('upgrade from prerelease without preid to prerelease with preid at a specific tag if major.minor.patch is the same', async () => {
       const upgraded = (await ncu.run({
         target: '@task-42',
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-test-tag': '1.0.0-beta.0',
           },
-        }),
+        },
       })) as Index<Version>
 
       upgraded['ncu-test-tag'].should.equal('1.0.0-task-42.0')
@@ -468,11 +468,11 @@ describe('run', function () {
     it('upgrade from prerelease with preid to prerelease without preid at a specific tag if major.minor.patch is the same', async () => {
       const upgraded = (await ncu.run({
         target: '@next',
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-test-tag': '1.0.0-task-42.0',
           },
-        }),
+        },
       })) as Index<Version>
 
       upgraded['ncu-test-tag'].should.equal('1.0.0-1')
@@ -483,11 +483,11 @@ describe('run', function () {
     it('downgrade to tag with a non-matching preid and lower patch', async () => {
       const upgraded = (await ncu.run({
         target: '@task-42',
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-test-tag': '1.0.1-beta.0',
           },
-        }),
+        },
       })) as Index<Version>
 
       upgraded['ncu-test-tag'].should.equal('1.0.0-task-42.0')
@@ -497,11 +497,11 @@ describe('run', function () {
     it('downgrade to tag with a non-matching preid and lower minor', async () => {
       const upgraded = (await ncu.run({
         target: '@next',
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-test-tag': '1.2.0-dev.0',
           },
-        }),
+        },
       })) as Index<Version>
 
       upgraded['ncu-test-tag'].should.equal('1.0.0-1')
@@ -510,11 +510,11 @@ describe('run', function () {
     it('do not downgrade nonprerelease version to lower version with with specific tag', async () => {
       const upgraded = await ncu.run({
         target: '@next',
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-test-tag': '1.1.0',
           },
-        }),
+        },
       })
 
       upgraded!.should.not.have.property('ncu-test-tag')
@@ -523,11 +523,11 @@ describe('run', function () {
     it('do not downgrade to latest with lower version', async () => {
       const upgraded = await ncu.run({
         target: 'latest',
-        packageData: JSON.stringify({
+        packageData: {
           dependencies: {
             'ncu-test-tag': '1.1.1-beta.0',
           },
-        }),
+        },
       })
 
       upgraded!.should.not.have.property('ncu-test-tag')
@@ -544,7 +544,7 @@ describe('run', function () {
       }
 
       const upgraded = await ncu.run({
-        packageData: JSON.stringify(pkg),
+        packageData: pkg,
         filterVersion: '1.0.0',
       })
 
@@ -562,7 +562,7 @@ describe('run', function () {
       }
 
       const upgraded = await ncu.run({
-        packageData: JSON.stringify(pkg),
+        packageData: pkg,
         filterVersion: '1.0.0 0.1.0',
       })
 
@@ -581,7 +581,7 @@ describe('run', function () {
       }
 
       const upgraded = await ncu.run({
-        packageData: JSON.stringify(pkg),
+        packageData: pkg,
         filterVersion: '1.0.0,0.1.0',
       })
 
@@ -600,7 +600,7 @@ describe('run', function () {
       }
 
       const upgraded = await ncu.run({
-        packageData: JSON.stringify(pkg),
+        packageData: pkg,
         filterVersion: /^1/,
       })
 
@@ -619,7 +619,7 @@ describe('run', function () {
       }
 
       const upgraded = await ncu.run({
-        packageData: JSON.stringify(pkg),
+        packageData: pkg,
         filterVersion: '/^1/',
       })
 
@@ -639,7 +639,7 @@ describe('run', function () {
       }
 
       const upgraded = await ncu.run({
-        packageData: JSON.stringify(pkg),
+        packageData: pkg,
         rejectVersion: '1.0.0',
       })
 
@@ -657,7 +657,7 @@ describe('run', function () {
       }
 
       const upgraded = await ncu.run({
-        packageData: JSON.stringify(pkg),
+        packageData: pkg,
         rejectVersion: '1.0.0 0.1.0',
       })
 
@@ -676,7 +676,7 @@ describe('run', function () {
       }
 
       const upgraded = await ncu.run({
-        packageData: JSON.stringify(pkg),
+        packageData: pkg,
         rejectVersion: '1.0.0,0.1.0',
       })
 
@@ -695,7 +695,7 @@ describe('run', function () {
       }
 
       const upgraded = await ncu.run({
-        packageData: JSON.stringify(pkg),
+        packageData: pkg,
         rejectVersion: /^1/,
       })
 
@@ -714,7 +714,7 @@ describe('run', function () {
       }
 
       const upgraded = await ncu.run({
-        packageData: JSON.stringify(pkg),
+        packageData: pkg,
         rejectVersion: '/^1/',
       })
 
@@ -726,25 +726,25 @@ describe('run', function () {
 
   it('ignore non-string versions (sometimes used as comments)', async () => {
     const upgrades = await ncu.run({
-      packageData: JSON.stringify({
+      packageData: {
         dependencies: {
-          '//': ['This is a comment'],
+          '//': 'This is a comment',
         },
-      }),
+      },
     })
     upgrades!.should.deep.equal({})
   })
 
   it('update devDependency when duplicate dependency is up-to-date', async () => {
     const upgrades = await ncu.run({
-      packageData: JSON.stringify({
+      packageData: {
         dependencies: {
           'ncu-test-v2': '^2.0.0',
         },
         devDependencies: {
           'ncu-test-v2': '^1.0.0',
         },
-      }),
+      },
     })
     upgrades!.should.deep.equal({
       'ncu-test-v2': '^2.0.0',
@@ -753,14 +753,14 @@ describe('run', function () {
 
   it('update dependency when duplicate devDependency is up-to-date', async () => {
     const upgrades = await ncu.run({
-      packageData: JSON.stringify({
+      packageData: {
         dependencies: {
           'ncu-test-v2': '^1.0.0',
         },
         devDependencies: {
           'ncu-test-v2': '^2.0.0',
         },
-      }),
+      },
     })
     upgrades!.should.deep.equal({
       'ncu-test-v2': '^2.0.0',
@@ -784,12 +784,12 @@ describe('run', function () {
 
   it('ignore file: and link: protocols', async () => {
     const output = await ncu.run({
-      packageData: JSON.stringify({
+      packageData: {
         dependencies: {
           editor: 'file:../editor',
           event: 'link:../link',
         },
-      }),
+      },
     })
     output!.should.deep.equal({})
   })
