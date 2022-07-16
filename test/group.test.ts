@@ -38,7 +38,7 @@ async function groupTestScaffold(
     const stdout = await spawn('node', [bin, '--format', 'group', '--configFilePath', tempDir], {
       cwd: tempDir,
     })
-    stripAnsi(stdout).should.include(expectedOutput)
+    stripAnsi(stdout).should.containIgnoreCase(expectedOutput)
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true })
   }

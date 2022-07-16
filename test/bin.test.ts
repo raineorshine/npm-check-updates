@@ -27,16 +27,16 @@ describe('bin', async function () {
 
   it('--loglevel verbose', async () => {
     const output = await spawn('node', [bin, '--loglevel', 'verbose'], '{ "dependencies": { "ncu-test-v2": "1.0.0" } }')
-    output.should.include('Initializing')
-    output.should.include('Running in local mode')
-    output.should.include('Finding package file data')
+    output.should.containIgnoreCase('Initializing')
+    output.should.containIgnoreCase('Running in local mode')
+    output.should.containIgnoreCase('Finding package file data')
   })
 
   it('--verbose', async () => {
     const output = await spawn('node', [bin, '--verbose'], '{ "dependencies": { "ncu-test-v2": "1.0.0" } }')
-    output.should.include('Initializing')
-    output.should.include('Running in local mode')
-    output.should.include('Finding package file data')
+    output.should.containIgnoreCase('Initializing')
+    output.should.containIgnoreCase('Running in local mode')
+    output.should.containIgnoreCase('Finding package file data')
   })
 
   it('accept stdin', async () => {
@@ -242,7 +242,7 @@ describe('rc-config', () => {
         [bin, '--configFilePath', tempDir],
         '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       )
-      text.should.include(`Using config file ${tempConfigFile}`)
+      text.should.containIgnoreCase(`Using config file ${tempConfigFile}`)
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
@@ -399,12 +399,12 @@ describe('rc-config', () => {
 
     it('option with default', async () => {
       const output = await spawn('node', [bin, '--help', '--concurrency'])
-      output.trim().should.include('Default:')
+      output.trim().should.containIgnoreCase('Default:')
     })
 
     it('option with extended help', async () => {
       const output = await spawn('node', [bin, '--help', '--target'])
-      output.trim().should.include('Upgrade to the highest version number')
+      output.trim().should.containIgnoreCase('Upgrade to the highest version number')
 
       // run extended help on other options for test coverage
       await spawn('node', [bin, '--help', 'doctor'])
@@ -416,7 +416,7 @@ describe('rc-config', () => {
 
     it('unknown option', async () => {
       const output = await spawn('node', [bin, '--help', '--foo'])
-      output.trim().should.include('Unknown option')
+      output.trim().should.containIgnoreCase('Unknown option')
     })
 
     it('special --help --help', async () => {

@@ -1,5 +1,6 @@
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
+import chaiString from 'chai-string'
 import fs from 'fs/promises'
 import path from 'path'
 import rimraf from 'rimraf'
@@ -8,6 +9,8 @@ import { cliOptionsMap } from '../src/cli-options'
 
 chai.should()
 chai.use(chaiAsPromised)
+chai.use(chaiString)
+
 process.env.NCU_TESTS = 'true'
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
@@ -62,14 +65,14 @@ const testPass = ({ packageManager }: { packageManager: string }) => {
 
     // stdout should include normal output
     stderr.should.equal('')
-    stripAnsi(stdout).should.include('Tests pass')
-    stripAnsi(stdout).should.include('ncu-test-v2  ~1.0.0  →  ~2.0.0')
+    stripAnsi(stdout).should.containIgnoreCase('Tests pass')
+    stripAnsi(stdout).should.containIgnoreCase('ncu-test-v2  ~1.0.0  →  ~2.0.0')
 
     // stderr should include first failing upgrade
     stderr.should.equal('')
 
     // package file should include upgrades
-    pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
+    pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
   })
 }
 
@@ -115,19 +118,19 @@ const testFail = ({ packageManager }: { packageManager: string }) => {
     }
 
     // stdout should include successful upgrades
-    stdout.should.include('ncu-test-v2 ~1.0.0 →')
+    stdout.should.containIgnoreCase('ncu-test-v2 ~1.0.0 →')
     stdout.should.not.include('ncu-test-return-version ~1.0.0 →')
-    stdout.should.include('emitter20 1.0.0 →')
+    stdout.should.containIgnoreCase('emitter20 1.0.0 →')
 
     // stderr should include first failing upgrade
-    stderr.should.include('Breaks with v2.x')
+    stderr.should.containIgnoreCase('Breaks with v2.x')
     stderr.should.not.include('ncu-test-v2 ~1.0.0 →')
-    stderr.should.include('ncu-test-return-version ~1.0.0 →')
+    stderr.should.containIgnoreCase('ncu-test-return-version ~1.0.0 →')
     stderr.should.not.include('emitter20 1.0.0 →')
 
     // package file should only include successful upgrades
-    pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
-    pkgUpgraded.should.include('"ncu-test-return-version": "~1.0.0"')
+    pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
+    pkgUpgraded.should.containIgnoreCase('"ncu-test-return-version": "~1.0.0"')
     pkgUpgraded.should.not.include('"emitter20": "1.0.0"') // assert the negation since emitter20 is a live package and the latest version could change (it would be better to mock this)
   })
 }
@@ -206,11 +209,11 @@ describe('doctor', function () {
       stderr.should.equal('')
 
       // stdout should include normal output
-      stripAnsi(stdout).should.include('Tests pass')
-      stripAnsi(stdout).should.include('ncu-test-v2  ~1.0.0  →  ~2.0.0')
+      stripAnsi(stdout).should.containIgnoreCase('Tests pass')
+      stripAnsi(stdout).should.containIgnoreCase('ncu-test-v2  ~1.0.0  →  ~2.0.0')
 
       // package file should include upgrades
-      pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
+      pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
     })
 
     it('custom install script with --doctorInstall', async function () {
@@ -248,10 +251,10 @@ describe('doctor', function () {
       stderr.should.equal('')
 
       // stdout should include normal output
-      stripAnsi(stdout).should.include('Tests pass')
+      stripAnsi(stdout).should.containIgnoreCase('Tests pass')
 
       // package file should include upgrades
-      pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
+      pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
     })
 
     it('custom test script with --doctorTest', async function () {
@@ -289,10 +292,10 @@ describe('doctor', function () {
       stderr.should.equal('')
 
       // stdout should include normal output
-      stripAnsi(stdout).should.include('Tests pass')
+      stripAnsi(stdout).should.containIgnoreCase('Tests pass')
 
       // package file should include upgrades
-      pkgUpgraded.should.include('"ncu-test-v2": "~2.0.0"')
+      pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
     })
   })
 

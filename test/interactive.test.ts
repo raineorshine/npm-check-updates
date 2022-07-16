@@ -174,11 +174,11 @@ describe('--interactive', () => {
         },
       )
 
-      stripAnsi(stdout).should.include('Run npm install in each project directory to install new versions')
+      stripAnsi(stdout).should.containIgnoreCase('Run npm install in each project directory to install new versions')
 
       // npm install outupt
       // e.g. added 1 package, and audited 2 packages in 386ms
-      stripAnsi(stdout).should.not.include('added')
+      stripAnsi(stdout).should.not.containIgnoreCase('added')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
