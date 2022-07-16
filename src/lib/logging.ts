@@ -8,6 +8,7 @@ import { Options } from '../types/Options'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
 import chalk from './chalk'
+import filterObject from './filterObject'
 import getRepoUrl from './getRepoUrl'
 import {
   colorizeDiff,
@@ -28,6 +29,9 @@ const logLevels = {
   verbose: 5,
   silly: 6,
 }
+
+/** Returns true if the dependency spec is not fetchable from the registry and is ignored. */
+const isFetchable = (spec: VersionSpec) => !spec.startsWith('file:') && !spec.startsWith('link:')
 
 /**
  * Prints a message if it is included within options.loglevel.
@@ -275,7 +279,12 @@ export async function printUpgrades(
   if (numUpgraded === 0 && total === 0 && numErrors === 0) {
     if (Object.keys(current).length === 0) {
       print(options, 'No dependencies.')
-    } else if (latest && Object.keys(latest).length === 0) {
+    } else if (
+      latest &&
+      Object.keys(latest).length === 0 &&
+      // some specs are ignored by ncu, like the file: protocol, so they should be ignored when detecting fetch issues
+      Object.values(filterObject(current, (name, spec) => isFetchable(spec))).length > 0
+    ) {
       print(
         options,
         `No package versions were returned. This is likely a problem with your installed ${

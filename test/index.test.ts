@@ -781,4 +781,16 @@ describe('run', function () {
     })
     upgrades!.should.haveOwnProperty('grunt-contrib-requirejs')
   })
+
+  it('ignore file: and link: protocols', async () => {
+    const output = await ncu.run({
+      packageData: JSON.stringify({
+        dependencies: {
+          editor: 'file:../editor',
+          event: 'link:../link',
+        },
+      }),
+    })
+    output!.should.deep.equal({})
+  })
 })

@@ -423,5 +423,18 @@ describe('rc-config', () => {
       const output = await spawn('node', [bin, '--help', '--help'])
       output.trim().should.not.include('Usage')
     })
+
+    it('ignore file: and link: protocols', async () => {
+      const { default: stripAnsi } = await import('strip-ansi')
+      const dependencies = {
+        editor: 'file:../editor',
+        event: 'link:../link',
+      }
+      const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
+
+      stripAnsi(output)!.should.not.include(
+        'No package versions were returned. This is likely a problem with your installed npm',
+      )
+    })
   })
 })
