@@ -114,7 +114,7 @@ export interface RunOptions {
   /** Number of times to retry failed requests for package info. (default: 3) */
   retry?: number
 
-  /** Don't output anything (--loglevel silent). */
+  /** Don't output anything. Alias for --loglevel silent. */
   silent?: boolean
 
   /** Read package.json from stdin. */
