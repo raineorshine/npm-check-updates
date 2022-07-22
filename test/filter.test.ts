@@ -42,52 +42,47 @@ describe('filter', () => {
   })
 
   it('filter with wildcard for scoped package', async () => {
-    // eslint-disable-next-line jsdoc/require-jsdoc
-    const withFilter = (filter: string[]) =>
-      ncu({
-        packageData: {
-          dependencies: {
-            vite: '1.0.0',
-            '@vitejs/plugin-react': '1.0.0',
-            '@vitejs/plugin-vue': '1.0.0',
-          },
-        },
-        filter,
-      }) as Promise<Index<string>>
-
-    {
-      const upgraded = await withFilter(['vite'])
-      upgraded.should.have.property('vite')
-      upgraded.should.not.have.property('@vitejs/plugin-react')
-      upgraded.should.not.have.property('@vitejs/plugin-vue')
+    const pkg = {
+      dependencies: {
+        vite: '1.0.0',
+        '@vitejs/plugin-react': '1.0.0',
+        '@vitejs/plugin-vue': '1.0.0',
+      },
     }
 
     {
-      const upgraded = await withFilter(['@vite*'])
-      upgraded.should.not.have.property('vite')
-      upgraded.should.have.property('@vitejs/plugin-react')
-      upgraded.should.have.property('@vitejs/plugin-vue')
+      const upgraded = await ncu({ packageData: pkg, filter: ['vite'] })
+      upgraded!.should.have.property('vite')
+      upgraded!.should.not.have.property('@vitejs/plugin-react')
+      upgraded!.should.not.have.property('@vitejs/plugin-vue')
     }
 
     {
-      const upgraded = await withFilter(['*vite*'])
-      upgraded.should.have.property('vite')
-      upgraded.should.have.property('@vitejs/plugin-react')
-      upgraded.should.have.property('@vitejs/plugin-vue')
+      const upgraded = await ncu({ packageData: pkg, filter: ['@vite*'] })
+      upgraded!.should.not.have.property('vite')
+      upgraded!.should.have.property('@vitejs/plugin-react')
+      upgraded!.should.have.property('@vitejs/plugin-vue')
     }
 
     {
-      const upgraded = await withFilter(['*vite*/*react*'])
-      upgraded.should.not.have.property('vite')
-      upgraded.should.have.property('@vitejs/plugin-react')
-      upgraded.should.not.have.property('@vitejs/plugin-vue')
+      const upgraded = await ncu({ packageData: pkg, filter: ['*vite*'] })
+      upgraded!.should.have.property('vite')
+      upgraded!.should.have.property('@vitejs/plugin-react')
+      upgraded!.should.have.property('@vitejs/plugin-vue')
     }
 
     {
-      const upgraded = await withFilter(['*vite*vue*'])
-      upgraded.should.not.have.property('vite')
-      upgraded.should.not.have.property('@vitejs/plugin-react')
-      upgraded.should.have.property('@vitejs/plugin-vue')
+      const upgraded = await ncu({ packageData: pkg, filter: ['*vite*/*react*'] })
+      upgraded!.should.not.have.property('vite')
+      upgraded!.should.have.property('@vitejs/plugin-react')
+      upgraded!.should.not.have.property('@vitejs/plugin-vue')
+    }
+
+    {
+      const upgraded = await ncu({ packageData: pkg, filter: ['*vite*vue*'] })
+      upgraded!.should.not.have.property('vite')
+      upgraded!.should.not.have.property('@vitejs/plugin-react')
+      upgraded!.should.have.property('@vitejs/plugin-vue')
     }
   })
 

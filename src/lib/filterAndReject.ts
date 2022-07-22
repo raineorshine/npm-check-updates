@@ -1,4 +1,4 @@
-import { and } from 'fp-and-or'
+import { and, or } from 'fp-and-or'
 import identity from 'lodash/identity'
 import negate from 'lodash/negate'
 import minimatch from 'minimatch'
@@ -31,14 +31,19 @@ function composeFilter(filterPattern: FilterRejectPattern): (name: string, versi
     // glob string
     else {
       const patterns = filterPattern.split(/[\s,]+/)
-      predicate = (dependencyName: string) =>
-        patterns.some(
-          pattern =>
-            minimatch(dependencyName, pattern) ||
-            (!pattern.includes('/') &&
-              dependencyName.includes('/') &&
-              minimatch(dependencyName.replace(/\//g, '_'), pattern)),
-        )
+      predicate = (dependencyName: string) => {
+        /** Returns true if the pattern matches an unscoped dependency name. */
+        const matchUnscoped = (pattern: string) => minimatch(dependencyName, pattern)
+
+        /** Returns true if the pattern matches a scoped dependency name. */
+        const matchScoped = (pattern: string) =>
+          !pattern.includes('/') &&
+          dependencyName.includes('/') &&
+          minimatch(dependencyName.replace(/\//g, '_'), pattern)
+
+        // return true if any of the provided patterns match the dependency name
+        return patterns.some(or(matchUnscoped, matchScoped))
+      }
     }
   }
   // array
