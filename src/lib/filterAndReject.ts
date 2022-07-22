@@ -31,7 +31,14 @@ function composeFilter(filterPattern: FilterRejectPattern): (name: string, versi
     // glob string
     else {
       const patterns = filterPattern.split(/[\s,]+/)
-      predicate = (dependencyName: string) => patterns.some(pattern => minimatch(dependencyName, pattern))
+      predicate = (dependencyName: string) =>
+        patterns.some(
+          pattern =>
+            minimatch(dependencyName, pattern) ||
+            (!pattern.includes('/') &&
+              dependencyName.includes('/') &&
+              minimatch(dependencyName.replace(/\//g, '_'), pattern)),
+        )
     }
   }
   // array
