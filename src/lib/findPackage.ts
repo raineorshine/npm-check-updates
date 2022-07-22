@@ -8,9 +8,6 @@ import chalk from './chalk'
 import getPackageFileName from './getPackageFileName'
 import programError from './programError'
 
-// time to wait for stdin before printing a warning
-const stdinWarningTime = 5000
-
 /**
  * Finds the package file and data.
  *
@@ -25,7 +22,6 @@ const stdinWarningTime = 5000
 async function findPackage(options: Options) {
   let pkgData
   let pkgFile = null
-  let stdinTimer
 
   print(options, 'Running in local mode', 'verbose')
   print(options, 'Finding package file data', 'verbose')
@@ -59,30 +55,13 @@ async function findPackage(options: Options) {
   } else if (options.packageFile) {
     pkgFile = options.packageFile
     pkgData = getPackageDataFromFile(pkgFile, pkgFileName)
-  } else if (!process.stdin.isTTY) {
-    if (!options.stdin) {
-      print(options, chalk.yellow('Default stdin handling is deprecated. Please add the --stdin option.'), 'warn')
-    }
+  } else if (options.stdin) {
     print(options, 'Waiting for package data on stdin', 'verbose')
-
-    // warn the user after a while if still waiting for stdin
-    // this is a way to mitigate #136 where Windows unexpectedly waits for stdin
-    stdinTimer = setTimeout(() => {
-      console.log(
-        `Hmmmmm... this is taking a long time. Your console is telling me to wait for input \non stdin, but maybe that is not what you want.\nTry ${chalk.cyan(
-          'winpty ncu.cmd',
-        )}, or specify a package file explicitly with ${chalk.cyan(
-          '--packageFile package.json',
-        )}. \nSee https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102`,
-      )
-    }, stdinWarningTime)
 
     // get data from stdin
     // trim stdin to account for \r\n
-    // clear the warning timer once stdin returns
     const stdinData = await getstdin()
     const data = stdinData.trim().length > 0 ? stdinData : null
-    clearTimeout(stdinTimer)
 
     // if no stdin content fall back to searching for package.json from pwd and up to root
     pkgFile = data || !pkgFileName ? null : findUp.sync(pkgFileName)

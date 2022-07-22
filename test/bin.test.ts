@@ -20,7 +20,7 @@ describe('bin', async function () {
   })
 
   it('output only upgraded with --jsonUpgraded', async () => {
-    const output = await spawn('node', [bin, '--jsonUpgraded'], '{ "dependencies": { "express": "1" } }')
+    const output = await spawn('node', [bin, '--jsonUpgraded', '--stdin'], '{ "dependencies": { "express": "1" } }')
     const pkgData = JSON.parse(output) as Record<string, unknown>
     pkgData.should.have.property('express')
   })
@@ -156,7 +156,7 @@ describe('bin', async function () {
     it('filter by package name with --filter', async () => {
       const output = await spawn(
         'node',
-        [bin, '--jsonUpgraded', '--filter', 'express'],
+        [bin, '--jsonUpgraded', '--stdin', '--filter', 'express'],
         '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       )
       const pkgData = JSON.parse(output)
@@ -167,7 +167,7 @@ describe('bin', async function () {
     it('filter by package name with -f', async () => {
       const output = await spawn(
         'node',
-        [bin, '--jsonUpgraded', '-f', 'express'],
+        [bin, '--jsonUpgraded', '--stdin', '-f', 'express'],
         '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       )
       const pkgData = JSON.parse(output)
@@ -198,7 +198,7 @@ describe('bin', async function () {
 
     const output = await spawn(
       'node',
-      [bin, '--jsonUpgraded', '--filter', 'lodash.map lodash.filter', 'lodash.map', 'lodash.filter'],
+      [bin, '--jsonUpgraded', '--stdin', '--filter', 'lodash.map lodash.filter', 'lodash.map', 'lodash.filter'],
       JSON.stringify(pkgData),
     )
     const upgraded = JSON.parse(output)
@@ -211,7 +211,7 @@ describe('reject', () => {
   it('reject by package name with --reject', async () => {
     const output = await spawn(
       'node',
-      [bin, '--jsonUpgraded', '--reject', 'chalk'],
+      [bin, '--jsonUpgraded', '--stdin', '--reject', 'chalk'],
       '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
     )
     const pkgData = JSON.parse(output)
@@ -222,7 +222,7 @@ describe('reject', () => {
   it('reject by package name with -x', async () => {
     const output = await spawn(
       'node',
-      [bin, '--jsonUpgraded', '-x', 'chalk'],
+      [bin, '--jsonUpgraded', '--stdin', '-x', 'chalk'],
       '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
     )
     const pkgData = JSON.parse(output)
@@ -276,7 +276,7 @@ describe('rc-config', () => {
     try {
       const text = await spawn(
         'node',
-        [bin, '--configFilePath', tempDir],
+        [bin, '--stdin', '--configFilePath', tempDir],
         '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       )
       const pkgData = JSON.parse(text)
@@ -295,7 +295,7 @@ describe('rc-config', () => {
     try {
       const text = await spawn(
         'node',
-        [bin, '--configFilePath', tempDir, '--configFileName', tempConfigFileName],
+        [bin, '--stdin', '--configFilePath', tempDir, '--configFileName', tempConfigFileName],
         '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       )
       const pkgData = JSON.parse(text)
@@ -313,7 +313,7 @@ describe('rc-config', () => {
     try {
       const text = await spawn(
         'node',
-        [bin, '--configFilePath', tempDir, '--filter', 'chalk'],
+        [bin, '--stdin', '--configFilePath', tempDir, '--filter', 'chalk'],
         '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
       )
       const pkgData = JSON.parse(text)
@@ -330,7 +330,11 @@ describe('rc-config', () => {
     // if boolean arguments are not handled as a special case, ncu will incorrectly pass "--deep false" to commander, which will interpret it as two args, i.e. --deep and --filter false
     await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true, "deep": false }', 'utf-8')
     try {
-      const text = await spawn('node', [bin, '--configFilePath', tempDir], '{ "dependencies": { "chalk": "0.1.0" } }')
+      const text = await spawn(
+        'node',
+        [bin, '--stdin', '--configFilePath', tempDir],
+        '{ "dependencies": { "chalk": "0.1.0" } }',
+      )
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('chalk')
     } finally {
