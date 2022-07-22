@@ -41,6 +41,51 @@ describe('filter', () => {
     upgraded.should.have.property('lodash.filter')
   })
 
+  it('filter with wildcard for scoped package', async () => {
+    const pkg = {
+      dependencies: {
+        vite: '1.0.0',
+        '@vitejs/plugin-react': '1.0.0',
+        '@vitejs/plugin-vue': '1.0.0',
+      },
+    }
+
+    {
+      const upgraded = await ncu({ packageData: pkg, filter: ['vite'] })
+      upgraded!.should.have.property('vite')
+      upgraded!.should.not.have.property('@vitejs/plugin-react')
+      upgraded!.should.not.have.property('@vitejs/plugin-vue')
+    }
+
+    {
+      const upgraded = await ncu({ packageData: pkg, filter: ['@vite*'] })
+      upgraded!.should.not.have.property('vite')
+      upgraded!.should.have.property('@vitejs/plugin-react')
+      upgraded!.should.have.property('@vitejs/plugin-vue')
+    }
+
+    {
+      const upgraded = await ncu({ packageData: pkg, filter: ['*vite*'] })
+      upgraded!.should.have.property('vite')
+      upgraded!.should.have.property('@vitejs/plugin-react')
+      upgraded!.should.have.property('@vitejs/plugin-vue')
+    }
+
+    {
+      const upgraded = await ncu({ packageData: pkg, filter: ['*vite*/*react*'] })
+      upgraded!.should.not.have.property('vite')
+      upgraded!.should.have.property('@vitejs/plugin-react')
+      upgraded!.should.not.have.property('@vitejs/plugin-vue')
+    }
+
+    {
+      const upgraded = await ncu({ packageData: pkg, filter: ['*vite*vue*'] })
+      upgraded!.should.not.have.property('vite')
+      upgraded!.should.not.have.property('@vitejs/plugin-react')
+      upgraded!.should.have.property('@vitejs/plugin-vue')
+    }
+  })
+
   it('filter with negated wildcard', async () => {
     const upgraded = (await ncu({
       packageData: {
