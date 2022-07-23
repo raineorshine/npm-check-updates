@@ -2,6 +2,15 @@
 
 This file documents all **major version** releases. For other releases, please read the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
 
+## [16.0.0] - 2022-07-23
+
+### Breaking
+
+- Automatic detection of package data on stdin has been removed. This feature was deprecated in `v14.0.0`. Add `--stdin` for old behavior.
+- Wild card filters now apply to scoped packages. Previously, `ncu -f '*vite*'` would not include `@vitejs/plugin-react`. Now, filters will match any part of the package name, including the scope. Use a more specific glob or regex expression for old behavior.
+
+<https://github.com/raineorshine/npm-check-updates/compare/v15.3.4...v16.0.0>
+
 ## [15.0.0] - 2022-06-30
 
 ### Breaking
