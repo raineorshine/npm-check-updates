@@ -6,6 +6,7 @@ import path from 'path'
 import rimraf from 'rimraf'
 import spawn from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
+import { chalkInit } from '../src/lib/chalk'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -141,7 +142,7 @@ describe('doctor', function () {
 
   describe('npm', () => {
     it('print instructions when -u is not specified', async () => {
-      // use dynamic import for ESM module
+      await chalkInit()
       const { default: stripAnsi } = await import('strip-ansi')
       const cwd = path.join(doctorTests, 'nopackagefile')
       const output = await ncu(['--doctor'], { cwd })

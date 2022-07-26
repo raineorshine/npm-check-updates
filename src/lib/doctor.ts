@@ -9,7 +9,7 @@ import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { SpawnOptions } from '../types/SpawnOptions'
 import { VersionSpec } from '../types/VersionSpec'
-import chalk from './chalk'
+import chalk, { chalkInit } from './chalk'
 import upgradePackageData from './upgradePackageData'
 
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
@@ -65,6 +65,7 @@ const loadPackageFile = async (options: Options) => {
 /** Iteratively installs upgrades and runs tests to identify breaking upgrades. */
 // we have to pass run directly since it would be a circular require if doctor included this file
 const doctor = async (run: Run, options: Options) => {
+  await chalkInit()
   const lockFileName = options.packageManager === 'yarn' ? 'yarn.lock' : 'package-lock.json'
   const { pkg, pkgFile } = await loadPackageFile(options)
 
