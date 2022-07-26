@@ -108,9 +108,10 @@ const doctor = async (run: Run, options: Options) => {
 
   console.log(`Running tests before upgrading`)
 
-  // install and load lock file
+  // initial install
   await runInstall()
 
+  // save lock file if there is one
   let lockFile = ''
   try {
     lockFile = await fs.readFile(lockFileName, 'utf-8')
@@ -150,11 +151,17 @@ const doctor = async (run: Run, options: Options) => {
     return
   }
 
-  // npm install
-  await runInstall()
+  // track if installing dependencies was successful
+  // this allows us to skip re-installing when it fails and proceed straight to installing individual dependencies
+  let installAllSuccess = false
 
   // run tests on all upgrades
   try {
+    // install after all upgrades
+    await runInstall()
+    installAllSuccess = true
+
+    // run tests after all upgrades
     await runTests()
 
     console.log(`${chalk.green('✓')} Tests pass`)
@@ -182,19 +189,33 @@ const doctor = async (run: Run, options: Options) => {
     // save the last package file with passing tests
     let lastPkgFile = pkgFile
 
-    await runInstall()
+    // re-install after restoring package file and lock file
+    // only re-install if the tests failed, not if npm install failed
+    if (installAllSuccess) {
+      try {
+        await runInstall()
+      } catch (e) {
+        const installCommand = (options.packageManager || 'npm') + ' install'
+        throw new Error(
+          `Error: Doctor mode was about to test individual upgrades, but ${chalk.cyan(
+            installCommand,
+          )} failed after rolling back to your existing package and lock files. This is unexpected since the initial install before any upgrades succeeded. Either npm failed to revert a partial install, or failed anomalously on the second run. Please check your internet connection and retry. If doctor mode fails consistently, report a bug with your complete list of dependency versions at https://github.com/raineorshine/npm-check-updates/issues.`,
+        )
+      }
+    }
 
     // iterate upgrades
     // eslint-disable-next-line fp/no-loops
     for (const [name, version] of Object.entries(upgrades)) {
-      // install single dependency
-      await npm(
-        [...(options.packageManager === 'yarn' ? ['add'] : ['install', '--no-save']), `${name}@${version}`],
-        { packageManager: options.packageManager },
-        true,
-      )
-
       try {
+        // install single dependency
+        await npm(
+          [...(options.packageManager === 'yarn' ? ['add'] : ['install', '--no-save']), `${name}@${version}`],
+          { packageManager: options.packageManager },
+          true,
+        )
+
+        // run tests after individual upgrade
         await runTests()
         console.log(`  ${chalk.green('✓')} ${name} ${allDependencies[name]} → ${version}`)
 
