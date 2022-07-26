@@ -1,4 +1,6 @@
 module.exports = {
+  interactive: true,
+  format: 'group',
   reject: [
     // ESM only modules
     // https://github.com/microsoft/TypeScript/issues/46452
