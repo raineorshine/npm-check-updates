@@ -39,9 +39,10 @@ const loadPackageFile = async (options: Options) => {
 
   // assert no --packageData or --packageFile
   if (options.packageData || options.packageFile) {
-    throw new Error(
+    console.error(
       '--packageData and --packageFile are not allowed with --doctor. You must execute "ncu --doctor" in a directory with a package file so it can install dependencies and test them.',
     )
+    process.exit(1)
   }
 
   // assert package.json
@@ -49,14 +50,16 @@ const loadPackageFile = async (options: Options) => {
     pkgFile = await fs.readFile('package.json', 'utf-8')
     pkg = JSON.parse(pkgFile)
   } catch (e) {
-    throw new Error('Missing or invalid package.json')
+    console.error('Missing or invalid package.json')
+    process.exit(1)
   }
 
   // assert npm script "test" (unless a custom test script is specified)
   if (!options.doctorTest && !pkg.scripts?.test) {
-    throw new Error(
+    console.error(
       'No npm "test" script defined. You must define a "test" script in the "scripts" section of your package.json to use --doctor.',
     )
+    process.exit(1)
   }
 
   return { pkg, pkgFile }
@@ -119,7 +122,8 @@ const doctor = async (run: Run, options: Options) => {
       stderr: (data: string) => console.error(chalk.red(data.toString())),
     })
   } catch (e) {
-    throw new Error('Tests failed before we even got started!')
+    console.error('Tests failed before we even got started!')
+    process.exit(1)
   }
 
   console.log(`Upgrading all dependencies and re-running tests`)
