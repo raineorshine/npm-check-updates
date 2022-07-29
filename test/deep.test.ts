@@ -1,6 +1,7 @@
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import fs from 'fs/promises'
+import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import * as ncu from '../src/'
@@ -13,109 +14,106 @@ process.env.NCU_TESTS = 'true'
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
+/** Creates a temp directory with nested package files for --deep testing. Returns the temp directory name (should be removed by caller).
+ *
+ * The file tree that is created is:
+ * |- package.json
+ * |- packages/
+ * |  - sub1/
+ * |    - package.json
+ * |  - sub2/
+ * |    - package.json
+ */
+const setupDeepTest = async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+  await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+  const pkgData = JSON.stringify({
+    dependencies: {
+      express: '1',
+    },
+  })
+
+  // write root package file
+  await fs.writeFile(path.join(tempDir, 'package.json'), pkgData, 'utf-8')
+
+  // write subproject package files
+  await fs.mkdir(path.join(tempDir, 'packages/sub1'), { recursive: true })
+  await fs.writeFile(path.join(tempDir, 'packages/sub1/package.json'), pkgData, 'utf-8')
+  await fs.mkdir(path.join(tempDir, 'packages/sub2'), { recursive: true })
+  await fs.writeFile(path.join(tempDir, 'packages/sub2/package.json'), pkgData, 'utf-8')
+
+  return tempDir
+}
+
 describe('--deep', function () {
-  const cwd = path.join(__dirname, 'deep')
-
   this.timeout(60000)
-
-  let last = 0
-
-  /** Gets information about the temporary package file. */
-  function getTempPackage() {
-    ++last
-    const pkgDir = path.join(cwd, `tmp/tmp-pkg-${last}`)
-    const rel = `./tmp/tmp-pkg-${last}/package.json`
-    const pkgJson = path.join(cwd, rel)
-    return {
-      dir: pkgDir,
-      file: pkgJson,
-      rel,
-      data: {
-        name: `tmp-pkg-${last}`,
-        dependencies: {
-          express: '1',
-        },
-      },
-    }
-  }
 
   it('do not allow --packageFile and --deep together', () => {
     ncu.run({ packageFile: './package.json', deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
   })
 
   it('output json with --jsonAll', async () => {
-    const deepJsonOut = await spawn('node', [bin, '--jsonAll', '--deep'], { cwd }).then(JSON.parse)
-    deepJsonOut.should.have.property('package.json')
-    deepJsonOut.should.have.property('pkg/sub1/package.json')
-    deepJsonOut.should.have.property('pkg/sub2/package.json')
-    deepJsonOut['package.json'].dependencies.should.have.property('express')
-    deepJsonOut['pkg/sub1/package.json'].dependencies.should.have.property('express')
-    deepJsonOut['pkg/sub2/package.json'].dependencies.should.have.property('express')
+    const tempDir = await setupDeepTest()
+    try {
+      const deepJsonOut = await spawn('node', [bin, '--jsonAll', '--deep'], { cwd: tempDir }).then(JSON.parse)
+      deepJsonOut.should.have.property('package.json')
+      deepJsonOut.should.have.property('packages/sub1/package.json')
+      deepJsonOut.should.have.property('packages/sub2/package.json')
+      deepJsonOut['package.json'].dependencies.should.have.property('express')
+      deepJsonOut['packages/sub1/package.json'].dependencies.should.have.property('express')
+      deepJsonOut['packages/sub2/package.json'].dependencies.should.have.property('express')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
   })
 
   it('ignore stdin if --packageFile glob is specified', async () => {
-    const pkg = getTempPackage()
-    await fs.mkdir(pkg.dir, { recursive: true })
-    await fs.writeFile(pkg.file, JSON.stringify(pkg.data))
+    const tempDir = await setupDeepTest()
     try {
-      await spawn('node', [bin, '-u', '--packageFile', './tmp/**/package.json'], '{ "dependencies": {}}', { cwd })
-      const upgradedPkg = JSON.parse(await fs.readFile(pkg.file, 'utf-8'))
+      await spawn(
+        'node',
+        [bin, '-u', '--packageFile', path.join(tempDir, '/**/package.json')],
+        '{ "dependencies": {}}',
+        {
+          cwd: tempDir,
+        },
+      )
+      const upgradedPkg = JSON.parse(await fs.readFile(path.join(tempDir, 'package.json'), 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await fs.unlink(pkg.file)
-      await fs.rm(pkg.dir, { recursive: true })
-      await fs.rm(path.join(cwd, 'tmp'), { recursive: true })
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
   it('update multiple packages', async () => {
-    const pkg1 = getTempPackage()
-    await fs.mkdir(pkg1.dir, { recursive: true })
-    await fs.writeFile(pkg1.file, JSON.stringify(pkg1.data))
-    const pkg2 = getTempPackage()
-    await fs.mkdir(pkg2.dir, { recursive: true })
-    await fs.writeFile(pkg2.file, JSON.stringify(pkg2.data))
+    const tempDir = await setupDeepTest()
     try {
       const output = await spawn(
         'node',
-        [bin, '-u', '--jsonUpgraded', '--packageFile', './tmp/**/package.json'],
+        [bin, '-u', '--jsonUpgraded', '--packageFile', path.join(tempDir, '**/package.json')],
         '{ "dependencies": {}}',
-        { cwd },
+        { cwd: tempDir },
       )
 
-      const upgradedPkg1 = JSON.parse(await fs.readFile(pkg1.file, 'utf-8'))
+      const upgradedPkg1 = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/sub1/package.json'), 'utf-8'))
       upgradedPkg1.should.have.property('dependencies')
       upgradedPkg1.dependencies.should.have.property('express')
       upgradedPkg1.dependencies.express.should.not.equal('1')
 
-      const upgradedPkg2 = JSON.parse(await fs.readFile(pkg2.file, 'utf-8'))
+      const upgradedPkg2 = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/sub2/package.json'), 'utf-8'))
       upgradedPkg2.should.have.property('dependencies')
       upgradedPkg2.dependencies.should.have.property('express')
       upgradedPkg2.dependencies.express.should.not.equal('1')
 
       const json = JSON.parse(output)
-      json.should.have.property(pkg1.rel)
-      json.should.have.property(pkg2.rel)
-      json.should.not.have.property('package.json')
+      json.should.have.property(path.join(tempDir, 'packages/sub1/package.json'))
+      json.should.have.property(path.join(tempDir, 'packages/sub2/package.json'))
+      json.should.have.property(path.join(tempDir, 'package.json'))
     } finally {
-      await fs.unlink(pkg1.file)
-      await fs.unlink(pkg2.file)
-      await fs.rm(pkg1.dir, { recursive: true, force: true })
-      await fs.rm(pkg2.dir, { recursive: true, force: true })
-      await fs.rm(path.join(cwd, 'tmp'), { recursive: true })
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
-  })
-
-  it('using --cwd is checking files from right location', async () => {
-    return spawn('node', [bin, '--jsonAll', '--deep', '--cwd', './test/deep/pkg'])
-      .then(JSON.parse)
-      .then((deepJsonOut: Record<string, unknown>) => {
-        deepJsonOut.should.not.have.property('package.json')
-        deepJsonOut.should.have.property('sub1/package.json')
-        deepJsonOut.should.have.property('sub2/package.json')
-      })
   })
 })
 
