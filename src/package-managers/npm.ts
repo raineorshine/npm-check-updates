@@ -1,5 +1,5 @@
 import memoize from 'fast-memoize'
-import fs from 'fs/promises'
+import fs from 'fs'
 import assign from 'lodash/assign'
 import camelCase from 'lodash/camelCase'
 import filter from 'lodash/filter'
@@ -34,10 +34,12 @@ const TIME_FIELDS = ['modified', 'created']
 /** Reads the local npm config and normalizes keys for pacote. */
 const readNpmConfig = () => {
   const npmConfigToPacoteMap = {
-    cafile: async (path: string) => {
+    cafile: (path: string) => {
       // load-cafile, based on github.com/npm/cli/blob/40c1b0f/lib/config/load-cafile.js
       if (!path) return
-      const cadata = await fs.readFile(path, 'utf8')
+      // synchronous since it is loaded once on startup, and to avoid complexity in libnpmconfig.read
+      // https://github.com/raineorshine/npm-check-updates/issues/636?notification_referrer_id=MDE4Ok5vdGlmaWNhdGlvblRocmVhZDc0Njk2NjAzMjo3NTAyNzY%3D
+      const cadata = fs.readFileSync(path, 'utf8')
       const delim = '-----END CERTIFICATE-----'
       const output = cadata
         .split(delim)
