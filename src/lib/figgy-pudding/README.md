@@ -21,22 +21,6 @@ and passing of options.
 
 `$ npm install figgy-pudding`
 
-## Table of Contents
-
-- [Example](#example)
-- [Features](#features)
-- [API](#api)
-  - [`figgyPudding(spec)`](#figgy-pudding)
-  - [`PuddingFactory(values)`](#pudding-factory)
-    - [`opts.get()`](#opts-get)
-    - [`opts.concat()`](#opts-concat)
-    - [`opts.toJSON()`](#opts-to-json)
-    - [`opts.forEach()`](#opts-for-each)
-    - [`opts[Symbol.iterator]()`](#opts-symbol-iterator)
-    - [`opts.entries()`](#opts-entries)
-    - [`opts.keys()`](#opts-keys)
-    - [`opts.value()`](#opts-values)
-
 ### Example
 
 ```javascript
