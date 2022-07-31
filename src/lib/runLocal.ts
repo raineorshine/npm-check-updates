@@ -173,7 +173,7 @@ async function runLocal(
 
   const current = getCurrentDependencies(pkg, options)
 
-  print(options, '\nCurrent:', 'verbose')
+  print(options, '\nCurrent versions:', 'verbose')
   print(options, current, 'verbose')
 
   print(options, `\nFetching ${options.target} versions`, 'verbose')
@@ -195,10 +195,10 @@ async function runLocal(
     print(options, upgradedPeerDependencies, 'verbose')
   }
 
-  print(options, '\nFetched:', 'verbose')
+  print(options, '\nFetched versions:', 'verbose')
   print(options, latest, 'verbose')
 
-  print(options, '\nUpgraded:', 'verbose')
+  print(options, '\nUpgraded versions:', 'verbose')
   print(options, upgraded, 'verbose')
 
   // filter out satisfied deps when using --minimal

@@ -18,6 +18,13 @@ class FiggyPudding {
   get(key) {
     return pudGet(this, key, true)
   }
+  toJSON() {
+    const obj = {}
+    this.forEach((val, key) => {
+      obj[key] = val
+    })
+    return obj
+  }
   forEach(fn, thisArg = this) {
     for (let [key, value] of this.entries()) {
       fn.call(thisArg, value, key, this)
