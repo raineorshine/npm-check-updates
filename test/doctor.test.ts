@@ -2,6 +2,7 @@ import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 import fs from 'fs/promises'
+import os from 'os'
 import path from 'path'
 import rimraf from 'rimraf'
 import spawn from 'spawn-please'
@@ -297,6 +298,100 @@ describe('doctor', function () {
 
       // package file should include upgrades
       pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
+    })
+
+    it('handle failed prepare script', async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgPath = path.join(tempDir, 'package.json')
+      await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+
+      /*
+        - packagu.json
+        - tsconfig.json
+        - src/
+          - index.ts
+      */
+
+      // package.json
+      await fs.writeFile(
+        pkgPath,
+        JSON.stringify({
+          scripts: {
+            prepare: 'tsc',
+            test: 'echo "No tests"',
+          },
+          devDependencies: {
+            '@types/node': '18.0.0',
+            typescript: '4.7.4',
+          },
+          dependencies: {
+            '@kayahr/eddb': '^1.0.0',
+          },
+        }),
+        'utf-8',
+      )
+
+      // tsconfig.json
+      await fs.writeFile(
+        path.join(tempDir, 'tsconfig.json'),
+        JSON.stringify({
+          compilerOptions: {
+            rootDir: 'src',
+            outDir: 'lib',
+          },
+        }),
+        'utf-8',
+      )
+
+      // src/index.ts
+      await fs.mkdir(path.join(tempDir, 'src'))
+      await fs.writeFile(
+        path.join(tempDir, 'src/index.ts'),
+        `import { createFactories } from "@kayahr/eddb"
+
+console.log(createFactories())`,
+        'utf-8',
+      )
+
+      let stdout = ''
+      let stderr = ''
+      let pkgUpgraded
+
+      try {
+        // explicitly set packageManager to avoid auto yarn detection
+        await spawn('npm', ['install'], { cwd: tempDir })
+
+        await ncu(['--doctor', '-u', '-p', 'npm'], {
+          cwd: tempDir,
+          stdout: function (data: string) {
+            stdout += data
+          },
+          stderr: function (data: string) {
+            stderr += data
+          },
+        })
+
+        pkgUpgraded = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+      }
+
+      // stdout should include successful upgrades
+      stdout.should.containIgnoreCase('@types/node 18.0.0 →')
+      stdout.should.not.containIgnoreCase('@kayahr/eddb ^1.0.0 →')
+
+      // stderr should include failed prepare script
+      stderr.should.containIgnoreCase('Prepare script failed')
+      stderr.should.containIgnoreCase('@kayahr/eddb ^1.0.0 →')
+      stderr.should.not.containIgnoreCase('@types/node → 18.0.0')
+
+      // package file should only include successful upgrades
+      pkgUpgraded.dependencies.should.deep.equal({
+        '@kayahr/eddb': '^1.0.0',
+      })
+      pkgUpgraded.devDependencies.should.not.deep.equal({
+        '@types/node': '18.0.0',
+      })
     })
   })
 

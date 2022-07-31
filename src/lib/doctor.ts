@@ -174,7 +174,7 @@ const doctor = async (run: Run, options: Options) => {
 
     console.log('\nAll dependencies upgraded and installed ' + chalk.green(':)'))
   } catch (e) {
-    console.error(chalk.red('Tests failed'))
+    console.error(chalk.red(installAllSuccess ? 'Tests failed' : 'Install failed'))
     console.log(`Identifying broken dependencies`)
 
     // restore package file, lockFile and re-install
@@ -214,6 +214,17 @@ const doctor = async (run: Run, options: Options) => {
           { packageManager: options.packageManager },
           true,
         )
+
+        // if there is a prepare script, we need to run it manually since --no-save does not run prepare automatically
+        // https://github.com/raineorshine/npm-check-updates/issues/1170
+        if (pkg.scripts?.prepare) {
+          try {
+            await npm(['run', 'prepare'], { packageManager: options.packageManager }, true)
+          } catch (e) {
+            console.error(chalk.red('Prepare script failed'))
+            throw e
+          }
+        }
 
         // run tests after individual upgrade
         await runTests()
