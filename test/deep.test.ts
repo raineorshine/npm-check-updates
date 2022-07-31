@@ -37,9 +37,11 @@ const setupDeepTest = async () => {
   await fs.writeFile(path.join(tempDir, 'package.json'), pkgData, 'utf-8')
 
   // write subproject package files
-  await fs.mkdir(path.join(tempDir, 'packages/sub1'), { recursive: true })
+  // recursive fails in Github Actions for some reason
+  await fs.mkdir(path.join(tempDir, 'packages'))
+  await fs.mkdir(path.join(tempDir, 'packages/sub1'))
+  await fs.mkdir(path.join(tempDir, 'packages/sub2'))
   await fs.writeFile(path.join(tempDir, 'packages/sub1/package.json'), pkgData, 'utf-8')
-  await fs.mkdir(path.join(tempDir, 'packages/sub2'), { recursive: true })
   await fs.writeFile(path.join(tempDir, 'packages/sub2/package.json'), pkgData, 'utf-8')
 
   return tempDir
