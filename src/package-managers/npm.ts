@@ -1,14 +1,16 @@
 import memoize from 'fast-memoize'
 import fs from 'fs'
-import assign from 'lodash/assign'
+import ini from 'ini'
 import camelCase from 'lodash/camelCase'
 import filter from 'lodash/filter'
 import get from 'lodash/get'
 import isEqual from 'lodash/isEqual'
 import last from 'lodash/last'
+import omit from 'lodash/omit'
 import overEvery from 'lodash/overEvery'
 import pullAll from 'lodash/pullAll'
 import pacote from 'pacote'
+import path from 'path'
 import semver from 'semver'
 import spawn from 'spawn-please'
 import { keyValueBy } from '../lib/keyValueBy'
@@ -29,10 +31,12 @@ import {
   satisfiesPeerDependencies,
 } from './filters'
 
+type NpmConfig = Index<string | boolean | ((path: string) => any)>
+
 const TIME_FIELDS = ['modified', 'created']
 
-/** Reads the local npm config and normalizes keys for pacote. */
-const readNpmConfig = () => {
+/** Normalizes the keys of an npm config for pacote. */
+const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
   const npmConfigToPacoteMap = {
     cafile: (path: string) => {
       // load-cafile, based on github.com/npm/cli/blob/40c1b0f/lib/config/load-cafile.js
@@ -60,13 +64,7 @@ const readNpmConfig = () => {
 
   // needed until pacote supports full npm config compatibility
   // See: https://github.com/zkat/pacote/issues/156
-  const config: Index<string | boolean> = {}
-  // libnpmconfig incorrectly (?) ignores NPM_CONFIG_USERCONFIG because it is always overridden by the default builtin.userconfig
-  // set userconfig manually so that it is prioritized
-  const builtinsWithUserConfig = {
-    userconfig: process.env.npm_config_userconfig || process.env.NPM_CONFIG_USERCONFIG,
-  }
-  libnpmconfig.read(null, builtinsWithUserConfig).forEach((value: string, key: string) => {
+  const config: NpmConfig = keyValueBy(npmConfig, (key: string, value: string | boolean | ((path: string) => any)) => {
     // replace env ${VARS} in strings with the process.env value
     const normalizedValue =
       typeof value !== 'string'
@@ -76,22 +74,54 @@ const readNpmConfig = () => {
         ? stringToBoolean(value)
         : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
 
+    // normalize the key for pacote
     const { [key]: pacoteKey }: Index<string | ((path: string) => any)> = npmConfigToPacoteMap
-    if (typeof pacoteKey === 'string') {
-      config[pacoteKey] = normalizedValue
-    } else if (typeof pacoteKey === 'function') {
-      assign(config, pacoteKey(normalizedValue.toString()))
-    } else {
-      config[key.match(/^[a-z]/i) ? camelCase(key) : key] = normalizedValue
-    }
-  })
 
-  config.cache = false
+    return typeof pacoteKey === 'string'
+      ? // key is mapped to a string
+        { [pacoteKey]: normalizedValue }
+      : // key is mapped to a function
+      typeof pacoteKey === 'function'
+      ? { ...pacoteKey(normalizedValue.toString()) }
+      : // otherwise assign the camel-cased key
+        { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
+  })
 
   return config
 }
 
-const npmConfig = readNpmConfig()
+/** Finds and parses the npm config at the given path. If the path does not exist, returns null. If no path is provided, finds and merges the global and user npm configs using libnpmconfig and sets cache: false. */
+const findNpmConfig = (path?: string): NpmConfig | null => {
+  let config
+
+  if (path) {
+    try {
+      config = ini.parse(fs.readFileSync(path, 'utf-8'))
+    } catch (err: any) {
+      if (err.code === 'ENOENT') {
+        return null
+      } else {
+        throw err
+      }
+    }
+  } else {
+    // libnpmconfig incorrectly (?) ignores NPM_CONFIG_USERCONFIG because it is always overridden by the default builtin.userconfig
+    // set userconfig manually so that it is prioritized
+    const opts = libnpmconfig.read(null, {
+      userconfig: process.env.npm_config_userconfig || process.env.NPM_CONFIG_USERCONFIG,
+    })
+    config = {
+      ...opts.toJSON(),
+      cache: false,
+    }
+  }
+
+  return normalizeNpmConfig(config)
+}
+
+// get the base config that is used for all npm queries
+// this may be partially overwritten by .npmrc config files when using --deep
+const npmConfig = findNpmConfig()
 
 /** A promise that returns true if --global is deprecated on the system npm. Spawns "npm --version". */
 const isGlobalDeprecated = new Promise((resolve, reject) => {
@@ -147,7 +177,7 @@ export async function packageAuthorChanged(
   currentVersion: VersionSpec,
   upgradedVersion: VersionSpec,
   options: Options = {},
-  npmConfigLocal?: Index<string | boolean>,
+  npmConfigLocal?: NpmConfig,
 ) {
   const result = await pacote.packument(packageName, {
     ...npmConfigLocal,
@@ -169,12 +199,6 @@ export async function packageAuthorChanged(
   return false
 }
 
-export interface ViewOptions {
-  registry?: string
-  timeout?: number
-  retry?: number
-}
-
 /**
  * Returns an object of specified values retrieved by npm view.
  *
@@ -187,33 +211,47 @@ export async function viewMany(
   packageName: string,
   fields: string[],
   currentVersion: Version,
-  { registry, timeout, retry }: ViewOptions = {},
+  options: Options,
   retried = 0,
-  npmConfigLocal?: Index<string | boolean>,
+  npmConfigLocal?: NpmConfig,
 ) {
   if (currentVersion && (!semver.validRange(currentVersion) || versionUtil.isWildCard(currentVersion))) {
     return Promise.resolve({} as Packument)
   }
 
+  // merge project npm config with base config
+  const npmConfigProjectPath = options.packageFile ? path.join(options.packageFile, '../.npmrc') : null
+  const npmConfigProject = options.packageFile ? findNpmConfig(npmConfigProjectPath!) : null
+  const npmConfigCWDPath = options.cwd ? path.join(options.cwd, '.npmrc') : null
+  const npmConfigCWD = options.cwd ? findNpmConfig(npmConfigCWDPath!) : null
+
+  if (npmConfigProject) {
+    print(options, `\nUsing npm config in project directory: ${npmConfigProjectPath}:`, 'verbose')
+    print(options, omit(npmConfigProject, 'cache'), 'verbose')
+  }
+
+  if (npmConfigCWD) {
+    print(options, `\nUsing npm config in current working directory: ${npmConfigCWDPath}:`, 'verbose')
+    // omit cache since it is added to every config
+    print(options, omit(npmConfigCWD, 'cache'), 'verbose')
+  }
+
+  const npmOptions = {
+    ...npmConfig,
+    ...npmConfigLocal,
+    ...npmConfigProject,
+    ...npmConfigCWD,
+    ...(options.registry ? { registry: options.registry, silent: true } : null),
+    ...(options.timeout ? { timeout: options.timeout } : null),
+    fullMetadata: fields.includes('time'),
+  }
+
   let result: any
   try {
-    result = await pacote.packument(packageName, {
-      ...npmConfigLocal,
-      ...npmConfig,
-      fullMetadata: fields.includes('time'),
-      ...(registry ? { registry, silent: true } : null),
-      ...(timeout ? { timeout } : null),
-    })
+    result = await pacote.packument(packageName, npmOptions)
   } catch (err: any) {
-    if (retry && ++retried <= retry) {
-      const packument: Packument = await viewMany(
-        packageName,
-        fields,
-        currentVersion,
-        { registry, timeout, retry },
-        retried,
-        npmConfigLocal,
-      )
+    if (options.retry && ++retried <= options.retry) {
+      const packument: Packument = await viewMany(packageName, fields, currentVersion, options, retried, npmConfigLocal)
       return packument
     }
 
@@ -246,8 +284,8 @@ export async function viewOne(
   packageName: string,
   field: string,
   currentVersion: Version,
-  options: ViewOptions = {},
-  npmConfigLocal?: Index<string | boolean>,
+  options: Options,
+  npmConfigLocal?: NpmConfig,
 ) {
   const result = await viewManyMemoized(packageName, [field], currentVersion, options, 0, npmConfigLocal)
   return result && result[field as keyof Packument]
@@ -414,11 +452,12 @@ export const list = async (options: Options = {}) => {
  * @returns
  */
 export const distTag: GetVersion = async (packageName, currentVersion, options: Options = {}) => {
-  const revision = (await viewOne(packageName, `dist-tags.${options.distTag}`, currentVersion, {
-    registry: options.registry,
-    timeout: options.timeout,
-    retry: options.retry,
-  })) as unknown as Packument // known type based on dist-tags.latest
+  const revision = (await viewOne(
+    packageName,
+    `dist-tags.${options.distTag}`,
+    currentVersion,
+    options,
+  )) as unknown as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
