@@ -67,34 +67,12 @@ describe('--deep', function () {
     }
   })
 
-  it('ignore stdin if --packageFile glob is specified', async () => {
-    const tempDir = await setupDeepTest()
-    // path.join messes up ** on Windows, so build the path manually
-    const packageFile = `${tempDir}/${'**/package.json'}`
-    try {
-      await spawn('node', [bin, '-u', '--packageFile', packageFile], '{ "dependencies": {}}', {
-        cwd: tempDir,
-      })
-      const upgradedPkg = JSON.parse(await fs.readFile(path.join(tempDir, 'package.json'), 'utf-8'))
-      upgradedPkg.should.have.property('dependencies')
-      upgradedPkg.dependencies.should.have.property('express')
-      upgradedPkg.dependencies.express.should.not.equal('1')
-    } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
-    }
-  })
-
   it('update multiple packages', async () => {
     const tempDir = await setupDeepTest()
     // path.join messes up ** on Windows, so build the path manually
     const packageFile = `${tempDir}/${'**/package.json'}`
     try {
-      const output = await spawn(
-        'node',
-        [bin, '-u', '--jsonUpgraded', '--packageFile', packageFile],
-        '{ "dependencies": {}}',
-        { cwd: tempDir },
-      )
+      const output = await spawn('node', [bin, '-u', '--jsonUpgraded', '--packageFile', packageFile], { cwd: tempDir })
 
       const upgradedPkg1 = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/sub1/package.json'), 'utf-8'))
       upgradedPkg1.should.have.property('dependencies')

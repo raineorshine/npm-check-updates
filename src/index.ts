@@ -186,6 +186,7 @@ export async function run(
         ignore: ['**/node_modules/**'],
       },
     )
+    console.log({ packageFile: options.packageFile, defaultPackageFilename, pkgs })
 
     // enable --deep if multiple package files are found
     options.deep = options.deep || pkgs.length > 1
