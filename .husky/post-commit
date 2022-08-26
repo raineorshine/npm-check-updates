@@ -1,0 +1,16 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# display a notification
+# if osascript is not supported, do nothing
+notify() {
+  if [ -f /usr/bin/osascript ]; then
+    /usr/bin/osascript -e "display notification \"$*\" with title \"Notification\""
+  fi
+}
+
+# ensure failed lint exit code passes through sed
+set -o pipefail
+
+# omit first 4 lines printed by npm run
+npm run lint:src 2>&1 | sed 1,4d || notify "Lint Error" &
