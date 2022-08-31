@@ -1,6 +1,8 @@
 import Table from 'cli-table'
 import sortBy from 'lodash/sortBy'
+import path from 'path'
 import chalk from './lib/chalk'
+import { defaultCacheFile } from './lib/getCacher'
 import { Index } from './types/IndexType'
 
 export interface CLIOption<T = any> {
@@ -272,6 +274,28 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
 
 // store CLI options separately from bin file so that they can be used to build type definitions
 const cliOptions: CLIOption[] = [
+  {
+    long: 'cache',
+    description: 'Cache versions to the cache file',
+    default: false,
+    type: 'boolean',
+  },
+  {
+    long: 'cacheExpiration',
+    arg: 'time',
+    description: 'Cache expiration in minutes',
+    parse: s => parseInt(s, 10),
+    default: 10,
+    type: 'number',
+  },
+  {
+    long: 'cacheFile',
+    arg: 'path',
+    description: 'Filepath for the cache file',
+    parse: s => (path.isAbsolute(s) ? s : path.join(process.cwd(), s)),
+    default: defaultCacheFile,
+    type: 'string',
+  },
   {
     long: 'color',
     description: 'Force color in terminal',

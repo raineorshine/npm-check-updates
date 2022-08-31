@@ -35,6 +35,15 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   }
 
   /**
+   * Bar utility to avoid code duplication
+   */
+  function barTick() {
+    if (bar) {
+      bar.tick()
+    }
+  }
+
+  /**
    * Ignore 404 errors from getPackageVersion by having them return `null`
    * instead of rejecting.
    *
@@ -44,6 +53,17 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   async function getPackageVersionProtected(dep: VersionSpec): Promise<VersionResult> {
     const npmAlias = parseNpmAlias(packageMap[dep])
     const [name, version] = npmAlias || [dep, packageMap[dep]]
+
+    const cacheKey = options.cacher?.key(name, version)
+    const cached = options.cacher?.get(cacheKey)
+    if (cached) {
+      barTick()
+
+      return {
+        version: cached,
+      }
+    }
+
     let targetResult = typeof target === 'string' ? target : target(name, parseRange(version))
     let distTag = 'latest'
 
@@ -109,8 +129,10 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       }
     }
 
-    if (bar) {
-      bar.tick()
+    barTick()
+
+    if (versionNew) {
+      options.cacher?.set(cacheKey, versionNew)
     }
 
     return {
@@ -119,6 +141,9 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   }
 
   const versionResultList = await pMap(packageList, getPackageVersionProtected, { concurrency: options.concurrency })
+
+  // save cacher only after pMap handles cacher.set
+  await options.cacher?.save()
 
   const versionResultObject = keyValueBy(versionResultList, (versionResult, i) =>
     versionResult.version || versionResult.error
