@@ -135,6 +135,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
 
   // save cacher only after pMap handles cacher.set
   await options.cacher?.save()
+  options.cacher?.log()
 
   const versionResultObject = keyValueBy(versionResultList, (versionResult, i) =>
     versionResult.version || versionResult.error

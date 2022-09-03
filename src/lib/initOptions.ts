@@ -42,7 +42,6 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     ...(runOptions.packageData && typeof runOptions.packageData !== 'string'
       ? { packageData: JSON.stringify(runOptions.packageData, null, 2) as any }
       : null),
-    cacher: getCacher(runOptions),
     cli,
   }
 
@@ -126,7 +125,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     print(options, 'Using yarn')
   }
 
-  return {
+  const resolvedOptions = {
     ...options,
     ...(options.deep ? { packageFile: `**/${getPackageFileName(options)}` } : null),
     ...((options.args || []).length > 0 ? { filter: options.args!.join(' ') } : null),
@@ -142,6 +141,9 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     ...(options.interactive && options.upgrade === undefined ? { upgrade: !json } : null),
     packageManager,
   }
+  resolvedOptions.cacher = getCacher(resolvedOptions)
+
+  return resolvedOptions
 }
 
 export default initOptions

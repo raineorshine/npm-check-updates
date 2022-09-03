@@ -8,4 +8,5 @@ export type Cacher = {
   get(key: string | undefined): string | undefined
   set(key: string | undefined, value: string): void
   save(): Promise<void>
+  log(): void
 }

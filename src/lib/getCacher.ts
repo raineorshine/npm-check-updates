@@ -2,7 +2,8 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { CacheData, Cacher } from '../types/Cacher'
-import { RunOptions } from '../types/RunOptions'
+import { Options } from '../types/Options'
+import { print } from './logging'
 
 /**
  * Check if cache is expired if timestamp is set
@@ -31,22 +32,23 @@ export const resolvedDefaultCacheFile = path.join(os.homedir(), defaultCacheFile
  *
  * @returns
  */
-export default function getCacher(runOptions: RunOptions): Cacher | undefined {
-  if (!runOptions.cache) {
+export default function getCacher(options: Omit<Options, 'cacher'>): Cacher | undefined {
+  if (!options.cache) {
     return
   }
 
-  const file = runOptions.cacheFile
+  const file = options.cacheFile
   if (!file) {
     return
   }
   const cacheFile = file === defaultCacheFile ? resolvedDefaultCacheFile : file
   let cacheData: CacheData = {}
+  let cacheUsed: string[] = []
 
   try {
     cacheData = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'))
 
-    const expired = checkCacheExpiration(cacheData, runOptions.cacheExpiration)
+    const expired = checkCacheExpiration(cacheData, options.cacheExpiration)
     if (expired) {
       // reset cache
       fs.promises.rm(cacheFile)
@@ -64,10 +66,14 @@ export default function getCacher(runOptions: RunOptions): Cacher | undefined {
   }
 
   return {
-    key: (name, version) => name + version,
+    key: (name, version) => name + '@' + version,
     get: key => {
-      if (!key) return
-      return cacheData.packages ? cacheData.packages[key] : undefined
+      if (!key || !cacheData.packages) return
+      const cached = cacheData.packages[key]
+      if (cached) {
+        cacheUsed = [...cacheUsed, key + `: ${cached}`]
+      }
+      return cached
     },
     set: (key, value) => {
       if (!key || !cacheData.packages) return
@@ -75,6 +81,18 @@ export default function getCacher(runOptions: RunOptions): Cacher | undefined {
     },
     save: async () => {
       await fs.promises.writeFile(cacheFile, JSON.stringify(cacheData))
+    },
+    log: () => {
+      if (cacheUsed.length === 0) return
+
+      const message = '\nUsing cached package versions'
+
+      if (options.loglevel === 'verbose') {
+        print(options, message + ':', 'verbose')
+        cacheUsed.forEach(cache => print(options, `  ${cache}`, 'verbose'))
+      } else {
+        print(options, message, 'warn')
+      }
     },
   } as Cacher
 }
