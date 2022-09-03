@@ -49,7 +49,7 @@ export default function getCacher(runOptions: RunOptions): Cacher | undefined {
     const expired = checkCacheExpiration(cacheData, runOptions.cacheExpiration)
     if (expired) {
       // reset cache
-      fs.rmSync(cacheFile)
+      fs.promises.rm(cacheFile)
       cacheData = {}
     }
   } catch (error) {
@@ -70,8 +70,8 @@ export default function getCacher(runOptions: RunOptions): Cacher | undefined {
       return cacheData.packages ? cacheData.packages[key] : undefined
     },
     set: (key, value) => {
-      if (!key) return
-      cacheData.packages![key] = value
+      if (!key || !cacheData.packages) return
+      cacheData.packages[key] = value
     },
     save: async () => {
       await fs.promises.writeFile(cacheFile, JSON.stringify(cacheData))

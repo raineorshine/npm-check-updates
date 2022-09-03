@@ -28,19 +28,10 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   const packageList = Object.keys(packageMap)
   const globalPackageManager = getPackageManager(options.packageManager)
 
-  let bar: ProgressBar
+  let bar: ProgressBar | undefined
   if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && packageList.length > 0) {
     bar = new ProgressBar('[:bar] :current/:total :percent', { total: packageList.length, width: 20 })
     bar.render()
-  }
-
-  /**
-   * Bar utility to avoid code duplication
-   */
-  function barTick() {
-    if (bar) {
-      bar.tick()
-    }
   }
 
   /**
@@ -57,7 +48,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
     const cacheKey = options.cacher?.key(name, version)
     const cached = options.cacher?.get(cacheKey)
     if (cached) {
-      barTick()
+      bar?.tick()
 
       return {
         version: cached,
@@ -129,7 +120,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       }
     }
 
-    barTick()
+    bar?.tick()
 
     if (versionNew) {
       options.cacher?.set(cacheKey, versionNew)
