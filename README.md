@@ -130,6 +130,11 @@ ncu "/^(?!react-).*$/" # windows
 ## Options
 
 ```text
+--cache                      Cache versions to the cache file (default:
+                             false)
+--cacheExpiration <time>     Cache expiration in minutes (default: 10)
+--cacheFile <path>           Filepath for the cache file (default:
+                             "~/.ncu-cache.json")
 --color                      Force color in terminal
 --concurrency <n>            Max number of concurrent HTTP requests to
                              registry. (default: 8)

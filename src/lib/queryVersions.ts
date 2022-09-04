@@ -28,7 +28,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   const packageList = Object.keys(packageMap)
   const globalPackageManager = getPackageManager(options.packageManager)
 
-  let bar: ProgressBar
+  let bar: ProgressBar | undefined
   if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && packageList.length > 0) {
     bar = new ProgressBar('[:bar] :current/:total :percent', { total: packageList.length, width: 20 })
     bar.render()
@@ -44,6 +44,17 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   async function getPackageVersionProtected(dep: VersionSpec): Promise<VersionResult> {
     const npmAlias = parseNpmAlias(packageMap[dep])
     const [name, version] = npmAlias || [dep, packageMap[dep]]
+
+    const cacheKey = options.cacher?.key(name, version)
+    const cached = options.cacher?.get(cacheKey)
+    if (cached) {
+      bar?.tick()
+
+      return {
+        version: cached,
+      }
+    }
+
     let targetResult = typeof target === 'string' ? target : target(name, parseRange(version))
     let distTag = 'latest'
 
@@ -109,8 +120,10 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       }
     }
 
-    if (bar) {
-      bar.tick()
+    bar?.tick()
+
+    if (versionNew) {
+      options.cacher?.set(cacheKey, versionNew)
     }
 
     return {
@@ -119,6 +132,10 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   }
 
   const versionResultList = await pMap(packageList, getPackageVersionProtected, { concurrency: options.concurrency })
+
+  // save cacher only after pMap handles cacher.set
+  await options.cacher?.save()
+  options.cacher?.log()
 
   const versionResultObject = keyValueBy(versionResultList, (versionResult, i) =>
     versionResult.version || versionResult.error

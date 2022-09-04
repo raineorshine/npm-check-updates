@@ -6,6 +6,15 @@ import { TargetFunction } from './TargetFunction'
 
 /** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
 export interface RunOptions {
+  /** Cache versions to the cache file */
+  cache?: boolean
+
+  /** Cache expiration in minutes (default: 10) */
+  cacheExpiration?: number
+
+  /** Filepath for the cache file (default: "~/.ncu-cache.json") */
+  cacheFile?: string
+
   /** Force color in terminal */
   color?: boolean
 

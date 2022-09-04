@@ -6,6 +6,7 @@ import { RunOptions } from '../types/RunOptions'
 import { Target } from '../types/Target'
 import determinePackageManager from './determinePackageManager'
 import exists from './exists'
+import getCacher from './getCacher'
 import getPackageFileName from './getPackageFileName'
 import programError from './programError'
 
@@ -124,7 +125,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     print(options, 'Using yarn')
   }
 
-  return {
+  const resolvedOptions = {
     ...options,
     ...(options.deep ? { packageFile: `**/${getPackageFileName(options)}` } : null),
     ...((options.args || []).length > 0 ? { filter: options.args!.join(' ') } : null),
@@ -140,6 +141,9 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     ...(options.interactive && options.upgrade === undefined ? { upgrade: !json } : null),
     packageManager,
   }
+  resolvedOptions.cacher = await getCacher(resolvedOptions)
+
+  return resolvedOptions
 }
 
 export default initOptions
