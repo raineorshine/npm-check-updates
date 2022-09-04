@@ -33,7 +33,7 @@ const cacheKeyDivider = '###'
  *
  * @returns
  */
-export default async function getCacher(options: Omit<Options, 'cacher'>): Promise<Cacher | undefined> {
+export default async function cacher(options: Omit<Options, 'cacher'>): Promise<Cacher | undefined> {
   if (!options.cache || !options.cacheFile) {
     return
   }

@@ -4,9 +4,9 @@ import { print } from '../lib/logging'
 import { Options } from '../types/Options'
 import { RunOptions } from '../types/RunOptions'
 import { Target } from '../types/Target'
+import cacher from './cache'
 import determinePackageManager from './determinePackageManager'
 import exists from './exists'
-import getCacher from './getCacher'
 import getPackageFileName from './getPackageFileName'
 import programError from './programError'
 
@@ -141,7 +141,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     ...(options.interactive && options.upgrade === undefined ? { upgrade: !json } : null),
     packageManager,
   }
-  resolvedOptions.cacher = await getCacher(resolvedOptions)
+  resolvedOptions.cacher = await cacher(resolvedOptions)
 
   return resolvedOptions
 }

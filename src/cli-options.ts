@@ -1,8 +1,8 @@
 import Table from 'cli-table'
 import sortBy from 'lodash/sortBy'
 import path from 'path'
+import { defaultCacheFile } from './lib/cache'
 import chalk from './lib/chalk'
-import { defaultCacheFile } from './lib/getCacher'
 import { Index } from './types/IndexType'
 
 export interface CLIOption<T = any> {
