@@ -84,14 +84,8 @@ export default async function getCacher(options: Omit<Options, 'cacher'>): Promi
       const cacheCount = Object.keys(cacheUpdates).length
       if (cacheCount === 0) return
 
-      const message = `\nUsing ${cacheCount} cached package versions`
-
-      if (options.loglevel === 'verbose') {
-        print(options, message + ':', 'verbose')
-        print(options, cacheUpdates, 'verbose')
-      } else {
-        print(options, message, 'warn')
-      }
+      print(options, `\nUsing ${cacheCount} cached package versions`, 'warn')
+      print(options, cacheUpdates, 'verbose')
     },
   } as Cacher
 }
