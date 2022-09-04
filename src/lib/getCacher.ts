@@ -25,6 +25,7 @@ function checkCacheExpiration(cacheData: CacheData, cacheExpiration = 10) {
 export const defaultCacheFilename = '.ncu-cache.json'
 export const defaultCacheFile = `~/${defaultCacheFilename}`
 export const resolvedDefaultCacheFile = path.join(os.homedir(), defaultCacheFilename)
+const cacheKeyDivider = '###'
 
 /**
  * The cacher stores key (name + version) - value (new version) pairs
@@ -32,21 +33,17 @@ export const resolvedDefaultCacheFile = path.join(os.homedir(), defaultCacheFile
  *
  * @returns
  */
-export default function getCacher(options: Omit<Options, 'cacher'>): Cacher | undefined {
-  if (!options.cache) {
+export default async function getCacher(options: Omit<Options, 'cacher'>): Promise<Cacher | undefined> {
+  if (!options.cache || !options.cacheFile) {
     return
   }
 
-  const file = options.cacheFile
-  if (!file) {
-    return
-  }
-  const cacheFile = file === defaultCacheFile ? resolvedDefaultCacheFile : file
+  const cacheFile = options.cacheFile === defaultCacheFile ? resolvedDefaultCacheFile : options.cacheFile
   let cacheData: CacheData = {}
-  let cacheUsed: string[] = []
+  const cacheUpdates: Record<string, string> = {}
 
   try {
-    cacheData = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'))
+    cacheData = JSON.parse(await fs.promises.readFile(cacheFile, 'utf-8'))
 
     const expired = checkCacheExpiration(cacheData, options.cacheExpiration)
     if (expired) {
@@ -66,12 +63,13 @@ export default function getCacher(options: Omit<Options, 'cacher'>): Cacher | un
   }
 
   return {
-    key: (name, version) => name + '@' + version,
+    key: (name, version) => name + cacheKeyDivider + version,
     get: key => {
       if (!key || !cacheData.packages) return
       const cached = cacheData.packages[key]
-      if (cached) {
-        cacheUsed = [...cacheUsed, key + `: ${cached}`]
+      if (cached && !key.includes(cached)) {
+        const [name] = key.split(cacheKeyDivider)
+        cacheUpdates[name] = cached
       }
       return cached
     },
@@ -83,13 +81,14 @@ export default function getCacher(options: Omit<Options, 'cacher'>): Cacher | un
       await fs.promises.writeFile(cacheFile, JSON.stringify(cacheData))
     },
     log: () => {
-      if (cacheUsed.length === 0) return
+      const cacheCount = Object.keys(cacheUpdates).length
+      if (cacheCount === 0) return
 
-      const message = '\nUsing cached package versions'
+      const message = `\nUsing ${cacheCount} cached package versions`
 
       if (options.loglevel === 'verbose') {
         print(options, message + ':', 'verbose')
-        cacheUsed.forEach(cache => print(options, `  ${cache}`, 'verbose'))
+        print(options, cacheUpdates, 'verbose')
       } else {
         print(options, message, 'warn')
       }

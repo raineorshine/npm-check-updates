@@ -141,7 +141,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     ...(options.interactive && options.upgrade === undefined ? { upgrade: !json } : null),
     packageManager,
   }
-  resolvedOptions.cacher = getCacher(resolvedOptions)
+  resolvedOptions.cacher = await getCacher(resolvedOptions)
 
   return resolvedOptions
 }
