@@ -134,21 +134,24 @@ export async function toDependencyTable({
 }) {
   const table = renderDependencyTable(
     await Promise.all(
-      Object.keys(toDeps).map(async dep => {
-        const from = fromDeps[dep] || ''
-        const toRaw = toDeps[dep] || ''
-        const to = getVersion(toRaw)
-        const ownerChanged = ownersChangedDeps
-          ? dep in ownersChangedDeps
-            ? ownersChangedDeps[dep]
-              ? '*owner changed*'
-              : ''
-            : '*unknown*'
-          : ''
-        const toColorized = colorizeDiff(getVersion(from), to)
-        const repoUrl = format?.includes('repo') ? (await getRepoUrl(dep)) || '' : ''
-        return [dep, from, '→', toColorized, ownerChanged, repoUrl]
-      }),
+      // eslint-disable-next-line fp/no-mutating-methods
+      Object.keys(toDeps)
+        .sort()
+        .map(async dep => {
+          const from = fromDeps[dep] || ''
+          const toRaw = toDeps[dep] || ''
+          const to = getVersion(toRaw)
+          const ownerChanged = ownersChangedDeps
+            ? dep in ownersChangedDeps
+              ? ownersChangedDeps[dep]
+                ? '*owner changed*'
+                : ''
+              : '*unknown*'
+            : ''
+          const toColorized = colorizeDiff(getVersion(from), to)
+          const repoUrl = format?.includes('repo') ? (await getRepoUrl(dep)) || '' : ''
+          return [dep, from, '→', toColorized, ownerChanged, repoUrl]
+        }),
     ),
   )
   return table
