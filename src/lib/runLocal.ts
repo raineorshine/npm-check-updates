@@ -90,11 +90,14 @@ const chooseUpgrades = async (
       const choices = groups.flatMap(({ heading, groupName, packages }) => {
         return [
           { title: '\n' + heading, heading: true },
-          ...Object.keys(packages).map(dep => ({
-            title: formattedLines[dep],
-            value: dep,
-            selected: ['patch', 'minor'].includes(groupName),
-          })),
+          // eslint-disable-next-line fp/no-mutating-methods
+          ...Object.keys(packages)
+            .sort()
+            .map(dep => ({
+              title: formattedLines[dep],
+              value: dep,
+              selected: ['patch', 'minor'].includes(groupName),
+            })),
         ]
       })
 
@@ -119,11 +122,14 @@ const chooseUpgrades = async (
 
       chosenDeps = response.value
     } else {
-      const choices = Object.keys(newDependencies).map(dep => ({
-        title: formattedLines[dep],
-        value: dep,
-        selected: true,
-      }))
+      // eslint-disable-next-line fp/no-mutating-methods
+      const choices = Object.keys(newDependencies)
+        .sort()
+        .map(dep => ({
+          title: formattedLines[dep],
+          value: dep,
+          selected: true,
+        }))
 
       const response = await prompts({
         choices: [...choices, { title: ' ', heading: true }],
