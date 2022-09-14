@@ -44,7 +44,7 @@ async function groupTestScaffold(
   }
 }
 
-describe('--format group', () => {
+describe.only('--format group', () => {
   it('group upgrades by type', async () => {
     await groupTestScaffold(
       { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
@@ -53,8 +53,8 @@ describe('--format group', () => {
  ncu-test-tag  1.0.0  →  1.1.0
 
 Major   Potentially breaking API changes
- ncu-test-v2              1.0.0  →  2.0.0
- ncu-test-return-version  1.0.0  →  2.0.0`,
+ ncu-test-return-version  1.0.0  →  2.0.0
+ ncu-test-v2              1.0.0  →  2.0.0`,
     )
   })
 
@@ -72,9 +72,9 @@ Major   Potentially breaking API changes
       { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
       (packageName, defaultGroup) => (packageName === 'ncu-test-tag' ? 'major' : defaultGroup),
       `Major   Potentially breaking API changes
- ncu-test-v2              1.0.0  →  2.0.0
  ncu-test-return-version  1.0.0  →  2.0.0
- ncu-test-tag             1.0.0  →  1.1.0`,
+ ncu-test-tag             1.0.0  →  1.1.0
+ ncu-test-v2              1.0.0  →  2.0.0`,
     )
   })
 
@@ -83,8 +83,8 @@ Major   Potentially breaking API changes
       { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
       (packageName, defaultGroup) => (packageName === 'ncu-test-v2' ? 'minor' : defaultGroup),
       `Minor   Backwards-compatible features
- ncu-test-v2   1.0.0  →  2.0.0
  ncu-test-tag  1.0.0  →  1.1.0
+ ncu-test-v2   1.0.0  →  2.0.0
 
 Major   Potentially breaking API changes
  ncu-test-return-version  1.0.0  →  2.0.0`,
