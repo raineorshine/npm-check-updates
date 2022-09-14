@@ -13,6 +13,7 @@ import pacote from 'pacote'
 import path from 'path'
 import semver from 'semver'
 import spawn from 'spawn-please'
+import untildify from 'untildify'
 import { keyValueBy } from '../lib/keyValueBy'
 import libnpmconfig from '../lib/libnpmconfig'
 import { print } from '../lib/logging'
@@ -43,7 +44,7 @@ const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
       if (!path) return
       // synchronous since it is loaded once on startup, and to avoid complexity in libnpmconfig.read
       // https://github.com/raineorshine/npm-check-updates/issues/636?notification_referrer_id=MDE4Ok5vdGlmaWNhdGlvblRocmVhZDc0Njk2NjAzMjo3NTAyNzY%3D
-      const cadata = fs.readFileSync(path, 'utf8')
+      const cadata = fs.readFileSync(untildify(path), 'utf8')
       const delim = '-----END CERTIFICATE-----'
       const output = cadata
         .split(delim)
