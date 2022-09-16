@@ -44,7 +44,7 @@ async function groupTestScaffold(
   }
 }
 
-describe.only('--format group', () => {
+describe('--format group', () => {
   it('group upgrades by type', async () => {
     await groupTestScaffold(
       { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
