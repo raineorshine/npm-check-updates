@@ -282,7 +282,7 @@ const cliOptions: CLIOption[] = [
   },
   {
     long: 'cacheExpiration',
-    arg: 'time',
+    arg: 'min',
     description: 'Cache expiration in minutes',
     parse: s => parseInt(s, 10),
     default: 10,
@@ -311,7 +311,7 @@ const cliOptions: CLIOption[] = [
   },
   {
     long: 'configFileName',
-    arg: 'filename',
+    arg: 's',
     description: 'Config file name. (default: .ncurc.{json,yml,js})',
     type: 'string',
   },
@@ -382,14 +382,14 @@ const cliOptions: CLIOption[] = [
   {
     long: 'filter',
     short: 'f',
-    arg: 'matches',
+    arg: 'p',
     description:
       'Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
   },
   {
     long: 'filterVersion',
-    arg: 'matches',
+    arg: 'p',
     description: 'Filter on package version using comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
   },
@@ -475,7 +475,7 @@ const cliOptions: CLIOption[] = [
   {
     long: 'packageManager',
     short: 'p',
-    arg: 'name',
+    arg: 's',
     // manual default to allow overriding auto yarn detection
     description: 'npm, yarn, staticRegistry (default: npm).',
     help: extendedHelpPackageManager,
@@ -513,7 +513,7 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
   {
     long: 'reject',
     short: 'x',
-    arg: 'matches',
+    arg: 'p',
     description:
       'Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
     parse: (s, p) => p.concat([s]),
@@ -522,7 +522,7 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
   },
   {
     long: 'rejectVersion',
-    arg: 'matches',
+    arg: 'p',
     description: 'Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
   },
@@ -578,9 +578,21 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     type: 'boolean',
   },
   {
+    long: 'withWorkspace',
+    short: 'ww',
+    arg: 's',
+    // Commander mutates accum across program.parse calls.
+    // Since we call program.parse twice in cli.ts, we need to remove duplicates.
+    // Otherwise the option will consist of two of each value.
+    parse: (value, accum) => (accum.includes(value) ? accum : [...accum, value]),
+    default: [],
+    description: 'Run on one or more specified workspaces and the root project.',
+    type: 'string[]',
+  },
+  {
     long: 'workspace',
     short: 'w',
-    arg: 'value',
+    arg: 's',
     // Commander mutates accum across program.parse calls.
     // Since we call program.parse twice in cli.ts, we need to remove duplicates.
     // Otherwise the option will consist of two of each value.

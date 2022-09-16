@@ -33,10 +33,7 @@ async function findPackage(options: Options) {
     // exit if no pkgFile to read from fs
     if (pkgFile != null) {
       const relPathToPackage = path.resolve(pkgFile)
-      // when --workspace or --workspaces is specified, do not print the "Checking" message on the root package file since it is only used to get the workspaces property, and is not checked for upgrades itself
-      if (pkgFile !== 'package.json' || (!options.workspace && !options.workspaces)) {
-        print(options, `${options.upgrade ? 'Upgrading' : 'Checking'} ${relPathToPackage}`)
-      }
+      print(options, `${options.upgrade ? 'Upgrading' : 'Checking'} ${relPathToPackage}`)
     } else {
       programError(
         options,

@@ -130,114 +130,113 @@ ncu "/^(?!react-).*$/" # windows
 ## Options
 
 ```text
---cache                      Cache versions to the cache file (default:
-                             false)
---cacheExpiration <time>     Cache expiration in minutes (default: 10)
---cacheFile <path>           Filepath for the cache file (default:
-                             "~/.ncu-cache.json")
---color                      Force color in terminal
---concurrency <n>            Max number of concurrent HTTP requests to
-                             registry. (default: 8)
---configFileName <filename>  Config file name. (default:
-                             .ncurc.{json,yml,js})
---configFilePath <path>      Directory of .ncurc config file. (default:
-                             directory of `packageFile`)
---cwd <path>                 Working directory in which npm will be executed.
---deep                       Run recursively in current working directory.
-                             Alias of (--packageFile '**/package.json').
---dep <value>                Check one or more sections of dependencies only:
-                             dev, optional, peer, prod, bundle
-                             (comma-delimited). (default:
-                             "prod,dev,bundle,optional")
---deprecated                 Include deprecated packages.
---doctor                     Iteratively installs upgrades and runs tests to
-                             identify breaking upgrades. Requires "-u" to
-                             execute. Run "ncu --help --doctor" for details.
---doctorInstall <command>    Specifies the install script to use in doctor
-                             mode. (default: npm install/yarn)
---doctorTest <command>       Specifies the test script to use in doctor mode.
-                             (default: npm test)
---enginesNode                Include only packages that satisfy engines.node
-                             as specified in the package file.
--e, --errorLevel <n>         Set the error level. 1: exits with error code 0
-                             if no errors occur. 2: exits with error code 0
-                             if no packages need updating (useful for
-                             continuous integration). (default: 1)
--f, --filter <matches>       Include only package names matching the given
-                             string, wildcard, glob, comma-or-space-delimited
-                             list, /regex/, or predicate function.
---filterVersion <matches>    Filter on package version using
-                             comma-or-space-delimited list, /regex/, or
-                             predicate function.
---format <value>             Modify the output formatting or show additional
-                             information. Specify one or more comma-delimited
-                             values: group, ownerChanged, repo. Run "ncu
-                             --help --format" for details. (default: [])
--g, --global                 Check global packages instead of in the current
-                             project.
---groupFunction <fn>         Customize how packages are divided into groups
-                             when using '--format group'. Run "ncu --help
-                             --groupFunction" for details.
--i, --interactive            Enable interactive prompts for each dependency;
-                             implies -u unless one of the json options are
-                             set.
--j, --jsonAll                Output new package file instead of
-                             human-readable message.
---jsonDeps                   Like `jsonAll` but only lists `dependencies`,
-                             `devDependencies`, `optionalDependencies`, etc
-                             of the new package data.
---jsonUpgraded               Output upgraded dependencies in json.
--l, --loglevel <n>           Amount to log: silent, error, minimal, warn,
-                             info, verbose, silly. (default: "warn")
---mergeConfig                Merges nested configs with the root config file
-                             for --deep or --packageFile options. (default:
-                             false)
--m, --minimal                Do not upgrade newer versions that are already
-                             satisfied by the version range according to
-                             semver.
---packageData <value>        Package file data (you can also use stdin).
---packageFile <path|glob>    Package file(s) location. (default:
-                             ./package.json)
--p, --packageManager <name>  npm, yarn, staticRegistry (default: npm). Run
-                             "ncu --help --packageManager" for details.
---peer                       Check peer dependencies of installed packages
-                             and filter updates to compatible versions. Run
-                             "ncu --help --peer" for details.
---pre <n>                    Include -alpha, -beta, -rc. (default: 0; default
-                             with --newest and --greatest: 1)
---prefix <path>              Current working directory of npm.
--r, --registry <uri>         Third-party npm registry. Run "ncu --help
-                             --registry" for details.
--x, --reject <matches>       Exclude packages matching the given string,
-                             wildcard, glob, comma-or-space-delimited list,
-                             /regex/, or predicate function. (default: [])
---rejectVersion <matches>    Exclude package.json versions using
-                             comma-or-space-delimited list, /regex/, or
-                             predicate function.
---removeRange                Remove version ranges from the final package
-                             version.
---retry <n>                  Number of times to retry failed requests for
-                             package info. (default: 3)
--s, --silent                 Don't output anything. Alias for --loglevel
-                             silent.
---stdin                      Read package.json from stdin.
--t, --target <value>         Determines the version to upgrade to: latest,
-                             newest, greatest, minor, patch, @[tag], or
-                             [function]. (default: latest). Run "ncu --help
-                             --target" for details.
---timeout <ms>               Global timeout in milliseconds. (default: no
-                             global timeout and 30 seconds per
-                             npm-registry-fetch)
--u, --upgrade                Overwrite package file with upgraded versions
-                             instead of just outputting to console.
---verbose                    Log additional information for debugging. Alias
-                             for --loglevel verbose.
--wws, --withWorkspaces       Run on all workspaces and the root project.
--w, --workspace <value>      Run on one or more specified workspaces.
-                             (default: [])
--ws, --workspaces            Run on all workspaces.
--V, --version                output the version number
--h, --help                   display help for command
+--cache                    Cache versions to the cache file (default: false)
+--cacheExpiration <min>    Cache expiration in minutes (default: 10)
+--cacheFile <path>         Filepath for the cache file (default:
+                           "~/.ncu-cache.json")
+--color                    Force color in terminal
+--concurrency <n>          Max number of concurrent HTTP requests to
+                           registry. (default: 8)
+--configFileName <s>       Config file name. (default: .ncurc.{json,yml,js})
+--configFilePath <path>    Directory of .ncurc config file. (default:
+                           directory of `packageFile`)
+--cwd <path>               Working directory in which npm will be executed.
+--deep                     Run recursively in current working directory.
+                           Alias of (--packageFile '**/package.json').
+--dep <value>              Check one or more sections of dependencies only:
+                           dev, optional, peer, prod, bundle
+                           (comma-delimited). (default:
+                           "prod,dev,bundle,optional")
+--deprecated               Include deprecated packages.
+--doctor                   Iteratively installs upgrades and runs tests to
+                           identify breaking upgrades. Requires "-u" to
+                           execute. Run "ncu --help --doctor" for details.
+--doctorInstall <command>  Specifies the install script to use in doctor
+                           mode. (default: npm install/yarn)
+--doctorTest <command>     Specifies the test script to use in doctor mode.
+                           (default: npm test)
+--enginesNode              Include only packages that satisfy engines.node as
+                           specified in the package file.
+-e, --errorLevel <n>       Set the error level. 1: exits with error code 0 if
+                           no errors occur. 2: exits with error code 0 if no
+                           packages need updating (useful for continuous
+                           integration). (default: 1)
+-f, --filter <p>           Include only package names matching the given
+                           string, wildcard, glob, comma-or-space-delimited
+                           list, /regex/, or predicate function.
+--filterVersion <p>        Filter on package version using
+                           comma-or-space-delimited list, /regex/, or
+                           predicate function.
+--format <value>           Modify the output formatting or show additional
+                           information. Specify one or more comma-delimited
+                           values: group, ownerChanged, repo. Run "ncu --help
+                           --format" for details. (default: [])
+-g, --global               Check global packages instead of in the current
+                           project.
+--groupFunction <fn>       Customize how packages are divided into groups
+                           when using '--format group'. Run "ncu --help
+                           --groupFunction" for details.
+-i, --interactive          Enable interactive prompts for each dependency;
+                           implies -u unless one of the json options are set.
+-j, --jsonAll              Output new package file instead of human-readable
+                           message.
+--jsonDeps                 Like `jsonAll` but only lists `dependencies`,
+                           `devDependencies`, `optionalDependencies`, etc of
+                           the new package data.
+--jsonUpgraded             Output upgraded dependencies in json.
+-l, --loglevel <n>         Amount to log: silent, error, minimal, warn, info,
+                           verbose, silly. (default: "warn")
+--mergeConfig              Merges nested configs with the root config file
+                           for --deep or --packageFile options. (default:
+                           false)
+-m, --minimal              Do not upgrade newer versions that are already
+                           satisfied by the version range according to
+                           semver.
+--packageData <value>      Package file data (you can also use stdin).
+--packageFile <path|glob>  Package file(s) location. (default:
+                           ./package.json)
+-p, --packageManager <s>   npm, yarn, staticRegistry (default: npm). Run "ncu
+                           --help --packageManager" for details.
+--peer                     Check peer dependencies of installed packages and
+                           filter updates to compatible versions. Run "ncu
+                           --help --peer" for details.
+--pre <n>                  Include -alpha, -beta, -rc. (default: 0; default
+                           with --newest and --greatest: 1)
+--prefix <path>            Current working directory of npm.
+-r, --registry <uri>       Third-party npm registry. Run "ncu --help
+                           --registry" for details.
+-x, --reject <p>           Exclude packages matching the given string,
+                           wildcard, glob, comma-or-space-delimited list,
+                           /regex/, or predicate function. (default: [])
+--rejectVersion <p>        Exclude package.json versions using
+                           comma-or-space-delimited list, /regex/, or
+                           predicate function.
+--removeRange              Remove version ranges from the final package
+                           version.
+--retry <n>                Number of times to retry failed requests for
+                           package info. (default: 3)
+-s, --silent               Don't output anything. Alias for --loglevel
+                           silent.
+--stdin                    Read package.json from stdin.
+-t, --target <value>       Determines the version to upgrade to: latest,
+                           newest, greatest, minor, patch, @[tag], or
+                           [function]. (default: latest). Run "ncu --help
+                           --target" for details.
+--timeout <ms>             Global timeout in milliseconds. (default: no
+                           global timeout and 30 seconds per
+                           npm-registry-fetch)
+-u, --upgrade              Overwrite package file with upgraded versions
+                           instead of just outputting to console.
+--verbose                  Log additional information for debugging. Alias
+                           for --loglevel verbose.
+-ww, --withWorkspace <s>   Run on one or more specified workspaces and the
+                           root project. (default: [])
+-wws, --withWorkspaces     Run on all workspaces and the root project.
+-w, --workspace <s>        Run on one or more specified workspaces. (default:
+                           [])
+-ws, --workspaces          Run on all workspaces.
+-V, --version              output the version number
+-h, --help                 display help for command
 ```
 
 ## Interactive Mode

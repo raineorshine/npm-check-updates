@@ -187,38 +187,46 @@ export async function run(
       },
     )
 
-    // --workspace
-    if (options.workspace?.length) {
-      const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename })
+    // --workspace and --withWorkspace
+    if (options.workspace?.length || options.withWorkspace?.length) {
+      // use silent, otherwise there will be a duplicate "Checking" message
+      const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename, loglevel: 'silent' })
       const workspaces = (typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile))
         .workspaces
       if (!workspaces) {
         programError(
           options,
           chalk.red(
-            'workspaces property missing from package.json. --workspace only works when you specify a "workspaces" property in your package.json.',
+            `workspaces property missing from package.json. --${
+              options.withWorkspace?.length ? 'withWorkspace' : 'workspace'
+            } only works when you specify a "workspaces" property in your package.json.`,
           ),
         )
       }
       const workspacePackageGlob = ([] as string[])
         .concat(workspaces || [])
         .map(workspace => path.join(workspace, defaultPackageFilename))
-      pkgs = globby
-        .sync(workspacePackageGlob, {
-          ignore: ['**/node_modules/**'],
-        })
-        .filter(pkgFile =>
-          options.workspace!.some(workspace =>
-            workspaces?.some(
-              workspacePattern =>
-                pkgFile === path.join(path.dirname(workspacePattern), workspace, defaultPackageFilename),
+      pkgs = [
+        // include root project package file when --withWorkspace is used
+        ...(options.withWorkspace?.length ? pkgs : []),
+        ...globby
+          .sync(workspacePackageGlob, {
+            ignore: ['**/node_modules/**'],
+          })
+          .filter(pkgFile =>
+            (options.workspace?.length ? options.workspace : options.withWorkspace)!.some(workspace =>
+              workspaces?.some(
+                workspacePattern =>
+                  pkgFile === path.join(path.dirname(workspacePattern), workspace, defaultPackageFilename),
+              ),
             ),
           ),
-        )
+      ]
     }
     // --workspaces and --withWorkspaces
     else if (options.workspaces || options.withWorkspaces) {
-      const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename })
+      // use silent, otherwise there will be a duplicate "Checking" message
+      const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename, loglevel: 'silent' })
       const workspaces = (typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile))
         .workspaces
       if (!workspaces) {

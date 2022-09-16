@@ -174,11 +174,11 @@ describe('--workspace', function () {
   })
 })
 
-describe.only('--withWorkspaces', function () {
+describe('--withWorkspaces', function () {
   this.timeout(60000)
 
   it('do not allow --withWorkspaces and --deep together', () => {
-    ncu.run({ workspaces: true, deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+    ncu.run({ withWorkspaces: true, deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
   })
 
   it('update root project and workspaces with --withWorkspaces', async () => {
@@ -230,6 +230,63 @@ describe.only('--withWorkspaces', function () {
       output.should.have.property('packages/a/package.json')
       output.should.have.property('packages/b/package.json')
       output.should.not.have.property('other/package.json')
+      output['package.json'].dependencies.should.have.property('ncu-test-v2')
+      output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+      output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('--withWorkspace', function () {
+  this.timeout(60000)
+
+  it('do not allow --withWorkspace and --deep together', () => {
+    ncu.run({ withWorkspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+  })
+
+  it('do not allow --withWorkspace and --withWorkspaces together', () => {
+    ncu.run({ withWorkspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+  })
+
+  it('update single workspace with --withWorkspace', async () => {
+    const tempDir = await setup()
+    try {
+      const output = await spawn('node', [bin, '--jsonAll', '--withWorkspace', 'a'], { cwd: tempDir }).then(JSON.parse)
+      output.should.have.property('package.json')
+      output.should.have.property('packages/a/package.json')
+      output.should.not.have.property('packages/b/package.json')
+      output['package.json'].dependencies.should.have.property('ncu-test-v2')
+      output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('update single workspace with -ww', async () => {
+    const tempDir = await setup()
+    try {
+      const output = await spawn('node', [bin, '--jsonAll', '-ww', 'a'], { cwd: tempDir }).then(JSON.parse)
+      output.should.have.property('package.json')
+      output.should.have.property('packages/a/package.json')
+      output.should.not.have.property('packages/b/package.json')
+      output['package.json'].dependencies.should.have.property('ncu-test-v2')
+      output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('update more than one workspace', async () => {
+    const tempDir = await setup()
+    try {
+      const output = await spawn('node', [bin, '--jsonAll', '--withWorkspace', 'a', '--withWorkspace', 'b'], {
+        cwd: tempDir,
+      }).then(JSON.parse)
+      output.should.have.property('package.json')
+      output.should.have.property('packages/a/package.json')
+      output.should.have.property('packages/b/package.json')
       output['package.json'].dependencies.should.have.property('ncu-test-v2')
       output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
       output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
