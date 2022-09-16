@@ -179,7 +179,7 @@ export async function run(
     const defaultPackageFilename = getPackageFileName(options)
     let pkgs = globby.sync(
       options.cwd
-        ? untildify(defaultPackageFilename).replace(/\\/g, '/') // convert Windows path to *nix path for globby
+        ? path.resolve(untildify(options.cwd), defaultPackageFilename).replace(/\\/g, '/') // convert Windows path to *nix path for globby
         : defaultPackageFilename,
       {
         ignore: ['**/node_modules/**'],
