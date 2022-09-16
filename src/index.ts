@@ -68,7 +68,7 @@ const getPackageManagerForInstall = async (options: Options, pkgFile: string) =>
 }
 
 /** Either suggest an install command based on the package manager, or in interactive mode, prompt to autoinstall. */
-const npmInstallHint = async (
+const npmInstall = async (
   pkgs: string[],
   analysis: Index<PackageFile> | PackageFile,
   options: Options,
@@ -80,16 +80,16 @@ const npmInstallHint = async (
   const someUpgraded = Object.values(analysisNormalized).some(upgrades => Object.keys(upgrades).length > 0)
   if (!someUpgraded) return
 
-  let showInstallHint = true
-
   // for the purpose of the install hint, just use the package manager used in the first subproject
   // if autoinstalling, the actual package manager in each subproject will be used
   const packageManager = await getPackageManagerForInstall(options, pkgs[0])
 
   // by default, show an install hint after upgrading
   // this will be disabled in interactive mode if the user chooses to have npm-check-updates execute the install command
-  const installHint = `${chalk.cyan(packageManager + ' install')}${
-    pkgs.length > 1 ? ' in each project directory' : ''
+  const installHint = `Run ${chalk.cyan(packageManager + ' install')}${
+    pkgs.length > 1 && !options.withWorkspace && !options.workspace && !options.withWorkspaces && !options.workspaces
+      ? ' in each project directory'
+      : ''
   } to install new versions`
 
   // prompt the user if they want ncu to run "npm install"
@@ -110,7 +110,6 @@ const npmInstallHint = async (
 
     // autoinstall
     if (response.value) {
-      showInstallHint = false
       pkgs.forEach(async pkgFile => {
         const packageManager = await getPackageManagerForInstall(options, pkgFile)
         const cmd = packageManager + (process.platform === 'win32' ? '.cmd' : '')
@@ -122,8 +121,8 @@ const npmInstallHint = async (
   }
 
   // show the install hint unless autoinstall occurred
-  if (showInstallHint) {
-    print(options, `\nRun ${installHint}.`)
+  else {
+    print(options, `\n${installHint}.`)
   }
 }
 
@@ -252,8 +251,9 @@ export async function run(
     }
 
     // enable --deep if multiple package files are found
-    options.deep =
-      options.deep || options.withWorkspaces || options.workspaces || !!options.workspace || pkgs.length > 1
+    const isWorkspace =
+      options.withWorkspaces || options.workspaces || !!options.withWorkspace?.length || !!options.workspace?.length
+    options.deep = options.deep || isWorkspace || pkgs.length > 1
 
     let analysis: Index<PackageFile> | PackageFile | void
     if (options.global) {
@@ -302,7 +302,8 @@ export async function run(
 
     // suggest install command or autoinstall
     if (options.upgrade) {
-      await npmInstallHint(pkgs, analysis, options)
+      // if workspaces, install from root project folder
+      await npmInstall(isWorkspace ? ['package.json'] : pkgs, analysis, options)
     }
 
     return analysis
