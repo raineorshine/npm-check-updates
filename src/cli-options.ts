@@ -590,6 +590,12 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     type: 'string[]',
   },
   {
+    long: 'withWorkspaces',
+    short: 'wws',
+    description: 'Run on all workspaces and the root project.',
+    type: 'boolean',
+  },
+  {
     long: 'workspaces',
     short: 'ws',
     description: 'Run on all workspaces.',

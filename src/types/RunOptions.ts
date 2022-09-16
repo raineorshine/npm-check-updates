@@ -141,7 +141,10 @@ export interface RunOptions {
   /** Log additional information for debugging. Alias for --loglevel verbose. */
   verbose?: boolean
 
-  /** Run on the given workspace. */
+  /** Run on all workspaces and the root project. */
+  withWorkspaces?: boolean
+
+  /** Run on one or more specified workspaces. */
   workspace?: string[]
 
   /** Run on all workspaces. */

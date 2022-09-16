@@ -173,3 +173,68 @@ describe('--workspace', function () {
     }
   })
 })
+
+describe.only('--withWorkspaces', function () {
+  this.timeout(60000)
+
+  it('do not allow --withWorkspaces and --deep together', () => {
+    ncu.run({ workspaces: true, deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+  })
+
+  it('update root project and workspaces with --withWorkspaces', async () => {
+    const tempDir = await setup()
+    try {
+      const output = await spawn('node', [bin, '--jsonAll', '--withWorkspaces'], { cwd: tempDir }).then(JSON.parse)
+      output.should.have.property('package.json')
+      output.should.have.property('packages/a/package.json')
+      output.should.have.property('packages/b/package.json')
+      output['package.json'].dependencies.should.have.property('ncu-test-v2')
+      output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+      output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('update root project and workspaces with -wws', async () => {
+    const tempDir = await setup()
+    try {
+      const output = await spawn('node', [bin, '--jsonAll', '-wws'], { cwd: tempDir }).then(JSON.parse)
+      output.should.have.property('package.json')
+      output.should.have.property('packages/a/package.json')
+      output.should.have.property('packages/b/package.json')
+      output['package.json'].dependencies.should.have.property('ncu-test-v2')
+      output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+      output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('do not update non-workspace subpackages', async () => {
+    const tempDir = await setup()
+    await fs.mkdir(path.join(tempDir, 'other'), { recursive: true })
+    await fs.writeFile(
+      path.join(tempDir, 'other/package.json'),
+      JSON.stringify({
+        dependencies: {
+          'ncu-test-return-version': '1.0.0',
+        },
+      }),
+      'utf-8',
+    )
+
+    try {
+      const output = await spawn('node', [bin, '--jsonAll', '--withWorkspaces'], { cwd: tempDir }).then(JSON.parse)
+      output.should.have.property('package.json')
+      output.should.have.property('packages/a/package.json')
+      output.should.have.property('packages/b/package.json')
+      output.should.not.have.property('other/package.json')
+      output['package.json'].dependencies.should.have.property('ncu-test-v2')
+      output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+      output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+})

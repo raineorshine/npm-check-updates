@@ -187,6 +187,7 @@ export async function run(
       },
     )
 
+    // --workspace
     if (options.workspace?.length) {
       const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename })
       const workspaces = (typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile))
@@ -214,7 +215,9 @@ export async function run(
             ),
           ),
         )
-    } else if (options.workspaces) {
+    }
+    // --workspaces and --withWorkspaces
+    else if (options.workspaces || options.withWorkspaces) {
       const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename })
       const workspaces = (typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile))
         .workspaces
@@ -222,20 +225,27 @@ export async function run(
         programError(
           options,
           chalk.red(
-            'workspaces property missing from package.json. --workspaces only works when you specify a "workspaces" property in your package.json.',
+            `workspaces property missing from package.json. --${
+              options.withWorkspaces ? 'withWorkspaces' : 'workspaces'
+            } only works when you specify a "workspaces" property in your package.json.`,
           ),
         )
       }
       const workspacePackageGlob = ([] as string[])
         .concat(workspaces || [])
         .map(workspace => path.join(workspace, defaultPackageFilename))
-      pkgs = globby.sync(workspacePackageGlob, {
-        ignore: ['**/node_modules/**'],
-      })
+      pkgs = [
+        // include root project package file when --withWorkspaces is used
+        ...(options.withWorkspaces ? pkgs : []),
+        ...globby.sync(workspacePackageGlob, {
+          ignore: ['**/node_modules/**'],
+        }),
+      ]
     }
 
     // enable --deep if multiple package files are found
-    options.deep = options.deep || options.workspaces || !!options.workspace || pkgs.length > 1
+    options.deep =
+      options.deep || options.withWorkspaces || options.workspaces || !!options.workspace || pkgs.length > 1
 
     let analysis: Index<PackageFile> | PackageFile | void
     if (options.global) {
