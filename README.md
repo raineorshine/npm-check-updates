@@ -232,6 +232,8 @@ ncu "/^(?!react-).*$/" # windows
                              instead of just outputting to console.
 --verbose                    Log additional information for debugging. Alias
                              for --loglevel verbose.
+-w, --workspace <value>      Run on the given workspace. (default: [])
+-ws, --workspaces            Run on all workspaces.
 -V, --version                output the version number
 -h, --help                   display help for command
 ```

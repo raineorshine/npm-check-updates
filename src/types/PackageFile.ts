@@ -11,4 +11,5 @@ export interface PackageFile {
   peerDependencies?: Index<VersionSpec>
   optionalDependencies?: Index<VersionSpec>
   bundleDependencies?: Index<VersionSpec>
+  workspaces?: string[]
 }

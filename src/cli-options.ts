@@ -577,6 +577,24 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     description: 'Log additional information for debugging. Alias for --loglevel verbose.',
     type: 'boolean',
   },
+  {
+    long: 'workspace',
+    short: 'w',
+    arg: 'value',
+    // Commander mutates accum across program.parse calls.
+    // Since we call program.parse twice in cli.ts, we need to remove duplicates.
+    // Otherwise the option will consist of two of each value.
+    parse: (value, accum) => (accum.includes(value) ? accum : [...accum, value]),
+    default: [],
+    description: 'Run on one or more specified workspaces.',
+    type: 'string[]',
+  },
+  {
+    long: 'workspaces',
+    short: 'ws',
+    description: 'Run on all workspaces.',
+    type: 'boolean',
+  },
 ]
 
 // put cliOptions into an object for O(1) lookups

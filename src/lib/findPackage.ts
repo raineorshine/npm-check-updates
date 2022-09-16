@@ -26,14 +26,17 @@ async function findPackage(options: Options) {
   print(options, 'Running in local mode', 'verbose')
   print(options, 'Finding package file data', 'verbose')
 
-  const pkgFileName = getPackageFileName(options)
+  const defaultPackageFilename = getPackageFileName(options)
 
   /** Reads the contents of a package file. */
   function getPackageDataFromFile(pkgFile: string | null | undefined, pkgFileName: string): Promise<string> {
     // exit if no pkgFile to read from fs
     if (pkgFile != null) {
       const relPathToPackage = path.resolve(pkgFile)
-      print(options, `${options.upgrade ? 'Upgrading' : 'Checking'} ${relPathToPackage}`)
+      // when --workspace or --workspaces is specified, do not print the "Checking" message on the root package file since it is only used to get the workspaces property, and is not checked for upgrades itself
+      if (pkgFile !== 'package.json' || (!options.workspace && !options.workspaces)) {
+        print(options, `${options.upgrade ? 'Upgrading' : 'Checking'} ${relPathToPackage}`)
+      }
     } else {
       programError(
         options,
@@ -54,7 +57,7 @@ async function findPackage(options: Options) {
     pkgData = Promise.resolve(options.packageData)
   } else if (options.packageFile) {
     pkgFile = options.packageFile
-    pkgData = getPackageDataFromFile(pkgFile, pkgFileName)
+    pkgData = getPackageDataFromFile(pkgFile, defaultPackageFilename)
   } else if (options.stdin) {
     print(options, 'Waiting for package data on stdin', 'verbose')
 
@@ -64,12 +67,12 @@ async function findPackage(options: Options) {
     const data = stdinData.trim().length > 0 ? stdinData : null
 
     // if no stdin content fall back to searching for package.json from pwd and up to root
-    pkgFile = data || !pkgFileName ? null : findUp.sync(pkgFileName)
-    pkgData = data || getPackageDataFromFile(await pkgFile, pkgFileName)
+    pkgFile = data || !defaultPackageFilename ? null : findUp.sync(defaultPackageFilename)
+    pkgData = data || getPackageDataFromFile(await pkgFile, defaultPackageFilename)
   } else {
     // find the closest package starting from the current working directory and going up to the root
-    pkgFile = pkgFileName ? findUp.sync(pkgFileName) : null
-    pkgData = getPackageDataFromFile(pkgFile, pkgFileName)
+    pkgFile = defaultPackageFilename ? findUp.sync(defaultPackageFilename) : null
+    pkgData = getPackageDataFromFile(pkgFile, defaultPackageFilename)
   }
 
   return Promise.all([pkgData, pkgFile])

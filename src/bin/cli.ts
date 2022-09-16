@@ -30,25 +30,25 @@ import getNcuRc from '../lib/getNcuRc' // async global contexts are only availab
       const query = arg.replace(/^-*/, '')
       const option = cliOptions.find(option => option.long === query || option.short === query)
       if (option) {
-        console.log(`Usage: ncu --${option.long}`)
+        console.info(`Usage: ncu --${option.long}`)
         if (option.short) {
-          console.log(`       ncu -${option.short}`)
+          console.info(`       ncu -${option.short}`)
         }
         if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
-          console.log(`Default: ${option.default}`)
+          console.info(`Default: ${option.default}`)
         }
         if (option.help) {
           const helpText = typeof option.help === 'function' ? option.help() : option.help
-          console.log(`\n${helpText}`)
+          console.info(`\n${helpText}`)
         } else if (option.description) {
-          console.log(`\n${option.description}`)
+          console.info(`\n${option.description}`)
         }
       } else {
-        console.log(`Unknown option: ${arg}`)
+        console.info(`Unknown option: ${arg}`)
       }
     })
     if (rawArgs.length - nonHelpArgs.length > 1) {
-      console.log('Would you like some help with your help?')
+      console.info('Would you like some help with your help?')
     }
     process.exit(0)
   }

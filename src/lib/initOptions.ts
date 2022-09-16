@@ -98,6 +98,16 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     )
   }
 
+  // disallow --workspace and --workspaces
+  else if (options.workspace?.length && options.workspaces) {
+    programError(options, chalk.red('Cannot specify both --workspace and --workspaces.'))
+  }
+
+  // disallow --workspace(s) and --deep
+  else if (options.deep && (options.workspace?.length || options.workspaces)) {
+    programError(options, chalk.red(`Cannot specify both --deep and --workspace${options.workspaces ? 's' : ''}.`))
+  }
+
   // disallow incorrect or missing registry path when selecting staticRegistry as packageManager
   if (options.packageManager === 'staticRegistry') {
     if (options.registry === undefined || options.registry === null) {

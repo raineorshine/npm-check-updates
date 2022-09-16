@@ -178,7 +178,7 @@ export async function run(
   /** Runs the dependency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
   async function runUpgrades(): Promise<Index<string> | PackageFile | void> {
     const defaultPackageFilename = getPackageFileName(options)
-    const pkgs = globby.sync(
+    let pkgs = globby.sync(
       options.cwd
         ? untildify(defaultPackageFilename).replace(/\\/g, '/') // convert Windows path to *nix path for globby
         : defaultPackageFilename,
@@ -187,8 +187,55 @@ export async function run(
       },
     )
 
+    if (options.workspace?.length) {
+      const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename })
+      const workspaces = (typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile))
+        .workspaces
+      if (!workspaces) {
+        programError(
+          options,
+          chalk.red(
+            'workspaces property missing from package.json. --workspace only works when you specify a "workspaces" property in your package.json.',
+          ),
+        )
+      }
+      const workspacePackageGlob = ([] as string[])
+        .concat(workspaces || [])
+        .map(workspace => path.join(workspace, defaultPackageFilename))
+      pkgs = globby
+        .sync(workspacePackageGlob, {
+          ignore: ['**/node_modules/**'],
+        })
+        .filter(pkgFile =>
+          options.workspace!.some(workspace =>
+            workspaces?.some(
+              workspacePattern =>
+                pkgFile === path.join(path.dirname(workspacePattern), workspace, defaultPackageFilename),
+            ),
+          ),
+        )
+    } else if (options.workspaces) {
+      const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename })
+      const workspaces = (typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile))
+        .workspaces
+      if (!workspaces) {
+        programError(
+          options,
+          chalk.red(
+            'workspaces property missing from package.json. --workspaces only works when you specify a "workspaces" property in your package.json.',
+          ),
+        )
+      }
+      const workspacePackageGlob = ([] as string[])
+        .concat(workspaces || [])
+        .map(workspace => path.join(workspace, defaultPackageFilename))
+      pkgs = globby.sync(workspacePackageGlob, {
+        ignore: ['**/node_modules/**'],
+      })
+    }
+
     // enable --deep if multiple package files are found
-    options.deep = options.deep || pkgs.length > 1
+    options.deep = options.deep || options.workspaces || !!options.workspace || pkgs.length > 1
 
     let analysis: Index<PackageFile> | PackageFile | void
     if (options.global) {
