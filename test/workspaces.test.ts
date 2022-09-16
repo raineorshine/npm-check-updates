@@ -23,7 +23,7 @@ const bin = path.join(__dirname, '../build/src/bin/cli.js')
  * |  - b/
  * |    - package.json
  */
-const setup = async () => {
+const setup = async (workspaces: string[] = ['packages/**']) => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
   await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
 
@@ -31,7 +31,7 @@ const setup = async () => {
     dependencies: {
       'ncu-test-v2': '1.0.0',
     },
-    workspaces: ['packages/**'],
+    workspaces,
   })
 
   const pkgDataA = JSON.stringify({
@@ -66,6 +66,19 @@ describe('--workspaces', function () {
   })
 
   it('update workspaces with --workspaces', async () => {
+    const tempDir = await setup(['packages/a'])
+    try {
+      const output = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir }).then(JSON.parse)
+      output.should.not.have.property('package.json')
+      output.should.have.property('packages/a/package.json')
+      output.should.not.have.property('packages/b/package.json')
+      output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('update workspaces glob', async () => {
     const tempDir = await setup()
     try {
       const output = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir }).then(JSON.parse)
