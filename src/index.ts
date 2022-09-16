@@ -1,9 +1,9 @@
 import globby from 'globby'
 import isString from 'lodash/isString'
-import os from 'os'
 import path from 'path'
 import prompts from 'prompts-ncu'
 import spawn from 'spawn-please'
+import untildify from 'untildify'
 import { cliOptionsMap } from './cli-options'
 import chalk, { chalkInit } from './lib/chalk'
 import doctor from './lib/doctor'
@@ -180,7 +180,7 @@ export async function run(
     const defaultPackageFilename = getPackageFileName(options)
     const pkgs = globby.sync(
       options.cwd
-        ? path.resolve(options.cwd.replace(/^~/, os.homedir()), defaultPackageFilename).replace(/\\/g, '/') // convert Windows path to *nix path for globby
+        ? untildify(defaultPackageFilename).replace(/\\/g, '/') // convert Windows path to *nix path for globby
         : defaultPackageFilename,
       {
         ignore: ['**/node_modules/**'],
