@@ -202,7 +202,7 @@ ncu "/^(?!react-).*$/" # windows
                            --help --peer" for details.
 --pre <n>                  Include prerelease versions, e.g. -alpha.0,
                            -beta.5, -rc.2. Automatically set to 1 when
-                           --loglevel is newest or greatest, or when the
+                           --target is newest or greatest, or when the
                            current version is a prerelease. (default: 0)
 --prefix <path>            Current working directory of npm.
 -r, --registry <uri>       Third-party npm registry. Run "ncu --help
