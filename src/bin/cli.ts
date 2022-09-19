@@ -30,9 +30,9 @@ import getNcuRc from '../lib/getNcuRc' // async global contexts are only availab
       const query = arg.replace(/^-*/, '')
       const option = cliOptions.find(option => option.long === query || option.short === query)
       if (option) {
-        console.info(`Usage: ncu --${option.long}`)
+        console.info(`Usage: ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}`)
         if (option.short) {
-          console.info(`       ncu -${option.short}`)
+          console.info(`       ncu -${option.short}${option.arg ? ` [${option.arg}]` : ''}`)
         }
         if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
           console.info(`Default: ${option.default}`)
