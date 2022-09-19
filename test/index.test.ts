@@ -582,7 +582,7 @@ describe('run', function () {
       upgraded['ncu-test-tag'].should.equal('1.0.0-1')
     })
 
-    it('do not downgrade nonprerelease version to lower version with with specific tag', async () => {
+    it('do not downgrade nonprerelease version to lower version with specific tag', async () => {
       const upgraded = await ncu.run({
         target: '@next',
         packageData: {

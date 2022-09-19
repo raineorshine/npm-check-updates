@@ -86,8 +86,8 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
     try {
       versionNew = await getPackageVersion(name, version, {
         ...options,
-        // upgrade prereleases to newer prereleases by default
         distTag,
+        // upgrade prereleases to newer prereleases by default
         pre: options.pre != null ? options.pre : distTag !== 'latest' || isPre(version),
         retry: options.retry ?? 2,
       })

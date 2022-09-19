@@ -275,6 +275,10 @@ describe('version-util', () => {
       versionUtil.isComparable('1.2.3-next.0', '1.2.3-next.dev.0').should.equal(false)
       versionUtil.isComparable('1.2.3-alpha.0', '1.2.3-next.dev.0').should.equal(false)
     })
+
+    it('versions with matching preids are comparable', () => {
+      versionUtil.isComparable('1.3.3-next.1', '1.2.3-next.2').should.equal(true)
+    })
   })
 
   describe('precisionAdd', () => {
@@ -436,6 +440,13 @@ describe('version-util', () => {
       versionUtil.findGreatestByLevel(versions, '1.1.0', 'minor')!.should.equal('1.1.0')
       versionUtil.findGreatestByLevel(versions, '1.0.0', 'patch')!.should.equal('1.0.1')
       versionUtil.findGreatestByLevel(versions, '1.0.1', 'patch')!.should.equal('1.0.1')
+    })
+
+    it('find the greatest prerelease version', () => {
+      const versions = ['0.1.0', '0.2.0-alpha.0', '0.2.0-alpha.1']
+      versionUtil.findGreatestByLevel(versions, '0.1.0', 'major')!.should.equal('0.2.0-alpha.1')
+      versionUtil.findGreatestByLevel(versions, '0.1.0', 'minor')!.should.equal('0.2.0-alpha.1')
+      versionUtil.findGreatestByLevel(versions, '0.1.0', 'patch')!.should.equal('0.1.0')
     })
 
     it('handle wildcards', () => {

@@ -153,6 +153,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     loglevel,
     minimal: options.minimal === undefined ? false : options.minimal,
     // default to false, except when newest or greatest are set
+    // this is overriden on a per-dependency basis in queryVersions to allow prereleases to be upgraded to newer prereleases
     ...(options.pre != null || autoPre ? { pre: options.pre != null ? !!options.pre : autoPre } : null),
     target,
     // imply upgrade in interactive mode when json is not specified as the output

@@ -490,7 +490,8 @@ const cliOptions: CLIOption[] = [
   {
     long: 'pre',
     arg: 'n',
-    description: 'Include -alpha, -beta, -rc. (default: 0; default with --newest and --greatest: 1)',
+    description:
+      'Include prerelease versions, e.g. -alpha.0, -beta.5, -rc.2. Automatically set to 1 when --loglevel is newest or greatest, or when the current version is a prerelease. (default: 0)',
     parse: s => !!parseInt(s, 10),
     type: 'number',
   },

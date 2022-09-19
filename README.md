@@ -200,8 +200,10 @@ ncu "/^(?!react-).*$/" # windows
 --peer                     Check peer dependencies of installed packages and
                            filter updates to compatible versions. Run "ncu
                            --help --peer" for details.
---pre <n>                  Include -alpha, -beta, -rc. (default: 0; default
-                           with --newest and --greatest: 1)
+--pre <n>                  Include prerelease versions, e.g. -alpha.0,
+                           -beta.5, -rc.2. Automatically set to 1 when
+                           --loglevel is newest or greatest, or when the
+                           current version is a prerelease. (default: 0)
 --prefix <path>            Current working directory of npm.
 -r, --registry <uri>       Third-party npm registry. Run "ncu --help
                            --registry" for details.
