@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { program } from 'commander'
 import pickBy from 'lodash/pickBy'
+import semver from 'semver'
 import pkg from '../../package.json'
 import cliOptions from '../cli-options'
 import ncu from '../index'
@@ -8,14 +9,52 @@ import { chalkInit } from '../lib/chalk'
 import getNcuRc from '../lib/getNcuRc' // async global contexts are only available in esm modules -> function
 
 ;(async () => {
-  // importing update-notifier dynamically as esm modules are only
-  // allowed to be dynamically imported inside of cjs modules.
+  // importing update-notifier dynamically as esm modules are only allowed to be dynamically imported inside of cjs modules
   const { default: updateNotifier } = await import('update-notifier')
 
   // check if a new version of ncu is available and print an update notification
+  //
+  // For testing from specific versions, use:
+  //
+  // updateNotifier({
+  //   pkg: {
+  //     name: 'npm-check-updates',
+  //     version: x.y.z
+  //   },
+  //   updateCheckInterval: 0
+  // })
+
   const notifier = updateNotifier({ pkg })
   if (notifier.update && notifier.update.latest !== pkg.version) {
-    notifier.notify({ defer: false, isGlobal: true })
+    const { default: chalk } = await import('chalk')
+
+    // generate release urls for all the major versions from the current version up to the latest
+    const currentMajor = semver.parse(notifier.update.current)?.major
+    const latestMajor = semver.parse(notifier.update.latest)?.major
+    const majorVersions =
+      currentMajor && latestMajor
+        ? new Array(latestMajor - currentMajor).fill(0).map((x, i) => currentMajor + i + 1)
+        : []
+    const releaseUrls = majorVersions.map(majorVersion => `${pkg.homepage ?? ''}/releases/tag/v${majorVersion}.0.0`)
+
+    // for non-major updates, generate a URL to view all commits since the current version
+    const compareUrl = `${pkg.homepage ?? ''}/compare/v${notifier.update.current}...v${notifier.update.latest}`
+
+    notifier.notify({
+      defer: false,
+      isGlobal: true,
+      message: `Update available ${chalk.dim('{currentVersion}')}${chalk.reset(' → ')}${
+        notifier.update.type === 'major'
+          ? chalk.red('{latestVersion}')
+          : notifier.update.type === 'minor'
+          ? chalk.yellow('{latestVersion}')
+          : chalk.green('{latestVersion}')
+      }
+Run ${chalk.cyan('{updateCommand}')} to update
+${chalk.dim.underline(
+  notifier.update.type === 'major' ? releaseUrls.map(url => chalk.dim.underline(url)).join('\n') : compareUrl,
+)}`,
+    })
   }
 
   // manually detect option-specific help
