@@ -533,6 +533,12 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     type: 'boolean',
   },
   {
+    long: 'root',
+    description:
+      'Runs updates on the root project in addition to specified workspaces. Only allowed with --workspace or --workspaces. (default: false)',
+    type: 'boolean',
+  },
+  {
     long: 'retry',
     arg: 'n',
     description: 'Number of times to retry failed requests for package info.',
@@ -556,7 +562,7 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     short: 't',
     arg: 'value',
     description:
-      'Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. (default: latest).',
+      'Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. (default: latest)',
     help: extendedHelpTarget,
     // eslint-disable-next-line no-template-curly-in-string
     type: `'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | ${'`@${string}`'} | TargetFunction`,
@@ -579,18 +585,6 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     type: 'boolean',
   },
   {
-    long: 'withWorkspace',
-    short: 'ww',
-    arg: 's',
-    // Commander mutates accum across program.parse calls.
-    // Since we call program.parse twice in cli.ts, we need to remove duplicates.
-    // Otherwise the option will consist of two of each value.
-    parse: (value, accum) => (accum.includes(value) ? accum : [...accum, value]),
-    default: [],
-    description: 'Run on one or more specified workspaces and the root project.',
-    type: 'string[]',
-  },
-  {
     long: 'workspace',
     short: 'w',
     arg: 's',
@@ -599,19 +593,13 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     // Otherwise the option will consist of two of each value.
     parse: (value, accum) => (accum.includes(value) ? accum : [...accum, value]),
     default: [],
-    description: 'Run on one or more specified workspaces.',
+    description: 'Run on one or more specified workspaces. Add --root to also upgrade the root project.',
     type: 'string[]',
-  },
-  {
-    long: 'withWorkspaces',
-    short: 'wws',
-    description: 'Run on all workspaces and the root project.',
-    type: 'boolean',
   },
   {
     long: 'workspaces',
     short: 'ws',
-    description: 'Run on all workspaces.',
+    description: 'Run on all workspaces. All --root to also upgrade the root project.',
     type: 'boolean',
   },
 ]

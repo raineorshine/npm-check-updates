@@ -123,13 +123,16 @@ export interface RunOptions {
   /** Number of times to retry failed requests for package info. (default: 3) */
   retry?: number
 
+  /** Runs updates on the root project in addition to specified workspaces. Only allowed with --workspace or --workspaces. (default: false) */
+  root?: boolean
+
   /** Don't output anything. Alias for --loglevel silent. */
   silent?: boolean
 
   /** Read package.json from stdin. */
   stdin?: string
 
-  /** Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. (default: latest). Run "ncu --help --target" for details. */
+  /** Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. (default: latest) Run "ncu --help --target" for details. */
   target?: 'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | `@${string}` | TargetFunction
 
   /** Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch) */
@@ -141,15 +144,9 @@ export interface RunOptions {
   /** Log additional information for debugging. Alias for --loglevel verbose. */
   verbose?: boolean
 
-  /** Run on one or more specified workspaces and the root project. */
-  withWorkspace?: string[]
-
-  /** Run on all workspaces and the root project. */
-  withWorkspaces?: boolean
-
-  /** Run on one or more specified workspaces. */
+  /** Run on one or more specified workspaces. Add --root to also upgrade the root project. */
   workspace?: string[]
 
-  /** Run on all workspaces. */
+  /** Run on all workspaces. All --root to also upgrade the root project. */
   workspaces?: boolean
 }

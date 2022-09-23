@@ -108,14 +108,6 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     programError(options, chalk.red(`Cannot specify both --deep and --workspace${options.workspaces ? 's' : ''}.`))
   }
 
-  // disallow --withWorkspace(s) and --deep
-  else if (options.deep && (options.withWorkspace?.length || options.withWorkspaces)) {
-    programError(
-      options,
-      chalk.red(`Cannot specify both --deep and --withWorkspace${options.withWorkspaces ? 's' : ''}.`),
-    )
-  }
-
   // disallow incorrect or missing registry path when selecting staticRegistry as packageManager
   if (options.packageManager === 'staticRegistry') {
     if (options.registry === undefined || options.registry === null) {

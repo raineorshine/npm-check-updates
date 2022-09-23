@@ -87,9 +87,7 @@ const npmInstall = async (
   // by default, show an install hint after upgrading
   // this will be disabled in interactive mode if the user chooses to have npm-check-updates execute the install command
   const installHint = `Run ${chalk.cyan(packageManager + ' install')}${
-    pkgs.length > 1 && !options.withWorkspace && !options.workspace && !options.withWorkspaces && !options.workspaces
-      ? ' in each project directory'
-      : ''
+    pkgs.length > 1 && !options.workspace && !options.workspaces ? ' in each project directory' : ''
   } to install new versions`
 
   // prompt the user if they want ncu to run "npm install"
@@ -186,8 +184,8 @@ export async function run(
       },
     )
 
-    // --workspace and --withWorkspace
-    if (options.workspace?.length || options.withWorkspace?.length) {
+    // --workspace
+    if (options.workspace?.length) {
       // use silent, otherwise there will be a duplicate "Checking" message
       const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename, loglevel: 'silent' })
       const workspaces = (typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile))
@@ -196,9 +194,7 @@ export async function run(
         programError(
           options,
           chalk.red(
-            `workspaces property missing from package.json. --${
-              options.withWorkspace?.length ? 'withWorkspace' : 'workspace'
-            } only works when you specify a "workspaces" property in your package.json.`,
+            `workspaces property missing from package.json. --workspace only works when you specify a "workspaces" property in your package.json.`,
           ),
         )
       }
@@ -206,14 +202,14 @@ export async function run(
         .concat(workspaces || [])
         .map(workspace => path.join(workspace, defaultPackageFilename))
       pkgs = [
-        // include root project package file when --withWorkspace is used
-        ...(options.withWorkspace?.length ? pkgs : []),
+        // include root project package file when --root is used
+        ...(options.root ? pkgs : []),
         ...globby
           .sync(workspacePackageGlob, {
             ignore: ['**/node_modules/**'],
           })
           .filter(pkgFile =>
-            (options.workspace?.length ? options.workspace : options.withWorkspace)!.some(workspace =>
+            options.workspace?.some(workspace =>
               workspaces?.some(
                 workspacePattern =>
                   pkgFile === path.join(path.dirname(workspacePattern), workspace, defaultPackageFilename),
@@ -222,8 +218,8 @@ export async function run(
           ),
       ]
     }
-    // --workspaces and --withWorkspaces
-    else if (options.workspaces || options.withWorkspaces) {
+    // --workspaces and --root
+    else if (options.workspaces) {
       // use silent, otherwise there will be a duplicate "Checking" message
       const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename, loglevel: 'silent' })
       const workspaces = (typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile))
@@ -232,9 +228,7 @@ export async function run(
         programError(
           options,
           chalk.red(
-            `workspaces property missing from package.json. --${
-              options.withWorkspaces ? 'withWorkspaces' : 'workspaces'
-            } only works when you specify a "workspaces" property in your package.json.`,
+            `workspaces property missing from package.json. --workspaces only works when you specify a "workspaces" property in your package.json.`,
           ),
         )
       }
@@ -242,17 +236,16 @@ export async function run(
         .concat(workspaces || [])
         .map(workspace => path.join(workspace, defaultPackageFilename))
       pkgs = [
-        // include root project package file when --withWorkspaces is used
-        ...(options.withWorkspaces ? pkgs : []),
+        // include root project package file when --root is used
+        ...(options.root ? pkgs : []),
         ...globby.sync(workspacePackageGlob, {
           ignore: ['**/node_modules/**'],
         }),
       ]
     }
 
-    // enable --deep if multiple package files are found
-    const isWorkspace =
-      options.withWorkspaces || options.workspaces || !!options.withWorkspace?.length || !!options.workspace?.length
+    // enable deep mode if --deep, --workspace, --workspaces, or if multiple package files are found
+    const isWorkspace = options.workspaces || !!options.workspace?.length
     options.deep = options.deep || isWorkspace || pkgs.length > 1
 
     let analysis: Index<PackageFile> | PackageFile | void

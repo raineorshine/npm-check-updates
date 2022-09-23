@@ -217,12 +217,15 @@ ncu "/^(?!react-).*$/" # windows
                            version.
 --retry <n>                Number of times to retry failed requests for
                            package info. (default: 3)
+--root                     Runs updates on the root project in addition to
+                           specified workspaces. Only allowed with
+                           --workspace or --workspaces. (default: false)
 -s, --silent               Don't output anything. Alias for --loglevel
                            silent.
 --stdin                    Read package.json from stdin.
 -t, --target <value>       Determines the version to upgrade to: latest,
                            newest, greatest, minor, patch, @[tag], or
-                           [function]. (default: latest). Run "ncu --help
+                           [function]. (default: latest) Run "ncu --help
                            --target" for details.
 --timeout <ms>             Global timeout in milliseconds. (default: no
                            global timeout and 30 seconds per
@@ -231,12 +234,11 @@ ncu "/^(?!react-).*$/" # windows
                            instead of just outputting to console.
 --verbose                  Log additional information for debugging. Alias
                            for --loglevel verbose.
--ww, --withWorkspace <s>   Run on one or more specified workspaces and the
-                           root project. (default: [])
--wws, --withWorkspaces     Run on all workspaces and the root project.
--w, --workspace <s>        Run on one or more specified workspaces. (default:
+-w, --workspace <s>        Run on one or more specified workspaces. Add
+                           --root to also upgrade the root project. (default:
                            [])
--ws, --workspaces          Run on all workspaces.
+-ws, --workspaces          Run on all workspaces. All --root to also upgrade
+                           the root project.
 -V, --version              output the version number
 -h, --help                 display help for command
 ```
