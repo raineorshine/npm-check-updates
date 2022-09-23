@@ -31,7 +31,13 @@ const logLevels = {
 }
 
 /** Returns true if the dependency spec is not fetchable from the registry and is ignored. */
-const isFetchable = (spec: VersionSpec) => !spec.startsWith('file:') && !spec.startsWith('link:')
+const isFetchable = (spec: VersionSpec) =>
+  // local file protocol
+  !spec.startsWith('file:') &&
+  // link protocol
+  !spec.startsWith('link:') &&
+  // short github urls that are ignored, e.g. raineorshine/foo
+  !/^[^/:@]+\/\w+/.test(spec)
 
 /**
  * Prints a message if it is included within options.loglevel.

@@ -77,6 +77,17 @@ describe('queryVersions', function () {
       })
     })
 
+    it('short github urls should be ignored', async () => {
+      const upgrades = await queryVersions(
+        {
+          'ncu-test-v2': 'raineorshine/ncu-test-v2',
+        },
+        { loglevel: 'silent' },
+      )
+
+      upgrades.should.deep.equal({})
+    })
+
     it('git+https urls should upgrade the embedded version tag', async () => {
       const upgrades = await queryVersions(
         {
