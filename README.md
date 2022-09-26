@@ -322,7 +322,7 @@ For example, `.ncurc.json`:
 npm-check-updates can be imported as a module:
 
 ```js
-import ncu from 'npm-check-updates'
+import * as ncu from 'npm-check-updates'
 
 const upgraded = await ncu.run({
   // Pass any cli option
