@@ -226,7 +226,7 @@ export async function run(
       }
       const workspacePackageGlob = ([] as string[])
         .concat(workspaces || [])
-        .map(workspace => path.join(workspace, defaultPackageFilename))
+        .map(workspace => path.join(workspace, defaultPackageFilename).replace(/\\/g, '/'))
       pkgs = [
         // include root project package file when --root is used
         ...(options.root ? pkgs : []),
@@ -260,7 +260,7 @@ export async function run(
       }
       const workspacePackageGlob = ([] as string[])
         .concat(workspaces || [])
-        .map(workspace => path.join(workspace, defaultPackageFilename))
+        .map(workspace => path.join(workspace, defaultPackageFilename).replace(/\\/g, '/'))
       pkgs = [
         // include root project package file when --root is used
         ...(options.root ? pkgs : []),
