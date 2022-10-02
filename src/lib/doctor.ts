@@ -142,8 +142,10 @@ const doctor = async (run: Run, options: Options) => {
   )
   const upgrades = (await run({
     ...options,
+    interactive: false,
     silent: true,
-    doctor: false, // --doctor triggers the initial call to doctor, but the internal call executes npm-check-updates normally in order to upgrade the dependencies
+    // --doctor triggers the initial call to doctor, but the internal call needs to executes npm-check-updates normally in order to upgrade the dependencies
+    doctor: false,
   })) as Index<string>
 
   if (Object.keys(upgrades || {}).length === 0) {
