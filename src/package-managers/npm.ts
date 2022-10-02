@@ -56,12 +56,87 @@ const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
     'strict-ssl': 'strictSSL',
   }
 
-  // config variables that need to be converted from strings to boolean values
-  // store in lowercase since they are strictly for comparison purposes
-  const booleanKeys = { strictssl: true }
+  // all config variables are read in as strings, so we need to type coerce non-strings
+  // lowercased and hyphens removed for comparison purposes
+  const keyTypes: Index<'boolean' | 'number'> = {
+    all: 'boolean',
+    allowsameversion: 'boolean',
+    audit: 'boolean',
+    binlinks: 'boolean',
+    color: 'boolean',
+    commithooks: 'boolean',
+    description: 'boolean',
+    dev: 'boolean',
+    diffignoreallspace: 'boolean',
+    diffnameonly: 'boolean',
+    diffnoprefix: 'boolean',
+    difftext: 'boolean',
+    dryrun: 'boolean',
+    enginestrict: 'boolean',
+    force: 'boolean',
+    foregroundscripts: 'boolean',
+    formatpackagelock: 'boolean',
+    fund: 'boolean',
+    gittagversion: 'boolean',
+    global: 'boolean',
+    globalstyle: 'boolean',
+    ifpresent: 'boolean',
+    ignorescripts: 'boolean',
+    includestaged: 'boolean',
+    includeworkspaceroot: 'boolean',
+    installlinks: 'boolean',
+    json: 'boolean',
+    legacybundling: 'boolean',
+    legacypeerdeps: 'boolean',
+    link: 'boolean',
+    long: 'boolean',
+    offline: 'boolean',
+    omitlockfileregistryresolved: 'boolean',
+    packagelock: 'boolean',
+    packagelockonly: 'boolean',
+    parseable: 'boolean',
+    preferoffline: 'boolean',
+    preferonline: 'boolean',
+    progress: 'boolean',
+    readonly: 'boolean',
+    rebuildbundle: 'boolean',
+    save: 'boolean',
+    savebundle: 'boolean',
+    savedev: 'boolean',
+    saveexact: 'boolean',
+    saveoptional: 'boolean',
+    savepeer: 'boolean',
+    saveprod: 'boolean',
+    shrinkwrap: 'boolean',
+    signgitcommit: 'boolean',
+    signgittag: 'boolean',
+    strictpeerdeps: 'boolean',
+    strictssl: 'boolean',
+    timing: 'boolean',
+    unicode: 'boolean',
+    updatenotifier: 'boolean',
+    usage: 'boolean',
+    version: 'boolean',
+    versions: 'boolean',
+    workspacesupdate: 'boolean',
+    diffunified: 'number',
+    fetchretries: 'number',
+    fetchretryfactor: 'number',
+    fetchretrymaxtimeout: 'number',
+    fetchretrymintimeout: 'number',
+    fetchtimeout: 'number',
+    logsmax: 'number',
+    maxsockets: 'number',
+    searchlimit: 'number',
+    searchstaleness: 'number',
+    ssopollfrequency: 'number',
+  }
 
   /** Parses a string to a boolean. */
   const stringToBoolean = (s: string) => !!s && s !== 'false' && s !== '0'
+
+  /** Parses a string to a number. */
+  const stringToNumber = (s: string) => parseInt(s) || 0
 
   // needed until pacote supports full npm config compatibility
   // See: https://github.com/zkat/pacote/issues/156
@@ -71,8 +146,10 @@ const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
       typeof value !== 'string'
         ? value
         : // parse stringified booleans
-        key.replace(/-/g, '').toLowerCase() in booleanKeys
+        keyTypes[key.replace(/-/g, '').toLowerCase()] === 'boolean'
         ? stringToBoolean(value)
+        : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
+        ? stringToNumber(value)
         : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
 
     // normalize the key for pacote
