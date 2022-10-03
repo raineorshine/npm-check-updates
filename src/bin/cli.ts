@@ -32,7 +32,10 @@ import getNcuRc from '../lib/getNcuRc' // async global contexts are only availab
     const currentMajor = semver.parse(notifier.update.current)?.major
     const latestMajor = semver.parse(notifier.update.latest)?.major
     const majorVersions =
-      currentMajor && latestMajor
+      // Greater than or equal to (>=) will always return false if either operant is NaN or undefined.
+      // Without this condition, it can result in a RangeError: Invalid array length.
+      // See: https://github.com/raineorshine/npm-check-updates/issues/1200
+      currentMajor && latestMajor && latestMajor >= currentMajor
         ? new Array(latestMajor - currentMajor).fill(0).map((x, i) => currentMajor + i + 1)
         : []
     const releaseUrls = majorVersions.map(majorVersion => `${pkg.homepage ?? ''}/releases/tag/v${majorVersion}.0.0`)
