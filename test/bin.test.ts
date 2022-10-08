@@ -229,6 +229,17 @@ describe('reject', () => {
     pkgData.should.have.property('express')
     pkgData.should.not.have.property('chalk')
   })
+
+  it('reject with empty string should not reject anything', async () => {
+    const output = await spawn(
+      'node',
+      [bin, '--jsonUpgraded', '--reject', '""', '--stdin', '-x', 'chalk'],
+      '{ "dependencies": { "ncu-test-v2": "1.0.0", "ncu-test-tag": "1.0.0" } }',
+    )
+    const pkgData = JSON.parse(output)
+    pkgData.should.have.property('ncu-test-v2')
+    pkgData.should.have.property('ncu-test-tag')
+  })
 })
 
 describe('rc-config', () => {

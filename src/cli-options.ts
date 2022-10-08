@@ -517,8 +517,6 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     arg: 'p',
     description:
       'Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
-    parse: (s, p) => p.concat([s]),
-    default: [],
     type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
   },
   {
@@ -588,10 +586,7 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     long: 'workspace',
     short: 'w',
     arg: 's',
-    // Commander mutates accum across program.parse calls.
-    // Since we call program.parse twice in cli.ts, we need to remove duplicates.
-    // Otherwise the option will consist of two of each value.
-    parse: (value, accum) => (accum.includes(value) ? accum : [...accum, value]),
+    parse: (value, accum) => [...accum, value],
     default: [],
     description: 'Run on one or more specified workspaces. Add --root to also upgrade the root project.',
     type: 'string[]',
