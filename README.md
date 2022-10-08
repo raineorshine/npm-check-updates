@@ -209,7 +209,7 @@ ncu "/^(?!react-).*$/" # windows
                            --registry" for details.
 -x, --reject <p>           Exclude packages matching the given string,
                            wildcard, glob, comma-or-space-delimited list,
-                           /regex/, or predicate function. (default: [])
+                           /regex/, or predicate function.
 --rejectVersion <p>        Exclude package.json versions using
                            comma-or-space-delimited list, /regex/, or
                            predicate function.
