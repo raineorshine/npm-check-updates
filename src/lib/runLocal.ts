@@ -25,6 +25,12 @@ import upgradePackageData from './upgradePackageData'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
 import { getDependencyGroups } from './version-util'
 
+const INTERACTIVE_HINT = `
+  ↑/↓: Select a package
+  Space: Toggle selection
+  a: Toggle all
+  Enter: Upgrade`
+
 /** Recreate the options object sorted. */
 function sortOptions(options: Options): Options {
   return transform(
@@ -103,11 +109,7 @@ const chooseUpgrades = async (
 
       const response = await prompts({
         choices: [...choices, { title: ' ', heading: true }],
-        hint: `
-  ↑/↓: Select a package
-  Space: Toggle selection
-  a: Select/Deselect all
-  Enter: Upgrade`,
+        hint: INTERACTIVE_HINT,
         instructions: false,
         message: 'Choose which packages to update',
         name: 'value',
@@ -133,7 +135,7 @@ const chooseUpgrades = async (
 
       const response = await prompts({
         choices: [...choices, { title: ' ', heading: true }],
-        hint: 'Space to deselect. Enter to upgrade.',
+        hint: INTERACTIVE_HINT + '\n',
         instructions: false,
         message: 'Choose which packages to update',
         name: 'value',
