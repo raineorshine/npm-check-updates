@@ -106,7 +106,7 @@ const chooseUpgrades = async (
         hint: `
   ↑/↓: Select a package
   Space: Toggle selection
-  a: Select all
+  a: Select/Deselect all
   Enter: Upgrade`,
         instructions: false,
         message: 'Choose which packages to update',
