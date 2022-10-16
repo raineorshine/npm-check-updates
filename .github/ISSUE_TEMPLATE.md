@@ -1,6 +1,6 @@
 - [ ] I have searched for [similar issues](https://github.com/raineorshine/npm-check-updates/issues)
 - [ ] I am using the latest version of `npm-check-updates`
-- [ ] I am using `node >= 14`
+- [ ] I am using `node >= 14.14`
 
 ---
 
@@ -16,7 +16,7 @@
 
 Dependencies:
 
-<!-- If the suggested upgrades are not what you expect, make sure to List your package.json dependencies here so the issue can be reproduced. -->
+<!-- If the suggested upgrades are not what you expect, make sure to list your package.json dependencies here so the issue can be reproduced. -->
 
 ```json
 
