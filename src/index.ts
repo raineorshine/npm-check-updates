@@ -29,9 +29,12 @@ if (process.env.INJECT_PROMPTS) {
   prompts.inject(JSON.parse(process.env.INJECT_PROMPTS))
 }
 
-// exit with non-zero error code when there is an unhandled promise rejection
-process.on('unhandledRejection', err => {
-  throw err
+// Exit with non-zero error code when there is an unhandled promise rejection.
+// Use `node --trace-uncaught ...` to show where the exception was thrown.
+// See: https://nodejs.org/api/process.html#event-unhandledrejection
+process.on('unhandledRejection', (reason: string | Error) => {
+  // do not rethrow, as there may be other errors to print out
+  console.error(reason)
 })
 
 /**
