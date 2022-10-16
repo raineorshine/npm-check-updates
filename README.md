@@ -43,11 +43,12 @@ $ ncu
 Checking package.json
 [====================] 5/5 100%
 
- express           4.12.x  →   4.13.x
- multer            ^0.1.8  →   ^1.0.1
- react-bootstrap  ^0.22.6  →  ^0.24.0
- react-a11y        ^0.1.1  →   ^0.2.6
- webpack          ~1.9.10  →  ~1.10.5
+ eslint             7.32.0  →    8.0.0
+ prettier           ^2.7.1  →   ^3.0.0
+ svelte            ^3.48.0  →  ^3.51.0
+ typescript         >3.0.0  →   >4.0.0
+ untildify          <4.0.0  →   ^4.0.0
+ webpack               4.x  →      5.x
 
 Run ncu -u to upgrade package.json
 ```
@@ -312,7 +313,7 @@ For example, `.ncurc.json`:
 ```json
 {
   "upgrade": true,
-  "filter": "express",
+  "filter": "svelte",
   "reject": ["@types/estree", "ts-node"]
 }
 ```
