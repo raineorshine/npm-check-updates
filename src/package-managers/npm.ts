@@ -425,7 +425,7 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
 
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 
-  let prefix
+  let prefix: string | undefined
 
   // catch spawn error which can occur on Windows
   // https://github.com/raineorshine/npm-check-updates/issues/703
@@ -444,7 +444,7 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
 
   // FIX: for ncu -g doesn't work on homebrew or windows #146
   // https://github.com/raineorshine/npm-check-updates/issues/146
-  return options.global && prefix.match('Cellar')
+  return options.global && prefix?.match('Cellar')
     ? '/usr/local'
     : // Workaround: get prefix on windows for global packages
     // Only needed when using npm api directly
