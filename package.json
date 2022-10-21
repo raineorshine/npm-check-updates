@@ -79,7 +79,7 @@
     "semver": "^7.3.8",
     "semver-utils": "^1.1.4",
     "source-map-support": "^0.5.21",
-    "spawn-please": "^1.0.0",
+    "spawn-please": "^2.0.1",
     "untildify": "^4.0.0",
     "update-notifier": "^6.0.2",
     "yaml": "^2.1.3"
