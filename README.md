@@ -238,7 +238,7 @@ ncu "/^(?!react-).*$/" # windows
 -w, --workspace <s>        Run on one or more specified workspaces. Add
                            --root to also upgrade the root project. (default:
                            [])
--ws, --workspaces          Run on all workspaces. All --root to also upgrade
+-ws, --workspaces          Run on all workspaces. Add --root to also upgrade
                            the root project.
 -V, --version              output the version number
 -h, --help                 display help for command

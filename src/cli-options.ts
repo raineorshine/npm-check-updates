@@ -594,7 +594,7 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
   {
     long: 'workspaces',
     short: 'ws',
-    description: 'Run on all workspaces. All --root to also upgrade the root project.',
+    description: 'Run on all workspaces. Add --root to also upgrade the root project.',
     type: 'boolean',
   },
 ]
