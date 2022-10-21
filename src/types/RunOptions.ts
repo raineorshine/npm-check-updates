@@ -147,6 +147,6 @@ export interface RunOptions {
   /** Run on one or more specified workspaces. Add --root to also upgrade the root project. */
   workspace?: string[]
 
-  /** Run on all workspaces. All --root to also upgrade the root project. */
+  /** Run on all workspaces. Add --root to also upgrade the root project. */
   workspaces?: boolean
 }
