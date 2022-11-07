@@ -204,17 +204,23 @@ export async function run(
   /** Runs the dependency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
   async function runUpgrades(): Promise<Index<string> | PackageFile | void> {
     const defaultPackageFilename = getPackageFileName(options)
-    let pkgs = globby.sync(
-      options.cwd
-        ? path.resolve(untildify(options.cwd), defaultPackageFilename).replace(/\\/g, '/') // convert Windows path to *nix path for globby
-        : defaultPackageFilename,
-      {
-        ignore: ['**/node_modules/**'],
-      },
-    )
 
-    // --workspace
-    if (options.workspace?.length) {
+    // Find the package file with globby.
+    // When in workspaces mode, only include the root project package file when --root is used.
+    let pkgs =
+      (!options.workspaces && !options.workspace?.length) || options.root
+        ? globby.sync(
+            options.cwd
+              ? path.resolve(untildify(options.cwd), defaultPackageFilename).replace(/\\/g, '/') // convert Windows path to *nix path for globby
+              : defaultPackageFilename,
+            {
+              ignore: ['**/node_modules/**'],
+            },
+          )
+        : []
+
+    // workspaces
+    if (options.workspaces || options.workspace?.length) {
       // use silent, otherwise there will be a duplicate "Checking" message
       const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename, loglevel: 'silent' })
       const pkgDataParsed =
@@ -222,60 +228,47 @@ export async function run(
       const workspaces = Array.isArray(pkgDataParsed.workspaces)
         ? pkgDataParsed.workspaces
         : pkgDataParsed.workspaces?.packages
+
       if (!workspaces) {
         programError(
           options,
           chalk.red(
-            `workspaces property missing from package.json. --workspace only works when you specify a "workspaces" property in your package.json.`,
+            `workspaces property missing from package.json. --workspace${
+              options.workspaces ? 's' : ''
+            } only works when you specify a "workspaces" property in your package.json.`,
           ),
         )
       }
-      const workspacePackageGlob = ([] as string[])
-        .concat(workspaces || [])
-        .map(workspace => path.join(workspace, defaultPackageFilename).replace(/\\/g, '/'))
-      pkgs = [
-        // include root project package file when --root is used
-        ...(options.root ? pkgs : []),
-        ...globby
-          .sync(workspacePackageGlob, {
-            ignore: ['**/node_modules/**'],
-          })
-          .filter(pkgFile =>
-            options.workspace?.some(workspace =>
-              workspaces?.some(
-                workspacePattern =>
-                  pkgFile === path.join(path.dirname(workspacePattern), workspace, defaultPackageFilename),
-              ),
-            ),
-          ),
-      ]
-    }
-    // --workspaces and --root
-    else if (options.workspaces) {
-      // use silent, otherwise there will be a duplicate "Checking" message
-      const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename, loglevel: 'silent' })
-      const pkgDataParsed =
-        typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile)
-      const workspaces = Array.isArray(pkgDataParsed.workspaces)
-        ? pkgDataParsed.workspaces
-        : pkgDataParsed.workspaces?.packages
-      if (!workspaces) {
-        programError(
-          options,
-          chalk.red(
-            `workspaces property missing from package.json. --workspaces only works when you specify a "workspaces" property in your package.json.`,
-          ),
-        )
-      }
-      const workspacePackageGlob = ([] as string[])
-        .concat(workspaces || [])
-        .map(workspace => path.join(workspace, defaultPackageFilename).replace(/\\/g, '/'))
-      pkgs = [
-        // include root project package file when --root is used
-        ...(options.root ? pkgs : []),
+
+      // build a glob from the workspaces
+      const workspacePackageGlob = (workspaces || []).map(workspace =>
+        path
+          .join(workspace, defaultPackageFilename)
+          // convert Windows path to *nix path for globby
+          .replace(/\\/g, '/'),
+      )
+
+      const workspacePackages = [
         ...globby.sync(workspacePackageGlob, {
           ignore: ['**/node_modules/**'],
         }),
+      ]
+
+      // add workspace packages
+      pkgs = [
+        ...pkgs,
+        ...(options.workspaces
+          ? // --workspaces
+            workspacePackages
+          : // --workspace
+            workspacePackages.filter(pkgFile =>
+              options.workspace?.some(workspace =>
+                workspaces?.some(
+                  workspacePattern =>
+                    pkgFile === path.join(path.dirname(workspacePattern), workspace, defaultPackageFilename),
+                ),
+              ),
+            )),
       ]
     }
 
