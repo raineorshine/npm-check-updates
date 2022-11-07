@@ -95,7 +95,7 @@
     "@types/ini": "^1.3.31",
     "@types/json-parse-helpfulerror": "^1.0.1",
     "@types/jsonlines": "^0.1.2",
-    "@types/lodash": "^4.14.186",
+    "@types/lodash": "^4.14.188",
     "@types/minimatch": "^5.1.2",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.11.9",
