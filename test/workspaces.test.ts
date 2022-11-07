@@ -23,7 +23,7 @@ const bin = path.join(__dirname, '../build/src/bin/cli.js')
  * |  - b/
  * |    - package.json
  */
-const setup = async (workspaces: string[] = ['packages/**']) => {
+const setup = async (workspaces: string[] | { packages: string[] } = ['packages/**']) => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
   await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
 
@@ -125,6 +125,22 @@ describe('--workspaces', function () {
       output.should.have.property('packages/a/package.json')
       output.should.have.property('packages/b/package.json')
       output.should.not.have.property('other/package.json')
+      output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+      output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  // support for object type with packages property
+  // https://classic.yarnpkg.com/blog/2018/02/15/nohoist/
+  it('update workspaces/packages', async () => {
+    const tempDir = await setup({ packages: ['packages/**'] })
+    try {
+      const output = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir }).then(JSON.parse)
+      output.should.not.have.property('package.json')
+      output.should.have.property('packages/a/package.json')
+      output.should.have.property('packages/b/package.json')
       output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
       output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
     } finally {

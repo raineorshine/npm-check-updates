@@ -217,8 +217,11 @@ export async function run(
     if (options.workspace?.length) {
       // use silent, otherwise there will be a duplicate "Checking" message
       const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename, loglevel: 'silent' })
-      const workspaces = (typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile))
-        .workspaces
+      const pkgDataParsed =
+        typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile)
+      const workspaces = Array.isArray(pkgDataParsed.workspaces)
+        ? pkgDataParsed.workspaces
+        : pkgDataParsed.workspaces?.packages
       if (!workspaces) {
         programError(
           options,
@@ -251,8 +254,11 @@ export async function run(
     else if (options.workspaces) {
       // use silent, otherwise there will be a duplicate "Checking" message
       const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename, loglevel: 'silent' })
-      const workspaces = (typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile))
-        .workspaces
+      const pkgDataParsed =
+        typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile)
+      const workspaces = Array.isArray(pkgDataParsed.workspaces)
+        ? pkgDataParsed.workspaces
+        : pkgDataParsed.workspaces?.packages
       if (!workspaces) {
         programError(
           options,
