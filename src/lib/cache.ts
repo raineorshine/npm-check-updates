@@ -64,8 +64,8 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
   }
 
   return {
-    get: (name: string) => {
-      const key = name
+    get: (name: string, target: string) => {
+      const key = `${name}${CACHE_DELIMITER}${target}`
       if (!key || !cacheData.packages) return
       const cached = cacheData.packages[key]
       if (cached && !key.includes(cached)) {
@@ -74,10 +74,10 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
       }
       return cached
     },
-    set: (name: string, versionNew: string) => {
-      const key = name
+    set: (name: string, target: string, version: string) => {
+      const key = `${name}${CACHE_DELIMITER}${target}`
       if (!key || !cacheData.packages) return
-      cacheData.packages[key] = versionNew
+      cacheData.packages[key] = version
     },
     save: async () => {
       await fs.promises.writeFile(cacheFile, JSON.stringify(cacheData))

@@ -52,7 +52,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       target = 'distTag'
     }
 
-    const cached = options.cacher?.get(name)
+    const cached = options.cacher?.get(name, target)
     if (cached) {
       bar?.tick()
 
@@ -121,7 +121,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
     bar?.tick()
 
     if (versionNew) {
-      options.cacher?.set(name, versionNew)
+      options.cacher?.set(name, target, versionNew)
     }
 
     return {
