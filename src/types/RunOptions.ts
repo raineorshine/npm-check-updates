@@ -9,6 +9,9 @@ export interface RunOptions {
   /** Cache versions to the cache file */
   cache?: boolean
 
+  /** Remove the default cache file */
+  cacheClear?: boolean
+
   /** Cache expiration in minutes (default: 10) */
   cacheExpiration?: number
 

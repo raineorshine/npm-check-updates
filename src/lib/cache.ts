@@ -28,8 +28,17 @@ export const defaultCacheFilename = '.ncu-cache.json'
 export const defaultCacheFile = `~/${defaultCacheFilename}`
 export const resolvedDefaultCacheFile = path.join(os.homedir(), defaultCacheFilename)
 
+/** Remove the default cache file. */
+export async function cacheClear() {
+  try {
+    fs.promises.rm(resolvedDefaultCacheFile)
+  } catch (error) {
+    // ignore file read/parse/remove errors
+  }
+}
+
 /**
- * The cacher stores key (name + version) - value (new version) pairs
+ * The cacher stores key (name + target) - value (new version) pairs
  * for quick updates across `ncu` calls.
  *
  * @returns

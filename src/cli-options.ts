@@ -281,6 +281,12 @@ const cliOptions: CLIOption[] = [
     type: 'boolean',
   },
   {
+    long: 'cacheClear',
+    description: 'Remove the default cache file',
+    default: false,
+    type: 'boolean',
+  },
+  {
     long: 'cacheExpiration',
     arg: 'min',
     description: 'Cache expiration in minutes',
