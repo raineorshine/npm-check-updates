@@ -5,6 +5,8 @@ import { CacheData, Cacher } from '../types/Cacher'
 import { Options } from '../types/Options'
 import { print } from './logging'
 
+export const CACHE_DELIMITER = '___'
+
 /**
  * Check if cache is expired if timestamp is set
  *
@@ -25,7 +27,6 @@ function checkCacheExpiration(cacheData: CacheData, cacheExpiration = 10) {
 export const defaultCacheFilename = '.ncu-cache.json'
 export const defaultCacheFile = `~/${defaultCacheFilename}`
 export const resolvedDefaultCacheFile = path.join(os.homedir(), defaultCacheFilename)
-const cacheKeyDivider = '###'
 
 /**
  * The cacher stores key (name + version) - value (new version) pairs
@@ -63,19 +64,20 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
   }
 
   return {
-    key: (name, version) => name + cacheKeyDivider + version,
-    get: key => {
+    get: (name: string) => {
+      const key = name
       if (!key || !cacheData.packages) return
       const cached = cacheData.packages[key]
       if (cached && !key.includes(cached)) {
-        const [name] = key.split(cacheKeyDivider)
+        const [name] = key.split(CACHE_DELIMITER)
         cacheUpdates[name] = cached
       }
       return cached
     },
-    set: (key, value) => {
+    set: (name: string, versionNew: string) => {
+      const key = name
       if (!key || !cacheData.packages) return
-      cacheData.packages[key] = value
+      cacheData.packages[key] = versionNew
     },
     save: async () => {
       await fs.promises.writeFile(cacheFile, JSON.stringify(cacheData))

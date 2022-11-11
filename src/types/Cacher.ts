@@ -4,9 +4,8 @@ export interface CacheData {
 }
 
 export type Cacher = {
-  key(name: string, version: string): string
-  get(key: string | undefined): string | undefined
-  set(key: string | undefined, value: string): void
+  get(name: string): string | undefined
+  set(name: string, versionNew: string): void
   save(): Promise<void>
   log(): void
 }

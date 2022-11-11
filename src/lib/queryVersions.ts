@@ -24,7 +24,6 @@ const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch
 async function queryVersions(packageMap: Index<VersionSpec>, options: Options = {}): Promise<Index<VersionResult>> {
   const { default: chalkDefault, Chalk } = await import('chalk')
   const chalk = options.color ? new Chalk({ level: 1 }) : chalkDefault
-  const target = options.target || 'latest'
   const packageList = Object.keys(packageMap)
   const globalPackageManager = getPackageManager(options.packageManager)
 
@@ -44,23 +43,22 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   async function getPackageVersionProtected(dep: VersionSpec): Promise<VersionResult> {
     const npmAlias = parseNpmAlias(packageMap[dep])
     const [name, version] = npmAlias || [dep, packageMap[dep]]
+    let distTag = 'latest'
+    const targetOption = options.target || 'latest'
+    let target = typeof targetOption === 'string' ? targetOption : targetOption(name, parseRange(version))
 
-    const cacheKey = options.cacher?.key(name, version)
-    const cached = options.cacher?.get(cacheKey)
+    if (target[0] === '@') {
+      distTag = target.slice(1)
+      target = 'distTag'
+    }
+
+    const cached = options.cacher?.get(name)
     if (cached) {
       bar?.tick()
 
       return {
         version: cached,
       }
-    }
-
-    let targetResult = typeof target === 'string' ? target : target(name, parseRange(version))
-    let distTag = 'latest'
-
-    if (targetResult[0] === '@') {
-      distTag = targetResult.slice(1)
-      targetResult = 'distTag'
     }
 
     let versionNew: Version | null = null
@@ -70,13 +68,13 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
     const packageManager = isGithubDependency ? packageManagers.gitTags : globalPackageManager
     const packageManagerName = isGithubDependency ? 'github urls' : options.packageManager || 'npm'
 
-    const getPackageVersion = packageManager[targetResult as keyof typeof packageManager] as GetVersion
+    const getPackageVersion = packageManager[target as keyof typeof packageManager] as GetVersion
 
     if (!getPackageVersion) {
       const packageManagerSupportedVersionTargets = supportedVersionTargets.filter(t => t in packageManager)
       return Promise.reject(
         new Error(
-          `Unsupported target "${targetResult}" for ${packageManagerName}. Supported version targets are: ` +
+          `Unsupported target "${target}" for ${packageManagerName}. Supported version targets are: ` +
             packageManagerSupportedVersionTargets.join(', ') +
             (!isGithubDependency ? ' and custom distribution tags, following "@" (example: @next)' : ''),
         ),
@@ -123,7 +121,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
     bar?.tick()
 
     if (versionNew) {
-      options.cacher?.set(cacheKey, versionNew)
+      options.cacher?.set(name, versionNew)
     }
 
     return {
