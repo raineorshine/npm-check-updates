@@ -205,6 +205,10 @@ export async function run(
   async function runUpgrades(): Promise<Index<string> | PackageFile | void> {
     const defaultPackageFilename = getPackageFileName(options)
 
+    // Workspace package names
+    // These will be used to filter out local workspace packages so they are not fetched from the registry.
+    let workspacePackages: string[] = []
+
     // Find the package file with globby.
     // When in workspaces mode, only include the root project package file when --root is used.
     let pkgs =
@@ -248,20 +252,26 @@ export async function run(
           .replace(/\\/g, '/'),
       )
 
-      const workspacePackages = [
+      // e.g. [packages/a/package.json, ...]
+      const workspacePackageFiles = [
         ...globby.sync(workspacePackageGlob, {
           ignore: ['**/node_modules/**'],
         }),
       ]
+
+      // Extract the package names from the full package paths.
+      // These will be used to filter out local workspace packages so they are not fetched from the registry.
+      // e.g. [a, b, c, ...]
+      workspacePackages = workspacePackageFiles.map(file => file.split('/').slice(-2)[0])
 
       // add workspace packages
       pkgs = [
         ...pkgs,
         ...(options.workspaces
           ? // --workspaces
-            workspacePackages
+            workspacePackageFiles
           : // --workspace
-            workspacePackages.filter(pkgFile =>
+            workspacePackageFiles.filter(pkgFile =>
               options.workspace?.some(workspace =>
                 workspaces?.some(
                   workspacePattern =>
@@ -291,10 +301,11 @@ export async function run(
           // Merge config options.
           rcConfig = mergeOptions(options, rcConfig)
         }
-        const pkgOptions = {
+        const pkgOptions: Options = {
           ...options,
           ...rcConfig,
           packageFile,
+          workspacePackages,
         }
         const [pkgData, pkgFile] = await findPackage(pkgOptions)
         return {

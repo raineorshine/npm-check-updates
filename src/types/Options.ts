@@ -14,4 +14,7 @@ export type Options = RunOptions & {
   packageData?: string
   peerDependencies?: Index<any>
   rcConfigPath?: string
+  // A list of local workspace packages by name.
+  // This is used to ignore local workspace packages when fetching new versions.
+  workspacePackages?: string[]
 }

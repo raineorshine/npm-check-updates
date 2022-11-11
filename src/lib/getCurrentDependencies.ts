@@ -5,6 +5,7 @@ import { PackageFile } from '../types/PackageFile'
 import { VersionSpec } from '../types/VersionSpec'
 import filterAndReject from './filterAndReject'
 import filterObject from './filterObject'
+import { keyValueBy } from './keyValueBy'
 
 /** Returns true if spec1 is greater than spec2, ignoring invalid version ranges. */
 const isGreaterThanSafe = (spec1: VersionSpec, spec2: VersionSpec) =>
@@ -45,8 +46,9 @@ function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}
   }, {} as Index<VersionSpec>)
 
   // filter & reject dependencies and versions
+  const workspacePackageMap = keyValueBy(options.workspacePackages || [])
   const filteredDependencies = filterObject(
-    allDependencies,
+    filterObject(allDependencies, name => !workspacePackageMap[name]),
     filterAndReject(
       options.filter || null,
       options.reject || null,

@@ -58,6 +58,38 @@ const setup = async (workspaces: string[] | { packages: string[] } = ['packages/
   return tempDir
 }
 
+/** Sets up a workspace with a dependency to a symlinked workspace package. */
+const setupSymlinkedPackages = async (workspaces: string[] | { packages: string[] } = ['packages/**']) => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+  await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+
+  const pkgDataRoot = JSON.stringify({ workspaces })
+
+  const pkgDataA = JSON.stringify({
+    dependencies: {
+      b: '0.4.2',
+      'ncu-test-v2': '1.0.0',
+    },
+  })
+
+  const pkgDataB = JSON.stringify({
+    dependencies: {
+      'ncu-test-v2': '1.1.0',
+    },
+  })
+
+  // write root package file
+  await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+
+  // write workspace package files
+  await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+  await fs.writeFile(path.join(tempDir, 'packages/a/package.json'), pkgDataA, 'utf-8')
+  await fs.mkdir(path.join(tempDir, 'packages/b'), { recursive: true })
+  await fs.writeFile(path.join(tempDir, 'packages/b/package.json'), pkgDataB, 'utf-8')
+
+  return tempDir
+}
+
 describe('--workspaces', function () {
   this.timeout(60000)
 
@@ -143,6 +175,24 @@ describe('--workspaces', function () {
       output.should.have.property('packages/b/package.json')
       output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
       output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  // https://github.com/raineorshine/npm-check-updates/issues/1217
+  it('ignore local workspace packages', async () => {
+    const tempDir = await setupSymlinkedPackages()
+    try {
+      const upgrades = await spawn('node', [bin, '--jsonUpgraded', '--workspaces'], { cwd: tempDir }).then(JSON.parse)
+      upgrades.should.deep.equal({
+        'packages/a/package.json': {
+          'ncu-test-v2': '2.0.0',
+        },
+        'packages/b/package.json': {
+          'ncu-test-v2': '2.0.0',
+        },
+      })
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
