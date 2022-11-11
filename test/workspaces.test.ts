@@ -59,20 +59,24 @@ const setup = async (workspaces: string[] | { packages: string[] } = ['packages/
 }
 
 /** Sets up a workspace with a dependency to a symlinked workspace package. */
-const setupSymlinkedPackages = async (workspaces: string[] | { packages: string[] } = ['packages/**']) => {
+const setupSymlinkedPackages = async (
+  workspaces: string[] | { packages: string[] } = ['packages/**'],
+  customName?: string,
+) => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
   await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
 
   const pkgDataRoot = JSON.stringify({ workspaces })
 
-  const pkgDataA = JSON.stringify({
+  const pkgDataFoo = JSON.stringify({
     dependencies: {
-      b: '0.4.2',
+      [customName || 'bar']: '0.4.2',
       'ncu-test-v2': '1.0.0',
     },
   })
 
-  const pkgDataB = JSON.stringify({
+  const pkgDataBar = JSON.stringify({
+    ...(customName ? { name: customName } : null),
     dependencies: {
       'ncu-test-v2': '1.1.0',
     },
@@ -82,10 +86,10 @@ const setupSymlinkedPackages = async (workspaces: string[] | { packages: string[
   await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
 
   // write workspace package files
-  await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
-  await fs.writeFile(path.join(tempDir, 'packages/a/package.json'), pkgDataA, 'utf-8')
-  await fs.mkdir(path.join(tempDir, 'packages/b'), { recursive: true })
-  await fs.writeFile(path.join(tempDir, 'packages/b/package.json'), pkgDataB, 'utf-8')
+  await fs.mkdir(path.join(tempDir, 'packages/foo'), { recursive: true })
+  await fs.writeFile(path.join(tempDir, 'packages/foo/package.json'), pkgDataFoo, 'utf-8')
+  await fs.mkdir(path.join(tempDir, 'packages/bar'), { recursive: true })
+  await fs.writeFile(path.join(tempDir, 'packages/bar/package.json'), pkgDataBar, 'utf-8')
 
   return tempDir
 }
@@ -186,10 +190,27 @@ describe('--workspaces', function () {
     try {
       const upgrades = await spawn('node', [bin, '--jsonUpgraded', '--workspaces'], { cwd: tempDir }).then(JSON.parse)
       upgrades.should.deep.equal({
-        'packages/a/package.json': {
+        'packages/foo/package.json': {
           'ncu-test-v2': '2.0.0',
         },
-        'packages/b/package.json': {
+        'packages/bar/package.json': {
+          'ncu-test-v2': '2.0.0',
+        },
+      })
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('ignore local workspace packages with different names than their folders', async () => {
+    const tempDir = await setupSymlinkedPackages(['packages/**'], 'chalk')
+    try {
+      const upgrades = await spawn('node', [bin, '--jsonUpgraded', '--workspaces'], { cwd: tempDir }).then(JSON.parse)
+      upgrades.should.deep.equal({
+        'packages/foo/package.json': {
+          'ncu-test-v2': '2.0.0',
+        },
+        'packages/bar/package.json': {
           'ncu-test-v2': '2.0.0',
         },
       })

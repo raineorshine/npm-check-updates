@@ -4,12 +4,13 @@ import { VersionSpec } from './VersionSpec'
 
 /** The relevant bits of a parsed package.json file. */
 export interface PackageFile {
-  engines?: Index<VersionSpec>
-  repository?: string | PackageFileRepository
+  bundleDependencies?: Index<VersionSpec>
   dependencies?: Index<VersionSpec>
   devDependencies?: Index<VersionSpec>
-  peerDependencies?: Index<VersionSpec>
+  engines?: Index<VersionSpec>
+  name?: string
   optionalDependencies?: Index<VersionSpec>
-  bundleDependencies?: Index<VersionSpec>
+  peerDependencies?: Index<VersionSpec>
+  repository?: string | PackageFileRepository
   workspaces?: string[] | { packages: string[] }
 }

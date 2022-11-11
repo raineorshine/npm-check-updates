@@ -1,3 +1,4 @@
+import fs from 'fs/promises'
 import globby from 'globby'
 import isString from 'lodash/isString'
 import path from 'path'
@@ -259,10 +260,16 @@ export async function run(
         }),
       ]
 
-      // Extract the package names from the full package paths.
+      // Get the package names from the package files.
+      // If a package does not have a name, use the folder name.
       // These will be used to filter out local workspace packages so they are not fetched from the registry.
-      // e.g. [a, b, c, ...]
-      workspacePackages = workspacePackageFiles.map(file => file.split('/').slice(-2)[0])
+      workspacePackages = await Promise.all(
+        workspacePackageFiles.map(async file => {
+          const packageFile = await fs.readFile(file, 'utf-8')
+          const pkg: PackageFile = JSON.parse(packageFile)
+          return pkg.name || file.split('/').slice(-2)[0]
+        }),
+      )
 
       // add workspace packages
       pkgs = [
