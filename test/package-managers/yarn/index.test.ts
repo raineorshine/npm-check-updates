@@ -3,7 +3,6 @@ import chaiAsPromised from 'chai-as-promised'
 import path from 'path'
 import * as yarn from '../../../src/package-managers/yarn'
 import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn'
-import { Index } from '../../../src/types/IndexType'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -50,28 +49,29 @@ describe('yarn', function () {
     await yarn.list({ cwd: testDir }, localYarnSpawnOptions).should.eventually.be.rejectedWith(lockFileErrorMessage)
   })
 
-  describe('setNpmAuthToken', () => {
-    /** Run the test for the given registry server URL. */
-    function testCore(npmRegistryServer: string): void {
-      const npmConfig: Index<string | boolean> = { '@fortawesome:registry': 'https://npm.fontawesome.com/' }
-      const dep = 'fortawesome'
-      const scopedConfig: yarn.NpmScope = {
+  describe('npmAuthTokenKeyValue', () => {
+    it('npmRegistryServer with trailing slash', () => {
+      const authToken = yarn.npmAuthTokenKeyValue({}, 'fortawesome', {
         npmAlwaysAuth: true,
         npmAuthToken: 'MY-AUTH-TOKEN',
-        npmRegistryServer,
-      }
+        npmRegistryServer: 'https://npm.fontawesome.com/',
+      })
 
-      yarn.setNpmAuthToken(npmConfig, [dep, scopedConfig])
-
-      npmConfig['//npm.fontawesome.com/:_authToken'].should.equal('MY-AUTH-TOKEN')
-    }
-
-    it('npmRegistryServer does not have trailing slash', () => {
-      testCore('https://npm.fontawesome.com')
+      authToken!.should.deep.equal({
+        '//npm.fontawesome.com/:_authToken': 'MY-AUTH-TOKEN',
+      })
     })
 
-    it('npmRegistryServer has trailing slash', () => {
-      testCore('https://npm.fontawesome.com/')
+    it('npmRegistryServer without trailing slash', () => {
+      const authToken = yarn.npmAuthTokenKeyValue({}, 'fortawesome', {
+        npmAlwaysAuth: true,
+        npmAuthToken: 'MY-AUTH-TOKEN',
+        npmRegistryServer: 'https://npm.fontawesome.com',
+      })
+
+      authToken!.should.deep.equal({
+        '//npm.fontawesome.com/:_authToken': 'MY-AUTH-TOKEN',
+      })
     })
   })
 })

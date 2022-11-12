@@ -1,4 +1,5 @@
 import get from 'lodash/get'
+import overEvery from 'lodash/overEvery'
 import semver from 'semver'
 import * as versionUtil from '../lib/version-util'
 import { Index } from '../types/IndexType'
@@ -55,4 +56,14 @@ export function satisfiesPeerDependencies(versionResult: Packument, peerDependen
     peers =>
       peers[versionResult.name] === undefined || semver.satisfies(versionResult.version, peers[versionResult.name]),
   )
+}
+
+/** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by pacote.packument. */
+export function filterPredicate(options: Options): (o: Packument) => boolean {
+  return overEvery([
+    o => allowDeprecatedOrIsNotDeprecated(o, options),
+    o => allowPreOrIsNotPre(o, options),
+    options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null!,
+    options.peerDependencies ? o => satisfiesPeerDependencies(o, options.peerDependencies!) : null!,
+  ])
 }
