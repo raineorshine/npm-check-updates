@@ -178,7 +178,7 @@ export async function run(
   print(options, 'Initializing', 'verbose')
 
   if (options.cacheClear) {
-    await cacheClear()
+    await cacheClear(options)
   }
 
   if (options.packageManager === 'npm' && !options.prefix) {

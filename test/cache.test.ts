@@ -89,4 +89,32 @@ describe('cache', () => {
       rimraf.sync(resolvedDefaultCacheFile)
     }
   })
+
+  it('clears the cache file', async () => {
+    const packageData = {
+      dependencies: {
+        // major version upgrade → 2.0.0
+        'ncu-test-v2': '^1.0.0',
+        // latest: minor version upgrade → 1.1.0
+        // greatest: prerelease → 1.2.0-dev.0
+        'ncu-test-tag': '1.0.0',
+        // latest: no upgrade
+        // greatest: prerelease → 2.0.0-alpha.2
+        'ncu-test-alpha': '1.0.0',
+      },
+    }
+
+    await ncu.run({ packageData, cache: true })
+    const cacheData: CacheData = await fs.readFile(resolvedDefaultCacheFile, 'utf-8').then(JSON.parse)
+    expect(cacheData.timestamp).lessThanOrEqual(Date.now())
+
+    await ncu.run({ packageData, cacheClear: true })
+    let noCacheFile = false
+    try {
+      await fs.stat(resolvedDefaultCacheFile)
+    } catch (error) {
+      noCacheFile = true
+    }
+    expect(noCacheFile).eq(true)
+  })
 })
