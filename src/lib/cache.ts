@@ -53,7 +53,7 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
     return
   }
 
-  const cacheFile = options.cacheFile === defaultCacheFile ? resolvedDefaultCacheFile : options.cacheFile
+  const cacheFile = resolveCacheFile(options.cacheFile)
   let cacheData: CacheData = {}
   const cacheUpdates: Record<string, string> = {}
 
