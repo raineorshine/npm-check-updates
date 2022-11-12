@@ -110,7 +110,7 @@ const npmConfigFromYarn = memoize(
     /** Reads a registry from a yarn config. interpolates it, and sets it on the npm config. */
     const setNpmRegistry = ([dep, scopedConfig]: [string, NpmScope]) => {
       if (scopedConfig.npmRegistryServer) {
-        npmConfig[`@${dep}:registry`] = scopedConfig.npmRegistryServer
+        npmConfig[`@${dep}:registry`] = interpolate(scopedConfig.npmRegistryServer, process.env)
       }
     }
 
