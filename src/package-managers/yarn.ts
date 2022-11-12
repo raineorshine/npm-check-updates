@@ -6,7 +6,6 @@ import jsonlines from 'jsonlines'
 import curry from 'lodash/curry'
 import filter from 'lodash/filter'
 import last from 'lodash/last'
-import overEvery from 'lodash/overEvery'
 import pullAll from 'lodash/pullAll'
 import os from 'os'
 import path from 'path'
@@ -24,7 +23,7 @@ import { Options } from '../types/Options'
 import { Packument } from '../types/Packument'
 import { SpawnOptions } from '../types/SpawnOptions'
 import { Version } from '../types/Version'
-import { allowDeprecatedOrIsNotDeprecated, allowPreOrIsNotPre, satisfiesNodeEngine } from './filters'
+import { filterPredicate, satisfiesNodeEngine } from './filters'
 import { viewManyMemoized, viewOne } from './npm'
 
 interface ParsedDep {
@@ -180,15 +179,6 @@ async function parseJsonLines(result: string): Promise<{ dependencies: Index<Par
   await once(parser as unknown as EventEmitter, 'end')
 
   return { dependencies }
-}
-
-/** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by pacote.packument. */
-function filterPredicate(options: Options): (o: Packument) => boolean {
-  return overEvery([
-    o => allowDeprecatedOrIsNotDeprecated(o, options),
-    o => allowPreOrIsNotPre(o, options),
-    options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null!,
-  ])
 }
 
 /**

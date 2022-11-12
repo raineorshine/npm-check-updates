@@ -7,7 +7,6 @@ import get from 'lodash/get'
 import isEqual from 'lodash/isEqual'
 import last from 'lodash/last'
 import omit from 'lodash/omit'
-import overEvery from 'lodash/overEvery'
 import pullAll from 'lodash/pullAll'
 import pacote from 'pacote'
 import path from 'path'
@@ -25,12 +24,7 @@ import { Options } from '../types/Options'
 import { Packument } from '../types/Packument'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
-import {
-  allowDeprecatedOrIsNotDeprecated,
-  allowPreOrIsNotPre,
-  satisfiesNodeEngine,
-  satisfiesPeerDependencies,
-} from './filters'
+import { filterPredicate, satisfiesNodeEngine } from './filters'
 
 type NpmConfig = Index<string | boolean | ((path: string) => any)>
 
@@ -367,16 +361,6 @@ export async function viewOne(
 ) {
   const result = await viewManyMemoized(packageName, [field], currentVersion, options, 0, npmConfigLocal)
   return result && result[field as keyof Packument]
-}
-
-/** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by pacote.packument. */
-function filterPredicate(options: Options): (o: Packument) => boolean {
-  return overEvery([
-    o => allowDeprecatedOrIsNotDeprecated(o, options),
-    o => allowPreOrIsNotPre(o, options),
-    options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null!,
-    options.peerDependencies ? o => satisfiesPeerDependencies(o, options.peerDependencies!) : null!,
-  ])
 }
 
 /**
