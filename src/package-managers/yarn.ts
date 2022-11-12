@@ -3,6 +3,7 @@ import { EventEmitter, once } from 'events'
 import memoize from 'fast-memoize'
 import fs from 'fs/promises'
 import jsonlines from 'jsonlines'
+import curry from 'lodash/curry'
 import filter from 'lodash/filter'
 import last from 'lodash/last'
 import overEvery from 'lodash/overEvery'
@@ -14,6 +15,7 @@ import yaml from 'yaml'
 import exists from '../lib/exists'
 import findLockfile from '../lib/findLockfile'
 import { keyValueBy } from '../lib/keyValueBy'
+import { print } from '../lib/logging'
 import * as versionUtil from '../lib/version-util'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
@@ -52,8 +54,8 @@ const interpolate = (s: string, data: any) =>
     (match, key, name, fallbackOnEmpty, fallback) => data[key] || (fallbackOnEmpty ? fallback : ''),
   )
 
-/** Reads an auth token from a yarn config, interpolates it, and sets it on the npm config. */
-export const setNpmAuthToken = (npmConfig: Index<string | boolean>, [dep, scopedConfig]: [string, NpmScope]) => {
+/** Reads an auth token from a yarn config, interpolates it, and returns it as an npm config key-value pair. */
+export const npmAuthTokenKeyValue = curry((npmConfig: Index<string | boolean>, dep: string, scopedConfig: NpmScope) => {
   if (scopedConfig.npmAuthToken) {
     // get registry server from this config or a previous config (assumes setNpmRegistry has already been called on all npm scopes)
     const registryServer = scopedConfig.npmRegistryServer || (npmConfig[`@${dep}:registry`] as string | undefined)
@@ -66,10 +68,20 @@ export const setNpmAuthToken = (npmConfig: Index<string | boolean>, [dep, scoped
         trimmedRegistryServer = trimmedRegistryServer.slice(0, -1)
       }
 
-      npmConfig[`${trimmedRegistryServer}/:_authToken`] = interpolate(scopedConfig.npmAuthToken, process.env)
+      return {
+        [`${trimmedRegistryServer}/:_authToken`]: interpolate(scopedConfig.npmAuthToken, process.env),
+      }
     }
   }
-}
+
+  return null
+})
+
+/** Reads a registry from a yarn config. interpolates it, and returns it as an npm config key-value pair. */
+const npmRegistryKeyValue = (dep: string, scopedConfig: NpmScope) =>
+  scopedConfig.npmRegistryServer
+    ? { [`@${dep}:registry`]: interpolate(scopedConfig.npmRegistryServer, process.env) }
+    : null
 
 /**
  * Returns the path to the local .yarnrc.yml, or undefined. This doesn't
@@ -80,7 +92,7 @@ export const setNpmAuthToken = (npmConfig: Index<string | boolean>, [dep, scoped
  * @param readdirSync This is only a parameter so that it can be used in tests.
  */
 export async function getPathToLookForYarnrc(
-  options: Pick<Options, 'global' | 'cwd' | 'packageFile'>,
+  options: Options,
   readdir: (_path: string) => Promise<string[]> = fs.readdir,
 ): Promise<string | undefined> {
   if (options.global) return undefined
@@ -94,37 +106,46 @@ export async function getPathToLookForYarnrc(
 // If private registry auth is specified in npmScopes in .yarnrc.yml, read them in and convert them to npm config variables.
 // Define as a memoized function to efficiently call existsSync and readFileSync only once, and only if yarn is being used.
 // https://github.com/raineorshine/npm-check-updates/issues/1036
-const npmConfigFromYarn = memoize(
-  async (options: Pick<Options, 'global' | 'cwd' | 'packageFile'>): Promise<Index<string | boolean>> => {
-    const yarnrcLocalPath = await getPathToLookForYarnrc(options)
-    const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
-    const yarnrcLocalExists = typeof yarnrcLocalPath === 'string' && (await exists(yarnrcLocalPath))
-    const yarnrcUserExists = await exists(yarnrcUserPath)
-    const yarnrcLocal = yarnrcLocalExists ? await fs.readFile(yarnrcLocalPath, 'utf-8') : ''
-    const yarnrcUser = yarnrcUserExists ? await fs.readFile(yarnrcUserPath, 'utf-8') : ''
-    const yarnConfigLocal: YarnConfig = yaml.parse(yarnrcLocal)
-    const yarnConfigUser: YarnConfig = yaml.parse(yarnrcUser)
+const npmConfigFromYarn = memoize(async (options: Options): Promise<Index<string | boolean>> => {
+  const yarnrcLocalPath = await getPathToLookForYarnrc(options)
+  const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
+  const yarnrcLocalExists = typeof yarnrcLocalPath === 'string' && (await exists(yarnrcLocalPath))
+  const yarnrcUserExists = await exists(yarnrcUserPath)
+  const yarnrcLocal = yarnrcLocalExists ? await fs.readFile(yarnrcLocalPath, 'utf-8') : ''
+  const yarnrcUser = yarnrcUserExists ? await fs.readFile(yarnrcUserPath, 'utf-8') : ''
+  const yarnConfigLocal: YarnConfig = yaml.parse(yarnrcLocal)
+  const yarnConfigUser: YarnConfig = yaml.parse(yarnrcUser)
 
-    const npmConfig: Index<string | boolean> = {}
+  let npmConfig: Index<string | boolean> = {
+    ...keyValueBy(yarnConfigUser?.npmScopes || {}, npmRegistryKeyValue),
+    ...keyValueBy(yarnConfigLocal?.npmScopes || {}, npmRegistryKeyValue),
+  }
 
-    /** Reads a registry from a yarn config. interpolates it, and sets it on the npm config. */
-    const setNpmRegistry = ([dep, scopedConfig]: [string, NpmScope]) => {
-      if (scopedConfig.npmRegistryServer) {
-        npmConfig[`@${dep}:registry`] = interpolate(scopedConfig.npmRegistryServer, process.env)
-      }
-    }
+  // npmAuthTokenKeyValue uses scoped npmRegistryServer, so must come after npmRegistryKeyValue
+  npmConfig = {
+    ...npmConfig,
+    ...keyValueBy(yarnConfigUser?.npmScopes || {}, npmAuthTokenKeyValue(npmConfig)),
+    ...keyValueBy(yarnConfigLocal?.npmScopes || {}, npmAuthTokenKeyValue(npmConfig)),
+  }
 
-    // set registry for all npm scopes
-    Object.entries(yarnConfigUser?.npmScopes || {}).forEach(setNpmRegistry)
-    Object.entries(yarnConfigLocal?.npmScopes || {}).forEach(setNpmRegistry)
+  // set auth token after npm registry, since auth token syntax uses regitry
 
-    // set auth token after npm registry, since auth token syntax uses regitry
-    Object.entries(yarnConfigUser?.npmScopes || {}).forEach(s => setNpmAuthToken(npmConfig, s))
-    Object.entries(yarnConfigLocal?.npmScopes || {}).forEach(s => setNpmAuthToken(npmConfig, s))
+  if (yarnrcLocalExists) {
+    print(options, `\nUsing local yarn config at ${yarnrcLocalPath}:`, 'verbose')
+    print(options, yarnConfigLocal, 'verbose')
+  }
+  if (yarnrcUserExists) {
+    print(options, `\nUsing user yarn config at ${yarnrcUserPath}:`, 'verbose')
+    print(options, yarnConfigLocal, 'verbose')
+  }
 
-    return npmConfig
-  },
-)
+  if (Object.keys(npmConfig)) {
+    print(options, '\nMerged yarn config in npm format:', 'verbose')
+    print(options, npmConfig, 'verbose')
+  }
+
+  return npmConfig
+})
 
 /**
  * Parse JSON lines and throw an informative error on failure.
