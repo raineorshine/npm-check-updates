@@ -105,8 +105,6 @@ describe('cache', () => {
     }
 
     await ncu.run({ packageData, cache: true })
-    const cacheData: CacheData = await fs.readFile(resolvedDefaultCacheFile, 'utf-8').then(JSON.parse)
-    expect(cacheData.timestamp).lessThanOrEqual(Date.now())
 
     await ncu.run({ packageData, cacheClear: true })
     let noCacheFile = false

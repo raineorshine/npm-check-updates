@@ -28,12 +28,12 @@ export const defaultCacheFilename = '.ncu-cache.json'
 export const defaultCacheFile = `~/${defaultCacheFilename}`
 export const resolvedDefaultCacheFile = path.join(os.homedir(), defaultCacheFilename)
 
-/** Resolve the cache file path based on os/homedir */
+/** Resolve the cache file path based on os/homedir. */
 export function resolveCacheFile(optionsCacheFile: string) {
   return optionsCacheFile === defaultCacheFile ? resolvedDefaultCacheFile : optionsCacheFile
 }
 
-/** Remove the default cache file. */
+/** Clear the default cache, or the cache file specified by --cacheFile. */
 export async function cacheClear(options: Options) {
   if (!options.cacheFile) {
     return
