@@ -28,8 +28,22 @@ export const defaultCacheFilename = '.ncu-cache.json'
 export const defaultCacheFile = `~/${defaultCacheFilename}`
 export const resolvedDefaultCacheFile = path.join(os.homedir(), defaultCacheFilename)
 
+/** Resolve the cache file path based on os/homedir. */
+export function resolveCacheFile(optionsCacheFile: string) {
+  return optionsCacheFile === defaultCacheFile ? resolvedDefaultCacheFile : optionsCacheFile
+}
+
+/** Clear the default cache, or the cache file specified by --cacheFile. */
+export async function cacheClear(options: Options) {
+  if (!options.cacheFile) {
+    return
+  }
+
+  await fs.promises.rm(resolveCacheFile(options.cacheFile), { force: true })
+}
+
 /**
- * The cacher stores key (name + version) - value (new version) pairs
+ * The cacher stores key (name + target) - value (new version) pairs
  * for quick updates across `ncu` calls.
  *
  * @returns
@@ -39,7 +53,7 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
     return
   }
 
-  const cacheFile = options.cacheFile === defaultCacheFile ? resolvedDefaultCacheFile : options.cacheFile
+  const cacheFile = resolveCacheFile(options.cacheFile)
   let cacheData: CacheData = {}
   const cacheUpdates: Record<string, string> = {}
 
@@ -49,7 +63,7 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
     const expired = checkCacheExpiration(cacheData, options.cacheExpiration)
     if (expired) {
       // reset cache
-      fs.promises.rm(cacheFile)
+      fs.promises.rm(cacheFile, { force: true })
       cacheData = {}
     }
   } catch (error) {

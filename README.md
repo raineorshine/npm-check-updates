@@ -131,7 +131,9 @@ ncu "/^(?!react-).*$/" # windows
 ## Options
 
 ```text
---cache                    Cache versions to the cache file (default: false)
+--cache                    Cache versions to the cache file
+--cacheClear               Clear the default cache, or the cache file
+                           specified by --cacheFile
 --cacheExpiration <min>    Cache expiration in minutes (default: 10)
 --cacheFile <path>         Filepath for the cache file (default:
                            "~/.ncu-cache.json")

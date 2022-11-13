@@ -277,7 +277,11 @@ const cliOptions: CLIOption[] = [
   {
     long: 'cache',
     description: 'Cache versions to the cache file',
-    default: false,
+    type: 'boolean',
+  },
+  {
+    long: 'cacheClear',
+    description: 'Clear the default cache, or the cache file specified by --cacheFile',
     type: 'boolean',
   },
   {
