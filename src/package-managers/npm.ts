@@ -7,12 +7,13 @@ import get from 'lodash/get'
 import isEqual from 'lodash/isEqual'
 import last from 'lodash/last'
 import omit from 'lodash/omit'
-import pullAll from 'lodash/pullAll'
+import sortBy from 'lodash/sortBy'
 import pacote from 'pacote'
 import path from 'path'
 import semver from 'semver'
 import spawn from 'spawn-please'
 import untildify from 'untildify'
+import filterObject from '../lib/filterObject'
 import { keyValueBy } from '../lib/keyValueBy'
 import libnpmconfig from '../lib/libnpmconfig'
 import { print } from '../lib/logging'
@@ -27,8 +28,6 @@ import { VersionSpec } from '../types/VersionSpec'
 import { filterPredicate, satisfiesNodeEngine } from './filters'
 
 type NpmConfig = Index<string | boolean | ((path: string) => any)>
-
-const TIME_FIELDS = ['modified', 'created']
 
 /** Normalizes the keys of an npm config for pacote. */
 const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
@@ -563,21 +562,24 @@ export const latest: GetVersion = async (packageName: string, currentVersion: Ve
 export const newest: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
   const result = await viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options)
 
-  const versionsSatisfyingNodeEngine = filter(result.versions, version =>
-    satisfiesNodeEngine(version, options.nodeEngineVersion),
-  ).map((o: Packument) => o.version)
-
-  const versions = Object.keys(result.time || {}).reduce(
-    (accum: string[], key: string) =>
-      accum.concat(TIME_FIELDS.includes(key) || versionsSatisfyingNodeEngine.includes(key) ? key : []),
-    [],
+  // Generate a map of versions that satisfy the node engine.
+  // result.versions is an object but is parsed as an array, so manually convert it to an object.
+  // Otherwise keyValueBy will pass the predicate arguments in the wrong order.
+  const versionsSatisfyingNodeEngine = keyValueBy(Object.values(result.versions || {}), packument =>
+    satisfiesNodeEngine(packument, options.nodeEngineVersion) ? { [packument.version]: true } : null,
   )
 
-  const versionsWithTime = pullAll(versions, TIME_FIELDS)
-
-  return (
-    last(options.pre !== false ? versions : versionsWithTime.filter(version => !versionUtil.isPre(version))) || null
+  // filter out times that do not satisfy the node engine
+  // filter out prereleases if pre:false (same as allowPreOrIsNotPre)
+  const timesSatisfyingNodeEngine = filterObject(
+    result.time || {},
+    version => versionsSatisfyingNodeEngine[version] && (options.pre !== false || !versionUtil.isPre(version)),
   )
+
+  // sort by timestamp (entry[1]) and map versions
+  const versionsSortedByTime = sortBy(Object.entries(timesSatisfyingNodeEngine), 1).map(([version]) => version)
+
+  return last(versionsSortedByTime) || null
 }
 
 /**
