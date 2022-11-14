@@ -20,14 +20,13 @@ import { print } from '../lib/logging'
 import * as versionUtil from '../lib/version-util'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
+import { NpmConfig } from '../types/NpmConfig'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { Packument } from '../types/Packument'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
 import { filterPredicate, satisfiesNodeEngine } from './filters'
-
-type NpmConfig = Index<string | boolean | ((path: string) => any)>
 
 /** Normalizes the keys of an npm config for pacote. */
 const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
@@ -446,9 +445,14 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
  * @param options
  * @returns
  */
-export const greatest: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
+export const greatest: GetVersion = async (
+  packageName,
+  currentVersion,
+  options = {},
+  npmConfig?: NpmConfig,
+): Promise<string | null> => {
   // known type based on 'versions'
-  const versions = (await viewOne(packageName, 'versions', currentVersion, options)) as Packument[]
+  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Packument[]
 
   return (
     last(
@@ -516,12 +520,18 @@ export const list = async (options: Options = {}) => {
  * @param options
  * @returns
  */
-export const distTag: GetVersion = async (packageName, currentVersion, options: Options = {}) => {
+export const distTag: GetVersion = async (
+  packageName,
+  currentVersion,
+  options: Options = {},
+  npmConfig?: NpmConfig,
+) => {
   const revision = (await viewOne(
     packageName,
     `dist-tags.${options.distTag}`,
     currentVersion,
     options,
+    npmConfig,
   )) as unknown as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated
@@ -537,7 +547,7 @@ export const distTag: GetVersion = async (packageName, currentVersion, options: 
   // or latest is deprecated
   // find the next valid version
   // known type based on dist-tags.latest
-  return await greatest(packageName, currentVersion, options)
+  return greatest(packageName, currentVersion, options, npmConfig)
 }
 
 /**
@@ -559,8 +569,13 @@ export const latest: GetVersion = async (packageName: string, currentVersion: Ve
  * @param options
  * @returns
  */
-export const newest: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
-  const result = await viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options)
+export const newest: GetVersion = async (
+  packageName,
+  currentVersion,
+  options = {},
+  npmConfig?: NpmConfig,
+): Promise<string | null> => {
+  const result = await viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options, 0, npmConfig)
 
   // Generate a map of versions that satisfy the node engine.
   // result.versions is an object but is parsed as an array, so manually convert it to an object.
@@ -590,8 +605,13 @@ export const newest: GetVersion = async (packageName, currentVersion, options = 
  * @param options
  * @returns
  */
-export const minor: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
-  const versions = (await viewOne(packageName, 'versions', currentVersion, options)) as Packument[]
+export const minor: GetVersion = async (
+  packageName,
+  currentVersion,
+  options = {},
+  npmConfig?: NpmConfig,
+): Promise<string | null> => {
+  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Packument[]
   return versionUtil.findGreatestByLevel(
     filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
@@ -607,8 +627,13 @@ export const minor: GetVersion = async (packageName, currentVersion, options = {
  * @param options
  * @returns
  */
-export const patch: GetVersion = async (packageName, currentVersion, options = {}): Promise<string | null> => {
-  const versions = (await viewOne(packageName, 'versions', currentVersion, options)) as Packument[]
+export const patch: GetVersion = async (
+  packageName,
+  currentVersion,
+  options = {},
+  npmConfig?: NpmConfig,
+): Promise<string | null> => {
+  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Packument[]
   return versionUtil.findGreatestByLevel(
     filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
