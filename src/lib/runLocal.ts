@@ -184,8 +184,6 @@ async function runLocal(
   print(options, '\nCurrent versions:', 'verbose')
   print(options, current, 'verbose')
 
-  print(options, `\nFetching ${options.target} versions`, 'verbose')
-
   if (options.enginesNode) {
     options.nodeEngineVersion = get(pkg, 'engines.node')
   }
@@ -203,7 +201,13 @@ async function runLocal(
     print(options, upgradedPeerDependencies, 'verbose')
   }
 
-  print(options, '\nFetched versions:', 'verbose')
+  print(
+    options,
+    `\n${
+      typeof options.target === 'string' ? `${options.target[0].toUpperCase()}${options.target.slice(1)}` : 'Fetched'
+    } versions:`,
+    'verbose',
+  )
   print(options, latest, 'verbose')
 
   print(options, '\nUpgraded versions:', 'verbose')

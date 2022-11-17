@@ -12,7 +12,7 @@ import queryVersions from './queryVersions'
 import upgradeDependencies from './upgradeDependencies'
 
 /**
- * Returns an 3-tuple of upgradedDependencies, their latest versions and the resulting peer dependencies.
+ * Returns a 3-tuple of upgradedDependencies, their latest versions and the resulting peer dependencies.
  *
  * @param currentDependencies
  * @param options
