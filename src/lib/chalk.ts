@@ -14,6 +14,17 @@ import keyValueBy from './keyValueBy'
 
 type ChalkMethod = ((s: any) => string) & { bold: (s: any) => string }
 
+const chalkMethods = {
+  blue: true,
+  bold: true,
+  cyan: true,
+  gray: true,
+  green: true,
+  magenta: true,
+  red: true,
+  yellow: true,
+}
+
 // a Promise of a chalk instance that can optionally force color
 let chalkInstance: Record<keyof typeof chalkMethods, ChalkMethod>
 
@@ -31,17 +42,6 @@ const assertChalk = () => {
       `Chalk has not been imported yet. Chalk is a dynamic import and requires that you await { chalkInit } from './lib/chalk'.`,
     )
   }
-}
-
-const chalkMethods = {
-  blue: true,
-  bold: true,
-  cyan: true,
-  gray: true,
-  green: true,
-  magenta: true,
-  red: true,
-  yellow: true,
 }
 
 // generate an async method for each chalk method that calls a chalk instance with global.color for forced color
