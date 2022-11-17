@@ -19,6 +19,8 @@ import { VersionLevel } from '../types/VersionLevel'
 import chalk from './chalk'
 import { keyValueBy } from './keyValueBy'
 
+type VersionPart = keyof SemVer
+
 const VERSION_BASE_PARTS = ['major', 'minor', 'patch'] as VersionPart[]
 const VERSION_ADDED_PARTS = ['release', 'build'] as VersionPart[]
 const VERSION_PARTS = [...VERSION_BASE_PARTS, ...VERSION_ADDED_PARTS] as VersionPart[]
@@ -36,8 +38,6 @@ const WILDCARD_PURE_REGEX = new RegExp(`^(${WILDCARDS_PURE.join('|').replace(/\^
 
 /** Matches an npm alias version declaration. */
 const NPM_ALIAS_REGEX = /^npm:(.*)@(.*)/
-
-type VersionPart = keyof SemVer
 
 interface UpgradeOptions {
   wildcard?: string
