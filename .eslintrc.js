@@ -21,17 +21,10 @@ module.exports = {
       },
       plugins: ['@typescript-eslint'],
       rules: {
-        'import/prefer-default-export': 0,
-        // temporary fix from 'typescript-eslint' docs
-        // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-unused-vars.md
-        'no-unused-vars': 0,
-        'no-use-before-define': 0,
         '@typescript-eslint/no-explicit-any': 0,
         '@typescript-eslint/no-non-null-assertion': 0,
         '@typescript-eslint/no-use-before-define': 2,
         '@typescript-eslint/no-unused-vars': 2,
-        '@typescript-eslint/explicit-function-return-type': 0,
-        '@typescript-eslint/explicit-module-boundary-types': 0,
         '@typescript-eslint/array-type': [
           2,
           {
