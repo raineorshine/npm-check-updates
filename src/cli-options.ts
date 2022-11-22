@@ -351,6 +351,7 @@ const cliOptions: CLIOption[] = [
   },
   {
     long: 'doctor',
+    short: 'd',
     description:
       'Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires "-u" to execute.',
     type: 'boolean',

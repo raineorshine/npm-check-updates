@@ -151,7 +151,7 @@ ncu "/^(?!react-).*$/" # windows
                            (comma-delimited). (default:
                            "prod,dev,bundle,optional")
 --deprecated               Include deprecated packages.
---doctor                   Iteratively installs upgrades and runs tests to
+-d, --doctor               Iteratively installs upgrades and runs tests to
                            identify breaking upgrades. Requires "-u" to
                            execute. Run "ncu --help --doctor" for details.
 --doctorInstall <command>  Specifies the install script to use in doctor
