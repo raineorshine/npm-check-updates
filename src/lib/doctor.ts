@@ -15,14 +15,25 @@ import upgradePackageData from './upgradePackageData'
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
 
 /** Run the npm CLI in CI mode. */
-const npm = (args: string[], options: Options, print?: boolean) => {
+const npm = (
+  args: string[],
+  options: Options,
+  print?: boolean,
+  { spawnOptions }: { spawnOptions?: SpawnOptions } = {},
+) => {
   if (print) {
     console.log(chalk.blue([options.packageManager, ...args].join(' ')))
   }
 
-  const spawnOptions = {
+  const spawnOptionsMerged = {
     cwd: options.cwd || process.cwd(),
-    env: { ...process.env, CI: '1' },
+    env: {
+      ...process.env,
+      CI: '1',
+      FORCE_COLOR: '1',
+      ...spawnOptions?.env,
+    },
+    ...spawnOptions,
   }
 
   const npmOptions = {
@@ -30,7 +41,7 @@ const npm = (args: string[], options: Options, print?: boolean) => {
     ...(options.prefix ? { prefix: options.prefix } : null),
   }
 
-  return (options.packageManager === 'yarn' ? spawnYarn : spawnNpm)(args, npmOptions, spawnOptions)
+  return (options.packageManager === 'yarn' ? spawnYarn : spawnNpm)(args, npmOptions, spawnOptionsMerged)
 }
 
 /** Load and validate package file and tests. */
@@ -90,7 +101,18 @@ const doctor = async (run: Run, options: Options) => {
   }
 
   /** Run the tests using "npm run test" or a custom script given by --doctorTest. */
-  const runTests = async (spawnOptions?: SpawnOptions) => {
+  const runTests = async () => {
+    const spawnOptions = {
+      stderr: (data: string) => {
+        console.error(chalk.red(data.toString()))
+      },
+      // Test runners typically write to stdout, so we need to print stdout.
+      // Otherwise test failures will be silenced.
+      stdout: (data: string) => {
+        process.stdout.write(data.toString())
+      },
+    }
+
     if (options.doctorTest) {
       const [testCommand, ...testArgs] = options.doctorTest.split(' ')
       await spawn(testCommand, testArgs, spawnOptions)
@@ -99,9 +121,9 @@ const doctor = async (run: Run, options: Options) => {
         ['run', 'test'],
         {
           packageManager: options.packageManager,
-          ...spawnOptions,
         },
         true,
+        { spawnOptions },
       )
     }
   }
@@ -119,15 +141,15 @@ const doctor = async (run: Run, options: Options) => {
 
   // make sure current tests pass before we begin
   try {
-    await runTests({
-      stderr: (data: string) => console.error(chalk.red(data.toString())),
-    })
+    await runTests()
   } catch (e) {
     console.error('Tests failed before we even got started!')
     process.exit(1)
   }
 
-  console.log(`Upgrading all dependencies and re-running tests`)
+  if (!options.interactive) {
+    console.log(`Upgrading all dependencies and re-running tests`)
+  }
 
   // upgrade all dependencies
   // save upgrades for later in case we need to iterate
@@ -174,8 +196,8 @@ const doctor = async (run: Run, options: Options) => {
       total: Object.keys(upgrades || {}).length,
     })
 
-    console.log('\nAll dependencies upgraded and installed ' + chalk.green(':)'))
-  } catch (e) {
+    console.log(`\n${options.interactive ? 'Chosen' : 'All'} dependencies upgraded and installed ${chalk.green(':)')}`)
+  } catch {
     console.error(chalk.red(installAllSuccess ? 'Tests failed' : 'Install failed'))
     console.log(`Identifying broken dependencies`)
 
