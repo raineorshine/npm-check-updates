@@ -140,9 +140,9 @@ const doctor = async (run: Run, options: Options) => {
           .join(' '),
     ),
   )
+  process.env.NCU_DOCTOR = '1'
   const upgrades = (await run({
     ...options,
-    interactive: false,
     silent: true,
     // --doctor triggers the initial call to doctor, but the internal call needs to executes npm-check-updates normally in order to upgrade the dependencies
     doctor: false,

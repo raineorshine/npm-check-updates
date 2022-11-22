@@ -96,7 +96,7 @@ const npmInstall = async (
   } to install new versions`
 
   // prompt the user if they want ncu to run "npm install"
-  if (options.interactive) {
+  if (options.interactive && !process.env.NCU_DOCTOR) {
     console.info('')
     const response = await prompts({
       type: 'confirm',
