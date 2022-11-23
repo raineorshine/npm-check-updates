@@ -1,4 +1,5 @@
 /** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build:options" to build. */
+import { FilterFetchedFunction } from './FilterFetchedFunction'
 import { FilterFunction } from './FilterFunction'
 import { GroupFunction } from './GroupFunction'
 import { PackageFile } from './PackageFile'
@@ -62,6 +63,9 @@ export interface RunOptions {
 
   /** Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. */
   filterVersion?: string | string[] | RegExp | RegExp[] | FilterFunction
+
+  /** Filter on Packument using predicate function. */
+  filterFetched?: FilterFetchedFunction
 
   /** Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo. Run "ncu --help --format" for details. */
   format?: string[]
