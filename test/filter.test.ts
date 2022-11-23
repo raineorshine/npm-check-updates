@@ -41,6 +41,21 @@ describe('filter', () => {
     upgraded.should.have.property('lodash.filter')
   })
 
+  it('filter metadata', async () => {
+    const upgraded = (await ncu({
+      packageData: {
+        dependencies: {
+          lodash: '2.0.0',
+          'lodash.map': '2.0.0',
+          'lodash.filter': '2.0.0',
+        },
+      },
+      filterMeta: packument => packument.name === 'lodash.map',
+    })) as Index<string>
+    upgraded.should.have.property('lodash.map')
+    upgraded.should.not.have.property('lodash.filter')
+  })
+
   it('filter with wildcard for scoped package', async () => {
     const pkg = {
       dependencies: {
