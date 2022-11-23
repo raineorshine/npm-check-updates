@@ -65,6 +65,6 @@ export function filterPredicate(options: Options): (o: Packument) => boolean {
     o => allowPreOrIsNotPre(o, options),
     options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null!,
     options.peerDependencies ? o => satisfiesPeerDependencies(o, options.peerDependencies!) : null!,
-    options.filterFetched ? o => options.filterFetched!(o) : null!,
+    options.filterMeta ? o => options.filterMeta!(o) : null!,
   ])
 }

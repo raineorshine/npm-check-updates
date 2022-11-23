@@ -167,6 +167,8 @@ ncu "/^(?!react-).*$/" # windows
 -f, --filter <p>           Include only package names matching the given
                            string, wildcard, glob, comma-or-space-delimited
                            list, /regex/, or predicate function.
+--filterMeta <fn>          Filter on Packument using predicate function. Run
+                           "ncu --help --filterMeta" for details.
 --filterVersion <p>        Filter on package version using
                            comma-or-space-delimited list, /regex/, or
                            predicate function.

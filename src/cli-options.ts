@@ -393,6 +393,13 @@ const cliOptions: CLIOption[] = [
     type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
   },
   {
+    long: 'filterMeta',
+    arg: 'fn',
+    description: `Filter on Packument using predicate function.`,
+    type: 'FilterMetaFunction',
+    help: extendedHelpGroup,
+  },
+  {
     long: 'filterVersion',
     arg: 'p',
     description: 'Filter on package version using comma-or-space-delimited list, /regex/, or predicate function.',
