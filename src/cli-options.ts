@@ -111,6 +111,23 @@ npm run test
 Saving partially upgraded package.json
 `
 
+/** Extended help for the filterMeta option. */
+const extendedHelpFilterMeta = (): string => {
+  return `Filter packages after the metadata is fetched. Only available in .ncurc.js or when importing npm-check-updates as a module:
+
+  ${chalk.gray(`/**
+    @param packument        The object returned from NPM.
+    @returns                Boolean value, true to include the dependency in the output, false to exclude it.
+  */`)}
+  ${chalk.cyan('filterMeta')}: (packument} {
+    if (packument.name === 'typescript') {
+      return true
+    }
+    return return false
+  }
+`
+}
+
 /** Extended help for the --format option. */
 const extendedHelpFormat = (): string => {
   const header =
@@ -397,7 +414,7 @@ const cliOptions: CLIOption[] = [
     arg: 'fn',
     description: `Filter on Packument using predicate function.`,
     type: 'FilterMetaFunction',
-    help: extendedHelpGroup,
+    help: extendedHelpFilterMeta,
   },
   {
     long: 'filterVersion',
