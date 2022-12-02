@@ -78,7 +78,7 @@ const npmInstall = async (
   analysis: Index<PackageFile> | PackageFile,
   options: Options,
 ): Promise<unknown> => {
-  // if no packages were upgraded (i.e. all dependendencies deselected in interactive mode), then bail without suggesting an install.
+  // if no packages were upgraded (i.e. all dependencies deselected in interactive mode), then bail without suggesting an install.
   // normalize the analysis for one or many packages
   const analysisNormalized =
     pkgs.length === 1 ? { [pkgs[0]]: analysis as PackageFile } : (analysis as Index<PackageFile>)

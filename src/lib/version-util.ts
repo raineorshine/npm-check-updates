@@ -243,7 +243,7 @@ export function getDependencyGroups(
 
 /**
  * Colorize the parts of a version string (to) that are different than
- * another (from). Assumes that the two verson strings are in the same format.
+ * another (from). Assumes that the two version strings are in the same format.
  *
  * @param from
  * @param to
