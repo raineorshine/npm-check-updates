@@ -56,7 +56,7 @@ describe('version-util', () => {
       versionUtil.upgradeDependencyDeclaration('~1.2.3', '1.2.4').should.equal('~1.2.4')
     })
 
-    it('preserve prerelease versons', () => {
+    it('preserve prerelease versions', () => {
       versionUtil.upgradeDependencyDeclaration('^0.15.7', '0.16.0-beta.3').should.equal('^0.16.0-beta.3')
     })
 

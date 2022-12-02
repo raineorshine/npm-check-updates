@@ -21,12 +21,12 @@ module.exports = {
       },
       plugins: ['@typescript-eslint'],
       rules: {
-        '@typescript-eslint/no-explicit-any': 0,
-        '@typescript-eslint/no-non-null-assertion': 0,
-        '@typescript-eslint/no-use-before-define': 2,
-        '@typescript-eslint/no-unused-vars': 2,
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-non-null-assertion': 'off',
+        '@typescript-eslint/no-use-before-define': 'error',
+        '@typescript-eslint/no-unused-vars': 'error',
         '@typescript-eslint/array-type': [
-          2,
+          'error',
           {
             'array-type': 'array',
           },
@@ -34,16 +34,11 @@ module.exports = {
       },
     },
   ],
-  // to be removed later
-  globals: {
-    Atomics: 'readonly',
-    SharedArrayBuffer: 'readonly',
-  },
   plugins: ['fp', 'jsdoc'],
   rules: {
     // jsdoc
     'jsdoc/require-jsdoc': [
-      2,
+      'error',
       {
         contexts: ['VariableDeclarator > ArrowFunctionExpression'],
         require: {
