@@ -36,20 +36,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3.1.0
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
           cache: npm
-
-      # --doctorTest breaks due to an npm warning in npm < 8.12.1
-      # https://github.com/actions/setup-node/issues/515
-      - name: Upgrade npm on Windows
-        run: |
-          $WhereNode = Get-Command node | Select-Object -ExpandProperty Definition
-          $NodeDirPath = Split-Path $WhereNode -Parent
-          cd $NodeDirPath
-          npm install npm@^8.12.1
-        if: (matrix.node == '16' || matrix.node == '18') && matrix.os == 'windows-latest'
 
       - name: Install npm dependencies
         run: npm ci
