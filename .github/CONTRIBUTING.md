@@ -2,6 +2,11 @@
 
 Make sure you read the list of [known issues](https://github.com/raineorshine/npm-check-updates#known-issues) and search for [similar issues](https://github.com/raineorshine/npm-check-updates/issues) before filing an issue.
 
+## Known Issues
+
+- If `ncu` prints output that does not seem related to this package, it may be conflicting with another executable such as `ncu-weather-cli` or Nvidia CUDA. Try using the long name instead: `npm-check-updates`.
+- Windows: If npm-check-updates hangs, try setting the package file explicitly: `ncu --packageFile package.json`. You can run `ncu --loglevel verbose` to confirm that it was incorrectly waiting for stdin. See [#136](https://github.com/raineorshine/npm-check-updates/issues/136#issuecomment-155721102).
+
 When filing an issue, please include:
 
 - node version
@@ -10,11 +15,25 @@ When filing an issue, please include:
 - the relevant package names and their specified versions from your package file
 - ...or the output from `npm -g ls --depth=0` if using global mode
 
-## Design
+## Design Guidelines
 
 The _raison d'être_ of npm-check-updates is to upgrade package.json dependencies to the latest versions, ignoring specified versions. Suggested features that do not fit within this objective will be considered out of scope.
 
 npm-check-updates maintains a balance between minimalism and customizability. The default execution with no options will always produce simple, clean output. If you would like to add additional information to ncu's output, you may propose a new value for the `--format` option.
+
+## Running Tests
+
+Some of the tests use the `git+https` protocol. If git prompts you for credentials in the middle of running the tests, you may want to enable credentials storage:
+
+```
+git config --global credential.helper store
+```
+
+When running this command, the first time you pull from the remote repository, you'll get asked for your username and password.
+
+Afterwards, for consequent communications with the remote repository you won't have to provide the username and password.
+
+https://stackoverflow.com/a/35943882/480608
 
 ## Adding a new CLI or module option
 
