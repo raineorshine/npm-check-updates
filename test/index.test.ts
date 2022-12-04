@@ -42,7 +42,7 @@ describe('run', function () {
     stub.restore()
   })
 
-  it('do not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimial is true', async () => {
+  it('do not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimal is true', async () => {
     const stub = stubNpmView('2.1.1')
 
     const upgraded = await ncu.run({
