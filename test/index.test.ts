@@ -18,7 +18,7 @@ describe('run', function () {
     const stub = stubNpmView('99.9.9')
 
     const output = await ncu.run({
-      packageData: await fs.readFile(path.join(__dirname, 'ncu/package.json'), 'utf-8'),
+      packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package.json'), 'utf-8'),
     })
     output!.should.deep.equal({
       express: '^99.9.9',
@@ -60,7 +60,7 @@ describe('run', function () {
     const stub = stubNpmView('99.9.9')
 
     const upgraded = await ncu.run({
-      packageData: await fs.readFile(path.join(__dirname, '/ncu/package-dep.json'), 'utf-8'),
+      packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package-dep.json'), 'utf-8'),
     })
 
     upgraded!.should.have.property('express')
@@ -74,7 +74,7 @@ describe('run', function () {
     const stub = stubNpmView('99.9.9')
 
     const upgraded = await ncu.run({
-      packageData: await fs.readFile(path.join(__dirname, 'ncu/package-dep.json'), 'utf-8'),
+      packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package-dep.json'), 'utf-8'),
       dep: 'dev',
     })
 
@@ -87,7 +87,7 @@ describe('run', function () {
 
   it('only upgrade devDependencies and peerDependencies with --dep dev,peer', async () => {
     const upgraded = await ncu.run({
-      packageData: await fs.readFile(path.join(__dirname, 'ncu/package-dep.json'), 'utf-8'),
+      packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package-dep.json'), 'utf-8'),
       dep: 'dev,peer',
     })
 

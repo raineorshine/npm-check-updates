@@ -14,7 +14,7 @@ process.env.NCU_TESTS = 'true'
 
 describe('peer dependencies', function () {
   it('peer dependencies of installed packages are ignored by default', async () => {
-    const cwd = path.join(__dirname, '/peer/')
+    const cwd = path.join(__dirname, 'test-data/peer/')
     try {
       await spawnNpm('install', {}, { cwd })
       const upgrades = await ncu.run({ cwd })
@@ -28,7 +28,7 @@ describe('peer dependencies', function () {
   })
 
   it('peer dependencies of installed packages are checked when using option peer', async () => {
-    const cwd = path.join(__dirname, '/peer/')
+    const cwd = path.join(__dirname, 'test-data/peer/')
     try {
       await spawnNpm('install', {}, { cwd })
       const upgrades = await ncu.run({ cwd, peer: true })
@@ -42,7 +42,7 @@ describe('peer dependencies', function () {
   })
 
   it('peer dependencies of installed packages are checked iteratively when using option peer', async () => {
-    const cwd = path.join(__dirname, '/peer-update/')
+    const cwd = path.join(__dirname, 'test-data/peer-update/')
     try {
       await spawnNpm('install', {}, { cwd })
       const upgrades = await ncu.run({ cwd, peer: true })

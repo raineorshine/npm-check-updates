@@ -10,7 +10,7 @@ process.env.NCU_TESTS = 'true'
 describe('filter', () => {
   it('filter by package name with one arg', async () => {
     const upgraded = (await ncu({
-      packageData: await fs.readFile(path.join(__dirname, './ncu/package2.json'), 'utf-8'),
+      packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package2.json'), 'utf-8'),
       filter: ['lodash.map'],
     })) as Index<string>
     upgraded.should.have.property('lodash.map')
@@ -19,7 +19,7 @@ describe('filter', () => {
 
   it('filter by package name with multiple args', async () => {
     const upgraded = (await ncu({
-      packageData: await fs.readFile(path.join(__dirname, './ncu/package2.json'), 'utf-8'),
+      packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package2.json'), 'utf-8'),
       filter: ['lodash.map', 'lodash.filter'],
     })) as Index<string>
     upgraded.should.have.property('lodash.map')
