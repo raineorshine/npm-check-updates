@@ -21,20 +21,6 @@ The _raison d'être_ of npm-check-updates is to upgrade package.json dependencie
 
 npm-check-updates maintains a balance between minimalism and customizability. The default execution with no options will always produce simple, clean output. If you would like to add additional information to ncu's output, you may propose a new value for the `--format` option.
 
-## Running Tests
-
-Some of the tests use the `git+https` protocol. If git prompts you for credentials in the middle of running the tests, you may want to enable credentials storage:
-
-```
-git config --global credential.helper store
-```
-
-When running this command, the first time you pull from the remote repository, you'll get asked for your username and password.
-
-Afterwards, for consequent communications with the remote repository you won't have to provide the username and password.
-
-https://stackoverflow.com/a/35943882/480608
-
 ## Adding a new CLI or module option
 
 All of ncu's options are generated from [/src/cli-options.ts](https://github.com/raineorshine/npm-check-updates/blob/main/src/cli-options.ts). You can add a new option to this file and then run `npm run build` to automatically generate README, CLI help text, and Typescript definitions.

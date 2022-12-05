@@ -164,7 +164,8 @@ describe('queryVersions', function () {
       const upgrades = await queryVersions(
         {
           'ncu-test-alpha': 'git+https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git#v283',
-          'ncu-test-private': 'https://github.com/ncu-test/ncu-test-private#v999.9.9',
+          // disable since fetching from a private repo prompts the user for credentials
+          // 'ncu-test-private': 'https://github.com/ncu-test/ncu-test-private#v999.9.9',
           'ncu-return-version': 'git+https://raineorshine@github.com/ncu-return-version#v999.9.9',
           'ncu-test-v2': '^1.0.0',
         },
