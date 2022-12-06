@@ -2,6 +2,8 @@ import fs from 'fs/promises'
 import spawn from 'spawn-please'
 import cliOptions, { CLIOption } from '../cli-options'
 
+const INJECT_HEADER = '<!-- Do not edit this section by hand. It is auto-generated in build-options.ts -->'
+
 /** Extracts CLI options from the bin output. */
 const readOptions = async () => {
   const optionsBinLabel = 'Options:\n'
@@ -13,23 +15,30 @@ const readOptions = async () => {
       .split('\n')
       .map((s: string) => s.slice(2))
       .join('\n')
+      .trim()
   )
 }
 
 /** Replaces the "Options" section of the README with direct output from "ncu --help". */
-const injectReadme = async (helpOptions: string) => {
-  const optionsLabelStart = '## Options\n\n```text\n'
-  const optionsLabelEnd = '```'
+const injectReadme = async () => {
+  const helpOptions = await readOptions()
+  let readme = await fs.readFile('README.md', 'utf8')
 
-  // find insertion point for options into README
-  const readme = await fs.readFile('README.md', 'utf8')
-  const optionsLabelStartIndex = readme.indexOf(optionsLabelStart)
-  const optionsStart = optionsLabelStartIndex + optionsLabelStart.length
-  const optionsEnd = readme.indexOf(optionsLabelEnd, optionsStart)
+  // inject options into README
+  const optionsStart = readme.indexOf('<!-- BEGIN Options -->') + '<!-- BEGIN Options -->'.length
+  const optionsEnd = readme.indexOf('<!-- END Options -->', optionsStart)
 
   // insert new options into README
-  const readmeNew = readme.slice(0, optionsStart) + helpOptions + readme.slice(optionsEnd)
-  return readmeNew
+  readme = `${readme.slice(0, optionsStart)}
+${INJECT_HEADER}
+
+\`\`\`text
+${helpOptions}
+\`\`\`
+
+${readme.slice(optionsEnd)}`
+
+  return readme
 }
 
 /** Renders a single CLI option for a type definition file. */
@@ -74,7 +83,6 @@ export interface RunOptions {
 }
 
 ;(async () => {
-  const helpOptionsString = await readOptions()
-  await fs.writeFile('README.md', await injectReadme(helpOptionsString))
+  await fs.writeFile('README.md', await injectReadme())
   await fs.writeFile('src/types/RunOptions.ts', renderRunOptions(cliOptions))
 })()

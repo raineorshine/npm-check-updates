@@ -130,6 +130,9 @@ ncu "/^(?!react-).*$/" # windows
 
 ## Options
 
+<!-- BEGIN Options -->
+<!-- Do not edit this section by hand. It is auto-generated in build-options.ts -->
+
 ```text
 --cache                    Cache versions to the cache file
 --cacheClear               Clear the default cache, or the cache file
@@ -245,6 +248,8 @@ ncu "/^(?!react-).*$/" # windows
 -V, --version              output the version number
 -h, --help                 display help for command
 ```
+
+<!-- END Options -->
 
 ## Interactive Mode
 
