@@ -4,6 +4,7 @@ This chalk wrapper allows synchronous chalk.COLOR(...) syntax with special suppo
 
 1) dynamic import as pure ESM module
 2) force color on all instances
+3) disable color on all instances
 
 Call await chalkInit(color) at the beginning of execution and the chalk instance will be available everywhere.
 
@@ -25,14 +26,20 @@ const chalkMethods = {
   yellow: true,
 }
 
-// a Promise of a chalk instance that can optionally force color
+// A chalk instance that passes strings through as-is, without color. Used with color: null. */
+const chalkNoop = keyValueBy(chalkMethods, name => ({ [name]: (s: any) => s.toString() })) as Record<
+  keyof typeof chalkMethods,
+  ChalkMethod
+>
+
+// a global Promise of a chalk instance that can optionally force or ignore color
 let chalkInstance: Record<keyof typeof chalkMethods, ChalkMethod>
 
 /** Initializes the global chalk instance with an optional flag for forced color. Idempotent. */
-export const chalkInit = async (color?: boolean) => {
+export const chalkInit = async (color?: boolean | null) => {
   const chalkModule = await import('chalk')
   const { default: chalkDefault, Chalk } = chalkModule
-  chalkInstance = color ? new Chalk({ level: 1 }) : chalkDefault
+  chalkInstance = color === true ? new Chalk({ level: 1 }) : color === null ? chalkNoop : chalkDefault
 }
 
 /** Asserts that chalk has been imported. */

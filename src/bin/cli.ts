@@ -4,7 +4,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import pickBy from 'lodash/pickBy'
 import semver from 'semver'
 import pkg from '../../package.json'
-import cliOptions from '../cli-options'
+import cliOptions, { renderExtendedHelp } from '../cli-options'
 import ncu from '../index'
 import { chalkInit } from '../lib/chalk'
 import getNcuRc from '../lib/getNcuRc' // async global contexts are only available in esm modules -> function
@@ -73,19 +73,7 @@ ${chalk.dim.underline(
       const query = arg.replace(/^-*/, '')
       const option = cliOptions.find(option => option.long === query || option.short === query)
       if (option) {
-        console.info(`Usage: ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}`)
-        if (option.short) {
-          console.info(`       ncu -${option.short}${option.arg ? ` [${option.arg}]` : ''}`)
-        }
-        if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
-          console.info(`Default: ${option.default}`)
-        }
-        if (option.help) {
-          const helpText = typeof option.help === 'function' ? option.help() : option.help
-          console.info(`\n${helpText}`)
-        } else if (option.description) {
-          console.info(`\n${option.description}`)
-        }
+        console.info(renderExtendedHelp(option) + '\n')
       } else {
         console.info(`Unknown option: ${arg}`)
       }
