@@ -240,7 +240,7 @@ function parseJson<R>(result: string, data: { command?: string; packageName?: st
  * @param currentVersion Current version declaration (may be range)
  * @param upgradedVersion Upgraded version declaration (may be range)
  * @param npmConfigLocal Additional npm config variables that are merged into the system npm config
- * @returns A promise that fullfills with boolean value.
+ * @returns A promise that fulfills with boolean value.
  */
 export async function packageAuthorChanged(
   packageName: string,
