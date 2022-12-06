@@ -34,7 +34,7 @@ describe('--interactive', () => {
 
       should.equal(/^Upgrading/m.test(stdout), true)
 
-      // do not show install hint when choosing autoinstall
+      // do not show install hint when choosing auto-install
       should.equal(/^Run npm install to install new versions.$/m.test(stdout), false)
 
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))

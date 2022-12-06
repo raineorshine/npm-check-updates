@@ -36,7 +36,7 @@ const setupDeepTest = async () => {
   // write root package file
   await fs.writeFile(path.join(tempDir, 'package.json'), pkgData, 'utf-8')
 
-  // write subproject package files
+  // write sub-project package files
   await fs.mkdir(path.join(tempDir, 'packages/sub1'), { recursive: true })
   await fs.writeFile(path.join(tempDir, 'packages/sub1/package.json'), pkgData, 'utf-8')
   await fs.mkdir(path.join(tempDir, 'packages/sub2'), { recursive: true })
