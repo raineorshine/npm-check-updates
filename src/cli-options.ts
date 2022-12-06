@@ -87,47 +87,54 @@ const wrap = (s: string, maxLineLength = 92) => {
 const wrapRows = (rows: string[][]) => rows.map(([col1, col2]) => [col1, wrap(col2)])
 
 /** Extended help for the --doctor option. */
-const extendedHelpDoctor = () => `Iteratively installs upgrades and runs tests to identify breaking upgrades.
+const extendedHelpDoctor =
+  () => `Iteratively installs upgrades and runs tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
 
-${chalk.bold('Add "-u" to execute')} (modifies your package file, lock file, and node_modules)
+${chalk.yellow('Add "-u" to execute')} (modifies your package file, lock file, and node_modules)
 
 To be more precise:
-1. Runs "npm install" and "npm test" to ensure tests are currently passing.
-2. Runs "ncu -u" to optimistically upgrade all dependencies.
-3. If tests pass, hurray!
-4. If tests fail, restores package file and lock file.
-5. For each dependency, install upgrade and run tests.
-6. Prints broken upgrades with test error.
-7. Saves working upgrades to package.json.
+
+  1. Runs "npm install" and "npm test" to ensure tests are currently passing.
+  2. Runs "ncu -u" to optimistically upgrade all dependencies.
+  3. If tests pass, hurray!
+  4. If tests fail, restores package file and lock file.
+  5. For each dependency, install upgrade and run tests.
+  6. Prints broken upgrades with test error.
+  7. Saves working upgrades to package.json.
+
+Additional options:
+
+  ${chalk.cyan('--doctorInstall')}   specify a custom install script (default: "npm install" or "yarn")
+  ${chalk.cyan('--doctorTest')}      specify a custom test script (default: "npm test")
 
 Example:
 
-$ ncu --doctor -u
-Running tests before upgrading
-npm install
-npm run test
-Upgrading all dependencies and re-running tests
-ncu -u
-npm install
-npm run test
-Tests failed
-Identifying broken dependencies
-npm install
-npm install --no-save react@16.0.0
-npm run test
-  ✓ react 15.0.0 → 16.0.0
-npm install --no-save react-redux@7.0.0
-npm run test
-  ✗ react-redux 6.0.0 → 7.0.0
+  $ ncu --doctor -u
+  Running tests before upgrading
+  npm install
+  npm run test
+  Upgrading all dependencies and re-running tests
+  ncu -u
+  npm install
+  npm run test
+  Tests failed
+  Identifying broken dependencies
+  npm install
+  npm install --no-save react@16.0.0
+  npm run test
+    ✓ react 15.0.0 → 16.0.0
+  npm install --no-save react-redux@7.0.0
+  npm run test
+    ✗ react-redux 6.0.0 → 7.0.0
 
-/projects/myproject/test.js:13
-  throw new Error('Test failed!')
-  ^
+  /projects/myproject/test.js:13
+    throw new Error('Test failed!')
+    ^
 
-npm install --no-save react-dnd@11.1.3
-npm run test
-  ✓ react-dnd 10.0.0 → 11.1.3
-Saving partially upgraded package.json
+  npm install --no-save react-dnd@11.1.3
+  npm run test
+    ✓ react-dnd 10.0.0 → 11.1.3
+  Saving partially upgraded package.json
 `
 
 /** Extended help for the --format option. */
