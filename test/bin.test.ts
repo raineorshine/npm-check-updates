@@ -61,7 +61,7 @@ describe('bin', async function () {
   })
 
   it('use package.json in cwd by default', async () => {
-    const output = await spawn('node', [bin, '--jsonUpgraded'], { cwd: path.join(__dirname, 'ncu') })
+    const output = await spawn('node', [bin, '--jsonUpgraded'], { cwd: path.join(__dirname, 'test-data/ncu') })
     const pkgData = JSON.parse(output)
     pkgData.should.have.property('express')
   })

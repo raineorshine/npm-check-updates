@@ -16,7 +16,7 @@ chai.use(chaiString)
 process.env.NCU_TESTS = 'true'
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
-const doctorTests = path.join(__dirname, 'doctor')
+const doctorTests = path.join(__dirname, 'test-data/doctor')
 
 /** Run the ncu CLI. */
 const ncu = (args: string[], options?: Record<string, unknown>) => spawn('node', [bin, ...args], options)

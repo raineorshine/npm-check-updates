@@ -118,7 +118,7 @@ describe('--deep', function () {
 })
 
 describe('--deep with nested ncurc files', function () {
-  const cwd = path.join(__dirname, 'deep-ncurc')
+  const cwd = path.join(__dirname, 'test-data/deep-ncurc')
 
   this.timeout(60000)
 
