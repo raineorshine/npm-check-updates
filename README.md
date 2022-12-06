@@ -262,9 +262,10 @@ Run `ncu --help [OPTION]` to view advanced help for a specific option, or see be
 
 ## doctor
 
-```text
-Usage: ncu --doctor
-       ncu -d
+Usage:
+
+    ncu --doctor
+    ncu -d
 
 Iteratively installs upgrades and runs tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
 
@@ -272,128 +273,128 @@ Add "-u" to execute (modifies your package file, lock file, and node_modules)
 
 To be more precise:
 
-  1. Runs "npm install" and "npm test" to ensure tests are currently passing.
-  2. Runs "ncu -u" to optimistically upgrade all dependencies.
-  3. If tests pass, hurray!
-  4. If tests fail, restores package file and lock file.
-  5. For each dependency, install upgrade and run tests.
-  6. Prints broken upgrades with test error.
-  7. Saves working upgrades to package.json.
+1. Runs "npm install" and "npm test" to ensure tests are currently passing.
+2. Runs "ncu -u" to optimistically upgrade all dependencies.
+3. If tests pass, hurray!
+4. If tests fail, restores package file and lock file.
+5. For each dependency, install upgrade and run tests.
+6. Prints broken upgrades with test error.
+7. Saves working upgrades to package.json.
 
 Additional options:
 
-  --doctorInstall   specify a custom install script (default: "npm install" or "yarn")
-  --doctorTest      specify a custom test script (default: "npm test")
+    --doctorInstall   specify a custom install script (default: "npm install" or "yarn")
+    --doctorTest      specify a custom test script (default: "npm test")
 
 Example:
 
-  $ ncu --doctor -u
-  Running tests before upgrading
-  npm install
-  npm run test
-  Upgrading all dependencies and re-running tests
-  ncu -u
-  npm install
-  npm run test
-  Tests failed
-  Identifying broken dependencies
-  npm install
-  npm install --no-save react@16.0.0
-  npm run test
-    ✓ react 15.0.0 → 16.0.0
-  npm install --no-save react-redux@7.0.0
-  npm run test
-    ✗ react-redux 6.0.0 → 7.0.0
+    $ ncu --doctor -u
+    Running tests before upgrading
+    npm install
+    npm run test
+    Upgrading all dependencies and re-running tests
+    ncu -u
+    npm install
+    npm run test
+    Tests failed
+    Identifying broken dependencies
+    npm install
+    npm install --no-save react@16.0.0
+    npm run test
+      ✓ react 15.0.0 → 16.0.0
+    npm install --no-save react-redux@7.0.0
+    npm run test
+      ✗ react-redux 6.0.0 → 7.0.0
 
-  /projects/myproject/test.js:13
-    throw new Error('Test failed!')
-    ^
+    /projects/myproject/test.js:13
+      throw new Error('Test failed!')
+      ^
 
-  npm install --no-save react-dnd@11.1.3
-  npm run test
-    ✓ react-dnd 10.0.0 → 11.1.3
-  Saving partially upgraded package.json
-```
+    npm install --no-save react-dnd@11.1.3
+    npm run test
+      ✓ react-dnd 10.0.0 → 11.1.3
+    Saving partially upgraded package.json
 
 ## format
 
-```text
-Usage: ncu --format [value]
+Usage:
+
+    ncu --format [value]
 
 Modify the output formatting or show additional information. Specify one or more comma-delimited values.
 
-┌──────────────┬─────────────────────────────────────────────────────────────────────────┐
-│        group │ Groups packages by major, minor, patch, and major version zero updates. │
-├──────────────┼─────────────────────────────────────────────────────────────────────────┤
-│ ownerChanged │ Shows if the package owner has changed.                                 │
-├──────────────┼─────────────────────────────────────────────────────────────────────────┤
-│         repo │ Infers and displays links to the package's source code repository.      │
-└──────────────┴─────────────────────────────────────────────────────────────────────────┘
-```
+    ┌──────────────┬─────────────────────────────────────────────────────────────────────────┐
+    │        group │ Groups packages by major, minor, patch, and major version zero updates. │
+    ├──────────────┼─────────────────────────────────────────────────────────────────────────┤
+    │ ownerChanged │ Shows if the package owner has changed.                                 │
+    ├──────────────┼─────────────────────────────────────────────────────────────────────────┤
+    │         repo │ Infers and displays links to the package's source code repository.      │
+    └──────────────┴─────────────────────────────────────────────────────────────────────────┘
 
 ## groupFunction
 
-```text
-Usage: ncu --groupFunction [fn]
+Usage:
+
+    ncu --groupFunction [fn]
 
 Customize how packages are divided into groups when using '--format group'. Only available in .ncurc.js or when importing npm-check-updates as a module:
 
-  /**
-    @param name             The name of the dependency.
-    @param defaultGroup     The predefined group name which will be used by default.
-    @param currentSpec      The current version range in your package.json.
-    @param upgradedSpec     The upgraded version range that will be written to your package.json.
-    @param upgradedVersion  The upgraded version number returned by the registry.
-    @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
-  */
-  groupFunction: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion} {
-    if (name === 'typescript' && defaultGroup === 'minor') {
-      return 'major'
+    /**
+      @param name             The name of the dependency.
+      @param defaultGroup     The predefined group name which will be used by default.
+      @param currentSpec      The current version range in your package.json.
+      @param upgradedSpec     The upgraded version range that will be written to your package.json.
+      @param upgradedVersion  The upgraded version number returned by the registry.
+      @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
+    */
+    groupFunction: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion} {
+      if (name === 'typescript' && defaultGroup === 'minor') {
+        return 'major'
+      }
+      if (name.startsWith('@myorg/')) {
+        return 'My Org'
+      }
+      return defaultGroup
     }
-    if (name.startsWith('@myorg/')) {
-      return 'My Org'
-    }
-    return defaultGroup
-  }
-```
 
 ## packageManager
 
-```text
-Usage: ncu --packageManager [s]
-       ncu -p [s]
+Usage:
+
+    ncu --packageManager [s]
+    ncu -p [s]
 
 Specifies the package manager to use when looking up version numbers.
 
-┌────────────────┬───────────────────────────────────────────────────────────────────────────────────────────┐
-│            npm │ System-installed npm. Default.                                                            │
-├────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
-│           yarn │ System-installed yarn. Automatically used if yarn.lock is present.                        │
-├────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
-│ staticRegistry │ Checks versions from a static file. Must include the --registry option with the path to a │
-│                │ JSON registry file.                                                                       │
-│                │                                                                                           │
-│                │ Example:                                                                                  │
-│                │                                                                                           │
-│                │ $ ncu --packageManager staticRegistry --registry ./my-registry.json                       │
-│                │                                                                                           │
-│                │ my-registry.json:                                                                         │
-│                │                                                                                           │
-│                │ {                                                                                         │
-│                │   "prettier": "2.7.1",                                                                    │
-│                │   "typescript": "4.7.4"                                                                   │
-│                │ }                                                                                         │
-└────────────────┴───────────────────────────────────────────────────────────────────────────────────────────┘
-```
+    ┌────────────────┬───────────────────────────────────────────────────────────────────────────────────────────┐
+    │            npm │ System-installed npm. Default.                                                            │
+    ├────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+    │           yarn │ System-installed yarn. Automatically used if yarn.lock is present.                        │
+    ├────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+    │ staticRegistry │ Checks versions from a static file. Must include the --registry option with the path to a │
+    │                │ JSON registry file.                                                                       │
+    │                │                                                                                           │
+    │                │ Example:                                                                                  │
+    │                │                                                                                           │
+    │                │     $ ncu --packageManager staticRegistry --registry ./my-registry.json                   │
+    │                │                                                                                           │
+    │                │ my-registry.json:                                                                         │
+    │                │                                                                                           │
+    │                │     {                                                                                     │
+    │                │       "prettier": "2.7.1",                                                                │
+    │                │       "typescript": "4.7.4"                                                               │
+    │                │     }                                                                                     │
+    └────────────────┴───────────────────────────────────────────────────────────────────────────────────────────┘
 
 ## peer
 
-```text
-Usage: ncu --peer
+Usage:
+
+    ncu --peer
 
 Check peer dependencies of installed packages and filter updates to compatible versions.
 
-Example
+Example:
 
 The following example demonstrates how --peer works, and how it uses peer dependencies from upgraded modules.
 
@@ -404,77 +405,76 @@ The package ncu-test-peer-update has two versions published:
 
 Our test app has the following dependencies:
 
-  "ncu-test-peer-update": "1.0.0",
-  "ncu-test-return-version": "1.0.0"
+    "ncu-test-peer-update": "1.0.0",
+    "ncu-test-return-version": "1.0.0"
 
 The latest versions of these packages are:
 
-  "ncu-test-peer-update": "1.1.0",
-  "ncu-test-return-version": "2.0.0"
+    "ncu-test-peer-update": "1.1.0",
+    "ncu-test-return-version": "2.0.0"
 
-With --peer
+With --peer:
 
 ncu upgrades packages to the highest version that still adheres to the peer dependency constraints:
 
-  ncu-test-peer-update     1.0.0  →  1.1.0
-  ncu-test-return-version  1.0.0  →  1.1.0
+    ncu-test-peer-update     1.0.0  →  1.1.0
+    ncu-test-return-version  1.0.0  →  1.1.0
 
-Without --peer
+Without --peer:
 
 As a comparison: without using the --peer option, ncu will suggest the latest versions, ignoring peer dependencies:
 
-  ncu-test-peer-update     1.0.0  →  1.1.0
-  ncu-test-return-version  1.0.0  →  2.0.0
-```
+    ncu-test-peer-update     1.0.0  →  1.1.0
+    ncu-test-return-version  1.0.0  →  2.0.0
 
 ## registry
 
-```text
-Usage: ncu --registry [uri]
-       ncu -r [uri]
+Usage:
+
+    ncu --registry [uri]
+    ncu -r [uri]
 
 Specify the registry to use when looking up package version numbers.
 
 When --packageManager staticRegistry is set, --registry must specify a path to a JSON
 registry file.
-```
 
 ## target
 
-```text
-Usage: ncu --target [value]
-       ncu -t [value]
+Usage:
+
+    ncu --target [value]
+    ncu -t [value]
 
 Determines the version to upgrade to. (default: "latest")
 
-┌──────────┬──────────────────────────────────────────────────────────────────────────────────────────────┐
-│ greatest │ Upgrade to the highest version number published, regardless of release date or tag. Includes │
-├──────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
-│   latest │ Upgrade to whatever the package's "latest" git tag points to. Excludes pre is specified.     │
-├──────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
-│    minor │ Upgrade to the highest minor version without bumping the major version.                      │
-├──────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
-│   newest │ Upgrade to the version with the most recent publish date, even if there are other version    │
-│          │ numbers that are higher. Includes prereleases.                                               │
-├──────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
-│    patch │ Upgrade to the highest patch version without bumping the minor or major versions.            │
-├──────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
-│   @[tag] │ Upgrade to the version published to a specific tag, e.g. 'next' or 'beta'.                   │
-└──────────┴──────────────────────────────────────────────────────────────────────────────────────────────┘
+    ┌──────────┬──────────────────────────────────────────────────────────────────────────────────────────────┐
+    │ greatest │ Upgrade to the highest version number published, regardless of release date or tag. Includes │
+    ├──────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
+    │   latest │ Upgrade to whatever the package's "latest" git tag points to. Excludes pre is specified.     │
+    ├──────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
+    │    minor │ Upgrade to the highest minor version without bumping the major version.                      │
+    ├──────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
+    │   newest │ Upgrade to the version with the most recent publish date, even if there are other version    │
+    │          │ numbers that are higher. Includes prereleases.                                               │
+    ├──────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
+    │    patch │ Upgrade to the highest patch version without bumping the minor or major versions.            │
+    ├──────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
+    │   @[tag] │ Upgrade to the version published to a specific tag, e.g. 'next' or 'beta'.                   │
+    └──────────┴──────────────────────────────────────────────────────────────────────────────────────────────┘
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module:
 
-  /** Custom target.
-    @param dependencyName The name of the dependency.
-    @param parsedVersion A parsed Semver object from semver-utils.
-      (See https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
-    @returns One of the valid target values (specified in the table above).
-  */
-  target: (dependencyName, [{ semver, version, operator, major, minor, patch, release, build }]) => {
-    if (major === '0') return 'minor'
-    return 'latest'
-  }
-```
+    /** Custom target.
+      @param dependencyName The name of the dependency.
+      @param parsedVersion A parsed Semver object from semver-utils.
+        (See https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
+      @returns One of the valid target values (specified in the table above).
+    */
+    target: (dependencyName, [{ semver, version, operator, major, minor, patch, release, build }]) => {
+      if (major === '0') return 'minor'
+      return 'latest'
+    }
 
 <!-- END Advanced Options -->
 

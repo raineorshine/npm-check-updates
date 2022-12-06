@@ -53,9 +53,7 @@ ${cliOptions
   .map(
     option => `## ${option.long}
 
-\`\`\`text
 ${stripAnsi(renderExtendedHelp(option))}
-\`\`\`
 `,
   )
   .join('\n')}

@@ -394,22 +394,22 @@ describe('rc-config', () => {
   describe('option-specific help', () => {
     it('long option', async () => {
       const output = await spawn('node', [bin, '--help', '--filter'])
-      output.trim().should.startWith('Usage: ncu --filter')
+      output.trim().should.match(/^Usage:\s+ncu --filter/)
     })
 
     it('long option without "--" prefix', async () => {
       const output = await spawn('node', [bin, '--help', '-f'])
-      output.trim().should.startWith('Usage: ncu --filter')
+      output.trim().should.match(/^Usage:\s+ncu --filter/)
     })
 
     it('short option', async () => {
       const output = await spawn('node', [bin, '--help', 'filter'])
-      output.trim().should.startWith('Usage: ncu --filter')
+      output.trim().should.match(/^Usage:\s+ncu --filter/)
     })
 
     it('short option without "-" prefix', async () => {
       const output = await spawn('node', [bin, '--help', 'f'])
-      output.trim().should.startWith('Usage: ncu --filter')
+      output.trim().should.match(/^Usage:\s+ncu --filter/)
     })
 
     it('option with default', async () => {
