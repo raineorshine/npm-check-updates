@@ -18,6 +18,25 @@ export interface CLIOption<T = any> {
   type: string
 }
 
+/** Renders the extended help for an option with usage information. */
+export const renderExtendedHelp = (option: CLIOption): string => {
+  let output = `Usage: ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}\n`
+  if (option.short) {
+    output += `       ncu -${option.short}${option.arg ? ` [${option.arg}]` : ''}\n`
+  }
+  if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
+    output += `Default: ${option.default}\n`
+  }
+  if (option.help) {
+    const helpText = typeof option.help === 'function' ? option.help() : option.help
+    output += `\n${helpText.trim()}\n\n`
+  } else if (option.description) {
+    output += `\n${option.description}\n`
+  }
+
+  return output.trim()
+}
+
 /** Wraps a string by inserting newlines every n characters. Wraps on word break. Default: 92 chars. */
 const wrap = (s: string, maxLineLength = 92) => {
   /* eslint-disable fp/no-mutating-methods */
@@ -197,7 +216,6 @@ You can also specify a custom function in your .ncurc.js file, or when importing
   )}
     ${chalk.red('return')} ${chalk.yellow("'latest'")}
   }
-
 `
 }
 
@@ -270,7 +288,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
 
  ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
  ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}
-  `
+`
 
 // store CLI options separately from bin file so that they can be used to build type definitions
 const cliOptions: CLIOption[] = [

@@ -1,8 +1,10 @@
 import fs from 'fs/promises'
 import spawn from 'spawn-please'
-import cliOptions, { CLIOption } from '../cli-options'
+import cliOptions, { CLIOption, renderExtendedHelp } from '../cli-options'
+import { chalkInit } from '../lib/chalk'
 
-const INJECT_HEADER = '<!-- Do not edit this section by hand. It is auto-generated in build-options.ts -->'
+const INJECT_HEADER =
+  '<!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->'
 
 /** Extracts CLI options from the bin output. */
 const readOptions = async () => {
@@ -19,16 +21,15 @@ const readOptions = async () => {
   )
 }
 
-/** Replaces the "Options" section of the README with direct output from "ncu --help". */
+/** Replaces the "Options" and "Advanced Options" sections of the README with direct output from "ncu --help". */
 const injectReadme = async () => {
+  const { default: stripAnsi } = await import('strip-ansi')
   const helpOptions = await readOptions()
   let readme = await fs.readFile('README.md', 'utf8')
 
   // inject options into README
   const optionsStart = readme.indexOf('<!-- BEGIN Options -->') + '<!-- BEGIN Options -->'.length
   const optionsEnd = readme.indexOf('<!-- END Options -->', optionsStart)
-
-  // insert new options into README
   readme = `${readme.slice(0, optionsStart)}
 ${INJECT_HEADER}
 
@@ -37,6 +38,28 @@ ${helpOptions}
 \`\`\`
 
 ${readme.slice(optionsEnd)}`
+
+  // Inject advanced options into README
+  // Even though chalkInit has a colorless option, we need stripAnsi to remove the ANSI characters frim the output of cli-table
+  await chalkInit()
+  const advancedOptionsStart =
+    readme.indexOf('<!-- BEGIN Advanced Options -->') + '<!-- BEGIN Advanced Options -->'.length
+  const advancedOptionsEnd = readme.indexOf('<!-- END Advanced Options -->', advancedOptionsStart)
+  readme = `${readme.slice(0, advancedOptionsStart)}
+${INJECT_HEADER}
+
+${cliOptions
+  .filter(option => option.help)
+  .map(
+    option => `## ${option.long}
+
+\`\`\`text
+${stripAnsi(renderExtendedHelp(option))}
+\`\`\`
+`,
+  )
+  .join('\n')}
+${readme.slice(advancedOptionsEnd)}`
 
   return readme
 }
@@ -63,7 +86,7 @@ const renderOption = (option: CLIOption<unknown>) => {
 
 /** Generate /src/types/RunOptions from cli-options so there is a single source of truth. */
 const renderRunOptions = (options: CLIOption<unknown>[]) => {
-  const header = `/** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build:options" to build. */
+  const header = `/** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build" or "npm run build:options" to build. */
 import { FilterFunction } from './FilterFunction'
 import { GroupFunction } from './GroupFunction'
 import { PackageFile } from './PackageFile'
