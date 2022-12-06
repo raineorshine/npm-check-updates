@@ -18,6 +18,7 @@ import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { SpawnOptions } from '../types/SpawnOptions'
 import { Version } from '../types/Version'
+import { VersionSpec } from '../types/VersionSpec'
 import {
   distTag as npmDistTag,
   greatest as npmGreatest,
@@ -45,7 +46,7 @@ interface YarnConfig {
 }
 
 /** Safely interpolates a string as a template string. */
-const interpolate = (s: string, data: any) =>
+const interpolate = (s: string, data: any): string =>
   s.replace(
     /\$\{([^:-]+)(?:(:)?-([^}]*))?\}/g,
     (match, key, name, fallbackOnEmpty, fallback) => data[key] || (fallbackOnEmpty ? fallback : ''),
@@ -75,7 +76,7 @@ export const npmAuthTokenKeyValue = curry((npmConfig: Index<string | boolean>, d
 })
 
 /** Reads a registry from a yarn config. interpolates it, and returns it as an npm config key-value pair. */
-const npmRegistryKeyValue = (dep: string, scopedConfig: NpmScope) =>
+const npmRegistryKeyValue = (dep: string, scopedConfig: NpmScope): null | Index<VersionSpec> =>
   scopedConfig.npmRegistryServer
     ? { [`@${dep}:registry`]: interpolate(scopedConfig.npmRegistryServer, process.env) }
     : null
@@ -147,6 +148,9 @@ const npmConfigFromYarn = memoize(async (options: Options): Promise<Index<string
 /**
  * Parse JSON lines and throw an informative error on failure.
  *
+ * Note: although this is similar to the NPM parseJson() function we always return the
+ * same concrete-type here, for now.
+ *
  * @param result    Output from `yarn list --json` to be parsed
  */
 async function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep> }> {
@@ -214,7 +218,7 @@ async function spawnYarn(
  * @param [options.prefix]
  * @returns
  */
-export async function defaultPrefix(options: Options) {
+export async function defaultPrefix(options: Options): Promise<string> {
   if (options.prefix) {
     return Promise.resolve(options.prefix)
   }
@@ -252,16 +256,20 @@ export async function defaultPrefix(options: Options) {
  * @param [options.prefix]
  * @returns
  */
-export const list = async (options: Options = {}, spawnOptions?: SpawnOptions) => {
-  const jsonLines = await spawnYarn('list', options as Index<string>, {
+export const list = async (options: Options = {}, spawnOptions?: SpawnOptions): Promise<Index<string | undefined>> => {
+  const jsonLines: string = await spawnYarn('list', options as Index<string>, {
     ...(options.cwd ? { cwd: options.cwd } : {}),
     ...spawnOptions,
   })
-  const json = await parseJsonLines(jsonLines)
-  return keyValueBy(json.dependencies, (name, info) => ({
-    // unmet peer dependencies have a different structure
-    [name]: info.version || info.required?.version,
-  }))
+  const json: { dependencies: Index<ParsedDep> } = await parseJsonLines(jsonLines)
+  const keyValues: Index<string | undefined> = keyValueBy<ParsedDep, string | undefined>(
+    json.dependencies,
+    (name, info): { [key: string]: string | undefined } => ({
+      // unmet peer dependencies have a different structure
+      [name]: info.version || info.required?.version,
+    }),
+  )
+  return keyValues
 }
 
 /**

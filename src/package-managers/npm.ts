@@ -31,14 +31,14 @@ import { filterPredicate, satisfiesNodeEngine } from './filters'
 /** Normalizes the keys of an npm config for pacote. */
 const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
   const npmConfigToPacoteMap = {
-    cafile: (path: string) => {
+    cafile: (path: string): undefined | { ca: string[] } => {
       // load-cafile, based on github.com/npm/cli/blob/40c1b0f/lib/config/load-cafile.js
       if (!path) return
       // synchronous since it is loaded once on startup, and to avoid complexity in libnpmconfig.read
       // https://github.com/raineorshine/npm-check-updates/issues/636?notification_referrer_id=MDE4Ok5vdGlmaWNhdGlvblRocmVhZDc0Njk2NjAzMjo3NTAyNzY%3D
       const cadata = fs.readFileSync(untildify(path), 'utf8')
       const delim = '-----END CERTIFICATE-----'
-      const output = cadata
+      const output: string[] = cadata
         .split(delim)
         .filter(xs => !!xs.trim())
         .map(xs => `${xs.trimStart()}${delim}`)
@@ -125,10 +125,10 @@ const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
   }
 
   /** Parses a string to a boolean. */
-  const stringToBoolean = (s: string) => !!s && s !== 'false' && s !== '0'
+  const stringToBoolean = (s: string): boolean => !!s && s !== 'false' && s !== '0'
 
   /** Parses a string to a number. */
-  const stringToNumber = (s: string) => parseInt(s) || 0
+  const stringToNumber = (s: string): number => parseInt(s) || 0
 
   // needed until pacote supports full npm config compatibility
   // See: https://github.com/zkat/pacote/issues/156
@@ -218,7 +218,7 @@ const isGlobalDeprecated = new Promise((resolve, reject) => {
  * @param data
  * @returns
  */
-function parseJson(result: string, data: { command?: string; packageName?: string }) {
+function parseJson<R>(result: string, data: { command?: string; packageName?: string }): R {
   let json
   // use a try-catch instead of .catch to avoid re-catching upstream errors
   try {
@@ -230,7 +230,7 @@ function parseJson(result: string, data: { command?: string; packageName?: strin
       }.\n\n${result}`,
     )
   }
-  return json
+  return json as R
 }
 
 /**
@@ -240,7 +240,7 @@ function parseJson(result: string, data: { command?: string; packageName?: strin
  * @param currentVersion Current version declaration (may be range)
  * @param upgradedVersion Upgraded version declaration (may be range)
  * @param npmConfigLocal Additional npm config variables that are merged into the system npm config
- * @returns A promise that fullfills with boolean value.
+ * @returns A promise that fulfills with boolean value.
  */
 export async function packageAuthorChanged(
   packageName: string,
@@ -248,7 +248,7 @@ export async function packageAuthorChanged(
   upgradedVersion: VersionSpec,
   options: Options = {},
   npmConfigLocal?: NpmConfig,
-) {
+): Promise<boolean> {
   const result = await pacote.packument(packageName, {
     ...npmConfigLocal,
     ...npmConfig,
@@ -284,7 +284,7 @@ export async function viewMany(
   options: Options,
   retried = 0,
   npmConfigLocal?: NpmConfig,
-) {
+): Promise<Packument> {
   if (currentVersion && (!semver.validRange(currentVersion) || versionUtil.isWildCard(currentVersion))) {
     return Promise.resolve({} as Packument)
   }
@@ -356,7 +356,7 @@ export async function viewOne(
   currentVersion: Version,
   options: Options,
   npmConfigLocal?: NpmConfig,
-) {
+): Promise<string | boolean | { engines: { node: string } } | undefined | Index<string> | Packument[]> {
   const result = await viewManyMemoized(packageName, [field], currentVersion, options, 0, npmConfigLocal)
   return result && result[field as keyof Packument]
 }
@@ -478,7 +478,11 @@ export const getPeerDependencies = async (packageName: string, version: Version)
   const atVersion = !version.startsWith('>') ? `@${version}` : ''
   const npmArgs = ['view', `${packageName}${atVersion}`, 'peerDependencies']
   const result = await spawnNpm(npmArgs, {}, { rejectOnError: false })
-  return result ? parseJson(result, { command: `${npmArgs.join(' ')} --json` }) : {}
+  if (!result) {
+    return {}
+  }
+  const peerDependencies: Index<Version> = parseJson<Index<Version>>(result, { command: `${npmArgs.join(' ')} --json` })
+  return peerDependencies
 }
 
 /**
@@ -490,7 +494,7 @@ export const getPeerDependencies = async (packageName: string, version: Version)
  * @param [options.prefix]
  * @returns
  */
-export const list = async (options: Options = {}) => {
+export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
   const result = await spawnNpm(
     'ls',
     {
@@ -503,10 +507,10 @@ export const list = async (options: Options = {}) => {
       rejectOnError: false,
     },
   )
-  const json = parseJson(result, {
+  const dependencies: Index<any> = parseJson<{ dependencies: Index<any> }>(result, {
     command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --location=global' : ''}`,
-  }) as { dependencies: Index<any> }
-  return keyValueBy(json.dependencies, (name, info) => ({
+  }).dependencies
+  return keyValueBy(dependencies, (name, info) => ({
     // unmet peer dependencies have a different structure
     [name]: info.version || info.required?.version,
   }))
