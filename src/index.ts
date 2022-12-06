@@ -152,6 +152,71 @@ const npmInstall = async (
   }
 }
 
+/** Runs the dependency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
+async function runUpgrades(): Promise<Index<string> | PackageFile | void> {
+  const [pkgInfos, workspacePackages]: [PackageInfo[], string[]] = await getAllPackages(options)
+
+  const pkgs: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
+
+  // enable deep mode if --deep, --workspace, --workspaces, or if multiple package files are found
+  const isWorkspace = options.workspaces || !!options.workspace?.length
+  options.deep = options.deep || isWorkspace || pkgs.length > 1
+
+  let analysis: Index<PackageFile> | PackageFile | void
+  if (options.global) {
+    const analysis = await runGlobal(options)
+    clearTimeout(timeout)
+    return analysis
+  } else if (options.deep) {
+    analysis = await pkgs.reduce(async (previousPromise, packageFile) => {
+      const packages = await previousPromise
+      // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
+      const rcResult = await getNcuRc({ packageFile, color: options.color })
+      let rcConfig = rcResult && rcResult.config ? rcResult.config : {}
+      if (options.mergeConfig && Object.keys(rcConfig).length) {
+        // Merge config options.
+        rcConfig = mergeOptions(options, rcConfig)
+      }
+      const pkgOptions: Options = {
+        ...options,
+        ...rcConfig,
+        packageFile,
+        workspacePackages,
+      }
+      const [pkgData, pkgFile] = await findPackage(pkgOptions)
+      return {
+        ...packages,
+        // index by relative path if cwd was specified
+        [pkgOptions.cwd
+          ? path
+              .relative(path.resolve(pkgOptions.cwd), pkgFile!)
+              // convert Windows path to *nix path for consistency
+              .replace(/\\/g, '/')
+          : pkgFile!]: await runLocal(pkgOptions, pkgData, pkgFile),
+      }
+    }, Promise.resolve({} as Index<PackageFile> | PackageFile))
+    if (options.json) {
+      printJson(options, analysis)
+    }
+  } else {
+    // mutate packageFile when glob pattern finds only single package
+    if (pkgs.length === 1 && pkgs[0] !== (options.packageFile || 'package.json')) {
+      options.packageFile = pkgs[0]
+    }
+    const [pkgData, pkgFile] = await findPackage(options)
+    analysis = await runLocal(options, pkgData, pkgFile)
+  }
+  clearTimeout(timeout)
+
+  // suggest install command or auto-install
+  if (options.upgrade) {
+    // if workspaces, install from root project folder
+    await npmInstall(isWorkspace ? ['package.json'] : pkgs, analysis, options)
+  }
+
+  return analysis
+}
+
 /** Main entry point.
  *
  * @returns Promise<
@@ -198,71 +263,6 @@ export async function run(
         }
       }, timeoutMs)
     })
-  }
-
-  /** Runs the dependency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
-  async function runUpgrades(): Promise<Index<string> | PackageFile | void> {
-    const [pkgInfos, workspacePackages]: [PackageInfo[], string[]] = await getAllPackages(options)
-
-    const pkgs: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
-
-    // enable deep mode if --deep, --workspace, --workspaces, or if multiple package files are found
-    const isWorkspace = options.workspaces || !!options.workspace?.length
-    options.deep = options.deep || isWorkspace || pkgs.length > 1
-
-    let analysis: Index<PackageFile> | PackageFile | void
-    if (options.global) {
-      const analysis = await runGlobal(options)
-      clearTimeout(timeout)
-      return analysis
-    } else if (options.deep) {
-      analysis = await pkgs.reduce(async (previousPromise, packageFile) => {
-        const packages = await previousPromise
-        // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
-        const rcResult = await getNcuRc({ packageFile, color: options.color })
-        let rcConfig = rcResult && rcResult.config ? rcResult.config : {}
-        if (options.mergeConfig && Object.keys(rcConfig).length) {
-          // Merge config options.
-          rcConfig = mergeOptions(options, rcConfig)
-        }
-        const pkgOptions: Options = {
-          ...options,
-          ...rcConfig,
-          packageFile,
-          workspacePackages,
-        }
-        const [pkgData, pkgFile] = await findPackage(pkgOptions)
-        return {
-          ...packages,
-          // index by relative path if cwd was specified
-          [pkgOptions.cwd
-            ? path
-                .relative(path.resolve(pkgOptions.cwd), pkgFile!)
-                // convert Windows path to *nix path for consistency
-                .replace(/\\/g, '/')
-            : pkgFile!]: await runLocal(pkgOptions, pkgData, pkgFile),
-        }
-      }, Promise.resolve({} as Index<PackageFile> | PackageFile))
-      if (options.json) {
-        printJson(options, analysis)
-      }
-    } else {
-      // mutate packageFile when glob pattern finds only single package
-      if (pkgs.length === 1 && pkgs[0] !== (options.packageFile || 'package.json')) {
-        options.packageFile = pkgs[0]
-      }
-      const [pkgData, pkgFile] = await findPackage(options)
-      analysis = await runLocal(options, pkgData, pkgFile)
-    }
-    clearTimeout(timeout)
-
-    // suggest install command or auto-install
-    if (options.upgrade) {
-      // if workspaces, install from root project folder
-      await npmInstall(isWorkspace ? ['package.json'] : pkgs, analysis, options)
-    }
-
-    return analysis
   }
 
   // doctor mode
