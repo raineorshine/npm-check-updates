@@ -404,28 +404,27 @@ The package ncu-test-peer-update has two versions published:
 
 Our test app has the following dependencies:
 
-    "ncu-test-peer-update": "1.0.0",
-    "ncu-test-return-version": "1.0.0"
+  "ncu-test-peer-update": "1.0.0",
+  "ncu-test-return-version": "1.0.0"
 
 The latest versions of these packages are:
 
-    "ncu-test-peer-update": "1.1.0",
-    "ncu-test-return-version": "2.0.0"
+  "ncu-test-peer-update": "1.1.0",
+  "ncu-test-return-version": "2.0.0"
 
 With --peer
 
 ncu upgrades packages to the highest version that still adheres to the peer dependency constraints:
 
-
- ncu-test-peer-update     1.0.0  →  1.1.0
- ncu-test-return-version  1.0.0  →  1.1.0
+  ncu-test-peer-update     1.0.0  →  1.1.0
+  ncu-test-return-version  1.0.0  →  1.1.0
 
 Without --peer
 
 As a comparison: without using the --peer option, ncu will suggest the latest versions, ignoring peer dependencies:
 
- ncu-test-peer-update     1.0.0  →  1.1.0
- ncu-test-return-version  1.0.0  →  2.0.0
+  ncu-test-peer-update     1.0.0  →  1.1.0
+  ncu-test-return-version  1.0.0  →  2.0.0
 ```
 
 ## registry

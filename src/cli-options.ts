@@ -37,6 +37,25 @@ export const renderExtendedHelp = (option: CLIOption): string => {
   return output.trim()
 }
 
+/** Renders the extended help in markdown for an option with usage information. */
+export const renderExtendedHelpMD = (option: CLIOption): string => {
+  let output = `Usage: \`ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}\`\n`
+  if (option.short) {
+    output += `       \`ncu -${option.short}${option.arg ? ` [${option.arg}]` : ''}\`\n`
+  }
+  if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
+    output += `Default: \`${option.default}\`\n`
+  }
+  if (option.help) {
+    const helpText = typeof option.help === 'function' ? option.help() : option.help
+    output += `\n${helpText.trim()}\n\n`
+  } else if (option.description) {
+    output += `\n${option.description}\n`
+  }
+
+  return output.trim()
+}
+
 /** Wraps a string by inserting newlines every n characters. Wraps on word break. Default: 92 chars. */
 const wrap = (s: string, maxLineLength = 92) => {
   /* eslint-disable fp/no-mutating-methods */
@@ -273,28 +292,27 @@ The package ${chalk.bold('ncu-test-peer-update')} has two versions published:
 
 Our test app has the following dependencies:
 
-    "ncu-test-peer-update": "1.0.0",
-    "ncu-test-return-version": "1.0.0"
+  "ncu-test-peer-update": "1.0.0",
+  "ncu-test-return-version": "1.0.0"
 
 The latest versions of these packages are:
 
-    "ncu-test-peer-update": "1.1.0",
-    "ncu-test-return-version": "2.0.0"
+  "ncu-test-peer-update": "1.1.0",
+  "ncu-test-return-version": "2.0.0"
 
 ${chalk.bold('With --peer')}
 
 ncu upgrades packages to the highest version that still adheres to the peer dependency constraints:
 
-
- ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
- ncu-test-return-version  1.0.0  →  1.${chalk.cyan('1.0')}
+  ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
+  ncu-test-return-version  1.0.0  →  1.${chalk.cyan('1.0')}
 
 ${chalk.bold('Without --peer')}
 
 As a comparison: without using the --peer option, ncu will suggest the latest versions, ignoring peer dependencies:
 
- ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
- ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}
+  ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
+  ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}
 `
 
 // store CLI options separately from bin file so that they can be used to build type definitions
