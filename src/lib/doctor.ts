@@ -14,13 +14,19 @@ import upgradePackageData from './upgradePackageData'
 
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
 
+/** Describes package data plus it's filepath */
+interface PackageInfo {
+  pkg: PackageFile
+  pkgFile: string
+}
+
 /** Run the npm CLI in CI mode. */
 const npm = (
   args: string[],
   options: Options,
   print?: boolean,
   { spawnOptions }: { spawnOptions?: SpawnOptions } = {},
-) => {
+): Promise<string> => {
   if (print) {
     console.log(chalk.blue([options.packageManager, ...args].join(' ')))
   }
@@ -45,8 +51,8 @@ const npm = (
 }
 
 /** Load and validate package file and tests. */
-const loadPackageFile = async (options: Options) => {
-  let pkg, pkgFile
+const loadPackageFile = async (options: Options): Promise<PackageInfo> => {
+  let pkg: PackageFile, pkgFile: string
 
   // assert no --packageData or --packageFile
   if (options.packageData || options.packageFile) {
@@ -78,12 +84,13 @@ const loadPackageFile = async (options: Options) => {
 
 /** Iteratively installs upgrades and runs tests to identify breaking upgrades. */
 // we have to pass run directly since it would be a circular require if doctor included this file
-const doctor = async (run: Run, options: Options) => {
+const doctor = async (run: Run, options: Options): Promise<void> => {
   await chalkInit()
   const lockFileName = options.packageManager === 'yarn' ? 'yarn.lock' : 'package-lock.json'
-  const { pkg, pkgFile } = await loadPackageFile(options)
+  const { pkg, pkgFile }: PackageInfo = await loadPackageFile(options)
 
-  const allDependencies = {
+  // flatten all deps into one so we can iterate over them
+  const allDependencies: Index<VersionSpec> = {
     ...pkg.dependencies,
     ...pkg.devDependencies,
     ...pkg.optionalDependencies,
@@ -91,7 +98,7 @@ const doctor = async (run: Run, options: Options) => {
   }
 
   /** Install dependencies using "npm run install" or a custom script given by --doctorInstall. */
-  const runInstall = async () => {
+  const runInstall = async (): Promise<void> => {
     if (options.doctorInstall) {
       const [installCommand, ...testArgs] = options.doctorInstall.split(' ')
       await spawn(installCommand, testArgs)
@@ -101,14 +108,14 @@ const doctor = async (run: Run, options: Options) => {
   }
 
   /** Run the tests using "npm run test" or a custom script given by --doctorTest. */
-  const runTests = async () => {
+  const runTests = async (): Promise<void> => {
     const spawnOptions = {
-      stderr: (data: string) => {
+      stderr: (data: string): void => {
         console.error(chalk.red(data.toString()))
       },
       // Test runners typically write to stdout, so we need to print stdout.
       // Otherwise test failures will be silenced.
-      stdout: (data: string) => {
+      stdout: (data: string): void => {
         process.stdout.write(data.toString())
       },
     }
@@ -163,12 +170,12 @@ const doctor = async (run: Run, options: Options) => {
     ),
   )
   process.env.NCU_DOCTOR = '1'
-  const upgrades = (await run({
+  const upgrades: Index<VersionSpec> = (await run({
     ...options,
     silent: true,
     // --doctor triggers the initial call to doctor, but the internal call needs to executes npm-check-updates normally in order to upgrade the dependencies
     doctor: false,
-  })) as Index<string>
+  })) as Index<VersionSpec>
 
   if (Object.keys(upgrades || {}).length === 0) {
     console.log('All dependencies are up-to-date ' + chalk.green.bold(':)'))
@@ -229,8 +236,9 @@ const doctor = async (run: Run, options: Options) => {
     }
 
     // iterate upgrades
+    let name: string, version: VersionSpec
     // eslint-disable-next-line fp/no-loops
-    for (const [name, version] of Object.entries(upgrades)) {
+    for ([name, version] of Object.entries(upgrades)) {
       try {
         // install single dependency
         await npm(

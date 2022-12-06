@@ -20,7 +20,7 @@ export function keyValueBy<T, R = true>(
   accum: Index<R> = {},
 ): Index<R> {
   const isArray = Array.isArray(input)
-  keyValue = keyValue || ((key: T) => ({ [key as unknown as string]: true as unknown as R }))
+  keyValue = keyValue || ((key: T): Index<R> => ({ [key as unknown as string]: true as unknown as R }))
   // considerably faster than Array.prototype.reduce
   Object.entries(input || {}).forEach(([key, value], i) => {
     const o = isArray
