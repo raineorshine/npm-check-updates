@@ -153,7 +153,7 @@ const npmInstall = async (
 }
 
 /** Runs the dependency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
-async function runUpgrades(): Promise<Index<string> | PackageFile | void> {
+async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<Index<string> | PackageFile | void> {
   const [pkgInfos, workspacePackages]: [PackageInfo[], string[]] = await getAllPackages(options)
 
   const pkgs: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
@@ -247,7 +247,7 @@ export async function run(
     options.prefix = await packageManagers[options.packageManager === 'yarn' ? 'yarn' : 'npm'].defaultPrefix!(options)
   }
 
-  let timeout: NodeJS.Timeout
+  let timeout: NodeJS.Timeout | undefined
   let timeoutPromise: Promise<void> = new Promise(() => null)
   if (options.timeout) {
     const timeoutMs = isString(options.timeout) ? Number.parseInt(options.timeout, 10) : options.timeout
@@ -279,7 +279,7 @@ export async function run(
   }
   // normal mode
   else {
-    return Promise.race([timeoutPromise, runUpgrades()])
+    return Promise.race([timeoutPromise, runUpgrades(options, timeout)])
   }
 }
 
