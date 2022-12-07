@@ -54,7 +54,13 @@ describe('getAllPackages', () => {
     it('errors in non-workspace project with --workspaces option', async () => {
       await getAllPackagesForTest('test-data/basic/', {
         workspaces: true,
-      }).should.be.rejectedWith('workspaces property missing')
+      }).should.be.rejectedWith('workspaces property missing from package.json. --workspaces')
+    })
+
+    it('errors in non-workspace project with --workspace=<name> option', async () => {
+      await getAllPackagesForTest('test-data/basic/', {
+        workspace: ['basic-sub-package'],
+      }).should.be.rejectedWith('workspaces property missing from package.json. --workspace')
     })
   })
 
