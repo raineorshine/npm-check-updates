@@ -61,6 +61,8 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
     }
 
     // build a glob from the workspaces
+    // FIXME: the following workspaces check is redundant
+    /* c8 ignore next */
     const workspacePackageGlob: string[] = (workspaces || []).map(workspace =>
       path
         .join(workspace, defaultPackageFilename)
