@@ -26,7 +26,11 @@ const isGreaterThanSafe = (spec1: VersionSpec, spec2: VersionSpec) =>
  * @returns Promised {packageName: version} collection
  */
 function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}) {
-  const depOptions = options.dep ? (options.dep || '').split(',') : ['dev', 'optional', 'peer', 'prod', 'bundle']
+  const depOptions = options.dep
+    ? typeof options.dep === 'string'
+      ? options.dep.split(',')
+      : options.dep
+    : ['prod', 'dev', 'bundle', 'optional']
 
   // map the dependency section option to a full dependency section name
   const depSections = depOptions.map(

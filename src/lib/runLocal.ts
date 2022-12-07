@@ -251,7 +251,7 @@ async function runLocal(
     }
   }
 
-  const newPkgData = await upgradePackageData(pkgData!, current, chosenUpgraded)
+  const newPkgData = await upgradePackageData(pkgData!, current, chosenUpgraded, options)
 
   const output = options.jsonAll
     ? (jph.parse(newPkgData) as PackageFile)

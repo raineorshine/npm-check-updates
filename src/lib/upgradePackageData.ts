@@ -1,4 +1,6 @@
 import { Index } from '../types/IndexType'
+import { Options } from '../types/Options'
+import { PackageFile } from '../types/PackageFile'
 import { VersionSpec } from '../types/VersionSpec'
 
 /**
@@ -17,15 +19,34 @@ function escapeRegexp(s: string) {
  * @returns The updated package data, as utf8 text
  * @description Side Effect: prompts
  */
-async function upgradePackageData(pkgData: string, current: Index<VersionSpec>, upgraded: Index<VersionSpec>) {
-  let newPkgData = pkgData
+async function upgradePackageData(
+  pkgData: string,
+  current: Index<VersionSpec>,
+  upgraded: Index<VersionSpec>,
+  options: Options,
+) {
+  const depOptions = options.dep
+    ? typeof options.dep === 'string'
+      ? options.dep.split(',')
+      : options.dep
+    : ['prod', 'dev', 'bundle', 'optional']
 
-  // eslint-disable-next-line fp/no-loops
-  for (const dep in upgraded) {
-    const expression = `"${dep}"\\s*:\\s*"${escapeRegexp(`${current[dep]}"`)}`
-    const regExp = new RegExp(expression, 'g')
-    newPkgData = newPkgData.replace(regExp, `"${dep}": "${upgraded[dep]}"`)
-  }
+  const depSections = depOptions.map(
+    short => (short === 'prod' ? 'dependencies' : short + 'Dependencies') as keyof PackageFile,
+  )
+
+  // iterate through each dependency section
+  const sectionRegExp = new RegExp(`"(${depSections.join(`|`)})"s*:[^}]*`, 'g')
+  const newPkgData = pkgData.replace(sectionRegExp, section => {
+    // replace each upgraded dependency in the section
+    Object.keys(upgraded).forEach(dep => {
+      const expression = `"${dep}"\\s*:\\s*"(${escapeRegexp(current[dep])})"`
+      const regExp = new RegExp(expression, 'g')
+      section = section.replace(regExp, `"${dep}": "${upgraded[dep]}"`)
+    })
+
+    return section
+  })
 
   return newPkgData
 }

@@ -258,7 +258,12 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         console.log(`  ${chalk.green('✓')} ${name} ${allDependencies[name]} → ${version}`)
 
         // save upgraded package data so that passing versions can still be saved even when there is a failure
-        lastPkgFile = await upgradePackageData(lastPkgFile, { [name]: allDependencies[name] }, { [name]: version })
+        lastPkgFile = await upgradePackageData(
+          lastPkgFile,
+          { [name]: allDependencies[name] },
+          { [name]: version },
+          options,
+        )
 
         // save working lock file
         lockFile = await fs.readFile(lockFileName, 'utf-8')
