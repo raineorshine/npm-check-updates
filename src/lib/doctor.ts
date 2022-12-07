@@ -74,7 +74,8 @@ const loadPackageFile = async (options: Options): Promise<PackageInfo> => {
     process.exit(1)
   }
 
-  return { pkg, pkgFile }
+  const packageName = pkg.name || '__root__'
+  return { name: packageName, pkg, pkgFile }
 }
 
 /** Iteratively installs upgrades and runs tests to identify breaking upgrades. */
