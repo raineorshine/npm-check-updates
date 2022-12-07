@@ -5,4 +5,5 @@ export interface PackageInfo {
   name: string
   pkg: PackageFile
   pkgFile: string // the raw file string
+  filepath: string
 }

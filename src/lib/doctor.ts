@@ -75,7 +75,7 @@ const loadPackageFile = async (options: Options): Promise<PackageInfo> => {
   }
 
   const packageName = pkg.name || '__root__'
-  return { name: packageName, pkg, pkgFile }
+  return { name: packageName, pkg, pkgFile, filepath: 'package.json' }
 }
 
 /** Iteratively installs upgrades and runs tests to identify breaking upgrades. */
