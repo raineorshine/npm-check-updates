@@ -9,16 +9,11 @@ import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { SpawnOptions } from '../types/SpawnOptions'
 import { VersionSpec } from '../types/VersionSpec'
+import { PackageInfo } from './PackageInfo'
 import chalk, { chalkInit } from './chalk'
 import upgradePackageData from './upgradePackageData'
 
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
-
-/** Describes package data plus it's filepath */
-interface PackageInfo {
-  pkg: PackageFile
-  pkgFile: string
-}
 
 /** Run the npm CLI in CI mode. */
 const npm = (
