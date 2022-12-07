@@ -72,5 +72,16 @@ describe('getAllPackages', () => {
       pkgs.should.deep.equal(['pkg/sub/package.json'])
       workspacePackages.should.deep.equal(['basic-sub-package'])
     })
+
+    it('handles simple workspace with --workspaces and --root option', async () => {
+      const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+        'test-data/workspace_basic/',
+        { root: true, workspaces: true },
+      )
+
+      // with --root should return root package and the sub-package
+      pkgs.should.deep.equal(['package.json', 'pkg/sub/package.json'])
+      workspacePackages.should.deep.equal(['basic-sub-package'])
+    })
   })
 })
