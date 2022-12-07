@@ -89,7 +89,11 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
           workspacePackageFiles
         : // --workspace
           workspacePackageFiles.filter(pkgFile =>
+            /* ignore coverage on optional-chaining */
+            /* c8 ignore next */
             options.workspace?.some(workspace =>
+              /* ignore coverage on optional-chaining */
+              /* c8 ignore next */
               workspaces?.some(
                 workspacePattern =>
                   pkgFile === path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename),
