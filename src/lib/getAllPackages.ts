@@ -54,7 +54,9 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
     }
 
     // build a glob from the workspaces
-    const workspacePackageGlob = (workspaces || []).map(workspace =>
+    // FIXME: the following workspaces check is redundant
+    /* c8 ignore next */
+    const workspacePackageGlob: string[] = (workspaces || []).map(workspace =>
       path
         .join(cwd, workspace, defaultPackageFilename)
         // convert Windows path to *nix path for globby
