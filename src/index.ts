@@ -72,7 +72,7 @@ const getPackageManagerForInstall = async (options: Options, pkgFile: string) =>
   return pnpm ? 'pnpm' : 'npm'
 }
 
-/** Either suggest an install command based on the package manager, or in interactive mode, prompt to autoinstall. */
+/** Either suggest an install command based on the package manager, or in interactive mode, prompt to auto-install. */
 const npmInstall = async (
   pkgs: string[],
   analysis: Index<PackageFile> | PackageFile,
@@ -85,8 +85,8 @@ const npmInstall = async (
   const someUpgraded = Object.values(analysisNormalized).some(upgrades => Object.keys(upgrades).length > 0)
   if (!someUpgraded) return
 
-  // for the purpose of the install hint, just use the package manager used in the first subproject
-  // if autoinstalling, the actual package manager in each subproject will be used
+  // for the purpose of the install hint, just use the package manager used in the first sub-project
+  // if auto-installing, the actual package manager in each sub-project will be used
   const packageManager = await getPackageManagerForInstall(options, pkgs[0])
 
   // by default, show an install hint after upgrading
@@ -111,7 +111,7 @@ const npmInstall = async (
       },
     })
 
-    // autoinstall
+    // auto-install
     if (response.value) {
       pkgs.forEach(async pkgFile => {
         const packageManager = await getPackageManagerForInstall(options, pkgFile)
@@ -129,7 +129,7 @@ const npmInstall = async (
                     // When pnpm install is run directly from the terminal, this error does not occur.
                     // When pnpm install is run from a simple spawn script, this error does not occur.
                     // The issue only seems to be when pnpm install is executed from npm-check-updates, but it's not clear what configuration or environmental factors are causing this.
-                    // For now, turn off strict-peer-dependencies on pnpm autoinstall.
+                    // For now, turn off strict-peer-dependencies on pnpm auto-install.
                     // See: https://github.com/raineorshine/npm-check-updates/issues/1191
                     npm_config_strict_peer_dependencies: false,
                   },
@@ -149,7 +149,7 @@ const npmInstall = async (
     }
   }
 
-  // show the install hint unless autoinstall occurred
+  // show the install hint unless auto-install occurred
   else {
     print(options, `\n${installHint}.`)
   }
@@ -169,7 +169,7 @@ export async function run(
 ): Promise<PackageFile | Index<VersionSpec> | void> {
   const options = await initOptions(runOptions, { cli })
 
-  // chalk may already have been intialized in cli.ts, but when imported as a module
+  // chalk may already have been initialized in cli.ts, but when imported as a module
   // chalkInit is idempotent
   await chalkInit(options.color)
 
@@ -335,7 +335,7 @@ export async function run(
         printJson(options, analysis)
       }
     } else {
-      // Mutate packageFile when glob patern finds only single package
+      // Mutate packageFile when glob pattern finds only single package
       if (pkgs.length === 1 && pkgs[0] !== defaultPackageFilename) {
         options.packageFile = pkgs[0]
       }
@@ -344,7 +344,7 @@ export async function run(
     }
     clearTimeout(timeout)
 
-    // suggest install command or autoinstall
+    // suggest install command or auto-install
     if (options.upgrade) {
       // if workspaces, install from root project folder
       await npmInstall(isWorkspace ? ['package.json'] : pkgs, analysis, options)

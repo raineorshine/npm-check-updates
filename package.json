@@ -39,6 +39,7 @@
     "prettier": "prettier .",
     "test": "npm run test:src && npm run test:timeout",
     "test:src": "mocha test test/package-managers/npm test/package-managers/yarn test/package-managers/staticRegistry",
+    "test:src:cov": "npm run c8 npm run test:src",
     "test:timeout": "mocha --exit test/timeout",
     "ncu": "node build/src/bin/cli.js"
   },
