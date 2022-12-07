@@ -75,7 +75,7 @@ describe('getAllPackages', () => {
 
     it('handles simple workspace with --workspaces and --root option', async () => {
       const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
-        'test-data/workspace_basic/',
+        'test-data/workspace-basic/',
         { root: true, workspaces: true },
       )
 
@@ -86,7 +86,7 @@ describe('getAllPackages', () => {
 
     it('handles simple workspace with --workspaces=false', async () => {
       const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
-        'test-data/workspace_basic/',
+        'test-data/workspace-basic/',
         { workspaces: false },
       )
 
@@ -99,7 +99,7 @@ describe('getAllPackages', () => {
     describe('--workspace="<string>"', () => {
       it('handles simple workspace with --workspace="basic-sub-package"', async () => {
         const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
-          'test-data/workspace_basic/',
+          'test-data/workspace-basic/',
           { workspace: ['basic-sub-package'] },
         )
 
@@ -110,7 +110,7 @@ describe('getAllPackages', () => {
 
       it('handles simple workspace with --workspaces and --workspace="basic-sub-package"', async () => {
         const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
-          'test-data/workspace_basic/',
+          'test-data/workspace-basic/',
           { workspaces: true, workspace: ['basic-sub-package'] },
         )
 
@@ -120,7 +120,7 @@ describe('getAllPackages', () => {
 
       it('handles simple workspace with --workspaces, --workspace="basic-sub-package", and --root option', async () => {
         const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
-          'test-data/workspace_basic/',
+          'test-data/workspace-basic/',
           { root: true, workspaces: true, workspace: ['basic-sub-package'] },
         )
 
@@ -131,7 +131,7 @@ describe('getAllPackages', () => {
 
       it('handles simple workspace with --workspaces and --workspace=<empty>', async () => {
         const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
-          'test-data/workspace_basic/',
+          'test-data/workspace-basic/',
           { workspaces: true, workspace: [] },
         )
 
@@ -141,7 +141,7 @@ describe('getAllPackages', () => {
 
       it('handles simple workspace with --workspaces=false and  --workspace="basic-sub-package"', async () => {
         const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
-          'test-data/workspace_basic/',
+          'test-data/workspace-basic/',
           { workspaces: false, workspace: ['basic-sub-package'] },
         )
 
@@ -151,6 +151,32 @@ describe('getAllPackages', () => {
         // from the code.
         pkgs.should.deep.equal([])
         workspacePackages.should.deep.equal(['basic-sub-package'])
+      })
+    })
+  })
+
+  describe('empty workspace project', () => {
+    describe('package.workspaces is empty array', () => {
+      it('should return empty data for empty workspaces', async () => {
+        const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+          'test-data/workspace-workspace-param-is-array/',
+          { workspaces: true },
+        )
+
+        pkgs.should.deep.equal([])
+        workspacePackages.should.deep.equal([])
+      })
+    })
+
+    describe('package.workspaces is object and package.workspaces.packages is empty array', () => {
+      it('should return empty data for empty workspaces', async () => {
+        const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+          'test-data/workspace-no-sub-packages/',
+          { workspaces: true },
+        )
+
+        pkgs.should.deep.equal([])
+        workspacePackages.should.deep.equal([])
       })
     })
   })
