@@ -84,6 +84,18 @@ describe('getAllPackages', () => {
       workspacePackages.should.deep.equal(['basic-sub-package'])
     })
 
+    it('handles simple workspace with --workspaces=false', async () => {
+      const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+        'test-data/workspace_basic/',
+        { workspaces: false },
+      )
+
+      // with workspaces=false should return just the root package, no sub-packages,
+      // when inside a workspace project
+      pkgs.should.deep.equal(['package.json'])
+      workspacePackages.should.deep.equal([])
+    })
+
     describe('--workspace="<string>"', () => {
       it('handles simple workspace with --workspace="basic-sub-package"', async () => {
         const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
@@ -124,6 +136,20 @@ describe('getAllPackages', () => {
         )
 
         pkgs.should.deep.equal(['pkg/sub/package.json'])
+        workspacePackages.should.deep.equal(['basic-sub-package'])
+      })
+
+      it('handles simple workspace with --workspaces=false and  --workspace="basic-sub-package"', async () => {
+        const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+          'test-data/workspace_basic/',
+          { workspaces: false, workspace: ['basic-sub-package'] },
+        )
+
+        // with --workspaces=false should return no packages but the workspace name
+        // when --workspace="X" given.
+        // FIXME: explain WHY this exists and what the use-case is for, it's unclear
+        // from the code.
+        pkgs.should.deep.equal([])
         workspacePackages.should.deep.equal(['basic-sub-package'])
       })
     })
