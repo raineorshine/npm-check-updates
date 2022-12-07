@@ -191,5 +191,17 @@ describe('getAllPackages', () => {
         workspacePackages.should.deep.equal([])
       })
     })
+
+    describe('unnamed sub-project', () => {
+      it('should use path for workspace name if name property missing', async () => {
+        const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+          'test-data//workspace-with-unnamed-sub-package/',
+          { workspaces: true },
+        )
+
+        pkgs.should.deep.equal(['pkg/dirname-will-become-name/package.json'])
+        workspacePackages.should.deep.equal(['dirname-will-become-name']) // should use the directory name
+      })
+    })
   })
 })
