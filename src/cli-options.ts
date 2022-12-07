@@ -156,6 +156,7 @@ const extendedHelpFormat = (): string => {
       ['group', `Groups packages by major, minor, patch, and major version zero updates.`],
       ['ownerChanged', `Shows if the package owner has changed.`],
       ['repo', `Infers and displays links to the package's source code repository.`],
+      ['time', 'Shows the publish time of each upgrade.'],
     ]),
     // coerce type until rows is added @types/cli-table
     // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
@@ -439,7 +440,7 @@ const cliOptions: CLIOption[] = [
     parse: value => (typeof value === 'string' ? value.split(',') : value),
     default: [],
     type: 'string[]',
-    choices: ['group', 'ownerChanged', 'repo'],
+    choices: ['group', 'ownerChanged', 'repo', 'time'],
     help: extendedHelpFormat,
   },
   {

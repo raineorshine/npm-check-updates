@@ -195,6 +195,7 @@ async function runLocal(
   const [upgraded, latestResults, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)
   const latest = keyValueBy(latestResults, (key, result) => (result.version ? { [key]: result.version } : null))
   const errors = keyValueBy(latestResults, (key, result) => (result.error ? { [key]: result.error } : null))
+  const time = keyValueBy(latestResults, (key, result) => (result.time ? { [key]: result.time } : null))
 
   if (options.peer) {
     print(options, '\nupgradedPeerDependencies:', 'verbose')
@@ -236,9 +237,10 @@ async function runLocal(
         current,
         upgraded: chosenUpgraded,
         total: Object.keys(upgraded).length,
-        latest,
+        latest: latestResults,
         ownersChangedDeps,
         errors,
+        time,
       },
     )
     if (options.peer) {

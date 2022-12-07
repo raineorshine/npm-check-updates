@@ -5,7 +5,7 @@ import Table from 'cli-table'
 import { IgnoredUpgrade } from '../types/IgnoredUpgrade'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
-import { Version } from '../types/Version'
+import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
 import chalk from './chalk'
 import filterObject from './filterObject'
@@ -131,12 +131,14 @@ export async function toDependencyTable({
   from: fromDeps,
   to: toDeps,
   ownersChangedDeps,
+  time,
   format,
 }: {
   from: Index<VersionSpec>
   to: Index<VersionSpec>
   ownersChangedDeps?: Index<boolean>
   format?: string[]
+  time?: Index<string>
 }) {
   const table = renderDependencyTable(
     await Promise.all(
@@ -156,7 +158,8 @@ export async function toDependencyTable({
             : ''
           const toColorized = colorizeDiff(getVersion(from), to)
           const repoUrl = format?.includes('repo') ? (await getRepoUrl(dep)) || '' : ''
-          return [dep, from, '→', toColorized, ownerChanged, repoUrl]
+          const publishTime = format?.includes('time') && time?.[dep] ? time[dep] : ''
+          return [dep, from, '→', toColorized, ownerChanged, ...[repoUrl, publishTime].filter(x => x)]
         }),
     ),
   )
@@ -177,10 +180,12 @@ export async function printUpgradesTable(
     current,
     upgraded,
     ownersChangedDeps,
+    time,
   }: {
     current: Index<VersionSpec>
     upgraded: Index<VersionSpec>
     ownersChangedDeps?: Index<boolean>
+    time?: Index<string>
   },
   options: Options,
 ) {
@@ -197,6 +202,7 @@ export async function printUpgradesTable(
           from: current,
           to: packages,
           ownersChangedDeps,
+          time,
           format: options.format,
         }),
       )
@@ -208,6 +214,7 @@ export async function printUpgradesTable(
         from: current,
         to: upgraded,
         ownersChangedDeps,
+        time,
         format: options.format,
       }),
     )
@@ -261,18 +268,21 @@ export async function printUpgrades(
     upgraded,
     total,
     ownersChangedDeps,
+    time,
     errors,
   }: {
     // Current package versions
     current: Index<VersionSpec>
     // Latest package versions according to the target. This is only used to detect an empty result from npm/pacote.
-    latest?: Index<Version>
+    latest?: Index<VersionResult>
     // Upgraded package specifications
     upgraded: Index<VersionSpec>
     // The total number of all possible upgrades. This is used to differentiate "no dependencies" from "no upgrades"
     total: number
     // Boolean flag per dependency which announces if package owner changed. Only used by --format ownerChanged
     ownersChangedDeps?: Index<boolean>
+    // Time published if options.format includes "time"
+    time?: Index<string>
     // Any errors that were encountered when fetching versions.
     errors?: Index<string>
   },
@@ -317,6 +327,7 @@ export async function printUpgrades(
         current,
         upgraded,
         ownersChangedDeps,
+        time,
       },
       options,
     )

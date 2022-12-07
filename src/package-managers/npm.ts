@@ -25,6 +25,7 @@ import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { Packument } from '../types/Packument'
 import { Version } from '../types/Version'
+import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
 import { filterPredicate, satisfiesNodeEngine } from './filters'
 
@@ -289,6 +290,8 @@ export async function viewMany(
     return Promise.resolve({} as Packument)
   }
 
+  const fieldsExtended = options.format?.includes('time') ? [...fields, 'time'] : fields
+
   // merge project npm config with base config
   const npmConfigProjectPath = options.packageFile ? path.join(options.packageFile, '../.npmrc') : null
   const npmConfigProject = options.packageFile ? findNpmConfig(npmConfigProjectPath!) : null
@@ -313,7 +316,7 @@ export async function viewMany(
     ...npmConfigCWD,
     ...(options.registry ? { registry: options.registry, silent: true } : null),
     ...(options.timeout ? { timeout: options.timeout } : null),
-    fullMetadata: fields.includes('time'),
+    fullMetadata: fieldsExtended.includes('time'),
   }
 
   let result: any
@@ -321,22 +324,35 @@ export async function viewMany(
     result = await pacote.packument(packageName, npmOptions)
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
-      const packument: Packument = await viewMany(packageName, fields, currentVersion, options, retried, npmConfigLocal)
+      const packument: Packument = await viewMany(
+        packageName,
+        fieldsExtended,
+        currentVersion,
+        options,
+        retried,
+        npmConfigLocal,
+      )
       return packument
     }
 
     throw err
   }
-  return fields.reduce(
-    (accum, field) => ({
-      ...accum,
-      [field]:
-        field.startsWith('dist-tags.') && result.versions
-          ? result.versions[get(result, field) as unknown as string]
-          : result[field],
-    }),
-    {} as Packument,
-  )
+
+  // select each field from the result object
+  return keyValueBy(fields, field => {
+    let value = result[field]
+
+    // index into the result object to get the dist-tag
+    if (field.startsWith('dist-tags.') && result.versions) {
+      const packument: Packument = result.versions[get(result, field) as unknown as string]
+      // since viewOne only keeps a single field, we need to add time onto the dist-tag field
+      value = options.format?.includes('time') ? { ...packument, time: result.time } : packument
+    }
+
+    return {
+      [field]: value,
+    }
+  }) as Packument
 }
 
 /** Memoize viewMany for --deep performance. */
@@ -450,18 +466,19 @@ export const greatest: GetVersion = async (
   currentVersion,
   options = {},
   npmConfig?: NpmConfig,
-): Promise<string | null> => {
+): Promise<VersionResult> => {
   // known type based on 'versions'
   const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Packument[]
 
-  return (
-    last(
-      // eslint-disable-next-line fp/no-mutating-methods
-      filter(versions, filterPredicate(options))
-        .map(o => o.version)
-        .sort(versionUtil.compareVersions),
-    ) || null
-  )
+  return {
+    version:
+      last(
+        // eslint-disable-next-line fp/no-mutating-methods
+        filter(versions, filterPredicate(options))
+          .map(o => o.version)
+          .sort(versionUtil.compareVersions),
+      ) || null,
+  }
 }
 
 /**
@@ -530,7 +547,7 @@ export const distTag: GetVersion = async (
   options: Options = {},
   npmConfig?: NpmConfig,
 ) => {
-  const revision = (await viewOne(
+  const packument = (await viewOne(
     packageName,
     `dist-tags.${options.distTag}`,
     currentVersion,
@@ -542,10 +559,14 @@ export const distTag: GetVersion = async (
   // if latest exists and latest is not a prerelease version, return it
   // if latest exists and latest is a prerelease version and --pre is specified, return it
   // if latest exists and latest not satisfies min version of engines.node
-  if (revision && filterPredicate(options)(revision)) return revision.version
+  if (packument && filterPredicate(options)(packument))
+    return {
+      version: packument.version,
+      ...(packument.time?.[packument.version] ? { time: packument.time[packument.version] } : null),
+    }
 
   // If we use a custom dist-tag, we do not want to get other 'pre' versions, just the ones from this dist-tag
-  if (options.distTag && options.distTag !== 'latest') return null
+  if (options.distTag && options.distTag !== 'latest') return {}
 
   // if latest is a prerelease version and --pre is not specified
   // or latest is deprecated
@@ -578,7 +599,7 @@ export const newest: GetVersion = async (
   currentVersion,
   options = {},
   npmConfig?: NpmConfig,
-): Promise<string | null> => {
+): Promise<VersionResult> => {
   const result = await viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options, 0, npmConfig)
 
   // Generate a map of versions that satisfy the node engine.
@@ -598,7 +619,7 @@ export const newest: GetVersion = async (
   // sort by timestamp (entry[1]) and map versions
   const versionsSortedByTime = sortBy(Object.entries(timesSatisfyingNodeEngine), 1).map(([version]) => version)
 
-  return last(versionsSortedByTime) || null
+  return { version: last(versionsSortedByTime) }
 }
 
 /**
@@ -614,13 +635,14 @@ export const minor: GetVersion = async (
   currentVersion,
   options = {},
   npmConfig?: NpmConfig,
-): Promise<string | null> => {
+): Promise<VersionResult> => {
   const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Packument[]
-  return versionUtil.findGreatestByLevel(
+  const version = versionUtil.findGreatestByLevel(
     filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
     'minor',
   )
+  return { version }
 }
 
 /**
@@ -636,13 +658,14 @@ export const patch: GetVersion = async (
   currentVersion,
   options = {},
   npmConfig?: NpmConfig,
-): Promise<string | null> => {
+): Promise<VersionResult> => {
   const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Packument[]
-  return versionUtil.findGreatestByLevel(
+  const version = versionUtil.findGreatestByLevel(
     filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
     'patch',
   )
+  return { version }
 }
 
 export default spawnNpm

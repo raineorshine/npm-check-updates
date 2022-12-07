@@ -4,12 +4,14 @@ import remoteGitTags from 'remote-git-tags'
 import semver from 'semver'
 import { print } from '../lib/logging'
 import * as versionUtil from '../lib/version-util'
+import { GetVersion } from '../types/GetVersion'
 import { Options } from '../types/Options'
 import { VersionLevel } from '../types/VersionLevel'
+import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
 
 /** Gets remote versions sorted. */
-const getSortedVersions = async (name: string, declaration: VersionSpec, options: Options) => {
+const getSortedVersions = async (name: string, declaration: VersionSpec, options?: Options) => {
   // if present, github: is parsed as the protocol. This is not valid when passed into remote-git-tags.
   declaration = declaration.replace(/^github:/, '')
   const { auth, protocol, host, path } = parseGithubUrl(declaration)!
@@ -32,7 +34,7 @@ const getSortedVersions = async (name: string, declaration: VersionSpec, options
     tagMap = await tagsPromise
   } catch (e) {
     // catch a variety of errors that occur on invalid or private repos
-    print(options, `Invalid, private repo, or no tags for ${name}: ${declaration}`, 'verbose')
+    print(options || {}, `Invalid, private repo, or no tags for ${name}: ${declaration}`, 'verbose')
     return null
   }
 
@@ -48,29 +50,29 @@ const getSortedVersions = async (name: string, declaration: VersionSpec, options
 }
 
 /** Return the highest non-prerelease numbered tag on a remote Git URL. */
-export const latest = async (name: string, declaration: VersionSpec, options: Options) => {
+export const latest: GetVersion = async (name: string, declaration: VersionSpec, options?: Options) => {
   const versions = await getSortedVersions(name, declaration, options)
-  if (!versions) return null
-  const versionsFiltered = options.pre ? versions : versions.filter(v => !versionUtil.isPre(v))
+  if (!versions) return { version: null }
+  const versionsFiltered = options?.pre ? versions : versions.filter(v => !versionUtil.isPre(v))
   const latestVersion = versionsFiltered[versionsFiltered.length - 1]
-  return latestVersion ? versionUtil.upgradeGithubUrl(declaration, latestVersion) : null
+  return { version: latestVersion ? versionUtil.upgradeGithubUrl(declaration, latestVersion) : null }
 }
 
 /** Return the highest numbered tag on a remote Git URL. */
-export const greatest = async (name: string, declaration: VersionSpec, options: Options) => {
+export const greatest: GetVersion = async (name: string, declaration: VersionSpec, options?: Options) => {
   const versions = await getSortedVersions(name, declaration, options)
-  if (!versions) return null
+  if (!versions) return { version: null }
   const greatestVersion = versions[versions.length - 1]
-  return greatestVersion ? versionUtil.upgradeGithubUrl(declaration, greatestVersion) : null
+  return { version: greatestVersion ? versionUtil.upgradeGithubUrl(declaration, greatestVersion) : null }
 }
 
 /** Returns a function that returns the highest version at the given level. */
 export const greatestLevel =
   (level: VersionLevel) =>
-  async (name: string, declaration: VersionSpec, options: Options = {}) => {
+  async (name: string, declaration: VersionSpec, options: Options = {}): Promise<VersionResult> => {
     const version = decodeURIComponent(parseGithubUrl(declaration)!.branch).replace(/^semver:/, '')
     const versions = await getSortedVersions(name, declaration, options)
-    if (!versions) return null
+    if (!versions) return { version: null }
 
     const greatestMinor = versionUtil.findGreatestByLevel(
       versions.map(v => v.replace(/^v/, '')),
@@ -78,7 +80,7 @@ export const greatestLevel =
       level,
     )
 
-    return greatestMinor ? versionUtil.upgradeGithubUrl(declaration, greatestMinor) : null
+    return { version: greatestMinor ? versionUtil.upgradeGithubUrl(declaration, greatestMinor) : null }
   }
 
 export const minor = greatestLevel('minor')

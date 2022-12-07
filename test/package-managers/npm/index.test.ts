@@ -12,12 +12,12 @@ describe('npm', function () {
   })
 
   it('latest', async () => {
-    const version = await npm.latest('express', '', { cwd: __dirname })
+    const { version } = await npm.latest('express', '', { cwd: __dirname })
     parseInt(version!, 10).should.be.above(1)
   })
 
   it('greatest', async () => {
-    const version = await npm.greatest('ncu-test-greatest-not-newest', '', { pre: true, cwd: __dirname })
+    const { version } = await npm.greatest('ncu-test-greatest-not-newest', '', { pre: true, cwd: __dirname })
     version!.should.equal('2.0.0-beta')
   })
 

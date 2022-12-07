@@ -22,24 +22,24 @@ const localYarnSpawnOptions = {
 describe('yarn', function () {
   it('list', async () => {
     const testDir = path.join(__dirname, 'default')
-    const version = await yarn.latest('chalk', '', { cwd: testDir })
+    const { version } = await yarn.latest('chalk', '', { cwd: testDir })
     parseInt(version!, 10).should.be.above(3)
   })
 
   it('latest', async () => {
     const testDir = path.join(__dirname, 'default')
-    const version = await yarn.latest('chalk', '', { cwd: testDir })
+    const { version } = await yarn.latest('chalk', '', { cwd: testDir })
     parseInt(version!, 10).should.be.above(3)
   })
 
   it('greatest', async () => {
-    const version = await yarn.greatest('ncu-test-greatest-not-newest', '', { pre: true, cwd: __dirname })
+    const { version } = await yarn.greatest('ncu-test-greatest-not-newest', '', { pre: true, cwd: __dirname })
     version!.should.equal('2.0.0-beta')
   })
 
   it('avoids deprecated', async () => {
     const testDir = path.join(__dirname, 'default')
-    const version = await yarn.minor('popper.js', '1.15.0', { cwd: testDir, pre: true })
+    const { version } = await yarn.minor('popper.js', '1.15.0', { cwd: testDir, pre: true })
     version!.should.equal('1.16.1-lts')
   })
 

@@ -23,14 +23,15 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
   const [upgraded, latest] = await upgradePackageDefinitions(globalPackages, options)
   print(options, latest, 'verbose')
 
-  const latestVersions = keyValueBy(latest, (key, value) => (value.version ? { [key]: value.version } : null))
+  const time = keyValueBy(latest, (key, result) => (result.time ? { [key]: result.time } : null))
 
   const upgradedPackageNames = Object.keys(upgraded)
   await printUpgrades(options, {
     current: globalPackages,
     upgraded,
-    latest: latestVersions,
+    latest,
     total: upgradedPackageNames.length,
+    time,
   })
 
   const instruction = upgraded ? upgradedPackageNames.map(pkg => pkg + '@' + upgraded[pkg]).join(' ') : '[package]'

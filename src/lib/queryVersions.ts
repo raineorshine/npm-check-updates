@@ -5,7 +5,6 @@ import packageManagers from '../package-managers'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
-import { Version } from '../types/Version'
 import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
 import getPackageManager from './getPackageManager'
@@ -61,7 +60,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       }
     }
 
-    let versionNew: Version | null = null
+    let versionResult: VersionResult
     const isGithubDependency = isGithubUrl(packageMap[dep])
 
     // use gitTags package manager for git urls (for this dependency only)
@@ -82,7 +81,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
     }
 
     try {
-      versionNew = await getPackageVersion(name, version, {
+      versionResult = await getPackageVersion(name, version, {
         ...options,
         distTag,
         // upgrade prereleases to newer prereleases by default
@@ -90,7 +89,10 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
         retry: options.retry ?? 2,
       })
 
-      versionNew = !isGithubDependency && npmAlias && versionNew ? createNpmAlias(name, versionNew) : versionNew
+      versionResult.version =
+        !isGithubDependency && npmAlias && versionResult?.version
+          ? createNpmAlias(name, versionResult.version)
+          : versionResult?.version ?? null
     } catch (err: any) {
       const errorMessage = err ? (err.message || err).toString() : ''
       if (errorMessage.match(/E404|ENOTFOUND|404 Not Found/i)) {
@@ -120,13 +122,11 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
 
     bar?.tick()
 
-    if (versionNew) {
-      options.cacher?.set(name, target, versionNew)
+    if (versionResult.version) {
+      options.cacher?.set(name, target, versionResult.version)
     }
 
-    return {
-      version: versionNew,
-    }
+    return versionResult
   }
 
   const versionResultList = await pMap(packageList, getPackageVersionProtected, { concurrency: options.concurrency })

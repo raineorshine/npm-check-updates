@@ -8,7 +8,7 @@ chai.use(chaiAsPromised)
 describe('staticRegistry', function () {
   it('latest', async () => {
     const registry = './test/package-managers/staticRegistry/staticRegistry.json'
-    const version = await staticRegistry.latest('express', '', { cwd: __dirname, registry })
+    const { version } = await staticRegistry.latest('express', '', { cwd: __dirname, registry })
     version!.should.equal('4.1.2')
   })
 })

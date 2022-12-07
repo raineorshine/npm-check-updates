@@ -4,4 +4,5 @@ import { Version } from './Version'
 export interface VersionResult {
   version?: Version | null
   error?: string
+  time?: string
 }

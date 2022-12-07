@@ -329,6 +329,8 @@ Modify the output formatting or show additional information. Specify one or more
     │ ownerChanged │ Shows if the package owner has changed.                                 │
     ├──────────────┼─────────────────────────────────────────────────────────────────────────┤
     │         repo │ Infers and displays links to the package's source code repository.      │
+    ├──────────────┼─────────────────────────────────────────────────────────────────────────┤
+    │         time │ Shows the publish time of each upgrade.                                 │
     └──────────────┴─────────────────────────────────────────────────────────────────────────┘
 
 ## groupFunction
