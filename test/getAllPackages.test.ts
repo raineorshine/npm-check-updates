@@ -14,12 +14,63 @@ async function stripDir(dirPath: string, paths: [string[], string[]]): Promise<[
   ]
 }
 
+/** convenience function to call getAllPackages for a given test-path  */
+async function getAllPackagesForTest(testPath: string, options: Options): Promise<[string[], string[]]> {
+  const testCwd = path.join(__dirname, testPath)
+  process.chdir(testCwd) // FIXME: remove the setting of cwd, the tests should work without it
+  const optionsWithTestCwd: Options = { cwd: testCwd, ...options }
+  const [pkgs, workspacePackages]: [string[], string[]] = await stripDir(
+    testCwd,
+    await getAllPackages(optionsWithTestCwd),
+  )
+  return [pkgs, workspacePackages]
+}
+
 describe('getAllPackages', () => {
-  it('handles tradition flat npm project ', async () => {
-    const cwd = path.join(__dirname, 'test-data/basic/')
-    const emptyOptions: Options = { cwd }
-    const [pkgs, workspacePackages]: [string[], string[]] = await stripDir(cwd, await getAllPackages(emptyOptions))
-    pkgs.should.deep.equal(['package.json'])
-    workspacePackages.should.deep.equal([])
+  let originalCwd = process.cwd()
+  beforeEach(() => {
+    // FIXME: delete me
+    originalCwd = process.cwd()
+  })
+
+  afterEach(() => {
+    // FIXME: delete me
+    process.chdir(originalCwd)
+  })
+
+  describe('basic npm package', () => {
+    it('handles tradition flat npm project ', async () => {
+      const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest('test-data/basic/', {})
+      pkgs.should.deep.equal(['package.json'])
+      workspacePackages.should.deep.equal([])
+    })
+
+    it('errors in non-workspace project with --workspaces option', async () => {
+      await getAllPackagesForTest('test-data/basic/', {
+        workspaces: true,
+      }).should.be.rejectedWith('workspaces property missing')
+    })
+  })
+
+  describe('basic workspace project', () => {
+    it('handles simple workspace without --workspaces option', async () => {
+      const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+        'test-data/workspace-basic/',
+        {},
+      )
+      pkgs.should.deep.equal(['package.json'])
+      workspacePackages.should.deep.equal([])
+    })
+
+    it('handles simple workspace with --workspaces option', async () => {
+      const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+        'test-data/workspace-basic/',
+        { workspaces: true },
+      )
+
+      // without --root should just return the sub-package
+      pkgs.should.deep.equal(['pkg/sub/package.json'])
+      workspacePackages.should.deep.equal(['basic-sub-package'])
+    })
   })
 })

@@ -1,0 +1,5 @@
+{
+  "name": "basic-sub-package",
+  "license": "MIT",
+  "dependencies": {}
+}
