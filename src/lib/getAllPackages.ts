@@ -42,7 +42,9 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
   if (options.workspaces || options.workspace?.length) {
     // use silent, otherwise there will be a duplicate "Checking" message
     const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename, loglevel: 'silent' })
-    const pkgDataParsed = typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile)
+    // FIXME: the next line suggests a typing bug.
+    const pkgDataParsed =
+      typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : /* c8 ignore next */ (pkgData as PackageFile)
     const workspaces = Array.isArray(pkgDataParsed.workspaces)
       ? pkgDataParsed.workspaces
       : pkgDataParsed.workspaces?.packages
