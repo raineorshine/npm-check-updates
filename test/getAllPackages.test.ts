@@ -83,5 +83,49 @@ describe('getAllPackages', () => {
       pkgs.should.deep.equal(['package.json', 'pkg/sub/package.json'])
       workspacePackages.should.deep.equal(['basic-sub-package'])
     })
+
+    describe('--workspace="<string>"', () => {
+      it('handles simple workspace with --workspace="basic-sub-package"', async () => {
+        const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+          'test-data/workspace_basic/',
+          { workspace: ['basic-sub-package'] },
+        )
+
+        // with --root should return root package and the sub-package
+        pkgs.should.deep.equal([])
+        workspacePackages.should.deep.equal(['basic-sub-package'])
+      })
+
+      it('handles simple workspace with --workspaces and --workspace="basic-sub-package"', async () => {
+        const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+          'test-data/workspace_basic/',
+          { workspaces: true, workspace: ['basic-sub-package'] },
+        )
+
+        pkgs.should.deep.equal(['pkg/sub/package.json'])
+        workspacePackages.should.deep.equal(['basic-sub-package'])
+      })
+
+      it('handles simple workspace with --workspaces, --workspace="basic-sub-package", and --root option', async () => {
+        const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+          'test-data/workspace_basic/',
+          { root: true, workspaces: true, workspace: ['basic-sub-package'] },
+        )
+
+        // with --root should return root package and the sub-package
+        pkgs.should.deep.equal(['package.json', 'pkg/sub/package.json'])
+        workspacePackages.should.deep.equal(['basic-sub-package'])
+      })
+
+      it('handles simple workspace with --workspaces and --workspace=<empty>', async () => {
+        const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+          'test-data/workspace_basic/',
+          { workspaces: true, workspace: [] },
+        )
+
+        pkgs.should.deep.equal(['pkg/sub/package.json'])
+        workspacePackages.should.deep.equal(['basic-sub-package'])
+      })
+    })
   })
 })
