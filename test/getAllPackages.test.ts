@@ -38,6 +38,12 @@ describe('getAllPackages', () => {
     process.chdir(originalCwd)
   })
 
+  it('returns default package without cwd ', async () => {
+    const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackages({})
+    pkgs.should.deep.equal(['package.json'])
+    workspacePackages.should.deep.equal([])
+  })
+
   describe('basic npm package', () => {
     it('handles tradition flat npm project ', async () => {
       const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest('test-data/basic/', {})
