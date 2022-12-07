@@ -14,9 +14,10 @@ describe('getCurrentDependencies', () => {
       },
       devDependencies: {
         lodash: '^3.9.3',
+        moment: '^1.0.0',
       },
       peerDependencies: {
-        moment: '^1.0.0',
+        'ncu-test-v2': '0.1.0',
       },
       optionalDependencies: {
         chalk: '^1.1.0',
@@ -33,7 +34,7 @@ describe('getCurrentDependencies', () => {
     getCurrentDependencies({}, {}).should.eql({})
   })
 
-  it('get dependencies, devDependencies, and optionalDependencies by default', () => {
+  it('get dependencies, devDependencies, and bundleDependencies, and optionalDependencies by default', () => {
     getCurrentDependencies(deps).should.eql({
       mocha: '1.2',
       lodash: '^3.9.3',
@@ -53,6 +54,7 @@ describe('getCurrentDependencies', () => {
     it('only get devDependencies with --dep dev', () => {
       getCurrentDependencies(deps, { dep: 'dev' }).should.eql({
         lodash: '^3.9.3',
+        moment: '^1.0.0',
       })
     })
 
@@ -64,7 +66,7 @@ describe('getCurrentDependencies', () => {
 
     it('only get peerDependencies with --dep peer', () => {
       getCurrentDependencies(deps, { dep: 'peer' }).should.eql({
-        moment: '^1.0.0',
+        'ncu-test-v2': '0.1.0',
       })
     })
 
@@ -78,6 +80,7 @@ describe('getCurrentDependencies', () => {
       getCurrentDependencies(deps, { dep: 'dev,peer' }).should.eql({
         lodash: '^3.9.3',
         moment: '^1.0.0',
+        'ncu-test-v2': '0.1.0',
       })
     })
   })

@@ -375,8 +375,9 @@ const cliOptions: CLIOption[] = [
     arg: 'value',
     description:
       'Check one or more sections of dependencies only: dev, optional, peer, prod, bundle (comma-delimited).',
-    default: 'prod,dev,bundle,optional',
-    type: 'string',
+    default: ['prod', 'dev', 'bundle', 'optional'],
+    parse: value => (value && typeof value === 'string' ? value.split(',') : value),
+    type: 'string | string[]',
   },
   {
     long: 'deprecated',

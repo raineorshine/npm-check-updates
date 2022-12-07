@@ -37,7 +37,7 @@ export interface RunOptions {
   deep?: boolean
 
   /** Check one or more sections of dependencies only: dev, optional, peer, prod, bundle (comma-delimited). (default: "prod,dev,bundle,optional") */
-  dep?: string
+  dep?: string | string[]
 
   /** Include deprecated packages. */
   deprecated?: boolean
