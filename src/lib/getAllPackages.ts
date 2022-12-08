@@ -21,11 +21,6 @@ async function getWorkspacePackages(
   rootPackageFile: string,
   cwd: string,
 ): Promise<[string[], string[]]> {
-  // workspaces
-  if (!(options.workspaces || options.workspace?.length)) {
-    return [[], []]
-  }
-
   // use silent, otherwise there will be a duplicate "Checking" message
   const [pkgData] = await findPackage({ ...options, packageFile: rootPackageFile, loglevel: 'silent' })
   const rootPkg: PackageFile = typeof pkgData === 'string' ? JSON.parse(pkgData) : pkgData
@@ -84,7 +79,7 @@ async function getWorkspacePackages(
     ? // --workspaces
       allWorkspacePackageFilepaths
     : // --workspace
-      allWorkspacePackageFilepaths.filter(pkgFilepath =>
+      allWorkspacePackageFilepaths.filter((pkgFilepath: string) =>
         /* ignore coverage on optional-chaining */
         /* c8 ignore next */
         options.workspace?.some(workspace =>
@@ -112,13 +107,20 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
   const cwd = options.cwd ? untildify(options.cwd) : './'
   const rootPackageFile = options.packageFile || (options.cwd ? path.join(cwd, 'package.json') : 'package.json')
 
+  // workspaces
+  const useWorkspaces = options.workspaces || options.workspace?.length
+
   // Find the package file with globby.
   // When in workspaces mode, only include the root project package file when --root is used.
   let packageFilepaths: string[] =
-    (!options.workspaces && !options.workspace?.length) || options.root
+    !useWorkspaces || options.root
       ? // convert Windows path to *nix path for globby
         globby.sync(rootPackageFile.replace(/\\/g, '/'), { ignore: ['**/node_modules/**'] })
       : []
+
+  if (!useWorkspaces) {
+    return [packageFilepaths, []]
+  }
 
   const [workspacePackageFilepaths, workspacePackageNames]: [string[], string[]] = await getWorkspacePackages(
     options,
