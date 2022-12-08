@@ -9,26 +9,22 @@ import findPackage from './findPackage'
 import programError from './programError'
 
 /**
- * Gets all workspace filenames, or just the root workspace package file
+ * Gets workspace sub-package information
  *
  * @param options the application options, used to determine which packages to return.
- * @returns tuple(pkgs, workspaces) containing the pkgs and workspace string arrays
+ * @param defaultPackageFilename the default package filename
+ * @returns a tuple of list of package-files and workspace names
  */
-async function getAllPackages(options: Options): Promise<[string[], string[]]> {
-  const cwd = options.cwd ? untildify(options.cwd) : './'
-  const rootPackageFile = options.packageFile || (options.cwd ? path.join(cwd, 'package.json') : 'package.json')
-
+async function getWorkspacePackages(
+  options: Options,
+  defaultPackageFilename: string,
+  rootPackageFile: string,
+  cwd: string,
+): Promise<[string[], string[]]> {
   // Workspace package names
   // These will be used to filter out local workspace packages so they are not fetched from the registry.
   let workspacePackageNames: string[] = []
-
-  // Find the package file with globby.
-  // When in workspaces mode, only include the root project package file when --root is used.
-  let packageFilepaths: string[] =
-    (!options.workspaces && !options.workspace?.length) || options.root
-      ? // convert Windows path to *nix path for globby
-        globby.sync(rootPackageFile.replace(/\\/g, '/'), { ignore: ['**/node_modules/**'] })
-      : []
+  let workspacePackageFilepaths: string[] = []
 
   // workspaces
   if (options.workspaces || options.workspace?.length) {
@@ -60,7 +56,7 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
     )
 
     // e.g. [packages/a/package.json, ...]
-    const workspacePackageFilepaths: string[] = [
+    const allWorkspacePackageFilepaths: string[] = [
       ...globby.sync(workspacePackageGlob, {
         ignore: ['**/node_modules/**'],
       }),
@@ -70,7 +66,7 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
     // If a package does not have a name, use the folder name.
     // These will be used to filter out local workspace packages so they are not fetched from the registry.
     workspacePackageNames = await Promise.all(
-      workspacePackageFilepaths.map(async (filepath: string): Promise<string> => {
+      allWorkspacePackageFilepaths.map(async (filepath: string): Promise<string> => {
         const packageFile = await fs.readFile(filepath, 'utf-8')
         const pkg: PackageFile = JSON.parse(packageFile)
         return pkg.name || filepath.split('/').slice(-2)[0]
@@ -78,26 +74,54 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
     )
 
     // add workspace packages
-    packageFilepaths = [
-      ...packageFilepaths,
-      ...(options.workspaces
-        ? // --workspaces
-          workspacePackageFilepaths
-        : // --workspace
-          workspacePackageFilepaths.filter((pkgFilepath: string) =>
+    workspacePackageFilepaths = options.workspaces
+      ? // --workspaces
+        allWorkspacePackageFilepaths
+      : // --workspace
+        allWorkspacePackageFilepaths.filter(pkgFilepath =>
+          /* ignore coverage on optional-chaining */
+          /* c8 ignore next */
+          options.workspace?.some(workspace =>
             /* ignore coverage on optional-chaining */
             /* c8 ignore next */
-            options.workspace?.some(workspace =>
-              /* ignore coverage on optional-chaining */
-              /* c8 ignore next */
-              workspaces?.some(
-                workspacePattern =>
-                  pkgFilepath === path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename),
-              ),
+            workspaces?.some(
+              workspacePattern =>
+                pkgFilepath === path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename),
             ),
-          )),
-    ]
+          ),
+        )
   }
+  return [workspacePackageFilepaths, workspacePackageNames]
+}
+
+/**
+ * Gets all workspace filenames, or just the root workspace package file
+ *
+ * NOTE: this has been refactored out of index.ts
+ *
+ * @param options the application options, used to determine which packages to return.
+ * @returns tuple(packageFilepaths, workspaces) containing the packageFilepaths and workspace string arrays
+ */
+async function getAllPackages(options: Options): Promise<[string[], string[]]> {
+  const defaultPackageFilename = getPackageFileName(options)
+  const cwd = options.cwd ? untildify(options.cwd) : './'
+  const rootPackageFile = options.packageFile || (options.cwd ? path.join(cwd, 'package.json') : 'package.json')
+
+  // Find the package file with globby.
+  // When in workspaces mode, only include the root project package file when --root is used.
+  let packageFilepaths: string[] =
+    (!options.workspaces && !options.workspace?.length) || options.root
+      ? // convert Windows path to *nix path for globby
+        globby.sync(rootPackageFile.replace(/\\/g, '/'), { ignore: ['**/node_modules/**'] })
+      : []
+
+  const [workspacePackageFilepaths, workspacePackageNames]: [string[], string[]] = await getWorkspacePackages(
+    options,
+    defaultPackageFilename,
+    rootPackageFile,
+    cwd,
+  )
+  packageFilepaths = [...packageFilepaths, ...workspacePackageFilepaths]
 
   return [packageFilepaths, workspacePackageNames]
 }
