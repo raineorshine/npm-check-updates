@@ -74,24 +74,27 @@ async function getWorkspacePackages(
     (packageInfo: PackageInfo): string => packageInfo.name || '',
   )
 
+  const filterWorkspaces = options.workspaces !== true
+  if (!filterWorkspaces) {
+    // --workspaces
+    return [allWorkspacePackageFilepaths, workspacePackageNames]
+  }
+
   // add workspace packages
-  const workspacePackageFilepaths: string[] = options.workspaces
-    ? // --workspaces
-      allWorkspacePackageFilepaths
-    : // --workspace
-      allWorkspacePackageFilepaths.filter((pkgFilepath: string) =>
-        /* ignore coverage on optional-chaining */
-        /* c8 ignore next */
-        options.workspace?.some(workspace =>
-          /* ignore coverage on optional-chaining */
-          /* c8 ignore next */
-          workspaces?.some(
-            workspacePattern =>
-              pkgFilepath === path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename),
-          ),
-        ),
-      )
-  return [workspacePackageFilepaths, workspacePackageNames]
+  // --workspace
+  const filteredWorkspacePackageFilenames: string[] = allWorkspacePackageFilepaths.filter(pkgFilepath =>
+    /* ignore coverage on optional-chaining */
+    /* c8 ignore next */
+    options.workspace?.some(workspace =>
+      /* ignore coverage on optional-chaining */
+      /* c8 ignore next */
+      workspaces?.some(
+        uworkspacePattern =>
+          pkgFilepath === path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename),
+      ),
+    ),
+  )
+  return [filteredWorkspacePackageFilenames, workspacePackageNames]
 }
 
 /**
