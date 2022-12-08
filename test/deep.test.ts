@@ -201,7 +201,9 @@ describe('--deep with nested ncurc files', function () {
     deepJsonOut['pkg/sub3/sub32/package.json'].should.have.property('fp-and-or')
     deepJsonOut['pkg/sub3/sub32/package.json'].should.have.property('ncu-test-v2')
   })
+})
 
+describe('mergeOptions', function () {
   it('merge options', () => {
     /** Asserts that merging two options object deep equals the given result object. */
     const eq = (
