@@ -85,11 +85,11 @@ async function getWorkspacePackageInfos(
   const filteredWorkspacePackageInfos: PackageInfo[] = allWorkspacePackageInfos.filter((packageInfo: PackageInfo) =>
     /* ignore coverage on optional-chaining */
     /* c8 ignore next */
-    options.workspace?.some(workspace =>
+    options.workspace?.some((workspace: string) =>
       /* ignore coverage on optional-chaining */
       /* c8 ignore next */
       workspaces?.some(
-        workspacePattern =>
+        (workspacePattern: string) =>
           packageInfo.filepath === path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename),
       ),
     ),
@@ -111,8 +111,8 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
   const cwd = options.cwd ? untildify(options.cwd) : './'
   const rootPackageFile = options.packageFile || (options.cwd ? path.join(cwd, 'package.json') : 'package.json')
 
-  // workspaces
-  const useWorkspaces = options.workspaces || options.workspace?.length
+  const useWorkspaces: boolean =
+    options.workspaces === true || (options.workspace !== undefined && options.workspace.length !== 0)
 
   // Find the package file with globby.
   // When in workspaces mode, only include the root project package file when --root is used.
