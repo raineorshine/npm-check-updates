@@ -154,13 +154,13 @@ const npmInstall = async (
 
 /** Runs the dependency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
 async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<Index<string> | PackageFile | void> {
-  const [pkgInfos, workspacePackages]: [PackageInfo[], string[]] = await getAllPackages(options)
+  const [packageInfos, workspacePackages]: [PackageInfo[], string[]] = await getAllPackages(options)
 
-  const pkgs: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
+  const packageFilepaths: string[] = packageInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
 
   // enable deep mode if --deep, --workspace, --workspaces, or if multiple package files are found
   const isWorkspace = options.workspaces || !!options.workspace?.length
-  options.deep = options.deep || isWorkspace || pkgs.length > 1
+  options.deep = options.deep || isWorkspace || packageInfos.length > 1
 
   let analysis: Index<PackageFile> | PackageFile | void
   if (options.global) {
@@ -168,10 +168,10 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
     clearTimeout(timeout)
     return analysis
   } else if (options.deep) {
-    analysis = await pkgs.reduce(async (previousPromise, packageFile) => {
+    analysis = await packageInfos.reduce(async (previousPromise, packageInfo: PackageInfo) => {
       const packages = await previousPromise
       // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
-      const rcResult = await getNcuRc({ packageFile, color: options.color })
+      const rcResult = await getNcuRc({ packageFile: packageInfo.filepath, color: options.color })
       let rcConfig = rcResult && rcResult.config ? rcResult.config : {}
       if (options.mergeConfig && Object.keys(rcConfig).length) {
         // Merge config options.
@@ -180,7 +180,7 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
       const pkgOptions: Options = {
         ...options,
         ...rcConfig,
-        packageFile,
+        packageFile: packageInfo.filepath,
         workspacePackages,
       }
       const [pkgData, pkgFile] = await findPackage(pkgOptions)
@@ -200,8 +200,8 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
     }
   } else {
     // mutate packageFile when glob pattern finds only single package
-    if (pkgs.length === 1 && pkgs[0] !== (options.packageFile || 'package.json')) {
-      options.packageFile = pkgs[0]
+    if (packageInfos.length === 1 && packageInfos[0].filepath !== (options.packageFile || 'package.json')) {
+      options.packageFile = packageInfos[0].filepath
     }
     const [pkgData, pkgFile] = await findPackage(options)
     analysis = await runLocal(options, pkgData, pkgFile)
@@ -211,7 +211,7 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
   // suggest install command or auto-install
   if (options.upgrade) {
     // if workspaces, install from root project folder
-    await npmInstall(isWorkspace ? ['package.json'] : pkgs, analysis, options)
+    await npmInstall(isWorkspace ? ['package.json'] : packageFilepaths, analysis, options)
   }
 
   return analysis
