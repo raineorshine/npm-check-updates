@@ -9,18 +9,18 @@ import findPackage from './findPackage'
 import programError from './programError'
 
 /**
- * Gets workspace sub-package information
+ * Gets all workspace sub-package information
  *
  * @param options the application options, used to determine which packages to return.
  * @param defaultPackageFilename the default package filename
- * @returns a tuple of list of package-files and workspace names
+ * @returns a list of PackageInfo objects, one for each workspace file
  */
-async function getWorkspacePackages(
+async function getWorkspacePackageInfos(
   options: Options,
   defaultPackageFilename: string,
   rootPackageFile: string,
   cwd: string,
-): Promise<[string[], string[]]> {
+): Promise<[PackageInfo[], string[]]> {
   // use silent, otherwise there will be a duplicate "Checking" message
   const [pkgData] = await findPackage({ ...options, packageFile: rootPackageFile, loglevel: 'silent' })
   const rootPkg: PackageFile = typeof pkgData === 'string' ? JSON.parse(pkgData) : pkgData
@@ -70,31 +70,32 @@ async function getWorkspacePackages(
 
   // Workspace package names
   // These will be used to filter out local workspace packages so they are not fetched from the registry.
-  const workspacePackageNames: string[] = allWorkspacePackageInfos.map(
+  const allWorkspacePackageNames: string[] = allWorkspacePackageInfos.map(
     (packageInfo: PackageInfo): string => packageInfo.name || '',
   )
 
   const filterWorkspaces = options.workspaces !== true
   if (!filterWorkspaces) {
     // --workspaces
-    return [allWorkspacePackageFilepaths, workspacePackageNames]
+    return [allWorkspacePackageInfos, allWorkspacePackageNames]
   }
 
   // add workspace packages
   // --workspace
-  const filteredWorkspacePackageFilenames: string[] = allWorkspacePackageFilepaths.filter(pkgFilepath =>
+  const filteredWorkspacePackageInfos: PackageInfo[] = allWorkspacePackageInfos.filter((packageInfo: PackageInfo) =>
     /* ignore coverage on optional-chaining */
     /* c8 ignore next */
     options.workspace?.some(workspace =>
       /* ignore coverage on optional-chaining */
       /* c8 ignore next */
       workspaces?.some(
-        uworkspacePattern =>
-          pkgFilepath === path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename),
+        workspacePattern =>
+          packageInfo.filepath === path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename),
       ),
     ),
   )
-  return [filteredWorkspacePackageFilenames, workspacePackageNames]
+
+  return [filteredWorkspacePackageInfos, allWorkspacePackageNames]
 }
 
 /**
@@ -106,7 +107,7 @@ async function getWorkspacePackages(
  * @returns tuple(packageFilepaths, workspaces) containing the packageFilepaths and workspace string arrays
  */
 async function getAllPackages(options: Options): Promise<[string[], string[]]> {
-  const defaultPackageFilename = getPackageFileName(options)
+  const defaultPackageFilename = options.packageFile || 'package.json'
   const cwd = options.cwd ? untildify(options.cwd) : './'
   const rootPackageFile = options.packageFile || (options.cwd ? path.join(cwd, 'package.json') : 'package.json')
 
@@ -125,14 +126,16 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
     return [packageFilepaths, []]
   }
 
-  const [workspacePackageFilepaths, workspacePackageNames]: [string[], string[]] = await getWorkspacePackages(
+  const [workspacePackageInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getWorkspacePackageInfos(
     options,
     defaultPackageFilename,
     rootPackageFile,
     cwd,
   )
+  const workspacePackageFilepaths: string[] = workspacePackageInfos.map(
+    (packageInfo: PackageInfo) => packageInfo.filepath,
+  )
   packageFilepaths = [...packageFilepaths, ...workspacePackageFilepaths]
-
   return [packageFilepaths, workspacePackageNames]
 }
 
