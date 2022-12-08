@@ -73,6 +73,26 @@ describe('yarn', function () {
         '//npm.fontawesome.com/:_authToken': 'MY-AUTH-TOKEN',
       })
     })
+
+    it('does nothing when no npmAlwaysAuth', () => {
+      const authToken = yarn.npmAuthTokenKeyValue({}, 'fortawesome', {
+        npmAlwaysAuth: true,
+        // undefined: npmAuthToken: 'MY-AUTH-TOKEN',
+        npmRegistryServer: 'https://npm.fontawesome.com/',
+      })
+
+      authToken!.should.deep.equal(null)
+    })
+
+    it('does nothing when no registry server', () => {
+      const authToken = yarn.npmAuthTokenKeyValue({}, 'fortawesome', {
+        npmAlwaysAuth: true,
+        npmAuthToken: 'MY-AUTH-TOKEN',
+        // undefined: npmRegistryServer: 'https://npm.fontawesome.com/',
+      })
+
+      authToken!.should.deep.equal(null)
+    })
   })
 })
 
