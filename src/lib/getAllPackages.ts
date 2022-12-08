@@ -1,9 +1,9 @@
-import fs from 'fs/promises'
 import globby from 'globby'
 import path from 'path'
 import untildify from 'untildify'
 import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
+import { PackageInfo, loadPackageInfoFromFile } from './PackageInfo'
 import chalk from './chalk'
 import findPackage from './findPackage'
 import programError from './programError'
@@ -65,13 +65,19 @@ async function getWorkspacePackages(
     // Get the package names from the package files.
     // If a package does not have a name, use the folder name.
     // These will be used to filter out local workspace packages so they are not fetched from the registry.
-    workspacePackageNames = await Promise.all(
-      allWorkspacePackageFilepaths.map(async (filepath: string): Promise<string> => {
-        const packageFile = await fs.readFile(filepath, 'utf-8')
-        const pkg: PackageFile = JSON.parse(packageFile)
-        return pkg.name || filepath.split('/').slice(-2)[0]
-      }),
-    )
+    const allWorkspacePackageInfos: PackageInfo[] = [
+      ...(await Promise.all(
+        allWorkspacePackageFilepaths.map(async (filepath: string): Promise<PackageInfo> => {
+          const info: PackageInfo = await loadPackageInfoFromFile(filepath)
+          info.name = info.pkg.name || filepath.split('/').slice(-2)[0]
+          return info
+        }),
+      )),
+    ]
+
+    // Workspace package names
+    // These will be used to filter out local workspace packages so they are not fetched from the registry.
+    workspacePackageNames = allWorkspacePackageInfos.map((packageInfo: PackageInfo): string => packageInfo.name || '')
 
     // add workspace packages
     workspacePackageFilepaths = options.workspaces
