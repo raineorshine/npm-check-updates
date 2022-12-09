@@ -1,10 +1,10 @@
-import chai, { should } from 'chai'
+import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import path from 'path'
 import * as yarn from '../../../src/package-managers/yarn'
 import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn'
 
-chai.should()
+const should = chai.should()
 chai.use(chaiAsPromised)
 process.env.NCU_TESTS = 'true'
 
@@ -74,24 +74,24 @@ describe('yarn', function () {
       })
     })
 
-    it('does nothing when no npmAlwaysAuth', () => {
+    it('returns null when no npmAlwaysAuth', () => {
       const authToken = yarn.npmAuthTokenKeyValue({}, 'fortawesome', {
         npmAlwaysAuth: true,
         // undefined: npmAuthToken: 'MY-AUTH-TOKEN',
         npmRegistryServer: 'https://npm.fontawesome.com/',
       })
 
-      authToken!.should.deep.equal(null)
+      should.equal(authToken, null)
     })
 
-    it('does nothing when no registry server', () => {
+    it('returns null when no registry server', () => {
       const authToken = yarn.npmAuthTokenKeyValue({}, 'fortawesome', {
         npmAlwaysAuth: true,
         npmAuthToken: 'MY-AUTH-TOKEN',
         // undefined: npmRegistryServer: 'https://npm.fontawesome.com/',
       })
 
-      authToken!.should.deep.equal(null)
+      should.equal(authToken, null)
     })
   })
 })
@@ -122,7 +122,7 @@ describe('getPathToLookForLocalYarnrc', () => {
       readdirMock,
     )
 
-    should().exist(yarnrcPath)
+    should.exist(yarnrcPath)
     yarnrcPath!.should.equal(isWindows ? 'C:\\home\\test-repo\\.yarnrc.yml' : '/home/test-repo/.yarnrc.yml')
   })
 })
