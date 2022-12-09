@@ -100,7 +100,7 @@ export interface RunOptions {
   packageFile?: string
 
   /** npm, yarn, staticRegistry (default: npm). Run "ncu --help --packageManager" for details. */
-  packageManager?: string
+  packageManager?: 'npm' | 'yarn' | 'pnpm' | 'staticRegistry'
 
   /** Check peer dependencies of installed packages and filter updates to compatible versions. Run "ncu --help --peer" for details. */
   peer?: boolean

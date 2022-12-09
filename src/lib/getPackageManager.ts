@@ -3,7 +3,7 @@ import { Maybe } from '../types/Maybe'
 import { PackageManager } from '../types/PackageManager'
 
 /**
- * Initialize the version manager with the given package manager.
+ * Initialize the version manager with the given package manager. Throws an error if an invalid packageManager is provided
  *
  * @param packageManagerNameOrObject
  * @param packageManagerNameOrObject.global
@@ -20,7 +20,7 @@ function getPackageManager(packageManagerNameOrObject: Maybe<string | PackageMan
     return (packageManagers as any)[key]
   }
 
-  return !packageManagerNameOrObject
+  return !packageManagerNameOrObject || packageManagerNameOrObject === 'pnpm'
     ? packageManagers.npm // default to npm
     : // use present package manager if name is specified
     typeof packageManagerNameOrObject === 'string'

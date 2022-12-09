@@ -6,11 +6,6 @@ chai.should()
 const isWindows = process.platform === 'win32'
 
 describe('determinePackageManager', () => {
-  it('returns options.packageManager if set', async () => {
-    const packageManager = await determinePackageManager({ packageManager: 'fake' })
-    packageManager.should.equal('fake')
-  })
-
   it('returns yarn if yarn.lock exists in cwd', async () => {
     /** Mock for filesystem calls. */
     function readdirMock(path: string): Promise<string[]> {

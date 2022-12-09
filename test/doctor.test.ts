@@ -29,12 +29,16 @@ const testPass = ({ packageManager }: { packageManager: string }) => {
     const cwd = path.join(doctorTests, 'pass')
     const pkgPath = path.join(cwd, 'package.json')
     const nodeModulesPath = path.join(cwd, 'node_modules')
-    const lockfilePath = path.join(cwd, packageManager === 'npm' ? 'package-lock.json' : 'yarn.lock')
+    const lockfilePath = path.join(
+      cwd,
+      packageManager === 'yarn' ? 'yarn.lock' : packageManager === 'pnpm' ? 'pnpm-lock.yaml' : 'package-lock.json',
+    )
     const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
     let stderr = ''
 
-    // touch yarn.lock (see pass/README)
+    // touch yarn.lock
+    // yarn.lock is necessary otherwise yarn sees the package.json in the npm-check-updates directory and throws an error.
     if (packageManager === 'yarn') {
       await fs.writeFile(lockfilePath, '')
     }

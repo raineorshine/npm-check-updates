@@ -244,6 +244,7 @@ const extendedHelpPackageManager = (): string => {
     rows: wrapRows([
       ['npm', `System-installed npm. Default.`],
       ['yarn', `System-installed yarn. Automatically used if yarn.lock is present.`],
+      ['pnpm', `System-installed pnpm. Automatically used if pnpm-lock.yaml is present.`],
       [
         'staticRegistry',
         `Checks versions from a static file. Must include the --registry option with the path to a JSON registry file.
@@ -517,9 +518,9 @@ const cliOptions: CLIOption[] = [
     short: 'p',
     arg: 's',
     // manual default to allow overriding auto yarn detection
-    description: 'npm, yarn, staticRegistry (default: npm).',
+    description: 'npm, yarn, pnpm, staticRegistry (default: npm).',
     help: extendedHelpPackageManager,
-    type: 'string',
+    type: `'npm' | 'yarn' | 'pnpm' | 'staticRegistry'`,
   },
   {
     long: 'peer',

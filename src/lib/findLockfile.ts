@@ -25,10 +25,10 @@ export default async function findLockfile(
 
       if (files.includes('package-lock.json')) {
         return { directoryPath: currentPath, filename: 'package-lock.json' }
-      }
-
-      if (files.includes('yarn.lock')) {
+      } else if (files.includes('yarn.lock')) {
         return { directoryPath: currentPath, filename: 'yarn.lock' }
+      } else if (files.includes('pnpm-lock.yaml')) {
+        return { directoryPath: currentPath, filename: 'pnpm-lock.yaml' }
       }
 
       const pathParent = path.resolve(currentPath, '..')
