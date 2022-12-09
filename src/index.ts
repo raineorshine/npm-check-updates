@@ -3,6 +3,7 @@ import path from 'path'
 import prompts from 'prompts-ncu'
 import spawn from 'spawn-please'
 import { cliOptionsMap } from './cli-options'
+import { PackageInfo } from './lib/PackageInfo'
 import { cacheClear } from './lib/cache'
 import chalk, { chalkInit } from './lib/chalk'
 import doctor from './lib/doctor'
@@ -201,7 +202,9 @@ export async function run(
 
   /** Runs the dependency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
   async function runUpgrades(): Promise<Index<string> | PackageFile | void> {
-    const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackages(options)
+    const [pkgInfos, workspacePackages]: [PackageInfo[], string[]] = await getAllPackages(options)
+
+    const pkgs: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
 
     // enable deep mode if --deep, --workspace, --workspaces, or if multiple package files are found
     const isWorkspace = options.workspaces || !!options.workspace?.length

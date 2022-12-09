@@ -104,9 +104,9 @@ async function getWorkspacePackageInfos(
  * NOTE: this has been refactored out of index.ts
  *
  * @param options the application options, used to determine which packages to return.
- * @returns tuple(packageFilepaths, workspaces) containing the packageFilepaths and workspace string arrays
+ * @returns PackageInfo[] an array of all package infos to be considered for updating
  */
-async function getAllPackages(options: Options): Promise<[string[], string[]]> {
+async function getAllPackages(options: Options): Promise<[PackageInfo[], string[]]> {
   const defaultPackageFilename = options.packageFile || 'package.json'
   const cwd = options.cwd ? untildify(options.cwd) : './'
   const rootPackageFile = options.packageFile || (options.cwd ? path.join(cwd, 'package.json') : 'package.json')
@@ -114,29 +114,43 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
   const useWorkspaces: boolean =
     options.workspaces === true || (options.workspace !== undefined && options.workspace.length !== 0)
 
+  let packageInfos: PackageInfo[] = []
+
   // Find the package file with globby.
   // When in workspaces mode, only include the root project package file when --root is used.
-  let packageFilepaths: string[] =
-    !useWorkspaces || options.root
-      ? // convert Windows path to *nix path for globby
-        globby.sync(rootPackageFile.replace(/\\/g, '/'), { ignore: ['**/node_modules/**'] })
-      : []
-
-  if (!useWorkspaces) {
-    return [packageFilepaths, []]
+  const getBasePackageFile: boolean = !useWorkspaces || options.root === true
+  if (getBasePackageFile) {
+    // we are either:
+    // * NOT a workspace
+    // * a workspace and have requested an upgrade of the workspace-root
+    const globPattern = rootPackageFile.replace(/\\/g, '/')
+    const rootPackagePaths = globby.sync(globPattern, {
+      ignore: ['**/node_modules/**'],
+    })
+    // realistically there should only be zero or one
+    const rootPackages = [
+      ...(await Promise.all(
+        rootPackagePaths.map(
+          async (packagePath: string): Promise<PackageInfo> => await loadPackageInfoFromFile(packagePath),
+        ),
+      )),
+    ]
+    packageInfos = [...packageInfos, ...rootPackages]
   }
 
-  const [workspacePackageInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getWorkspacePackageInfos(
+  if (!useWorkspaces) {
+    return [packageInfos, []]
+  }
+
+  // workspaces
+  const [workspacePackageInfos, workspaceNames]: [PackageInfo[], string[]] = await getWorkspacePackageInfos(
     options,
     defaultPackageFilename,
     rootPackageFile,
     cwd,
   )
-  const workspacePackageFilepaths: string[] = workspacePackageInfos.map(
-    (packageInfo: PackageInfo) => packageInfo.filepath,
-  )
-  packageFilepaths = [...packageFilepaths, ...workspacePackageFilepaths]
-  return [packageFilepaths, workspacePackageNames]
+  packageInfos = [...packageInfos, ...workspacePackageInfos]
+  return [packageInfos, workspaceNames]
 }
 
 export default getAllPackages
