@@ -6,21 +6,17 @@ import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import chalk from './chalk'
 import findPackage from './findPackage'
-import getPackageFileName from './getPackageFileName'
 import programError from './programError'
 
 /**
  * Gets all workspace filenames, or just the root workspace package file
  *
- * NOTE: this has been refactored out of index.ts
- *
  * @param options the application options, used to determine which packages to return.
  * @returns tuple(pkgs, workspaces) containing the pkgs and workspace string arrays
  */
 async function getAllPackages(options: Options): Promise<[string[], string[]]> {
-  const defaultPackageFilename = getPackageFileName(options)
   const cwd = options.cwd ? untildify(options.cwd) : './'
-  const rootPackageFile = options.cwd ? path.join(cwd, defaultPackageFilename) : defaultPackageFilename
+  const rootPackageFile = options.packageFile || (options.cwd ? path.join(cwd, 'package.json') : 'package.json')
 
   // Workspace package names
   // These will be used to filter out local workspace packages so they are not fetched from the registry.
@@ -58,7 +54,7 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
     /* c8 ignore next */
     const workspacePackageGlob: string[] = (workspaces || []).map(workspace =>
       path
-        .join(cwd, workspace, defaultPackageFilename)
+        .join(cwd, workspace, 'package.json')
         // convert Windows path to *nix path for globby
         .replace(/\\/g, '/'),
     )
@@ -96,7 +92,7 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
               /* c8 ignore next */
               workspaces?.some(
                 workspacePattern =>
-                  pkgFile === path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename),
+                  pkgFile === path.join(cwd, path.dirname(workspacePattern), workspace, 'package.json'),
               ),
             ),
           )),

@@ -7,7 +7,6 @@ import { Target } from '../types/Target'
 import cacher from './cache'
 import determinePackageManager from './determinePackageManager'
 import exists from './exists'
-import getPackageFileName from './getPackageFileName'
 import programError from './programError'
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
@@ -142,7 +141,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
 
   const resolvedOptions = {
     ...options,
-    ...(options.deep ? { packageFile: `**/${getPackageFileName(options)}` } : null),
+    ...(options.deep ? { packageFile: '**/package.json' } : null),
     ...((options.args || []).length > 0 ? { filter: options.args!.join(' ') } : null),
     ...(format.length > 0 ? { format } : null),
     // add shortcut for any keys that start with 'json'

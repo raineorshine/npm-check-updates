@@ -15,7 +15,6 @@ import { VersionSpec } from '../types/VersionSpec'
 import chalk from './chalk'
 import getCurrentDependencies from './getCurrentDependencies'
 import getIgnoredUpgrades from './getIgnoredUpgrades'
-import getPackageFileName from './getPackageFileName'
 import getPackageManager from './getPackageManager'
 import getPeerDependencies from './getPeerDependencies'
 import keyValueBy from './keyValueBy'
@@ -277,7 +276,10 @@ async function runLocal(
         const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'
         const argv = process.argv.slice(2).join(' ')
         const ncuOptions = argv ? ' ' + argv : argv
-        print(options, `\nRun ${chalk.cyan(`${ncuCmd}${ncuOptions} -u`)} to upgrade ${getPackageFileName(options)}`)
+        print(
+          options,
+          `\nRun ${chalk.cyan(`${ncuCmd}${ncuOptions} -u`)} to upgrade ${options.packageFile || 'package.json'}`,
+        )
       }
     }
 
