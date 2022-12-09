@@ -22,7 +22,7 @@ describe('rc-config', () => {
     try {
       const text = await spawn(
         'node',
-        [bin, '--configFilePath', tempDir],
+        [bin, '--stdin', '--configFilePath', tempDir],
         '{ "dependencies": { "ncu-test-v2": "1.0.0", "ncu-test-tag": "0.1.0" } }',
       )
       text.should.containIgnoreCase(`Using config file ${tempConfigFile}`)
@@ -34,7 +34,11 @@ describe('rc-config', () => {
   it('do not print rcConfigPath when there is no rc config file', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     try {
-      const text = await spawn('node', [bin, '--cwd', tempDir], '{ "dependencies": { "ncu-test-v2": "1.0.0" } }')
+      const text = await spawn(
+        'node',
+        [bin, '--stdin', '--cwd', tempDir],
+        '{ "dependencies": { "ncu-test-v2": "1.0.0" } }',
+      )
       text.should.not.include('Using config file')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
@@ -48,7 +52,7 @@ describe('rc-config', () => {
     try {
       const text = await spawn(
         'node',
-        [bin, '--configFilePath', tempDir],
+        [bin, '--stdin', '--configFilePath', tempDir],
         '{ "dependencies": { "ncu-test-v2": "1", "ncu-test-tag": "0.1.0" } }',
       )
       text.should.not.include('Using config file')
