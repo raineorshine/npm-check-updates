@@ -210,6 +210,8 @@ export async function run(
   /** Runs the dependency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
   async function runUpgrades(): Promise<Index<string> | PackageFile | void> {
     const defaultPackageFilename = getPackageFileName(options)
+    const cwd = options.cwd ? untildify(options.cwd) : './'
+    const rootPackageFile = options.cwd ? path.join(cwd, defaultPackageFilename) : defaultPackageFilename
 
     // Workspace package names
     // These will be used to filter out local workspace packages so they are not fetched from the registry.
@@ -219,25 +221,17 @@ export async function run(
     // When in workspaces mode, only include the root project package file when --root is used.
     let pkgs =
       (!options.workspaces && !options.workspace?.length) || options.root
-        ? globby.sync(
-            options.cwd
-              ? path.resolve(untildify(options.cwd), defaultPackageFilename).replace(/\\/g, '/') // convert Windows path to *nix path for globby
-              : defaultPackageFilename,
-            {
-              ignore: ['**/node_modules/**'],
-            },
-          )
+        ? // convert Windows path to *nix path for globby
+          globby.sync(rootPackageFile.replace(/\\/g, '/'), { ignore: ['**/node_modules/**'] })
         : []
 
     // workspaces
     if (options.workspaces || options.workspace?.length) {
       // use silent, otherwise there will be a duplicate "Checking" message
-      const [pkgData] = await findPackage({ ...options, packageFile: defaultPackageFilename, loglevel: 'silent' })
-      const pkgDataParsed =
-        typeof pkgData === 'string' ? (JSON.parse(pkgData) as PackageFile) : (pkgData as PackageFile)
-      const workspaces = Array.isArray(pkgDataParsed.workspaces)
-        ? pkgDataParsed.workspaces
-        : pkgDataParsed.workspaces?.packages
+      const [pkgData] = await findPackage({ ...options, packageFile: rootPackageFile, loglevel: 'silent' })
+      const rootPkg: PackageFile = typeof pkgData === 'string' ? JSON.parse(pkgData) : pkgData
+
+      const workspaces = Array.isArray(rootPkg.workspaces) ? rootPkg.workspaces : rootPkg.workspaces?.packages
 
       if (!workspaces) {
         programError(
@@ -253,7 +247,7 @@ export async function run(
       // build a glob from the workspaces
       const workspacePackageGlob = (workspaces || []).map(workspace =>
         path
-          .join(workspace, defaultPackageFilename)
+          .join(cwd, workspace, defaultPackageFilename)
           // convert Windows path to *nix path for globby
           .replace(/\\/g, '/'),
       )
@@ -287,7 +281,7 @@ export async function run(
               options.workspace?.some(workspace =>
                 workspaces?.some(
                   workspacePattern =>
-                    pkgFile === path.join(path.dirname(workspacePattern), workspace, defaultPackageFilename),
+                    pkgFile === path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename),
                 ),
               ),
             )),

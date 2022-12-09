@@ -272,6 +272,22 @@ describe('--workspace', function () {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
+
+  it('update single workspace with --cwd and --workspace', async () => {
+    const tempDir = await setup()
+    try {
+      // when npm-check-updates is executed in a workspace directory but uses --cwd to point up to the root, make sure that the root package.json is checked for the workspaces property
+      const output = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--cwd', '../../'], {
+        cwd: path.join(tempDir, 'packages', 'a'),
+      }).then(JSON.parse)
+      output.should.not.have.property('package.json')
+      output.should.have.property('packages/a/package.json')
+      output.should.not.have.property('packages/b/package.json')
+      output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
 })
 
 describe('--workspaces --root', function () {
