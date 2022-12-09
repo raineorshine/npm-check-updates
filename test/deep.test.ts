@@ -5,6 +5,7 @@ import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import ncu from '../src/'
+import asPosixPath from '../src/lib/asPosixPath'
 import mergeOptions from '../src/lib/mergeOptions'
 
 chai.should()
@@ -108,9 +109,9 @@ describe('--deep', function () {
       upgradedPkg2.dependencies.express.should.not.equal('1')
 
       const json = JSON.parse(output)
-      json.should.have.property(path.join(tempDir, 'packages/sub1/package.json'))
-      json.should.have.property(path.join(tempDir, 'packages/sub2/package.json'))
-      json.should.have.property(path.join(tempDir, 'package.json'))
+      json.should.have.property(asPosixPath(path.join(tempDir, 'packages/sub1/package.json')))
+      json.should.have.property(asPosixPath(path.join(tempDir, 'packages/sub2/package.json')))
+      json.should.have.property(asPosixPath(path.join(tempDir, 'package.json')))
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
