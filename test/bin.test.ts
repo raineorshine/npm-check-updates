@@ -242,214 +242,102 @@ describe('reject', () => {
   })
 })
 
-describe('rc-config', () => {
-  it('print rcConfigPath when there is a non-empty rc config file', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-    const tempConfigFile = path.join(tempDir, '.ncurc.json')
-    await fs.writeFile(tempConfigFile, '{"filter": "express"}', 'utf-8')
-    try {
-      const text = await spawn(
-        'node',
-        [bin, '--configFilePath', tempDir],
-        '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
-      )
-      text.should.containIgnoreCase(`Using config file ${tempConfigFile}`)
-    } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+describe('with timeout option', () => {
+  it('exit with error when timeout exceeded', async () => {
+    return spawn(
+      'node',
+      [bin, '--timeout', '1'],
+      '{ "dependencies": { "express": "1" } }',
+    ).should.eventually.be.rejectedWith('Exceeded global timeout of 1ms')
+  })
+
+  it('completes successfully with timeout', async () => {
+    return spawn('node', [bin, '--timeout', '100000'], '{ "dependencies": { "express": "1" } }')
+  })
+})
+
+describe('embedded versions', () => {
+  it('strip url from Github url in "to" output', async () => {
+    // use dynamic import for ESM module
+    const { default: stripAnsi } = await import('strip-ansi')
+    const dependencies = {
+      'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0',
     }
+    const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
+    stripAnsi(output)
+      .trim()
+      .should.equal('ncu-test-v2  https://github.com/raineorshine/ncu-test-v2.git#v1.0.0  →  v2.0.0')
   })
 
-  it('do not print rcConfigPath when there is no rc config file', async () => {
-    const text = await spawn('node', [bin], '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }')
-    text.should.not.include('Using config file')
-  })
-
-  it('do not print rcConfigPath when there is an empty rc config file', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-    const tempConfigFile = path.join(tempDir, '.ncurc.json')
-    await fs.writeFile(tempConfigFile, '{}', 'utf-8')
-    try {
-      const text = await spawn(
-        'node',
-        [bin, '--configFilePath', tempDir],
-        '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
-      )
-      text.should.not.include('Using config file')
-    } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+  it('strip prefix from npm alias in "to" output', async () => {
+    // use dynamic import for ESM module
+    const { default: stripAnsi } = await import('strip-ansi')
+    const dependencies = {
+      request: 'npm:ncu-test-v2@1.0.0',
     }
+    const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
+    stripAnsi(output).trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  2.0.0')
+  })
+})
+
+describe('option-specific help', () => {
+  it('long option', async () => {
+    const output = await spawn('node', [bin, '--help', '--filter'])
+    output.trim().should.match(/^Usage:\s+ncu --filter/)
   })
 
-  it('read --configFilePath', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-    const tempConfigFile = path.join(tempDir, '.ncurc.json')
-    await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
-    try {
-      const text = await spawn(
-        'node',
-        [bin, '--stdin', '--configFilePath', tempDir],
-        '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
-      )
-      const pkgData = JSON.parse(text)
-      pkgData.should.have.property('express')
-      pkgData.should.not.have.property('chalk')
-    } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+  it('long option without "--" prefix', async () => {
+    const output = await spawn('node', [bin, '--help', '-f'])
+    output.trim().should.match(/^Usage:\s+ncu --filter/)
+  })
+
+  it('short option', async () => {
+    const output = await spawn('node', [bin, '--help', 'filter'])
+    output.trim().should.match(/^Usage:\s+ncu --filter/)
+  })
+
+  it('short option without "-" prefix', async () => {
+    const output = await spawn('node', [bin, '--help', 'f'])
+    output.trim().should.match(/^Usage:\s+ncu --filter/)
+  })
+
+  it('option with default', async () => {
+    const output = await spawn('node', [bin, '--help', '--concurrency'])
+    output.trim().should.containIgnoreCase('Default:')
+  })
+
+  it('option with extended help', async () => {
+    const output = await spawn('node', [bin, '--help', '--target'])
+    output.trim().should.containIgnoreCase('Upgrade to the highest version number')
+
+    // run extended help on other options for test coverage
+    await spawn('node', [bin, '--help', 'doctor'])
+    await spawn('node', [bin, '--help', 'format'])
+    await spawn('node', [bin, '--help', 'group'])
+    await spawn('node', [bin, '--help', 'packageManager'])
+    await spawn('node', [bin, '--help', 'peer'])
+  })
+
+  it('unknown option', async () => {
+    const output = await spawn('node', [bin, '--help', '--foo'])
+    output.trim().should.containIgnoreCase('Unknown option')
+  })
+
+  it('special --help --help', async () => {
+    const output = await spawn('node', [bin, '--help', '--help'])
+    output.trim().should.not.include('Usage')
+  })
+
+  it('ignore file: and link: protocols', async () => {
+    const { default: stripAnsi } = await import('strip-ansi')
+    const dependencies = {
+      editor: 'file:../editor',
+      event: 'link:../link',
     }
-  })
+    const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
 
-  it('read --configFileName', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-    const tempConfigFileName = '.rctemp.json'
-    const tempConfigFile = path.join(tempDir, tempConfigFileName)
-    await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
-    try {
-      const text = await spawn(
-        'node',
-        [bin, '--stdin', '--configFilePath', tempDir, '--configFileName', tempConfigFileName],
-        '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
-      )
-      const pkgData = JSON.parse(text)
-      pkgData.should.have.property('express')
-      pkgData.should.not.have.property('chalk')
-    } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
-    }
-  })
-
-  it('override config with arguments', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-    const tempConfigFile = path.join(tempDir, '.ncurc.json')
-    await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true, "filter": "express"}', 'utf-8')
-    try {
-      const text = await spawn(
-        'node',
-        [bin, '--stdin', '--configFilePath', tempDir, '--filter', 'chalk'],
-        '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
-      )
-      const pkgData = JSON.parse(text)
-      pkgData.should.have.property('chalk')
-      pkgData.should.not.have.property('express')
-    } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
-    }
-  })
-
-  it('handle boolean arguments', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-    const tempConfigFile = path.join(tempDir, '.ncurc.json')
-    // if boolean arguments are not handled as a special case, ncu will incorrectly pass "--deep false" to commander, which will interpret it as two args, i.e. --deep and --filter false
-    await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true, "deep": false }', 'utf-8')
-    try {
-      const text = await spawn(
-        'node',
-        [bin, '--stdin', '--configFilePath', tempDir],
-        '{ "dependencies": { "chalk": "0.1.0" } }',
-      )
-      const pkgData = JSON.parse(text)
-      pkgData.should.have.property('chalk')
-    } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
-    }
-  })
-
-  describe('with timeout option', () => {
-    it('exit with error when timeout exceeded', async () => {
-      return spawn(
-        'node',
-        [bin, '--timeout', '1'],
-        '{ "dependencies": { "express": "1" } }',
-      ).should.eventually.be.rejectedWith('Exceeded global timeout of 1ms')
-    })
-
-    it('completes successfully with timeout', async () => {
-      return spawn('node', [bin, '--timeout', '100000'], '{ "dependencies": { "express": "1" } }')
-    })
-  })
-
-  describe('embedded versions', () => {
-    it('strip url from Github url in "to" output', async () => {
-      // use dynamic import for ESM module
-      const { default: stripAnsi } = await import('strip-ansi')
-      const dependencies = {
-        'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0',
-      }
-      const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
-      stripAnsi(output)
-        .trim()
-        .should.equal('ncu-test-v2  https://github.com/raineorshine/ncu-test-v2.git#v1.0.0  →  v2.0.0')
-    })
-
-    it('strip prefix from npm alias in "to" output', async () => {
-      // use dynamic import for ESM module
-      const { default: stripAnsi } = await import('strip-ansi')
-      const dependencies = {
-        request: 'npm:ncu-test-v2@1.0.0',
-      }
-      const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
-      stripAnsi(output).trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  2.0.0')
-    })
-  })
-
-  describe('option-specific help', () => {
-    it('long option', async () => {
-      const output = await spawn('node', [bin, '--help', '--filter'])
-      output.trim().should.match(/^Usage:\s+ncu --filter/)
-    })
-
-    it('long option without "--" prefix', async () => {
-      const output = await spawn('node', [bin, '--help', '-f'])
-      output.trim().should.match(/^Usage:\s+ncu --filter/)
-    })
-
-    it('short option', async () => {
-      const output = await spawn('node', [bin, '--help', 'filter'])
-      output.trim().should.match(/^Usage:\s+ncu --filter/)
-    })
-
-    it('short option without "-" prefix', async () => {
-      const output = await spawn('node', [bin, '--help', 'f'])
-      output.trim().should.match(/^Usage:\s+ncu --filter/)
-    })
-
-    it('option with default', async () => {
-      const output = await spawn('node', [bin, '--help', '--concurrency'])
-      output.trim().should.containIgnoreCase('Default:')
-    })
-
-    it('option with extended help', async () => {
-      const output = await spawn('node', [bin, '--help', '--target'])
-      output.trim().should.containIgnoreCase('Upgrade to the highest version number')
-
-      // run extended help on other options for test coverage
-      await spawn('node', [bin, '--help', 'doctor'])
-      await spawn('node', [bin, '--help', 'format'])
-      await spawn('node', [bin, '--help', 'group'])
-      await spawn('node', [bin, '--help', 'packageManager'])
-      await spawn('node', [bin, '--help', 'peer'])
-    })
-
-    it('unknown option', async () => {
-      const output = await spawn('node', [bin, '--help', '--foo'])
-      output.trim().should.containIgnoreCase('Unknown option')
-    })
-
-    it('special --help --help', async () => {
-      const output = await spawn('node', [bin, '--help', '--help'])
-      output.trim().should.not.include('Usage')
-    })
-
-    it('ignore file: and link: protocols', async () => {
-      const { default: stripAnsi } = await import('strip-ansi')
-      const dependencies = {
-        editor: 'file:../editor',
-        event: 'link:../link',
-      }
-      const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
-
-      stripAnsi(output)!.should.not.include(
-        'No package versions were returned. This is likely a problem with your installed npm',
-      )
-    })
+    stripAnsi(output)!.should.not.include(
+      'No package versions were returned. This is likely a problem with your installed npm',
+    )
   })
 })
