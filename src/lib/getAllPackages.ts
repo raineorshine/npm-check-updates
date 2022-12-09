@@ -92,7 +92,9 @@ async function getAllPackages(options: Options): Promise<[string[], string[]]> {
               /* c8 ignore next */
               workspaces?.some(
                 workspacePattern =>
-                  pkgFile === path.join(cwd, path.dirname(workspacePattern), workspace, 'package.json'),
+                  // convert Windows path to *nix path for filtering
+                  pkgFile ===
+                  path.join(cwd, path.dirname(workspacePattern), workspace, 'package.json').replace(/\\/g, '/'),
               ),
             ),
           )),
