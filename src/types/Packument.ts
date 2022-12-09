@@ -8,7 +8,8 @@ export interface Packument {
   engines: {
     node: string
   }
-  time: Index<string>
+  // fullMetadata only
+  time?: Index<string>
   version: Version
   versions: Packument[]
 }
