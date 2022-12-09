@@ -66,9 +66,19 @@ describe('bin', async function () {
     pkgData.should.have.property('express')
   })
 
-  it('handle no package.json to analyze when receiving empty content on stdin', async () => {
+  it('throw error if there is no package', async () => {
     // run from tmp dir to avoid ncu analyzing the project's package.json
     return spawn('node', [bin], { cwd: os.tmpdir() }).should.eventually.be.rejectedWith('No package.json')
+  })
+
+  it('throw error if there is no package in --cwd', async () => {
+    return spawn('node', [bin, '--cwd', os.tmpdir()]).should.eventually.be.rejectedWith('No package.json')
+  })
+
+  it('throw error if --cwd does not exist', async () => {
+    return spawn('node', [bin, '--cwd', 'fnuoathufoawhtufonwauto']).should.eventually.be.rejectedWith(
+      'no such directory: fnuoathufoawhtufonwauto',
+    )
   })
 
   it('read --packageFile', async () => {

@@ -82,6 +82,11 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     }
   })
 
+  // validate options.cwd
+  if (options.cwd && !(await exists(options.cwd))) {
+    programError(options, `no such directory: ${options.cwd}`)
+  }
+
   // disallow non-matching filter and args
   if (options.filter && (options.args || []).length > 0 && options.filter !== options.args!.join(' ')) {
     programError(

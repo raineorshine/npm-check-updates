@@ -68,7 +68,7 @@ async function findPackage(options: Options) {
     pkgData = data || getPackageDataFromFile(await pkgFile, defaultPackageFilename)
   } else {
     // find the closest package starting from the current working directory and going up to the root
-    pkgFile = defaultPackageFilename ? findUp.sync(defaultPackageFilename) : null
+    pkgFile = defaultPackageFilename ? findUp.sync(defaultPackageFilename, { cwd: options.cwd || process.cwd() }) : null
     pkgData = getPackageDataFromFile(pkgFile, defaultPackageFilename)
   }
 
