@@ -5,18 +5,23 @@ import { Options } from '../src/types/Options'
 
 chai.should()
 
+/** forces path to a posix version (windows-style) */
+function asPosixPath(filepath: string): string {
+  return filepath.split(path.sep).join(path.posix.sep)
+}
+
 /** given a dirPath removes it from a tuple of strings  */
 async function stripDir(dirPath: string, paths: [string[], string[]]): Promise<[string[], string[]]> {
   const [pkgs, workspacePackages]: [string[], string[]] = paths
   return [
-    pkgs.map((path: string): string => path.replace(dirPath, '')),
-    workspacePackages.map((path: string): string => path.replace(dirPath, '')),
+    pkgs.map((path: string): string => asPosixPath(path).replace(dirPath, '')),
+    workspacePackages.map((path: string): string => asPosixPath(path).replace(dirPath, '')),
   ]
 }
 
 /** convenience function to call getAllPackages for a given test-path  */
 async function getAllPackagesForTest(testPath: string, options: Options): Promise<[string[], string[]]> {
-  const testCwd = path.join(__dirname, testPath)
+  const testCwd = path.join(__dirname, testPath).replace(/\\/g, '/')
   process.chdir(testCwd) // FIXME: remove the setting of cwd, the tests should work without it
   const optionsWithTestCwd: Options = { cwd: testCwd, ...options }
   const [pkgs, workspacePackages]: [string[], string[]] = await stripDir(
