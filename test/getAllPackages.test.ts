@@ -196,42 +196,42 @@ describe('getAllPackages', () => {
         workspacePackages.should.deep.equal([])
       })
     })
+  })
 
-    describe('sub-package-names', () => {
-      it('FIXME: --workspaces should return all packages not just ones that dir-names-match', async () => {
-        const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
-          'test-data/workspace-sub-package-names/',
-          { workspaces: true },
-        )
+  describe('sub-package-names', () => {
+    it('FIXME: --workspaces should return all packages not just ones that dir-names-match', async () => {
+      const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+        'test-data/workspace-sub-package-names/',
+        { workspaces: true },
+      )
 
-        pkgs.should.deep.equal(['pkg/dirname-matches-name/package.json', 'pkg/dirname-will-become-name/package.json'])
-        workspacePackages.should.deep.equal([
-          'dirname-matches-name',
-          'dirname-will-become-name', // should use the directory name
-          // 'dirname-does-not-match-name',  FIXME: this should be returned too
-        ])
-      })
+      pkgs.should.deep.equal(['pkg/dirname-matches-name/package.json', 'pkg/dirname-will-become-name/package.json'])
+      workspacePackages.should.deep.equal([
+        'dirname-matches-name',
+        'dirname-will-become-name', // should use the directory name
+        // 'dirname-does-not-match-name',  FIXME: this should be returned too
+      ])
+    })
 
-      it('FIXME: --workspace should return all named packages not just ones that dir-names-match', async () => {
-        const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
-          'test-data/workspace-sub-package-names/',
-          {
-            workspaces: false,
-            workspace: [
-              'dirname-matches-name',
-              'dirname-will-become-name',
-              // 'dirname-does-not-match-name',  FIXME: this should be returned too
-            ],
-          },
-        )
+    it('FIXME: --workspace should return all named packages not just ones that dir-names-match', async () => {
+      const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+        'test-data/workspace-sub-package-names/',
+        {
+          workspaces: false,
+          workspace: [
+            'dirname-matches-name',
+            'dirname-will-become-name',
+            // 'dirname-does-not-match-name',  FIXME: this should be returned too
+          ],
+        },
+      )
 
-        pkgs.should.deep.equal(['pkg/dirname-matches-name/package.json', 'pkg/dirname-will-become-name/package.json'])
-        workspacePackages.should.deep.equal([
-          'dirname-matches-name',
-          'dirname-will-become-name',
-          // 'dirname-does-not-match-name',  FIXME: this should be returned too
-        ])
-      })
+      pkgs.should.deep.equal(['pkg/dirname-matches-name/package.json', 'pkg/dirname-will-become-name/package.json'])
+      workspacePackages.should.deep.equal([
+        'dirname-matches-name',
+        'dirname-will-become-name',
+        // 'dirname-does-not-match-name',  FIXME: this should be returned too
+      ])
     })
   })
 })
