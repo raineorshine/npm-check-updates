@@ -108,9 +108,10 @@ describe('--deep', function () {
       upgradedPkg2.dependencies.express.should.not.equal('1')
 
       const json = JSON.parse(output)
-      json.should.have.property(path.join(tempDir, 'packages/sub1/package.json'))
-      json.should.have.property(path.join(tempDir, 'packages/sub2/package.json'))
-      json.should.have.property(path.join(tempDir, 'package.json'))
+      // Make sure to fix windows paths with replace
+      json.should.have.property(path.join(tempDir, 'packages/sub1/package.json').replace(/\\/g, '/'))
+      json.should.have.property(path.join(tempDir, 'packages/sub2/package.json').replace(/\\/g, '/'))
+      json.should.have.property(path.join(tempDir, 'package.json').replace(/\\/g, '/'))
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
