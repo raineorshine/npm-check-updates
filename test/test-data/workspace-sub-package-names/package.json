@@ -1,0 +1,14 @@
+{
+  "name": "basic-test-workspaces",
+  "license": "MIT",
+  "private": true,
+  "version": "0.0.0",
+  "dependencies": {},
+  "workspaces": {
+    "packages": [
+      "pkg/a-different-name-to-dirname",
+      "pkg/dirname-matches-name",
+      "pkg/dirname-will-become-name"
+    ]
+  }
+}
