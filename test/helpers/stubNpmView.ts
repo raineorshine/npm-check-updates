@@ -7,7 +7,7 @@ import { Version } from '../../src/types/Version'
 type MockedVersions = Index<Version>
 type MockedVersionsMatcher = (options: Options) => Index<Version> | null
 
-/** Stubs the npmView function from package-managers/npm. Only works with ncu.run in tests, not spawn. Returns the stub object. Call stub.restore() after assertions to restore the original function. */
+/** Stubs the npmView function from package-managers/npm. Only works when importing ncu directly in tests, not when the binary is spawned. Returns the stub object. Call stub.restore() after assertions to restore the original function. */
 const stubNpmView = (mockReturnedVersions: Version | MockedVersions | MockedVersionsMatcher) =>
   sinon
     .stub(npmPackageManager, 'viewManyMemoized')

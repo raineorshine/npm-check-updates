@@ -4,7 +4,7 @@ import chaiString from 'chai-string'
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
-import * as ncu from '../src/'
+import ncu from '../src/'
 import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
@@ -17,7 +17,7 @@ describe('run', function () {
   it('return jsonUpgraded by default', async () => {
     const stub = stubNpmView('99.9.9')
 
-    const output = await ncu.run({
+    const output = await ncu({
       packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package.json'), 'utf-8'),
     })
     output!.should.deep.equal({
@@ -30,7 +30,7 @@ describe('run', function () {
   it('pass object as packageData', async () => {
     const stub = stubNpmView('99.9.9')
 
-    const output = await ncu.run({
+    const output = await ncu({
       packageData: {
         dependencies: {
           MOCK_PACKAGE: '1.0.0',
@@ -45,7 +45,7 @@ describe('run', function () {
   it('do not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimal is true', async () => {
     const stub = stubNpmView('2.1.1')
 
-    const upgraded = await ncu.run({
+    const upgraded = await ncu({
       packageData: { dependencies: { MOCK_PACKAGE: '^2.1.0' } },
       jsonUpgraded: true,
       minimal: true,
@@ -63,7 +63,7 @@ describe('run', function () {
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
 
     try {
-      const result = await ncu.run({
+      const result = await ncu({
         packageFile: pkgFile,
         jsonUpgraded: true,
         upgrade: true,
@@ -80,78 +80,70 @@ describe('run', function () {
   })
 
   it('exclude -alpha, -beta, -rc', () => {
-    return ncu
-      .run({
-        jsonAll: true,
-        packageData: {
-          dependencies: {
-            'ncu-mock-pre': '1.0.0',
-          },
+    return ncu({
+      jsonAll: true,
+      packageData: {
+        dependencies: {
+          'ncu-mock-pre': '1.0.0',
+        },
+      },
+    }).then(data => {
+      return data!.should.eql({
+        dependencies: {
+          'ncu-mock-pre': '1.0.0',
         },
       })
-      .then(data => {
-        return data!.should.eql({
-          dependencies: {
-            'ncu-mock-pre': '1.0.0',
-          },
-        })
-      })
+    })
   })
 
   it('upgrade prereleases to newer prereleases', () => {
-    return ncu
-      .run({
-        packageData: {
-          dependencies: {
-            'ncu-test-alpha-latest': '1.0.0-alpha.1',
-          },
+    return ncu({
+      packageData: {
+        dependencies: {
+          'ncu-test-alpha-latest': '1.0.0-alpha.1',
         },
+      },
+    }).then(data => {
+      return data!.should.eql({
+        'ncu-test-alpha-latest': '1.0.0-alpha.2',
       })
-      .then(data => {
-        return data!.should.eql({
-          'ncu-test-alpha-latest': '1.0.0-alpha.2',
-        })
-      })
+    })
   })
 
   it('do not upgrade prereleases to newer prereleases with --pre 0', () => {
-    return ncu
-      .run({
-        pre: false,
-        packageData: {
-          dependencies: {
-            'ncu-test-alpha-latest': '1.0.0-alpha.1',
-          },
+    return ncu({
+      pre: false,
+      packageData: {
+        dependencies: {
+          'ncu-test-alpha-latest': '1.0.0-alpha.1',
         },
-      })
-      .then(data => {
-        return data!.should.eql({})
-      })
+      },
+    }).then(data => {
+      return data!.should.eql({})
+    })
   })
 
   it('include -alpha, -beta, -rc with --pre option', () => {
-    return ncu
-      .run({
-        jsonAll: true,
-        packageData: {
-          dependencies: {
-            'ncu-mock-pre': '1.0.0',
-          },
+    return ncu({
+      jsonAll: true,
+      packageData: {
+        dependencies: {
+          'ncu-mock-pre': '1.0.0',
         },
-        pre: true,
+      },
+      pre: true,
+    }).then(data => {
+      return data!.should.eql({
+        dependencies: {
+          'ncu-mock-pre': '2.0.0-alpha.0',
+        },
       })
-      .then(data => {
-        return data!.should.eql({
-          dependencies: {
-            'ncu-mock-pre': '2.0.0-alpha.0',
-          },
-        })
-      })
+    })
   })
 
   describe('deprecated', () => {
     it('deprecated excluded by default', async () => {
-      const upgrades = await ncu.run({
+      const upgrades = await ncu({
         packageData: {
           dependencies: {
             'ncu-test-deprecated': '1.0.0',
@@ -162,7 +154,7 @@ describe('run', function () {
     })
 
     it('deprecated included with option', async () => {
-      const upgrades = await ncu.run({
+      const upgrades = await ncu({
         deprecated: true,
         packageData: {
           dependencies: {
@@ -177,7 +169,7 @@ describe('run', function () {
   })
 
   it('ignore non-string versions (sometimes used as comments)', async () => {
-    const upgrades = await ncu.run({
+    const upgrades = await ncu({
       packageData: {
         dependencies: {
           '//': 'This is a comment',
@@ -189,7 +181,7 @@ describe('run', function () {
 
   it('update devDependency when duplicate dependency is up-to-date', async () => {
     const stub = stubNpmView('2.0.0')
-    const upgrades = await ncu.run({
+    const upgrades = await ncu({
       packageData: {
         dependencies: {
           'ncu-test-v2': '^2.0.0',
@@ -207,7 +199,7 @@ describe('run', function () {
 
   it('update dependency when duplicate devDependency is up-to-date', async () => {
     const stub = stubNpmView('2.0.0')
-    const upgrades = await ncu.run({
+    const upgrades = await ncu({
       packageData: {
         dependencies: {
           'ncu-test-v2': '^1.0.0',
@@ -225,7 +217,7 @@ describe('run', function () {
 
   // https://github.com/raineorshine/npm-check-updates/issues/1129
   it('ignore invalid semver version', async () => {
-    const upgrades = await ncu.run({
+    const upgrades = await ncu({
       // needed to cause the npm package handler to use greatest or newest and compare all published versions
       target: 'minor',
       packageData: {
@@ -239,7 +231,7 @@ describe('run', function () {
   })
 
   it('ignore file: and link: protocols', async () => {
-    const output = await ncu.run({
+    const output = await ncu({
       packageData: {
         dependencies: {
           editor: 'file:../editor',

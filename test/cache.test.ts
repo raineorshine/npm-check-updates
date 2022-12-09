@@ -2,7 +2,7 @@ import chai, { expect } from 'chai'
 import chaiString from 'chai-string'
 import fs from 'fs/promises'
 import rimraf from 'rimraf'
-import * as ncu from '../src/'
+import ncu from '../src/'
 import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
 import { CacheData } from '../src/types/Cacher'
 import stubNpmView from './helpers/stubNpmView'
@@ -28,7 +28,7 @@ describe('cache', () => {
         },
       }
 
-      await ncu.run({ packageData, cache: true })
+      await ncu({ packageData, cache: true })
 
       const cacheData: CacheData = await fs.readFile(resolvedDefaultCacheFile, 'utf-8').then(JSON.parse)
 
@@ -70,7 +70,7 @@ describe('cache', () => {
       }
 
       // first run caches latest
-      await ncu.run({ packageData, cache: true })
+      await ncu({ packageData, cache: true })
 
       const cacheData1: CacheData = await fs.readFile(resolvedDefaultCacheFile, 'utf-8').then(JSON.parse)
 
@@ -81,7 +81,7 @@ describe('cache', () => {
       })
 
       // second run has a different target so should not use the cache
-      const result2 = await ncu.run({ packageData, cache: true, target: 'greatest' })
+      const result2 = await ncu({ packageData, cache: true, target: 'greatest' })
       expect(result2).deep.eq({
         'ncu-test-v2': '^2.0.0',
         'ncu-test-tag': '1.2.0-dev.0',
@@ -114,9 +114,9 @@ describe('cache', () => {
       },
     }
 
-    await ncu.run({ packageData, cache: true })
+    await ncu({ packageData, cache: true })
 
-    await ncu.run({ packageData, cacheClear: true })
+    await ncu({ packageData, cacheClear: true })
     let noCacheFile = false
     try {
       await fs.stat(resolvedDefaultCacheFile)

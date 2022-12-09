@@ -4,7 +4,7 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import * as ncu from '../src/'
+import ncu from '../src/'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -98,7 +98,7 @@ describe('--workspaces', function () {
   this.timeout(60000)
 
   it('do not allow --workspaces and --deep together', () => {
-    ncu.run({ workspaces: true, deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+    ncu({ workspaces: true, deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
   })
 
   it('update workspaces with --workspaces', async () => {
@@ -224,11 +224,11 @@ describe('--workspace', function () {
   this.timeout(60000)
 
   it('do not allow --workspace and --deep together', () => {
-    ncu.run({ workspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+    ncu({ workspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
   })
 
   it('do not allow --workspace and --workspaces together', () => {
-    ncu.run({ workspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+    ncu({ workspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
   })
 
   it('update single workspace with --workspace', async () => {

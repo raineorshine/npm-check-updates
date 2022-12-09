@@ -4,7 +4,7 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import * as ncu from '../src/'
+import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
 
 chai.should()
@@ -49,9 +49,7 @@ describe('--deep', function () {
   this.timeout(60000)
 
   it('do not allow --packageFile and --deep together', async () => {
-    await ncu
-      .run({ packageFile: './package.json', deep: true })
-      .should.eventually.be.rejectedWith('Cannot specify both')
+    await ncu({ packageFile: './package.json', deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
   })
 
   it('output json with --jsonAll', async () => {

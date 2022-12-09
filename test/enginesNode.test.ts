@@ -1,5 +1,5 @@
 import chai from 'chai'
-import * as ncu from '../src/'
+import ncu from '../src/'
 import { Index } from '../src/types/IndexType'
 import { VersionSpec } from '../src/types/VersionSpec'
 
@@ -8,7 +8,7 @@ process.env.NCU_TESTS = 'true'
 
 describe('enginesNode', () => {
   it('enable --enginesNode matching ', async () => {
-    const upgradedPkg = await ncu.run({
+    const upgradedPkg = await ncu({
       jsonAll: true,
       packageData: {
         dependencies: {
@@ -32,7 +32,7 @@ describe('enginesNode', () => {
   })
 
   it('enable engines matching if --enginesNode', async () => {
-    const upgradedPkg = await ncu.run({
+    const upgradedPkg = await ncu({
       jsonAll: true,
       packageData: {
         dependencies: {
@@ -52,7 +52,7 @@ describe('enginesNode', () => {
   })
 
   it('enable engines matching if --enginesNode, not update if matches not exists', async () => {
-    const upgradedPkg = await ncu.run({
+    const upgradedPkg = await ncu({
       jsonAll: true,
       packageData: {
         dependencies: {
@@ -72,7 +72,7 @@ describe('enginesNode', () => {
   })
 
   it('enable engines matching if --enginesNode, update to latest version if engines.node not exists', async () => {
-    const upgradedPkg = await ncu.run({
+    const upgradedPkg = await ncu({
       jsonAll: true,
       packageData: {
         dependencies: {
