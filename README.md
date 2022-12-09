@@ -201,8 +201,8 @@ ncu "/^(?!react-).*$/" # windows
 --packageData <value>      Package file data (you can also use stdin).
 --packageFile <path|glob>  Package file(s) location. (default:
                            ./package.json)
--p, --packageManager <s>   npm, yarn, staticRegistry (default: npm). Run "ncu
-                           --help --packageManager" for details.
+-p, --packageManager <s>   npm, yarn, pnpm, staticRegistry (default: npm).
+                           Run "ncu --help --packageManager" for details.
 --peer                     Check peer dependencies of installed packages and
                            filter updates to compatible versions. Run "ncu
                            --help --peer" for details.
@@ -372,6 +372,8 @@ Specifies the package manager to use when looking up version numbers.
     │            npm │ System-installed npm. Default.                                                            │
     ├────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
     │           yarn │ System-installed yarn. Automatically used if yarn.lock is present.                        │
+    ├────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+    │           pnpm │ System-installed pnpm. Automatically used if pnpm-lock.yaml is present.                   │
     ├────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
     │ staticRegistry │ Checks versions from a static file. Must include the --registry option with the path to a │
     │                │ JSON registry file.                                                                       │
