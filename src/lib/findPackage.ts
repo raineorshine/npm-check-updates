@@ -5,7 +5,6 @@ import path from 'path'
 import { print } from '../lib/logging'
 import { Options } from '../types/Options'
 import chalk from './chalk'
-import getPackageFileName from './getPackageFileName'
 import programError from './programError'
 
 /**
@@ -22,11 +21,7 @@ import programError from './programError'
 async function findPackage(options: Options) {
   let pkgData
   let pkgFile = null
-
-  print(options, 'Running in local mode', 'verbose')
-  print(options, 'Finding package file data', 'verbose')
-
-  const defaultPackageFilename = getPackageFileName(options)
+  const pkgPath = options.packageFile || 'package.json'
 
   /** Reads the contents of a package file. */
   function getPackageDataFromFile(pkgFile: string | null | undefined, pkgFileName: string): Promise<string> {
@@ -48,13 +43,16 @@ async function findPackage(options: Options) {
     return fs.readFile(pkgFile!, 'utf-8')
   }
 
+  print(options, 'Running in local mode', 'verbose')
+  print(options, 'Finding package file data', 'verbose')
+
   // get the package data from the various input possibilities
   if (options.packageData) {
     pkgFile = null
     pkgData = Promise.resolve(options.packageData)
   } else if (options.packageFile) {
     pkgFile = options.packageFile
-    pkgData = getPackageDataFromFile(pkgFile, defaultPackageFilename)
+    pkgData = getPackageDataFromFile(pkgFile, pkgPath)
   } else if (options.stdin) {
     print(options, 'Waiting for package data on stdin', 'verbose')
 
@@ -64,12 +62,12 @@ async function findPackage(options: Options) {
     const data = stdinData.trim().length > 0 ? stdinData : null
 
     // if no stdin content fall back to searching for package.json from pwd and up to root
-    pkgFile = data || !defaultPackageFilename ? null : findUp.sync(defaultPackageFilename)
-    pkgData = data || getPackageDataFromFile(await pkgFile, defaultPackageFilename)
+    pkgFile = data || !pkgPath ? null : findUp.sync(pkgPath)
+    pkgData = data || getPackageDataFromFile(await pkgFile, pkgPath)
   } else {
     // find the closest package starting from the current working directory and going up to the root
-    pkgFile = defaultPackageFilename ? findUp.sync(defaultPackageFilename, { cwd: options.cwd || process.cwd() }) : null
-    pkgData = getPackageDataFromFile(pkgFile, defaultPackageFilename)
+    pkgFile = pkgPath ? findUp.sync(pkgPath, { cwd: options.cwd || process.cwd() }) : null
+    pkgData = getPackageDataFromFile(pkgFile, pkgPath)
   }
 
   return Promise.all([pkgData, pkgFile])

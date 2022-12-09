@@ -10,7 +10,6 @@ import exists from './lib/exists'
 import findPackage from './lib/findPackage'
 import getAllPackages from './lib/getAllPackages'
 import getNcuRc from './lib/getNcuRc'
-import getPackageFileName from './lib/getPackageFileName'
 import initOptions from './lib/initOptions'
 import { print, printJson } from './lib/logging'
 import mergeOptions from './lib/mergeOptions'
@@ -245,9 +244,8 @@ export async function run(
         printJson(options, analysis)
       }
     } else {
-      // Mutate packageFile when glob pattern finds only single package
-      const defaultPackageFilename = getPackageFileName(options)
-      if (pkgs.length === 1 && pkgs[0] !== defaultPackageFilename) {
+      // mutate packageFile when glob pattern finds only single package
+      if (pkgs.length === 1 && pkgs[0] !== (options.packageFile || 'package.json')) {
         options.packageFile = pkgs[0]
       }
       const [pkgData, pkgFile] = await findPackage(options)
