@@ -5,6 +5,7 @@ import rimraf from 'rimraf'
 import * as ncu from '../src/'
 import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
 import { CacheData } from '../src/types/Cacher'
+import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
 chai.use(chaiString)
@@ -13,16 +14,16 @@ process.env.NCU_TESTS = 'true'
 
 describe('cache', () => {
   it('cache latest versions', async () => {
+    const stub = stubNpmView({
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '1.1.0',
+      'ncu-test-alpha': '1.0.0',
+    })
     try {
       const packageData = {
         dependencies: {
-          // major version upgrade → 2.0.0
           'ncu-test-v2': '^1.0.0',
-          // latest: minor version upgrade → 1.1.0
-          // greatest: prerelease → 1.2.0-dev.0
           'ncu-test-tag': '1.0.0',
-          // latest: no upgrade
-          // greatest: prerelease → 2.0.0-alpha.2
           'ncu-test-alpha': '1.0.0',
         },
       }
@@ -39,19 +40,31 @@ describe('cache', () => {
       })
     } finally {
       rimraf.sync(resolvedDefaultCacheFile)
+      stub.restore()
     }
   })
 
   it('use different cache key for different target', async () => {
+    const stub = stubNpmView(options =>
+      options.target === 'latest'
+        ? {
+            'ncu-test-v2': '2.0.0',
+            'ncu-test-tag': '1.1.0',
+            'ncu-test-alpha': '1.0.0',
+          }
+        : options.target === 'greatest'
+        ? {
+            'ncu-test-v2': '2.0.0',
+            'ncu-test-tag': '1.2.0-dev.0',
+            'ncu-test-alpha': '2.0.0-alpha.2',
+          }
+        : null,
+    )
     try {
       const packageData = {
         dependencies: {
-          // major version upgrade → 2.0.0
           'ncu-test-v2': '^1.0.0',
-          // minor version upgrade → 1.1.0
           'ncu-test-tag': '1.0.0',
-          // latest: no upgrade
-          // greatest: prerelease → 2.0.0.alpha.2
           'ncu-test-alpha': '1.0.0',
         },
       }
@@ -87,19 +100,16 @@ describe('cache', () => {
       })
     } finally {
       rimraf.sync(resolvedDefaultCacheFile)
+      stub.restore()
     }
   })
 
   it('clears the cache file', async () => {
+    const stub = stubNpmView('99.9.9')
     const packageData = {
       dependencies: {
-        // major version upgrade → 2.0.0
         'ncu-test-v2': '^1.0.0',
-        // latest: minor version upgrade → 1.1.0
-        // greatest: prerelease → 1.2.0-dev.0
         'ncu-test-tag': '1.0.0',
-        // latest: no upgrade
-        // greatest: prerelease → 2.0.0-alpha.2
         'ncu-test-alpha': '1.0.0',
       },
     }
@@ -114,5 +124,6 @@ describe('cache', () => {
       noCacheFile = true
     }
     expect(noCacheFile).eq(true)
+    stub.restore()
   })
 })

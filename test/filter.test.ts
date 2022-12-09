@@ -3,30 +3,36 @@ import fs from 'fs/promises'
 import path from 'path'
 import ncu from '../src'
 import { Index } from '../src/types/IndexType'
+import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
 process.env.NCU_TESTS = 'true'
 
 describe('filter', () => {
   it('filter by package name with one arg', async () => {
+    const stub = stubNpmView('99.9.9')
     const upgraded = (await ncu({
       packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package2.json'), 'utf-8'),
       filter: ['lodash.map'],
     })) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.not.have.property('lodash.filter')
+    stub.restore()
   })
 
   it('filter by package name with multiple args', async () => {
+    const stub = stubNpmView('99.9.9')
     const upgraded = (await ncu({
       packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package2.json'), 'utf-8'),
       filter: ['lodash.map', 'lodash.filter'],
     })) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
+    stub.restore()
   })
 
   it('filter with wildcard', async () => {
+    const stub = stubNpmView('99.9.9')
     const upgraded = (await ncu({
       packageData: {
         dependencies: {
@@ -39,9 +45,11 @@ describe('filter', () => {
     })) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
+    stub.restore()
   })
 
   it('filter with wildcard for scoped package', async () => {
+    const stub = stubNpmView('99.9.9')
     const pkg = {
       dependencies: {
         vite: '1.0.0',
@@ -84,9 +92,12 @@ describe('filter', () => {
       upgraded!.should.not.have.property('@vitejs/plugin-react')
       upgraded!.should.have.property('@vitejs/plugin-vue')
     }
+
+    stub.restore()
   })
 
   it('filter with negated wildcard', async () => {
+    const stub = stubNpmView('99.9.9')
     const upgraded = (await ncu({
       packageData: {
         dependencies: {
@@ -98,9 +109,11 @@ describe('filter', () => {
       filter: ['!lodash.*'],
     })) as Index<string>
     upgraded.should.have.property('lodash')
+    stub.restore()
   })
 
   it('filter with regex string', async () => {
+    const stub = stubNpmView('99.9.9')
     const upgraded = (await ncu({
       packageData: {
         dependencies: {
@@ -113,9 +126,11 @@ describe('filter', () => {
     })) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
+    stub.restore()
   })
 
   it('filter with array of strings', async () => {
+    const stub = stubNpmView('99.9.9')
     const upgraded = (await ncu({
       packageData: {
         dependencies: {
@@ -128,9 +143,11 @@ describe('filter', () => {
     })) as Index<string>
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
+    stub.restore()
   })
 
   it('filter with array of regex', async () => {
+    const stub = stubNpmView('99.9.9')
     const upgraded = (await ncu({
       packageData: {
         dependencies: {
@@ -145,9 +162,11 @@ describe('filter', () => {
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
     upgraded.should.have.property('fp-and-or')
+    stub.restore()
   })
 
   it('filter with array of regex strings', async () => {
+    const stub = stubNpmView('99.9.9')
     const upgraded = (await ncu({
       packageData: {
         dependencies: {
@@ -162,5 +181,6 @@ describe('filter', () => {
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
     upgraded.should.have.property('fp-and-or')
+    stub.restore()
   })
 })

@@ -57,6 +57,7 @@ describe('run', function () {
   })
 
   it('write to --packageFile and output jsonUpgraded', async () => {
+    const stub = stubNpmView('99.9.9')
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
@@ -74,6 +75,7 @@ describe('run', function () {
       upgradedPkg.dependencies.should.have.property('express')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
+      stub.restore()
     }
   })
 
@@ -174,196 +176,6 @@ describe('run', function () {
     })
   })
 
-  describe('filterVersion', () => {
-    it('filter by package version with string', async () => {
-      const pkg = {
-        dependencies: {
-          'ncu-test-v2': '1.0.0',
-          'ncu-test-return-version': '1.0.1',
-        },
-      }
-
-      const upgraded = await ncu.run({
-        packageData: pkg,
-        filterVersion: '1.0.0',
-      })
-
-      upgraded!.should.have.property('ncu-test-v2')
-      upgraded!.should.not.have.property('ncu-test-return-version')
-    })
-
-    it('filter by package version with space-delimited list of strings', async () => {
-      const pkg = {
-        dependencies: {
-          'ncu-test-v2': '1.0.0',
-          'ncu-test-return-version': '1.0.1',
-          'fp-and-or': '0.1.0',
-        },
-      }
-
-      const upgraded = await ncu.run({
-        packageData: pkg,
-        filterVersion: '1.0.0 0.1.0',
-      })
-
-      upgraded!.should.have.property('ncu-test-v2')
-      upgraded!.should.not.have.property('ncu-test-return-version')
-      upgraded!.should.have.property('fp-and-or')
-    })
-
-    it('filter by package version with comma-delimited list of strings', async () => {
-      const pkg = {
-        dependencies: {
-          'ncu-test-v2': '1.0.0',
-          'ncu-test-return-version': '1.0.1',
-          'fp-and-or': '0.1.0',
-        },
-      }
-
-      const upgraded = await ncu.run({
-        packageData: pkg,
-        filterVersion: '1.0.0,0.1.0',
-      })
-
-      upgraded!.should.have.property('ncu-test-v2')
-      upgraded!.should.not.have.property('ncu-test-return-version')
-      upgraded!.should.have.property('fp-and-or')
-    })
-
-    it('filter by package version with RegExp', async () => {
-      const pkg = {
-        dependencies: {
-          'ncu-test-v2': '1.0.0',
-          'ncu-test-return-version': '1.0.1',
-          'fp-and-or': '0.1.0',
-        },
-      }
-
-      const upgraded = await ncu.run({
-        packageData: pkg,
-        filterVersion: /^1/,
-      })
-
-      upgraded!.should.have.property('ncu-test-v2')
-      upgraded!.should.have.property('ncu-test-return-version')
-      upgraded!.should.not.have.property('fp-and-or')
-    })
-
-    it('filter by package version with RegExp string', async () => {
-      const pkg = {
-        dependencies: {
-          'ncu-test-v2': '1.0.0',
-          'ncu-test-return-version': '1.0.1',
-          'fp-and-or': '0.1.0',
-        },
-      }
-
-      const upgraded = await ncu.run({
-        packageData: pkg,
-        filterVersion: '/^1/',
-      })
-
-      upgraded!.should.have.property('ncu-test-v2')
-      upgraded!.should.have.property('ncu-test-return-version')
-      upgraded!.should.not.have.property('fp-and-or')
-    })
-  })
-
-  describe('rejectVersion', () => {
-    it('reject by package version with string', async () => {
-      const pkg = {
-        dependencies: {
-          'ncu-test-v2': '1.0.0',
-          'ncu-test-return-version': '1.0.1',
-        },
-      }
-
-      const upgraded = await ncu.run({
-        packageData: pkg,
-        rejectVersion: '1.0.0',
-      })
-
-      upgraded!.should.not.have.property('ncu-test-v2')
-      upgraded!.should.have.property('ncu-test-return-version')
-    })
-
-    it('reject by package version with space-delimited list of strings', async () => {
-      const pkg = {
-        dependencies: {
-          'ncu-test-v2': '1.0.0',
-          'ncu-test-return-version': '1.0.1',
-          'fp-and-or': '0.1.0',
-        },
-      }
-
-      const upgraded = await ncu.run({
-        packageData: pkg,
-        rejectVersion: '1.0.0 0.1.0',
-      })
-
-      upgraded!.should.not.have.property('ncu-test-v2')
-      upgraded!.should.have.property('ncu-test-return-version')
-      upgraded!.should.not.have.property('fp-and-or')
-    })
-
-    it('reject by package version with comma-delimited list of strings', async () => {
-      const pkg = {
-        dependencies: {
-          'ncu-test-v2': '1.0.0',
-          'ncu-test-return-version': '1.0.1',
-          'fp-and-or': '0.1.0',
-        },
-      }
-
-      const upgraded = await ncu.run({
-        packageData: pkg,
-        rejectVersion: '1.0.0,0.1.0',
-      })
-
-      upgraded!.should.not.have.property('ncu-test-v2')
-      upgraded!.should.have.property('ncu-test-return-version')
-      upgraded!.should.not.have.property('fp-and-or')
-    })
-
-    it('reject by package version with RegExp', async () => {
-      const pkg = {
-        dependencies: {
-          'ncu-test-v2': '1.0.0',
-          'ncu-test-return-version': '1.0.1',
-          'fp-and-or': '0.1.0',
-        },
-      }
-
-      const upgraded = await ncu.run({
-        packageData: pkg,
-        rejectVersion: /^1/,
-      })
-
-      upgraded!.should.not.have.property('ncu-test-v2')
-      upgraded!.should.not.have.property('ncu-test-return-version')
-      upgraded!.should.have.property('fp-and-or')
-    })
-
-    it('reject by package version with RegExp string', async () => {
-      const pkg = {
-        dependencies: {
-          'ncu-test-v2': '1.0.0',
-          'ncu-test-return-version': '1.0.1',
-          'fp-and-or': '0.1.0',
-        },
-      }
-
-      const upgraded = await ncu.run({
-        packageData: pkg,
-        rejectVersion: '/^1/',
-      })
-
-      upgraded!.should.not.have.property('ncu-test-v2')
-      upgraded!.should.not.have.property('ncu-test-return-version')
-      upgraded!.should.have.property('fp-and-or')
-    })
-  })
-
   it('ignore non-string versions (sometimes used as comments)', async () => {
     const upgrades = await ncu.run({
       packageData: {
@@ -376,6 +188,7 @@ describe('run', function () {
   })
 
   it('update devDependency when duplicate dependency is up-to-date', async () => {
+    const stub = stubNpmView('2.0.0')
     const upgrades = await ncu.run({
       packageData: {
         dependencies: {
@@ -389,9 +202,11 @@ describe('run', function () {
     upgrades!.should.deep.equal({
       'ncu-test-v2': '^2.0.0',
     })
+    stub.restore()
   })
 
   it('update dependency when duplicate devDependency is up-to-date', async () => {
+    const stub = stubNpmView('2.0.0')
     const upgrades = await ncu.run({
       packageData: {
         dependencies: {
@@ -405,6 +220,7 @@ describe('run', function () {
     upgrades!.should.deep.equal({
       'ncu-test-v2': '^2.0.0',
     })
+    stub.restore()
   })
 
   // https://github.com/raineorshine/npm-check-updates/issues/1129

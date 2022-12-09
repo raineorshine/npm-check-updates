@@ -48,8 +48,10 @@ const setupDeepTest = async () => {
 describe('--deep', function () {
   this.timeout(60000)
 
-  it('do not allow --packageFile and --deep together', () => {
-    ncu.run({ packageFile: './package.json', deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+  it('do not allow --packageFile and --deep together', async () => {
+    await ncu
+      .run({ packageFile: './package.json', deep: true })
+      .should.eventually.be.rejectedWith('Cannot specify both')
   })
 
   it('output json with --jsonAll', async () => {

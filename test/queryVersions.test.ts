@@ -1,6 +1,7 @@
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import queryVersions from '../src/lib/queryVersions'
+import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -8,15 +9,18 @@ process.env.NCU_TESTS = 'true'
 
 describe('queryVersions', function () {
   it('valid single package', async () => {
+    const stub = stubNpmView('99.9.9')
     const latestVersions = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })
-    return latestVersions.should.have.property('async')
+    latestVersions.should.have.property('async')
+    stub.restore()
   })
 
   it('valid packages', async () => {
+    const stub = stubNpmView('99.9.9')
     const latestVersions = await queryVersions({ async: '1.5.1', npm: '3.10.3' }, { loglevel: 'silent' })
     latestVersions.should.have.property('async')
     latestVersions.should.have.property('npm')
-    return latestVersions
+    stub.restore()
   })
 
   it('unavailable packages should be ignored', async () => {
@@ -33,13 +37,17 @@ describe('queryVersions', function () {
   })
 
   it('set the target explicitly to latest', async () => {
+    const stub = stubNpmView('99.9.9')
     const result = await queryVersions({ async: '1.5.1' }, { target: 'latest', loglevel: 'silent' })
     result.should.have.property('async')
+    stub.restore()
   })
 
   it('set the target to greatest', async () => {
+    const stub = stubNpmView('99.9.9')
     const result = await queryVersions({ async: '1.5.1' }, { target: 'greatest', loglevel: 'silent' })
     result.should.have.property('async')
+    stub.restore()
   })
 
   it('return an error for an unsupported target', () => {

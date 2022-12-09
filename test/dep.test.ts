@@ -4,7 +4,7 @@ import chaiString from 'chai-string'
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
-import * as ncu from '../src/'
+import ncu from '../src/'
 import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
@@ -29,7 +29,7 @@ describe('--dep', () => {
   it('do not upgrade peerDependencies by default', async () => {
     const stub = stubNpmView('99.9.9')
 
-    const upgraded = await ncu.run({ packageData })
+    const upgraded = await ncu({ packageData })
 
     upgraded!.should.have.property('ncu-test-v2')
     upgraded!.should.have.property('ncu-test-tag')
@@ -41,7 +41,7 @@ describe('--dep', () => {
   it('only upgrade devDependencies with --dep dev', async () => {
     const stub = stubNpmView('99.9.9')
 
-    const upgraded = await ncu.run({ packageData, dep: 'dev' })
+    const upgraded = await ncu({ packageData, dep: 'dev' })
 
     upgraded!.should.not.have.property('ncu-test-v2')
     upgraded!.should.have.property('ncu-test-tag')
@@ -51,11 +51,14 @@ describe('--dep', () => {
   })
 
   it('only upgrade devDependencies and peerDependencies with --dep dev,peer', async () => {
-    const upgraded = await ncu.run({ packageData, dep: 'dev,peer' })
+    const stub = stubNpmView('99.9.9')
+    const upgraded = await ncu({ packageData, dep: 'dev,peer' })
 
     upgraded!.should.not.have.property('ncu-test-v2')
     upgraded!.should.have.property('ncu-test-tag')
     upgraded!.should.have.property('ncu-test-10')
+
+    stub.restore()
   })
 
   it('do not overwrite the same package in peerDependencies when upgrading devDependencies', async () => {
@@ -77,7 +80,7 @@ describe('--dep', () => {
     await fs.writeFile(pkgFile, packageData)
 
     try {
-      await ncu.run({
+      await ncu({
         packageFile: pkgFile,
         jsonUpgraded: false,
         upgrade: true,
@@ -124,7 +127,7 @@ describe('--dep', () => {
     await fs.writeFile(pkgFile, packageData)
 
     try {
-      await ncu.run({
+      await ncu({
         packageFile: pkgFile,
         jsonUpgraded: false,
         upgrade: true,
@@ -171,7 +174,7 @@ describe('--dep', () => {
     await fs.writeFile(pkgFile, packageData)
 
     try {
-      await ncu.run({
+      await ncu({
         packageFile: pkgFile,
         jsonUpgraded: false,
         upgrade: true,
