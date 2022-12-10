@@ -2,6 +2,7 @@ import chai from 'chai'
 import path from 'path'
 import getAllPackages from '../src/lib/getAllPackages'
 import { Options } from '../src/types/Options'
+import { PackageInfo } from '../src/types/PackageInfo'
 
 chai.should()
 
@@ -24,10 +25,9 @@ async function getAllPackagesForTest(testPath: string, options: Options): Promis
   const testCwd = path.join(__dirname, testPath).replace(/\\/g, '/')
   process.chdir(testCwd) // FIXME: remove the setting of cwd, the tests should work without it
   const optionsWithTestCwd: Options = { cwd: testCwd, ...options }
-  const [pkgs, workspacePackages]: [string[], string[]] = await stripDir(
-    testCwd,
-    await getAllPackages(optionsWithTestCwd),
-  )
+  const [pkgInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages(optionsWithTestCwd)
+  const packagePaths: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
+  const [pkgs, workspacePackages]: [string[], string[]] = await stripDir(testCwd, [packagePaths, workspacePackageNames])
   return [pkgs, workspacePackages]
 }
 
@@ -43,10 +43,12 @@ describe('getAllPackages', () => {
     process.chdir(originalCwd)
   })
 
-  it('returns default package without cwd ', async () => {
-    const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackages({})
-    pkgs.should.deep.equal(['package.json'])
-    workspacePackages.should.deep.equal([])
+  it('returns default package without cwd', async () => {
+    const [pkgInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages({})
+    const packagePaths: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
+    packagePaths.should.deep.equal(['package.json'])
+    // allPackageInfos[0].name.should.deep.equal(undefined)
+    workspacePackageNames.should.deep.equal([])
   })
 
   describe('basic npm package', () => {

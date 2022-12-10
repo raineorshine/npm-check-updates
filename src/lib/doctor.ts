@@ -7,10 +7,11 @@ import spawnYarn from '../package-managers/yarn'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
+import { PackageInfo } from '../types/PackageInfo'
 import { SpawnOptions } from '../types/SpawnOptions'
 import { VersionSpec } from '../types/VersionSpec'
-import { PackageInfo } from './PackageInfo'
 import chalk, { chalkInit } from './chalk'
+import loadPackageInfoFromFile from './loadPackageInfoFromFile'
 import upgradePackageData from './upgradePackageData'
 
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
@@ -46,9 +47,7 @@ const npm = (
 }
 
 /** Load and validate package file and tests. */
-const loadPackageFile = async (options: Options): Promise<PackageInfo> => {
-  let pkg: PackageFile, pkgFile: string
-
+const loadPackageFileForDoctor = async (options: Options): Promise<PackageInfo> => {
   // assert no --packageData or --packageFile
   if (options.packageData || options.packageFile) {
     console.error(
@@ -57,24 +56,24 @@ const loadPackageFile = async (options: Options): Promise<PackageInfo> => {
     process.exit(1)
   }
 
+  let packageInfo: PackageInfo
   // assert package.json
   try {
-    pkgFile = await fs.readFile('package.json', 'utf-8')
-    pkg = JSON.parse(pkgFile)
+    packageInfo = await loadPackageInfoFromFile('package.json')
   } catch (e) {
     console.error('Missing or invalid package.json')
     process.exit(1)
   }
 
   // assert npm script "test" (unless a custom test script is specified)
-  if (!options.doctorTest && !pkg.scripts?.test) {
+  if (!options.doctorTest && !packageInfo.pkg.scripts?.test) {
     console.error(
       'No npm "test" script defined. You must define a "test" script in the "scripts" section of your package.json to use --doctor.',
     )
     process.exit(1)
   }
 
-  return { pkg, pkgFile }
+  return packageInfo
 }
 
 /** Iteratively installs upgrades and runs tests to identify breaking upgrades. */
@@ -82,7 +81,7 @@ const loadPackageFile = async (options: Options): Promise<PackageInfo> => {
 const doctor = async (run: Run, options: Options): Promise<void> => {
   await chalkInit()
   const lockFileName = options.packageManager === 'yarn' ? 'yarn.lock' : 'package-lock.json'
-  const { pkg, pkgFile }: PackageInfo = await loadPackageFile(options)
+  const { pkg, pkgFile }: PackageInfo = await loadPackageFileForDoctor(options)
 
   // flatten all deps into one so we can iterate over them
   const allDependencies: Index<VersionSpec> = {
