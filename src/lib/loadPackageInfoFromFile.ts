@@ -1,15 +1,8 @@
 import fs from 'fs/promises'
 import { PackageFile } from '../types/PackageFile'
+import { PackageInfo } from '../types/PackageInfo'
 
-/** Describes package data plus it's filepath */
-export interface PackageInfo {
-  name?: string
-  pkg: PackageFile
-  pkgFile: string // the raw file string
-  filepath: string
-}
-
-/** Load package file. */
+/** Load and parse a package file. */
 const loadPackageInfoFromFile = async (filepath: string): Promise<PackageInfo> => {
   let pkg: PackageFile, pkgFile: string
 
@@ -29,4 +22,4 @@ const loadPackageInfoFromFile = async (filepath: string): Promise<PackageInfo> =
   }
 }
 
-export { loadPackageInfoFromFile }
+export default loadPackageInfoFromFile

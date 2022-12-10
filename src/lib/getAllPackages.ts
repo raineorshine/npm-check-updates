@@ -3,9 +3,10 @@ import path from 'path'
 import untildify from 'untildify'
 import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
-import { PackageInfo, loadPackageInfoFromFile } from './PackageInfo'
+import { PackageInfo } from '../types/PackageInfo'
 import chalk from './chalk'
 import findPackage from './findPackage'
+import loadPackageInfoFromFile from './loadPackageInfoFromFile'
 import programError from './programError'
 
 /**
@@ -90,7 +91,8 @@ async function getWorkspacePackageInfos(
       /* c8 ignore next */
       workspaces?.some(
         (workspacePattern: string) =>
-          packageInfo.filepath === path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename).replace(/\\/g, '/'),
+          packageInfo.filepath ===
+          path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename).replace(/\\/g, '/'),
       ),
     ),
   )

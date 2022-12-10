@@ -1,8 +1,8 @@
 import chai from 'chai'
 import path from 'path'
-import { PackageInfo } from '../src/lib/PackageInfo'
 import getAllPackages from '../src/lib/getAllPackages'
 import { Options } from '../src/types/Options'
+import { PackageInfo } from '../src/types/PackageInfo'
 
 chai.should()
 

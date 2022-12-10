@@ -7,10 +7,11 @@ import spawnYarn from '../package-managers/yarn'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
+import { PackageInfo } from '../types/PackageInfo'
 import { SpawnOptions } from '../types/SpawnOptions'
 import { VersionSpec } from '../types/VersionSpec'
-import { PackageInfo, loadPackageInfoFromFile } from './PackageInfo'
 import chalk, { chalkInit } from './chalk'
+import loadPackageInfoFromFile from './loadPackageInfoFromFile'
 import upgradePackageData from './upgradePackageData'
 
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
