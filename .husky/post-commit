@@ -26,6 +26,12 @@ notify() {
 # ensure failed lint exit code passes through sed
 set -o pipefail
 
+branch=$(git branch --show-current)
+# Do NOT run this when rebasing or we can't get the branch
+if [ -z "$branch" ]; then
+  exit 0
+fi
+
 # Lint asynchrously, not blocking the terminal and piping all output to a file.
 # IFF lint fails trigger a pop-up (on supported platforms) with at least the
 # first error shown.
