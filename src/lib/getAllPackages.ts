@@ -90,7 +90,7 @@ async function getWorkspacePackageInfos(
       /* c8 ignore next */
       workspaces?.some(
         (workspacePattern: string) =>
-          packageInfo.filepath === path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename),
+          packageInfo.filepath === path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename).replace(/\\/g, '/'),
       ),
     ),
   )
