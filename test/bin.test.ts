@@ -252,20 +252,6 @@ describe('reject', () => {
   })
 })
 
-describe('with timeout option', () => {
-  it('exit with error when timeout exceeded', async () => {
-    return spawn(
-      'node',
-      [bin, '--timeout', '1'],
-      '{ "dependencies": { "express": "1" } }',
-    ).should.eventually.be.rejectedWith('Exceeded global timeout of 1ms')
-  })
-
-  it('completes successfully with timeout', async () => {
-    return spawn('node', [bin, '--timeout', '100000'], '{ "dependencies": { "express": "1" } }')
-  })
-})
-
 describe('embedded versions', () => {
   it('strip url from Github url in "to" output', async () => {
     // use dynamic import for ESM module
