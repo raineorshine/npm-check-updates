@@ -61,144 +61,272 @@ describe('--dep', () => {
     stub.restore()
   })
 
-  it('do not overwrite the same package in peerDependencies when upgrading devDependencies', async () => {
-    const stub = stubNpmView('99.9.9')
-    const packageData = JSON.stringify({
-      dependencies: {
-        'ncu-test-v2': '0.1.0',
-      },
-      devDependencies: {
-        'ncu-test-tag': '0.1.0',
-      },
-      peerDependencies: {
-        'ncu-test-tag': '0.1.0',
-      },
-    })
-
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-    const pkgFile = path.join(tempDir, 'package.json')
-    await fs.writeFile(pkgFile, packageData)
-
-    try {
-      await ncu({
-        packageFile: pkgFile,
-        jsonUpgraded: false,
-        upgrade: true,
-        dep: 'dev',
-      })
-      const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-
-      pkgNew.should.deep.equal({
-        // unspecified dep sections are ignored
+  describe('section isolation', () => {
+    it('do not overwrite the same package in peerDependencies when upgrading devDependencies', async () => {
+      const stub = stubNpmView('99.9.9')
+      const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-v2': '0.1.0',
         },
-        // specified dep sections are upgraded
         devDependencies: {
-          'ncu-test-tag': '99.9.9',
+          'ncu-test-tag': '0.1.0',
         },
-        // unspecified dep sections are ignored, even if they have a package upgraded in another section
         peerDependencies: {
           'ncu-test-tag': '0.1.0',
         },
       })
-    } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
-      stub.restore()
-    }
-  })
 
-  it('do not overwrite the same package in devDependencies when upgrading peerDependencies', async () => {
-    const stub = stubNpmView('99.9.9')
-    const packageData = JSON.stringify({
-      dependencies: {
-        'ncu-test-v2': '0.1.0',
-      },
-      devDependencies: {
-        'ncu-test-tag': '0.1.0',
-      },
-      peerDependencies: {
-        'ncu-test-tag': '0.1.0',
-      },
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, packageData)
+
+      try {
+        await ncu({
+          packageFile: pkgFile,
+          jsonUpgraded: false,
+          upgrade: true,
+          dep: 'dev',
+        })
+        const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+
+        pkgNew.should.deep.equal({
+          // unspecified dep sections are ignored
+          dependencies: {
+            'ncu-test-v2': '0.1.0',
+          },
+          // specified dep sections are upgraded
+          devDependencies: {
+            'ncu-test-tag': '99.9.9',
+          },
+          // unspecified dep sections are ignored, even if they have a package upgraded in another section
+          peerDependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
     })
 
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-    const pkgFile = path.join(tempDir, 'package.json')
-    await fs.writeFile(pkgFile, packageData)
-
-    try {
-      await ncu({
-        packageFile: pkgFile,
-        jsonUpgraded: false,
-        upgrade: true,
-        dep: 'peer',
-      })
-      const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-
-      pkgNew.should.deep.equal({
-        // unspecified dep sections are ignored
+    it('do not overwrite the same package in devDependencies when upgrading peerDependencies', async () => {
+      const stub = stubNpmView('99.9.9')
+      const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-v2': '0.1.0',
         },
-        // unspecified dep sections are ignored, even if they have a package upgraded in another section
         devDependencies: {
           'ncu-test-tag': '0.1.0',
         },
-        // specified dep sections are upgraded
         peerDependencies: {
-          'ncu-test-tag': '99.9.9',
+          'ncu-test-tag': '0.1.0',
         },
       })
-    } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
-      stub.restore()
-    }
-  })
 
-  it('do not overwrite the same package in devDependencies when upgrading dependencies and peerDependencies', async () => {
-    const stub = stubNpmView('99.9.9')
-    const packageData = JSON.stringify({
-      dependencies: {
-        'ncu-test-tag': '0.1.0',
-      },
-      devDependencies: {
-        'ncu-test-tag': '0.1.0',
-      },
-      peerDependencies: {
-        'ncu-test-tag': '0.1.0',
-      },
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, packageData)
+
+      try {
+        await ncu({
+          packageFile: pkgFile,
+          jsonUpgraded: false,
+          upgrade: true,
+          dep: 'peer',
+        })
+        const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+
+        pkgNew.should.deep.equal({
+          // unspecified dep sections are ignored
+          dependencies: {
+            'ncu-test-v2': '0.1.0',
+          },
+          // unspecified dep sections are ignored, even if they have a package upgraded in another section
+          devDependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+          // specified dep sections are upgraded
+          peerDependencies: {
+            'ncu-test-tag': '99.9.9',
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
     })
 
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-    const pkgFile = path.join(tempDir, 'package.json')
-    await fs.writeFile(pkgFile, packageData)
-
-    try {
-      await ncu({
-        packageFile: pkgFile,
-        jsonUpgraded: false,
-        upgrade: true,
-        dep: 'prod,peer',
-      })
-      const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-
-      pkgNew.should.deep.equal({
-        // specified dep sections are upgraded
+    it('do not overwrite the same package in devDependencies when upgrading dependencies and peerDependencies', async () => {
+      const stub = stubNpmView('99.9.9')
+      const packageData = JSON.stringify({
         dependencies: {
-          'ncu-test-tag': '99.9.9',
+          'ncu-test-tag': '0.1.0',
         },
-        // unspecified dep sections are ignored, even if they have a package upgraded in another section
         devDependencies: {
           'ncu-test-tag': '0.1.0',
         },
-        // specified dep sections are upgraded
         peerDependencies: {
-          'ncu-test-tag': '99.9.9',
+          'ncu-test-tag': '0.1.0',
         },
       })
-    } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
-      stub.restore()
-    }
+
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, packageData)
+
+      try {
+        await ncu({
+          packageFile: pkgFile,
+          jsonUpgraded: false,
+          upgrade: true,
+          dep: 'prod,peer',
+        })
+        const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+
+        pkgNew.should.deep.equal({
+          // specified dep sections are upgraded
+          dependencies: {
+            'ncu-test-tag': '99.9.9',
+          },
+          // unspecified dep sections are ignored, even if they have a package upgraded in another section
+          devDependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+          // specified dep sections are upgraded
+          peerDependencies: {
+            'ncu-test-tag': '99.9.9',
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
+  })
+
+  describe('packageManager field', () => {
+    it('support packageManager field', async () => {
+      const stub = stubNpmView({
+        'ncu-test-tag': '1.0.0',
+        npm: '9.0.0',
+      })
+      const packageData = JSON.stringify(
+        {
+          packageManager: 'npm@6.0.0',
+          dependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+        },
+        null,
+        2,
+      )
+
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, packageData)
+
+      try {
+        await ncu({
+          packageFile: pkgFile,
+          jsonUpgraded: false,
+          upgrade: true,
+          dep: 'prod,packageManager',
+        })
+        const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+        const pkgNew = JSON.parse(pkgDataNew)
+
+        pkgNew.should.deep.equal({
+          packageManager: 'npm@9.0.0',
+          dependencies: {
+            'ncu-test-tag': '1.0.0',
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
+
+    it('do nothing if no packageManager field is present', async () => {
+      const stub = stubNpmView({
+        'ncu-test-tag': '1.0.0',
+        npm: '9.0.0',
+      })
+      const packageData = JSON.stringify(
+        {
+          dependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+        },
+        null,
+        2,
+      )
+
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, packageData)
+
+      try {
+        await ncu({
+          packageFile: pkgFile,
+          jsonUpgraded: false,
+          upgrade: true,
+          dep: 'prod,packageManager',
+        })
+        const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+        const pkgNew = JSON.parse(pkgDataNew)
+
+        pkgNew.should.deep.equal({
+          dependencies: {
+            'ncu-test-tag': '1.0.0',
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
+
+    it('do nothing if packageManager is up-to-date', async () => {
+      const stub = stubNpmView({
+        'ncu-test-tag': '1.0.0',
+        npm: '9.0.0',
+      })
+      const packageData = JSON.stringify(
+        {
+          packageManager: '9.0.0',
+          dependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+        },
+        null,
+        2,
+      )
+
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, packageData)
+
+      try {
+        await ncu({
+          packageFile: pkgFile,
+          jsonUpgraded: false,
+          upgrade: true,
+          dep: 'prod,packageManager',
+        })
+        const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+        const pkgNew = JSON.parse(pkgDataNew)
+
+        pkgNew.should.deep.equal({
+          packageManager: '9.0.0',
+          dependencies: {
+            'ncu-test-tag': '1.0.0',
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
   })
 })

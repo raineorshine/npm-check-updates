@@ -15,6 +15,12 @@ const isGreaterThanSafe = (spec1: VersionSpec, spec2: VersionSpec) =>
   // otherwise return true if spec2 is smaller than spec1
   semver.gt(semver.minVersion(spec1)!, semver.minVersion(spec2)!)
 
+/** Parses the packageManager field into a { [name]: version } pair. */
+const parsePackageManager = (pkgData: PackageFile) => {
+  if (!pkgData.packageManager) return {}
+  const [name, version] = pkgData.packageManager.split('@')
+  return { [name]: version }
+}
 /**
  * Get the current dependencies from the package file.
  *
@@ -34,7 +40,12 @@ function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}
 
   // map the dependency section option to a full dependency section name
   const depSections = depOptions.map(
-    short => (short === 'prod' ? 'dependencies' : short + 'Dependencies') as keyof PackageFile,
+    short =>
+      (short === 'prod'
+        ? 'dependencies'
+        : short === 'packageManager'
+        ? short
+        : short + 'Dependencies') as keyof PackageFile,
   )
 
   // get all dependencies from the selected sections
@@ -42,10 +53,12 @@ function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}
   const allDependencies = depSections.reduce((accum, depSection) => {
     return {
       ...accum,
-      ...filterObject(
-        (pkgData[depSection] as Index<string>) || {},
-        (dep, spec) => !isGreaterThanSafe(spec, accum[dep]),
-      ),
+      ...(depSection === 'packageManager'
+        ? parsePackageManager(pkgData)
+        : filterObject(
+            (pkgData[depSection] as Index<string>) || {},
+            (dep, spec) => !isGreaterThanSafe(spec, accum[dep]),
+          )),
     }
   }, {} as Index<VersionSpec>)
 

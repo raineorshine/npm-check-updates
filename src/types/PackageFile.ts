@@ -9,6 +9,8 @@ export interface PackageFile {
   devDependencies?: Index<VersionSpec>
   engines?: Index<VersionSpec>
   name?: string
+  // https://nodejs.org/api/packages.html#packagemanager
+  packageManager?: string
   optionalDependencies?: Index<VersionSpec>
   peerDependencies?: Index<VersionSpec>
   repository?: string | PackageFileRepository

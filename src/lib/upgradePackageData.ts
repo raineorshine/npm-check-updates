@@ -31,13 +31,19 @@ async function upgradePackageData(
       : options.dep
     : ['prod', 'dev', 'bundle', 'optional']
 
+  // map the dependency section option to a full dependency section name
   const depSections = depOptions.map(
-    short => (short === 'prod' ? 'dependencies' : short + 'Dependencies') as keyof PackageFile,
+    short =>
+      (short === 'prod'
+        ? 'dependencies'
+        : short === 'packageManager'
+        ? short
+        : short + 'Dependencies') as keyof PackageFile,
   )
 
   // iterate through each dependency section
   const sectionRegExp = new RegExp(`"(${depSections.join(`|`)})"s*:[^}]*`, 'g')
-  const newPkgData = pkgData.replace(sectionRegExp, section => {
+  let newPkgData = pkgData.replace(sectionRegExp, section => {
     // replace each upgraded dependency in the section
     Object.keys(upgraded).forEach(dep => {
       const expression = `"${dep}"\\s*:\\s*"(${escapeRegexp(current[dep])})"`
@@ -47,6 +53,19 @@ async function upgradePackageData(
 
     return section
   })
+
+  if (depOptions.includes('packageManager')) {
+    const pkg = JSON.parse(pkgData) as PackageFile
+    if (pkg.packageManager) {
+      const [name] = pkg.packageManager.split('@')
+      if (upgraded[name]) {
+        newPkgData = newPkgData.replace(
+          /"packageManager"\s*:\s*".*?@[^"]*"/,
+          `"packageManager": "${name}@${upgraded[name]}"`,
+        )
+      }
+    }
+  }
 
   return newPkgData
 }
