@@ -59,7 +59,7 @@ If you have a use case where this change is not what is desired, please [report 
 ### Breaking
 
 - node >= 12 is required. Time to upgrade that old-ass server you never touch.
-- `peerDependencies` are now excluded by default. Peer dependencies should use the **lowest** possible version that works. The old behavior encouraged a bad practice of uprading peer dependencies. You can use `--dep prod,dev,bundle,optional,peer` for the old behavior ([#951](https://github.com/raineorshine/npm-check-updates/issues/951)).
+- `peerDependencies` are now excluded by default. Peer dependencies should use the **lowest** possible version that works. The old behavior encouraged a bad practice of uprading peer dependencies. You can use `--dep prod,dev,optional,peer` for the old behavior ([#951](https://github.com/raineorshine/npm-check-updates/issues/951)).
 - Dependencies with `>` will be converted to `>=`. The old behavior was causing upgrades to `> [latest]` which was impossible ([#957](https://github.com/raineorshine/npm-check-updates/issues/957)).
 
 ## Other

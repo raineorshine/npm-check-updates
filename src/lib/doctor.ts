@@ -88,7 +88,6 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     ...pkg.dependencies,
     ...pkg.devDependencies,
     ...pkg.optionalDependencies,
-    ...pkg.bundleDependencies,
   }
 
   /** Install dependencies using "npm run install" or a custom script given by --doctorInstall. */

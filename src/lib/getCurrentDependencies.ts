@@ -24,7 +24,7 @@ const parsePackageManager = (pkgData: PackageFile) => {
 /**
  * Get the current dependencies from the package file.
  *
- * @param [pkgData={}] Object with dependencies, devDependencies, peerDependencies, optionalDependencies, and/or bundleDependencies properties
+ * @param [pkgData={}] Object with dependencies, devDependencies, peerDependencies, and/or optionalDependencies properties.
  * @param [options={}]
  * @param options.dep
  * @param options.filter
@@ -36,7 +36,7 @@ function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}
     ? typeof options.dep === 'string'
       ? options.dep.split(',')
       : options.dep
-    : ['prod', 'dev', 'bundle', 'optional']
+    : ['prod', 'dev', 'optional']
 
   // map the dependency section option to a full dependency section name
   const depSections = depOptions.map(

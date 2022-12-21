@@ -10,6 +10,7 @@ describe('getCurrentDependencies', () => {
   beforeEach(() => {
     deps = {
       dependencies: {
+        bluebird: '^1.0.0',
         mocha: '1.2',
       },
       devDependencies: {
@@ -22,9 +23,6 @@ describe('getCurrentDependencies', () => {
       optionalDependencies: {
         chalk: '^1.1.0',
       },
-      bundleDependencies: {
-        bluebird: '^1.0.0',
-      },
     }
   })
 
@@ -34,12 +32,12 @@ describe('getCurrentDependencies', () => {
     getCurrentDependencies({}, {}).should.eql({})
   })
 
-  it('get dependencies, devDependencies, and bundleDependencies, and optionalDependencies by default', () => {
+  it('get dependencies, devDependencies, and optionalDependencies by default', () => {
     getCurrentDependencies(deps).should.eql({
+      bluebird: '^1.0.0',
       mocha: '1.2',
       lodash: '^3.9.3',
       chalk: '^1.1.0',
-      bluebird: '^1.0.0',
       moment: '^1.0.0',
     })
   })
@@ -47,6 +45,7 @@ describe('getCurrentDependencies', () => {
   describe('dep', () => {
     it('only get dependencies with --dep prod', () => {
       getCurrentDependencies(deps, { dep: 'prod' }).should.eql({
+        bluebird: '^1.0.0',
         mocha: '1.2',
       })
     })
@@ -67,12 +66,6 @@ describe('getCurrentDependencies', () => {
     it('only get peerDependencies with --dep peer', () => {
       getCurrentDependencies(deps, { dep: 'peer' }).should.eql({
         'ncu-test-v2': '0.1.0',
-      })
-    })
-
-    it('only get bundleDependencies with --dep bundle', () => {
-      getCurrentDependencies(deps, { dep: 'bundle' }).should.eql({
-        bluebird: '^1.0.0',
       })
     })
 

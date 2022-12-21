@@ -150,9 +150,9 @@ ncu "/^(?!react-).*$/" # windows
 --deep                     Run recursively in current working directory.
                            Alias of (--packageFile '**/package.json').
 --dep <value>              Check one or more sections of dependencies only:
-                           dev, optional, peer, prod, bundle, packageManager
+                           dev, optional, peer, prod, or packageManager
                            (comma-delimited). (default:
-                           ["prod","dev","bundle","optional"])
+                           ["prod","dev","optional"])
 --deprecated               Include deprecated packages.
 -d, --doctor               Iteratively installs upgrades and runs tests to
                            identify breaking upgrades. Requires "-u" to

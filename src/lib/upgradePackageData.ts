@@ -29,7 +29,7 @@ async function upgradePackageData(
     ? typeof options.dep === 'string'
       ? options.dep.split(',')
       : options.dep
-    : ['prod', 'dev', 'bundle', 'optional']
+    : ['prod', 'dev', 'optional']
 
   // map the dependency section option to a full dependency section name
   const depSections = depOptions.map(

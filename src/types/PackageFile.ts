@@ -4,7 +4,6 @@ import { VersionSpec } from './VersionSpec'
 
 /** The relevant bits of a parsed package.json file. */
 export interface PackageFile {
-  bundleDependencies?: Index<VersionSpec>
   dependencies?: Index<VersionSpec>
   devDependencies?: Index<VersionSpec>
   engines?: Index<VersionSpec>
