@@ -133,4 +133,38 @@ describe('rc-config', () => {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
+
+  it('auto detect .ncurc.json', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc.json')
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(configFile, '{"filter": "ncu-test-v2"}', 'utf-8')
+    await fs.writeFile(pkgFile, '{ "dependencies": { "ncu-test-v2": "1.0.0", "ncu-test-tag": "0.1.0" } }', 'utf-8')
+    try {
+      // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+      const text = await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
+      // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates recieves /private/var/folders/cb/12345 (maybe symlink?).
+      // Therefore, ignore any directories prepended to the config file path.
+      text.should.match(new RegExp(`Using config file ([^\n]*)?${configFile}`))
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('auto detect .ncurc.cjs', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc.cjs')
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(configFile, 'module.exports = { "filter": "ncu-test-v2" }', 'utf-8')
+    await fs.writeFile(pkgFile, '{ "dependencies": { "ncu-test-v2": "1.0.0", "ncu-test-tag": "0.1.0" } }', 'utf-8')
+    try {
+      // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+      const text = await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
+      // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates recieves /private/var/folders/cb/12345 (maybe symlink?).
+      // Therefore, ignore any directories prepended to the config file path.
+      text.should.match(new RegExp(`Using config file ([^\n]*)?${configFile}`))
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
 })
