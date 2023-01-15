@@ -114,7 +114,14 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     }
 
     if (options.doctorTest) {
-      const [testCommand, ...testArgs] = options.doctorTest.split(' ')
+      const regexp = /"(.+?)"|'(.+?)'|[^ ]+/g
+      const matches = options.doctorTest.matchAll(regexp)
+      let groups: string[] = []
+      // eslint-disable-next-line fp/no-loops
+      for (const match of matches) {
+        groups = [...groups, match[2] || match[1] || match[0]]
+      }
+      const [testCommand, ...testArgs] = groups
       await spawn(testCommand, testArgs, spawnOptions)
     } else {
       await npm(

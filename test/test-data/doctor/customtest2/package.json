@@ -1,0 +1,9 @@
+{
+  "license": "MIT",
+  "dependencies": {
+    "ncu-test-v2": "~1.0.0"
+  },
+  "scripts": {
+    "mytest": "echo Success"
+  }
+}
