@@ -304,13 +304,54 @@ describe('doctor', function () {
       pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
     })
 
+    it('custom test script with --doctorTest command that includes spaced words wrapped in quotes', async function () {
+      // use dynamic import for ESM module
+      const { default: stripAnsi } = await import('strip-ansi')
+      const cwd = path.join(doctorTests, 'customtest2')
+      const pkgPath = path.join(cwd, 'package.json')
+      const lockfilePath = path.join(cwd, 'package-lock.json')
+      const nodeModulesPath = path.join(cwd, 'node_modules')
+      const echoPath = path.join(cwd, 'echo.js')
+      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
+      let stdout = ''
+      let stderr = ''
+
+      try {
+        await ncu(['--doctor', '-u', '--doctorTest', `node ${echoPath} '123 456'`], {
+          cwd,
+          stdout: function (data: string) {
+            stdout += data
+          },
+          stderr: function (data: string) {
+            stderr += data
+          },
+        })
+      } catch (e) {}
+
+      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
+
+      // cleanup before assertions in case they fail
+      await fs.writeFile(pkgPath, pkgOriginal)
+      rimraf.sync(lockfilePath)
+      rimraf.sync(nodeModulesPath)
+
+      // stderr should be empty
+      stderr.should.equal('')
+
+      // stdout should include expected output
+      stripAnsi(stdout).should.contain("'123 456'")
+
+      // package file should include upgrades
+      pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
+    })
+
     it('handle failed prepare script', async () => {
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgPath = path.join(tempDir, 'package.json')
       await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
 
       /*
-        - packagu.json
+        - package.json
         - tsconfig.json
         - src/
           - index.ts
