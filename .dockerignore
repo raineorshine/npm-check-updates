@@ -1,0 +1,11 @@
+*.md
+
+Dockerfile
+node_modules
+npm-debug.log
+
+.dockerignore
+
+/test
+/.husky
+/.github
