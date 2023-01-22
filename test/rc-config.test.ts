@@ -143,9 +143,12 @@ describe('rc-config', () => {
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const text = await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
-      // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates recieves /private/var/folders/cb/12345 (maybe symlink?).
+      const firstLine = text.split('\n')[0]
+      // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates recieves /private/var/folders/cb/12345.
+      // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
-      text.should.match(new RegExp(`Using config file ([^\n]*)?${configFile}`))
+      firstLine.should.contains('Using config file')
+      firstLine.should.contains(configFile)
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
@@ -160,9 +163,12 @@ describe('rc-config', () => {
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const text = await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
-      // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates recieves /private/var/folders/cb/12345 (maybe symlink?).
+      const firstLine = text.split('\n')[0]
+      // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates recieves /private/var/folders/cb/12345.
+      // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
-      text.should.match(new RegExp(`Using config file ([^\n]*)?${configFile}`))
+      firstLine.should.contains('Using config file')
+      firstLine.should.contains(configFile)
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
