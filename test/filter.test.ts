@@ -183,4 +183,15 @@ describe('filter', () => {
     upgraded.should.have.property('fp-and-or')
     stub.restore()
   })
+
+  it('trim and ignore empty filter', async () => {
+    const stub = stubNpmView('99.9.9')
+    const upgraded = (await ncu({
+      packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package2.json'), 'utf-8'),
+      filter: [],
+    })) as Index<string>
+    upgraded.should.have.property('lodash.map')
+    upgraded.should.have.property('lodash.filter')
+    stub.restore()
+  })
 })

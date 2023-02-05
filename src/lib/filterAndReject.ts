@@ -3,7 +3,7 @@ import identity from 'lodash/identity'
 import negate from 'lodash/negate'
 import minimatch from 'minimatch'
 import { SemVer, parseRange } from 'semver-utils'
-import { FilterRejectPattern } from '../types/FilterRejectPattern'
+import { FilterPattern } from '../types/FilterPattern'
 import { Maybe } from '../types/Maybe'
 import { VersionSpec } from '../types/VersionSpec'
 
@@ -14,7 +14,7 @@ import { VersionSpec } from '../types/VersionSpec'
  * @param [filterPattern]
  * @returns
  */
-function composeFilter(filterPattern: FilterRejectPattern): (name: string, versionSpec: VersionSpec) => boolean {
+function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec: VersionSpec) => boolean {
   let predicate: (name: string, versionSpec: VersionSpec) => boolean
 
   // no filter
@@ -75,10 +75,10 @@ function composeFilter(filterPattern: FilterRejectPattern): (name: string, versi
  * @param [rejectVersion]
  */
 function filterAndReject(
-  filter: Maybe<FilterRejectPattern>,
-  reject: Maybe<FilterRejectPattern>,
-  filterVersion: Maybe<FilterRejectPattern>,
-  rejectVersion: Maybe<FilterRejectPattern>,
+  filter: Maybe<FilterPattern>,
+  reject: Maybe<FilterPattern>,
+  filterVersion: Maybe<FilterPattern>,
+  rejectVersion: Maybe<FilterPattern>,
 ) {
   return and(
     // filter dep
