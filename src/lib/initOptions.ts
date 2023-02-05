@@ -1,6 +1,8 @@
+import isEqual from 'lodash/isEqual'
 import propertyOf from 'lodash/propertyOf'
 import cliOptions from '../cli-options'
 import { print } from '../lib/logging'
+import { FilterPattern } from '../types/FilterPattern'
 import { Options } from '../types/Options'
 import { RunOptions } from '../types/RunOptions'
 import { Target } from '../types/Target'
@@ -8,6 +10,23 @@ import cacher from './cache'
 import determinePackageManager from './determinePackageManager'
 import exists from './exists'
 import programError from './programError'
+
+function parseFilterExpression(filterExpression: string[] | undefined): string[] | undefined
+function parseFilterExpression(filterExpression: FilterPattern | undefined): FilterPattern | undefined
+/** Trims and filters out empty values from a filter expression. */
+function parseFilterExpression(filterExpression: FilterPattern | undefined): FilterPattern | undefined {
+  if (typeof filterExpression === 'string') {
+    return filterExpression.trim()
+  } else if (
+    Array.isArray(filterExpression) &&
+    (filterExpression.length === 0 || typeof filterExpression[0] === 'string')
+  ) {
+    const filtered = (filterExpression as string[]).map(s => s.trim()).filter(x => x)
+    return filtered.length > 0 ? filtered : undefined
+  } else {
+    return filterExpression
+  }
+}
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
 async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Promise<Options> {
@@ -86,8 +105,13 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     programError(options, `no such directory: ${options.cwd}`)
   }
 
+  // trim filter args
   // disallow non-matching filter and args
-  if (options.filter && (options.args || []).length > 0 && options.filter !== options.args!.join(' ')) {
+  const args = parseFilterExpression(options.args)
+  const filter = parseFilterExpression(options.filter)
+  // convert to string for comparison purposes
+  // otherwise ['a b'] will not match ['a', 'b']
+  if (options.filter && args && !isEqual(args.join(' '), Array.isArray(filter) ? filter.join(' ') : filter)) {
     programError(
       options,
       chalk.red('Cannot specify a filter using both --filter and args. Did you forget to quote an argument?') +
@@ -142,8 +166,8 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   const resolvedOptions = {
     ...options,
     ...(options.deep ? { packageFile: '**/package.json' } : null),
-    ...((options.args || []).length > 0 ? { filter: options.args!.join(' ') } : null),
     ...(format.length > 0 ? { format } : null),
+    filter: args || filter,
     // add shortcut for any keys that start with 'json'
     json,
     loglevel,

@@ -215,6 +215,24 @@ describe('bin', async function () {
     upgraded.should.have.property('lodash.map')
     upgraded.should.have.property('lodash.filter')
   })
+
+  it('trim and ignore empty args', async () => {
+    const pkgData = {
+      dependencies: {
+        'lodash.map': '2.0.0',
+        'lodash.filter': '2.0.0',
+      },
+    }
+
+    const output = await spawn(
+      'node',
+      [bin, '--jsonUpgraded', '--stdin', '--filter', 'lodash.map lodash.filter', ' '],
+      JSON.stringify(pkgData),
+    )
+    const upgraded = JSON.parse(output)
+    upgraded.should.have.property('lodash.map')
+    upgraded.should.have.property('lodash.filter')
+  })
 })
 
 describe('reject', () => {
