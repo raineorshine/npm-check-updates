@@ -20,7 +20,7 @@ function getPackageManager(packageManagerNameOrObject: Maybe<string | PackageMan
     return (packageManagers as any)[key]
   }
 
-  return !packageManagerNameOrObject || packageManagerNameOrObject === 'pnpm'
+  return !packageManagerNameOrObject
     ? packageManagers.npm // default to npm
     : // use present package manager if name is specified
     typeof packageManagerNameOrObject === 'string'
