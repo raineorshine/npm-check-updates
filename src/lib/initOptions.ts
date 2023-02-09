@@ -88,7 +88,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   cliOptions.forEach(({ long, choices }) => {
     if (!choices || choices.length === 0) return
     const value = options[long as keyof Options]
-    const values = ([] as typeof value[]).concat(value)
+    const values = Array.isArray(value) ? value : [value]
     if (values.length === 0) return
     // make sure the option value is valid
     // if an array of values is given, make sure each one is a valid choice
