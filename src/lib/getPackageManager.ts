@@ -3,30 +3,24 @@ import { Maybe } from '../types/Maybe'
 import { PackageManager } from '../types/PackageManager'
 
 /**
- * Initialize the version manager with the given package manager. Throws an error if an invalid packageManager is provided
+ * Resolves the package manager from a string or object. Throws an error if an invalid packageManager is provided.
  *
  * @param packageManagerNameOrObject
  * @param packageManagerNameOrObject.global
  * @param packageManagerNameOrObject.packageManager
  * @returns
  */
-function getPackageManager(packageManagerNameOrObject: Maybe<string | PackageManager>): PackageManager {
-  /** Get one of the preset package managers or throw an error if there is no match. */
-  function getPresetPackageManager(packageManagerName: string): PackageManager {
-    if (!(packageManagerName in packageManagers)) {
-      throw new Error(`Invalid package manager: ${packageManagerName}`)
-    }
-    const key = packageManagerName as keyof typeof packageManagers
-    return (packageManagers as any)[key]
+function getPackageManager(name: Maybe<string>): PackageManager {
+  // default to npm
+  if (!name || name === 'deno') {
+    return packageManagers.npm
   }
 
-  return !packageManagerNameOrObject
-    ? packageManagers.npm // default to npm
-    : // use present package manager if name is specified
-    typeof packageManagerNameOrObject === 'string'
-    ? getPresetPackageManager(packageManagerNameOrObject!)!
-    : // use provided package manager object otherwise
-      packageManagerNameOrObject!
+  if (!packageManagers[name]) {
+    throw new Error(`Invalid package manager: ${name}`)
+  }
+
+  return packageManagers[name]
 }
 
 export default getPackageManager
