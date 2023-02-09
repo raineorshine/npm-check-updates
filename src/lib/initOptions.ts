@@ -154,19 +154,17 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
 
   const autoPre = target === 'newest' || target === 'greatest'
 
-  const format = options.format || []
-
   const packageManager = await determinePackageManager(options)
 
-  // only print 'Using yarn' when autodetected
-  if (!options.packageManager && packageManager === 'yarn') {
-    print(options, 'Using yarn')
+  // print 'Using yarn/pnpm/etc' when autodetected
+  if (!options.packageManager && packageManager !== 'npm') {
+    print(options, `Using ${packageManager}`)
   }
 
-  const resolvedOptions = {
+  const resolvedOptions: Options = {
     ...options,
     ...(options.deep ? { packageFile: '**/package.json' } : null),
-    ...(format.length > 0 ? { format } : null),
+    ...(options.format && options.format.length > 0 ? { format: options.format } : null),
     filter: args || filter,
     // add shortcut for any keys that start with 'json'
     json,

@@ -517,7 +517,6 @@ const cliOptions: CLIOption[] = [
     long: 'packageManager',
     short: 'p',
     arg: 's',
-    // manual default to allow overriding auto yarn detection
     description: 'npm, yarn, pnpm, staticRegistry (default: npm).',
     help: extendedHelpPackageManager,
     type: `'npm' | 'yarn' | 'pnpm' | 'staticRegistry'`,

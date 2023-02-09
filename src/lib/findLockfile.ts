@@ -5,7 +5,7 @@ import { Options } from '../types/Options'
 /**
  * Goes up the filesystem tree until it finds a package-lock.json or yarn.lock.
  *
- * @param readdirSync This is only a parameter so that it can be used in tests.
+ * @param readdir This is only a parameter so that it can be used in tests.
  * @returns The path of the directory that contains the lockfile and the
  * filename of the lockfile.
  */
