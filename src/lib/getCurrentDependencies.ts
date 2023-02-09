@@ -6,6 +6,7 @@ import { VersionSpec } from '../types/VersionSpec'
 import filterAndReject from './filterAndReject'
 import filterObject from './filterObject'
 import { keyValueBy } from './keyValueBy'
+import resolveDepSections from './resolveDepSections'
 
 /** Returns true if spec1 is greater than spec2, ignoring invalid version ranges. */
 const isGreaterThanSafe = (spec1: VersionSpec, spec2: VersionSpec) =>
@@ -32,21 +33,7 @@ const parsePackageManager = (pkgData: PackageFile) => {
  * @returns Promised {packageName: version} collection
  */
 function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}) {
-  const depOptions = options.dep
-    ? typeof options.dep === 'string'
-      ? options.dep.split(',')
-      : options.dep
-    : ['prod', 'dev', 'optional']
-
-  // map the dependency section option to a full dependency section name
-  const depSections = depOptions.map(
-    short =>
-      (short === 'prod'
-        ? 'dependencies'
-        : short === 'packageManager'
-        ? short
-        : short + 'Dependencies') as keyof PackageFile,
-  )
+  const depSections = resolveDepSections(options.dep)
 
   // get all dependencies from the selected sections
   // if a dependency appears in more than one section, take the lowest version number

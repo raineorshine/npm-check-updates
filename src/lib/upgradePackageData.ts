@@ -2,6 +2,7 @@ import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { VersionSpec } from '../types/VersionSpec'
+import resolveDepSections from './resolveDepSections'
 
 /**
  * @returns String safe for use in `new RegExp()`
@@ -25,21 +26,7 @@ async function upgradePackageData(
   upgraded: Index<VersionSpec>,
   options: Options,
 ) {
-  const depOptions = options.dep
-    ? typeof options.dep === 'string'
-      ? options.dep.split(',')
-      : options.dep
-    : ['prod', 'dev', 'optional']
-
-  // map the dependency section option to a full dependency section name
-  const depSections = depOptions.map(
-    short =>
-      (short === 'prod'
-        ? 'dependencies'
-        : short === 'packageManager'
-        ? short
-        : short + 'Dependencies') as keyof PackageFile,
-  )
+  const depSections = resolveDepSections(options.dep)
 
   // iterate through each dependency section
   const sectionRegExp = new RegExp(`"(${depSections.join(`|`)})"s*:[^}]*`, 'g')
@@ -54,7 +41,7 @@ async function upgradePackageData(
     return section
   })
 
-  if (depOptions.includes('packageManager')) {
+  if (depSections.includes('packageManager')) {
     const pkg = JSON.parse(pkgData) as PackageFile
     if (pkg.packageManager) {
       const [name] = pkg.packageManager.split('@')

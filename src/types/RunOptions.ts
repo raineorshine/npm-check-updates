@@ -99,8 +99,8 @@ export interface RunOptions {
   /** Package file(s) location. (default: ./package.json) */
   packageFile?: string
 
-  /** npm, yarn, pnpm, staticRegistry (default: npm). Run "ncu --help --packageManager" for details. */
-  packageManager?: 'npm' | 'yarn' | 'pnpm' | 'staticRegistry'
+  /** npm, yarn, pnpm, deno, staticRegistry (default: npm). Run "ncu --help --packageManager" for details. */
+  packageManager?: 'npm' | 'yarn' | 'pnpm' | 'deno' | 'staticRegistry'
 
   /** Check peer dependencies of installed packages and filter updates to compatible versions. Run "ncu --help --peer" for details. */
   peer?: boolean

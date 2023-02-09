@@ -42,7 +42,9 @@ async function findPackage(options: Options) {
       )
     }
 
-    return fs.readFile(pkgFile!, 'utf-8')
+    return fs.readFile(pkgFile!, 'utf-8').catch(e => {
+      programError(options, chalk.red(e))
+    })
   }
 
   print(options, 'Running in local mode', 'verbose')

@@ -517,9 +517,9 @@ const cliOptions: CLIOption[] = [
     long: 'packageManager',
     short: 'p',
     arg: 's',
-    description: 'npm, yarn, pnpm, staticRegistry (default: npm).',
+    description: 'npm, yarn, pnpm, deno, staticRegistry (default: npm).',
     help: extendedHelpPackageManager,
-    type: `'npm' | 'yarn' | 'pnpm' | 'staticRegistry'`,
+    type: `'npm' | 'yarn' | 'pnpm' | 'deno' | 'staticRegistry'`,
   },
   {
     long: 'peer',

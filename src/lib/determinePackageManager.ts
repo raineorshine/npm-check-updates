@@ -9,6 +9,7 @@ const packageManagerLockfileMap: Index<PackageManagerName> = {
   'package-lock': 'npm',
   yarn: 'yarn',
   'pnpm-lock': 'pnpm',
+  deno: 'deno',
 }
 
 /**

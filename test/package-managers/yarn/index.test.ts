@@ -94,35 +94,35 @@ describe('yarn', function () {
       should.equal(authToken, null)
     })
   })
-})
 
-describe('getPathToLookForLocalYarnrc', () => {
-  it('returns the correct path when using Yarn workspaces', async () => {
-    /** Mock for filesystem calls. */
-    function readdirMock(path: string): Promise<string[]> {
-      switch (path) {
-        case '/home/test-repo/packages/package-a':
-        case 'C:\\home\\test-repo\\packages\\package-a':
-          return Promise.resolve(['index.ts'])
-        case '/home/test-repo/packages':
-        case 'C:\\home\\test-repo\\packages':
-          return Promise.resolve([])
-        case '/home/test-repo':
-        case 'C:\\home\\test-repo':
-          return Promise.resolve(['yarn.lock'])
+  describe('getPathToLookForLocalYarnrc', () => {
+    it('returns the correct path when using Yarn workspaces', async () => {
+      /** Mock for filesystem calls. */
+      function readdirMock(path: string): Promise<string[]> {
+        switch (path) {
+          case '/home/test-repo/packages/package-a':
+          case 'C:\\home\\test-repo\\packages\\package-a':
+            return Promise.resolve(['index.ts'])
+          case '/home/test-repo/packages':
+          case 'C:\\home\\test-repo\\packages':
+            return Promise.resolve([])
+          case '/home/test-repo':
+          case 'C:\\home\\test-repo':
+            return Promise.resolve(['yarn.lock'])
+        }
+
+        throw new Error(`Mock cannot handle path: ${path}.`)
       }
 
-      throw new Error(`Mock cannot handle path: ${path}.`)
-    }
+      const yarnrcPath = await getPathToLookForYarnrc(
+        {
+          cwd: isWindows ? 'C:\\home\\test-repo\\packages\\package-a' : '/home/test-repo/packages/package-a',
+        },
+        readdirMock,
+      )
 
-    const yarnrcPath = await getPathToLookForYarnrc(
-      {
-        cwd: isWindows ? 'C:\\home\\test-repo\\packages\\package-a' : '/home/test-repo/packages/package-a',
-      },
-      readdirMock,
-    )
-
-    should.exist(yarnrcPath)
-    yarnrcPath!.should.equal(isWindows ? 'C:\\home\\test-repo\\.yarnrc.yml' : '/home/test-repo/.yarnrc.yml')
+      should.exist(yarnrcPath)
+      yarnrcPath!.should.equal(isWindows ? 'C:\\home\\test-repo\\.yarnrc.yml' : '/home/test-repo/.yarnrc.yml')
+    })
   })
 })

@@ -20,6 +20,7 @@ import getPeerDependencies from './getPeerDependencies'
 import keyValueBy from './keyValueBy'
 import { print, printIgnoredUpdates, printJson, printUpgrades, toDependencyTable } from './logging'
 import programError from './programError'
+import resolveDepSections from './resolveDepSections'
 import upgradePackageData from './upgradePackageData'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
 import { getDependencyGroups } from './version-util'
@@ -255,7 +256,7 @@ async function runLocal(
   const output = options.jsonAll
     ? (jph.parse(newPkgData) as PackageFile)
     : options.jsonDeps
-    ? pick(jph.parse(newPkgData) as PackageFile, 'dependencies', 'devDependencies', 'optionalDependencies')
+    ? pick(jph.parse(newPkgData) as PackageFile, resolveDepSections(options.dep))
     : chosenUpgraded
 
   // will be overwritten with the result of fs.writeFile so that the return promise waits for the package file to be written

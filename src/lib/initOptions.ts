@@ -1,6 +1,6 @@
 import isEqual from 'lodash/isEqual'
 import propertyOf from 'lodash/propertyOf'
-import cliOptions from '../cli-options'
+import cliOptions, { cliOptionsMap } from '../cli-options'
 import { print } from '../lib/logging'
 import { FilterPattern } from '../types/FilterPattern'
 import { Options } from '../types/Options'
@@ -156,14 +156,14 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
 
   const packageManager = await determinePackageManager(options)
 
-  // print 'Using yarn/pnpm/etc' when autodetected
-  if (!options.packageManager && packageManager !== 'npm') {
-    print(options, `Using ${packageManager}`)
-  }
-
   const resolvedOptions: Options = {
     ...options,
-    ...(options.deep ? { packageFile: '**/package.json' } : null),
+    ...(options.deep
+      ? { packageFile: '**/package.json' }
+      : packageManager === 'deno' && !options.packageFile
+      ? { packageFile: 'deno.json' }
+      : null),
+    ...(packageManager === 'deno' && options.dep !== cliOptionsMap.dep.default ? { dep: ['imports'] } : null),
     ...(options.format && options.format.length > 0 ? { format: options.format } : null),
     filter: args || filter,
     // add shortcut for any keys that start with 'json'
@@ -179,6 +179,12 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     packageManager,
   }
   resolvedOptions.cacher = await cacher(resolvedOptions)
+
+  // print 'Using yarn/pnpm/etc' when autodetected
+  // use resolved options so that options.json is set
+  if (!options.packageManager && packageManager !== 'npm') {
+    print(resolvedOptions, `Using ${packageManager}`)
+  }
 
   return resolvedOptions
 }

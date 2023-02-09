@@ -12,7 +12,7 @@ import { PackageManager } from '../types/PackageManager'
  */
 function getPackageManager(name: Maybe<string>): PackageManager {
   // default to npm
-  if (!name) {
+  if (!name || name === 'deno') {
     return packageManagers.npm
   }
 

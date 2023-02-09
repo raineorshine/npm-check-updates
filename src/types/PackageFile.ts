@@ -6,6 +6,8 @@ import { VersionSpec } from './VersionSpec'
 export interface PackageFile {
   dependencies?: Index<VersionSpec>
   devDependencies?: Index<VersionSpec>
+  // deno only
+  imports?: Index<VersionSpec>
   engines?: Index<VersionSpec>
   name?: string
   // https://nodejs.org/api/packages.html#packagemanager
