@@ -36,6 +36,7 @@ export {
   greatest,
   latest,
   minor,
+  patch,
   newest,
   packageAuthorChanged,
 } from './npm'

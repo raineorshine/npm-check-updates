@@ -9,6 +9,7 @@ import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
 import getPackageManager from './getPackageManager'
 import keyValueBy from './keyValueBy'
+import programError from './programError'
 import { createNpmAlias, isGithubUrl, isPre, parseNpmAlias } from './version-util'
 
 const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch']
@@ -71,12 +72,12 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
 
     if (!getPackageVersion) {
       const packageManagerSupportedVersionTargets = supportedVersionTargets.filter(t => t in packageManager)
-      return Promise.reject(
-        new Error(
-          `Unsupported target "${target}" for ${packageManagerName}. Supported version targets are: ` +
-            packageManagerSupportedVersionTargets.join(', ') +
-            (!isGithubDependency ? ' and custom distribution tags, following "@" (example: @next)' : ''),
-        ),
+      programError(
+        options,
+        chalk.red(`\nUnsupported target "${target}" using ${packageManagerName}`) +
+          `\nSupported version targets are: ` +
+          packageManagerSupportedVersionTargets.join(', ') +
+          (!isGithubDependency ? ', and tags (e.g. @next)' : ''),
       )
     }
 
