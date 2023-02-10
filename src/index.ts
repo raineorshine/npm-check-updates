@@ -94,7 +94,7 @@ const npmInstall = async (
 
   // prompt the user if they want ncu to run "npm install"
   if (options.interactive && !process.env.NCU_DOCTOR) {
-    console.info('')
+    print(options, '')
     const response = await prompts({
       type: 'confirm',
       name: 'value',
@@ -210,8 +210,15 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
 
   // suggest install command or auto-install
   if (options.upgrade) {
-    // if workspaces, install from root project folder
-    await npmInstall(isWorkspace ? ['package.json'] : packageFilepaths, analysis, options)
+    // deno does not have an install command
+    // The closest equivalent is deno cache, but it is optional.
+    // See: https://deno.land/manual@v1.30.3/references/cheatsheet#nodejs---deno-cheatsheet
+    if (options.packageManager === 'deno') {
+      print(options, '')
+    } else {
+      // if workspaces, install from root project folder
+      await npmInstall(isWorkspace ? ['package.json'] : packageFilepaths, analysis, options)
+    }
   }
 
   return analysis
