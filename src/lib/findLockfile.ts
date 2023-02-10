@@ -31,6 +31,8 @@ export default async function findLockfile(
         return { directoryPath: currentPath, filename: 'pnpm-lock.yaml' }
       } else if (files.includes('deno.json')) {
         return { directoryPath: currentPath, filename: 'deno.json' }
+      } else if (files.includes('deno.jsonc')) {
+        return { directoryPath: currentPath, filename: 'deno.jsonc' }
       }
 
       const pathParent = path.resolve(currentPath, '..')

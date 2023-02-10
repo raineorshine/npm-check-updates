@@ -164,13 +164,16 @@ async function runLocal(
   print(options, '\nOptions:', 'verbose')
   print(options, sortOptions(options), 'verbose')
 
-  let pkg
+  let pkg: PackageFile
 
   try {
     if (!pkgData) {
-      throw new Error('Missing pkgData: ' + pkgData)
+      throw new Error('Missing pkgData')
     } else {
-      pkg = jph.parse(pkgData)
+      // strip comments from jsonc files
+      const pkgDataStripped =
+        pkgFile?.endsWith('.jsonc') && pkgData ? (await import('strip-json-comments')).default(pkgData) : pkgData
+      pkg = jph.parse(pkgDataStripped)
     }
   } catch (e: any) {
     programError(

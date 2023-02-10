@@ -70,7 +70,11 @@ async function findPackage(options: Options) {
     pkgData = data || getPackageDataFromFile(await pkgFile, pkgPath)
   } else {
     // find the closest package starting from the current working directory and going up to the root
-    pkgFile = pkgPath ? findUp.sync(pkgPath, { cwd: options.cwd || process.cwd() }) : null
+    pkgFile = pkgPath
+      ? findUp.sync(!options.packageFile && options.packageManager === 'deno' ? ['deno.json', 'deno.jsonc'] : pkgPath, {
+          cwd: options.cwd || process.cwd(),
+        })
+      : null
     pkgData = getPackageDataFromFile(pkgFile, pkgPath)
   }
 

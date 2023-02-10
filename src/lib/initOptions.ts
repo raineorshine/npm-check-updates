@@ -158,11 +158,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
 
   const resolvedOptions: Options = {
     ...options,
-    ...(options.deep
-      ? { packageFile: '**/package.json' }
-      : packageManager === 'deno' && !options.packageFile
-      ? { packageFile: 'deno.json' }
-      : null),
+    ...(options.deep ? { packageFile: '**/package.json' } : null),
     ...(packageManager === 'deno' && options.dep !== cliOptionsMap.dep.default ? { dep: ['imports'] } : null),
     ...(options.format && options.format.length > 0 ? { format: options.format } : null),
     filter: args || filter,
