@@ -5,6 +5,7 @@ import { FilterFunction } from '../src/types/FilterFunction'
 import { Index } from '../src/types/IndexType'
 import { TargetFunction } from '../src/types/TargetFunction'
 import { Version } from '../src/types/Version'
+import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
 chai.use(chaiString)
@@ -208,7 +209,7 @@ describe('target', () => {
   })
 }) // end 'target'
 
-describe('distTag as target', () => {
+describe('tags', () => {
   it('upgrade nonprerelease version to specific tag', async () => {
     const upgraded = (await ncu({
       target: '@next',
@@ -306,6 +307,8 @@ describe('distTag as target', () => {
   })
 
   it('do not downgrade nonprerelease version to lower version with specific tag', async () => {
+    const stub = stubNpmView('1.0.0-1')
+
     const upgraded = await ncu({
       target: '@next',
       packageData: {
@@ -316,9 +319,13 @@ describe('distTag as target', () => {
     })
 
     upgraded!.should.not.have.property('ncu-test-tag')
+
+    stub.restore()
   })
 
   it('do not downgrade to latest with lower version by default', async () => {
+    const stub = stubNpmView('1.1.0')
+
     const upgraded = await ncu({
       packageData: {
         dependencies: {
@@ -328,9 +335,13 @@ describe('distTag as target', () => {
     })
 
     upgraded!.should.not.have.property('ncu-test-tag')
+
+    stub.restore()
   })
 
   it('do not downgrade to latest with lower version with --target latest', async () => {
+    const stub = stubNpmView('1.1.0')
+
     const upgraded = await ncu({
       target: 'latest',
       packageData: {
@@ -341,9 +352,13 @@ describe('distTag as target', () => {
     })
 
     upgraded!.should.not.have.property('ncu-test-tag')
+
+    stub.restore()
   })
 
   it('downgrade to latest with lower version with explicit --target @latest', async () => {
+    const stub = stubNpmView('1.1.0')
+
     const upgraded = (await ncu({
       target: '@latest',
       packageData: {
@@ -354,9 +369,13 @@ describe('distTag as target', () => {
     })) as Index<Version>
 
     upgraded['ncu-test-tag'].should.equal('^1.1.0')
+
+    stub.restore()
   })
 
   it('downgrade to latest with lower version with target function returning @latest', async () => {
+    const stub = stubNpmView('1.1.0')
+
     const upgraded = (await ncu({
       target: () => '@latest',
       packageData: {
@@ -367,5 +386,7 @@ describe('distTag as target', () => {
     })) as Index<Version>
 
     upgraded['ncu-test-tag'].should.equal('^1.1.0')
+
+    stub.restore()
   })
-}) // end 'distTag as target'
+}) // end 'tags'

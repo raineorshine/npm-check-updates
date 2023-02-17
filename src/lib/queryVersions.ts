@@ -43,14 +43,11 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   async function getPackageVersionProtected(dep: VersionSpec): Promise<VersionResult> {
     const npmAlias = parseNpmAlias(packageMap[dep])
     const [name, version] = npmAlias || [dep, packageMap[dep]]
-    let distTag = 'latest'
     const targetOption = options.target || 'latest'
-    let target = typeof targetOption === 'string' ? targetOption : targetOption(name, parseRange(version))
-
-    if (target[0] === '@') {
-      distTag = target.slice(1)
-      target = 'distTag'
-    }
+    const targetString = typeof targetOption === 'string' ? targetOption : targetOption(name, parseRange(version))
+    const [target, distTag] = targetString.startsWith('@')
+      ? ['distTag', targetString.slice(1)]
+      : [targetString, 'latest']
 
     const cached = options.cacher?.get(name, target)
     if (cached) {
@@ -86,7 +83,8 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
         ...options,
         distTag,
         // upgrade prereleases to newer prereleases by default
-        pre: options.pre != null ? options.pre : distTag !== 'latest' || isPre(version),
+        // allow downgrading when explicit tag is used
+        pre: options.pre != null ? options.pre : targetString.startsWith('@') || isPre(version),
         retry: options.retry ?? 2,
       })
 

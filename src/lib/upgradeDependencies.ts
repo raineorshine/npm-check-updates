@@ -11,7 +11,7 @@ import getPreferredWildcard from './getPreferredWildcard'
 import isUpgradeable from './isUpgradeable'
 import * as versionUtil from './version-util'
 
-interface MappedDependencies {
+interface UpgradeSpec {
   current: VersionSpec
   currentParsed: VersionSpec | null
   latest: Version
@@ -48,9 +48,10 @@ function upgradeDependencies(
 
   return flow([
     // only include packages for which a latest version was fetched
-    deps => pickBy(deps, (current, packageName) => packageName in latestVersions),
+    (deps: Index<VersionSpec>): Index<VersionSpec> =>
+      pickBy(deps, (current, packageName) => packageName in latestVersions),
     // unpack npm alias and git urls
-    deps =>
+    (deps: Index<VersionSpec>): Index<UpgradeSpec> =>
       mapValues(deps, (current: string, packageName: string) => {
         const latest = latestVersions[packageName]
         let currentParsed = null
@@ -76,8 +77,8 @@ function upgradeDependencies(
         return { current, currentParsed, latest, latestParsed }
       }),
     // pick the packages that are upgradeable
-    deps =>
-      pickBy(deps, ({ current, currentParsed, latest, latestParsed }: MappedDependencies, name: string) => {
+    (deps: Index<UpgradeSpec>): Index<UpgradeSpec> =>
+      pickBy(deps, ({ current, currentParsed, latest, latestParsed }: UpgradeSpec, name: string) => {
         // allow downgrades from prereleases when explicit tag is given
         const downgrade: boolean =
           versionUtil.isPre(current) &&
@@ -85,8 +86,8 @@ function upgradeDependencies(
         return isUpgradeable(currentParsed || current, latestParsed || latest, { downgrade })
       }),
     // pack embedded versions: npm aliases and git urls
-    deps =>
-      mapValues(deps, ({ current, currentParsed, latest, latestParsed }: MappedDependencies) => {
+    (deps: Index<UpgradeSpec>): Index<Version | null> =>
+      mapValues(deps, ({ current, currentParsed, latest, latestParsed }: UpgradeSpec) => {
         const upgraded = upgradeDep(currentParsed || current, latestParsed || latest)
         return versionUtil.isNpmAlias(current)
           ? versionUtil.upgradeNpmAlias(current, upgraded)
