@@ -318,16 +318,54 @@ describe('distTag as target', () => {
     upgraded!.should.not.have.property('ncu-test-tag')
   })
 
-  it('do not downgrade to latest with lower version', async () => {
+  it('do not downgrade to latest with lower version by default', async () => {
     const upgraded = await ncu({
-      target: 'latest',
       packageData: {
         dependencies: {
-          'ncu-test-tag': '1.1.1-beta.0',
+          'ncu-test-tag': '^1.1.1-beta.0',
         },
       },
     })
 
     upgraded!.should.not.have.property('ncu-test-tag')
+  })
+
+  it('do not downgrade to latest with lower version with --target latest', async () => {
+    const upgraded = await ncu({
+      target: 'latest',
+      packageData: {
+        dependencies: {
+          'ncu-test-tag': '^1.1.1-beta.0',
+        },
+      },
+    })
+
+    upgraded!.should.not.have.property('ncu-test-tag')
+  })
+
+  it('downgrade to latest with lower version with explicit --target @latest', async () => {
+    const upgraded = (await ncu({
+      target: '@latest',
+      packageData: {
+        dependencies: {
+          'ncu-test-tag': '^1.1.1-beta.0',
+        },
+      },
+    })) as Index<Version>
+
+    upgraded['ncu-test-tag'].should.equal('^1.1.0')
+  })
+
+  it('downgrade to latest with lower version with target function returning @latest', async () => {
+    const upgraded = (await ncu({
+      target: () => '@latest',
+      packageData: {
+        dependencies: {
+          'ncu-test-tag': '^1.1.1-beta.0',
+        },
+      },
+    })) as Index<Version>
+
+    upgraded['ncu-test-tag'].should.equal('^1.1.0')
   })
 }) // end 'distTag as target'
