@@ -33,12 +33,10 @@
     "lint:lockfile": "lockfile-lint",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.js",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --ignore-path .gitignore --report-unused-disable-directives .",
-    "c8": "c8",
     "prepare": "husky install",
     "prepublishOnly": "npm run build",
     "prettier": "prettier .",
     "test": "mocha test test/package-managers/*",
-    "test:cov": "npm run c8 npm run test",
     "ncu": "node build/src/bin/cli.js"
   },
   "bin": {
