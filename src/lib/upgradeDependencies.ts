@@ -76,7 +76,7 @@ function upgradeDependencies(
     // pick the packages that are upgradeable
     deps =>
       pickBy(deps, ({ current, currentParsed, latest, latestParsed }: any) =>
-        isUpgradeable(currentParsed || current, latestParsed || latest),
+        options.target === '@latest' ? true : isUpgradeable(currentParsed || current, latestParsed || latest),
       ),
     // pack embedded versions: npm aliases and git urls
     deps =>

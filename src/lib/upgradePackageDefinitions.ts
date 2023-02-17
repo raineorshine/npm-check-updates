@@ -33,6 +33,7 @@ export async function upgradePackageDefinitions(
   )
 
   const upgradedDependencies = upgradeDependencies(currentDependencies, latestVersions, {
+    target: options.target,
     removeRange: options.removeRange,
   })
 
