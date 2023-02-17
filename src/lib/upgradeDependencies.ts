@@ -31,6 +31,8 @@ function upgradeDependencies(
   latestVersions: Index<Version>,
   options: Options = {},
 ): Index<VersionSpec> {
+  const targetOption = options.target || 'latest'
+
   // filter out dependencies with empty values
   currentDependencies = filterObject(currentDependencies, (key, value) => !!value)
 
@@ -75,9 +77,13 @@ function upgradeDependencies(
       }),
     // pick the packages that are upgradeable
     deps =>
-      pickBy(deps, ({ current, currentParsed, latest, latestParsed }: any) =>
-        isUpgradeable(currentParsed || current, latestParsed || latest),
-      ),
+      pickBy(deps, ({ current, currentParsed, latest, latestParsed }: MappedDependencies, name: string) => {
+        // allow downgrades from prereleases when explicit tag is given
+        const downgrade: boolean =
+          versionUtil.isPre(current) &&
+          (typeof targetOption === 'string' ? targetOption : targetOption(name, parseRange(current))).startsWith('@')
+        return isUpgradeable(currentParsed || current, latestParsed || latest, { downgrade })
+      }),
     // pack embedded versions: npm aliases and git urls
     deps =>
       mapValues(deps, ({ current, currentParsed, latest, latestParsed }: MappedDependencies) => {

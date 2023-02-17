@@ -32,9 +32,7 @@ export async function upgradePackageDefinitions(
       : null,
   )
 
-  const upgradedDependencies = upgradeDependencies(currentDependencies, latestVersions, {
-    removeRange: options.removeRange,
-  })
+  const upgradedDependencies = upgradeDependencies(currentDependencies, latestVersions, options)
 
   const filteredUpgradedDependencies = pickBy(upgradedDependencies, (v, dep) => {
     return !options.jsonUpgraded || !options.minimal || !satisfies(latestVersions[dep], currentDependencies[dep])

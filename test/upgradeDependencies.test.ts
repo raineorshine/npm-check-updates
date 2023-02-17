@@ -35,6 +35,12 @@ describe('upgradeDependencies', () => {
     upgradeDependencies({ mongodb: '^2.0.7' }, { mongodb: '1.4.30' }).should.eql({})
   })
 
+  it('allow to update to latest via @latest tag', () => {
+    upgradeDependencies({ mongodb: '^1.5.0-alpha.1' }, { mongodb: '1.4.30' }, { target: '@latest' }).should.eql({
+      mongodb: '^1.4.30',
+    })
+  })
+
   it('use the preferred wildcard when converting <, closed, or mixed ranges', () => {
     upgradeDependencies({ a: '1.*', mongodb: '<1.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '3.*' })
     upgradeDependencies({ a: '1.x', mongodb: '<1.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '3.x' })

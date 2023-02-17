@@ -9,9 +9,10 @@ import { fixPseudoVersion, isComparable, isWildCard, stringify } from './version
  *
  * @param current
  * @param latest
+ * @param downgrade  Allow downgrading
  * @returns
  */
-function isUpgradeable(current: VersionSpec, latest: Version) {
+function isUpgradeable(current: VersionSpec, latest: Version, { downgrade }: { downgrade?: boolean } = {}): boolean {
   // do not upgrade non-npm version declarations (such as git tags)
   // do not upgrade wildcards
   if (!semver.validRange(current) || isWildCard(current)) {
@@ -43,7 +44,7 @@ function isUpgradeable(current: VersionSpec, latest: Version) {
     // allow an upgrade if two prerelease versions can't be compared by semver
     (!isComparable(latestNormalized, version) ||
       (!semver.satisfies(latestNormalized, range.operator === '<' ? current : version) &&
-        !semver.ltr(latestNormalized, version)))
+        (downgrade || !semver.ltr(latestNormalized, version))))
   )
 }
 
