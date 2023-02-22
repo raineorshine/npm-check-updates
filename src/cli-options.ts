@@ -427,6 +427,7 @@ const cliOptions: CLIOption[] = [
     description:
       'Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
+    parse: (value, accum) => [...(accum || []), value],
   },
   {
     long: 'filterVersion',
@@ -558,6 +559,7 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     description:
       'Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
+    parse: (value, accum) => [...(accum || []), value],
   },
   {
     long: 'rejectVersion',
