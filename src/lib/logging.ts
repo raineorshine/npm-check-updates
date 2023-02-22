@@ -32,10 +32,9 @@ const logLevels = {
 
 /** Returns true if the dependency spec is not fetchable from the registry and is ignored. */
 const isFetchable = (spec: VersionSpec) =>
-  // local file protocol
   !spec.startsWith('file:') &&
-  // link protocol
   !spec.startsWith('link:') &&
+  !spec.startsWith('workspace:') &&
   // short github urls that are ignored, e.g. raineorshine/foo
   !/^[^/:@]+\/\w+/.test(spec)
 
@@ -306,7 +305,7 @@ export async function printUpgrades(
     ) {
       print(
         options,
-        `No package versions were returned. This is likely a problem with your installed ${
+        `No package versions were returned. This may be a problem with your installed ${
           options.packageManager
         }, the npm registry, or your Internet connection. Make sure ${chalk.cyan(
           'npx pacote packument ncu-test-v2',
