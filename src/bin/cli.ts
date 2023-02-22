@@ -111,6 +111,7 @@ ${chalk.dim.underline(
   program.parse(process.argv)
 
   let programOpts = program.opts()
+  const programArgs = process.argv.slice(2)
 
   const { color, configFileName, configFilePath, packageFile, mergeConfig } = programOpts
 
@@ -125,9 +126,15 @@ ${chalk.dim.underline(
     !programOpts.global && (!process.env.NCU_TESTS || configFilePath || mergeConfig)
       ? await getNcuRc({ configFileName, configFilePath, packageFile, color })
       : null
+  // override rc args with program args
+  const rcArgs = (rcResult?.args || []).filter(
+    (arg, i, args) =>
+      (typeof arg !== 'string' || !arg.startsWith('-') || !programArgs.includes(arg)) &&
+      (typeof args[i - 1] !== 'string' || !args[i - 1].startsWith('-') || !programArgs.includes(args[i - 1])),
+  )
 
   // insert config arguments into command line arguments so they can all be parsed by commander
-  const combinedArguments = [...process.argv.slice(0, 2), ...(rcResult?.args || []), ...process.argv.slice(2)]
+  const combinedArguments = [...process.argv.slice(0, 2), ...rcArgs, ...programArgs]
 
   // See initialOptionValues comment above
   ;(program as any)._optionValues = initialOptionValues
