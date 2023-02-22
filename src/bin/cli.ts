@@ -107,10 +107,10 @@ ${chalk.dim.underline(
   // commander mutates its optionValues with program.parse
   // In order to call program.parse again and parse the rc file options, we need to clear commander's internal optionValues
   // Otherwise array options will be duplicated
-  const initialOptionValues = cloneDeep((program as any)._optionValues)
+  const defaultOptionValues = cloneDeep((program as any)._optionValues)
   program.parse(process.argv)
 
-  let programOpts = program.opts()
+  const programOpts = program.opts()
   const programArgs = process.argv.slice(2)
 
   const { color, configFileName, configFilePath, packageFile, mergeConfig } = programOpts
@@ -136,18 +136,18 @@ ${chalk.dim.underline(
   // insert config arguments into command line arguments so they can all be parsed by commander
   const combinedArguments = [...process.argv.slice(0, 2), ...rcArgs, ...programArgs]
 
-  // See initialOptionValues comment above
-  ;(program as any)._optionValues = initialOptionValues
+  // See defaultOptionValues comment above
+  ;(program as any)._optionValues = defaultOptionValues
   program.parse(combinedArguments)
-  programOpts = program.opts()
+  const combinedProgramOpts = program.opts()
 
   // filter out undefined program options and combine cli options with config file options
   const options = {
     ...(rcResult && Object.keys(rcResult.config).length > 0 ? { rcConfigPath: rcResult.filePath } : null),
     ...pickBy(program.opts(), value => value !== undefined),
     args: program.args,
-    ...(programOpts.filter ? { filter: programOpts.filter } : null),
-    ...(programOpts.reject ? { reject: programOpts.reject } : null),
+    ...(combinedProgramOpts.filter ? { filter: combinedProgramOpts.filter } : null),
+    ...(combinedProgramOpts.reject ? { reject: combinedProgramOpts.reject } : null),
   }
 
   // NOTE: Options handling and defaults go in initOptions in index.js
