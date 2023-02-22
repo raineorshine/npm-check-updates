@@ -1,37 +1,26 @@
 import sinon from 'sinon'
 import * as npmPackageManager from '../../src/package-managers/npm'
-import { Index } from '../../src/types/IndexType'
-import { Options } from '../../src/types/Options'
-import { Version } from '../../src/types/Version'
+import { MockedVersions } from '../../src/types/MockedVersions'
 
-type MockedVersions = Index<Version>
-type MockedVersionsMatcher = (options: Options) => Index<Version> | null
-
-/** Stubs the npmView function from package-managers/npm. Only works when importing ncu directly in tests, not when the binary is spawned. Returns the stub object. Call stub.restore() after assertions to restore the original function. */
-const stubNpmView = (mockReturnedVersions: Version | MockedVersions | MockedVersionsMatcher) =>
-  sinon
-    .stub(npmPackageManager, 'viewManyMemoized')
-    .callsFake((name: string, fields: string[], currentVersion: Version, options: Options) => {
-      const version =
-        typeof mockReturnedVersions === 'function'
-          ? mockReturnedVersions(options)?.[name]
-          : typeof mockReturnedVersions === 'string'
-          ? mockReturnedVersions
-          : mockReturnedVersions[name]
-
-      const packument = {
-        name,
-        engines: { node: '' },
-        time: { [version || '']: new Date().toISOString() },
-        version: version || '',
-        // versions are not needed in nested packument
-        versions: [],
-      }
-
-      return Promise.resolve({
-        ...packument,
-        versions: [packument],
-      })
-    })
+/** Stubs the npmView function from package-managers/npm. Returns the stub object. Call stub.restore() after assertions to restore the original function. Set spawn:true to stub ncu spawned as a child process. */
+const stubNpmView = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?: boolean } = {}) => {
+  // stub child process
+  // the only way to stub functionality in spawned child processes is to pass data through process.env and stub internally
+  if (spawn) {
+    process.env.STUB_NPM_VIEW = JSON.stringify(mockReturnedVersions)
+    return {
+      restore: () => {
+        // eslint-disable-next-line fp/no-delete
+        delete process.env.STUB_NPM_VIEW
+      },
+    }
+  }
+  // stub module
+  else {
+    return sinon
+      .stub(npmPackageManager, 'viewManyMemoized')
+      .callsFake(npmPackageManager.mockViewMany(mockReturnedVersions))
+  }
+}
 
 export default stubNpmView

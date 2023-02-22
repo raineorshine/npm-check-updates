@@ -20,6 +20,7 @@ import { print } from '../lib/logging'
 import * as versionUtil from '../lib/version-util'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
+import { MockedVersions } from '../types/MockedVersions'
 import { NpmConfig } from '../types/NpmConfig'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
@@ -270,6 +271,32 @@ export async function packageAuthorChanged(
   return false
 }
 
+/** Creates a function with the same signature as viewMany that always returns the given versions. */
+export const mockViewMany =
+  (mockReturnedVersions: MockedVersions) =>
+  (name: string, fields: string[], currentVersion: Version, options: Options): Promise<Packument> => {
+    const version =
+      typeof mockReturnedVersions === 'function'
+        ? mockReturnedVersions(options)?.[name]
+        : typeof mockReturnedVersions === 'string'
+        ? mockReturnedVersions
+        : mockReturnedVersions[name]
+
+    const packument = {
+      name,
+      engines: { node: '' },
+      time: { [version || '']: new Date().toISOString() },
+      version: version || '',
+      // versions are not needed in nested packument
+      versions: [],
+    }
+
+    return Promise.resolve({
+      ...packument,
+      versions: [packument],
+    })
+  }
+
 /**
  * Returns an object of specified values retrieved by npm view.
  *
@@ -286,6 +313,12 @@ export async function viewMany(
   retried = 0,
   npmConfigLocal?: NpmConfig,
 ): Promise<Packument> {
+  // See: /test/helpers/stubNpmView
+  if (process.env.STUB_NPM_VIEW) {
+    const mockReturnedVersions = JSON.parse(process.env.STUB_NPM_VIEW)
+    return mockViewMany(mockReturnedVersions)(packageName, fields, currentVersion, options)
+  }
+
   if (currentVersion && (!semver.validRange(currentVersion) || versionUtil.isWildCard(currentVersion))) {
     return Promise.resolve({} as Packument)
   }

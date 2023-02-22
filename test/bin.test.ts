@@ -5,6 +5,7 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
+import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -15,55 +16,79 @@ process.env.NCU_TESTS = 'true'
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('bin', async function () {
-  it('runs from the command line', async () => {
-    await spawn('node', [bin], '{}')
+  it('fetch latest version from registry (not stubbed)', async () => {
+    const output = await spawn(
+      'node',
+      [bin, '--jsonUpgraded', '--stdin'],
+      '{ "dependencies": { "ncu-test-v2": "1.0.0" } }',
+    )
+    const pkgData = JSON.parse(output)
+    pkgData.should.have.property('ncu-test-v2')
   })
 
   it('output only upgraded with --jsonUpgraded', async () => {
-    const output = await spawn('node', [bin, '--jsonUpgraded', '--stdin'], '{ "dependencies": { "express": "1" } }')
-    const pkgData = JSON.parse(output) as Record<string, unknown>
-    pkgData.should.have.property('express')
+    const stub = stubNpmView('99.9.9', { spawn: true })
+    const output = await spawn(
+      'node',
+      [bin, '--jsonUpgraded', '--stdin'],
+      '{ "dependencies": { "ncu-test-v2": "1.0.0" } }',
+    )
+    const pkgData = JSON.parse(output)
+    pkgData.should.have.property('ncu-test-v2')
+    stub.restore()
   })
 
   it('--loglevel verbose', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
     const output = await spawn('node', [bin, '--loglevel', 'verbose'], '{ "dependencies": { "ncu-test-v2": "1.0.0" } }')
     output.should.containIgnoreCase('Initializing')
     output.should.containIgnoreCase('Running in local mode')
     output.should.containIgnoreCase('Finding package file data')
+    stub.restore()
   })
 
   it('--verbose', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
     const output = await spawn('node', [bin, '--verbose'], '{ "dependencies": { "ncu-test-v2": "1.0.0" } }')
     output.should.containIgnoreCase('Initializing')
     output.should.containIgnoreCase('Running in local mode')
     output.should.containIgnoreCase('Finding package file data')
+    stub.restore()
   })
 
   it('accept stdin', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
     const output = await spawn('node', [bin, '--stdin'], '{ "dependencies": { "express": "1" } }')
     output.trim().should.startWith('express')
+    stub.restore()
   })
 
   it('reject out-of-date stdin with errorLevel 2', async () => {
-    return spawn(
+    const stub = stubNpmView('99.9.9', { spawn: true })
+    await spawn(
       'node',
       [bin, '--stdin', '--errorLevel', '2'],
       '{ "dependencies": { "express": "1" } }',
     ).should.eventually.be.rejectedWith('Dependencies not up-to-date')
+    stub.restore()
   })
 
   it('fall back to package.json search when receiving empty content on stdin', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
     const stdout = await spawn('node', [bin, '--stdin'])
     stdout
       .toString()
       .trim()
       .should.match(/^Checking .+package.json/)
+    stub.restore()
   })
 
   it('use package.json in cwd by default', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
     const output = await spawn('node', [bin, '--jsonUpgraded'], { cwd: path.join(__dirname, 'test-data/ncu') })
     const pkgData = JSON.parse(output)
     pkgData.should.have.property('express')
+    stub.restore()
   })
 
   it('throw error if there is no package', async () => {
@@ -82,6 +107,7 @@ describe('bin', async function () {
   })
 
   it('read --packageFile', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
@@ -91,10 +117,12 @@ describe('bin', async function () {
       pkgData.should.have.property('express')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
+      stub.restore()
     }
   })
 
   it('write to --packageFile', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
@@ -106,10 +134,12 @@ describe('bin', async function () {
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
+      stub.restore()
     }
   })
 
   it('write to --packageFile if errorLevel=2 and upgrades', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
@@ -124,10 +154,12 @@ describe('bin', async function () {
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
+      stub.restore()
     }
   })
 
   it('write to --packageFile with jsonUpgraded flag', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
@@ -139,10 +171,12 @@ describe('bin', async function () {
       ugradedPkg.dependencies.express.should.not.equal('1')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
+      stub.restore()
     }
   })
 
   it('ignore stdin if --packageFile is specified', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
@@ -154,15 +188,19 @@ describe('bin', async function () {
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
+      stub.restore()
     }
   })
 
   it('suppress stdout when --silent is provided', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
     const output = await spawn('node', [bin, '--silent'], '{ "dependencies": { "express": "1" } }')
     output.trim().should.equal('')
+    stub.restore()
   })
 
   it('quote arguments with spaces in upgrade hint', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
     const pkgData = {
       dependencies: {
         'ncu-test-v2': '^1.0.0',
@@ -177,7 +215,22 @@ describe('bin', async function () {
       output.should.include('"ncu-test-v2 ncu-test-tag"')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
+      stub.restore()
     }
+  })
+
+  it('ignore file: and link: protocols', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
+    const { default: stripAnsi } = await import('strip-ansi')
+    const dependencies = {
+      editor: 'file:../editor',
+      event: 'link:../link',
+      workspace: 'workspace:../workspace',
+    }
+    const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
+
+    stripAnsi(output)!.should.not.include('No package versions were returned.')
+    stub.restore()
   })
 })
 
@@ -195,13 +248,15 @@ describe('embedded versions', () => {
   })
 
   it('strip prefix from npm alias in "to" output', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
     // use dynamic import for ESM module
     const { default: stripAnsi } = await import('strip-ansi')
     const dependencies = {
       request: 'npm:ncu-test-v2@1.0.0',
     }
     const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
-    stripAnsi(output).trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  2.0.0')
+    stripAnsi(output).trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  99.9.9')
+    stub.restore()
   })
 })
 
@@ -251,18 +306,5 @@ describe('option-specific help', () => {
   it('special --help --help', async () => {
     const output = await spawn('node', [bin, '--help', '--help'])
     output.trim().should.not.include('Usage')
-  })
-
-  it('ignore file: and link: protocols', async () => {
-    const { default: stripAnsi } = await import('strip-ansi')
-    const dependencies = {
-      editor: 'file:../editor',
-      event: 'link:../link',
-    }
-    const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
-
-    stripAnsi(output)!.should.not.include(
-      'No package versions were returned. This is likely a problem with your installed npm',
-    )
   })
 })
