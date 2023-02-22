@@ -109,6 +109,9 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   // disallow non-matching filter and args
   const args = parseFilterExpression(options.args)
   const filter = parseFilterExpression(options.filter)
+  const filterVersion = parseFilterExpression(options.filterVersion)
+  const reject = parseFilterExpression(options.reject)
+  const rejectVersion = parseFilterExpression(options.rejectVersion)
   // convert to string for comparison purposes
   // otherwise ['a b'] will not match ['a', 'b']
   if (options.filter && args && !isEqual(args.join(' '), Array.isArray(filter) ? filter.join(' ') : filter)) {
@@ -162,6 +165,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     ...(packageManager === 'deno' && options.dep !== cliOptionsMap.dep.default ? { dep: ['imports'] } : null),
     ...(options.format && options.format.length > 0 ? { format: options.format } : null),
     filter: args || filter,
+    filterVersion,
     // add shortcut for any keys that start with 'json'
     json,
     loglevel,
@@ -169,6 +173,8 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     // default to false, except when newest or greatest are set
     // this is overriden on a per-dependency basis in queryVersions to allow prereleases to be upgraded to newer prereleases
     ...(options.pre != null || autoPre ? { pre: options.pre != null ? !!options.pre : autoPre } : null),
+    reject,
+    rejectVersion,
     target,
     // imply upgrade in interactive mode when json is not specified as the output
     ...(options.interactive && options.upgrade === undefined ? { upgrade: !json } : null),

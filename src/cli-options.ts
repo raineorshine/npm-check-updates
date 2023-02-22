@@ -434,6 +434,7 @@ const cliOptions: CLIOption[] = [
     arg: 'p',
     description: 'Filter on package version using comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
+    parse: (value, accum) => [...(accum || []), value],
   },
   {
     long: 'format',
@@ -566,6 +567,7 @@ When --packageManager staticRegistry is set, --registry must specify a path to a
     arg: 'p',
     description: 'Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
+    parse: (value, accum) => [...(accum || []), value],
   },
   {
     long: 'removeRange',
