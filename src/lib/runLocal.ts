@@ -278,12 +278,16 @@ async function runLocal(
         writePromise = fs.writeFile(pkgFile, newPkgData)
       } else {
         const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'
-        const argv = process.argv.slice(2).join(' ')
+        // quote arguments with spaces
+        const argv = process.argv
+          .slice(2)
+          .map(arg => (arg.includes(' ') ? `"${arg}"` : arg))
+          .join(' ')
         const ncuOptions = argv ? ' ' + argv : argv
-        print(
-          options,
-          `\nRun ${chalk.cyan(`${ncuCmd}${ncuOptions} -u`)} to upgrade ${options.packageFile || 'package.json'}`,
-        )
+        const upgradeHint = `\nRun ${chalk.cyan(`${ncuCmd}${ncuOptions} -u`)} to upgrade ${
+          options.packageFile || 'package.json'
+        }`
+        print(options, upgradeHint)
       }
     }
 

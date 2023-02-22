@@ -161,6 +161,24 @@ describe('bin', async function () {
     const output = await spawn('node', [bin, '--silent'], '{ "dependencies": { "express": "1" } }')
     output.trim().should.equal('')
   })
+
+  it('quote arguments with spaces in upgrade hint', async () => {
+    const pkgData = {
+      dependencies: {
+        'ncu-test-v2': '^1.0.0',
+        'ncu-test-tag': '^1.0.0',
+      },
+    }
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
+    try {
+      const output = await spawn('node', [bin, '--packageFile', pkgFile, '--filter', 'ncu-test-v2 ncu-test-tag'])
+      output.should.include('"ncu-test-v2 ncu-test-tag"')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
 })
 
 describe('embedded versions', () => {
