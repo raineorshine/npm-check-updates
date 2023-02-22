@@ -271,17 +271,22 @@ export async function packageAuthorChanged(
   return false
 }
 
+/** Returns true if an object is a Packument. */
+const isPackument = (o: any): o is Partial<Packument> => o && (o.name || o.engines || o.version || o.versions)
+
 /** Creates a function with the same signature as viewMany that always returns the given versions. */
 export const mockViewMany =
   (mockReturnedVersions: MockedVersions) =>
   (name: string, fields: string[], currentVersion: Version, options: Options): Promise<Packument> => {
-    const version =
+    // a partial Packument
+    const partialPackument =
       typeof mockReturnedVersions === 'function'
         ? mockReturnedVersions(options)?.[name]
-        : typeof mockReturnedVersions === 'string'
+        : typeof mockReturnedVersions === 'string' || isPackument(mockReturnedVersions)
         ? mockReturnedVersions
         : mockReturnedVersions[name]
 
+    const version = isPackument(partialPackument) ? partialPackument.version : partialPackument
     const packument = {
       name,
       engines: { node: '' },
@@ -289,6 +294,7 @@ export const mockViewMany =
       version: version || '',
       // versions are not needed in nested packument
       versions: [],
+      ...(isPackument(partialPackument) ? partialPackument : null),
     }
 
     return Promise.resolve({
