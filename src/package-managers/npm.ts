@@ -276,8 +276,8 @@ const isPackument = (o: any): o is Partial<Packument> => o && (o.name || o.engin
 
 /** Creates a function with the same signature as viewMany that always returns the given versions. */
 export const mockViewMany =
-  (mockReturnedVersions: MockedVersions) =>
-  (name: string, fields: string[], currentVersion: Version, options: Options): Promise<Packument> => {
+  (mockReturnedVersions: MockedVersions): typeof viewMany =>
+  (name: string, fields: string[], currentVersion: Version, options: Options) => {
     // a partial Packument
     const partialPackument =
       typeof mockReturnedVersions === 'function'
@@ -286,21 +286,37 @@ export const mockViewMany =
         ? mockReturnedVersions
         : mockReturnedVersions[name]
 
-    const version = isPackument(partialPackument) ? partialPackument.version : partialPackument
-    const packument = {
+    const version = (isPackument(partialPackument) ? partialPackument.version : partialPackument) || ''
+    const time = (isPackument(partialPackument) && partialPackument.time?.[version]) || new Date().toISOString()
+    const packument: Packument = {
       name,
       engines: { node: '' },
-      time: { [version || '']: new Date().toISOString() },
-      version: version || '',
-      // versions are not needed in nested packument
+      time: {
+        [version]: time,
+      },
+      version,
+      // overwritten below
       versions: [],
       ...(isPackument(partialPackument) ? partialPackument : null),
     }
 
-    return Promise.resolve({
-      ...packument,
-      versions: [packument],
-    })
+    return Promise.resolve(
+      keyValueBy(fields, field => ({
+        [field]:
+          field === 'versions'
+            ? ({
+                [version]: packument,
+              } as Index<Packument>)
+            : field === 'time'
+            ? ({
+                [version]: time,
+              } as Index<string>)
+            : ({
+                ...packument,
+                versions: [packument],
+              } as Packument),
+      })),
+    )
   }
 
 /**
@@ -309,24 +325,25 @@ export const mockViewMany =
  * @param packageName   Name of the package
  * @param fields        Array of fields like versions, time, version
  * @param               currentVersion
- * @returns             Promised result
+ * @returns             dist-tags field return Index<Packument>, time field returns Index<Index<string>>>, versions field returns Index<Index<Packument>>
  */
-export async function viewMany(
+async function viewMany(
   packageName: string,
   fields: string[],
   currentVersion: Version,
   options: Options,
   retried = 0,
   npmConfigLocal?: NpmConfig,
-): Promise<Packument> {
+): Promise<Index<Packument | Index<string> | Index<Packument>>> {
   // See: /test/helpers/stubNpmView
+
   if (process.env.STUB_NPM_VIEW) {
     const mockReturnedVersions = JSON.parse(process.env.STUB_NPM_VIEW)
     return mockViewMany(mockReturnedVersions)(packageName, fields, currentVersion, options)
   }
 
   if (currentVersion && (!semver.validRange(currentVersion) || versionUtil.isWildCard(currentVersion))) {
-    return Promise.resolve({} as Packument)
+    return Promise.resolve({} as Index<Packument>)
   }
 
   const fieldsExtended = options.format?.includes('time') ? [...fields, 'time'] : fields
@@ -363,15 +380,7 @@ export async function viewMany(
     result = await pacote.packument(packageName, npmOptions)
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
-      const packument: Packument = await viewMany(
-        packageName,
-        fieldsExtended,
-        currentVersion,
-        options,
-        retried,
-        npmConfigLocal,
-      )
-      return packument
+      return viewMany(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
     }
 
     throw err
@@ -391,7 +400,7 @@ export async function viewMany(
     return {
       [field]: value,
     }
-  }) as Packument
+  })
 }
 
 /** Memoize viewMany for --deep performance. */
@@ -411,9 +420,9 @@ export async function viewOne(
   currentVersion: Version,
   options: Options,
   npmConfigLocal?: NpmConfig,
-): Promise<string | boolean | { engines: { node: string } } | undefined | Index<string> | Packument[]> {
+): Promise<string | boolean | { engines: { node: string } } | undefined | Index<string> | Index<Packument>> {
   const result = await viewManyMemoized(packageName, [field], currentVersion, options, 0, npmConfigLocal)
-  return result && result[field as keyof Packument]
+  return result[field]
 }
 
 /**
@@ -507,7 +516,7 @@ export const greatest: GetVersion = async (
   npmConfig?: NpmConfig,
 ): Promise<VersionResult> => {
   // known type based on 'versions'
-  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Packument[]
+  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Index<Packument>
 
   return {
     version:
@@ -598,11 +607,12 @@ export const distTag: GetVersion = async (
   // if latest exists and latest is not a prerelease version, return it
   // if latest exists and latest is a prerelease version and --pre is specified, return it
   // if latest exists and latest not satisfies min version of engines.node
-  if (packument && filterPredicate(options)(packument))
+  if (packument && filterPredicate(options)(packument)) {
     return {
       version: packument.version,
       ...(packument.time?.[packument.version] ? { time: packument.time[packument.version] } : null),
     }
+  }
 
   // If we use a custom dist-tag, we do not want to get other 'pre' versions, just the ones from this dist-tag
   if (options.distTag && options.distTag !== 'latest') return {}
@@ -644,14 +654,14 @@ export const newest: GetVersion = async (
   // Generate a map of versions that satisfy the node engine.
   // result.versions is an object but is parsed as an array, so manually convert it to an object.
   // Otherwise keyValueBy will pass the predicate arguments in the wrong order.
-  const versionsSatisfyingNodeEngine = keyValueBy(Object.values(result.versions || {}), packument =>
+  const versionsSatisfyingNodeEngine = keyValueBy(Object.values(result.versions || {}), (packument: Packument) =>
     satisfiesNodeEngine(packument, options.nodeEngineVersion) ? { [packument.version]: true } : null,
   )
 
   // filter out times that do not satisfy the node engine
   // filter out prereleases if pre:false (same as allowPreOrIsNotPre)
   const timesSatisfyingNodeEngine = filterObject(
-    result.time || {},
+    (result.time || {}) as unknown as Index<string>,
     version => versionsSatisfyingNodeEngine[version] && (options.pre !== false || !versionUtil.isPre(version)),
   )
 
@@ -675,7 +685,7 @@ export const minor: GetVersion = async (
   options = {},
   npmConfig?: NpmConfig,
 ): Promise<VersionResult> => {
-  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Packument[]
+  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Index<Packument>
   const version = versionUtil.findGreatestByLevel(
     filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
@@ -698,7 +708,7 @@ export const patch: GetVersion = async (
   options = {},
   npmConfig?: NpmConfig,
 ): Promise<VersionResult> => {
-  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Packument[]
+  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Index<Packument>
   const version = versionUtil.findGreatestByLevel(
     filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,

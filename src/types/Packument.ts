@@ -9,6 +9,7 @@ export interface Packument {
     node: string
   }
   // fullMetadata only
+  // TODO: store only the time of the latest version?
   time?: Index<string>
   version: Version
   versions: Packument[]
