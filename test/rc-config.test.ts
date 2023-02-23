@@ -5,6 +5,7 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
+import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -13,6 +14,10 @@ chai.use(chaiString)
 process.env.NCU_TESTS = 'true'
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
+
+let stub: { restore: () => void }
+before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
+after(() => stub.restore())
 
 describe('rc-config', () => {
   it('print rcConfigPath when there is a non-empty rc config file', async () => {

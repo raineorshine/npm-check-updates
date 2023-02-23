@@ -6,6 +6,7 @@ import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import { GroupFunction } from '../src/types/GroupFunction'
+import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -21,6 +22,15 @@ async function groupTestScaffold(
   groupFn: GroupFunction,
   expectedOutput: string,
 ): Promise<void> {
+  const stub = stubNpmView(
+    {
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '1.1.0',
+      'ncu-test-return-version': '2.0.0',
+    },
+    { spawn: true },
+  )
+
   // use dynamic import for ESM module
   const { default: stripAnsi } = await import('strip-ansi')
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
@@ -41,6 +51,7 @@ async function groupTestScaffold(
     stripAnsi(stdout).should.containIgnoreCase(expectedOutput)
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true })
+    stub.restore()
   }
 }
 

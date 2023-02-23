@@ -12,6 +12,7 @@ chai.use(chaiString)
 
 process.env.NCU_TESTS = 'true'
 
+// TODO: Mock based on real output of viewMany
 describe('target', () => {
   it('do not update major versions with --target minor', async () => {
     const pkgData = await ncu({ target: 'minor', packageData: { dependencies: { chalk: '3.0.0' } } })

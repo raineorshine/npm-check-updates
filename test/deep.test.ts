@@ -6,6 +6,7 @@ import path from 'path'
 import spawn from 'spawn-please'
 import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
+import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -47,6 +48,10 @@ const setupDeepTest = async () => {
 
 describe('--deep', function () {
   this.timeout(60000)
+
+  let stub: { restore: () => void }
+  before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
+  after(() => stub.restore())
 
   it('do not allow --packageFile and --deep together', async () => {
     await ncu({ packageFile: './package.json', deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
@@ -122,6 +127,10 @@ describe('--deep with nested ncurc files', function () {
   const cwd = path.join(__dirname, 'test-data/deep-ncurc')
 
   this.timeout(60000)
+
+  let stub: { restore: () => void }
+  before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
+  after(() => stub.restore())
 
   it('use ncurc of nested packages', async () => {
     const deepJsonOut = await spawn('node', [bin, '--jsonUpgraded', '--deep'], { cwd }).then(JSON.parse)

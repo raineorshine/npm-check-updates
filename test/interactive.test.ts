@@ -5,6 +5,7 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
+import stubNpmView from './helpers/stubNpmView'
 
 const should = chai.should()
 chai.use(chaiAsPromised)
@@ -13,6 +14,21 @@ chai.use(chaiString)
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('--interactive', () => {
+  let stub: { restore: () => void }
+  before(() => {
+    stub = stubNpmView(
+      {
+        'ncu-test-v2': '2.0.0',
+        'ncu-test-tag': '1.1.0',
+        'ncu-test-return-version': '2.0.0',
+      },
+      { spawn: true },
+    )
+  })
+  after(() => {
+    stub.restore()
+  })
+
   it('prompt for each upgraded dependency', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')

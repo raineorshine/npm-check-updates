@@ -13,12 +13,18 @@ const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('filterVersion', () => {
   describe('module', () => {
-    it('filter by package version with string', async () => {
-      const stub = stubNpmView({
+    let stub: { restore: () => void }
+    before(() => {
+      stub = stubNpmView({
         'ncu-test-v2': '2.0.0',
         'ncu-test-return-version': '2.0.0',
       })
+    })
+    after(() => {
+      stub.restore()
+    })
 
+    it('filter by package version with string', async () => {
       const pkg = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -38,12 +44,6 @@ describe('filterVersion', () => {
     })
 
     it('filter by package version with space-delimited list of strings', async () => {
-      const stub = stubNpmView({
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-return-version': '2.0.0',
-        'fp-and-or': '0.1.3',
-      })
-
       const pkg = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -60,17 +60,9 @@ describe('filterVersion', () => {
       upgraded!.should.have.property('ncu-test-v2')
       upgraded!.should.not.have.property('ncu-test-return-version')
       upgraded!.should.have.property('fp-and-or')
-
-      stub.restore()
     })
 
     it('filter by package version with comma-delimited list of strings', async () => {
-      const stub = stubNpmView({
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-return-version': '2.0.0',
-        'fp-and-or': '0.1.3',
-      })
-
       const pkg = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -87,17 +79,9 @@ describe('filterVersion', () => {
       upgraded!.should.have.property('ncu-test-v2')
       upgraded!.should.not.have.property('ncu-test-return-version')
       upgraded!.should.have.property('fp-and-or')
-
-      stub.restore()
     })
 
     it('filter by package version with RegExp', async () => {
-      const stub = stubNpmView({
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-return-version': '2.0.0',
-        'fp-and-or': '0.1.3',
-      })
-
       const pkg = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -114,17 +98,9 @@ describe('filterVersion', () => {
       upgraded!.should.have.property('ncu-test-v2')
       upgraded!.should.have.property('ncu-test-return-version')
       upgraded!.should.not.have.property('fp-and-or')
-
-      stub.restore()
     })
 
     it('filter by package version with RegExp string', async () => {
-      const stub = stubNpmView({
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-return-version': '2.0.0',
-        'fp-and-or': '0.1.3',
-      })
-
       const pkg = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -141,13 +117,12 @@ describe('filterVersion', () => {
       upgraded!.should.have.property('ncu-test-v2')
       upgraded!.should.have.property('ncu-test-return-version')
       upgraded!.should.not.have.property('fp-and-or')
-
-      stub.restore()
     })
   })
 
   describe('cli', () => {
     it('allow multiple --filterVersion options', async () => {
+      const stub = stubNpmView('99.9.9', { spawn: true })
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -163,6 +138,7 @@ describe('filterVersion', () => {
       const upgraded = JSON.parse(output)
       upgraded.should.have.property('ncu-test-v2')
       upgraded.should.have.property('ncu-test-10')
+      stub.restore()
     })
   })
 })
@@ -170,6 +146,7 @@ describe('filterVersion', () => {
 describe('rejectVersion', () => {
   describe('cli', () => {
     it('allow multiple --rejectVersion options', async () => {
+      const stub = stubNpmView('99.9.9', { spawn: true })
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -185,6 +162,7 @@ describe('rejectVersion', () => {
       const upgraded = JSON.parse(output)
       upgraded.should.not.have.property('ncu-test-v2')
       upgraded.should.not.have.property('ncu-test-10')
+      stub.restore()
     })
   })
 })

@@ -5,6 +5,7 @@ import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import ncu from '../src/'
+import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -93,6 +94,21 @@ const setupSymlinkedPackages = async (
 
   return tempDir
 }
+
+let stub: { restore: () => void }
+before(() => {
+  stub = stubNpmView(
+    {
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '1.1.0',
+      'ncu-test-return-version': '2.0.0',
+    },
+    { spawn: true },
+  )
+})
+after(() => {
+  stub.restore()
+})
 
 describe('--workspaces', function () {
   this.timeout(60000)

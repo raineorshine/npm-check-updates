@@ -5,6 +5,7 @@ import fs from 'fs/promises'
 import path from 'path'
 import spawn from 'spawn-please'
 import ncu from '../src/'
+import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -23,7 +24,7 @@ describe('timeout', function () {
     }).should.eventually.be.rejectedWith('Exceeded global timeout of 1ms')
   })
 
-  it('exit with error when timeout exceeded', async () => {
+  it('exit with error when timeout is exceeded', async () => {
     return spawn(
       'node',
       [bin, '--timeout', '1'],
@@ -32,6 +33,8 @@ describe('timeout', function () {
   })
 
   it('completes successfully with timeout', async () => {
-    return spawn('node', [bin, '--timeout', '100000'], '{ "dependencies": { "express": "1" } }')
+    const stub = stubNpmView('99.9.9', { spawn: true })
+    await spawn('node', [bin, '--timeout', '100000'], '{ "dependencies": { "express": "1" } }')
+    stub.restore()
   })
 })
