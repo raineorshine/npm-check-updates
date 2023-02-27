@@ -21,6 +21,7 @@ describe('--interactive', () => {
         'ncu-test-v2': '2.0.0',
         'ncu-test-tag': '1.1.0',
         'ncu-test-return-version': '2.0.0',
+        'modern-diacritics': '99.9.9',
       },
       { spawn: true },
     )
@@ -106,7 +107,11 @@ describe('--interactive', () => {
     await fs.writeFile(
       pkgFile,
       JSON.stringify({
-        dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
+        dependencies: {
+          'ncu-test-v2': '1.0.0',
+          'ncu-test-return-version': '1.0.0',
+          'ncu-test-tag': '1.0.0',
+        },
       }),
       'utf-8',
     )
@@ -131,6 +136,34 @@ describe('--interactive', () => {
       })
 
       // prompts does not print during injection, so we cannot assert the output in interactive mode
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('with --format repo', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({
+        dependencies: {
+          'modern-diacritics': '^1.0.0',
+        },
+      }),
+      'utf-8',
+    )
+    try {
+      await spawn('npm', ['install'], { cwd: tempDir })
+      const output = await spawn('node', [bin, '--interactive', '--format', 'repo'], {
+        cwd: tempDir,
+        env: {
+          ...process.env,
+          INJECT_PROMPTS: JSON.stringify([['modern-diacritics'], true]),
+        },
+      })
+
+      output.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }

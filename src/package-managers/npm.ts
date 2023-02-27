@@ -286,7 +286,15 @@ export const mockViewMany =
         ? mockReturnedVersions
         : mockReturnedVersions[name]
 
-    const version = (isPackument(partialPackument) ? partialPackument.version : partialPackument) || ''
+    const version = isPackument(partialPackument) ? partialPackument.version : partialPackument
+
+    // if there is no version, hard exit
+    // otherwise getPackageProtected will swallow the error
+    if (!version) {
+      console.error(`No mock version supplied for ${name}`)
+      process.exit(1)
+    }
+
     const time = (isPackument(partialPackument) && partialPackument.time?.[version]) || new Date().toISOString()
     const packument: Packument = {
       name,
@@ -387,7 +395,7 @@ async function viewMany(
   }
 
   // select each field from the result object
-  return keyValueBy(fields, field => {
+  const resultNormalized = keyValueBy(fields, field => {
     let value = result[field]
 
     // index into the result object to get the dist-tag
@@ -401,6 +409,8 @@ async function viewMany(
       [field]: value,
     }
   })
+
+  return resultNormalized
 }
 
 /** Memoize viewMany for --deep performance. */

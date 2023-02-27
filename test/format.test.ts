@@ -1,5 +1,7 @@
 import chai, { expect } from 'chai'
 import chaiString from 'chai-string'
+import fs from 'fs/promises'
+import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import stubNpmView from './helpers/stubNpmView'
@@ -11,8 +13,8 @@ process.env.NCU_TESTS = 'true'
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
-describe('--format time', () => {
-  it('show publish time', async () => {
+describe('format', () => {
+  it('--format time', async () => {
     const timestamp = '2020-04-27T21:48:11.660Z'
     const stub = stubNpmView(
       {
@@ -31,5 +33,26 @@ describe('--format time', () => {
     const output = await spawn('node', [bin, '--format', 'time', '--stdin'], JSON.stringify(packageData))
     expect(output).contains(timestamp)
     stub.restore()
+  })
+
+  it('--format repo', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({
+        dependencies: {
+          'modern-diacritics': '^1.0.0',
+        },
+      }),
+      'utf-8',
+    )
+    try {
+      await spawn('npm', ['install'], { cwd: tempDir })
+      const output = await spawn('node', [bin, '--format', 'repo'], { cwd: tempDir })
+      output.should.include('https://github.com/Mitsunee/modern-diacritics')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
   })
 })
