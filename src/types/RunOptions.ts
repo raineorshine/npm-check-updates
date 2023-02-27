@@ -6,19 +6,19 @@ import { TargetFunction } from './TargetFunction'
 
 /** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
 export interface RunOptions {
-  /** Cache versions to the cache file */
+  /** Cache versions to the cache file. */
   cache?: boolean
 
-  /** Clear the default cache, or the cache file specified by --cacheFile */
+  /** Clear the default cache, or the cache file specified by --cacheFile. */
   cacheClear?: boolean
 
-  /** Cache expiration in minutes (default: 10) */
+  /** Cache expiration in minutes. Only works with --cache. (default: 10) */
   cacheExpiration?: number
 
-  /** Filepath for the cache file (default: "~/.ncu-cache.json") */
+  /** Filepath for the cache file. Only works with --cache. (default: "~/.ncu-cache.json") */
   cacheFile?: string
 
-  /** Force color in terminal */
+  /** Force color in terminal. */
   color?: boolean
 
   /** Max number of concurrent HTTP requests to registry. (default: 8) */

@@ -155,7 +155,7 @@ const extendedHelpFormat = (): string => {
     rows: wrapRows([
       ['group', `Groups packages by major, minor, patch, and major version zero updates.`],
       ['ownerChanged', `Shows if the package owner has changed.`],
-      ['repo', `Infers and displays links to the package's source code repository.`],
+      ['repo', `Infers and displays links to the package's source code repository. Requires packages to be installed.`],
       ['time', 'Shows the publish time of each upgrade.'],
     ]),
     // coerce type until rows is added @types/cli-table
@@ -311,18 +311,18 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
 const cliOptions: CLIOption[] = [
   {
     long: 'cache',
-    description: 'Cache versions to the cache file',
+    description: 'Cache versions to the cache file.',
     type: 'boolean',
   },
   {
     long: 'cacheClear',
-    description: 'Clear the default cache, or the cache file specified by --cacheFile',
+    description: 'Clear the default cache, or the cache file specified by --cacheFile.',
     type: 'boolean',
   },
   {
     long: 'cacheExpiration',
     arg: 'min',
-    description: 'Cache expiration in minutes',
+    description: 'Cache expiration in minutes. Only works with --cache.',
     parse: s => parseInt(s, 10),
     default: 10,
     type: 'number',
@@ -330,14 +330,14 @@ const cliOptions: CLIOption[] = [
   {
     long: 'cacheFile',
     arg: 'path',
-    description: 'Filepath for the cache file',
+    description: 'Filepath for the cache file. Only works with --cache.',
     parse: s => (path.isAbsolute(s) ? s : path.join(process.cwd(), s)),
     default: defaultCacheFile,
     type: 'string',
   },
   {
     long: 'color',
-    description: 'Force color in terminal',
+    description: 'Force color in terminal.',
     type: 'boolean',
   },
   {

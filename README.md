@@ -134,13 +134,14 @@ ncu "/^(?!react-).*$/" # windows
 <!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->
 
 ```text
---cache                    Cache versions to the cache file
+--cache                    Cache versions to the cache file.
 --cacheClear               Clear the default cache, or the cache file
-                           specified by --cacheFile
---cacheExpiration <min>    Cache expiration in minutes (default: 10)
---cacheFile <path>         Filepath for the cache file (default:
-                           "~/.ncu-cache.json")
---color                    Force color in terminal
+                           specified by --cacheFile.
+--cacheExpiration <min>    Cache expiration in minutes. Only works with
+                           --cache. (default: 10)
+--cacheFile <path>         Filepath for the cache file. Only works with
+                           --cache. (default: "~/.ncu-cache.json")
+--color                    Force color in terminal.
 --concurrency <n>          Max number of concurrent HTTP requests to
                            registry. (default: 8)
 --configFileName <s>       Config file name. (default: .ncurc.{json,yml,js})
@@ -324,15 +325,16 @@ Usage:
 
 Modify the output formatting or show additional information. Specify one or more comma-delimited values.
 
-    ┌──────────────┬─────────────────────────────────────────────────────────────────────────┐
-    │        group │ Groups packages by major, minor, patch, and major version zero updates. │
-    ├──────────────┼─────────────────────────────────────────────────────────────────────────┤
-    │ ownerChanged │ Shows if the package owner has changed.                                 │
-    ├──────────────┼─────────────────────────────────────────────────────────────────────────┤
-    │         repo │ Infers and displays links to the package's source code repository.      │
-    ├──────────────┼─────────────────────────────────────────────────────────────────────────┤
-    │         time │ Shows the publish time of each upgrade.                                 │
-    └──────────────┴─────────────────────────────────────────────────────────────────────────┘
+    ┌──────────────┬────────────────────────────────────────────────────────────────────────────────────────────┐
+    │        group │ Groups packages by major, minor, patch, and major version zero updates.                    │
+    ├──────────────┼────────────────────────────────────────────────────────────────────────────────────────────┤
+    │ ownerChanged │ Shows if the package owner has changed.                                                    │
+    ├──────────────┼────────────────────────────────────────────────────────────────────────────────────────────┤
+    │         repo │ Infers and displays links to the package's source code repository. Requires packages to be │
+    │              │ installed.                                                                                 │
+    ├──────────────┼────────────────────────────────────────────────────────────────────────────────────────────┤
+    │         time │ Shows the publish time of each upgrade.                                                    │
+    └──────────────┴────────────────────────────────────────────────────────────────────────────────────────────┘
 
 ## groupFunction
 
