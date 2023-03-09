@@ -60,6 +60,8 @@ function upgradeDependencies(
         // parse npm alias
         if (versionUtil.isNpmAlias(current)) {
           currentParsed = versionUtil.parseNpmAlias(current)![1]
+        }
+        if (versionUtil.isNpmAlias(latest)) {
           latestParsed = versionUtil.parseNpmAlias(latest)![1]
         }
 
@@ -68,7 +70,9 @@ function upgradeDependencies(
           const currentTag = versionUtil.getGithubUrlTag(current)!
           const [currentSemver] = parseRange(currentTag)
           currentParsed = versionUtil.stringify(currentSemver)
+        }
 
+        if (versionUtil.isGithubUrl(latest)) {
           const latestTag = versionUtil.getGithubUrlTag(latest)!
           const [latestSemver] = parseRange(latestTag)
           latestParsed = versionUtil.stringify(latestSemver)
