@@ -134,7 +134,9 @@ ncu "/^(?!react-).*$/" # windows
 <!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->
 
 ```text
---cache                    Cache versions to the cache file.
+--cache                    Cache versions to a local cache file. Default
+                           --cacheFile is ~/.ncu-cache.json and default
+                           --cacheExpiration is 10 minutes.
 --cacheClear               Clear the default cache, or the cache file
                            specified by --cacheFile.
 --cacheExpiration <min>    Cache expiration in minutes. Only works with

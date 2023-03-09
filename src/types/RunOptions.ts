@@ -6,7 +6,7 @@ import { TargetFunction } from './TargetFunction'
 
 /** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
 export interface RunOptions {
-  /** Cache versions to the cache file. */
+  /** Cache versions to a local cache file. Default --cacheFile is ~/.ncu-cache.json and default --cacheExpiration is 10 minutes. */
   cache?: boolean
 
   /** Clear the default cache, or the cache file specified by --cacheFile. */

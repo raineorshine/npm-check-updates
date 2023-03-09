@@ -100,7 +100,7 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
       const cacheCount = Object.keys(cacheUpdates).length
       if (cacheCount === 0) return
 
-      print(options, `\nUsing ${cacheCount} cached package versions`, 'warn')
+      print(options, `\nUsing ${cacheCount} cached package version${cacheCount > 1 ? 's' : ''}`, 'warn')
       print(options, cacheUpdates, 'verbose')
     },
   } as Cacher

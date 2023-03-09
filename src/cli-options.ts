@@ -311,7 +311,7 @@ As a comparison: without using the --peer option, ncu will suggest the latest ve
 const cliOptions: CLIOption[] = [
   {
     long: 'cache',
-    description: 'Cache versions to the cache file.',
+    description: `Cache versions to a local cache file. Default --cacheFile is ${defaultCacheFile} and default --cacheExpiration is 10 minutes.`,
     type: 'boolean',
   },
   {
