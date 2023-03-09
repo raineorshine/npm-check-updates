@@ -139,6 +139,14 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     programError(options, chalk.red(`Cannot specify both --deep and --workspace${options.workspaces ? 's' : ''}.`))
   }
 
+  // disallow --workspace(s) and --doctor
+  else if (options.doctor && (options.workspace?.length || options.workspaces)) {
+    programError(
+      options,
+      chalk.red(`Doctor mode is not currently supported with --workspace${options.workspaces ? 's' : ''}.`),
+    )
+  }
+
   // disallow incorrect or missing registry path when selecting staticRegistry as packageManager
   if (options.packageManager === 'staticRegistry') {
     if (options.registry === undefined || options.registry === null) {
