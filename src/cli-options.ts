@@ -351,7 +351,7 @@ const cliOptions: CLIOption[] = [
   {
     long: 'configFileName',
     arg: 's',
-    description: 'Config file name. (default: .ncurc.{json,yml,js})',
+    description: 'Config file name. (default: .ncurc.{json,yml,js,cjs})',
     type: 'string',
   },
   {

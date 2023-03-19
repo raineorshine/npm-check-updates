@@ -146,7 +146,8 @@ ncu "/^(?!react-).*$/" # windows
 --color                    Force color in terminal.
 --concurrency <n>          Max number of concurrent HTTP requests to
                            registry. (default: 8)
---configFileName <s>       Config file name. (default: .ncurc.{json,yml,js})
+--configFileName <s>       Config file name. (default:
+                           .ncurc.{json,yml,js,cjs})
 --configFilePath <path>    Directory of .ncurc config file. (default:
                            directory of `packageFile`)
 --cwd <path>               Working directory in which npm will be executed.

@@ -24,7 +24,7 @@ export interface RunOptions {
   /** Max number of concurrent HTTP requests to registry. (default: 8) */
   concurrency?: number
 
-  /** Config file name. (default: .ncurc.{json,yml,js}) */
+  /** Config file name. (default: .ncurc.{json,yml,js,cjs}) */
   configFileName?: string
 
   /** Directory of .ncurc config file. (default: directory of `packageFile`) */
