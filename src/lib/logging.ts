@@ -1,7 +1,7 @@
 /**
  * Loggin functions.
  */
-import Table from 'cli-table'
+import Table from 'cli-table3'
 import { IgnoredUpgrade } from '../types/IgnoredUpgrade'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -93,10 +93,10 @@ function renderDependencyTable(rows: string[][]) {
       'right-mid': '',
       middle: '',
     },
-    rows,
-    // TODO: Submit a PR for rows in @types/cli-table
-    // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
-  } as any)
+  })
+
+  // eslint-disable-next-line fp/no-mutating-methods
+  table.push(...rows)
 
   // when border is removed, whitespace remains
   // trim the end of each line to remove whitespace
@@ -243,10 +243,10 @@ function printErrors(options: Options, errors?: Index<string>) {
         'right-mid': '',
         middle: '',
       },
-      rows: Object.entries(errors!).map(([dep, error]) => [dep, chalk.yellow(error)]),
-      // coerce type until rows is added @types/cli-table
-      // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
-    } as any)
+    })
+
+    // eslint-disable-next-line fp/no-mutating-methods
+    errorTable.push(...Object.entries(errors).map(([dep, error]) => [dep, chalk.yellow(error)]))
 
     print(options, '\n' + errorTable.toString())
   }

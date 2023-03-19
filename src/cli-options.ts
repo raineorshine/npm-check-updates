@@ -1,4 +1,4 @@
-import Table from 'cli-table'
+import Table from 'cli-table3'
 import sortBy from 'lodash/sortBy'
 import path from 'path'
 import { defaultCacheFile } from './lib/cache'
@@ -150,17 +150,15 @@ Example:
 const extendedHelpFormat = (): string => {
   const header =
     'Modify the output formatting or show additional information. Specify one or more comma-delimited values.'
-  const table = new Table({
-    colAligns: ['right', 'left'],
-    rows: wrapRows([
+  const table = new Table({ colAligns: ['right', 'left'] })
+  table.push(
+    ...wrapRows([
       ['group', `Groups packages by major, minor, patch, and major version zero updates.`],
       ['ownerChanged', `Shows if the package owner has changed.`],
       ['repo', `Infers and displays links to the package's source code repository. Requires packages to be installed.`],
       ['time', 'Shows the publish time of each upgrade.'],
     ]),
-    // coerce type until rows is added @types/cli-table
-    // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
-  } as any)
+  )
 
   return `${header}\n\n${padLeft(table.toString(), 4)}
 `
@@ -193,9 +191,9 @@ const extendedHelpGroup = (): string => {
 /** Extended help for the --target option. */
 const extendedHelpTarget = (): string => {
   const header = 'Determines the version to upgrade to. (default: "latest")'
-  const table = new Table({
-    colAligns: ['right', 'left'],
-    rows: wrapRows([
+  const table = new Table({ colAligns: ['right', 'left'] })
+  table.push(
+    ...wrapRows([
       [
         'greatest',
         `Upgrade to the highest version number published, regardless of release date or tag. Includes prereleases.`,
@@ -209,9 +207,7 @@ const extendedHelpTarget = (): string => {
       ['patch', `Upgrade to the highest patch version without bumping the minor or major versions.`],
       ['@[tag]', `Upgrade to the version published to a specific tag, e.g. 'next' or 'beta'.`],
     ]),
-    // coerce type until rows is added @types/cli-table
-    // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
-  } as any)
+  )
 
   return `${header}
 
@@ -239,9 +235,9 @@ You can also specify a custom function in your .ncurc.js file, or when importing
 /** Extended help for the --format option. */
 const extendedHelpPackageManager = (): string => {
   const header = 'Specifies the package manager to use when looking up version numbers.'
-  const table = new Table({
-    colAligns: ['right', 'left'],
-    rows: wrapRows([
+  const table = new Table({ colAligns: ['right', 'left'] })
+  table.push(
+    ...wrapRows([
       ['npm', `System-installed npm. Default.`],
       ['yarn', `System-installed yarn. Automatically used if yarn.lock is present.`],
       ['pnpm', `System-installed pnpm. Automatically used if pnpm-lock.yaml is present.`],
@@ -262,9 +258,7 @@ my-registry.json:
       `,
       ],
     ]),
-    // coerce type until rows is added @types/cli-table
-    // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/cli-table/index.d.ts
-  } as any)
+  )
 
   return `${header}\n\n${padLeft(table.toString(), 4)}
 `
