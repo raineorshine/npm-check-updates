@@ -232,79 +232,79 @@ describe('bin', async function () {
     stripAnsi(output)!.should.not.include('No package versions were returned.')
     stub.restore()
   })
-})
 
-describe('embedded versions', () => {
-  it('strip url from Github url in "to" output', async () => {
-    // use dynamic import for ESM module
-    const { default: stripAnsi } = await import('strip-ansi')
-    const dependencies = {
-      'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0',
-    }
-    const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
-    stripAnsi(output)
-      .trim()
-      .should.equal('ncu-test-v2  https://github.com/raineorshine/ncu-test-v2.git#v1.0.0  →  v2.0.0')
+  describe('embedded versions', () => {
+    it('strip url from Github url in "to" output', async () => {
+      // use dynamic import for ESM module
+      const { default: stripAnsi } = await import('strip-ansi')
+      const dependencies = {
+        'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0',
+      }
+      const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
+      stripAnsi(output)
+        .trim()
+        .should.equal('ncu-test-v2  https://github.com/raineorshine/ncu-test-v2.git#v1.0.0  →  v2.0.0')
+    })
+
+    it('strip prefix from npm alias in "to" output', async () => {
+      const stub = stubNpmView('99.9.9', { spawn: true })
+      // use dynamic import for ESM module
+      const { default: stripAnsi } = await import('strip-ansi')
+      const dependencies = {
+        request: 'npm:ncu-test-v2@1.0.0',
+      }
+      const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
+      stripAnsi(output).trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  99.9.9')
+      stub.restore()
+    })
   })
 
-  it('strip prefix from npm alias in "to" output', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
-    // use dynamic import for ESM module
-    const { default: stripAnsi } = await import('strip-ansi')
-    const dependencies = {
-      request: 'npm:ncu-test-v2@1.0.0',
-    }
-    const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
-    stripAnsi(output).trim().should.equal('request  npm:ncu-test-v2@1.0.0  →  99.9.9')
-    stub.restore()
-  })
-})
+  describe('option-specific help', () => {
+    it('long option', async () => {
+      const output = await spawn('node', [bin, '--help', '--filter'])
+      output.trim().should.match(/^Usage:\s+ncu --filter/)
+    })
 
-describe('option-specific help', () => {
-  it('long option', async () => {
-    const output = await spawn('node', [bin, '--help', '--filter'])
-    output.trim().should.match(/^Usage:\s+ncu --filter/)
-  })
+    it('long option without "--" prefix', async () => {
+      const output = await spawn('node', [bin, '--help', '-f'])
+      output.trim().should.match(/^Usage:\s+ncu --filter/)
+    })
 
-  it('long option without "--" prefix', async () => {
-    const output = await spawn('node', [bin, '--help', '-f'])
-    output.trim().should.match(/^Usage:\s+ncu --filter/)
-  })
+    it('short option', async () => {
+      const output = await spawn('node', [bin, '--help', 'filter'])
+      output.trim().should.match(/^Usage:\s+ncu --filter/)
+    })
 
-  it('short option', async () => {
-    const output = await spawn('node', [bin, '--help', 'filter'])
-    output.trim().should.match(/^Usage:\s+ncu --filter/)
-  })
+    it('short option without "-" prefix', async () => {
+      const output = await spawn('node', [bin, '--help', 'f'])
+      output.trim().should.match(/^Usage:\s+ncu --filter/)
+    })
 
-  it('short option without "-" prefix', async () => {
-    const output = await spawn('node', [bin, '--help', 'f'])
-    output.trim().should.match(/^Usage:\s+ncu --filter/)
-  })
+    it('option with default', async () => {
+      const output = await spawn('node', [bin, '--help', '--concurrency'])
+      output.trim().should.containIgnoreCase('Default:')
+    })
 
-  it('option with default', async () => {
-    const output = await spawn('node', [bin, '--help', '--concurrency'])
-    output.trim().should.containIgnoreCase('Default:')
-  })
+    it('option with extended help', async () => {
+      const output = await spawn('node', [bin, '--help', '--target'])
+      output.trim().should.containIgnoreCase('Upgrade to the highest version number')
 
-  it('option with extended help', async () => {
-    const output = await spawn('node', [bin, '--help', '--target'])
-    output.trim().should.containIgnoreCase('Upgrade to the highest version number')
+      // run extended help on other options for test coverage
+      await spawn('node', [bin, '--help', 'doctor'])
+      await spawn('node', [bin, '--help', 'format'])
+      await spawn('node', [bin, '--help', 'group'])
+      await spawn('node', [bin, '--help', 'packageManager'])
+      await spawn('node', [bin, '--help', 'peer'])
+    })
 
-    // run extended help on other options for test coverage
-    await spawn('node', [bin, '--help', 'doctor'])
-    await spawn('node', [bin, '--help', 'format'])
-    await spawn('node', [bin, '--help', 'group'])
-    await spawn('node', [bin, '--help', 'packageManager'])
-    await spawn('node', [bin, '--help', 'peer'])
-  })
+    it('unknown option', async () => {
+      const output = await spawn('node', [bin, '--help', '--foo'])
+      output.trim().should.containIgnoreCase('Unknown option')
+    })
 
-  it('unknown option', async () => {
-    const output = await spawn('node', [bin, '--help', '--foo'])
-    output.trim().should.containIgnoreCase('Unknown option')
-  })
-
-  it('special --help --help', async () => {
-    const output = await spawn('node', [bin, '--help', '--help'])
-    output.trim().should.not.include('Usage')
+    it('special --help --help', async () => {
+      const output = await spawn('node', [bin, '--help', '--help'])
+      output.trim().should.not.include('Usage')
+    })
   })
 })
