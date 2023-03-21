@@ -64,11 +64,15 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   }
 
   // consolidate loglevel
-  const loglevel = options.silent ? 'silent' : options.verbose ? 'verbose' : options.loglevel
+  let loglevel = options.silent ? 'silent' : options.verbose ? 'verbose' : options.loglevel
 
   const json = Object.keys(options)
     .filter(option => option.startsWith('json'))
     .some(propertyOf(options))
+
+  if (options.format?.includes('shell') || options.format?.includes('lines') || options.format?.includes('comma')) {
+    loglevel = 'silent';
+  }
 
   if (!json && loglevel !== 'silent' && options.rcConfigPath && !options.doctor) {
     print(options, `Using config file ${options.rcConfigPath}`)
