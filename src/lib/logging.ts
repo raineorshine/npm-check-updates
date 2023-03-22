@@ -74,7 +74,11 @@ export function printJson(options: Options, object: any) {
 
 /** Print JSON object keys as string joined by character. */
 export function printSimpleJoinedString(object: any, join: string) {
-  console.log(Object.keys(object).map(pkg => pkg + '@' + object[pkg]).join(join));
+  console.log(
+    Object.keys(object)
+      .map(pkg => pkg + '@' + object[pkg])
+      .join(join),
+  )
 }
 
 /** Create a table with the appropriate columns and alignment to render dependency upgrades. */
@@ -212,12 +216,8 @@ export async function printUpgradesTable(
       )
     }
   } else {
-    if (options.format?.includes('shell')) {
-      printSimpleJoinedString(upgraded, ' ');
-    } else if (options.format?.includes('lines')) {
-      printSimpleJoinedString(upgraded, "\n");
-    } else if (options.format?.includes('comma')) {
-      printSimpleJoinedString(upgraded, ',');
+    if (options.format?.includes('lines')) {
+      printSimpleJoinedString(upgraded, '\n')
     } else {
       print(
         options,
