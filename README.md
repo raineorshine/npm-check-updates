@@ -339,7 +339,7 @@ Modify the output formatting or show additional information. Specify one or more
     ├──────────────┼────────────────────────────────────────────────────────────────────────────────────────────┤
     │         time │ Shows the publish time of each upgrade.                                                    │
     ├──────────────┼────────────────────────────────────────────────────────────────────────────────────────────┤
-    │        lines │ Shows only packages name@version in unix style.                                            │
+    │        lines │ Prints name@version on separate lines. Useful for piping to npm install.                   │
     └──────────────┴────────────────────────────────────────────────────────────────────────────────────────────┘
 
 ## groupFunction

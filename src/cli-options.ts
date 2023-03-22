@@ -157,7 +157,7 @@ const extendedHelpFormat = (): string => {
       ['ownerChanged', `Shows if the package owner has changed.`],
       ['repo', `Infers and displays links to the package's source code repository. Requires packages to be installed.`],
       ['time', 'Shows the publish time of each upgrade.'],
-      ['lines', 'Shows only packages name@version in unix style.'],
+      ['lines', 'Prints name@version on separate lines. Useful for piping to npm install.'],
     ]),
   )
 

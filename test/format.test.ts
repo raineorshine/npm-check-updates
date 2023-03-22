@@ -57,6 +57,13 @@ describe('format', () => {
   })
 
   it('--format lines', async () => {
+    const stub = stubNpmView(
+      {
+        'ncu-test-v2': '2.0.0',
+        'ncu-test-tag': '1.1.0',
+      },
+      { spawn: true },
+    )
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -75,6 +82,7 @@ describe('format', () => {
       output.should.equals('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
+      stub.restore()
     }
   })
 })
