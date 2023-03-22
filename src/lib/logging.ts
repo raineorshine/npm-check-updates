@@ -72,6 +72,15 @@ export function printJson(options: Options, object: any) {
   }
 }
 
+/** Print JSON object keys as string joined by character. */
+export function printSimpleJoinedString(object: any, join: string) {
+  console.log(
+    Object.keys(object)
+      .map(pkg => pkg + '@' + object[pkg])
+      .join(join),
+  )
+}
+
 /** Create a table with the appropriate columns and alignment to render dependency upgrades. */
 function renderDependencyTable(rows: string[][]) {
   const table = new Table({
@@ -207,16 +216,20 @@ export async function printUpgradesTable(
       )
     }
   } else {
-    print(
-      options,
-      await toDependencyTable({
-        from: current,
-        to: upgraded,
-        ownersChangedDeps,
-        time,
-        format: options.format,
-      }),
-    )
+    if (options.format?.includes('lines')) {
+      printSimpleJoinedString(upgraded, '\n')
+    } else {
+      print(
+        options,
+        await toDependencyTable({
+          from: current,
+          to: upgraded,
+          ownersChangedDeps,
+          time,
+          format: options.format,
+        }),
+      )
+    }
   }
 }
 

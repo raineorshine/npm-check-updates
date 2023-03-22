@@ -157,6 +157,7 @@ const extendedHelpFormat = (): string => {
       ['ownerChanged', `Shows if the package owner has changed.`],
       ['repo', `Infers and displays links to the package's source code repository. Requires packages to be installed.`],
       ['time', 'Shows the publish time of each upgrade.'],
+      ['lines', 'Prints name@version on separate lines. Useful for piping to npm install.'],
     ]),
   )
 
@@ -434,11 +435,11 @@ const cliOptions: CLIOption[] = [
     long: 'format',
     arg: 'value',
     description:
-      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo.',
+      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines.',
     parse: value => (typeof value === 'string' ? value.split(',') : value),
     default: [],
     type: 'string[]',
-    choices: ['group', 'ownerChanged', 'repo', 'time'],
+    choices: ['group', 'ownerChanged', 'repo', 'time', 'lines'],
     help: extendedHelpFormat,
   },
   {

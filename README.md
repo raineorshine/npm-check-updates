@@ -179,8 +179,9 @@ ncu "/^(?!react-).*$/" # windows
                            predicate function.
 --format <value>           Modify the output formatting or show additional
                            information. Specify one or more comma-delimited
-                           values: group, ownerChanged, repo. Run "ncu --help
-                           --format" for details. (default: [])
+                           values: group, ownerChanged, repo, time, lines.
+                           Run "ncu --help --format" for details. (default:
+                           [])
 -g, --global               Check global packages instead of in the current
                            project.
 --groupFunction <fn>       Customize how packages are divided into groups
@@ -337,6 +338,8 @@ Modify the output formatting or show additional information. Specify one or more
     │              │ installed.                                                                                 │
     ├──────────────┼────────────────────────────────────────────────────────────────────────────────────────────┤
     │         time │ Shows the publish time of each upgrade.                                                    │
+    ├──────────────┼────────────────────────────────────────────────────────────────────────────────────────────┤
+    │        lines │ Prints name@version on separate lines. Useful for piping to npm install.                   │
     └──────────────┴────────────────────────────────────────────────────────────────────────────────────────────┘
 
 ## groupFunction

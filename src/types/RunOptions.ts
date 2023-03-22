@@ -63,7 +63,7 @@ export interface RunOptions {
   /** Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. */
   filterVersion?: string | string[] | RegExp | RegExp[] | FilterFunction
 
-  /** Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo. Run "ncu --help --format" for details. */
+  /** Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines. Run "ncu --help --format" for details. */
   format?: string[]
 
   /** Check global packages instead of in the current project. */

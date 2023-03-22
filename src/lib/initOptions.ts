@@ -64,7 +64,8 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   }
 
   // consolidate loglevel
-  const loglevel = options.silent ? 'silent' : options.verbose ? 'verbose' : options.loglevel
+  const loglevel =
+    options.silent || options.format?.includes('lines') ? 'silent' : options.verbose ? 'verbose' : options.loglevel
 
   const json = Object.keys(options)
     .filter(option => option.startsWith('json'))

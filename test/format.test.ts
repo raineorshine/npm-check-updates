@@ -55,4 +55,34 @@ describe('format', () => {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
+
+  it('--format lines', async () => {
+    const stub = stubNpmView(
+      {
+        'ncu-test-v2': '2.0.0',
+        'ncu-test-tag': '1.1.0',
+      },
+      { spawn: true },
+    )
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({
+        dependencies: {
+          'ncu-test-v2': '^1.0.0',
+          'ncu-test-tag': '^1.0.0',
+        },
+      }),
+      'utf-8',
+    )
+    try {
+      await spawn('npm', ['install'], { cwd: tempDir })
+      const output = await spawn('node', [bin, '--format', 'lines'], { cwd: tempDir })
+      output.should.equals('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+      stub.restore()
+    }
+  })
 })
