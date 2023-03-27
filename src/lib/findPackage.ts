@@ -15,10 +15,12 @@ import programError from './programError'
  * --packageFile flag
  * --stdin
  * --findUp
- *
- * @returns Promise<PkgInfo>
  */
-async function findPackage(options: Options) {
+async function findPackage(options: Options): Promise<{
+  pkgData: string | null
+  pkgFile: string | null
+  pkgPath: string | null
+}> {
   let pkgData
   let pkgFile = null
   const pkgPath = options.packageFile || 'package.json'
@@ -78,7 +80,13 @@ async function findPackage(options: Options) {
     pkgData = getPackageDataFromFile(pkgFile, pkgPath)
   }
 
-  return Promise.all([pkgData, pkgFile])
+  const pkgDataResolved = await pkgData
+
+  return {
+    pkgData: pkgDataResolved,
+    pkgFile: pkgFile || null,
+    pkgPath,
+  }
 }
 
 export default findPackage

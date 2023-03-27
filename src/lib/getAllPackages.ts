@@ -23,10 +23,10 @@ async function getWorkspacePackageInfos(
   cwd: string,
 ): Promise<[PackageInfo[], string[]]> {
   // use silent, otherwise there will be a duplicate "Checking" message
-  const [pkgData] = await findPackage({ ...options, packageFile: rootPackageFile, loglevel: 'silent' })
+  const { pkgData } = await findPackage({ ...options, packageFile: rootPackageFile, loglevel: 'silent' })
   const rootPkg: PackageFile = typeof pkgData === 'string' ? JSON.parse(pkgData) : pkgData
 
-  const workspaces = Array.isArray(rootPkg.workspaces) ? rootPkg.workspaces : rootPkg.workspaces?.packages
+  const workspaces = Array.isArray(rootPkg.workspaces) ? rootPkg.workspaces : rootPkg.workspaces?.packages // || (await read)
 
   if (!workspaces) {
     programError(

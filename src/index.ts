@@ -183,7 +183,7 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
         packageFile: packageInfo.filepath,
         workspacePackages,
       }
-      const [pkgData, pkgFile] = await findPackage(pkgOptions)
+      const { pkgData, pkgFile } = await findPackage(pkgOptions)
       return {
         ...packages,
         // index by relative path if cwd was specified
@@ -203,7 +203,7 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
     if (packageInfos.length === 1 && packageInfos[0].filepath !== (options.packageFile || 'package.json')) {
       options.packageFile = packageInfos[0].filepath
     }
-    const [pkgData, pkgFile] = await findPackage(options)
+    const { pkgData, pkgFile } = await findPackage(options)
     analysis = await runLocal(options, pkgData, pkgFile)
   }
   clearTimeout(timeout)
