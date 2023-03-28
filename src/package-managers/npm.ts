@@ -31,7 +31,7 @@ import { VersionSpec } from '../types/VersionSpec'
 import { filterPredicate, satisfiesNodeEngine } from './filters'
 
 /** Normalizes the keys of an npm config for pacote. */
-const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
+export const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
   const npmConfigToPacoteMap = {
     cafile: (path: string): undefined | { ca: string[] } => {
       // load-cafile, based on github.com/npm/cli/blob/40c1b0f/lib/config/load-cafile.js
