@@ -1,6 +1,8 @@
+import fs from 'fs/promises'
 import globby from 'globby'
 import path from 'path'
 import untildify from 'untildify'
+import yaml from 'yaml'
 import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { PackageInfo } from '../types/PackageInfo'
@@ -8,6 +10,18 @@ import chalk from './chalk'
 import findPackage from './findPackage'
 import loadPackageInfoFromFile from './loadPackageInfoFromFile'
 import programError from './programError'
+
+/** Reads, parses, and resolves workspaces from a pnpm-workspace file at the same path as the package file. */
+const readPnpmWorkspaces = async (pkgPath: string): Promise<string[] | { packages: string[] } | null> => {
+  const pnpmWorkspacesPath = path.join(path.dirname(pkgPath), 'pnpm-workspace.yaml')
+  let pnpmWorkspaceFile: string
+  try {
+    pnpmWorkspaceFile = await fs.readFile(pnpmWorkspacesPath, 'utf-8')
+  } catch (e) {
+    return null
+  }
+  return yaml.parse(pnpmWorkspaceFile)
+}
 
 /**
  * Gets all workspace sub-package information
@@ -23,10 +37,11 @@ async function getWorkspacePackageInfos(
   cwd: string,
 ): Promise<[PackageInfo[], string[]]> {
   // use silent, otherwise there will be a duplicate "Checking" message
-  const { pkgData } = await findPackage({ ...options, packageFile: rootPackageFile, loglevel: 'silent' })
+  const { pkgData, pkgPath } = await findPackage({ ...options, packageFile: rootPackageFile, loglevel: 'silent' })
   const rootPkg: PackageFile = typeof pkgData === 'string' ? JSON.parse(pkgData) : pkgData
 
-  const workspaces = Array.isArray(rootPkg.workspaces) ? rootPkg.workspaces : rootPkg.workspaces?.packages // || (await read)
+  const workspacesObject = rootPkg.workspaces || (await readPnpmWorkspaces(pkgPath || ''))
+  const workspaces = Array.isArray(workspacesObject) ? workspacesObject : workspacesObject?.packages
 
   if (!workspaces) {
     programError(

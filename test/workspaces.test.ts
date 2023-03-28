@@ -24,7 +24,15 @@ const bin = path.join(__dirname, '../build/src/bin/cli.js')
  * |  - b/
  * |    - package.json
  */
-const setup = async (workspaces: string[] | { packages: string[] } = ['packages/**']) => {
+const setup = async (
+  workspaces: string[] | { packages: string[] } = ['packages/**'],
+  {
+    pnpm,
+  }: {
+    // add workspaces to a pnpm-workspace.yaml file instead of the package file
+    pnpm?: boolean
+  } = {},
+) => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
   await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
 
@@ -32,7 +40,7 @@ const setup = async (workspaces: string[] | { packages: string[] } = ['packages/
     dependencies: {
       'ncu-test-v2': '1.0.0',
     },
-    workspaces,
+    ...(!pnpm ? { workspaces } : null),
   })
 
   const pkgDataA = JSON.stringify({
@@ -49,6 +57,15 @@ const setup = async (workspaces: string[] | { packages: string[] } = ['packages/
 
   // write root package file
   await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+  if (pnpm) {
+    await fs.writeFile(
+      path.join(tempDir, 'pnpm-workspace.yaml'),
+      `packages:\n${((workspaces as { packages: string[] }).packages || workspaces)
+        .map(glob => `  - '${glob}'`)
+        .join('\n')}`,
+      'utf-8',
+    )
+  }
 
   // write workspace package files
   await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
@@ -230,6 +247,20 @@ describe('--workspaces', function () {
           'ncu-test-v2': '2.0.0',
         },
       })
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('read packages from pnpm-workspaces.yaml', async () => {
+    const tempDir = await setup(['packages/**'], { pnpm: true })
+    try {
+      const output = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir }).then(JSON.parse)
+      output.should.not.have.property('package.json')
+      output.should.have.property('packages/a/package.json')
+      output.should.have.property('packages/b/package.json')
+      output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+      output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
