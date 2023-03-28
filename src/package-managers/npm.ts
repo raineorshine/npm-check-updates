@@ -134,7 +134,7 @@ export const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
 
   // needed until pacote supports full npm config compatibility
   // See: https://github.com/zkat/pacote/issues/156
-  const config: NpmConfig = keyValueBy(npmConfig, (key: string, value: string | boolean | ((path: string) => any)) => {
+  const config: NpmConfig = keyValueBy(npmConfig, (key: string, value: NpmConfig[keyof NpmConfig]) => {
     // replace env ${VARS} in strings with the process.env value
     const normalizedValue =
       typeof value !== 'string'
@@ -147,14 +147,14 @@ export const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
         : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
 
     // normalize the key for pacote
-    const { [key]: pacoteKey }: Index<string | ((path: string) => any)> = npmConfigToPacoteMap
+    const { [key]: pacoteKey }: Index<NpmConfig[keyof NpmConfig]> = npmConfigToPacoteMap
 
     return typeof pacoteKey === 'string'
       ? // key is mapped to a string
         { [pacoteKey]: normalizedValue }
       : // key is mapped to a function
       typeof pacoteKey === 'function'
-      ? { ...pacoteKey(normalizedValue.toString()) }
+      ? { ...(pacoteKey(normalizedValue.toString()) as any) }
       : // otherwise assign the camel-cased key
         { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
   })
@@ -385,7 +385,7 @@ async function viewMany(
 
   let result: any
   try {
-    result = await pacote.packument(packageName, npmOptions)
+    result = (await pacote.packument(packageName, npmOptions)) as any
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
       return viewMany(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
@@ -582,9 +582,12 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
       rejectOnError: false,
     },
   )
-  const dependencies: Index<any> = parseJson<{ dependencies: Index<any> }>(result, {
+  const dependencies = parseJson<{
+    dependencies: Index<{ version?: Version; required?: { version: Version } }>
+  }>(result, {
     command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --location=global' : ''}`,
   }).dependencies
+
   return keyValueBy(dependencies, (name, info) => ({
     // unmet peer dependencies have a different structure
     [name]: info.version || info.required?.version,

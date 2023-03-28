@@ -14,14 +14,15 @@ import { keyValueBy } from '../lib/keyValueBy'
 import { print } from '../lib/logging'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
+import { NpmConfig } from '../types/NpmConfig'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { SpawnOptions } from '../types/SpawnOptions'
-import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
 import {
   distTag as npmDistTag,
   greatest as npmGreatest,
+  latest as npmLatest,
   minor as npmMinor,
   newest as npmNewest,
   patch as npmPatch,
@@ -46,7 +47,7 @@ interface YarnConfig {
 }
 
 /** Safely interpolates a string as a template string. */
-const interpolate = (s: string, data: any): string =>
+const interpolate = (s: string, data: Index<string | undefined>): string =>
   s.replace(
     /\$\{([^:-]+)(?:(:)?-([^}]*))?\}/g,
     (match, key, name, fallbackOnEmpty, fallback) => data[key] || (fallbackOnEmpty ? fallback : ''),
@@ -104,7 +105,7 @@ export async function getPathToLookForYarnrc(
 // If private registry auth is specified in npmScopes in .yarnrc.yml, read them in and convert them to npm config variables.
 // Define as a memoized function to efficiently call existsSync and readFileSync only once, and only if yarn is being used.
 // https://github.com/raineorshine/npm-check-updates/issues/1036
-const npmConfigFromYarn = memoize(async (options: Options): Promise<Index<string | boolean>> => {
+const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> => {
   const yarnrcLocalPath = await getPathToLookForYarnrc(options)
   const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
   const yarnrcLocalExists = typeof yarnrcLocalPath === 'string' && (await exists(yarnrcLocalPath))
@@ -272,68 +273,17 @@ export const list = async (options: Options = {}, spawnOptions?: SpawnOptions): 
   return keyValues
 }
 
-/**
- * Fetches the highest version number, regardless of tag or publish time.
- *
- * @param packageName
- * @param currentVersion
- * @param options
- * @returns
- */
-export const greatest: GetVersion = async (packageName, currentVersion, options: Options = {}) =>
-  npmGreatest(packageName, currentVersion, options, await npmConfigFromYarn(options))
+/** Wraps a GetVersion function and passes the yarn config. */
+const withNpmConfigFromYarn =
+  (getVersion: GetVersion): GetVersion =>
+  async (packageName, currentVersion, options = {}) =>
+    getVersion(packageName, currentVersion, options, await npmConfigFromYarn(options))
 
-/**
- * @param packageName
- * @param currentVersion
- * @param options
- * @returns
- */
-export const distTag: GetVersion = async (packageName, currentVersion, options: Options = {}) =>
-  npmDistTag(packageName, currentVersion, options, await npmConfigFromYarn(options))
-
-/**
- * Fetches the version published to the latest tag.
- *
- * @param packageName
- * @param currentVersion
- * @param options
- * @returns
- */
-export const latest: GetVersion = async (packageName: string, currentVersion: Version, options: Options = {}) =>
-  distTag(packageName, currentVersion, { ...options, distTag: 'latest' })
-
-/**
- * Fetches the most recently published version, regardless of version number.
- *
- * @param packageName
- * @param currentVersion
- * @param options
- * @returns
- */
-export const newest: GetVersion = async (packageName: string, currentVersion, options = {}) =>
-  npmNewest(packageName, currentVersion, options, await npmConfigFromYarn(options))
-
-/**
- * Fetches the highest version with the same major version as currentVersion.
- *
- * @param packageName
- * @param currentVersion
- * @param options
- * @returns
- */
-export const minor: GetVersion = async (packageName, currentVersion, options = {}) =>
-  npmMinor(packageName, currentVersion, options, await npmConfigFromYarn(options))
-
-/**
- * Fetches the highest version with the same minor and major version as currentVersion.
- *
- * @param packageName
- * @param currentVersion
- * @param options
- * @returns
- */
-export const patch: GetVersion = async (packageName, currentVersion, options = {}) =>
-  npmPatch(packageName, currentVersion, options, await npmConfigFromYarn(options))
+export const distTag = withNpmConfigFromYarn(npmDistTag)
+export const greatest = withNpmConfigFromYarn(npmGreatest)
+export const latest = withNpmConfigFromYarn(npmLatest)
+export const minor = withNpmConfigFromYarn(npmMinor)
+export const newest = withNpmConfigFromYarn(npmNewest)
+export const patch = withNpmConfigFromYarn(npmPatch)
 
 export default spawnYarn
