@@ -68,14 +68,17 @@ async function findPackage(options: Options): Promise<{
     const data = stdinData.trim().length > 0 ? stdinData : null
 
     // if no stdin content fall back to searching for package.json from pwd and up to root
-    pkgFile = data || !pkgPath ? null : findUp.sync(pkgPath)
+    pkgFile = data || !pkgPath ? null : await findUp(pkgPath)
     pkgData = data || getPackageDataFromFile(await pkgFile, pkgPath)
   } else {
     // find the closest package starting from the current working directory and going up to the root
     pkgFile = pkgPath
-      ? findUp.sync(!options.packageFile && options.packageManager === 'deno' ? ['deno.json', 'deno.jsonc'] : pkgPath, {
-          cwd: options.cwd || process.cwd(),
-        })
+      ? await findUp(
+          !options.packageFile && options.packageManager === 'deno' ? ['deno.json', 'deno.jsonc'] : pkgPath,
+          {
+            cwd: options.cwd || process.cwd(),
+          },
+        )
       : null
     pkgData = getPackageDataFromFile(pkgFile, pkgPath)
   }
