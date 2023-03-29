@@ -88,18 +88,22 @@ ${chalk.dim.underline(
   program
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
+    // See: boolean optional arg below
+    .configureHelp({ optionTerm: option => option.flags.replace('[bool]', '') })
 
   // add cli options
-  cliOptions.forEach(({ long, short, arg, description, default: defaultValue, help, parse }) =>
+  cliOptions.forEach(({ long, short, arg, description, default: defaultValue, help, parse, type }) => {
     // handle 3rd/4th argument polymorphism
     program.option(
-      `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : ''}`,
+      // optional [bool] arg allows boolean options to be set to false, while still allowing unary functionality
+      // [bool] is stripped from the help text in configureHelp
+      `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : type === 'boolean' ? ' [bool]' : ''}`,
       // point to help in description if extended help text is available
       `${description}${help ? ` Run "ncu --help --${long}" for details.` : ''}`,
-      parse || defaultValue,
+      parse || (type === 'boolean' ? s => s !== 'false' : defaultValue),
       parse ? defaultValue : undefined,
-    ),
-  )
+    )
+  })
 
   // set version option at the end
   program.version(pkg.version)
