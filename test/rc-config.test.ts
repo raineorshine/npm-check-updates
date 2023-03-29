@@ -23,12 +23,12 @@ describe('rc-config', () => {
   it('print rcConfigPath when there is a non-empty rc config file', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
-    await fs.writeFile(tempConfigFile, '{"filter": "ncu-test-v2"}', 'utf-8')
+    await fs.writeFile(tempConfigFile, JSON.stringify({ filter: 'ncu-test-v2' }), 'utf-8')
     try {
       const text = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir],
-        '{ "dependencies": { "ncu-test-v2": "1.0.0", "ncu-test-tag": "0.1.0" } }',
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
       )
       text.should.containIgnoreCase(`Using config file ${tempConfigFile}`)
     } finally {
@@ -42,7 +42,7 @@ describe('rc-config', () => {
       const text = await spawn(
         'node',
         [bin, '--stdin', '--cwd', tempDir],
-        '{ "dependencies": { "ncu-test-v2": "1.0.0" } }',
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
       )
       text.should.not.include('Using config file')
     } finally {
@@ -58,7 +58,7 @@ describe('rc-config', () => {
       const text = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir],
-        '{ "dependencies": { "ncu-test-v2": "1", "ncu-test-tag": "0.1.0" } }',
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
       )
       text.should.not.include('Using config file')
     } finally {
@@ -69,12 +69,12 @@ describe('rc-config', () => {
   it('read --configFilePath', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
-    await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true, "filter": "ncu-test-v2"}', 'utf-8')
+    await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, filter: 'ncu-test-v2' }), 'utf-8')
     try {
       const text = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir],
-        '{ "dependencies": { "ncu-test-v2": "1", "ncu-test-tag": "0.1.0" } }',
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
       )
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('ncu-test-v2')
@@ -88,12 +88,12 @@ describe('rc-config', () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const tempConfigFileName = '.rctemp.json'
     const tempConfigFile = path.join(tempDir, tempConfigFileName)
-    await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true, "filter": "ncu-test-v2"}', 'utf-8')
+    await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, filter: 'ncu-test-v2' }), 'utf-8')
     try {
       const text = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir, '--configFileName', tempConfigFileName],
-        '{ "dependencies": { "ncu-test-v2": "1", "ncu-test-tag": "0.1.0" } }',
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
       )
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('ncu-test-v2')
@@ -106,12 +106,12 @@ describe('rc-config', () => {
   it('override config with arguments', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
-    await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true, "filter": "ncu-test-v2"}', 'utf-8')
+    await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, filter: 'ncu-test-v2' }), 'utf-8')
     try {
       const text = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir, '--filter', 'ncu-test-tag'],
-        '{ "dependencies": { "ncu-test-v2": "1", "ncu-test-tag": "0.1.0" } }',
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
       )
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('ncu-test-tag')
@@ -124,12 +124,12 @@ describe('rc-config', () => {
   it('override true in config with false on the cli', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
-    await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true}', 'utf-8')
+    await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true }), 'utf-8')
     try {
       const output = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir, '--jsonUpgraded', 'false'],
-        '{ "dependencies": { "ncu-test-v2": "1", "ncu-test-tag": "0.1.0" } }',
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
       )
       // if the output contains "Using config file", then we know that jsonUpgraded was overridden
       output.should.include('Using config file')
@@ -142,12 +142,12 @@ describe('rc-config', () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     // if boolean arguments are not handled as a special case, ncu will incorrectly pass "--deep false" to commander, which will interpret it as two args, i.e. --deep and --filter false
-    await fs.writeFile(tempConfigFile, '{"jsonUpgraded": true, "deep": false }', 'utf-8')
+    await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, deep: false }), 'utf-8')
     try {
       const text = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir],
-        '{ "dependencies": { "ncu-test-tag": "0.1.0" } }',
+        JSON.stringify({ dependencies: { 'ncu-test-tag': '0.1.0' } }),
       )
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('ncu-test-tag')
@@ -160,8 +160,12 @@ describe('rc-config', () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const configFile = path.join(tempDir, '.ncurc.json')
     const pkgFile = path.join(tempDir, 'package.json')
-    await fs.writeFile(configFile, '{"filter": "ncu-test-v2"}', 'utf-8')
-    await fs.writeFile(pkgFile, '{ "dependencies": { "ncu-test-v2": "1.0.0", "ncu-test-tag": "0.1.0" } }', 'utf-8')
+    await fs.writeFile(configFile, JSON.stringify({ filter: 'ncu-test-v2' }), 'utf-8')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      'utf-8',
+    )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const text = await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
@@ -181,7 +185,11 @@ describe('rc-config', () => {
     const configFile = path.join(tempDir, '.ncurc.cjs')
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(configFile, 'module.exports = { "filter": "ncu-test-v2" }', 'utf-8')
-    await fs.writeFile(pkgFile, '{ "dependencies": { "ncu-test-v2": "1.0.0", "ncu-test-tag": "0.1.0" } }', 'utf-8')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      'utf-8',
+    )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const text = await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
