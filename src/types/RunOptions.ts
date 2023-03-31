@@ -1,6 +1,7 @@
 /** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build" or "npm run build:options" to build. */
 import { FilterFunction } from './FilterFunction'
 import { GroupFunction } from './GroupFunction'
+import { FilterResultsFunction } from './FilterResultsFunction'
 import { PackageFile } from './PackageFile'
 import { TargetFunction } from './TargetFunction'
 
@@ -59,6 +60,9 @@ export interface RunOptions {
 
   /** Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. */
   filter?: string | string[] | RegExp | RegExp[] | FilterFunction
+
+  /** TODO */
+  filterResults?: FilterResultsFunction
 
   /** Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. */
   filterVersion?: string | string[] | RegExp | RegExp[] | FilterFunction

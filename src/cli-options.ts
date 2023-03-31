@@ -425,6 +425,12 @@ const cliOptions: CLIOption[] = [
     parse: (value, accum) => [...(accum || []), value],
   },
   {
+    long: 'filterResults',
+    arg: 'fn',
+    description: `TODO`,
+    type: 'FilterResultsFunction',
+  },
+  {
     long: 'filterVersion',
     arg: 'p',
     description: 'Filter on package version using comma-or-space-delimited list, /regex/, or predicate function.',
