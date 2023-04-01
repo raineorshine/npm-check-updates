@@ -146,6 +146,31 @@ Example:
     Saving partially upgraded package.json
 `
 
+/** Extended help for the filterResults option. */
+const extendedHelpFilterResults = (): string => {
+  return `Filters the results of update based on user provided function. Only available in .ncurc.js or when importing npm-check-updates as a module:
+
+    ${chalk.gray(`/**
+      @param packageName                   The name of the dependency.
+      @param currentVersion                Current version declaration (may be range)
+      @param currentVersionSemver          Current version declaration in semantic versioning format (may be range)
+      @param upgradedVersion               Upgraded version declaration (may be range)
+      @param upgradedVersionSemver         Upgraded version declaration in semantic versioning format (may be range)
+      @returns                             A result in boolean format - true or false.
+    */`)}
+    ${chalk.cyan(
+      'filterResults',
+    )}: (packageName, {currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver}) {
+      const currentMajorVersion = currentVersionSemver && currentVersionSemver[0] && currentVersionSemver[0].major
+      const upgradedMajorVersion = upgradedVersionSemver && upgradedVersionSemver[0] && upgradedVersionSemver[0].major
+      if (currentMajorVersion && upgradedMajorVersion) {
+        return currentMajorVersion < upgradedMajorVersion
+      }
+      return true
+    }
+`
+}
+
 /** Extended help for the --format option. */
 const extendedHelpFormat = (): string => {
   const header =
@@ -427,8 +452,9 @@ const cliOptions: CLIOption[] = [
   {
     long: 'filterResults',
     arg: 'fn',
-    description: `TODO`,
+    description: `Filters the results of update based on user provided function.`,
     type: 'FilterResultsFunction',
+    help: extendedHelpFilterResults,
   },
   {
     long: 'filterVersion',

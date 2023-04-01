@@ -61,7 +61,7 @@ export interface RunOptions {
   /** Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. */
   filter?: string | string[] | RegExp | RegExp[] | FilterFunction
 
-  /** TODO */
+  /** Filters the results of update based on user provided function. Run "ncu --help --filterResults" for details. */
   filterResults?: FilterResultsFunction
 
   /** Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. */

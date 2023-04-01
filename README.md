@@ -174,7 +174,9 @@ ncu "/^(?!react-).*$/" # windows
 -f, --filter <p>           Include only package names matching the given
                            string, wildcard, glob, comma-or-space-delimited
                            list, /regex/, or predicate function.
---filterResults <fn>       TODO
+--filterResults <fn>       Filters the results of update based on user
+                           provided function. Run "ncu --help
+                           --filterResults" for details.
 --filterVersion <p>        Filter on package version using
                            comma-or-space-delimited list, /regex/, or
                            predicate function.
@@ -253,7 +255,7 @@ ncu "/^(?!react-).*$/" # windows
 -ws, --workspaces          Run on all workspaces. Add --root to also upgrade
                            the root project.
 -V, --version              output the version number
--h, --help                 display help for command
+-h, --help                 display help for
 ```
 
 <!-- END Options -->
@@ -321,6 +323,31 @@ Example:
     npm run test
       ✓ react-dnd 10.0.0 → 11.1.3
     Saving partially upgraded package.json
+
+## filterResults
+
+Usage:
+
+    ncu --filterResults [fn]
+
+Filters the results of update based on user provided function. Only available in .ncurc.js or when importing npm-check-updates as a module:
+
+    /**
+      @param packageName                   The name of the dependency.
+      @param currentVersion                Current version declaration (may be range)
+      @param currentVersionSemver          Current version declaration in semantic versioning format (may be range)
+      @param upgradedVersion               Upgraded version declaration (may be range)
+      @param upgradedVersionSemver         Upgraded version declaration in semantic versioning format (may be range)
+      @returns                             A result in boolean format - true or false.
+    */
+    filterResults: (packageName, {currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver}) {
+      const currentMajorVersion = currentVersionSemver && currentVersionSemver[0] && currentVersionSemver[0].major
+      const upgradedMajorVersion = upgradedVersionSemver && upgradedVersionSemver[0] && upgradedVersionSemver[0].major
+      if (currentMajorVersion && upgradedMajorVersion) {
+        return currentMajorVersion < upgradedMajorVersion
+      }
+      return true
+    }
 
 ## format
 
