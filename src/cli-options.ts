@@ -152,10 +152,10 @@ const extendedHelpFilterResults = (): string => {
 
     ${chalk.gray(`/**
       @param {string} packageName                 The name of the dependency.
-      @param {VersionSpec} currentVersion         Current version declaration (may be range)
-      @param {SemVer[]} currentVersionSemver      Current version declaration in semantic versioning format (may be range)
-      @param {Version} upgradedVersion            Upgraded version declaration (may be range)
-      @param {SemVer} upgradedVersionSemver       Upgraded version declaration in semantic versioning format (may be range)
+      @param {VersionSpec} currentVersion         Current version declaration (may be range).
+      @param {SemVer[]} currentVersionSemver      Current version declaration in semantic versioning format (may be range).  @see {@link https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring.}
+      @param {Version} upgradedVersion            Upgraded version declaration (may be range).
+      @param {SemVer} upgradedVersionSemver       Upgraded version declaration in semantic versioning format. @see {@link https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring.}
       @returns {boolean}                          Return true if the upgrade should be kept, otherwise it will be ignored.
     */`)}
     ${chalk.cyan(
