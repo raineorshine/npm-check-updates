@@ -151,12 +151,12 @@ const extendedHelpFilterResults = (): string => {
   return `Filters the results of update based on user provided function. Only available in .ncurc.js or when importing npm-check-updates as a module:
 
     ${chalk.gray(`/**
-      @param packageName                   The name of the dependency.
-      @param currentVersion                Current version declaration (may be range)
-      @param currentVersionSemver          Current version declaration in semantic versioning format (may be range)
-      @param upgradedVersion               Upgraded version declaration (may be range)
-      @param upgradedVersionSemver         Upgraded version declaration in semantic versioning format (may be range)
-      @returns                             A result in boolean format - true or false.
+      @param {string} packageName                 The name of the dependency.
+      @param {VersionSpec} currentVersion         Current version declaration (may be range)
+      @param {SemVer[]} currentVersionSemver      Current version declaration in semantic versioning format (may be range)
+      @param {Version} upgradedVersion            Upgraded version declaration (may be range)
+      @param {SemVer} upgradedVersionSemver       Upgraded version declaration in semantic versioning format (may be range)
+      @returns {boolean}                          A result in boolean format - true or false.
     */`)}
     ${chalk.cyan(
       'filterResults',
