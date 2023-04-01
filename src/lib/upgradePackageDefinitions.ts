@@ -14,7 +14,12 @@ import queryVersions from './queryVersions'
 import upgradeDependencies from './upgradeDependencies'
 
 /**
+ * Returns boolean result of execution of user defined function that can filter out update versions according to function logic
  *
+ * @param dependencyName        The name of the dependency.
+ * @param currentDependencies   Current dependencies collection object.
+ * @param version               Version of the actual package.
+ * @param options               The application options, used to determine which packages to return.
  */
 function filterResultsByUserFunction(
   dependencyName: string,
