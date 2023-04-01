@@ -73,7 +73,7 @@ const renderOption = (option: CLIOption<unknown>) => {
   const defaults =
     // do not render default empty arrays
     option.default && (!Array.isArray(option.default) || option.default.length > 0)
-      ? ` (default: ${JSON.stringify(option.default)})`
+      ? `\n   *\n   * @default ${JSON.stringify(option.default)}\n  `
       : ''
 
   // all options are optional

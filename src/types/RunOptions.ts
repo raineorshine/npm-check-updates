@@ -13,16 +13,25 @@ export interface RunOptions {
   /** Clear the default cache, or the cache file specified by --cacheFile. */
   cacheClear?: boolean
 
-  /** Cache expiration in minutes. Only works with --cache. (default: 10) */
+  /** Cache expiration in minutes. Only works with --cache.
+   *
+   * @default 10
+   */
   cacheExpiration?: number
 
-  /** Filepath for the cache file. Only works with --cache. (default: "~/.ncu-cache.json") */
+  /** Filepath for the cache file. Only works with --cache.
+   *
+   * @default "~/.ncu-cache.json"
+   */
   cacheFile?: string
 
   /** Force color in terminal. */
   color?: boolean
 
-  /** Max number of concurrent HTTP requests to registry. (default: 8) */
+  /** Max number of concurrent HTTP requests to registry.
+   *
+   * @default 8
+   */
   concurrency?: number
 
   /** Config file name. (default: .ncurc.{json,yml,js,cjs}) */
@@ -37,7 +46,10 @@ export interface RunOptions {
   /** Run recursively in current working directory. Alias of (--packageFile '**\/package.json'). */
   deep?: boolean
 
-  /** Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited). (default: ["prod","dev","optional"]) */
+  /** Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited).
+   *
+   * @default ["prod","dev","optional"]
+   */
   dep?: string | string[]
 
   /** Include deprecated packages. */
@@ -55,7 +67,10 @@ export interface RunOptions {
   /** Include only packages that satisfy engines.node as specified in the package file. */
   enginesNode?: boolean
 
-  /** Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). (default: 1) */
+  /** Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration).
+   *
+   * @default 1
+   */
   errorLevel?: number
 
   /** Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. */
@@ -88,7 +103,10 @@ export interface RunOptions {
   /** Output upgraded dependencies in json. */
   jsonUpgraded?: boolean
 
-  /** Amount to log: silent, error, minimal, warn, info, verbose, silly. (default: "warn") */
+  /** Amount to log: silent, error, minimal, warn, info, verbose, silly.
+   *
+   * @default "warn"
+   */
   loglevel?: string
 
   /** Merges nested configs with the root config file for --deep or --packageFile options. (default: false) */
@@ -127,7 +145,10 @@ export interface RunOptions {
   /** Remove version ranges from the final package version. */
   removeRange?: boolean
 
-  /** Number of times to retry failed requests for package info. (default: 3) */
+  /** Number of times to retry failed requests for package info.
+   *
+   * @default 3
+   */
   retry?: number
 
   /** Runs updates on the root project in addition to specified workspaces. Only allowed with --workspace or --workspaces. (default: false) */
