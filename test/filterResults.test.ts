@@ -5,8 +5,8 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import stubNpmView from './helpers/stubNpmView'
 import { FilterResultsFunction } from '../src/types/FilterResultsFunction'
+import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -21,7 +21,7 @@ async function filterResultsTestScaffold(
   dependencies: Record<string, string>,
   filterResultsFn: FilterResultsFunction,
   expectedOutput: string,
-  notExpectedOutput: string
+  notExpectedOutput: string,
 ): Promise<void> {
   const stub = stubNpmView(
     {
@@ -60,20 +60,20 @@ async function filterResultsTestScaffold(
 describe('filterResults', () => {
   it('should return only major versions updated', async () => {
     await filterResultsTestScaffold(
-      {'ncu-test-v2': '2.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0'},
+      { 'ncu-test-v2': '2.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      (packageName, {currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver}) => {
-        const currentMajorVersion = (currentVersionSemver && currentVersionSemver[0] && currentVersionSemver[0].major)
-        const upgradedMajorVersion = (upgradedVersionSemver && upgradedVersionSemver[0] && upgradedVersionSemver[0].major)
+      (packageName, { currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver }) => {
+        const currentMajorVersion = currentVersionSemver && currentVersionSemver[0] && currentVersionSemver[0].major
+        const upgradedMajorVersion = upgradedVersionSemver && upgradedVersionSemver[0] && upgradedVersionSemver[0].major
         if (currentMajorVersion && upgradedMajorVersion) {
-          return currentMajorVersion < upgradedMajorVersion;
+          return currentMajorVersion < upgradedMajorVersion
         }
         return true
       },
       `
  ncu-test-tag  1.0.0  →  2.1.0
  ncu-test-v2   2.0.0  →  3.0.0`,
-      `ncu-test-return-version`
+      `ncu-test-return-version`,
     )
   })
 })

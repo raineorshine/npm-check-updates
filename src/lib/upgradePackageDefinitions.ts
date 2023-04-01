@@ -2,32 +2,34 @@ import isEmpty from 'lodash/isEmpty'
 import isEqual from 'lodash/isEqual'
 import pickBy from 'lodash/pickBy'
 import { satisfies } from 'semver'
+import { parseRange } from 'semver-utils'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
+import { Version } from '../types/Version'
 import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
 import keyValueBy from './keyValueBy'
 import queryVersions from './queryVersions'
 import upgradeDependencies from './upgradeDependencies'
-import { parseRange } from 'semver-utils';
-import { Version } from '../types/Version';
 
 /**
  *
  */
-function filterResultsByUserFunction(dependencyName: string,
-                                     currentDependencies: Index<VersionSpec>,
-                                     version: Version,
-                                     options: Options) {
-  return !options.filterResults || options.filterResults(
-    dependencyName,
-    {
+function filterResultsByUserFunction(
+  dependencyName: string,
+  currentDependencies: Index<VersionSpec>,
+  version: Version,
+  options: Options,
+) {
+  return (
+    !options.filterResults ||
+    options.filterResults(dependencyName, {
       currentVersion: currentDependencies[dependencyName],
       currentVersionSemver: parseRange(currentDependencies[dependencyName]),
       upgradedVersion: version,
       upgradedVersionSemver: parseRange(version),
-    }
+    })
   )
 }
 

@@ -1,7 +1,7 @@
 /** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build" or "npm run build:options" to build. */
 import { FilterFunction } from './FilterFunction'
-import { GroupFunction } from './GroupFunction'
 import { FilterResultsFunction } from './FilterResultsFunction'
+import { GroupFunction } from './GroupFunction'
 import { PackageFile } from './PackageFile'
 import { TargetFunction } from './TargetFunction'
 
