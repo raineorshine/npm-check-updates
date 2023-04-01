@@ -162,7 +162,7 @@ const extendedHelpFilterResults = (): string => {
       'filterResults',
     )}: (packageName, {currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver}) {
       const currentMajorVersion = currentVersionSemver && currentVersionSemver[0] && currentVersionSemver[0].major
-      const upgradedMajorVersion = upgradedVersionSemver && upgradedVersionSemver[0] && upgradedVersionSemver[0].major
+      const upgradedMajorVersion = upgradedVersionSemver && upgradedVersionSemver.major
       if (currentMajorVersion && upgradedMajorVersion) {
         return currentMajorVersion < upgradedMajorVersion
       }
