@@ -10,6 +10,26 @@ import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
 import keyValueBy from './keyValueBy'
 import queryVersions from './queryVersions'
 import upgradeDependencies from './upgradeDependencies'
+import { parseRange } from 'semver-utils';
+import { Version } from '../types/Version';
+
+/**
+ *
+ */
+function filterResultsByUserFunction(dependencyName: string,
+                                     currentDependencies: Index<VersionSpec>,
+                                     version: Version,
+                                     options: Options) {
+  return !options.filterResults || options.filterResults(
+    dependencyName,
+    {
+      currentVersion: currentDependencies[dependencyName],
+      currentVersionSemver: parseRange(currentDependencies[dependencyName]),
+      upgradedVersion: version,
+      upgradedVersionSemver: parseRange(version),
+    }
+  )
+}
 
 /**
  * Returns a 3-tuple of upgradedDependencies, their latest versions and the resulting peer dependencies.
@@ -25,7 +45,7 @@ export async function upgradePackageDefinitions(
   const latestVersionResults = await queryVersions(currentDependencies, options)
 
   const latestVersions = keyValueBy(latestVersionResults, (dep, result) =>
-    result?.version
+    result?.version && filterResultsByUserFunction(dep, currentDependencies, result.version, options)
       ? {
           [dep]: result.version,
         }
