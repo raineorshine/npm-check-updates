@@ -156,7 +156,7 @@ const extendedHelpFilterResults = (): string => {
       @param {SemVer[]} currentVersionSemver      Current version declaration in semantic versioning format (may be range)
       @param {Version} upgradedVersion            Upgraded version declaration (may be range)
       @param {SemVer} upgradedVersionSemver       Upgraded version declaration in semantic versioning format (may be range)
-      @returns {boolean}                          A result in boolean format - true or false.
+      @returns {boolean}                          Return true if the upgrade should be kept, otherwise it will be ignored.
     */`)}
     ${chalk.cyan(
       'filterResults',
