@@ -2,7 +2,7 @@ import isEmpty from 'lodash/isEmpty'
 import isEqual from 'lodash/isEqual'
 import pickBy from 'lodash/pickBy'
 import { satisfies } from 'semver'
-import { parseRange } from 'semver-utils'
+import {parse, parseRange} from 'semver-utils'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { Version } from '../types/Version'
@@ -28,7 +28,7 @@ function filterResultsByUserFunction(
       currentVersion: currentDependencies[dependencyName],
       currentVersionSemver: parseRange(currentDependencies[dependencyName]),
       upgradedVersion: version,
-      upgradedVersionSemver: parseRange(version),
+      upgradedVersionSemver: parse(version),
     })
   )
 }

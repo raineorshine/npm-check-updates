@@ -8,6 +8,6 @@ export type FilterResultsFunction = (
     currentVersion: VersionSpec
     currentVersionSemver: SemVer[]
     upgradedVersion: Version
-    upgradedVersionSemver: SemVer[]
+    upgradedVersionSemver: SemVer
   },
 ) => boolean
