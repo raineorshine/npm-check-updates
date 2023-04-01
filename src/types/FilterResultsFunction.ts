@@ -7,6 +7,7 @@ export type FilterResultsFunction = (
   versioningMetadata: {
     currentVersion: VersionSpec,
     currentVersionSemver: SemVer[],
-    upgradedVersion: Version
+    upgradedVersion: Version,
+    upgradedVersionSemver: SemVer[]
   },
 ) => boolean
