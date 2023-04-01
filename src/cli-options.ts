@@ -168,6 +168,8 @@ const extendedHelpFilterResults = (): string => {
       }
       return true
     }
+
+    This example implementation of filterResults function, will filter out all the version updates that were not the major ones.
 `
 }
 
