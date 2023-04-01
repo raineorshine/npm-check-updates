@@ -338,11 +338,11 @@ Filters the results of update based on user provided function. Only available in
       @param {SemVer[]} currentVersionSemver      Current version declaration in semantic versioning format (may be range)
       @param {Version} upgradedVersion            Upgraded version declaration (may be range)
       @param {SemVer} upgradedVersionSemver       Upgraded version declaration in semantic versioning format (may be range)
-      @returns {boolean}                          A result in boolean format - true or false.
+      @returns {boolean}                          Return true if the upgrade should be kept, otherwise it will be ignored.
     */
     filterResults: (packageName, {currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver}) {
-      const currentMajorVersion = currentVersionSemver && currentVersionSemver[0] && currentVersionSemver[0].major
-      const upgradedMajorVersion = upgradedVersionSemver && upgradedVersionSemver[0] && upgradedVersionSemver[0].major
+      const currentMajorVersion = currentVersionSemver?.[0]?.major
+      const upgradedMajorVersion = upgradedVersionSemver?.major
       if (currentMajorVersion && upgradedMajorVersion) {
         return currentMajorVersion < upgradedMajorVersion
       }

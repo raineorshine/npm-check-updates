@@ -63,8 +63,8 @@ describe('filterResults', () => {
       { 'ncu-test-v2': '2.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       (packageName, { currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver }) => {
-        const currentMajorVersion = currentVersionSemver && currentVersionSemver[0] && currentVersionSemver[0].major
-        const upgradedMajorVersion = upgradedVersionSemver && upgradedVersionSemver.major
+        const currentMajorVersion = currentVersionSemver?.[0]?.major
+        const upgradedMajorVersion = upgradedVersionSemver?.major
         if (currentMajorVersion && upgradedMajorVersion) {
           return currentMajorVersion < upgradedMajorVersion
         }
