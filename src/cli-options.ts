@@ -146,6 +146,33 @@ Example:
     Saving partially upgraded package.json
 `
 
+/** Extended help for the filterResults option. */
+const extendedHelpFilterResults = (): string => {
+  return `Filters the results of update based on user provided function. Only available in .ncurc.js or when importing npm-check-updates as a module:
+
+    ${chalk.gray(`/**
+      @param {string} packageName                 The name of the dependency.
+      @param {VersionSpec} currentVersion         Current version declaration (may be range).
+      @param {SemVer[]} currentVersionSemver      Current version declaration in semantic versioning format (may be range).  @see {@link https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring.}
+      @param {Version} upgradedVersion            Upgraded version declaration (may be range).
+      @param {SemVer} upgradedVersionSemver       Upgraded version declaration in semantic versioning format. @see {@link https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring.}
+      @returns {boolean}                          Return true if the upgrade should be kept, otherwise it will be ignored.
+    */`)}
+    ${chalk.cyan(
+      'filterResults',
+    )}: (packageName, {currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver}) {
+      const currentMajorVersion = currentVersionSemver?.[0]?.major
+      const upgradedMajorVersion = upgradedVersionSemver?.major
+      if (currentMajorVersion && upgradedMajorVersion) {
+        return currentMajorVersion < upgradedMajorVersion
+      }
+      return true
+    }
+
+    This example implementation of filterResults function, will filter out all the version updates that were not the major ones.
+`
+}
+
 /** Extended help for the --format option. */
 const extendedHelpFormat = (): string => {
   const header =
@@ -423,6 +450,13 @@ const cliOptions: CLIOption[] = [
       'Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
     parse: (value, accum) => [...(accum || []), value],
+  },
+  {
+    long: 'filterResults',
+    arg: 'fn',
+    description: `Filters the results of update based on user provided function.`,
+    type: 'FilterResultsFunction',
+    help: extendedHelpFilterResults,
   },
   {
     long: 'filterVersion',
