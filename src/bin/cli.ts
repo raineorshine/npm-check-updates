@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { program } from 'commander'
+import { Help, program } from 'commander'
 import cloneDeep from 'lodash/cloneDeep'
 import pickBy from 'lodash/pickBy'
 import semver from 'semver'
@@ -89,7 +89,11 @@ ${chalk.dim.underline(
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
     // See: boolean optional arg below
-    .configureHelp({ optionTerm: option => option.flags.replace('[bool]', '') })
+    .configureHelp({
+      optionTerm: option => option.flags.replace('[bool]', ''),
+      optionDescription: option =>
+        option.long === '--help' ? 'display help' : Help.prototype.optionDescription(option),
+    })
 
   // add cli options
   cliOptions.forEach(({ long, short, arg, description, default: defaultValue, help, parse, type }) => {

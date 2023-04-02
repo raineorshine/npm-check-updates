@@ -152,7 +152,9 @@ describe('doctor', function () {
       const cwd = path.join(doctorTests, 'nopackagefile')
       const output = await ncu(['--doctor'], { cwd })
       return stripAnsi(output).should.equal(
-        `Usage: ncu --doctor\n\n${stripAnsi((cliOptionsMap.doctor.help as () => string)())}\n`,
+        `Usage: ncu --doctor\n\n${stripAnsi(
+          (cliOptionsMap.doctor.help as (options: { markdown: boolean }) => string)({ markdown: false }),
+        )}\n`,
       )
     })
 

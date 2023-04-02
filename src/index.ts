@@ -281,7 +281,9 @@ export async function run(
     }
     // print help otherwise
     else {
-      print(options, `Usage: ncu --doctor\n\n${(cliOptionsMap.doctor.help as () => string)()}`, 'warn')
+      const help =
+        typeof cliOptionsMap.doctor.help === 'function' ? cliOptionsMap.doctor.help({}) : cliOptionsMap.doctor.help
+      print(options, `Usage: ncu --doctor\n\n${help}`, 'warn')
     }
   }
   // normal mode
