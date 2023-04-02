@@ -330,6 +330,8 @@ Example:
 
 Filters out upgrades based on a user provided function.
 
+`filterResults` runs _after_ new versions are fetched, in contrast to `filter` and `filterVersion`, which run _before_. This allows you to filter out upgrades with `filterResults` based on how the version has changed (e.g. a major version change).
+
 Only available in .ncurc.js or when importing npm-check-updates as a module.
 
 ```js

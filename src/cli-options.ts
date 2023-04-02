@@ -124,7 +124,16 @@ Example:
 
 /** Extended help for the filterResults option. */
 const extendedHelpFilterResults: ExtendedHelp = ({ markdown }) => {
+  /** If markdown, surround inline code with backticks. */
+  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+
   return `Filters out upgrades based on a user provided function.
+
+${codeInline('filterResults')} runs _after_ new versions are fetched, in contrast to ${codeInline(
+    'filter',
+  )} and ${codeInline('filterVersion')}, which run _before_. This allows you to filter out upgrades with ${codeInline(
+    'filterResults',
+  )} based on how the version has changed (e.g. a major version change).
 
 Only available in .ncurc.js or when importing npm-check-updates as a module.
 
