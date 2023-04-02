@@ -174,6 +174,9 @@ ncu "/^(?!react-).*$/" # windows
 -f, --filter <p>           Include only package names matching the given
                            string, wildcard, glob, comma-or-space-delimited
                            list, /regex/, or predicate function.
+--filterResults <fn>       Filters out upgrades based on a user provided
+                           function. Run "ncu --help --filterResults" for
+                           details.
 --filterVersion <p>        Filter on package version using
                            comma-or-space-delimited list, /regex/, or
                            predicate function.
@@ -184,6 +187,9 @@ ncu "/^(?!react-).*$/" # windows
                            [])
 -g, --global               Check global packages instead of in the current
                            project.
+--groupFunction <fn>       Customize how packages are divided into groups
+                           when using '--format group'. Run "ncu --help
+                           --groupFunction" for details.
 -i, --interactive          Enable interactive prompts for each dependency;
                            implies -u unless one of the json options are set.
 -j, --jsonAll              Output new package file instead of human-readable

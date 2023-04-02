@@ -16,7 +16,6 @@ export interface CLIOption<T = any> {
   deprecated?: boolean
   description: string
   help?: ExtendedHelp
-  hidden?: boolean
   parse?: (s: string, p?: T) => T
   long: string
   short?: string
@@ -446,7 +445,6 @@ const cliOptions: CLIOption[] = [
     long: 'filterResults',
     arg: 'fn',
     description: `Filters out upgrades based on a user provided function.`,
-    hidden: true,
     type: 'FilterResultsFunction',
     help: extendedHelpFilterResults,
   },
@@ -478,7 +476,6 @@ const cliOptions: CLIOption[] = [
     long: 'groupFunction',
     arg: 'fn',
     description: `Customize how packages are divided into groups when using '--format group'.`,
-    hidden: true,
     type: 'GroupFunction',
     help: extendedHelpGroupFunction,
   },
