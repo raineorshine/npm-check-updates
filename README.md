@@ -341,7 +341,7 @@ Only available in .ncurc.js or when importing npm-check-updates as a module.
   @param {SemVer} upgradedVersionSemver     Upgraded version in semantic versioning format.
   @returns {boolean}                        Return true if the upgrade should be kept, otherwise it will be ignored.
 */
-filterResults: (packageName, {currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver}) {
+filterResults: (packageName, { currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver }) => {
   const currentMajorVersion = currentVersionSemver?.[0]?.major
   const upgradedMajorVersion = upgradedVersionSemver?.major
   if (currentMajorVersion && upgradedMajorVersion) {
@@ -384,7 +384,7 @@ Only available in .ncurc.js or when importing npm-check-updates as a module.
   @param upgradedVersion  The upgraded version number returned by the registry.
   @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
 */
-groupFunction: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion} {
+groupFunction: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion) => {
   if (name === 'typescript' && defaultGroup === 'minor') {
     return 'major'
   }

@@ -139,13 +139,15 @@ ${codeBlock(
 */`)}
 ${chalk.cyan(
   'filterResults',
-)}: (packageName, {currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver}) {
-  const currentMajorVersion = currentVersionSemver?.[0]?.major
+)}: (packageName, { currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver }) ${chalk.cyan(
+    '=>',
+  )} {
+  const currentMajorVersion = currentVersionSemver?.[${chalk.blue('0')}]?.major
   const upgradedMajorVersion = upgradedVersionSemver?.major
-  if (currentMajorVersion && upgradedMajorVersion) {
-    return currentMajorVersion < upgradedMajorVersion
+  ${chalk.red('if')} (currentMajorVersion ${chalk.red('&&')} upgradedMajorVersion) {
+    ${chalk.red('return')} currentMajorVersion ${chalk.red('<')} upgradedMajorVersion
   }
-  return true
+  ${chalk.red('return')} ${chalk.blue('true')}
 }`,
   { markdown },
 )}
@@ -190,14 +192,16 @@ ${codeBlock(
   @param upgradedVersion  The upgraded version number returned by the registry.
   @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
 */`)}
-${chalk.cyan('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion} {
-  if (name === 'typescript' && defaultGroup === 'minor') {
-    return 'major'
+${chalk.cyan('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion) ${chalk.cyan('=>')} {
+  ${chalk.red('if')} (name ${chalk.red('===')} ${chalk.yellow(`'typescript'`)} && defaultGroup ${chalk.red(
+    '===',
+  )} ${chalk.yellow(`'minor'`)}) {
+    ${chalk.red('return')} ${chalk.yellow(`'major'`)}
   }
-  if (name.startsWith('@myorg/')) {
-    return 'My Org'
+  ${chalk.red('if')} (name.startsWith('@myorg/')) {
+    ${chalk.red('return')} ${chalk.yellow(`'My Org'`)}
   }
-  return defaultGroup
+  ${chalk.red('return')} defaultGroup
 }`,
   { markdown },
 )}
@@ -243,7 +247,9 @@ ${codeBlock(
 ${chalk.cyan(
   'target',
 )}: (dependencyName, [{ semver, version, operator, major, minor, patch, release, build }]) ${chalk.cyan('=>')} {
-  ${chalk.red('if')} (major ${chalk.red('===')} ${chalk.blue("'0'")}) ${chalk.red('return')} ${chalk.yellow("'minor'")}
+  ${chalk.red('if')} (major ${chalk.red('===')} ${chalk.yellow("'0'")}) ${chalk.red('return')} ${chalk.yellow(
+    "'minor'",
+  )}
   ${chalk.red('return')} ${chalk.yellow("'latest'")}
 }`,
   { markdown },
