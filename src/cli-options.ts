@@ -12,6 +12,8 @@ type ExtendedHelp = string | ((options: { markdown?: boolean }) => string)
 export interface CLIOption<T = any> {
   arg?: string
   choices?: T[]
+  /** If false, the option is only usable in the ncurc file, or when using npm-check-updates as a module, not on the command line. */
+  cli?: boolean
   default?: T
   deprecated?: boolean
   description: string
@@ -36,9 +38,12 @@ const codeBlock = (code: string, { markdown }: { markdown?: boolean } = {}) => {
 
 /** Renders the extended help for an option with usage information. */
 export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?: boolean } = {}) => {
-  let output = `Usage:
+  let output = ''
+  if (option.cli !== false) {
+    output = `Usage:
 
     ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}\n`
+  }
   if (option.short) {
     output += `    ncu -${option.short}${option.arg ? ` [${option.arg}]` : ''}\n`
   }
@@ -119,12 +124,12 @@ Example:
 
 /** Extended help for the filterResults option. */
 const extendedHelpFilterResults: ExtendedHelp = ({ markdown }) => {
-  return `Filters out upgrades based on a user provided function. Only available in .ncurc.js or when importing npm-check-updates as a module.
+  return `Filters out upgrades based on a user provided function.
 
-For the SemVer type, see: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring
+Only available in .ncurc.js or when importing npm-check-updates as a module.
 
 ${codeBlock(
-  `${chalk.gray(`/**
+  `${chalk.gray(`/** Filter out non-major version updates.
   @param {string} packageName               The name of the dependency.
   @param {string} currentVersion            Current version declaration (may be range).
   @param {SemVer[]} currentVersionSemver    Current version declaration in semantic versioning format (may be range).
@@ -145,7 +150,7 @@ ${chalk.cyan(
   { markdown },
 )}
 
-The above example filters out non-major version updates.
+For the SemVer type definition, see: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring
 
 `
 }
@@ -172,7 +177,9 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
 
 /** Extended help for the --group option. */
 const extendedHelpGroupFunction: ExtendedHelp = ({ markdown }) => {
-  return `Customize how packages are divided into groups when using \`--format group\`. Only available in .ncurc.js or when importing npm-check-updates as a module:
+  return `Customize how packages are divided into groups when using \`--format group\`.
+
+Only available in .ncurc.js or when importing npm-check-updates as a module.
 
 ${codeBlock(
   `${chalk.gray(`/**
@@ -227,7 +234,7 @@ ${padLeft(tableString, markdown ? 0 : 4)}
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module:
 
 ${codeBlock(
-  `${chalk.gray(`/** Custom target.
+  `${chalk.gray(`/** Upgrade major version zero to the next minor version, and everything else to latest.
   @param dependencyName The name of the dependency.
   @param parsedVersion A parsed Semver object from semver-utils.
     (See https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
@@ -444,6 +451,7 @@ const cliOptions: CLIOption[] = [
   {
     long: 'filterResults',
     arg: 'fn',
+    cli: false,
     description: `Filters out upgrades based on a user provided function.`,
     type: 'FilterResultsFunction',
     help: extendedHelpFilterResults,
@@ -475,6 +483,7 @@ const cliOptions: CLIOption[] = [
   {
     long: 'groupFunction',
     arg: 'fn',
+    cli: false,
     description: `Customize how packages are divided into groups when using '--format group'.`,
     type: 'GroupFunction',
     help: extendedHelpGroupFunction,

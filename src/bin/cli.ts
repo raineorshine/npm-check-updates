@@ -84,15 +84,25 @@ ${chalk.dim.underline(
     process.exit(0)
   }
 
+  // a set of options that only work in an rc config file, not on the command line
+  const noCli = new Set(cliOptions.filter(option => option.cli === false).map(option => `--${option.long}`))
+
   // start commander program
   program
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
     // See: boolean optional arg below
     .configureHelp({
-      optionTerm: option => option.flags.replace('[bool]', ''),
+      optionTerm: option =>
+        option.long && noCli.has(option.long)
+          ? option.long.replace('--', '') + '*'
+          : option.flags.replace('[bool]', ''),
       optionDescription: option =>
-        option.long === '--help' ? 'display help' : Help.prototype.optionDescription(option),
+        option.long === '--version'
+          ? 'Output the version number.'
+          : option.long === '--help'
+          ? `You're lookin' at it.`
+          : Help.prototype.optionDescription(option),
     })
 
   // add cli options

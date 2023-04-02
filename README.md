@@ -174,7 +174,7 @@ ncu "/^(?!react-).*$/" # windows
 -f, --filter <p>           Include only package names matching the given
                            string, wildcard, glob, comma-or-space-delimited
                            list, /regex/, or predicate function.
---filterResults <fn>       Filters out upgrades based on a user provided
+filterResults*             Filters out upgrades based on a user provided
                            function. Run "ncu --help --filterResults" for
                            details.
 --filterVersion <p>        Filter on package version using
@@ -187,7 +187,7 @@ ncu "/^(?!react-).*$/" # windows
                            [])
 -g, --global               Check global packages instead of in the current
                            project.
---groupFunction <fn>       Customize how packages are divided into groups
+groupFunction*             Customize how packages are divided into groups
                            when using '--format group'. Run "ncu --help
                            --groupFunction" for details.
 -i, --interactive          Enable interactive prompts for each dependency;
@@ -254,8 +254,8 @@ ncu "/^(?!react-).*$/" # windows
                            [])
 -ws, --workspaces          Run on all workspaces. Add --root to also upgrade
                            the root project.
--V, --version              output the version number
--h, --help                 display help
+-V, --version              Output the version number.
+-h, --help                 You're lookin' at it.
 ```
 
 <!-- END Options -->
@@ -328,16 +328,12 @@ Example:
 
 ## filterResults
 
-Usage:
+Filters out upgrades based on a user provided function.
 
-    ncu --filterResults [fn]
-
-Filters out upgrades based on a user provided function. Only available in .ncurc.js or when importing npm-check-updates as a module.
-
-For the SemVer type, see: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring
+Only available in .ncurc.js or when importing npm-check-updates as a module.
 
 ```js
-/**
+/** Filter out non-major version updates.
   @param {string} packageName               The name of the dependency.
   @param {string} currentVersion            Current version declaration (may be range).
   @param {SemVer[]} currentVersionSemver    Current version declaration in semantic versioning format (may be range).
@@ -355,7 +351,7 @@ filterResults: (packageName, {currentVersion, currentVersionSemver, upgradedVers
 }
 ```
 
-The above example filters out non-major version updates.
+For the SemVer type definition, see: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring
 
 ## format
 
@@ -375,11 +371,9 @@ Modify the output formatting or show additional information. Specify one or more
 
 ## groupFunction
 
-Usage:
+Customize how packages are divided into groups when using `--format group`.
 
-    ncu --groupFunction [fn]
-
-Customize how packages are divided into groups when using `--format group`. Only available in .ncurc.js or when importing npm-check-updates as a module:
+Only available in .ncurc.js or when importing npm-check-updates as a module.
 
 ```js
 /**
@@ -504,7 +498,7 @@ Determines the version to upgrade to. (default: "latest")
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module:
 
 ```js
-/** Custom target.
+/** Upgrade major version zero to the next minor version, and everything else to latest.
   @param dependencyName The name of the dependency.
   @param parsedVersion A parsed Semver object from semver-utils.
     (See https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
