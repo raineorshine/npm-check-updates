@@ -189,9 +189,9 @@ ${codeBlock(
   @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
 */`)}
 ${chalk.cyan('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion) ${chalk.cyan('=>')} {
-  ${chalk.red('if')} (name ${chalk.red('===')} ${chalk.yellow(`'typescript'`)} && defaultGroup ${chalk.red(
-    '===',
-  )} ${chalk.yellow(`'minor'`)}) {
+  ${chalk.red('if')} (name ${chalk.red('===')} ${chalk.yellow(`'typescript'`)} ${chalk.red(
+    '&&',
+  )} defaultGroup ${chalk.red('===')} ${chalk.yellow(`'minor'`)}) {
     ${chalk.red('return')} ${chalk.yellow(`'major'`)}
   }
   ${chalk.red('if')} (name.startsWith('@myorg/')) {
