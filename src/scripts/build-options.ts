@@ -1,7 +1,8 @@
 import fs from 'fs/promises'
 import spawn from 'spawn-please'
-import cliOptions, { CLIOption, renderExtendedHelp } from '../cli-options'
+import cliOptions, { renderExtendedHelp } from '../cli-options'
 import { chalkInit } from '../lib/chalk'
+import CLIOption from '../types/CLIOption'
 
 const INJECT_HEADER =
   '<!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->'

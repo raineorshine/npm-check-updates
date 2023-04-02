@@ -4,25 +4,9 @@ import { defaultCacheFile } from './lib/cache'
 import chalk from './lib/chalk'
 import table from './lib/table'
 import wrap from './lib/wrap'
+import CLIOption from './types/CLIOption'
+import ExtendedHelp from './types/ExtendedHelp'
 import { Index } from './types/IndexType'
-
-/** A function that renders extended help for an option. */
-type ExtendedHelp = string | ((options: { markdown?: boolean }) => string)
-
-export interface CLIOption<T = any> {
-  arg?: string
-  choices?: T[]
-  /** If false, the option is only usable in the ncurc file, or when using npm-check-updates as a module, not on the command line. */
-  cli?: boolean
-  default?: T
-  deprecated?: boolean
-  description: string
-  help?: ExtendedHelp
-  parse?: (s: string, p?: T) => T
-  long: string
-  short?: string
-  type: string
-}
 
 /** Pads the left side of each line in a string. */
 const padLeft = (s: string, n: number) =>
