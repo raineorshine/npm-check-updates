@@ -134,6 +134,7 @@
     "strip-ansi": "^7.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.2",
+    "typescript-json-schema": "^0.55.0",
     "yarn": "^1.22.19"
   },
   "files": [

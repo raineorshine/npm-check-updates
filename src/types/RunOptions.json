@@ -1,0 +1,486 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "PackageFile": {
+      "description": "The relevant bits of a parsed package.json file.",
+      "properties": {
+        "dependencies": {
+          "additionalProperties": {
+            "$ref": "#/definitions/T"
+          },
+          "description": "A very generic object.",
+          "type": "object"
+        },
+        "devDependencies": {
+          "additionalProperties": {
+            "$ref": "#/definitions/T"
+          },
+          "description": "A very generic object.",
+          "type": "object"
+        },
+        "engines": {
+          "additionalProperties": {
+            "$ref": "#/definitions/T"
+          },
+          "description": "A very generic object.",
+          "type": "object"
+        },
+        "imports": {
+          "additionalProperties": {
+            "$ref": "#/definitions/T"
+          },
+          "description": "A very generic object.",
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        },
+        "optionalDependencies": {
+          "additionalProperties": {
+            "$ref": "#/definitions/T"
+          },
+          "description": "A very generic object.",
+          "type": "object"
+        },
+        "packageManager": {
+          "type": "string"
+        },
+        "peerDependencies": {
+          "additionalProperties": {
+            "$ref": "#/definitions/T"
+          },
+          "description": "A very generic object.",
+          "type": "object"
+        },
+        "repository": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PackageFileRepository"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "scripts": {
+          "additionalProperties": {
+            "$ref": "#/definitions/T"
+          },
+          "description": "A very generic object.",
+          "type": "object"
+        },
+        "workspaces": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "properties": {
+                "packages": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "PackageFileRepository": {
+      "description": "Represents the repository field in package.json.",
+      "properties": {
+        "directory": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "RegExp": {
+      "properties": {
+        "dotAll": {
+          "type": "boolean"
+        },
+        "flags": {
+          "type": "string"
+        },
+        "global": {
+          "type": "boolean"
+        },
+        "ignoreCase": {
+          "type": "boolean"
+        },
+        "lastIndex": {
+          "type": "number"
+        },
+        "multiline": {
+          "type": "boolean"
+        },
+        "source": {
+          "type": "string"
+        },
+        "sticky": {
+          "type": "boolean"
+        },
+        "unicode": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "T": {
+      "type": "object"
+    }
+  },
+  "description": "Options that can be given on the CLI or passed to the ncu module to control all behavior.",
+  "properties": {
+    "cache": {
+      "description": "Cache versions to a local cache file. Default --cacheFile is ~/.ncu-cache.json and default --cacheExpiration is 10 minutes.",
+      "type": "boolean"
+    },
+    "cacheClear": {
+      "description": "Clear the default cache, or the cache file specified by --cacheFile.",
+      "type": "boolean"
+    },
+    "cacheExpiration": {
+      "default": 10,
+      "description": "Cache expiration in minutes. Only works with --cache.",
+      "type": "number"
+    },
+    "cacheFile": {
+      "default": "~/.ncu-cache.json",
+      "description": "Filepath for the cache file. Only works with --cache.",
+      "type": "string"
+    },
+    "color": {
+      "description": "Force color in terminal.",
+      "type": "boolean"
+    },
+    "concurrency": {
+      "default": 8,
+      "description": "Max number of concurrent HTTP requests to registry.",
+      "type": "number"
+    },
+    "configFileName": {
+      "description": "Config file name. (default: .ncurc.{json,yml,js,cjs})",
+      "type": "string"
+    },
+    "configFilePath": {
+      "description": "Directory of .ncurc config file. (default: directory of `packageFile`)",
+      "type": "string"
+    },
+    "cwd": {
+      "description": "Working directory in which npm will be executed.",
+      "type": "string"
+    },
+    "deep": {
+      "description": "Run recursively in current working directory. Alias of (--packageFile '**\\/package.json').",
+      "type": "boolean"
+    },
+    "dep": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "default": ["prod", "dev", "optional"],
+      "description": "Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited)."
+    },
+    "deprecated": {
+      "description": "Include deprecated packages.",
+      "type": "boolean"
+    },
+    "doctor": {
+      "description": "Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires \"-u\" to execute. Run \"ncu --help --doctor\" for details.",
+      "type": "boolean"
+    },
+    "doctorInstall": {
+      "description": "Specifies the install script to use in doctor mode. (default: npm install/yarn)",
+      "type": "string"
+    },
+    "doctorTest": {
+      "description": "Specifies the test script to use in doctor mode. (default: npm test)",
+      "type": "string"
+    },
+    "enginesNode": {
+      "description": "Include only packages that satisfy engines.node as specified in the package file.",
+      "type": "boolean"
+    },
+    "errorLevel": {
+      "default": 1,
+      "description": "Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration).",
+      "type": "number"
+    },
+    "filter": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/RegExp"
+        },
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "description": "Supported function for the --filter and --reject options.",
+          "type": "object"
+        },
+        {
+          "items": {
+            "$ref": "#/definitions/RegExp"
+          },
+          "type": "array"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function."
+    },
+    "filterResults": {
+      "description": "Filters out upgrades based on a user provided function. Run \"ncu --help --filterResults\" for details.",
+      "type": "object"
+    },
+    "filterVersion": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/RegExp"
+        },
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "description": "Supported function for the --filter and --reject options.",
+          "type": "object"
+        },
+        {
+          "items": {
+            "$ref": "#/definitions/RegExp"
+          },
+          "type": "array"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "Filter on package version using comma-or-space-delimited list, /regex/, or predicate function."
+    },
+    "format": {
+      "description": "Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines. Run \"ncu --help --format\" for details.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "global": {
+      "description": "Check global packages instead of in the current project.",
+      "type": "boolean"
+    },
+    "groupFunction": {
+      "description": "Supported function for the --group options.",
+      "type": "object"
+    },
+    "interactive": {
+      "description": "Enable interactive prompts for each dependency; implies -u unless one of the json options are set.",
+      "type": "boolean"
+    },
+    "jsonAll": {
+      "description": "Output new package file instead of human-readable message.",
+      "type": "boolean"
+    },
+    "jsonDeps": {
+      "description": "Like `jsonAll` but only lists `dependencies`, `devDependencies`, `optionalDependencies`, etc of the new package data.",
+      "type": "boolean"
+    },
+    "jsonUpgraded": {
+      "description": "Output upgraded dependencies in json.",
+      "type": "boolean"
+    },
+    "loglevel": {
+      "default": "warn",
+      "description": "Amount to log: silent, error, minimal, warn, info, verbose, silly.",
+      "type": "string"
+    },
+    "mergeConfig": {
+      "description": "Merges nested configs with the root config file for --deep or --packageFile options. (default: false)",
+      "type": "boolean"
+    },
+    "minimal": {
+      "description": "Do not upgrade newer versions that are already satisfied by the version range according to semver.",
+      "type": "boolean"
+    },
+    "packageData": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/PackageFile"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "Package file data (you can also use stdin)."
+    },
+    "packageFile": {
+      "description": "Package file(s) location. (default: ./package.json)",
+      "type": "string"
+    },
+    "packageManager": {
+      "description": "npm, yarn, pnpm, deno, staticRegistry (default: npm). Run \"ncu --help --packageManager\" for details.",
+      "enum": ["deno", "npm", "pnpm", "staticRegistry", "yarn"],
+      "type": "string"
+    },
+    "peer": {
+      "description": "Check peer dependencies of installed packages and filter updates to compatible versions. Run \"ncu --help --peer\" for details.",
+      "type": "boolean"
+    },
+    "pre": {
+      "description": "Include prerelease versions, e.g. -alpha.0, -beta.5, -rc.2. Automatically set to 1 when --target is newest or greatest, or when the current version is a prerelease. (default: 0)",
+      "type": "boolean"
+    },
+    "prefix": {
+      "description": "Current working directory of npm.",
+      "type": "string"
+    },
+    "registry": {
+      "description": "Third-party npm registry. Run \"ncu --help --registry\" for details.",
+      "type": "string"
+    },
+    "reject": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/RegExp"
+        },
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "description": "Supported function for the --filter and --reject options.",
+          "type": "object"
+        },
+        {
+          "items": {
+            "$ref": "#/definitions/RegExp"
+          },
+          "type": "array"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function."
+    },
+    "rejectVersion": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/RegExp"
+        },
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "description": "Supported function for the --filter and --reject options.",
+          "type": "object"
+        },
+        {
+          "items": {
+            "$ref": "#/definitions/RegExp"
+          },
+          "type": "array"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function."
+    },
+    "removeRange": {
+      "description": "Remove version ranges from the final package version.",
+      "type": "boolean"
+    },
+    "retry": {
+      "default": 3,
+      "description": "Number of times to retry failed requests for package info.",
+      "type": "number"
+    },
+    "root": {
+      "description": "Runs updates on the root project in addition to specified workspaces. Only allowed with --workspace or --workspaces. (default: false)",
+      "type": "boolean"
+    },
+    "silent": {
+      "description": "Don't output anything. Alias for --loglevel silent.",
+      "type": "boolean"
+    },
+    "stdin": {
+      "description": "Read package.json from stdin.",
+      "type": "string"
+    },
+    "target": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "description": "A function that can be provided to the --target option for custom filtering.",
+          "type": "object"
+        },
+        {
+          "enum": ["greatest", "latest", "minor", "newest", "patch"],
+          "type": "string"
+        }
+      ],
+      "description": "Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. (default: latest) Run \"ncu --help --target\" for details."
+    },
+    "timeout": {
+      "description": "Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch)",
+      "type": "number"
+    },
+    "upgrade": {
+      "description": "Overwrite package file with upgraded versions instead of just outputting to console.",
+      "type": "boolean"
+    },
+    "verbose": {
+      "description": "Log additional information for debugging. Alias for --loglevel verbose.",
+      "type": "boolean"
+    },
+    "workspace": {
+      "description": "Run on one or more specified workspaces. Add --root to also upgrade the root project.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "workspaces": {
+      "description": "Run on all workspaces. Add --root to also upgrade the root project.",
+      "type": "boolean"
+    }
+  },
+  "type": "object"
+}

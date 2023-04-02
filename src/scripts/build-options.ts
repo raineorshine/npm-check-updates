@@ -83,7 +83,7 @@ const renderOption = (option: CLIOption<unknown>) => {
 }
 
 /** Generate /src/types/RunOptions from cli-options so there is a single source of truth. */
-const renderRunOptions = (options: CLIOption<unknown>[]) => {
+const generateRunOptions = (options: CLIOption<unknown>[]) => {
   const header = `/** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build" or "npm run build:options" to build. */
 import { FilterFunction } from './FilterFunction'
 import { FilterResultsFunction } from './FilterResultsFunction'
@@ -104,7 +104,15 @@ export interface RunOptions {
   return output
 }
 
+/** Generates a JSON schema for the ncurc file. */
+const generateRunOptionsJsonSchema = async (): Promise<string> =>
+  // programmatic usage of typescript-json-schema does not work, at least not straightforwardly.
+  // Use the CLI which works out-of-the-box.
+  spawn('typescript-json-schema', ['tsconfig.json', 'RunOptions'])
+
 ;(async () => {
   await fs.writeFile('README.md', await injectReadme())
-  await fs.writeFile('src/types/RunOptions.ts', renderRunOptions(cliOptions))
+  await fs.writeFile('src/types/RunOptions.ts', generateRunOptions(cliOptions))
+  await fs.writeFile('src/types/RunOptions.json', await generateRunOptionsJsonSchema())
+  await spawn('prettier', ['-w', 'src/types/RunOptions.json'])
 })()
