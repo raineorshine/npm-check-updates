@@ -174,9 +174,9 @@ ncu "/^(?!react-).*$/" # windows
 -f, --filter <p>           Include only package names matching the given
                            string, wildcard, glob, comma-or-space-delimited
                            list, /regex/, or predicate function.
---filterResults <fn>       Filters the results of update based on user
-                           provided function. Run "ncu --help
-                           --filterResults" for details.
+--filterResults <fn>       Filters out upgrades based on a user provided
+                           function. Run "ncu --help --filterResults" for
+                           details.
 --filterVersion <p>        Filter on package version using
                            comma-or-space-delimited list, /regex/, or
                            predicate function.
@@ -255,7 +255,7 @@ ncu "/^(?!react-).*$/" # windows
 -ws, --workspaces          Run on all workspaces. Add --root to also upgrade
                            the root project.
 -V, --version              output the version number
--h, --help                 display help for
+-h, --help                 display help
 ```
 
 <!-- END Options -->
@@ -332,26 +332,30 @@ Usage:
 
     ncu --filterResults [fn]
 
-Filters the results of update based on user provided function. Only available in .ncurc.js or when importing npm-check-updates as a module:
+Filters out upgrades based on a user provided function. Only available in .ncurc.js or when importing npm-check-updates as a module.
 
-    /**
-      @param {string} packageName                 The name of the dependency.
-      @param {VersionSpec} currentVersion         Current version declaration (may be range).
-      @param {SemVer[]} currentVersionSemver      Current version declaration in semantic versioning format (may be range).  @see {@link https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring.}
-      @param {Version} upgradedVersion            Upgraded version declaration (may be range).
-      @param {SemVer} upgradedVersionSemver       Upgraded version declaration in semantic versioning format. @see {@link https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring.}
-      @returns {boolean}                          Return true if the upgrade should be kept, otherwise it will be ignored.
-    */
-    filterResults: (packageName, {currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver}) {
-      const currentMajorVersion = currentVersionSemver?.[0]?.major
-      const upgradedMajorVersion = upgradedVersionSemver?.major
-      if (currentMajorVersion && upgradedMajorVersion) {
-        return currentMajorVersion < upgradedMajorVersion
-      }
-      return true
-    }
+For the SemVer type, see: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring
 
-    This example implementation of filterResults function, will filter out all the version updates that were not the major ones.
+```js
+/**
+  @param {string} packageName               The name of the dependency.
+  @param {string} currentVersion            Current version declaration (may be range).
+  @param {SemVer[]} currentVersionSemver    Current version declaration in semantic versioning format (may be range).
+  @param {string} upgradedVersion           Upgraded version.
+  @param {SemVer} upgradedVersionSemver     Upgraded version in semantic versioning format.
+  @returns {boolean}                        Return true if the upgrade should be kept, otherwise it will be ignored.
+*/
+filterResults: (packageName, {currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver}) {
+  const currentMajorVersion = currentVersionSemver?.[0]?.major
+  const upgradedMajorVersion = upgradedVersionSemver?.major
+  if (currentMajorVersion && upgradedMajorVersion) {
+    return currentMajorVersion < upgradedMajorVersion
+  }
+  return true
+}
+```
+
+The above example filters out non-major version updates.
 
 ## format
 
