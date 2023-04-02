@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { Help, program } from 'commander'
+import Commander, { Help, program } from 'commander'
 import cloneDeep from 'lodash/cloneDeep'
 import pickBy from 'lodash/pickBy'
 import semver from 'semver'
@@ -96,17 +96,23 @@ ${chalk.dim.underline(
     })
 
   // add cli options
-  cliOptions.forEach(({ long, short, arg, description, default: defaultValue, help, parse, type }) => {
+  cliOptions.forEach(({ hidden, long, short, arg, description, default: defaultValue, help, parse, type }) => {
     // handle 3rd/4th argument polymorphism
-    program.option(
+    const option = new Commander.Option(
       // optional [bool] arg allows boolean options to be set to false, while still allowing unary functionality
       // [bool] is stripped from the help text in configureHelp
       `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : type === 'boolean' ? ' [bool]' : ''}`,
       // point to help in description if extended help text is available
       `${description}${help ? ` Run "ncu --help --${long}" for details.` : ''}`,
-      parse || (type === 'boolean' ? s => s !== 'false' : defaultValue),
-      parse ? defaultValue : undefined,
     )
+    option.default(defaultValue)
+    if (parse || type === 'boolean') {
+      option.argParser(parse || ((s: string) => s !== 'false'))
+    }
+    if (hidden) {
+      option.hideHelp()
+    }
+    program.addOption(option)
   })
 
   // set version option at the end
