@@ -7,26 +7,23 @@ import CLIOption from '../types/CLIOption'
 const INJECT_HEADER =
   '<!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->'
 
-/** Extracts CLI options from the bin output. */
-const readOptions = async () => {
-  const optionsBinLabel = 'Options:\n'
-  const helpOutput: string = await spawn('node', ['./build/src/bin/cli.js', '--help'])
-  return (
-    helpOutput
-      .slice(helpOutput.indexOf(optionsBinLabel) + optionsBinLabel.length)
-      // outdent
-      .split('\n')
-      .map((s: string) => s.slice(2))
-      .join('\n')
-      .trim()
-  )
-}
+/** Replaces markdown code ticks with <code>...</code> tag. */
+const codeHtml = (code: string) => code.replace(/\b`/g, '</code>').replace(/`/g, '<code>')
 
 /** Replaces the "Options" and "Advanced Options" sections of the README with direct output from "ncu --help". */
 const injectReadme = async () => {
   const { default: stripAnsi } = await import('strip-ansi')
-  const helpOptions = await readOptions()
   let readme = await fs.readFile('README.md', 'utf8')
+  const optionRows = cliOptions
+    .map(option => {
+      return `  <tr>
+    <td>${option.short ? `-${option.short}, ` : ''}${option.cli !== false ? '--' : ''}${option.long}${
+        option.arg ? ` <${option.arg}>` : ''
+      }</td>
+    <td>${codeHtml(option.description)}${option.default ? ` (default: ${JSON.stringify(option.default)})` : ''}</td>
+  </tr>`
+    })
+    .join('\n')
 
   // inject options into README
   const optionsStart = readme.indexOf('<!-- BEGIN Options -->') + '<!-- BEGIN Options -->'.length
@@ -34,9 +31,9 @@ const injectReadme = async () => {
   readme = `${readme.slice(0, optionsStart)}
 ${INJECT_HEADER}
 
-\`\`\`text
-${helpOptions}
-\`\`\`
+<table>
+${optionRows}
+</table>
 
 ${readme.slice(optionsEnd)}`
 

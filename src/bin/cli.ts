@@ -7,7 +7,11 @@ import pkg from '../../package.json'
 import cliOptions, { renderExtendedHelp } from '../cli-options'
 import ncu from '../index'
 import { chalkInit } from '../lib/chalk'
-import getNcuRc from '../lib/getNcuRc' // async global contexts are only available in esm modules -> function
+// async global contexts are only available in esm modules -> function
+import getNcuRc from '../lib/getNcuRc'
+
+/** Removes inline code ticks. */
+const uncode = (s: string) => s.replace(/`/g, '')
 
 ;(async () => {
   // importing update-notifier dynamically as esm modules are only allowed to be dynamically imported inside of cjs modules
@@ -116,7 +120,7 @@ ${chalk.dim.underline(
       // [bool] is stripped from the help text in configureHelp
       `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : type === 'boolean' ? ' [bool]' : ''}`,
       // point to help in description if extended help text is available
-      `${description}${help ? ` Run "ncu --help --${long}" for details.` : ''}`,
+      `${uncode(description)}${help ? ` Run "ncu --help --${long}" for details.` : ''}`,
       parse || (type === 'boolean' ? s => s !== 'false' : defaultValue),
       parse ? defaultValue : undefined,
     )

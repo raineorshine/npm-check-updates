@@ -144,21 +144,21 @@
   "description": "Options that can be given on the CLI or passed to the ncu module to control all behavior.",
   "properties": {
     "cache": {
-      "description": "Cache versions to a local cache file. Default --cacheFile is ~/.ncu-cache.json and default --cacheExpiration is 10 minutes.",
+      "description": "Cache versions to a local cache file. Default `--cacheFile` is ~/.ncu-cache.json and default `--cacheExpiration` is 10 minutes.",
       "type": "boolean"
     },
     "cacheClear": {
-      "description": "Clear the default cache, or the cache file specified by --cacheFile.",
+      "description": "Clear the default cache, or the cache file specified by `--cacheFile`.",
       "type": "boolean"
     },
     "cacheExpiration": {
       "default": 10,
-      "description": "Cache expiration in minutes. Only works with --cache.",
+      "description": "Cache expiration in minutes. Only works with `--cache`.",
       "type": "number"
     },
     "cacheFile": {
       "default": "~/.ncu-cache.json",
-      "description": "Filepath for the cache file. Only works with --cache.",
+      "description": "Filepath for the cache file. Only works with `--cache`.",
       "type": "string"
     },
     "color": {
@@ -183,7 +183,7 @@
       "type": "string"
     },
     "deep": {
-      "description": "Run recursively in current working directory. Alias of (--packageFile '**\\/package.json').",
+      "description": "Run recursively in current working directory. Alias of (`--packageFile '**\\/package.json'`).",
       "type": "boolean"
     },
     "dep": {
@@ -206,15 +206,15 @@
       "type": "boolean"
     },
     "doctor": {
-      "description": "Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires \"-u\" to execute. Run \"ncu --help --doctor\" for details.",
+      "description": "Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires `-u` to execute. Run \"ncu --help --doctor\" for details.",
       "type": "boolean"
     },
     "doctorInstall": {
-      "description": "Specifies the install script to use in doctor mode. (default: npm install/yarn)",
+      "description": "Specifies the install script to use in doctor mode. (default: `npm install/yarn`)",
       "type": "string"
     },
     "doctorTest": {
-      "description": "Specifies the test script to use in doctor mode. (default: npm test)",
+      "description": "Specifies the test script to use in doctor mode. (default: `npm test`)",
       "type": "string"
     },
     "enginesNode": {
@@ -300,7 +300,7 @@
       "type": "object"
     },
     "interactive": {
-      "description": "Enable interactive prompts for each dependency; implies -u unless one of the json options are set.",
+      "description": "Enable interactive prompts for each dependency; implies `-u` unless one of the json options are set.",
       "type": "boolean"
     },
     "jsonAll": {
@@ -321,7 +321,7 @@
       "type": "string"
     },
     "mergeConfig": {
-      "description": "Merges nested configs with the root config file for --deep or --packageFile options. (default: false)",
+      "description": "Merges nested configs with the root config file for `--deep` or `--packageFile` options. (default: false)",
       "type": "boolean"
     },
     "minimal": {
@@ -353,7 +353,7 @@
       "type": "boolean"
     },
     "pre": {
-      "description": "Include prerelease versions, e.g. -alpha.0, -beta.5, -rc.2. Automatically set to 1 when --target is newest or greatest, or when the current version is a prerelease. (default: 0)",
+      "description": "Include prerelease versions, e.g. -alpha.0, -beta.5, -rc.2. Automatically set to 1 when `--target` is newest or greatest, or when the current version is a prerelease. (default: 0)",
       "type": "boolean"
     },
     "prefix": {
@@ -428,11 +428,11 @@
       "type": "number"
     },
     "root": {
-      "description": "Runs updates on the root project in addition to specified workspaces. Only allowed with --workspace or --workspaces. (default: false)",
+      "description": "Runs updates on the root project in addition to specified workspaces. Only allowed with `--workspace` or `--workspaces`. (default: false)",
       "type": "boolean"
     },
     "silent": {
-      "description": "Don't output anything. Alias for --loglevel silent.",
+      "description": "Don't output anything. Alias for `--loglevel` silent.",
       "type": "boolean"
     },
     "stdin": {
@@ -467,18 +467,18 @@
       "type": "boolean"
     },
     "verbose": {
-      "description": "Log additional information for debugging. Alias for --loglevel verbose.",
+      "description": "Log additional information for debugging. Alias for `--loglevel` verbose.",
       "type": "boolean"
     },
     "workspace": {
-      "description": "Run on one or more specified workspaces. Add --root to also upgrade the root project.",
+      "description": "Run on one or more specified workspaces. Add `--root` to also upgrade the root project.",
       "items": {
         "type": "string"
       },
       "type": "array"
     },
     "workspaces": {
-      "description": "Run on all workspaces. Add --root to also upgrade the root project.",
+      "description": "Run on all workspaces. Add `--root` to also upgrade the root project.",
       "type": "boolean"
     }
   },

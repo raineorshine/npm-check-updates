@@ -16,9 +16,11 @@ const padLeft = (s: string, n: number) =>
     .join('\n')
 
 /** Formats a code block for CLI or markdown. */
-const codeBlock = (code: string, { markdown }: { markdown?: boolean } = {}) => {
-  return `${markdown ? '```js\n' : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
-}
+const codeBlock = (code: string, { markdown }: { markdown?: boolean } = {}) =>
+  `${markdown ? '```js\n' : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
+
+/** Removes inline code ticks. */
+const uncode = (s: string) => s.replace(/`/g, '')
 
 /** Renders the extended help for an option with usage information. */
 export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?: boolean } = {}) => {
@@ -39,11 +41,12 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?:
       typeof option.help === 'function'
         ? markdown
           ? option.help({ markdown })
-          : option.help({ markdown }).replace(/`/g, '"')
+          : uncode(option.help({ markdown }))
         : option.help
     output += `\n${helpText.trim()}\n\n`
   } else if (option.description) {
-    output += `\n${option.description}\n`
+    const description = markdown ? option.description : uncode(option.description)
+    output += `\n${description.replace(/`/g, '')}\n`
   }
 
   return output.trim()
@@ -329,18 +332,18 @@ As a comparison: without using the \`--peer\` option, ncu will suggest the lates
 const cliOptions: CLIOption[] = [
   {
     long: 'cache',
-    description: `Cache versions to a local cache file. Default --cacheFile is ${defaultCacheFile} and default --cacheExpiration is 10 minutes.`,
+    description: `Cache versions to a local cache file. Default \`--cacheFile\` is ${defaultCacheFile} and default \`--cacheExpiration\` is 10 minutes.`,
     type: 'boolean',
   },
   {
     long: 'cacheClear',
-    description: 'Clear the default cache, or the cache file specified by --cacheFile.',
+    description: 'Clear the default cache, or the cache file specified by `--cacheFile`.',
     type: 'boolean',
   },
   {
     long: 'cacheExpiration',
     arg: 'min',
-    description: 'Cache expiration in minutes. Only works with --cache.',
+    description: 'Cache expiration in minutes. Only works with `--cache`.',
     parse: s => parseInt(s, 10),
     default: 10,
     type: 'number',
@@ -348,7 +351,7 @@ const cliOptions: CLIOption[] = [
   {
     long: 'cacheFile',
     arg: 'path',
-    description: 'Filepath for the cache file. Only works with --cache.',
+    description: 'Filepath for the cache file. Only works with `--cache`.',
     parse: s => (path.isAbsolute(s) ? s : path.join(process.cwd(), s)),
     default: defaultCacheFile,
     type: 'string',
@@ -386,7 +389,7 @@ const cliOptions: CLIOption[] = [
   },
   {
     long: 'deep',
-    description: `Run recursively in current working directory. Alias of (--packageFile '**/package.json').`,
+    description: `Run recursively in current working directory. Alias of (\`--packageFile '**/package.json'\`).`,
     type: 'boolean',
   },
   {
@@ -407,20 +410,20 @@ const cliOptions: CLIOption[] = [
     long: 'doctor',
     short: 'd',
     description:
-      'Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires "-u" to execute.',
+      'Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires `-u` to execute.',
     type: 'boolean',
     help: extendedHelpDoctor,
   },
   {
     long: 'doctorInstall',
     arg: 'command',
-    description: 'Specifies the install script to use in doctor mode. (default: npm install/yarn)',
+    description: 'Specifies the install script to use in doctor mode. (default: `npm install/yarn`)',
     type: 'string',
   },
   {
     long: 'doctorTest',
     arg: 'command',
-    description: 'Specifies the test script to use in doctor mode. (default: npm test)',
+    description: 'Specifies the test script to use in doctor mode. (default: `npm test`)',
     type: 'string',
   },
   {
@@ -483,14 +486,14 @@ const cliOptions: CLIOption[] = [
     long: 'groupFunction',
     arg: 'fn',
     cli: false,
-    description: `Customize how packages are divided into groups when using '--format group'.`,
+    description: `Customize how packages are divided into groups when using \`--format group\`.`,
     type: 'GroupFunction',
     help: extendedHelpGroupFunction,
   },
   {
     long: 'interactive',
     short: 'i',
-    description: 'Enable interactive prompts for each dependency; implies -u unless one of the json options are set.',
+    description: 'Enable interactive prompts for each dependency; implies `-u` unless one of the json options are set.',
     type: 'boolean',
   },
   {
@@ -521,7 +524,7 @@ const cliOptions: CLIOption[] = [
   },
   {
     long: 'mergeConfig',
-    description: `Merges nested configs with the root config file for --deep or --packageFile options. (default: false)`,
+    description: `Merges nested configs with the root config file for \`--deep\` or \`--packageFile\` options. (default: false)`,
     type: 'boolean',
   },
   {
@@ -560,7 +563,7 @@ const cliOptions: CLIOption[] = [
     long: 'pre',
     arg: 'n',
     description:
-      'Include prerelease versions, e.g. -alpha.0, -beta.5, -rc.2. Automatically set to 1 when --target is newest or greatest, or when the current version is a prerelease. (default: 0)',
+      'Include prerelease versions, e.g. -alpha.0, -beta.5, -rc.2. Automatically set to 1 when `--target` is newest or greatest, or when the current version is a prerelease. (default: 0)',
     parse: s => !!parseInt(s, 10),
     type: 'number',
   },
@@ -604,7 +607,7 @@ When \`--packageManager staticRegistry\` is set, \`--registry\` must specify a p
   {
     long: 'root',
     description:
-      'Runs updates on the root project in addition to specified workspaces. Only allowed with --workspace or --workspaces. (default: false)',
+      'Runs updates on the root project in addition to specified workspaces. Only allowed with `--workspace` or `--workspaces`. (default: false)',
     type: 'boolean',
   },
   {
@@ -618,7 +621,7 @@ When \`--packageManager staticRegistry\` is set, \`--registry\` must specify a p
   {
     long: 'silent',
     short: 's',
-    description: "Don't output anything. Alias for --loglevel silent.",
+    description: "Don't output anything. Alias for `--loglevel` silent.",
     type: 'boolean',
   },
   {
@@ -650,7 +653,7 @@ When \`--packageManager staticRegistry\` is set, \`--registry\` must specify a p
   },
   {
     long: 'verbose',
-    description: 'Log additional information for debugging. Alias for --loglevel verbose.',
+    description: 'Log additional information for debugging. Alias for `--loglevel` verbose.',
     type: 'boolean',
   },
   {
@@ -659,13 +662,13 @@ When \`--packageManager staticRegistry\` is set, \`--registry\` must specify a p
     arg: 's',
     parse: (value, accum) => [...accum, value],
     default: [],
-    description: 'Run on one or more specified workspaces. Add --root to also upgrade the root project.',
+    description: 'Run on one or more specified workspaces. Add `--root` to also upgrade the root project.',
     type: 'string[]',
   },
   {
     long: 'workspaces',
     short: 'ws',
-    description: 'Run on all workspaces. Add --root to also upgrade the root project.',
+    description: 'Run on all workspaces. Add `--root` to also upgrade the root project.',
     type: 'boolean',
   },
 ]

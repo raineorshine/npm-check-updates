@@ -7,19 +7,19 @@ import { TargetFunction } from './TargetFunction'
 
 /** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
 export interface RunOptions {
-  /** Cache versions to a local cache file. Default --cacheFile is ~/.ncu-cache.json and default --cacheExpiration is 10 minutes. */
+  /** Cache versions to a local cache file. Default `--cacheFile` is ~/.ncu-cache.json and default `--cacheExpiration` is 10 minutes. */
   cache?: boolean
 
-  /** Clear the default cache, or the cache file specified by --cacheFile. */
+  /** Clear the default cache, or the cache file specified by `--cacheFile`. */
   cacheClear?: boolean
 
-  /** Cache expiration in minutes. Only works with --cache.
+  /** Cache expiration in minutes. Only works with `--cache`.
    *
    * @default 10
    */
   cacheExpiration?: number
 
-  /** Filepath for the cache file. Only works with --cache.
+  /** Filepath for the cache file. Only works with `--cache`.
    *
    * @default "~/.ncu-cache.json"
    */
@@ -43,7 +43,7 @@ export interface RunOptions {
   /** Working directory in which npm will be executed. */
   cwd?: string
 
-  /** Run recursively in current working directory. Alias of (--packageFile '**\/package.json'). */
+  /** Run recursively in current working directory. Alias of (`--packageFile '**\/package.json'`). */
   deep?: boolean
 
   /** Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited).
@@ -55,13 +55,13 @@ export interface RunOptions {
   /** Include deprecated packages. */
   deprecated?: boolean
 
-  /** Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires "-u" to execute. Run "ncu --help --doctor" for details. */
+  /** Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires `-u` to execute. Run "ncu --help --doctor" for details. */
   doctor?: boolean
 
-  /** Specifies the install script to use in doctor mode. (default: npm install/yarn) */
+  /** Specifies the install script to use in doctor mode. (default: `npm install/yarn`) */
   doctorInstall?: string
 
-  /** Specifies the test script to use in doctor mode. (default: npm test) */
+  /** Specifies the test script to use in doctor mode. (default: `npm test`) */
   doctorTest?: string
 
   /** Include only packages that satisfy engines.node as specified in the package file. */
@@ -88,10 +88,10 @@ export interface RunOptions {
   /** Check global packages instead of in the current project. */
   global?: boolean
 
-  /** Customize how packages are divided into groups when using '--format group'. Run "ncu --help --groupFunction" for details. */
+  /** Customize how packages are divided into groups when using `--format group`. Run "ncu --help --groupFunction" for details. */
   groupFunction?: GroupFunction
 
-  /** Enable interactive prompts for each dependency; implies -u unless one of the json options are set. */
+  /** Enable interactive prompts for each dependency; implies `-u` unless one of the json options are set. */
   interactive?: boolean
 
   /** Output new package file instead of human-readable message. */
@@ -109,7 +109,7 @@ export interface RunOptions {
    */
   loglevel?: string
 
-  /** Merges nested configs with the root config file for --deep or --packageFile options. (default: false) */
+  /** Merges nested configs with the root config file for `--deep` or `--packageFile` options. (default: false) */
   mergeConfig?: boolean
 
   /** Do not upgrade newer versions that are already satisfied by the version range according to semver. */
@@ -127,7 +127,7 @@ export interface RunOptions {
   /** Check peer dependencies of installed packages and filter updates to compatible versions. Run "ncu --help --peer" for details. */
   peer?: boolean
 
-  /** Include prerelease versions, e.g. -alpha.0, -beta.5, -rc.2. Automatically set to 1 when --target is newest or greatest, or when the current version is a prerelease. (default: 0) */
+  /** Include prerelease versions, e.g. -alpha.0, -beta.5, -rc.2. Automatically set to 1 when `--target` is newest or greatest, or when the current version is a prerelease. (default: 0) */
   pre?: boolean
 
   /** Current working directory of npm. */
@@ -151,10 +151,10 @@ export interface RunOptions {
    */
   retry?: number
 
-  /** Runs updates on the root project in addition to specified workspaces. Only allowed with --workspace or --workspaces. (default: false) */
+  /** Runs updates on the root project in addition to specified workspaces. Only allowed with `--workspace` or `--workspaces`. (default: false) */
   root?: boolean
 
-  /** Don't output anything. Alias for --loglevel silent. */
+  /** Don't output anything. Alias for `--loglevel` silent. */
   silent?: boolean
 
   /** Read package.json from stdin. */
@@ -169,12 +169,12 @@ export interface RunOptions {
   /** Overwrite package file with upgraded versions instead of just outputting to console. */
   upgrade?: boolean
 
-  /** Log additional information for debugging. Alias for --loglevel verbose. */
+  /** Log additional information for debugging. Alias for `--loglevel` verbose. */
   verbose?: boolean
 
-  /** Run on one or more specified workspaces. Add --root to also upgrade the root project. */
+  /** Run on one or more specified workspaces. Add `--root` to also upgrade the root project. */
   workspace?: string[]
 
-  /** Run on all workspaces. Add --root to also upgrade the root project. */
+  /** Run on all workspaces. Add `--root` to also upgrade the root project. */
   workspaces?: boolean
 }
