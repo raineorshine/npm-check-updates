@@ -1,9 +1,13 @@
-import Table from 'cli-table3'
 import sortBy from 'lodash/sortBy'
 import path from 'path'
 import { defaultCacheFile } from './lib/cache'
 import chalk from './lib/chalk'
+import table from './lib/table'
+import wrap from './lib/wrap'
 import { Index } from './types/IndexType'
+
+/** A function that renders extended help for an option. */
+type ExtendedHelp = string | ((options: { markdown?: boolean }) => string)
 
 export interface CLIOption<T = any> {
   arg?: string
@@ -11,7 +15,7 @@ export interface CLIOption<T = any> {
   default?: T
   deprecated?: boolean
   description: string
-  help?: string | (() => string)
+  help?: ExtendedHelp
   parse?: (s: string, p?: T) => T
   long: string
   short?: string
@@ -25,8 +29,13 @@ const padLeft = (s: string, n: number) =>
     .map(line => `${''.padStart(n, ' ')}${line}`)
     .join('\n')
 
+/** Formats a code block for CLI or markdown. */
+const codeBlock = (code: string, { markdown }: { markdown?: boolean } = {}) => {
+  return `${markdown ? '```js\n' : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
+}
+
 /** Renders the extended help for an option with usage information. */
-export const renderExtendedHelp = (option: CLIOption): string => {
+export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?: boolean } = {}) => {
   let output = `Usage:
 
     ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}\n`
@@ -37,7 +46,12 @@ export const renderExtendedHelp = (option: CLIOption): string => {
     output += `Default: ${option.default}\n`
   }
   if (option.help) {
-    const helpText = typeof option.help === 'function' ? option.help() : option.help
+    const helpText =
+      typeof option.help === 'function'
+        ? markdown
+          ? option.help({ markdown })
+          : option.help({ markdown }).replace(/`/g, '"')
+        : option.help
     output += `\n${helpText.trim()}\n\n`
   } else if (option.description) {
     output += `\n${option.description}\n`
@@ -46,65 +60,17 @@ export const renderExtendedHelp = (option: CLIOption): string => {
   return output.trim()
 }
 
-/** Wraps a string by inserting newlines every n characters. Wraps on word break. Default: 92 chars. */
-const wrap = (s: string, maxLineLength = 92) => {
-  /* eslint-disable fp/no-mutating-methods */
-  const linesIn = s.split('\n')
-  const linesOut: string[] = []
-  linesIn.forEach(lineIn => {
-    let i = 0
-    if (lineIn.length === 0) {
-      linesOut.push('')
-      return
-    }
-
-    // eslint-disable-next-line fp/no-loops
-    while (i < lineIn.length) {
-      const lineFull = lineIn.slice(i, i + maxLineLength + 1)
-
-      // if the line is within the line length, push it as the last line and break
-      const lineTrimmed = lineFull.trimEnd()
-      if (lineTrimmed.length <= maxLineLength) {
-        linesOut.push(lineTrimmed)
-        break
-      }
-
-      // otherwise, wrap before the last word that exceeds the wrap length
-      // do not wrap in the middle of a word
-      // reverse the string and use match to find the first non-word character to wrap on
-      const wrapOffset =
-        lineFull
-          .split('')
-          .reverse()
-          .join('')
-          // add [^\W] to not break in the middle of --registry
-          .match(/[ -][^\W]/)?.index || 0
-      const line = lineFull.slice(0, lineFull.length - wrapOffset)
-
-      // make sure we do not end up in an infinite loop
-      if (line.length === 0) break
-
-      linesOut.push(line.trimEnd())
-      i += line.length
-    }
-    i = 0
-  })
-  return linesOut.join('\n').trim()
-}
-
-/** Wraps the second column in a list of 2-column cli-table rows. */
-const wrapRows = (rows: string[][]) => rows.map(([col1, col2]) => [col1, wrap(col2)])
-
 /** Extended help for the --doctor option. */
-const extendedHelpDoctor =
-  () => `Iteratively installs upgrades and runs tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
+const extendedHelpDoctor: ExtendedHelp = ({
+  markdown,
+}) => `Iteratively installs upgrades and runs tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
 
-${chalk.yellow('Add "-u" to execute')} (modifies your package file, lock file, and node_modules)
+${chalk.yellow('Add `-u` to execute')} (modifies your package file, lock file, and node_modules)
 
 To be more precise:
 
-1. Runs "npm install" and "npm test" to ensure tests are currently passing.
-2. Runs "ncu -u" to optimistically upgrade all dependencies.
+1. Runs \`npm install\` and \`npm test\` to ensure tests are currently passing.
+2. Runs \`ncu -u\` to optimistically upgrade all dependencies.
 3. If tests pass, hurray!
 4. If tests fail, restores package file and lock file.
 5. For each dependency, install upgrade and run tests.
@@ -113,8 +79,13 @@ To be more precise:
 
 Additional options:
 
-    ${chalk.cyan('--doctorInstall')}   specify a custom install script (default: "npm install" or "yarn")
-    ${chalk.cyan('--doctorTest')}      specify a custom test script (default: "npm test")
+${table({
+  markdown,
+  rows: [
+    [chalk.cyan('--doctorInstall'), 'specify a custom install script (default: `npm install` or `yarn`)'],
+    [chalk.cyan('--doctorTest'), 'specify a custom test script (default: `npm test`)'],
+  ],
+})}
 
 Example:
 
@@ -174,54 +145,60 @@ const extendedHelpFilterResults = (): string => {
 }
 
 /** Extended help for the --format option. */
-const extendedHelpFormat = (): string => {
+const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
   const header =
     'Modify the output formatting or show additional information. Specify one or more comma-delimited values.'
-  const table = new Table({ colAligns: ['right', 'left'] })
-  table.push(
-    ...wrapRows([
+  const tableString = table({
+    colAligns: ['right', 'left'],
+    markdown,
+    rows: [
       ['group', `Groups packages by major, minor, patch, and major version zero updates.`],
       ['ownerChanged', `Shows if the package owner has changed.`],
       ['repo', `Infers and displays links to the package's source code repository. Requires packages to be installed.`],
       ['time', 'Shows the publish time of each upgrade.'],
       ['lines', 'Prints name@version on separate lines. Useful for piping to npm install.'],
-    ]),
-  )
+    ],
+  })
 
-  return `${header}\n\n${padLeft(table.toString(), 4)}
+  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
 `
 }
 
 /** Extended help for the --group option. */
-const extendedHelpGroup = (): string => {
-  return `Customize how packages are divided into groups when using '--format group'. Only available in .ncurc.js or when importing npm-check-updates as a module:
+const extendedHelpGroupFunction: ExtendedHelp = ({ markdown }) => {
+  return `Customize how packages are divided into groups when using \`--format group\`. Only available in .ncurc.js or when importing npm-check-updates as a module:
 
-    ${chalk.gray(`/**
-      @param name             The name of the dependency.
-      @param defaultGroup     The predefined group name which will be used by default.
-      @param currentSpec      The current version range in your package.json.
-      @param upgradedSpec     The upgraded version range that will be written to your package.json.
-      @param upgradedVersion  The upgraded version number returned by the registry.
-      @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
-    */`)}
-    ${chalk.cyan('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion} {
-      if (name === 'typescript' && defaultGroup === 'minor') {
-        return 'major'
-      }
-      if (name.startsWith('@myorg/')) {
-        return 'My Org'
-      }
-      return defaultGroup
-    }
+${codeBlock(
+  `${chalk.gray(`/**
+  @param name             The name of the dependency.
+  @param defaultGroup     The predefined group name which will be used by default.
+  @param currentSpec      The current version range in your package.json.
+  @param upgradedSpec     The upgraded version range that will be written to your package.json.
+  @param upgradedVersion  The upgraded version number returned by the registry.
+  @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
+*/`)}
+${chalk.cyan('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion} {
+  if (name === 'typescript' && defaultGroup === 'minor') {
+    return 'major'
+  }
+  if (name.startsWith('@myorg/')) {
+    return 'My Org'
+  }
+  return defaultGroup
+}`,
+  { markdown },
+)}
+
 `
 }
 
 /** Extended help for the --target option. */
-const extendedHelpTarget = (): string => {
+const extendedHelpTarget: ExtendedHelp = ({ markdown }) => {
   const header = 'Determines the version to upgrade to. (default: "latest")'
-  const table = new Table({ colAligns: ['right', 'left'] })
-  table.push(
-    ...wrapRows([
+  const tableString = table({
+    colAligns: ['right', 'left'],
+    markdown,
+    rows: [
       [
         'greatest',
         `Upgrade to the highest version number published, regardless of release date or tag. Includes prereleases.`,
@@ -234,44 +211,46 @@ const extendedHelpTarget = (): string => {
       ],
       ['patch', `Upgrade to the highest patch version without bumping the minor or major versions.`],
       ['@[tag]', `Upgrade to the version published to a specific tag, e.g. 'next' or 'beta'.`],
-    ]),
-  )
+    ],
+  })
 
   return `${header}
 
-${padLeft(table.toString(), 4)}
+${padLeft(tableString, markdown ? 0 : 4)}
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module:
 
-    ${chalk.gray(`/** Custom target.
-      @param dependencyName The name of the dependency.
-      @param parsedVersion A parsed Semver object from semver-utils.
-        (See https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
-      @returns One of the valid target values (specified in the table above).
-    */`)}
-    ${chalk.cyan(
-      'target',
-    )}: (dependencyName, [{ semver, version, operator, major, minor, patch, release, build }]) ${chalk.cyan('=>')} {
-      ${chalk.red('if')} (major ${chalk.red('===')} ${chalk.blue("'0'")}) ${chalk.red('return')} ${chalk.yellow(
-    "'minor'",
-  )}
-      ${chalk.red('return')} ${chalk.yellow("'latest'")}
-    }
+${codeBlock(
+  `${chalk.gray(`/** Custom target.
+  @param dependencyName The name of the dependency.
+  @param parsedVersion A parsed Semver object from semver-utils.
+    (See https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
+  @returns One of the valid target values (specified in the table above).
+*/`)}
+${chalk.cyan(
+  'target',
+)}: (dependencyName, [{ semver, version, operator, major, minor, patch, release, build }]) ${chalk.cyan('=>')} {
+  ${chalk.red('if')} (major ${chalk.red('===')} ${chalk.blue("'0'")}) ${chalk.red('return')} ${chalk.yellow("'minor'")}
+  ${chalk.red('return')} ${chalk.yellow("'latest'")}
+}`,
+  { markdown },
+)}
 `
 }
 
 /** Extended help for the --format option. */
-const extendedHelpPackageManager = (): string => {
+const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
   const header = 'Specifies the package manager to use when looking up version numbers.'
-  const table = new Table({ colAligns: ['right', 'left'] })
-  table.push(
-    ...wrapRows([
+  const tableString = table({
+    colAligns: ['right', 'left'],
+    markdown,
+    rows: [
       ['npm', `System-installed npm. Default.`],
       ['yarn', `System-installed yarn. Automatically used if yarn.lock is present.`],
       ['pnpm', `System-installed pnpm. Automatically used if pnpm-lock.yaml is present.`],
       [
         'staticRegistry',
-        `Checks versions from a static file. Must include the --registry option with the path to a JSON registry file.
+        `Checks versions from a static file. Must include the \`--registry\` option with the path to a JSON registry file.
 
 Example:
 
@@ -283,26 +262,30 @@ my-registry.json:
       "prettier": "2.7.1",
       "typescript": "4.7.4"
     }
-      `,
-      ],
-    ]),
-  )
 
-  return `${header}\n\n${padLeft(table.toString(), 4)}
+`,
+      ],
+    ],
+  })
+
+  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
 `
 }
 
 /** Extended help for the --peer option. */
-const extendedHelpPeer = () => `Check peer dependencies of installed packages and filter updates to compatible versions.
+const extendedHelpPeer: ExtendedHelp = ({ markdown }) => {
+  /** If markdown, surround inline code with backticks. */
+  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+  return `Check peer dependencies of installed packages and filter updates to compatible versions.
 
 ${chalk.bold('Example')}:
 
-The following example demonstrates how --peer works, and how it uses peer dependencies from upgraded modules.
+The following example demonstrates how \`--peer\` works, and how it uses peer dependencies from upgraded modules.
 
 The package ${chalk.bold('ncu-test-peer-update')} has two versions published:
 
-- 1.0.0 has peer dependency "ncu-test-return-version": "1.0.x"
-- 1.1.0 has peer dependency "ncu-test-return-version": "1.1.x"
+- 1.0.0 has peer dependency ${codeInline('"ncu-test-return-version": "1.0.x"')}
+- 1.1.0 has peer dependency ${codeInline('"ncu-test-return-version": "1.1.x"')}
 
 Our test app has the following dependencies:
 
@@ -314,20 +297,21 @@ The latest versions of these packages are:
     "ncu-test-peer-update": "1.1.0",
     "ncu-test-return-version": "2.0.0"
 
-${chalk.bold('With --peer')}:
+${chalk.bold('With `--peer`')}:
 
 ncu upgrades packages to the highest version that still adheres to the peer dependency constraints:
 
     ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
     ncu-test-return-version  1.0.0  →  1.${chalk.cyan('1.0')}
 
-${chalk.bold('Without --peer')}:
+${chalk.bold('Without `--peer`')}:
 
-As a comparison: without using the --peer option, ncu will suggest the latest versions, ignoring peer dependencies:
+As a comparison: without using the \`--peer\` option, ncu will suggest the latest versions, ignoring peer dependencies:
 
     ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
     ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}
 `
+}
 
 // store CLI options separately from bin file so that they can be used to build type definitions
 const cliOptions: CLIOption[] = [
@@ -487,7 +471,7 @@ const cliOptions: CLIOption[] = [
     arg: 'fn',
     description: `Customize how packages are divided into groups when using '--format group'.`,
     type: 'GroupFunction',
-    help: extendedHelpGroup,
+    help: extendedHelpGroupFunction,
   },
   {
     long: 'interactive',
@@ -579,7 +563,7 @@ const cliOptions: CLIOption[] = [
     description: 'Third-party npm registry.',
     help: wrap(`Specify the registry to use when looking up package version numbers.
 
-When --packageManager staticRegistry is set, --registry must specify a path to a JSON registry file.`),
+When \`--packageManager staticRegistry\` is set, \`--registry\` must specify a path to a JSON registry file.`),
     type: 'string',
   },
   {

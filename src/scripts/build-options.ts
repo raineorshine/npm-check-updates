@@ -53,7 +53,7 @@ ${cliOptions
   .map(
     option => `## ${option.long}
 
-${stripAnsi(renderExtendedHelp(option))}
+${stripAnsi(renderExtendedHelp(option, { markdown: true }))}
 `,
   )
   .join('\n')}
