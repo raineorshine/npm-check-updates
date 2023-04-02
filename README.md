@@ -254,7 +254,7 @@ groupFunction*             Customize how packages are divided into groups
                            [])
 -ws, --workspaces          Run on all workspaces. Add --root to also upgrade
                            the root project.
--V, --version              Output the version number.
+-v, -V, --version          Output the version number.
 -h, --help                 You're lookin' at it.
 ```
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { Help, program } from 'commander'
+import Commander, { Help, program } from 'commander'
 import cloneDeep from 'lodash/cloneDeep'
 import pickBy from 'lodash/pickBy'
 import semver from 'semver'
@@ -91,11 +91,14 @@ ${chalk.dim.underline(
   program
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
+    .addOption(new Commander.Option('-v, --version', 'Version!').hideHelp())
     // See: boolean optional arg below
     .configureHelp({
       optionTerm: option =>
         option.long && noCli.has(option.long)
           ? option.long.replace('--', '') + '*'
+          : option.long === '--version'
+          ? '-v, -V, --version'
           : option.flags.replace('[bool]', ''),
       optionDescription: option =>
         option.long === '--version'
