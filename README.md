@@ -623,6 +623,27 @@ For example, `.ncurc.json`:
 }
 ```
 
+If you write `.ncurc` config files using json or yaml, you can add the JSON Schema to your IDE settings for completions.
+
+e.g. for VS Code:
+
+```json
+  "json.schemas": [
+    {
+      "fileMatch": [
+        ".ncurc",
+        ".ncurc.json",
+      ],
+      "url": "https://raw.githubusercontent.com/raineorshine/npm-check-updates/main/src/types/RunOptions.json"
+    }
+  ],
+  "yaml.schemas": {
+    "https://raw.githubusercontent.com/raineorshine/npm-check-updates/main/src/types/RunOptions.json": [
+        ".ncurc.yml",
+    ]
+  },
+```
+
 ## Module/Programmatic Usage
 
 npm-check-updates can be imported as a module:
