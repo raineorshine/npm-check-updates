@@ -121,7 +121,7 @@ describe('rc-config', () => {
     }
   })
 
-  it('override true in config with false on the cli', async () => {
+  it('override true in config with false in the cli', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true }), 'utf-8')
