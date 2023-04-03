@@ -342,6 +342,7 @@ async function viewMany(
   options: Options,
   retried = 0,
   npmConfigLocal?: NpmConfig,
+  npmConfigWorkspaceProject?: NpmConfig,
 ): Promise<Index<Packument | Index<string> | Index<Packument>>> {
   // See: /test/helpers/stubNpmView
 
@@ -362,18 +363,34 @@ async function viewMany(
   const npmConfigCWDPath = options.cwd ? path.join(options.cwd, '.npmrc') : null
   const npmConfigCWD = options.cwd ? findNpmConfig(npmConfigCWDPath!) : null
 
-  if (npmConfigProject) {
-    print(options, `\nUsing npm config in project directory: ${npmConfigProjectPath}:`, 'verbose')
+  if (npmConfigWorkspaceProject && Object.keys(npmConfigWorkspaceProject).length > 0) {
+    print(options, `\nnpm config (workspace project):`, 'verbose')
+    print(options, omit(npmConfigWorkspaceProject, 'cache'), 'verbose')
+  }
+
+  if (npmConfig && Object.keys(npmConfig).length > 0) {
+    print(options, `\nnpm config (local):`, 'verbose')
+    print(options, omit(npmConfig, 'cache'), 'verbose')
+  }
+
+  if (npmConfigLocal && Object.keys(npmConfigLocal).length > 0) {
+    print(options, `\nnpm config (local override):`, 'verbose')
+    print(options, omit(npmConfigLocal, 'cache'), 'verbose')
+  }
+
+  if (npmConfigProject && Object.keys(npmConfigProject).length > 0) {
+    print(options, `\npm config (project: ${npmConfigProjectPath}):`, 'verbose')
     print(options, omit(npmConfigProject, 'cache'), 'verbose')
   }
 
-  if (npmConfigCWD) {
-    print(options, `\nUsing npm config in current working directory: ${npmConfigCWDPath}:`, 'verbose')
+  if (npmConfigCWD && Object.keys(npmConfigCWD).length > 0) {
+    print(options, `\nnpm config (cwd: ${npmConfigCWDPath}):`, 'verbose')
     // omit cache since it is added to every config
     print(options, omit(npmConfigCWD, 'cache'), 'verbose')
   }
 
-  const npmOptions = {
+  const npmConfigMerged = {
+    ...npmConfigWorkspaceProject,
     ...npmConfig,
     ...npmConfigLocal,
     ...npmConfigProject,
@@ -383,9 +400,14 @@ async function viewMany(
     fullMetadata: fieldsExtended.includes('time'),
   }
 
+  const isMerged = npmConfigWorkspaceProject || npmConfigLocal || npmConfigProject || npmConfigCWD
+  print(options, `\nUsing${isMerged ? ' merged' : ''} npm config:`, 'verbose')
+  // omit cache since it is added to every config
+  print(options, omit(npmConfigMerged, 'cache'), 'verbose')
+
   let result: any
   try {
-    result = (await pacote.packument(packageName, npmOptions)) as any
+    result = (await pacote.packument(packageName, npmConfigMerged)) as any
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
       return viewMany(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
@@ -430,8 +452,17 @@ export async function viewOne(
   currentVersion: Version,
   options: Options,
   npmConfigLocal?: NpmConfig,
+  npmConfigProject?: NpmConfig,
 ): Promise<string | boolean | { engines: { node: string } } | undefined | Index<string> | Index<Packument>> {
-  const result = await viewManyMemoized(packageName, [field], currentVersion, options, 0, npmConfigLocal)
+  const result = await viewManyMemoized(
+    packageName,
+    [field],
+    currentVersion,
+    options,
+    0,
+    npmConfigLocal,
+    npmConfigProject,
+  )
   return result[field]
 }
 
@@ -524,9 +555,17 @@ export const greatest: GetVersion = async (
   currentVersion,
   options = {},
   npmConfig?: NpmConfig,
+  npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
   // known type based on 'versions'
-  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Index<Packument>
+  const versions = (await viewOne(
+    packageName,
+    'versions',
+    currentVersion,
+    options,
+    npmConfig,
+    npmConfigProject,
+  )) as Index<Packument>
 
   return {
     version:
@@ -607,6 +646,7 @@ export const distTag: GetVersion = async (
   currentVersion,
   options: Options = {},
   npmConfig?: NpmConfig,
+  npmConfigProject?: NpmConfig,
 ) => {
   const packument = (await viewOne(
     packageName,
@@ -614,6 +654,7 @@ export const distTag: GetVersion = async (
     currentVersion,
     options,
     npmConfig,
+    npmConfigProject,
   )) as unknown as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated
@@ -634,7 +675,7 @@ export const distTag: GetVersion = async (
   // or latest is deprecated
   // find the next valid version
   // known type based on dist-tags.latest
-  return greatest(packageName, currentVersion, options, npmConfig)
+  return greatest(packageName, currentVersion, options, npmConfig, npmConfigProject)
 }
 
 /**
@@ -645,8 +686,13 @@ export const distTag: GetVersion = async (
  * @param options
  * @returns
  */
-export const latest: GetVersion = async (packageName: string, currentVersion: Version, options: Options = {}) =>
-  distTag(packageName, currentVersion, { ...options, distTag: 'latest' })
+export const latest: GetVersion = async (
+  packageName: string,
+  currentVersion: Version,
+  options: Options = {},
+  npmConfig?: NpmConfig,
+  npmConfigProject?: NpmConfig,
+) => distTag(packageName, currentVersion, { ...options, distTag: 'latest' }, npmConfig, npmConfigProject)
 
 /**
  * Fetches the most recently published version, regardless of version number.
@@ -661,8 +707,17 @@ export const newest: GetVersion = async (
   currentVersion,
   options = {},
   npmConfig?: NpmConfig,
+  npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const result = await viewManyMemoized(packageName, ['time', 'versions'], currentVersion, options, 0, npmConfig)
+  const result = await viewManyMemoized(
+    packageName,
+    ['time', 'versions'],
+    currentVersion,
+    options,
+    0,
+    npmConfig,
+    npmConfigProject,
+  )
 
   // Generate a map of versions that satisfy the node engine.
   // result.versions is an object but is parsed as an array, so manually convert it to an object.
@@ -697,8 +752,16 @@ export const minor: GetVersion = async (
   currentVersion,
   options = {},
   npmConfig?: NpmConfig,
+  npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Index<Packument>
+  const versions = (await viewOne(
+    packageName,
+    'versions',
+    currentVersion,
+    options,
+    npmConfig,
+    npmConfigProject,
+  )) as Index<Packument>
   const version = versionUtil.findGreatestByLevel(
     filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
@@ -720,8 +783,16 @@ export const patch: GetVersion = async (
   currentVersion,
   options = {},
   npmConfig?: NpmConfig,
+  npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const versions = (await viewOne(packageName, 'versions', currentVersion, options, npmConfig)) as Index<Packument>
+  const versions = (await viewOne(
+    packageName,
+    'versions',
+    currentVersion,
+    options,
+    npmConfig,
+    npmConfigProject,
+  )) as Index<Packument>
   const version = versionUtil.findGreatestByLevel(
     filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,

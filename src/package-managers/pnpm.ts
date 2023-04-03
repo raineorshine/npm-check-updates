@@ -71,7 +71,7 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
 const withNpmWorkspaceConfig =
   (getVersion: GetVersion): GetVersion =>
   async (packageName, currentVersion, options = {}) =>
-    getVersion(packageName, currentVersion, options, await npmConfigFromPnpmWorkspace(options))
+    getVersion(packageName, currentVersion, options, {}, await npmConfigFromPnpmWorkspace(options))
 
 export const distTag = withNpmWorkspaceConfig(npmDistTag)
 export const greatest = withNpmWorkspaceConfig(npmGreatest)

@@ -9,4 +9,5 @@ export type GetVersion = (
   currentVersion: Version,
   options?: Options,
   npmConfig?: NpmConfig,
+  npmConfigProject?: NpmConfig,
 ) => Promise<VersionResult>
