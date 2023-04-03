@@ -638,7 +638,7 @@ e.g. for VS Code:
     }
   ],
   "yaml.schemas": {
-    "https://gist.githubusercontent.com/josh-hemphill/0018bf51444072d1cec1eb633a7f0c40/raw/v2.4.1.json": [
+    "https://raw.githubusercontent.com/raineorshine/npm-check-updates/main/src/types/RunOptions.json": [
         ".ncurc.yml",
     ]
   },
