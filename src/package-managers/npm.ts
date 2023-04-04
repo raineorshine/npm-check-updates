@@ -31,14 +31,18 @@ import { VersionSpec } from '../types/VersionSpec'
 import { filterPredicate, satisfiesNodeEngine } from './filters'
 
 /** Normalizes the keys of an npm config for pacote. */
-export const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
+export const normalizeNpmConfig = (
+  npmConfig: NpmConfig,
+  // config path used to determine relative cafile paths
+  configPath?: string,
+): NpmConfig => {
   const npmConfigToPacoteMap = {
-    cafile: (path: string): undefined | { ca: string[] } => {
+    cafile: (capath: string): undefined | { ca: string[] } => {
       // load-cafile, based on github.com/npm/cli/blob/40c1b0f/lib/config/load-cafile.js
-      if (!path) return
+      if (!capath) return
       // synchronous since it is loaded once on startup, and to avoid complexity in libnpmconfig.read
       // https://github.com/raineorshine/npm-check-updates/issues/636?notification_referrer_id=MDE4Ok5vdGlmaWNhdGlvblRocmVhZDc0Njk2NjAzMjo3NTAyNzY%3D
-      const cadata = fs.readFileSync(untildify(path), 'utf8')
+      const cadata = fs.readFileSync(path.resolve(configPath || '', untildify(capath)), 'utf8')
       const delim = '-----END CERTIFICATE-----'
       const output: string[] = cadata
         .split(delim)
@@ -163,12 +167,12 @@ export const normalizeNpmConfig = (npmConfig: NpmConfig): NpmConfig => {
 }
 
 /** Finds and parses the npm config at the given path. If the path does not exist, returns null. If no path is provided, finds and merges the global and user npm configs using libnpmconfig and sets cache: false. */
-const findNpmConfig = (path?: string): NpmConfig | null => {
+const findNpmConfig = (configPath?: string): NpmConfig | null => {
   let config
 
-  if (path) {
+  if (configPath) {
     try {
-      config = ini.parse(fs.readFileSync(path, 'utf-8'))
+      config = ini.parse(fs.readFileSync(configPath, 'utf-8'))
     } catch (err: any) {
       if (err.code === 'ENOENT') {
         return null
@@ -188,7 +192,7 @@ const findNpmConfig = (path?: string): NpmConfig | null => {
     }
   }
 
-  return normalizeNpmConfig(config)
+  return normalizeNpmConfig(config, configPath)
 }
 
 // get the base config that is used for all npm queries
@@ -359,7 +363,7 @@ async function viewMany(
 
   // merge project npm config with base config
   const npmConfigProjectPath = options.packageFile ? path.join(options.packageFile, '../.npmrc') : null
-  const npmConfigProject = options.packageFile ? findNpmConfig(npmConfigProjectPath!) : null
+  const npmConfigProject = options.packageFile ? findNpmConfig(npmConfigProjectPath || undefined) : null
   const npmConfigCWDPath = options.cwd ? path.join(options.cwd, '.npmrc') : null
   const npmConfigCWD = options.cwd ? findNpmConfig(npmConfigCWDPath!) : null
 

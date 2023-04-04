@@ -37,7 +37,10 @@ type PnpmList = {
 const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<NpmConfig> => {
   const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
   if (!pnpmWorkspacePath) return {}
-  const pnpmWorkspaceConfigPath = path.join(path.dirname(pnpmWorkspacePath), '.npmrc')
+
+  const pnpmWorkspaceDir = path.dirname(pnpmWorkspacePath)
+  const pnpmWorkspaceConfigPath = path.join(pnpmWorkspaceDir, '.npmrc')
+
   let pnpmWorkspaceConfig
   try {
     pnpmWorkspaceConfig = await fs.readFile(pnpmWorkspaceConfigPath, 'utf-8')
@@ -47,7 +50,7 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
 
   print(options, `\nUsing pnpm workspace config at ${pnpmWorkspaceConfigPath}:`, 'verbose')
 
-  const config = normalizeNpmConfig(ini.parse(pnpmWorkspaceConfig))
+  const config = normalizeNpmConfig(ini.parse(pnpmWorkspaceConfig), pnpmWorkspaceDir)
 
   print(options, config, 'verbose')
 
