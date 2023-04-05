@@ -5,6 +5,8 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
+import { Index } from '../src/types/IndexType'
+import { Version } from '../src/types/Version'
 import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
@@ -234,6 +236,35 @@ describe('bin', async function () {
     const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies }))
 
     stripAnsi(output)!.should.not.include('No package versions were returned.')
+    stub.restore()
+  })
+
+  it('combine boolean flags with arguments', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
+    const output = await spawn(
+      'node',
+      [bin, '--stdin', '--jsonUpgraded', 'ncu-test-v2'],
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+    )
+    const upgraded = JSON.parse(output) as Index<Version>
+    upgraded.should.deep.equal({
+      'ncu-test-v2': '99.9.9',
+    })
+    stub.restore()
+  })
+
+  it('combine short boolean options with long options', async () => {
+    const stub = stubNpmView('99.9.9', { spawn: true })
+    let stderr = ''
+    await spawn(
+      'node',
+      [bin, '--stdin', '-jp', 'foo'],
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      {
+        stderr: (data: string) => (stderr += data),
+      },
+    )
+    stderr.should.include('Invalid package manager: foo')
     stub.restore()
   })
 
