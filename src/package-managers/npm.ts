@@ -167,7 +167,7 @@ export const normalizeNpmConfig = (
 }
 
 /** Finds and parses the npm config at the given path. If the path does not exist, returns null. If no path is provided, finds and merges the global and user npm configs using libnpmconfig and sets cache: false. */
-const findNpmConfig = (configPath?: string): NpmConfig | null => {
+const findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
   let config
 
   if (configPath) {
@@ -193,7 +193,7 @@ const findNpmConfig = (configPath?: string): NpmConfig | null => {
   }
 
   return normalizeNpmConfig(config, configPath)
-}
+})
 
 // get the base config that is used for all npm queries
 // this may be partially overwritten by .npmrc config files when using --deep
