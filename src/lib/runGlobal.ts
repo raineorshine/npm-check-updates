@@ -14,7 +14,17 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
 
   print(options, '\nGetting installed packages', 'verbose')
   const globalPackages = await getInstalledPackages(
-    pick(options, ['cwd', 'filter', 'filterVersion', 'global', 'packageManager', 'prefix', 'reject', 'rejectVersion']),
+    pick(options, [
+      'cli',
+      'cwd',
+      'filter',
+      'filterVersion',
+      'global',
+      'packageManager',
+      'prefix',
+      'reject',
+      'rejectVersion',
+    ]),
   )
 
   print(options, 'globalPackages:', 'verbose')

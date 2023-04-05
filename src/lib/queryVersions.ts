@@ -25,7 +25,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   const { default: chalkDefault, Chalk } = await import('chalk')
   const chalk = options.color ? new Chalk({ level: 1 }) : chalkDefault
   const packageList = Object.keys(packageMap)
-  const globalPackageManager = getPackageManager(options.packageManager)
+  const globalPackageManager = getPackageManager(options, options.packageManager)
 
   let bar: ProgressBar | undefined
   if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && packageList.length > 0) {

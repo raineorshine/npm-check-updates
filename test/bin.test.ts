@@ -255,16 +255,8 @@ describe('bin', async function () {
 
   it('combine short boolean options with long options', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    let stderr = ''
-    await spawn(
-      'node',
-      [bin, '--stdin', '-jp', 'foo'],
-      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
-      {
-        stderr: (data: string) => (stderr += data),
-      },
-    )
-    stderr.should.include('Invalid package manager: foo')
+    const promise = spawn('node', [bin, '-jp', 'foo'])
+    promise.should.eventually.be.rejectedWith('Invalid package manager: foo')
     stub.restore()
   })
 

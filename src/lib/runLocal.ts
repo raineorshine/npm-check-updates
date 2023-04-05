@@ -39,7 +39,7 @@ const INTERACTIVE_HINT = `
  * @returns
  */
 export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersion: Index<Version>, options: Options) {
-  const packageManager = getPackageManager(options.packageManager)
+  const packageManager = getPackageManager(options, options.packageManager)
   return await Object.keys(toVersion).reduce(async (accum, dep) => {
     const from = fromVersion[dep] || null
     const to = toVersion[dep] || null

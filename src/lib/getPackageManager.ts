@@ -1,6 +1,8 @@
 import packageManagers from '../package-managers'
 import { Maybe } from '../types/Maybe'
+import { Options } from '../types/Options'
 import { PackageManager } from '../types/PackageManager'
+import programError from './programError'
 
 /**
  * Resolves the package manager from a string or object. Throws an error if an invalid packageManager is provided.
@@ -10,14 +12,14 @@ import { PackageManager } from '../types/PackageManager'
  * @param packageManagerNameOrObject.packageManager
  * @returns
  */
-function getPackageManager(name: Maybe<string>): PackageManager {
+function getPackageManager(options: Options, name: Maybe<string>): PackageManager {
   // default to npm
   if (!name || name === 'deno') {
     return packageManagers.npm
   }
 
   if (!packageManagers[name]) {
-    throw new Error(`Invalid package manager: ${name}`)
+    programError(options, `Invalid package manager: ${name}`)
   }
 
   return packageManagers[name]

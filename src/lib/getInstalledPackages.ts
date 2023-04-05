@@ -4,6 +4,7 @@ import { VersionSpec } from '../types/VersionSpec'
 import filterAndReject from './filterAndReject'
 import filterObject from './filterObject'
 import getPackageManager from './getPackageManager'
+import programError from './programError'
 import { isWildPart } from './version-util'
 
 /**
@@ -16,14 +17,14 @@ import { isWildPart } from './version-util'
  * @param options.reject
  */
 async function getInstalledPackages(options: Options = {}) {
-  const packages = await getPackageManager(options.packageManager).list?.({
+  const packages = await getPackageManager(options, options.packageManager).list?.({
     cwd: options.cwd,
     prefix: options.prefix,
     global: options.global,
   })
 
   if (!packages) {
-    throw new Error('Unable to retrieve package list')
+    programError(options, 'Unable to retrieve package list')
   }
 
   // filter out undefined packages or those with a wildcard

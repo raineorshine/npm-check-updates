@@ -12,7 +12,7 @@ import getPackageManager from './getPackageManager'
  * @returns Promised {packageName: peer dependencies} collection
  */
 async function getPeerDependenciesFromRegistry(packageMap: Index<VersionSpec>, options: Options) {
-  const packageManager = getPackageManager(options.packageManager)
+  const packageManager = getPackageManager(options, options.packageManager)
   if (!packageManager.getPeerDependencies) return {}
 
   const numItems = Object.keys(packageMap).length
