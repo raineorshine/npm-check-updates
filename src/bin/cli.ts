@@ -113,18 +113,16 @@ ${chalk.dim.underline(
     })
 
   // add cli options
-  cliOptions.forEach(({ long, short, arg, description, default: defaultValue, help, parse, type }) => {
+  cliOptions.forEach(({ long, short, arg, description, default: defaultValue, help, parse }) =>
     // handle 3rd/4th argument polymorphism
     program.option(
-      // optional [bool] arg allows boolean options to be set to false, while still allowing unary functionality
-      // [bool] is stripped from the help text in configureHelp
-      `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : type === 'boolean' ? ' [bool]' : ''}`,
+      `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : ''}`,
       // point to help in description if extended help text is available
       `${uncode(description)}${help ? ` Run "ncu --help --${long}" for details.` : ''}`,
-      parse || (type === 'boolean' ? s => s !== 'false' : defaultValue),
+      parse || defaultValue,
       parse ? defaultValue : undefined,
-    )
-  })
+    ),
+  )
 
   // set version option at the end
   program.version(pkg.version)
