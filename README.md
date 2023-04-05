@@ -361,6 +361,7 @@ Run `ncu --help [OPTION]` to view advanced help for a specific option, or see be
 Usage:
 
     ncu --doctor
+    ncu --no-doctor
     ncu -d
 
 Iteratively installs upgrades and runs tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
@@ -518,6 +519,7 @@ my-registry.json:
 Usage:
 
     ncu --peer
+    ncu --no-peer
 
 Check peer dependencies of installed packages and filter updates to compatible versions.
 
