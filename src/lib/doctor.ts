@@ -59,7 +59,7 @@ const loadPackageFileForDoctor = async (options: Options): Promise<PackageInfo> 
   let packageInfo: PackageInfo
   // assert package.json
   try {
-    packageInfo = await loadPackageInfoFromFile('package.json')
+    packageInfo = await loadPackageInfoFromFile(options, 'package.json')
   } catch (e) {
     console.error('Missing or invalid package.json')
     process.exit(1)

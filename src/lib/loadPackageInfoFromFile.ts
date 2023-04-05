@@ -1,9 +1,11 @@
 import fs from 'fs/promises'
+import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { PackageInfo } from '../types/PackageInfo'
+import programError from './programError'
 
 /** Load and parse a package file. */
-const loadPackageInfoFromFile = async (filepath: string): Promise<PackageInfo> => {
+const loadPackageInfoFromFile = async (options: Options, filepath: string): Promise<PackageInfo> => {
   let pkg: PackageFile, pkgFile: string
 
   // assert package.json
@@ -11,7 +13,7 @@ const loadPackageInfoFromFile = async (filepath: string): Promise<PackageInfo> =
     pkgFile = await fs.readFile(filepath, 'utf-8')
     pkg = JSON.parse(pkgFile)
   } catch (e) {
-    throw new Error(`Missing or invalid file '${filepath}'`)
+    programError(options, `Missing or invalid ${filepath}`)
   }
 
   return {

@@ -74,7 +74,7 @@ async function getWorkspacePackageInfos(
   const allWorkspacePackageInfos: PackageInfo[] = [
     ...(await Promise.all(
       allWorkspacePackageFilepaths.map(async (filepath: string): Promise<PackageInfo> => {
-        const info: PackageInfo = await loadPackageInfoFromFile(filepath)
+        const info: PackageInfo = await loadPackageInfoFromFile(options, filepath)
         info.name = info.pkg.name || filepath.split('/').slice(-2)[0]
         return info
       }),
@@ -145,7 +145,7 @@ async function getAllPackages(options: Options): Promise<[PackageInfo[], string[
     const rootPackages = [
       ...(await Promise.all(
         rootPackagePaths.map(
-          async (packagePath: string): Promise<PackageInfo> => await loadPackageInfoFromFile(packagePath),
+          async (packagePath: string): Promise<PackageInfo> => await loadPackageInfoFromFile(options, packagePath),
         ),
       )),
     ]
