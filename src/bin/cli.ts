@@ -95,7 +95,8 @@ ${chalk.dim.underline(
   program
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
-    .addOption(new Commander.Option('-v, --version', 'Version!').hideHelp())
+    // add hidden -v alias for --V/--version
+    .addOption(new Commander.Option('-v, --version').hideHelp())
     // See: boolean optional arg below
     .configureHelp({
       optionTerm: option =>
@@ -106,7 +107,7 @@ ${chalk.dim.underline(
           : option.flags.replace('[bool]', ''),
       optionDescription: option =>
         option.long === '--version'
-          ? 'Output the version number.'
+          ? 'Output the version number of npm-check-updates.'
           : option.long === '--help'
           ? `You're lookin' at it.`
           : Help.prototype.optionDescription(option),
