@@ -108,7 +108,7 @@ describe('bin', async function () {
 
   it('throw error if --cwd does not exist', async () => {
     return spawn('node', [bin, '--cwd', 'fnuoathufoawhtufonwauto']).should.eventually.be.rejectedWith(
-      'no such directory: fnuoathufoawhtufonwauto',
+      'No such directory: fnuoathufoawhtufonwauto',
     )
   })
 

@@ -264,7 +264,7 @@ export async function run(
         const error = `Exceeded global timeout of ${timeoutMs}ms`
         reject(error)
         try {
-          programError(options, chalk.red(error))
+          programError(options, error)
         } catch (e) {
           /* noop */
         }

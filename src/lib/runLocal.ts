@@ -166,7 +166,7 @@ async function runLocal(
   } catch (e: any) {
     programError(
       options,
-      await chalk.red(`Invalid package file${pkgFile ? `: ${pkgFile}` : ' from stdin'}. Error details:\n${e.message}`),
+      `Invalid package file${pkgFile ? `: ${pkgFile}` : ' from stdin'}. Error details:\n${e.message}`,
     )
   }
 

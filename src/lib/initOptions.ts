@@ -94,16 +94,13 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     // make sure the option value is valid
     // if an array of values is given, make sure each one is a valid choice
     if (values.every(value => !choices.includes(value))) {
-      programError(
-        options,
-        chalk.red(`Invalid option value: --${long} ${value}. Valid values are: ${choices.join(', ')}.`),
-      )
+      programError(options, `Invalid option value: --${long} ${value}. Valid values are: ${choices.join(', ')}.`)
     }
   })
 
   // validate options.cwd
   if (options.cwd && !(await exists(options.cwd))) {
-    programError(options, `no such directory: ${options.cwd}`)
+    programError(options, `No such directory: ${options.cwd}`)
   }
 
   // trim filter args
@@ -118,34 +115,30 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   if (options.filter && args && !isEqual(args.join(' '), Array.isArray(filter) ? filter.join(' ') : filter)) {
     programError(
       options,
-      chalk.red('Cannot specify a filter using both --filter and args. Did you forget to quote an argument?') +
-        '\nSee: https://github.com/raineorshine/npm-check-updates/issues/759#issuecomment-723587297',
+      'Cannot specify a filter using both --filter and args. Did you forget to quote an argument?\nSee: https://github.com/raineorshine/npm-check-updates/issues/759#issuecomment-723587297',
     )
   }
   // disallow packageFile and --deep
   else if (options.packageFile && options.deep) {
     programError(
       options,
-      chalk.red(`Cannot specify both --packageFile and --deep. --deep is an alias for --packageFile '**/package.json'`),
+      `Cannot specify both --packageFile and --deep. --deep is an alias for --packageFile '**/package.json'`,
     )
   }
 
   // disallow --workspace and --workspaces
   else if (options.workspace?.length && options.workspaces) {
-    programError(options, chalk.red('Cannot specify both --workspace and --workspaces.'))
+    programError(options, 'Cannot specify both --workspace and --workspaces.')
   }
 
   // disallow --workspace(s) and --deep
   else if (options.deep && (options.workspace?.length || options.workspaces)) {
-    programError(options, chalk.red(`Cannot specify both --deep and --workspace${options.workspaces ? 's' : ''}.`))
+    programError(options, `Cannot specify both --deep and --workspace${options.workspaces ? 's' : ''}.`)
   }
 
   // disallow --workspace(s) and --doctor
   else if (options.doctor && (options.workspace?.length || options.workspaces)) {
-    programError(
-      options,
-      chalk.red(`Doctor mode is not currently supported with --workspace${options.workspaces ? 's' : ''}.`),
-    )
+    programError(options, `Doctor mode is not currently supported with --workspace${options.workspaces ? 's' : ''}.`)
   }
 
   // disallow incorrect or missing registry path when selecting staticRegistry as packageManager
@@ -153,13 +146,12 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     if (options.registry === undefined || options.registry === null) {
       programError(
         options,
-        chalk.red(
-          'When --package-manager staticRegistry is specified, you must provide the path for the registry file with --registry. Run "ncu --help --packageManager" for details.',
-        ),
+
+        'When --package-manager staticRegistry is specified, you must provide the path for the registry file with --registry. Run "ncu --help --packageManager" for details.',
       )
     }
     if (!(await exists(options.registry!))) {
-      programError(options, chalk.red(`The specified static registry file does not exist: ${options.registry}`))
+      programError(options, `The specified static registry file does not exist: ${options.registry}`)
     }
   }
   const target: Target = options.target || 'latest'

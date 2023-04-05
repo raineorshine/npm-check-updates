@@ -75,6 +75,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
           `\nSupported version targets are: ` +
           packageManagerSupportedVersionTargets.join(', ') +
           (!isGithubDependency ? ', and tags (e.g. @next)' : ''),
+        { color: false },
       )
     }
 

@@ -41,11 +41,12 @@ async function findPackage(options: Options): Promise<{
         )} or ${chalk.cyan('--packageData')} options, or pipe a ${pkgFileName} to stdin and specify ${chalk.cyan(
           '--stdin',
         )}.`,
+        { color: false },
       )
     }
 
     return fs.readFile(pkgFile!, 'utf-8').catch(e => {
-      programError(options, chalk.red(e))
+      programError(options, e)
     })
   }
 

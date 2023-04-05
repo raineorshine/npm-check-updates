@@ -6,7 +6,6 @@ import yaml from 'yaml'
 import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { PackageInfo } from '../types/PackageInfo'
-import chalk from './chalk'
 import findPackage from './findPackage'
 import loadPackageInfoFromFile from './loadPackageInfoFromFile'
 import programError from './programError'
@@ -46,11 +45,9 @@ async function getWorkspacePackageInfos(
   if (!workspaces) {
     programError(
       options,
-      chalk.red(
-        `workspaces property missing from package.json. --workspace${
-          options.workspaces ? 's' : ''
-        } only works when you specify a "workspaces" property in your package.json.`,
-      ),
+      `workspaces property missing from package.json. --workspace${
+        options.workspaces ? 's' : ''
+      } only works when you specify a "workspaces" property in your package.json.`,
     )
   }
 
