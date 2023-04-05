@@ -1,8 +1,8 @@
 import fs from 'fs/promises'
 import globby from 'globby'
+import yaml from 'js-yaml'
 import path from 'path'
 import untildify from 'untildify'
-import yaml from 'yaml'
 import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { PackageInfo } from '../types/PackageInfo'
@@ -10,8 +10,10 @@ import findPackage from './findPackage'
 import loadPackageInfoFromFile from './loadPackageInfoFromFile'
 import programError from './programError'
 
+type PnpmWorkspaces = string[] | { packages: string[] }
+
 /** Reads, parses, and resolves workspaces from a pnpm-workspace file at the same path as the package file. */
-const readPnpmWorkspaces = async (pkgPath: string): Promise<string[] | { packages: string[] } | null> => {
+const readPnpmWorkspaces = async (pkgPath: string): Promise<PnpmWorkspaces | null> => {
   const pnpmWorkspacesPath = path.join(path.dirname(pkgPath), 'pnpm-workspace.yaml')
   let pnpmWorkspaceFile: string
   try {
@@ -19,7 +21,7 @@ const readPnpmWorkspaces = async (pkgPath: string): Promise<string[] | { package
   } catch (e) {
     return null
   }
-  return yaml.parse(pnpmWorkspaceFile)
+  return yaml.load(pnpmWorkspaceFile) as PnpmWorkspaces
 }
 
 /**

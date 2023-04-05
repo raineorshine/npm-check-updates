@@ -2,12 +2,12 @@
 import { EventEmitter, once } from 'events'
 import memoize from 'fast-memoize'
 import fs from 'fs/promises'
+import yaml from 'js-yaml'
 import jsonlines from 'jsonlines'
 import curry from 'lodash/curry'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import yaml from 'yaml'
 import exists from '../lib/exists'
 import findLockfile from '../lib/findLockfile'
 import { keyValueBy } from '../lib/keyValueBy'
@@ -112,8 +112,8 @@ const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> =
   const yarnrcUserExists = await exists(yarnrcUserPath)
   const yarnrcLocal = yarnrcLocalExists ? await fs.readFile(yarnrcLocalPath, 'utf-8') : ''
   const yarnrcUser = yarnrcUserExists ? await fs.readFile(yarnrcUserPath, 'utf-8') : ''
-  const yarnConfigLocal: YarnConfig = yaml.parse(yarnrcLocal)
-  const yarnConfigUser: YarnConfig = yaml.parse(yarnrcUser)
+  const yarnConfigLocal: YarnConfig = yaml.load(yarnrcLocal) as YarnConfig
+  const yarnConfigUser: YarnConfig = yaml.load(yarnrcUser) as YarnConfig
 
   let npmConfig: Index<string | boolean> = {
     ...keyValueBy(yarnConfigUser?.npmScopes || {}, npmRegistryKeyValue),
