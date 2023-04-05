@@ -156,7 +156,7 @@ async function runLocal(
 
   try {
     if (!pkgData) {
-      throw new Error('Missing pkgData')
+      programError(options, 'Missing package data')
     } else {
       // strip comments from jsonc files
       const pkgDataStripped =
