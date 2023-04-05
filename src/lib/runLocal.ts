@@ -3,7 +3,6 @@ import jph from 'json-parse-helpfulerror'
 import get from 'lodash/get'
 import isEmpty from 'lodash/isEmpty'
 import pick from 'lodash/pick'
-import transform from 'lodash/transform'
 import prompts from 'prompts-ncu'
 import { satisfies } from 'semver'
 import { Index } from '../types/IndexType'
@@ -18,7 +17,7 @@ import getIgnoredUpgrades from './getIgnoredUpgrades'
 import getPackageManager from './getPackageManager'
 import getPeerDependencies from './getPeerDependencies'
 import keyValueBy from './keyValueBy'
-import { print, printIgnoredUpdates, printJson, printUpgrades, toDependencyTable } from './logging'
+import { print, printIgnoredUpdates, printJson, printOptionsSorted, printUpgrades, toDependencyTable } from './logging'
 import programError from './programError'
 import resolveDepSections from './resolveDepSections'
 import upgradePackageData from './upgradePackageData'
@@ -30,17 +29,6 @@ const INTERACTIVE_HINT = `
   Space: Toggle selection
   a: Toggle all
   Enter: Upgrade`
-
-/** Recreate the options object sorted. */
-function sortOptions(options: Options): Options {
-  return transform(
-    Object.keys(options).sort(), // eslint-disable-line fp/no-mutating-methods
-    (accum, key) => {
-      accum[key] = options[key as keyof Options]
-    },
-    {} as any,
-  )
-}
 
 /**
  * Return a promise which resolves to object storing package owner changed status for each dependency.
@@ -162,7 +150,7 @@ async function runLocal(
   pkgFile?: Maybe<string>,
 ): Promise<PackageFile | Index<VersionSpec>> {
   print(options, '\nOptions:', 'verbose')
-  print(options, sortOptions(options), 'verbose')
+  printOptionsSorted(options, 'verbose')
 
   let pkg: PackageFile
 

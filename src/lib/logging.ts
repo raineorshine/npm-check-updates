@@ -2,6 +2,7 @@
  * Loggin functions.
  */
 import Table from 'cli-table3'
+import transform from 'lodash/transform'
 import { IgnoredUpgrade } from '../types/IgnoredUpgrade'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -18,6 +19,8 @@ import {
   isNpmAlias,
   parseNpmAlias,
 } from './version-util'
+
+type LogLevel = 'silent' | 'error' | 'warn' | 'info' | 'verbose' | 'silly' | null
 
 // maps string levels to numeric levels
 const logLevels = {
@@ -49,7 +52,7 @@ const isFetchable = (spec: VersionSpec) =>
 export function print(
   options: Options,
   message: any,
-  loglevel: 'silent' | 'error' | 'warn' | 'info' | 'verbose' | 'silly' | null = null,
+  loglevel: LogLevel = null,
   method: 'log' | 'warn' | 'info' | 'error' = 'log',
 ) {
   // not in json mode
@@ -79,6 +82,20 @@ export function printSimpleJoinedString(object: any, join: string) {
       .map(pkg => pkg + '@' + object[pkg])
       .join(join),
   )
+}
+
+/** Prints the options object sorted. */
+export function printOptionsSorted(options: Options, loglevel: LogLevel) {
+  // eslint-disable-next-line fp/no-mutating-methods
+  const sortedKeys = Object.keys(options).sort() as (keyof Options)[]
+  const optionsString = transform<keyof Options, any>(
+    sortedKeys,
+    (accum, key) => {
+      accum[key] = options[key]
+    },
+    {},
+  )
+  print(options, optionsString, loglevel)
 }
 
 /** Create a table with the appropriate columns and alignment to render dependency upgrades. */
