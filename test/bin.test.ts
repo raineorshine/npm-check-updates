@@ -20,7 +20,7 @@ describe('bin', async function () {
     const output = await spawn(
       'node',
       [bin, '--jsonUpgraded', '--stdin'],
-      '{ "dependencies": { "ncu-test-v2": "1.0.0" } }',
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
     )
     const pkgData = JSON.parse(output)
     pkgData.should.have.property('ncu-test-v2')
@@ -31,7 +31,7 @@ describe('bin', async function () {
     const output = await spawn(
       'node',
       [bin, '--jsonUpgraded', '--stdin'],
-      '{ "dependencies": { "ncu-test-v2": "1.0.0" } }',
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
     )
     const pkgData = JSON.parse(output)
     pkgData.should.have.property('ncu-test-v2')
@@ -40,7 +40,11 @@ describe('bin', async function () {
 
   it('--loglevel verbose', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    const output = await spawn('node', [bin, '--loglevel', 'verbose'], '{ "dependencies": { "ncu-test-v2": "1.0.0" } }')
+    const output = await spawn(
+      'node',
+      [bin, '--loglevel', 'verbose'],
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
+    )
     output.should.containIgnoreCase('Initializing')
     output.should.containIgnoreCase('Running in local mode')
     output.should.containIgnoreCase('Finding package file data')
@@ -49,7 +53,7 @@ describe('bin', async function () {
 
   it('--verbose', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    const output = await spawn('node', [bin, '--verbose'], '{ "dependencies": { "ncu-test-v2": "1.0.0" } }')
+    const output = await spawn('node', [bin, '--verbose'], JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }))
     output.should.containIgnoreCase('Initializing')
     output.should.containIgnoreCase('Running in local mode')
     output.should.containIgnoreCase('Finding package file data')
@@ -58,7 +62,7 @@ describe('bin', async function () {
 
   it('accept stdin', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    const output = await spawn('node', [bin, '--stdin'], '{ "dependencies": { "express": "1" } }')
+    const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies: { express: '1' } }))
     output.trim().should.startWith('express')
     stub.restore()
   })
@@ -68,7 +72,7 @@ describe('bin', async function () {
     await spawn(
       'node',
       [bin, '--stdin', '--errorLevel', '2'],
-      '{ "dependencies": { "express": "1" } }',
+      JSON.stringify({ dependencies: { express: '1' } }),
     ).should.eventually.be.rejectedWith('Dependencies not up-to-date')
     stub.restore()
   })
@@ -110,7 +114,7 @@ describe('bin', async function () {
     const stub = stubNpmView('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
-    await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
       const text = await spawn('node', [bin, '--jsonUpgraded', '--packageFile', pkgFile])
       const pkgData = JSON.parse(text)
@@ -125,7 +129,7 @@ describe('bin', async function () {
     const stub = stubNpmView('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
-    await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
       await spawn('node', [bin, '-u', '--packageFile', pkgFile])
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
@@ -142,7 +146,7 @@ describe('bin', async function () {
     const stub = stubNpmView('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
-    await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
 
     try {
       await spawn('node', [bin, '-u', '--errorLevel', '2', '--packageFile', pkgFile]).should.eventually.be.rejectedWith(
@@ -162,7 +166,7 @@ describe('bin', async function () {
     const stub = stubNpmView('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
-    await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
       await spawn('node', [bin, '-u', '--jsonUpgraded', '--packageFile', pkgFile])
       const ugradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
@@ -179,9 +183,9 @@ describe('bin', async function () {
     const stub = stubNpmView('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
-    await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
+    await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
-      await spawn('node', [bin, '-u', '--stdin', '--packageFile', pkgFile], '{ "dependencies": {}}')
+      await spawn('node', [bin, '-u', '--stdin', '--packageFile', pkgFile], JSON.stringify({ dependencies: {} }))
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
@@ -194,7 +198,7 @@ describe('bin', async function () {
 
   it('suppress stdout when --silent is provided', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    const output = await spawn('node', [bin, '--silent'], '{ "dependencies": { "express": "1" } }')
+    const output = await spawn('node', [bin, '--silent'], JSON.stringify({ dependencies: { express: '1' } }))
     output.trim().should.equal('')
     stub.restore()
   })
