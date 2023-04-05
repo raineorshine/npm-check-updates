@@ -75,7 +75,12 @@ ${chalk.dim.underline(
     nonHelpArgs.forEach(arg => {
       // match option by long or short
       const query = arg.replace(/^-*/, '')
-      const option = cliOptions.find(option => option.long === query || option.short === query)
+      const option = cliOptions.find(
+        option =>
+          query === option.long ||
+          query === option.short ||
+          (query === `no-${option.long}` && option.type === 'boolean'),
+      )
       if (option) {
         console.info(renderExtendedHelp(option) + '\n')
       } else {
@@ -114,16 +119,21 @@ ${chalk.dim.underline(
     })
 
   // add cli options
-  cliOptions.forEach(({ long, short, arg, description, default: defaultValue, help, parse }) =>
+  cliOptions.forEach(({ long, short, arg, description, default: defaultValue, help, parse, type }) => {
+    const flags = `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : ''}`
+    // format description for cli by removing inline code ticks
+    // point to help in description if extended help text is available
+    const descriptionFormatted = `${uncode(description)}${help ? ` Run "ncu --help --${long}" for details.` : ''}`
+
     // handle 3rd/4th argument polymorphism
-    program.option(
-      `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : ''}`,
-      // point to help in description if extended help text is available
-      `${uncode(description)}${help ? ` Run "ncu --help --${long}" for details.` : ''}`,
-      parse || defaultValue,
-      parse ? defaultValue : undefined,
-    ),
-  )
+    program.option(flags, descriptionFormatted, parse || defaultValue, parse ? defaultValue : undefined)
+
+    // add --no- prefixed boolean options
+    // necessary for overriding booleans set to true in the ncurc
+    if (type === 'boolean') {
+      program.addOption(new Commander.Option(`--no-${long}`, 'hello').default(false).hideHelp())
+    }
+  })
 
   // set version option at the end
   program.version(pkg.version)

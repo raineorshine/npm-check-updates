@@ -30,9 +30,13 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?:
 
     ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}\n`
   }
+  if (option.type === 'boolean') {
+    output += `    ncu --no-${option.long}\n`
+  }
   if (option.short) {
     output += `    ncu -${option.short}${option.arg ? ` [${option.arg}]` : ''}\n`
   }
+
   if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
     output += `Default: ${option.default}\n`
   }

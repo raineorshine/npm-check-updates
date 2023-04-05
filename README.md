@@ -130,6 +130,15 @@ ncu "/^(?!react-).*$/" # windows
 
 ## Options
 
+Options are merged with the following precedence:
+
+1. CLI
+2. Local [Config File](#config-file)
+3. Project Config File
+4. User Config File
+
+Options that take no arguments can be negated by prefixing them with `--no-`, e.g. `--no-peer`.
+
 <!-- BEGIN Options -->
 <!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->
 

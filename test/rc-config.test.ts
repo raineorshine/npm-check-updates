@@ -121,6 +121,23 @@ describe('rc-config', () => {
     }
   })
 
+  it('override true in config with false in the cli', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempConfigFile = path.join(tempDir, '.ncurc.json')
+    await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true }), 'utf-8')
+    try {
+      const output = await spawn(
+        'node',
+        [bin, '--stdin', '--configFilePath', tempDir, '--no-jsonUpgraded'],
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+      )
+      // if the output contains "Using config file", then we know that jsonUpgraded was overridden
+      output.should.include('Using config file')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
   it('handle boolean arguments', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
