@@ -255,8 +255,8 @@ describe('bin', async function () {
 
   it('combine short boolean options with long options', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    const promise = spawn('node', [bin, '-jp', 'foo'])
-    promise.should.eventually.be.rejectedWith('Invalid package manager: foo')
+    const promise = spawn('node', [bin, '-mp', 'foo'])
+    await promise.should.eventually.be.rejectedWith('Invalid package manager: foo')
     stub.restore()
   })
 
