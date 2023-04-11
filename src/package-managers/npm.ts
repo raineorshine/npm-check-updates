@@ -200,15 +200,12 @@ const findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
 const npmConfig = findNpmConfig()
 
 /** A promise that returns true if --global is deprecated on the system npm. Spawns "npm --version". */
-const isGlobalDeprecated = new Promise((resolve, reject) => {
+const isGlobalDeprecated = memoize(async () => {
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-  return spawn(cmd, ['--version'])
-    .then((output: string) => {
-      const npmVersion = output.trim()
-      // --global was deprecated in npm v8.11.0.
-      resolve(semver.valid(npmVersion) && semver.gte(npmVersion, '8.11.0'))
-    })
-    .catch(reject)
+  const output = await spawn(cmd, ['--version'])
+  const npmVersion = output.trim()
+  // --global was deprecated in npm v8.11.0.
+  return semver.valid(npmVersion) && semver.gte(npmVersion, '8.11.0')
 })
 
 /**
@@ -488,7 +485,7 @@ async function spawnNpm(
 
   const fullArgs = args.concat(
     npmOptions.location
-      ? (await isGlobalDeprecated)
+      ? (await isGlobalDeprecated())
         ? `--location=${npmOptions.location}`
         : npmOptions.location === 'global'
         ? '--global'

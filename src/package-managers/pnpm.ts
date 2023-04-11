@@ -59,7 +59,8 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
 
 /** Fetches the list of all installed packages. */
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
-  // use npm for local ls
+  // use npm for local ls for completeness
+  // this should never happen since list is only called in runGlobal -> getInstalledPackages
   if (!options.global) return npmList(options)
 
   const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
