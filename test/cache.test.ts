@@ -1,7 +1,7 @@
 import chai, { expect } from 'chai'
 import chaiString from 'chai-string'
 import fs from 'fs/promises'
-import rimraf from 'rimraf'
+import { rimraf } from 'rimraf'
 import ncu from '../src/'
 import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
 import { CacheData } from '../src/types/Cacher'

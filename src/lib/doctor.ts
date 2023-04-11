@@ -1,5 +1,5 @@
 import fs from 'fs/promises'
-import rimraf from 'rimraf'
+import { rimraf } from 'rimraf'
 import spawn from 'spawn-please'
 import { printUpgrades } from '../lib/logging'
 import spawnNpm from '../package-managers/npm'

@@ -1,7 +1,7 @@
 import { and, or } from 'fp-and-or'
 import identity from 'lodash/identity'
 import negate from 'lodash/negate'
-import minimatch from 'minimatch'
+import { minimatch } from 'minimatch'
 import { SemVer, parseRange } from 'semver-utils'
 import { FilterPattern } from '../types/FilterPattern'
 import { Maybe } from '../types/Maybe'
