@@ -346,7 +346,6 @@ async function viewMany(
   npmConfigWorkspaceProject?: NpmConfig,
 ): Promise<Index<Packument | Index<string> | Index<Packument>>> {
   // See: /test/helpers/stubNpmView
-
   if (process.env.STUB_NPM_VIEW) {
     const mockReturnedVersions = JSON.parse(process.env.STUB_NPM_VIEW)
     return mockViewMany(mockReturnedVersions)(packageName, fields, currentVersion, options)
@@ -468,7 +467,7 @@ export async function viewOne(
 }
 
 /**
- * Spawns npm. Handles different commands for Window and Linux/OSX, and automatically converts --location=global to --global on node < 8.11.0.
+ * Spawns npm with --json. Handles different commands for Window and Linux/OSX, and automatically converts --location=global to --global on node < 8.11.0.
  *
  * @param args
  * @param [npmOptions={}]
@@ -492,7 +491,6 @@ async function spawnNpm(
         : ''
       : [],
     npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : [],
-    '--depth=0',
     '--json',
   )
   return spawn(cmd, fullArgs, spawnOptions)
@@ -591,13 +589,9 @@ export const getPeerDependencies = async (packageName: string, version: Version)
   // otherwise, it will error out in the shell
   // https://github.com/raineorshine/npm-check-updates/issues/1181
   const atVersion = !version.startsWith('>') ? `@${version}` : ''
-  const npmArgs = ['view', `${packageName}${atVersion}`, 'peerDependencies']
-  const result = await spawnNpm(npmArgs, {}, { rejectOnError: false })
-  if (!result) {
-    return {}
-  }
-  const peerDependencies: Index<Version> = parseJson<Index<Version>>(result, { command: `${npmArgs.join(' ')} --json` })
-  return peerDependencies
+  const args = ['view', `${packageName}${atVersion}`, 'peerDependencies']
+  const result = await spawnNpm(args, {}, { rejectOnError: false })
+  return result ? parseJson(result, { command: [...args, '--json'].join(' ') }) : {}
 }
 
 /**
@@ -611,7 +605,7 @@ export const getPeerDependencies = async (packageName: string, version: Version)
  */
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
   const result = await spawnNpm(
-    'ls',
+    ['ls', '--depth=0'],
     {
       // spawnNpm takes the modern --location option and converts it to --global on older versions of npm
       ...(options.global ? { location: 'global' } : null),
