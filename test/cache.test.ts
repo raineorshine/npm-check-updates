@@ -39,7 +39,7 @@ describe('cache', () => {
         [`ncu-test-alpha${CACHE_DELIMITER}latest`]: '1.0.0',
       })
     } finally {
-      rimraf.sync(resolvedDefaultCacheFile)
+      await rimraf(resolvedDefaultCacheFile)
       stub.restore()
     }
   })
@@ -99,7 +99,7 @@ describe('cache', () => {
         [`ncu-test-alpha${CACHE_DELIMITER}greatest`]: '2.0.0-alpha.2',
       })
     } finally {
-      rimraf.sync(resolvedDefaultCacheFile)
+      await rimraf(resolvedDefaultCacheFile)
       stub.restore()
     }
   })

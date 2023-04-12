@@ -214,7 +214,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     if (lockFile) {
       await fs.writeFile(lockFileName, lockFile)
     } else {
-      rimraf.sync(lockFileName)
+      await rimraf(lockFileName)
     }
 
     // save the last package file with passing tests
