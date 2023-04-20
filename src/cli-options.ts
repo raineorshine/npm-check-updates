@@ -647,6 +647,7 @@ When \`--packageManager staticRegistry\` is set, \`--registry\` must specify a p
     long: 'timeout',
     arg: 'ms',
     description: 'Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch)',
+    parse: s => parseInt(s, 10),
     type: 'number',
   },
   {
