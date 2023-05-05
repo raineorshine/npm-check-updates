@@ -30,6 +30,9 @@ async function getNcuRc({ color, configFileName, configFilePath, packageFile }: 
     cwd: configFilePath || (packageFile ? path.dirname(packageFile) : undefined),
   })
 
+  // Prevent the cli tool from choking because of an unknown argument
+  delete result["$schema"];
+
   // validate arguments here to provide a better error message
   const unknownOptions = Object.keys(result?.config || {}).filter(arg => !cliOptionsMap[arg])
   if (unknownOptions.length > 0) {
