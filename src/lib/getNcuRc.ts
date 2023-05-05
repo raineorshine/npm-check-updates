@@ -1,5 +1,6 @@
 import flatten from 'lodash/flatten'
 import map from 'lodash/map'
+import omit from 'lodash/omit'
 import path from 'path'
 import { rcFile } from 'rc-config-loader'
 import { cliOptionsMap } from '../cli-options'
@@ -24,11 +25,17 @@ async function getNcuRc({ color, configFileName, configFilePath, packageFile }: 
   const { default: chalkDefault, Chalk } = await import('chalk')
   const chalk = color ? new Chalk({ level: 1 }) : chalkDefault
 
-  const result = rcFile('ncurc', {
+  const rawResult = rcFile('ncurc', {
     configFileName: configFileName || '.ncurc',
     defaultExtension: ['.json', '.yml', '.js'],
     cwd: configFilePath || (packageFile ? path.dirname(packageFile) : undefined),
   })
+
+  const result = {
+    filePath: rawResult?.filePath,
+    // Prevent the cli tool from choking because of an unknown option "$schema"
+    config: omit(rawResult?.config, '$schema'),
+  }
 
   // validate arguments here to provide a better error message
   const unknownOptions = Object.keys(result?.config || {}).filter(arg => !cliOptionsMap[arg])
