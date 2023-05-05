@@ -209,15 +209,11 @@ describe('rc-config', () => {
     const configFile = path.join(tempDir, '.ncurc.json')
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(configFile, JSON.stringify({ $schema: 'schema url' }), 'utf-8')
-    await fs.writeFile(
-      pkgFile,
-      JSON.stringify({ dependencies: { 'axios': '1.0.0' } }),
-      'utf-8',
-    )
+    await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { axios: '1.0.0' } }), 'utf-8')
 
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir });
+      await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }

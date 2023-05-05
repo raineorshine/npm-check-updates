@@ -35,7 +35,7 @@ async function getNcuRc({ color, configFileName, configFilePath, packageFile }: 
     filePath: rawResult?.filePath,
     // Prevent the cli tool from choking because of an unknown option "$schema"
     config: omit(rawResult?.config, '$schema'),
-  };
+  }
 
   // validate arguments here to provide a better error message
   const unknownOptions = Object.keys(result?.config || {}).filter(arg => !cliOptionsMap[arg])
