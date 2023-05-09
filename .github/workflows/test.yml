@@ -12,6 +12,7 @@ on:
 env:
   FORCE_COLOR: 2
   NODE_COV: 16
+  LRU_CACHE_IGNORE_AC_WARNING=1
 
 permissions:
   contents: read
