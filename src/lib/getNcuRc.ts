@@ -1,6 +1,7 @@
 import flatten from 'lodash/flatten'
 import map from 'lodash/map'
 import omit from 'lodash/omit'
+import os from 'os'
 import path from 'path'
 import { rcFile } from 'rc-config-loader'
 import { cliOptionsMap } from '../cli-options'
@@ -9,6 +10,8 @@ interface Options {
   color?: boolean
   configFileName?: string
   configFilePath?: string
+  // if true, does not look in package directory
+  global?: boolean
   packageFile?: string
 }
 
@@ -21,14 +24,14 @@ interface Options {
  * @param [cfg.packageFile]
  * @returns
  */
-async function getNcuRc({ color, configFileName, configFilePath, packageFile }: Options = {}) {
+async function getNcuRc({ color, configFileName, configFilePath, packageFile, global }: Options = {}) {
   const { default: chalkDefault, Chalk } = await import('chalk')
   const chalk = color ? new Chalk({ level: 1 }) : chalkDefault
 
   const rawResult = rcFile('ncurc', {
     configFileName: configFileName || '.ncurc',
     defaultExtension: ['.json', '.yml', '.js'],
-    cwd: configFilePath || (packageFile ? path.dirname(packageFile) : undefined),
+    cwd: configFilePath || (global ? os.homedir() : packageFile ? path.dirname(packageFile) : undefined),
   })
 
   const result = {

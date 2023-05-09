@@ -147,19 +147,19 @@ ${chalk.dim.underline(
   const programOpts = program.opts()
   const programArgs = process.argv.slice(2)
 
-  const { color, configFileName, configFilePath, packageFile, mergeConfig } = programOpts
+  const { color, configFileName, configFilePath, global, packageFile, mergeConfig } = programOpts
 
   // Force color on all chalk instances.
   // See: /src/lib/chalk.ts
   await chalkInit(color)
 
   // load .ncurc
-  // Do not load when global option is set
   // Do not load when tests are running (can be overridden if configFilePath is set explicitly, or --mergeConfig option specified)
   const rcResult =
-    !programOpts.global && (!process.env.NCU_TESTS || configFilePath || mergeConfig)
-      ? await getNcuRc({ configFileName, configFilePath, packageFile, color })
+    !process.env.NCU_TESTS || configFilePath || mergeConfig
+      ? await getNcuRc({ configFileName, configFilePath, global, packageFile, color })
       : null
+
   // override rc args with program args
   const rcArgs = (rcResult?.args || []).filter(
     (arg, i, args) =>
