@@ -429,7 +429,7 @@ describe('stubbed', () => {
   })
 
   describe('pnpm', () => {
-    it('read packages from pnpm-workspaces.yaml', async () => {
+    it('read packages from pnpm-workspace.yaml', async () => {
       const tempDir = await setup(['packages/**'], { pnpm: true })
       try {
         const output = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir }).then(JSON.parse)

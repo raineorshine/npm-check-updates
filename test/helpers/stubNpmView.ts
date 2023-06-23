@@ -10,8 +10,7 @@ const stubNpmView = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?: 
     process.env.STUB_NPM_VIEW = JSON.stringify(mockReturnedVersions)
     return {
       restore: () => {
-        // eslint-disable-next-line fp/no-delete
-        delete process.env.STUB_NPM_VIEW
+        process.env.STUB_NPM_VIEW = ''
       },
     }
   }
