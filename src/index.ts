@@ -154,13 +154,13 @@ const npmInstall = async (
 
 /** Runs the dependency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
 async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<Index<string> | PackageFile | void> {
-  const [packageInfos, workspacePackages]: [PackageInfo[], string[]] = await getAllPackages(options)
+  const [selectedPackageInfos, workspacePackages]: [PackageInfo[], string[]] = await getAllPackages(options)
 
-  const packageFilepaths: string[] = packageInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
+  const packageFilepaths: string[] = selectedPackageInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
 
   // enable deep mode if --deep, --workspace, --workspaces, or if multiple package files are found
   const isWorkspace = options.workspaces || !!options.workspace?.length
-  options.deep = options.deep || isWorkspace || packageInfos.length > 1
+  options.deep = options.deep || isWorkspace || selectedPackageInfos.length > 1
 
   let analysis: Index<PackageFile> | PackageFile | void
   if (options.global) {
@@ -168,7 +168,7 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
     clearTimeout(timeout)
     return analysis
   } else if (options.deep) {
-    analysis = await packageInfos.reduce(async (previousPromise, packageInfo: PackageInfo) => {
+    analysis = await selectedPackageInfos.reduce(async (previousPromise, packageInfo: PackageInfo) => {
       const packages = await previousPromise
       // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
       const rcResult = await getNcuRc({ packageFile: packageInfo.filepath, color: options.color })
@@ -181,7 +181,7 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
         ...options,
         ...rcConfig,
         packageFile: packageInfo.filepath,
-        workspacePackages,
+        workspacePackages: workspacePackages,
       }
       const { pkgData, pkgFile } = await findPackage(pkgOptions)
       return {
@@ -200,8 +200,11 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
     }
   } else {
     // mutate packageFile when glob pattern finds only single package
-    if (packageInfos.length === 1 && packageInfos[0].filepath !== (options.packageFile || 'package.json')) {
-      options.packageFile = packageInfos[0].filepath
+    if (
+      selectedPackageInfos.length === 1 &&
+      selectedPackageInfos[0].filepath !== (options.packageFile || 'package.json')
+    ) {
+      options.packageFile = selectedPackageInfos[0].filepath
     }
     const { pkgData, pkgFile } = await findPackage(options)
     analysis = await runLocal(options, pkgData, pkgFile)

@@ -25,7 +25,7 @@ const readPnpmWorkspaces = async (pkgPath: string): Promise<PnpmWorkspaces | nul
 }
 
 /**
- * Gets all workspace sub-package information
+ * Gets all workspace packages information.
  *
  * @param options the application options, used to determine which packages to return.
  * @param defaultPackageFilename the default package filename
@@ -97,7 +97,7 @@ async function getWorkspacePackageInfos(
 
   // add workspace packages
   // --workspace
-  const filteredWorkspacePackageInfos: PackageInfo[] = allWorkspacePackageInfos.filter((packageInfo: PackageInfo) =>
+  const selectedWorkspacePackageInfos: PackageInfo[] = allWorkspacePackageInfos.filter((packageInfo: PackageInfo) =>
     /* ignore coverage on optional-chaining */
     /* c8 ignore next */
     options.workspace?.some((workspace: string) =>
@@ -110,14 +110,11 @@ async function getWorkspacePackageInfos(
       ),
     ),
   )
-
-  return [filteredWorkspacePackageInfos, allWorkspacePackageNames]
+  return [selectedWorkspacePackageInfos, allWorkspacePackageNames]
 }
 
 /**
- * Gets all workspace filenames, or just the root workspace package file
- *
- * NOTE: this has been refactored out of index.ts
+ * Gets all local packages, including workspaces (depending on -w, -ws, and -root).
  *
  * @param options the application options, used to determine which packages to return.
  * @returns PackageInfo[] an array of all package infos to be considered for updating
