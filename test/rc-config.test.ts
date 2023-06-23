@@ -15,11 +15,12 @@ process.env.NCU_TESTS = 'true'
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
-let stub: { restore: () => void }
-before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
-after(() => stub.restore())
-
 describe('rc-config', () => {
+  // before/after must be placed within the describe block, otherwise they will apply to tests in other files
+  let stub: { restore: () => void }
+  before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
+  after(() => stub.restore())
+
   it('print rcConfigPath when there is a non-empty rc config file', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
