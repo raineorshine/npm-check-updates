@@ -22,7 +22,7 @@
     "ncu"
   ],
   "engines": {
-    "node": ">=14.14"
+    "node": ">=16"
   },
   "main": "build/src/index.js",
   "scripts": {
