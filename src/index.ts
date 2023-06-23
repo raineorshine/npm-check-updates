@@ -181,7 +181,7 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
         ...options,
         ...rcConfig,
         packageFile: packageInfo.filepath,
-        workspacePackages: workspacePackages,
+        workspacePackages,
       }
       const { pkgData, pkgFile } = await findPackage(pkgOptions)
       return {
