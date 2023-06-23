@@ -78,6 +78,7 @@ const setup = async (
 /** Sets up a workspace with a dependency to a symlinked workspace package. */
 const setupSymlinkedPackages = async (
   workspaces: string[] | { packages: string[] } = ['packages/**'],
+  // applies a custom package name to /packages/bar
   customName?: string,
 ) => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
@@ -317,6 +318,23 @@ describe('stubbed', () => {
         output.should.have.property('packages/a/package.json')
         output.should.not.have.property('packages/b/package.json')
         output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+      }
+    })
+
+    // https://github.com/raineorshine/npm-check-updates/issues/1304
+    it('update namespaced workspace', async () => {
+      const tempDir = await setupSymlinkedPackages(['packages/**'], '@ncu/bar')
+      try {
+        const upgrades = await spawn('node', [bin, '--jsonUpgraded', '--workspace', '@ncu/bar'], {
+          cwd: tempDir,
+        }).then(JSON.parse)
+        upgrades.should.deep.equal({
+          'packages/bar/package.json': {
+            'ncu-test-v2': '2.0.0',
+          },
+        })
       } finally {
         await fs.rm(tempDir, { recursive: true, force: true })
       }
