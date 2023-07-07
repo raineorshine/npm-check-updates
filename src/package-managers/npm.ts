@@ -128,6 +128,7 @@ export const normalizeNpmConfig = (
     searchlimit: 'number',
     searchstaleness: 'number',
     ssopollfrequency: 'number',
+    timeout: 'number',
   }
 
   /** Parses a string to a boolean. */
