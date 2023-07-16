@@ -3,6 +3,7 @@ import { rimraf } from 'rimraf'
 import spawn from 'spawn-please'
 import { printUpgrades } from '../lib/logging'
 import spawnNpm from '../package-managers/npm'
+import spawnPnpm from '../package-managers/pnpm'
 import spawnYarn from '../package-managers/yarn'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -16,7 +17,7 @@ import upgradePackageData from './upgradePackageData'
 
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
 
-/** Run the npm CLI in CI mode. */
+/** Run npm, yarn, or pnpm. */
 const npm = (
   args: string[],
   options: Options,
@@ -31,7 +32,8 @@ const npm = (
     cwd: options.cwd || process.cwd(),
     env: {
       ...process.env,
-      CI: '1',
+      // TODO: Why does CI break pnpm install?
+      ...(options.packageManager !== 'pnpm' ? { CI: '1' } : null),
       FORCE_COLOR: '1',
       ...spawnOptions?.env,
     },
@@ -43,7 +45,11 @@ const npm = (
     ...(options.prefix ? { prefix: options.prefix } : null),
   }
 
-  return (options.packageManager === 'yarn' ? spawnYarn : spawnNpm)(args, npmOptions, spawnOptionsMerged)
+  return (options.packageManager === 'pnpm' ? spawnPnpm : options.packageManager === 'yarn' ? spawnYarn : spawnNpm)(
+    args,
+    npmOptions,
+    spawnOptionsMerged as any,
+  )
 }
 
 /** Load and validate package file and tests. */
@@ -80,7 +86,12 @@ const loadPackageFileForDoctor = async (options: Options): Promise<PackageInfo> 
 // we have to pass run directly since it would be a circular require if doctor included this file
 const doctor = async (run: Run, options: Options): Promise<void> => {
   await chalkInit()
-  const lockFileName = options.packageManager === 'yarn' ? 'yarn.lock' : 'package-lock.json'
+  const lockFileName =
+    options.packageManager === 'yarn'
+      ? 'yarn.lock'
+      : options.packageManager === 'pnpm'
+      ? 'pnpm-lock.yaml'
+      : 'package-lock.json'
   const { pkg, pkgFile }: PackageInfo = await loadPackageFileForDoctor(options)
 
   // flatten all deps into one so we can iterate over them
@@ -94,6 +105,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
   const runInstall = async (): Promise<void> => {
     if (options.doctorInstall) {
       const [installCommand, ...testArgs] = options.doctorInstall.split(' ')
+      console.log(chalk.blue(options.doctorInstall))
       await spawn(installCommand, testArgs)
     } else {
       await npm(['install'], { packageManager: options.packageManager }, true)
@@ -122,6 +134,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         groups = [...groups, match[2] || match[1] || match[0]]
       }
       const [testCommand, ...testArgs] = groups
+      console.log(chalk.blue(options.doctorTest))
       await spawn(testCommand, testArgs, spawnOptions)
     } else {
       await npm(
@@ -242,7 +255,12 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
       try {
         // install single dependency
         await npm(
-          [...(options.packageManager === 'yarn' ? ['add'] : ['install', '--no-save']), `${name}@${version}`],
+          [
+            ...(options.packageManager === 'yarn' || options.packageManager === 'pnpm'
+              ? ['add']
+              : ['install', '--no-save']),
+            `${name}@${version}`,
+          ],
           { packageManager: options.packageManager },
           true,
         )
@@ -280,8 +298,8 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         // restore last good lock file
         await fs.writeFile(lockFileName, lockFile)
 
-        // restore package.json since yarn doesn't have --no-save option
-        if (options.packageManager === 'yarn') {
+        // restore package.json since yarn and pnpm do not have the --no-save option
+        if (options.packageManager === 'yarn' || options.packageManager === 'pnpm') {
           await fs.writeFile('package.json', lastPkgFile)
         }
       }

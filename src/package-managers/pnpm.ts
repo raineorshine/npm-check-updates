@@ -9,7 +9,9 @@ import { print } from '../lib/logging'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
 import { NpmConfig } from '../types/NpmConfig'
+import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
+import { SpawnOptions } from '../types/SpawnOptions'
 import { Version } from '../types/Version'
 import {
   normalizeNpmConfig,
@@ -83,5 +85,29 @@ export const latest = withNpmWorkspaceConfig(npmLatest)
 export const minor = withNpmWorkspaceConfig(npmMinor)
 export const newest = withNpmWorkspaceConfig(npmNewest)
 export const patch = withNpmWorkspaceConfig(npmPatch)
+
+/**
+ * Spawn pnpm.
+ *
+ * @param args
+ * @param [npmOptions={}]
+ * @param [spawnOptions={}]
+ * @returns
+ */
+export default async function spawnPnpm(
+  args: string | string[],
+  npmOptions: NpmOptions = {},
+  spawnOptions?: SpawnOptions,
+): Promise<string> {
+  const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+
+  const fullArgs = [
+    ...(npmOptions.location === 'global' ? 'global' : []),
+    ...(Array.isArray(args) ? args : [args]),
+    ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
+  ]
+
+  return spawn(cmd, fullArgs, spawnOptions)
+}
 
 export { defaultPrefix, getPeerDependencies, packageAuthorChanged } from './npm'
