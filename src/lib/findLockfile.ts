@@ -3,7 +3,7 @@ import path from 'path'
 import { Options } from '../types/Options'
 
 /**
- * Goes up the filesystem tree until it finds a package-lock.json or yarn.lock.
+ * Goes up the filesystem tree until it finds a package-lock.json, yarn.lock, pnpm-lock.yaml, deno.json, deno.jsonc, or bun.lockb file.
  *
  * @param readdir This is only a parameter so that it can be used in tests.
  * @returns The path of the directory that contains the lockfile and the
@@ -33,6 +33,8 @@ export default async function findLockfile(
         return { directoryPath: currentPath, filename: 'deno.json' }
       } else if (files.includes('deno.jsonc')) {
         return { directoryPath: currentPath, filename: 'deno.jsonc' }
+      } else if (files.includes('bun.lockb')) {
+        return { directoryPath: currentPath, filename: 'bun.lockb' }
       }
 
       const pathParent = path.resolve(currentPath, '..')

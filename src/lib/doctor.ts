@@ -2,6 +2,7 @@ import fs from 'fs/promises'
 import { rimraf } from 'rimraf'
 import spawn from 'spawn-please'
 import { printUpgrades } from '../lib/logging'
+import spawnBun from '../package-managers/bun'
 import spawnNpm from '../package-managers/npm'
 import spawnPnpm from '../package-managers/pnpm'
 import spawnYarn from '../package-managers/yarn'
@@ -17,7 +18,7 @@ import upgradePackageData from './upgradePackageData'
 
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
 
-/** Run npm, yarn, or pnpm. */
+/** Run npm, yarn, pnpm, or bun. */
 const npm = (
   args: string[],
   options: Options,
@@ -45,11 +46,15 @@ const npm = (
     ...(options.prefix ? { prefix: options.prefix } : null),
   }
 
-  return (options.packageManager === 'pnpm' ? spawnPnpm : options.packageManager === 'yarn' ? spawnYarn : spawnNpm)(
-    args,
-    npmOptions,
-    spawnOptionsMerged as any,
-  )
+  return (
+    options.packageManager === 'pnpm'
+      ? spawnPnpm
+      : options.packageManager === 'yarn'
+      ? spawnYarn
+      : options.packageManager === 'bun'
+      ? spawnBun
+      : spawnNpm
+  )(args, npmOptions, spawnOptionsMerged as any)
 }
 
 /** Load and validate package file and tests. */
@@ -91,6 +96,8 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
       ? 'yarn.lock'
       : options.packageManager === 'pnpm'
       ? 'pnpm-lock.yaml'
+      : options.packageManager === 'bun'
+      ? 'bun.lockb'
       : 'package-lock.json'
   const { pkg, pkgFile }: PackageInfo = await loadPackageFileForDoctor(options)
 
@@ -256,7 +263,9 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         // install single dependency
         await npm(
           [
-            ...(options.packageManager === 'yarn' || options.packageManager === 'pnpm'
+            ...(options.packageManager === 'yarn' ||
+            options.packageManager === 'pnpm' ||
+            options.packageManager === 'bun'
               ? ['add']
               : ['install', '--no-save']),
             `${name}@${version}`,
@@ -299,7 +308,11 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         await fs.writeFile(lockFileName, lockFile)
 
         // restore package.json since yarn and pnpm do not have the --no-save option
-        if (options.packageManager === 'yarn' || options.packageManager === 'pnpm') {
+        if (
+          options.packageManager === 'yarn' ||
+          options.packageManager === 'pnpm' ||
+          options.packageManager === 'bun'
+        ) {
           await fs.writeFile('package.json', lastPkgFile)
         }
       }

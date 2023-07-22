@@ -61,7 +61,7 @@ function checkIfVolta(options: Options): void {
   }
 }
 
-/** Returns the package manager that should be used to install packages after running "ncu -u". Detects pnpm via pnpm-lock.yarn. This is the one place that pnpm needs to be detected, since otherwise it is backwards compatible with npm. */
+/** Returns the package manager that should be used to install packages after running "ncu -u". Detects pnpm via pnpm-lock.yaml. This is the one place that pnpm needs to be detected, since otherwise it is backwards compatible with npm. */
 const getPackageManagerForInstall = async (options: Options, pkgFile: string) => {
   if (options.packageManager !== 'npm') return options.packageManager
   const cwd = options.cwd ?? pkgFile ? `${pkgFile}/..` : process.cwd()
