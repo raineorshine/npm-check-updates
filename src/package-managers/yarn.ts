@@ -1,5 +1,3 @@
-// eslint-disable-next-line fp/no-events
-import { EventEmitter, once } from 'events'
 import memoize from 'fast-memoize'
 import fs from 'fs/promises'
 import yaml from 'js-yaml'
@@ -154,34 +152,39 @@ const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> =
  *
  * @param result    Output from `yarn list --json` to be parsed
  */
-async function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep> }> {
-  const dependencies: Index<ParsedDep> = {}
+function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep> }> {
+  return new Promise((resolve, reject) => {
+    const dependencies: Index<ParsedDep> = {}
 
-  const parser = jsonlines.parse()
+    const parser = jsonlines.parse()
 
-  parser.on('data', d => {
-    // only parse info data
-    // ignore error info, e.g. "Visit https://yarnpkg.com/en/docs/cli/list for documentation about this command."
-    if (d.type === 'info' && !d.data.match(/^Visit/)) {
-      // parse package name and version number from info data, e.g. "nodemon@2.0.4" has binaries
-      const [, pkgName, pkgVersion] = d.data.match(/"(@?.*)@(.*)"/) || []
+    parser.on('data', d => {
+      // only parse info data
+      // ignore error info, e.g. "Visit https://yarnpkg.com/en/docs/cli/list for documentation about this command."
+      if (d.type === 'info' && !d.data.match(/^Visit/)) {
+        // parse package name and version number from info data, e.g. "nodemon@2.0.4" has binaries
+        const [, pkgName, pkgVersion] = d.data.match(/"(@?.*)@(.*)"/) || []
 
-      dependencies[pkgName] = {
-        version: pkgVersion,
-        from: pkgName,
+        dependencies[pkgName] = {
+          version: pkgVersion,
+          from: pkgName,
+        }
+      } else if (d.type === 'error') {
+        reject(new Error(d.data))
       }
-    } else if (d.type === 'error') {
-      throw new Error(d.data)
-    }
+    })
+
+    parser.on('end', () => {
+      resolve({ dependencies })
+    })
+
+    parser.on('error', reject)
+
+    parser.write(result)
+
+    parser.end()
+
   })
-
-  parser.write(result)
-
-  parser.end()
-
-  await once(parser as unknown as EventEmitter, 'end')
-
-  return { dependencies }
 }
 
 /**
