@@ -15,5 +15,7 @@ module.exports = {
     // Waiting for Prettier v3 support in @trivago/prettier-plugin-sort-imports
     // https://github.com/trivago/prettier-plugin-sort-imports/issues/240
     'prettier',
+    // Removed support for node v14 in v0.35.0
+    'makdownlint-cli',
   ],
 }
