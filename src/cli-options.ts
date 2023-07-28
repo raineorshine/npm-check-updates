@@ -130,24 +130,24 @@ Only available in .ncurc.js or when importing npm-check-updates as a module.
 
 ${codeBlock(
   `${chalk.gray(`/** Filter out non-major version updates.
-  @param {string} packageName               The name of the dependency.
-  @param {string} currentVersion            Current version declaration (may be range).
-  @param {SemVer[]} currentVersionSemver    Current version declaration in semantic versioning format (may be range).
-  @param {string} upgradedVersion           Upgraded version.
-  @param {SemVer} upgradedVersionSemver     Upgraded version in semantic versioning format.
-  @returns {boolean}                        Return true if the upgrade should be kept, otherwise it will be ignored.
+  @param {string} packageName        The name of the dependency.
+  @param {string} current            Current version declaration (may be a range).
+  @param {SemVer[]} currentSemver    Current version declaration in semantic versioning format (may be a range).
+  @param {string} upgraded           Upgraded version.
+  @param {SemVer} upgradedSemver     Upgraded version in semantic versioning format.
+  @returns {boolean}                 Return true if the upgrade should be kept, otherwise it will be ignored.
 */`)}
-${chalk.cyan(
-  'filterResults',
-)}: (packageName, { currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver }) ${chalk.cyan(
+${chalk.green('filterResults')}: (packageName, { current, currentSemver, upgraded, upgradedSemver }) ${chalk.cyan(
     '=>',
   )} {
-  const currentMajorVersion = currentVersionSemver?.[${chalk.blue('0')}]?.major
-  const upgradedMajorVersion = upgradedVersionSemver?.major
-  ${chalk.red('if')} (currentMajorVersion ${chalk.red('&&')} upgradedMajorVersion) {
-    ${chalk.red('return')} currentMajorVersion ${chalk.red('<')} upgradedMajorVersion
+  ${chalk.cyan('const')} currentMajor ${chalk.red('=')} parseInt(currentSemver?.[${chalk.cyan(
+    '0',
+  )}]?.major, ${chalk.cyan('10')})
+  ${chalk.cyan('const')} upgradedMajor ${chalk.red('=')} parseInt(upgradedSemver?.major, ${chalk.cyan('10')})
+  ${chalk.red('if')} (currentMajor ${chalk.red('&&')} upgradedMajor) {
+    ${chalk.red('return')} currentMajor ${chalk.red('<')} upgradedMajor
   }
-  ${chalk.red('return')} ${chalk.blue('true')}
+  ${chalk.red('return')} ${chalk.cyan('true')}
 }`,
   { markdown },
 )}
@@ -192,7 +192,7 @@ ${codeBlock(
   @param upgradedVersion  The upgraded version number returned by the registry.
   @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
 */`)}
-${chalk.cyan('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion) ${chalk.cyan('=>')} {
+${chalk.green('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion) ${chalk.cyan('=>')} {
   ${chalk.red('if')} (name ${chalk.red('===')} ${chalk.yellow(`'typescript'`)} ${chalk.red(
     '&&',
   )} defaultGroup ${chalk.red('===')} ${chalk.yellow(`'minor'`)}) {
@@ -244,7 +244,7 @@ ${codeBlock(
     (See https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns One of the valid target values (specified in the table above).
 */`)}
-${chalk.cyan(
+${chalk.green(
   'target',
 )}: (dependencyName, [{ semver, version, operator, major, minor, patch, release, build }]) ${chalk.cyan('=>')} {
   ${chalk.red('if')} (major ${chalk.red('===')} ${chalk.yellow("'0'")}) ${chalk.red('return')} ${chalk.yellow(

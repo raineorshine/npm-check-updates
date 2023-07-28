@@ -424,18 +424,18 @@ Only available in .ncurc.js or when importing npm-check-updates as a module.
 
 ```js
 /** Filter out non-major version updates.
-  @param {string} packageName               The name of the dependency.
-  @param {string} currentVersion            Current version declaration (may be range).
-  @param {SemVer[]} currentVersionSemver    Current version declaration in semantic versioning format (may be range).
-  @param {string} upgradedVersion           Upgraded version.
-  @param {SemVer} upgradedVersionSemver     Upgraded version in semantic versioning format.
-  @returns {boolean}                        Return true if the upgrade should be kept, otherwise it will be ignored.
+  @param {string} packageName        The name of the dependency.
+  @param {string} current            Current version declaration (may be a range).
+  @param {SemVer[]} currentSemver    Current version declaration in semantic versioning format (may be a range).
+  @param {string} upgraded           Upgraded version.
+  @param {SemVer} upgradedSemver     Upgraded version in semantic versioning format.
+  @returns {boolean}                 Return true if the upgrade should be kept, otherwise it will be ignored.
 */
-filterResults: (packageName, { currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver }) => {
-  const currentMajorVersion = currentVersionSemver?.[0]?.major
-  const upgradedMajorVersion = upgradedVersionSemver?.major
-  if (currentMajorVersion && upgradedMajorVersion) {
-    return currentMajorVersion < upgradedMajorVersion
+filterResults: (packageName, { current, currentSemver, upgraded, upgradedSemver }) => {
+  const currentMajor = parseInt(currentSemver?.[0]?.major, 10)
+  const upgradedMajor = parseInt(upgradedSemver?.major, 10)
+  if (currentMajor && upgradedMajor) {
+    return currentMajor < upgradedMajor
   }
   return true
 }
