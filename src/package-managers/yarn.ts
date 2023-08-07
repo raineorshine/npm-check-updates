@@ -183,7 +183,6 @@ function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep
     parser.write(result)
 
     parser.end()
-
   })
 }
 
