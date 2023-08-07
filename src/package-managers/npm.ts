@@ -224,14 +224,13 @@ const isGlobalDeprecated = memoize(async () => {
  */
 function parseJson<R>(result: string, data: { command?: string; packageName?: string }): R {
   let json
-  // use a try-catch instead of .catch to avoid re-catching upstream errors
   try {
     json = JSON.parse(result)
   } catch (err) {
     throw new Error(
-      `Expected JSON from "${data.command}". This could be due to npm instability${
-        data.packageName ? ` or problems with the ${data.packageName} package` : ''
-      }.\n\n${result}`,
+      `Expected JSON from "${data.command}".${
+        data.packageName ? ` There could be problems with the ${data.packageName} package.` : ''
+      } ${result ? 'Instead received: ' + result : 'Received empty response.'}`,
     )
   }
   return json as R
@@ -620,7 +619,9 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   const dependencies = parseJson<{
     dependencies: Index<{ version?: Version; required?: { version: Version } }>
   }>(result, {
-    command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --location=global' : ''}`,
+    command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --location=global' : ''}${
+      options.prefix ? ' --prefix ' + options.prefix : ''
+    }`,
   }).dependencies
 
   return keyValueBy(dependencies, (name, info) => ({
