@@ -7,6 +7,7 @@ import wrap from './lib/wrap'
 import CLIOption from './types/CLIOption'
 import ExtendedHelp from './types/ExtendedHelp'
 import { Index } from './types/IndexType'
+import { supportedVersionTargets } from './types/Target'
 
 /** Pads the left side of each line in a string. */
 const padLeft = (s: string, n: number) =>
@@ -637,11 +638,12 @@ When \`--packageManager staticRegistry\` is set, \`--registry\` must specify a p
     long: 'target',
     short: 't',
     arg: 'value',
-    description:
-      'Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. (default: latest)',
+    description: `Determines the version to upgrade to: ${supportedVersionTargets.join(
+      ', ',
+    )}, @[tag], or [function]. (default: latest)`,
     help: extendedHelpTarget,
     // eslint-disable-next-line no-template-curly-in-string
-    type: `'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | ${'`@${string}`'} | TargetFunction`,
+    type: `${supportedVersionTargets.map(s => `'${s}'`).join(' | ')} | ${'`@${string}`'} | TargetFunction`,
   },
   {
     long: 'timeout',

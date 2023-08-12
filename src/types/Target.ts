@@ -1,7 +1,10 @@
 import { TargetFunction } from './TargetFunction'
 
 /** Valid strings for the --target option. Indicates the desired version to upgrade to. */
-type TargetString = 'latest' | 'newest' | 'greatest' | 'minor' | 'patch'
+export const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch'] as const
+
+/** A union of supported version target strings. */
+export type TargetString = typeof supportedVersionTargets[number]
 
 /** Upgrading to specific distribution tags can be done by passing @-starting value to --target option. */
 export type TargetDistTag = `@${string}`
