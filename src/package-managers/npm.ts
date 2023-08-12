@@ -11,6 +11,7 @@ import sortBy from 'lodash/sortBy'
 import pacote from 'pacote'
 import path from 'path'
 import nodeSemver from 'semver'
+import { parseRange } from 'semver-utils'
 import spawn from 'spawn-please'
 import untildify from 'untildify'
 import filterObject from '../lib/filterObject'
@@ -29,6 +30,14 @@ import { Version } from '../types/Version'
 import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
 import { filterPredicate, satisfiesNodeEngine } from './filters'
+
+const EXPLICIT_RANGE_OPS = new Set(['-', '||', '&&', '<', '<=', '>', '>='])
+
+/** Returns true if the spec is an explicit version range (not ~ or ^). */
+const isExplicitRange = (spec: VersionSpec) => {
+  const range = parseRange(spec)
+  return range.some(parsed => EXPLICIT_RANGE_OPS.has(parsed.operator || ''))
+}
 
 /** Normalizes the keys of an npm config for pacote. */
 export const normalizeNpmConfig = (
@@ -821,6 +830,9 @@ export const semver: GetVersion = async (
     npmConfig,
     npmConfigProject,
   )) as Index<Packument>
+  // ignore explicit version ranges
+  if (isExplicitRange(currentVersion)) return { version: null }
+
   const versionsFiltered = filter(versions, filterPredicate(options)).map(o => o.version)
   // TODO: Upgrading within a prerelease does not seem to work.
   // { includePrerelease: true } does not help.

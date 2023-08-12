@@ -166,26 +166,6 @@ describe('target', () => {
   })
 
   describe('semver', () => {
-    describe('exact', () => {
-      it('exact version range', async () => {
-        const data = await ncu({
-          jsonAll: true,
-          packageData: {
-            dependencies: {
-              'ncu-test-semver': '1.0.0',
-            },
-          },
-          target: 'semver',
-        })
-
-        data!.should.eql({
-          dependencies: {
-            'ncu-test-semver': '1.0.0',
-          },
-        })
-      })
-    })
-
     describe('^', () => {
       it('highest minor for post-1.0 version', async () => {
         const data = await ncu({
@@ -282,8 +262,28 @@ describe('target', () => {
       })
     })
 
-    describe('-', () => {
-      it('inclusive range', async () => {
+    describe('exact version', () => {
+      it('ignore exact version range', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '1.0.0',
+            },
+          },
+          target: 'semver',
+        })
+
+        data!.should.eql({
+          dependencies: {
+            'ncu-test-semver': '1.0.0',
+          },
+        })
+      })
+    })
+
+    describe('explicit ranges', () => {
+      it('ignore inclusive range', async () => {
         const data = await ncu({
           jsonAll: true,
           packageData: {
@@ -296,7 +296,97 @@ describe('target', () => {
 
         data!.should.eql({
           dependencies: {
-            'ncu-test-semver': '1.2.0',
+            'ncu-test-semver': '1.0.0 - 1.3.0',
+          },
+        })
+      })
+
+      it('ignore >', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '>1',
+            },
+          },
+          target: 'semver',
+        })
+
+        data!.should.eql({
+          dependencies: {
+            'ncu-test-semver': '>1',
+          },
+        })
+      })
+
+      it('ignore >=', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '>=1',
+            },
+          },
+          target: 'semver',
+        })
+
+        data!.should.eql({
+          dependencies: {
+            'ncu-test-semver': '>=1',
+          },
+        })
+      })
+
+      it('ignore <', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '<2',
+            },
+          },
+          target: 'semver',
+        })
+
+        data!.should.eql({
+          dependencies: {
+            'ncu-test-semver': '<2',
+          },
+        })
+      })
+
+      it('ignore <=', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '<=2',
+            },
+          },
+          target: 'semver',
+        })
+
+        data!.should.eql({
+          dependencies: {
+            'ncu-test-semver': '<=2',
+          },
+        })
+      })
+
+      it('ignore ||', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '1 || 2',
+            },
+          },
+          target: 'semver',
+        })
+
+        data!.should.eql({
+          dependencies: {
+            'ncu-test-semver': '1 || 2',
           },
         })
       })
