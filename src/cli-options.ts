@@ -221,13 +221,17 @@ const extendedHelpTarget: ExtendedHelp = ({ markdown }) => {
         'greatest',
         `Upgrade to the highest version number published, regardless of release date or tag. Includes prereleases.`,
       ],
-      ['latest', `Upgrade to whatever the package's "latest" git tag points to. Excludes pre is specified.`],
+      [
+        'latest',
+        `Upgrade to whatever the package's "latest" git tag points to. Excludes prereleases unless --pre is specified.`,
+      ],
       ['minor', 'Upgrade to the highest minor version without bumping the major version.'],
       [
         'newest',
         `Upgrade to the version with the most recent publish date, even if there are other version numbers that are higher. Includes prereleases.`,
       ],
       ['patch', `Upgrade to the highest patch version without bumping the minor or major versions.`],
+      ['semver', `Upgrade to the highest version within the semver range specified in your package.json.`],
       ['@[tag]', `Upgrade to the version published to a specific tag, e.g. 'next' or 'beta'.`],
     ],
   })

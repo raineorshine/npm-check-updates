@@ -10,7 +10,7 @@ import omit from 'lodash/omit'
 import sortBy from 'lodash/sortBy'
 import pacote from 'pacote'
 import path from 'path'
-import semver from 'semver'
+import nodeSemver from 'semver'
 import spawn from 'spawn-please'
 import untildify from 'untildify'
 import filterObject from '../lib/filterObject'
@@ -206,7 +206,7 @@ const isGlobalDeprecated = memoize(async () => {
   const output = await spawn(cmd, ['--version'])
   const npmVersion = output.trim()
   // --global was deprecated in npm v8.11.0.
-  return semver.valid(npmVersion) && semver.gte(npmVersion, '8.11.0')
+  return nodeSemver.valid(npmVersion) && nodeSemver.gte(npmVersion, '8.11.0')
 })
 
 /**
@@ -260,8 +260,8 @@ export async function packageAuthorChanged(
   })
   if (result.versions) {
     const pkgVersions = Object.keys(result.versions)
-    const current = semver.minSatisfying(pkgVersions, currentVersion)
-    const upgraded = semver.maxSatisfying(pkgVersions, upgradedVersion)
+    const current = nodeSemver.minSatisfying(pkgVersions, currentVersion)
+    const upgraded = nodeSemver.maxSatisfying(pkgVersions, upgradedVersion)
     if (current && upgraded && result.versions[current]._npmUser && result.versions[upgraded]._npmUser) {
       const currentAuthor = result.versions[current]._npmUser?.name
       const latestAuthor = result.versions[upgraded]._npmUser?.name
@@ -351,7 +351,7 @@ async function viewMany(
     return mockViewMany(mockReturnedVersions)(packageName, fields, currentVersion, options)
   }
 
-  if (currentVersion && (!semver.validRange(currentVersion) || versionUtil.isWildCard(currentVersion))) {
+  if (currentVersion && (!nodeSemver.validRange(currentVersion) || versionUtil.isWildCard(currentVersion))) {
     return Promise.resolve({} as Index<Packument>)
   }
 
@@ -795,6 +795,36 @@ export const patch: GetVersion = async (
     currentVersion,
     'patch',
   )
+  return { version }
+}
+
+/**
+ * Fetches the highest version that satisfies the semver range specified in the package.json.
+ *
+ * @param packageName
+ * @param currentVersion
+ * @param options
+ * @returns
+ */
+export const semver: GetVersion = async (
+  packageName,
+  currentVersion,
+  options = {},
+  npmConfig?: NpmConfig,
+  npmConfigProject?: NpmConfig,
+): Promise<VersionResult> => {
+  const versions = (await viewOne(
+    packageName,
+    'versions',
+    currentVersion,
+    options,
+    npmConfig,
+    npmConfigProject,
+  )) as Index<Packument>
+  const versionsFiltered = filter(versions, filterPredicate(options)).map(o => o.version)
+  // TODO: Upgrading within a prerelease does not seem to work.
+  // { includePrerelease: true } does not help.
+  const version = nodeSemver.maxSatisfying(versionsFiltered, currentVersion)
   return { version }
 }
 

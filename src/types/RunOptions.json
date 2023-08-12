@@ -452,11 +452,11 @@
           "type": "object"
         },
         {
-          "enum": ["greatest", "latest", "minor", "newest", "patch"],
+          "enum": ["greatest", "latest", "minor", "newest", "patch", "semver"],
           "type": "string"
         }
       ],
-      "description": "Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. (default: latest) Run \"ncu --help --target\" for details."
+      "description": "Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, @[tag], or [function]. (default: latest) Run \"ncu --help --target\" for details."
     },
     "timeout": {
       "description": "Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch)",

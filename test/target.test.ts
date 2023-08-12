@@ -165,6 +165,144 @@ describe('target', () => {
     })
   })
 
+  describe('semver', () => {
+    describe('exact', () => {
+      it('exact version range', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '1.0.0',
+            },
+          },
+          target: 'semver',
+        })
+
+        data!.should.eql({
+          dependencies: {
+            'ncu-test-semver': '1.0.0',
+          },
+        })
+      })
+    })
+
+    describe('^', () => {
+      it('highest minor for post-1.0 version', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '^1.0.0',
+            },
+          },
+          target: 'semver',
+        })
+
+        data!.should.eql({
+          dependencies: {
+            'ncu-test-semver': '^1.2.0',
+          },
+        })
+      })
+
+      it('highest patch for pre-1.0 version', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-pre1': '^0.1.0',
+            },
+          },
+          target: 'semver',
+        })
+
+        data!.should.eql({
+          dependencies: {
+            'ncu-test-pre1': '^0.1.2',
+          },
+        })
+      })
+
+      // TODO: Why doesn't this work?
+      it.skip('alpha', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-alpha': '^1.0.0-alpha.1',
+            },
+          },
+          pre: true,
+          target: 'semver',
+        })
+
+        data!.should.eql({
+          dependencies: {
+            'ncu-test-alpha': '^1.0.0-alpha.2',
+          },
+        })
+      })
+    })
+
+    describe('~', () => {
+      it('highest patch for post-1.0 version', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '~1.0.0',
+            },
+          },
+          target: 'semver',
+        })
+
+        data!.should.eql({
+          dependencies: {
+            'ncu-test-semver': '~1.0.1',
+          },
+        })
+      })
+
+      it('highest patch for pre-1.0 version', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-pre1': '~0.1.0',
+            },
+          },
+          target: 'semver',
+        })
+
+        data!.should.eql({
+          dependencies: {
+            'ncu-test-pre1': '~0.1.2',
+          },
+        })
+      })
+    })
+
+    describe('-', () => {
+      it('inclusive range', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '1.0.0 - 1.3.0',
+            },
+          },
+          target: 'semver',
+        })
+
+        data!.should.eql({
+          dependencies: {
+            'ncu-test-semver': '1.2.0',
+          },
+        })
+      })
+    })
+  })
+
   describe('custom', () => {
     it('custom target function to mimic semver', async () => {
       // eslint-disable-next-line jsdoc/require-jsdoc

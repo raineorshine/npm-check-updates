@@ -321,7 +321,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>-t, --target <value></td>
-    <td>Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. (default: latest)</td>
+    <td>Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, @[tag], or [function]. (default: latest)</td>
   </tr>
   <tr>
     <td>--timeout <ms></td>
@@ -579,10 +579,11 @@ Determines the version to upgrade to. (default: "latest")
 
 <table>
   <tr><td>greatest</td><td>Upgrade to the highest version number published, regardless of release date or tag. Includes prereleases.</td></tr>
-  <tr><td>latest</td><td>Upgrade to whatever the package's "latest" git tag points to. Excludes pre is specified.</td></tr>
+  <tr><td>latest</td><td>Upgrade to whatever the package's "latest" git tag points to. Excludes prereleases unless --pre is specified.</td></tr>
   <tr><td>minor</td><td>Upgrade to the highest minor version without bumping the major version.</td></tr>
   <tr><td>newest</td><td>Upgrade to the version with the most recent publish date, even if there are other version numbers that are higher. Includes prereleases.</td></tr>
   <tr><td>patch</td><td>Upgrade to the highest patch version without bumping the minor or major versions.</td></tr>
+  <tr><td>semver</td><td>Upgrade to the highest version within the semver range specified in your package.json.</td></tr>
   <tr><td>@[tag]</td><td>Upgrade to the version published to a specific tag, e.g. 'next' or 'beta'.</td></tr>
 </table>
 
