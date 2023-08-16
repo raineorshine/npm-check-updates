@@ -1,3 +1,7 @@
+# Package Managers
+
+## How to add a new package manager
+
 To add support for another package manager, drop in a module with the following interface.
 
 ```js
