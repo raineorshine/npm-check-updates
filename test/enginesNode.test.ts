@@ -7,9 +7,9 @@ chai.should()
 process.env.NCU_TESTS = 'true'
 
 describe('enginesNode', () => {
-  it('enable --enginesNode matching ', async () => {
-    const upgradedPkg = await ncu({
-      jsonAll: true,
+  it("update packages that satisfy the project's engines.node", async () => {
+    const upgraded = await ncu({
+      enginesNode: true,
       packageData: {
         dependencies: {
           del: '3.0.0',
@@ -18,42 +18,16 @@ describe('enginesNode', () => {
           node: '>=6',
         },
       },
-      enginesNode: true,
     })
 
-    upgradedPkg!.should.eql({
-      dependencies: {
-        del: '4.1.1',
-      },
-      engines: {
-        node: '>=6',
-      },
+    upgraded!.should.eql({
+      del: '4.1.1',
     })
   })
 
-  it('enable engines matching if --enginesNode', async () => {
-    const upgradedPkg = await ncu({
-      jsonAll: true,
-      packageData: {
-        dependencies: {
-          del: '3.0.0',
-        },
-        engines: {
-          node: '>=6',
-        },
-      },
+  it('do not update packages with incompatible engines.node', async () => {
+    const upgraded = await ncu({
       enginesNode: true,
-    })
-
-    upgradedPkg!.should.have.property('dependencies')
-    const deps = upgradedPkg!.dependencies as Index<VersionSpec>
-    deps.should.have.property('del')
-    deps.del.should.equal('4.1.1')
-  })
-
-  it('enable engines matching if --enginesNode, not update if matches not exists', async () => {
-    const upgradedPkg = await ncu({
-      jsonAll: true,
       packageData: {
         dependencies: {
           del: '3.0.0',
@@ -62,30 +36,22 @@ describe('enginesNode', () => {
           node: '>=1',
         },
       },
-      enginesNode: true,
     })
 
-    upgradedPkg!.should.have.property('dependencies')
-    const deps = upgradedPkg!.dependencies as Index<VersionSpec>
-    deps.should.have.property('del')
-    deps.del.should.equal('3.0.0')
+    upgraded!.should.eql({})
   })
 
-  it('enable engines matching if --enginesNode, update to latest version if engines.node not exists', async () => {
-    const upgradedPkg = await ncu({
-      jsonAll: true,
+  it('update packages that do not have engines.node', async () => {
+    const upgraded = (await ncu({
+      enginesNode: true,
       packageData: {
         dependencies: {
           del: '3.0.0',
         },
       },
-      enginesNode: true,
-    })
+    })) as Index<VersionSpec>
 
-    upgradedPkg!.should.have.property('dependencies')
-    const deps = upgradedPkg!.dependencies as Index<VersionSpec>
-    deps.should.have.property('del')
-    deps.del.should.not.equal('3.0.0')
-    deps.del.should.not.equal('4.1.1')
+    const versionNew = parseInt(upgraded.del, 10)
+    versionNew.should.gt(4)
   })
 })
