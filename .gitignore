@@ -25,3 +25,8 @@ yarn.lock
 # test files
 /test/temp_package*.json
 /test/.ncurc.json
+
+# we're using npm, so we want this to be ignored
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
