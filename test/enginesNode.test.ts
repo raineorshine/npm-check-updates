@@ -46,12 +46,16 @@ describe('enginesNode', () => {
       enginesNode: true,
       packageData: {
         dependencies: {
-          del: '3.0.0',
+          'ncu-test-v2': '1.0.0',
+        },
+        engines: {
+          node: '>=6',
         },
       },
     })) as Index<VersionSpec>
 
-    const versionNew = parseInt(upgraded.del, 10)
-    versionNew.should.gt(4)
+    upgraded!.should.eql({
+      'ncu-test-v2': '2.0.0',
+    })
   })
 })
