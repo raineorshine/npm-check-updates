@@ -1,9 +1,13 @@
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
+import chaiString from 'chai-string'
 import * as bun from '../../../src/package-managers/bun'
 
 chai.should()
 chai.use(chaiAsPromised)
+chai.use(chaiString)
+
+process.env.NCU_TESTS = 'true'
 
 describe('bun', function () {
   it('list', async () => {

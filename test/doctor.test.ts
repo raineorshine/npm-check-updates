@@ -8,6 +8,7 @@ import { rimraf } from 'rimraf'
 import spawn from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
+import { PackageManagerName } from '../src/types/PackageManagerName'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -22,7 +23,7 @@ const doctorTests = path.join(__dirname, 'test-data/doctor')
 const ncu = (args: string[], options?: Record<string, unknown>) => spawn('node', [bin, ...args], options)
 
 /** Assertions for npm or yarn when tests pass. */
-const testPass = ({ packageManager }: { packageManager: string }) => {
+const testPass = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('upgrade dependencies when tests pass', async function () {
     // use dynamic import for ESM module
     const { default: stripAnsi } = await import('strip-ansi')
@@ -31,7 +32,13 @@ const testPass = ({ packageManager }: { packageManager: string }) => {
     const nodeModulesPath = path.join(cwd, 'node_modules')
     const lockfilePath = path.join(
       cwd,
-      packageManager === 'yarn' ? 'yarn.lock' : packageManager === 'pnpm' ? 'pnpm-lock.yaml' : 'package-lock.json',
+      packageManager === 'yarn'
+        ? 'yarn.lock'
+        : packageManager === 'pnpm'
+        ? 'pnpm-lock.yaml'
+        : packageManager === 'bun'
+        ? 'bun.lockb'
+        : 'package-lock.json',
     )
     const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
@@ -83,12 +90,21 @@ const testPass = ({ packageManager }: { packageManager: string }) => {
 }
 
 /** Assertions for npm or yarn when tests fail. */
-const testFail = ({ packageManager }: { packageManager: string }) => {
+const testFail = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('identify broken upgrade', async function () {
     const cwd = path.join(doctorTests, 'fail')
     const pkgPath = path.join(cwd, 'package.json')
     const nodeModulesPath = path.join(cwd, 'node_modules')
-    const lockfilePath = path.join(cwd, packageManager === 'npm' ? 'package-lock.json' : 'yarn.lock')
+    const lockfilePath = path.join(
+      cwd,
+      packageManager === 'yarn'
+        ? 'yarn.lock'
+        : packageManager === 'pnpm'
+        ? 'pnpm-lock.yaml'
+        : packageManager === 'bun'
+        ? 'bun.lockb'
+        : 'package-lock.json',
+    )
     const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
     let stderr = ''
@@ -445,5 +461,11 @@ console.log(createFactories())`,
   describe('yarn', () => {
     testPass({ packageManager: 'yarn' })
     testFail({ packageManager: 'yarn' })
+  })
+
+  describe('bun', () => {
+    // TODO: fix doctor bun tests
+    // testPass({ packageManager: 'bun' })
+    // testFail({ packageManager: 'bun' })
   })
 })
