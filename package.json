@@ -4,7 +4,8 @@
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
-    "Raine Revere (https://github.com/raineorshine)"
+    "Raine Revere (https://github.com/raineorshine)",
+    "Imamuzzaki Abu Salam <imamuzzaki@gmail.com>"
   ],
   "description": "Find newer versions of dependencies than what your package.json allows",
   "keywords": [
@@ -19,7 +20,10 @@
     "updater",
     "version",
     "management",
-    "ncu"
+    "ncu",
+    "bun",
+    "yarn",
+    "pnpm"
   ],
   "engines": {
     "node": ">=14.14"
@@ -36,7 +40,7 @@
     "prepare": "husky install",
     "prepublishOnly": "npm run build",
     "prettier": "prettier .",
-    "test": "mocha test test/package-managers/*",
+    "test": "mocha test/package-managers/*",
     "ncu": "node build/src/bin/cli.js"
   },
   "bin": {
