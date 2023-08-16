@@ -7,6 +7,7 @@ import wrap from './lib/wrap'
 import CLIOption from './types/CLIOption'
 import ExtendedHelp from './types/ExtendedHelp'
 import { Index } from './types/IndexType'
+import { supportedVersionTargets } from './types/Target'
 
 /** Pads the left side of each line in a string. */
 const padLeft = (s: string, n: number) =>
@@ -130,24 +131,24 @@ Only available in .ncurc.js or when importing npm-check-updates as a module.
 
 ${codeBlock(
   `${chalk.gray(`/** Filter out non-major version updates.
-  @param {string} packageName               The name of the dependency.
-  @param {string} currentVersion            Current version declaration (may be range).
-  @param {SemVer[]} currentVersionSemver    Current version declaration in semantic versioning format (may be range).
-  @param {string} upgradedVersion           Upgraded version.
-  @param {SemVer} upgradedVersionSemver     Upgraded version in semantic versioning format.
-  @returns {boolean}                        Return true if the upgrade should be kept, otherwise it will be ignored.
+  @param {string} packageName        The name of the dependency.
+  @param {string} current            Current version declaration (may be a range).
+  @param {SemVer[]} currentSemver    Current version declaration in semantic versioning format (may be a range).
+  @param {string} upgraded           Upgraded version.
+  @param {SemVer} upgradedSemver     Upgraded version in semantic versioning format.
+  @returns {boolean}                 Return true if the upgrade should be kept, otherwise it will be ignored.
 */`)}
-${chalk.cyan(
-  'filterResults',
-)}: (packageName, { currentVersion, currentVersionSemver, upgradedVersion, upgradedVersionSemver }) ${chalk.cyan(
+${chalk.green('filterResults')}: (packageName, { current, currentSemver, upgraded, upgradedSemver }) ${chalk.cyan(
     '=>',
   )} {
-  const currentMajorVersion = currentVersionSemver?.[${chalk.blue('0')}]?.major
-  const upgradedMajorVersion = upgradedVersionSemver?.major
-  ${chalk.red('if')} (currentMajorVersion ${chalk.red('&&')} upgradedMajorVersion) {
-    ${chalk.red('return')} currentMajorVersion ${chalk.red('<')} upgradedMajorVersion
+  ${chalk.cyan('const')} currentMajor ${chalk.red('=')} parseInt(currentSemver?.[${chalk.cyan(
+    '0',
+  )}]?.major, ${chalk.cyan('10')})
+  ${chalk.cyan('const')} upgradedMajor ${chalk.red('=')} parseInt(upgradedSemver?.major, ${chalk.cyan('10')})
+  ${chalk.red('if')} (currentMajor ${chalk.red('&&')} upgradedMajor) {
+    ${chalk.red('return')} currentMajor ${chalk.red('<')} upgradedMajor
   }
-  ${chalk.red('return')} ${chalk.blue('true')}
+  ${chalk.red('return')} ${chalk.cyan('true')}
 }`,
   { markdown },
 )}
@@ -192,7 +193,7 @@ ${codeBlock(
   @param upgradedVersion  The upgraded version number returned by the registry.
   @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
 */`)}
-${chalk.cyan('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion) ${chalk.cyan('=>')} {
+${chalk.green('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion) ${chalk.cyan('=>')} {
   ${chalk.red('if')} (name ${chalk.red('===')} ${chalk.yellow(`'typescript'`)} ${chalk.red(
     '&&',
   )} defaultGroup ${chalk.red('===')} ${chalk.yellow(`'minor'`)}) {
@@ -220,13 +221,17 @@ const extendedHelpTarget: ExtendedHelp = ({ markdown }) => {
         'greatest',
         `Upgrade to the highest version number published, regardless of release date or tag. Includes prereleases.`,
       ],
-      ['latest', `Upgrade to whatever the package's "latest" git tag points to. Excludes pre is specified.`],
+      [
+        'latest',
+        `Upgrade to whatever the package's "latest" git tag points to. Excludes prereleases unless --pre is specified.`,
+      ],
       ['minor', 'Upgrade to the highest minor version without bumping the major version.'],
       [
         'newest',
         `Upgrade to the version with the most recent publish date, even if there are other version numbers that are higher. Includes prereleases.`,
       ],
       ['patch', `Upgrade to the highest patch version without bumping the minor or major versions.`],
+      ['semver', `Upgrade to the highest version within the semver range specified in your package.json.`],
       ['@[tag]', `Upgrade to the version published to a specific tag, e.g. 'next' or 'beta'.`],
     ],
   })
@@ -244,7 +249,7 @@ ${codeBlock(
     (See https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns One of the valid target values (specified in the table above).
 */`)}
-${chalk.cyan(
+${chalk.green(
   'target',
 )}: (dependencyName, [{ semver, version, operator, major, minor, patch, release, build }]) ${chalk.cyan('=>')} {
   ${chalk.red('if')} (major ${chalk.red('===')} ${chalk.yellow("'0'")}) ${chalk.red('return')} ${chalk.yellow(
@@ -638,11 +643,12 @@ When \`--packageManager staticRegistry\` is set, \`--registry\` must specify a p
     long: 'target',
     short: 't',
     arg: 'value',
-    description:
-      'Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. (default: latest)',
+    description: `Determines the version to upgrade to: ${supportedVersionTargets.join(
+      ', ',
+    )}, @[tag], or [function]. (default: latest)`,
     help: extendedHelpTarget,
     // eslint-disable-next-line no-template-curly-in-string
-    type: `'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | ${'`@${string}`'} | TargetFunction`,
+    type: `${supportedVersionTargets.map(s => `'${s}'`).join(' | ')} | ${'`@${string}`'} | TargetFunction`,
   },
   {
     long: 'timeout',

@@ -160,8 +160,8 @@ export interface RunOptions {
   /** Read package.json from stdin. */
   stdin?: string
 
-  /** Determines the version to upgrade to: latest, newest, greatest, minor, patch, @[tag], or [function]. (default: latest) Run "ncu --help --target" for details. */
-  target?: 'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | `@${string}` | TargetFunction
+  /** Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, @[tag], or [function]. (default: latest) Run "ncu --help --target" for details. */
+  target?: 'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | 'semver' | `@${string}` | TargetFunction
 
   /** Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch) */
   timeout?: number

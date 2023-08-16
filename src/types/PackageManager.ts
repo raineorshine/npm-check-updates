@@ -13,6 +13,7 @@ export interface PackageManager {
   newest?: GetVersion
   patch?: GetVersion
   greatest?: GetVersion
+  semver?: GetVersion
   packageAuthorChanged?: (
     packageName: string,
     from: VersionSpec,

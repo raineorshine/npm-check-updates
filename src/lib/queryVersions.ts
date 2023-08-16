@@ -5,14 +5,13 @@ import packageManagers from '../package-managers'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
+import { supportedVersionTargets } from '../types/Target'
 import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
 import getPackageManager from './getPackageManager'
 import keyValueBy from './keyValueBy'
 import programError from './programError'
 import { createNpmAlias, isGithubUrl, isPre, parseNpmAlias } from './version-util'
-
-const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch']
 
 /**
  * Get the latest or greatest versions from the NPM repository based on the version target.
