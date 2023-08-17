@@ -38,7 +38,7 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?:
   }
 
   if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
-    output += `Default: ${option.default}\n`
+    output += `\nDefault: ${option.default}\n`
   }
   if (option.help) {
     const helpText =
