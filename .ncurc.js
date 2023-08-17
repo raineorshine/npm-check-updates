@@ -17,5 +17,7 @@ module.exports = {
     'prettier',
     // Removed support for node v14 in v0.35.0
     'makdownlint-cli',
+    // manually keep in alignment with pacote's version of make-fetch-happen
+    'make-fetch-happen',
   ],
 }
