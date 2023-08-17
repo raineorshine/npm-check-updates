@@ -16,6 +16,8 @@ function getPackageManager(options: Options, name: Maybe<string>): PackageManage
   // default to npm
   if (!name || name === 'deno') {
     return packageManagers.npm
+  } else if (options.registryType === 'json') {
+    return packageManagers.staticRegistry
   }
 
   if (!packageManagers[name]) {

@@ -273,7 +273,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>-p, --packageManager <s></td>
-    <td>npm, yarn, pnpm, deno, staticRegistry (default: npm).</td>
+    <td>npm, yarn, pnpm, deno (default: npm).</td>
   </tr>
   <tr>
     <td>--peer</td>
@@ -289,7 +289,11 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>-r, --registry <uri></td>
-    <td>Third-party npm registry.</td>
+    <td>Specify the registry to use when looking up package versions.</td>
+  </tr>
+  <tr>
+    <td>--registryType <type></td>
+    <td>Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: "npm")</td>
   </tr>
   <tr>
     <td>-x, --reject <p></td>
@@ -492,26 +496,13 @@ Usage:
     ncu --packageManager [s]
     ncu -p [s]
 
-Specifies the package manager to use when looking up version numbers.
+Specifies the package manager to use when looking up versions.
 
 <table>
   <tr><td>npm</td><td>System-installed npm. Default.</td></tr>
   <tr><td>yarn</td><td>System-installed yarn. Automatically used if yarn.lock is present.</td></tr>
   <tr><td>pnpm</td><td>System-installed pnpm. Automatically used if pnpm-lock.yaml is present.</td></tr>
-  <tr><td>staticRegistry</td><td>Checks versions from a file or url to a simple JSON registry. Must include the `--registry` option.
-
-Example:
-
-    $ ncu --packageManager staticRegistry --registry ./my-registry.json
-
-my-registry.json:
-
-    {
-      "prettier": "2.7.1",
-      "typescript": "4.7.4"
-    }
-
-</td></tr>
+  <tr><td>staticRegistry</td><td>Deprecated. Use --registryType json.</td></tr>
 </table>
 
 ## peer
@@ -556,17 +547,36 @@ As a comparison: without using the `--peer` option, ncu will suggest the latest 
     ncu-test-peer-update     1.0.0  →  1.1.0
     ncu-test-return-version  1.0.0  →  2.0.0
 
-## registry
+## registryType
 
 Usage:
 
-    ncu --registry [uri]
-    ncu -r [uri]
+    ncu --registryType [type]
+Default: npm
 
-Specify the registry to use when looking up package version numbers.
+Specify whether --registry refers to a full npm registry or a simple JSON file.
 
-When `--packageManager staticRegistry` is set, `--registry` must specify a file path or url
-to a simple JSON registry.
+<table>
+  <tr><td>npm</td><td>Default npm registry</td></tr>
+  <tr><td>json</td><td>Checks versions from a file or url to a simple JSON registry. Must include the `--registry` option.
+
+Example:
+
+    // local file
+    $ ncu --registryType json --registry ./registry.json
+
+    // url
+    $ ncu --registryType json --registry https://api.mydomain/registry.json
+
+registry.json:
+
+    {
+      "prettier": "2.7.1",
+      "typescript": "4.7.4"
+    }
+
+</td></tr>
+</table>
 
 ## target
 

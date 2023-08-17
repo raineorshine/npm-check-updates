@@ -3,7 +3,6 @@ import path from 'path'
 import { defaultCacheFile } from './lib/cache'
 import chalk from './lib/chalk'
 import table from './lib/table'
-import wrap from './lib/wrap'
 import CLIOption from './types/CLIOption'
 import ExtendedHelp from './types/ExtendedHelp'
 import { Index } from './types/IndexType'
@@ -262,9 +261,9 @@ ${chalk.green(
 `
 }
 
-/** Extended help for the --format option. */
+/** Extended help for the --packageManager option. */
 const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
-  const header = 'Specifies the package manager to use when looking up version numbers.'
+  const header = 'Specifies the package manager to use when looking up versions.'
   const tableString = table({
     colAligns: ['right', 'left'],
     markdown,
@@ -272,15 +271,37 @@ const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
       ['npm', `System-installed npm. Default.`],
       ['yarn', `System-installed yarn. Automatically used if yarn.lock is present.`],
       ['pnpm', `System-installed pnpm. Automatically used if pnpm-lock.yaml is present.`],
+      ['staticRegistry', `Deprecated. Use --registryType json.`],
+    ],
+  })
+
+  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+`
+}
+
+/** Extended help for the --registryType option. */
+const extendedHelpRegistryType: ExtendedHelp = ({ markdown }) => {
+  const header = 'Specify whether --registry refers to a full npm registry or a simple JSON file.'
+  const tableString = table({
+    colAligns: ['right', 'left'],
+    markdown,
+    rows: [
+      ['npm', `Default npm registry`],
       [
-        'staticRegistry',
-        `Checks versions from a file or url to a simple JSON registry. Must include the \`--registry\` option.
+        'json',
+        `Checks versions from a file or url to a simple JSON registry. Must include the ${chalk.cyan(
+          '`--registry`',
+        )} option.
 
 Example:
 
-    ${chalk.cyan('$')} ncu --packageManager staticRegistry --registry ./my-registry.json
+    ${chalk.gray('// local file')}
+    ${chalk.cyan('$')} ncu --registryType json --registry ./registry.json
 
-my-registry.json:
+    ${chalk.gray('// url')}
+    ${chalk.cyan('$')} ncu --registryType json --registry https://api.mydomain/registry.json
+
+registry.json:
 
     {
       "prettier": "2.7.1",
@@ -558,7 +579,7 @@ const cliOptions: CLIOption[] = [
     long: 'packageManager',
     short: 'p',
     arg: 's',
-    description: 'npm, yarn, pnpm, deno, staticRegistry (default: npm).',
+    description: 'npm, yarn, pnpm, deno (default: npm).',
     help: extendedHelpPackageManager,
     type: `'npm' | 'yarn' | 'pnpm' | 'deno' | 'staticRegistry'`,
   },
@@ -586,11 +607,16 @@ const cliOptions: CLIOption[] = [
     long: 'registry',
     short: 'r',
     arg: 'uri',
-    description: 'Third-party npm registry.',
-    help: wrap(`Specify the registry to use when looking up package version numbers.
-
-When \`--packageManager staticRegistry\` is set, \`--registry\` must specify a file path or url to a simple JSON registry.`),
+    description: 'Specify the registry to use when looking up package versions.',
     type: 'string',
+  },
+  {
+    long: 'registryType',
+    arg: 'type',
+    description: 'Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json.',
+    help: extendedHelpRegistryType,
+    type: `'npm' | 'json'`,
+    default: 'npm',
   },
   {
     long: 'reject',

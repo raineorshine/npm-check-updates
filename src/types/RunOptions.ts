@@ -121,7 +121,7 @@ export interface RunOptions {
   /** Package file(s) location. (default: ./package.json) */
   packageFile?: string
 
-  /** npm, yarn, pnpm, deno, staticRegistry (default: npm). Run "ncu --help --packageManager" for details. */
+  /** npm, yarn, pnpm, deno (default: npm). Run "ncu --help --packageManager" for details. */
   packageManager?: 'npm' | 'yarn' | 'pnpm' | 'deno' | 'staticRegistry'
 
   /** Check peer dependencies of installed packages and filter updates to compatible versions. Run "ncu --help --peer" for details. */
@@ -133,8 +133,14 @@ export interface RunOptions {
   /** Current working directory of npm. */
   prefix?: string
 
-  /** Third-party npm registry. Run "ncu --help --registry" for details. */
+  /** Specify the registry to use when looking up package versions. */
   registry?: string
+
+  /** Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. Run "ncu --help --registryType" for details.
+   *
+   * @default "npm"
+   */
+  registryType?: 'npm' | 'json'
 
   /** Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. */
   reject?: string | string[] | RegExp | RegExp[] | FilterFunction

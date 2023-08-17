@@ -344,7 +344,7 @@
       "type": "string"
     },
     "packageManager": {
-      "description": "npm, yarn, pnpm, deno, staticRegistry (default: npm). Run \"ncu --help --packageManager\" for details.",
+      "description": "npm, yarn, pnpm, deno (default: npm). Run \"ncu --help --packageManager\" for details.",
       "enum": ["deno", "npm", "pnpm", "staticRegistry", "yarn"],
       "type": "string"
     },
@@ -361,7 +361,13 @@
       "type": "string"
     },
     "registry": {
-      "description": "Third-party npm registry. Run \"ncu --help --registry\" for details.",
+      "description": "Specify the registry to use when looking up package versions.",
+      "type": "string"
+    },
+    "registryType": {
+      "default": "npm",
+      "description": "Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. Run \"ncu --help --registryType\" for details.",
+      "enum": ["json", "npm"],
       "type": "string"
     },
     "reject": {
