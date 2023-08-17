@@ -274,7 +274,7 @@ const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
       ['pnpm', `System-installed pnpm. Automatically used if pnpm-lock.yaml is present.`],
       [
         'staticRegistry',
-        `Checks versions from a static file. Must include the \`--registry\` option with the path to a JSON registry file.
+        `Checks versions from a file or url to a simple JSON registry. Must include the \`--registry\` option.
 
 Example:
 
@@ -589,7 +589,7 @@ const cliOptions: CLIOption[] = [
     description: 'Third-party npm registry.',
     help: wrap(`Specify the registry to use when looking up package version numbers.
 
-When \`--packageManager staticRegistry\` is set, \`--registry\` must specify a path to a JSON registry file.`),
+When \`--packageManager staticRegistry\` is set, \`--registry\` must specify a file path or url to a simple JSON registry.`),
     type: 'string',
   },
   {

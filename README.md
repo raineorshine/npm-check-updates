@@ -498,7 +498,7 @@ Specifies the package manager to use when looking up version numbers.
   <tr><td>npm</td><td>System-installed npm. Default.</td></tr>
   <tr><td>yarn</td><td>System-installed yarn. Automatically used if yarn.lock is present.</td></tr>
   <tr><td>pnpm</td><td>System-installed pnpm. Automatically used if pnpm-lock.yaml is present.</td></tr>
-  <tr><td>staticRegistry</td><td>Checks versions from a static file. Must include the `--registry` option with the path to a JSON registry file.
+  <tr><td>staticRegistry</td><td>Checks versions from a file or url to a simple JSON registry. Must include the `--registry` option.
 
 Example:
 
@@ -565,8 +565,8 @@ Usage:
 
 Specify the registry to use when looking up package version numbers.
 
-When `--packageManager staticRegistry` is set, `--registry` must specify a path to a JSON
-registry file.
+When `--packageManager staticRegistry` is set, `--registry` must specify a file path or url
+to a simple JSON registry.
 
 ## target
 
