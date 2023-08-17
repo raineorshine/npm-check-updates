@@ -5,6 +5,7 @@ import spawn from 'spawn-please'
 import { cliOptionsMap } from './cli-options'
 import { cacheClear } from './lib/cache'
 import chalk, { chalkInit } from './lib/chalk'
+import determinePackageManager from './lib/determinePackageManager'
 import doctor from './lib/doctor'
 import exists from './lib/exists'
 import findPackage from './lib/findPackage'
@@ -61,9 +62,11 @@ function checkIfVolta(options: Options): void {
   }
 }
 
-/** Returns the package manager that should be used to install packages after running "ncu -u". Detects pnpm via pnpm-lock.yarn. This is the one place that pnpm needs to be detected, since otherwise it is backwards compatible with npm. */
+/** Returns the package manager that should be used to install packages after running "ncu -u". Detects pnpm via pnpm-lock.yarn. */
 const getPackageManagerForInstall = async (options: Options, pkgFile: string) => {
-  if (options.packageManager !== 'npm') return options.packageManager
+  // when packageManager is set to staticRegistry, we need to infer the package manager from lock files
+  if (options.packageManager === 'staticRegistry') determinePackageManager({ ...options, packageManager: undefined })
+  else if (options.packageManager !== 'npm') return options.packageManager
   const cwd = options.cwd ?? pkgFile ? `${pkgFile}/..` : process.cwd()
   const pnpmDetected = await exists(path.join(cwd, 'pnpm-lock.yaml'))
   return pnpmDetected ? 'pnpm' : 'npm'
