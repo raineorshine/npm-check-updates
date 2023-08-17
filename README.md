@@ -293,7 +293,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--registryType <type></td>
-    <td>Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: "npm")</td>
+    <td>Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: npm)</td>
   </tr>
   <tr>
     <td>-x, --reject <p></td>
@@ -552,7 +552,6 @@ As a comparison: without using the `--peer` option, ncu will suggest the latest 
 Usage:
 
     ncu --registryType [type]
-Default: npm
 
 Specify whether --registry refers to a full npm registry or a simple JSON file.
 
@@ -567,6 +566,10 @@ Example:
 
     // url
     $ ncu --registryType json --registry https://api.mydomain/registry.json
+
+    // you can omit --registryType when the registry ends in .json
+    $ ncu --registry ./registry.json
+    $ ncu --registry https://api.mydomain/registry.json
 
 registry.json:
 

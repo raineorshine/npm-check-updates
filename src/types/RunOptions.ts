@@ -136,10 +136,7 @@ export interface RunOptions {
   /** Specify the registry to use when looking up package versions. */
   registry?: string
 
-  /** Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. Run "ncu --help --registryType" for details.
-   *
-   * @default "npm"
-   */
+  /** Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: npm) Run "ncu --help --registryType" for details. */
   registryType?: 'npm' | 'json'
 
   /** Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. */

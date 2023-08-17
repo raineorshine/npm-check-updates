@@ -365,8 +365,7 @@
       "type": "string"
     },
     "registryType": {
-      "default": "npm",
-      "description": "Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. Run \"ncu --help --registryType\" for details.",
+      "description": "Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: npm) Run \"ncu --help --registryType\" for details.",
       "enum": ["json", "npm"],
       "type": "string"
     },

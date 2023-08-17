@@ -301,6 +301,10 @@ Example:
     ${chalk.gray('// url')}
     ${chalk.cyan('$')} ncu --registryType json --registry https://api.mydomain/registry.json
 
+    ${chalk.gray('// you can omit --registryType when the registry ends in .json')}
+    ${chalk.cyan('$')} ncu --registry ./registry.json
+    ${chalk.cyan('$')} ncu --registry https://api.mydomain/registry.json
+
 registry.json:
 
     {
@@ -613,10 +617,10 @@ const cliOptions: CLIOption[] = [
   {
     long: 'registryType',
     arg: 'type',
-    description: 'Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json.',
+    description:
+      'Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: npm)',
     help: extendedHelpRegistryType,
     type: `'npm' | 'json'`,
-    default: 'npm',
   },
   {
     long: 'reject',

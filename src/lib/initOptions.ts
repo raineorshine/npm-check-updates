@@ -187,6 +187,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     // imply upgrade in interactive mode when json is not specified as the output
     ...(options.interactive && options.upgrade === undefined ? { upgrade: !json } : null),
     packageManager,
+    registryType: options.registryType || (options.registry?.endsWith('.json') ? 'json' : 'npm'),
   }
   resolvedOptions.cacher = await cacher(resolvedOptions)
 
