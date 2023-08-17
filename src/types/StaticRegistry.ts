@@ -1,3 +1,5 @@
+import { Version } from './Version'
+
 export type StaticRegistry = {
-  [key: string]: string
+  [key: string]: Version
 }

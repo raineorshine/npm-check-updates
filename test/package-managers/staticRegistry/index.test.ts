@@ -1,14 +1,40 @@
 import chai from 'chai'
-import chaiAsPromised from 'chai-as-promised'
-import * as staticRegistry from '../../../src/package-managers/staticRegistry'
+import ncu from '../../../src/index'
 
 chai.should()
-chai.use(chaiAsPromised)
 
 describe('staticRegistry', function () {
-  it('latest', async () => {
+  it('upgrade to the version specified in the static registry file', async () => {
     const registry = './test/package-managers/staticRegistry/staticRegistry.json'
-    const { version } = await staticRegistry.latest('express', '', { cwd: __dirname, registry })
-    version!.should.equal('4.1.2')
+
+    const output = await ncu({
+      packageData: {
+        dependencies: {
+          'ncu-test-v2': '1.0.0',
+        },
+      },
+      packageManager: 'staticRegistry',
+      registry,
+    })
+
+    output!.should.deep.equal({
+      'ncu-test-v2': '99.9.9',
+    })
+  })
+
+  it('ignore dependencies that are not in the static registry', async () => {
+    const registry = './test/package-managers/staticRegistry/staticRegistry.json'
+
+    const output = await ncu({
+      packageData: {
+        dependencies: {
+          'ncu-test-tag': '1.0.0',
+        },
+      },
+      packageManager: 'staticRegistry',
+      registry,
+    })
+
+    output!.should.deep.equal({})
   })
 })

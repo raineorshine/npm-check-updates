@@ -24,6 +24,6 @@ const registryMemoized = memoize(readStaticRegistry)
  * @returns A promise that fulfills to string value or null
  */
 export const latest: GetVersion = async (packageName: string, currentVersion: Version, options: Options = {}) => {
-  const registry: { [key: string]: string } = await registryMemoized(options.registry!)
-  return { version: registry[packageName] }
+  const registry: StaticRegistry = await registryMemoized(options.registry!)
+  return { version: registry[packageName] || null }
 }
