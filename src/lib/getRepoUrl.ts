@@ -14,10 +14,19 @@ const defaultBranchPath = hostedGitInfo
 const regexDefaultBranchPath = new RegExp(`${defaultBranchPath}$`)
 
 /** Gets the repo url of an installed package. */
-async function getPackageRepo(packageName: string): Promise<string | { url: string } | null> {
-  let nodeModulePaths = require.resolve.paths(packageName)
-  const localNodeModules = path.join(process.cwd(), 'node_modules')
-  nodeModulePaths = [localNodeModules].concat(nodeModulePaths || [])
+async function getPackageRepo(
+  packageName: string,
+  {
+    pkgFile,
+  }: {
+    /** Specify the package file location to add to the node_modules search paths. Needed in workspaces/deep mode. */
+    pkgFile?: string
+  } = {},
+): Promise<string | { url: string } | null> {
+  const requirePaths = require.resolve.paths(packageName) || []
+  const pkgFileNodeModules = pkgFile ? [path.join(path.dirname(pkgFile), 'node_modules')] : []
+  const localNodeModules = [path.join(process.cwd(), 'node_modules')]
+  const nodeModulePaths = [...pkgFileNodeModules, ...localNodeModules, ...requirePaths]
 
   // eslint-disable-next-line fp/no-loops
   for (const basePath of nodeModulePaths) {
@@ -41,9 +50,18 @@ const cleanRepoUrl = (url: string) => url.replace(/\/$/, '').replace(regexDefaul
  * @param packageJson Optional param to specify a object representation of a package.json file instead of loading from node_modules
  * @returns A valid url to the root of the package's source or null if a url could not be determined
  */
-async function getRepoUrl(packageName: string, packageJson?: PackageFile) {
+async function getRepoUrl(
+  packageName: string,
+  packageJson?: PackageFile,
+  {
+    pkgFile,
+  }: {
+    /** See: getPackageRepo pkgFile param. */
+    pkgFile?: string
+  } = {},
+) {
   const repositoryMetadata: string | PackageFileRepository | null = !packageJson
-    ? await getPackageRepo(packageName)
+    ? await getPackageRepo(packageName, { pkgFile })
     : packageJson.repository
     ? packageJson.repository
     : null

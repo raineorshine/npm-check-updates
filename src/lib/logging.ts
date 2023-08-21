@@ -155,14 +155,17 @@ function getVersion(dep: string): string {
 export async function toDependencyTable({
   from: fromDeps,
   to: toDeps,
-  ownersChangedDeps,
-  time,
   format,
+  ownersChangedDeps,
+  pkgFile,
+  time,
 }: {
   from: Index<VersionSpec>
   to: Index<VersionSpec>
-  ownersChangedDeps?: Index<boolean>
   format?: string[]
+  ownersChangedDeps?: Index<boolean>
+  /** See: logging/getPackageRepo pkgFile param. */
+  pkgFile?: string
   time?: Index<string>
 }) {
   const table = renderDependencyTable(
@@ -182,7 +185,7 @@ export async function toDependencyTable({
               : '*unknown*'
             : ''
           const toColorized = colorizeDiff(getVersion(from), to)
-          const repoUrl = format?.includes('repo') ? (await getRepoUrl(dep)) || '' : ''
+          const repoUrl = format?.includes('repo') ? (await getRepoUrl(dep, undefined, { pkgFile })) || '' : ''
           const publishTime = format?.includes('time') && time?.[dep] ? time[dep] : ''
           return [dep, from, '→', toColorized, ownerChanged, ...[repoUrl, publishTime].filter(x => x)]
         }),
@@ -205,11 +208,13 @@ export async function printUpgradesTable(
     current,
     upgraded,
     ownersChangedDeps,
+    pkgFile,
     time,
   }: {
     current: Index<VersionSpec>
     upgraded: Index<VersionSpec>
     ownersChangedDeps?: Index<boolean>
+    pkgFile?: string
     time?: Index<string>
   },
   options: Options,
@@ -226,9 +231,10 @@ export async function printUpgradesTable(
         await toDependencyTable({
           from: current,
           to: packages,
-          ownersChangedDeps,
-          time,
           format: options.format,
+          ownersChangedDeps,
+          pkgFile,
+          time,
         }),
       )
     }
@@ -241,9 +247,10 @@ export async function printUpgradesTable(
         await toDependencyTable({
           from: current,
           to: upgraded,
-          ownersChangedDeps,
-          time,
           format: options.format,
+          ownersChangedDeps,
+          pkgFile,
+          time,
         }),
       )
     }
@@ -297,6 +304,7 @@ export async function printUpgrades(
     upgraded,
     total,
     ownersChangedDeps,
+    pkgFile,
     time,
     errors,
   }: {
@@ -310,6 +318,8 @@ export async function printUpgrades(
     total: number
     // Boolean flag per dependency which announces if package owner changed. Only used by --format ownerChanged
     ownersChangedDeps?: Index<boolean>
+    // See: logging/getPackageRepo pkgFile param
+    pkgFile?: string
     // Time published if options.format includes "time"
     time?: Index<string>
     // Any errors that were encountered when fetching versions.
@@ -356,6 +366,7 @@ export async function printUpgrades(
         current,
         upgraded,
         ownersChangedDeps,
+        pkgFile,
         time,
       },
       options,
