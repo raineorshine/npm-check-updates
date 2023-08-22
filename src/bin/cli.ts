@@ -123,7 +123,7 @@ ${chalk.dim.underline(
     const flags = `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : ''}`
     // format description for cli by removing inline code ticks
     // point to help in description if extended help text is available
-    const descriptionFormatted = `${uncode(description)}${help ? ` Run "ncu --help --${long}" for details.` : ''}`
+    const descriptionFormatted = `${uncode(description)}${help ? ` Run "ncu --help ${long}" for details.` : ''}`
 
     // handle 3rd/4th argument polymorphism
     program.option(flags, descriptionFormatted, parse || defaultValue, parse ? defaultValue : undefined)
@@ -131,7 +131,7 @@ ${chalk.dim.underline(
     // add --no- prefixed boolean options
     // necessary for overriding booleans set to true in the ncurc
     if (type === 'boolean') {
-      program.addOption(new Commander.Option(`--no-${long}`, 'hello').default(false).hideHelp())
+      program.addOption(new Commander.Option(`--no-${long}`).default(false).hideHelp())
     }
   })
 

@@ -159,6 +159,8 @@ describe('install', () => {
         await spawn('node', [bin, '-iu', '--packageFile', pkgFile, '--install', 'always'], {
           env: {
             ...process.env,
+            // NOTE: We can inject valuees, but we cannot test if the prompt was actually shown or not.
+            // i.e. Testing that the prompt is not shown with --install always must be done manually.
             INJECT_PROMPTS: JSON.stringify([['ncu-test-v2']]),
           },
         })
@@ -186,6 +188,8 @@ describe('install', () => {
         await spawn('node', [bin, '-iu', '--packageFile', pkgFile, '--install', 'never'], {
           env: {
             ...process.env,
+            // NOTE: We can inject valuees, but we cannot test if the prompt was actually shown or not.
+            // i.e. Testing that the prompt is not shown with --install never must be done manually.
             INJECT_PROMPTS: JSON.stringify([['ncu-test-v2']]),
           },
         })

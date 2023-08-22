@@ -107,7 +107,7 @@ const npmInstall = async (
 
   // prompt the user if they want ncu to run "npm install"
   let response
-  if (isInteractive) {
+  if (isInteractive && options.install === 'prompt') {
     print(options, '')
     response = await prompts({
       type: 'confirm',
@@ -125,7 +125,7 @@ const npmInstall = async (
 
   // auto-install
   if (options.install === 'always' || (isInteractive && response.value)) {
-    if (!isInteractive) {
+    if (options.install === 'always') {
       print(options, '')
     }
 
