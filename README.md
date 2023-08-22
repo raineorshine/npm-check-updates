@@ -236,6 +236,10 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Customize how packages are divided into groups when using <code>--format group</code>.</td>
   </tr>
   <tr>
+    <td>--install <value></td>
+    <td>Control the auto-install behavior: always, never, prompt. (default: "prompt")</td>
+  </tr>
+  <tr>
     <td>-i, --interactive</td>
     <td>Enable interactive prompts for each dependency; implies <code>-u</code> unless one of the json options are set.</td>
   </tr>
@@ -488,6 +492,22 @@ groupFunction: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion) 
   return defaultGroup
 }
 ```
+
+## install
+
+Usage:
+
+    ncu --install [value]
+
+Default: prompt
+
+Control the auto-install behavior.
+
+<table>
+  <tr><td>always</td><td>Runs your package manager's install command automatically after upgrading.</td></tr>
+  <tr><td>never</td><td>Does not install and does not prompt.</td></tr>
+  <tr><td>prompt</td><td>Shows a message after upgrading that recommends an install, but does not install. In interactive mode, prompts for install. (default)</td></tr>
+</table>
 
 ## packageManager
 

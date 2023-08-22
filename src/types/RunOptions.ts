@@ -91,6 +91,12 @@ export interface RunOptions {
   /** Customize how packages are divided into groups when using `--format group`. Run "ncu --help --groupFunction" for details. */
   groupFunction?: GroupFunction
 
+  /** Control the auto-install behavior: always, never, prompt. Run "ncu --help --install" for details.
+   *
+   * @default "prompt"
+   */
+  install?: 'always' | 'never' | 'prompt'
+
   /** Enable interactive prompts for each dependency; implies `-u` unless one of the json options are set. */
   interactive?: boolean
 

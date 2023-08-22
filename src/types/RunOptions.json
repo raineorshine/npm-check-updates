@@ -299,6 +299,12 @@
       "description": "Customize how packages are divided into groups when using `--format group`. Run \"ncu --help --groupFunction\" for details.",
       "type": "object"
     },
+    "install": {
+      "default": "prompt",
+      "description": "Control the auto-install behavior: always, never, prompt. Run \"ncu --help --install\" for details.",
+      "enum": ["always", "never", "prompt"],
+      "type": "string"
+    },
     "interactive": {
       "description": "Enable interactive prompts for each dependency; implies `-u` unless one of the json options are set.",
       "type": "boolean"

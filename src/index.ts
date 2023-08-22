@@ -78,6 +78,11 @@ const npmInstall = async (
   analysis: Index<PackageFile> | PackageFile,
   options: Options,
 ): Promise<unknown> => {
+  if (options.install === 'never') {
+    print(options, '')
+    return
+  }
+
   // deep mode analysis is of type Index<PackageFile>
   // non-deep mode analysis is of type <PackageFile>, so we normalize it to Index<PackageFile>
   const analysisNormalized: Index<PackageFile> =
@@ -98,10 +103,13 @@ const npmInstall = async (
     pkgs.length > 1 && !options.workspace && !options.workspaces ? ' in each project directory' : ''
   } to install new versions`
 
+  const isInteractive = options.interactive && !process.env.NCU_DOCTOR
+
   // prompt the user if they want ncu to run "npm install"
-  if (options.interactive && !process.env.NCU_DOCTOR) {
+  let response
+  if (isInteractive) {
     print(options, '')
-    const response = await prompts({
+    response = await prompts({
       type: 'confirm',
       name: 'value',
       message: `${installHint}?`,
@@ -113,52 +121,55 @@ const npmInstall = async (
         }
       },
     })
-
-    // auto-install
-    if (response.value) {
-      // only run npm install once in the root when in workspace mode
-      // npm install will install packages for all workspaces
-      const isWorkspace = options.workspaces || !!options.workspace?.length
-      const pkgsNormalized = isWorkspace ? ['package.json'] : pkgs
-
-      pkgsNormalized.forEach(async pkgFile => {
-        const packageManager = await getPackageManagerForInstall(options, pkgFile)
-        const cmd = packageManager + (process.platform === 'win32' ? '.cmd' : '')
-        const cwd = options.cwd || path.resolve(pkgFile, '..')
-        let stdout = ''
-        try {
-          await spawn(cmd, ['install'], {
-            cwd,
-            ...(packageManager === 'pnpm'
-              ? {
-                  env: {
-                    ...process.env,
-                    // With spawn, pnpm install will fail with ERR_PNPM_PEER_DEP_ISSUES  Unmet peer dependencies.
-                    // When pnpm install is run directly from the terminal, this error does not occur.
-                    // When pnpm install is run from a simple spawn script, this error does not occur.
-                    // The issue only seems to be when pnpm install is executed from npm-check-updates, but it's not clear what configuration or environmental factors are causing this.
-                    // For now, turn off strict-peer-dependencies on pnpm auto-install.
-                    // See: https://github.com/raineorshine/npm-check-updates/issues/1191
-                    npm_config_strict_peer_dependencies: false,
-                  },
-                }
-              : null),
-            stdout: (data: string) => {
-              stdout += data
-            },
-          })
-          print(options, stdout, 'verbose')
-        } catch (err: any) {
-          // sometimes packages print errors to stdout instead of stderr
-          // if there is nothing on stderr, reject with stdout
-          throw new Error(err?.message || err || stdout)
-        }
-      })
-    }
   }
 
+  // auto-install
+  if (options.install === 'always' || (isInteractive && response.value)) {
+    if (!isInteractive) {
+      print(options, '')
+    }
+
+    // only run npm install once in the root when in workspace mode
+    // npm install will install packages for all workspaces
+    const isWorkspace = options.workspaces || !!options.workspace?.length
+    const pkgsNormalized = isWorkspace ? ['package.json'] : pkgs
+
+    pkgsNormalized.forEach(async pkgFile => {
+      const packageManager = await getPackageManagerForInstall(options, pkgFile)
+      const cmd = packageManager + (process.platform === 'win32' ? '.cmd' : '')
+      const cwd = options.cwd || path.resolve(pkgFile, '..')
+      let stdout = ''
+      try {
+        await spawn(cmd, ['install'], {
+          cwd,
+          ...(packageManager === 'pnpm'
+            ? {
+                env: {
+                  ...process.env,
+                  // With spawn, pnpm install will fail with ERR_PNPM_PEER_DEP_ISSUES  Unmet peer dependencies.
+                  // When pnpm install is run directly from the terminal, this error does not occur.
+                  // When pnpm install is run from a simple spawn script, this error does not occur.
+                  // The issue only seems to be when pnpm install is executed from npm-check-updates, but it's not clear what configuration or environmental factors are causing this.
+                  // For now, turn off strict-peer-dependencies on pnpm auto-install.
+                  // See: https://github.com/raineorshine/npm-check-updates/issues/1191
+                  npm_config_strict_peer_dependencies: false,
+                },
+              }
+            : null),
+          stdout: (data: string) => {
+            stdout += data
+          },
+        })
+        print(options, stdout, 'verbose')
+      } catch (err: any) {
+        // sometimes packages print errors to stdout instead of stderr
+        // if there is nothing on stderr, reject with stdout
+        throw new Error(err?.message || err || stdout)
+      }
+    })
+  }
   // show the install hint unless auto-install occurred
-  else {
+  else if (!isInteractive) {
     print(options, `\n${installHint}.`)
   }
 }

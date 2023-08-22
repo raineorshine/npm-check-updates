@@ -177,6 +177,26 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
 `
 }
 
+/** Extended help for the --install option. */
+const extendedHelpInstall: ExtendedHelp = ({ markdown }) => {
+  const header = 'Control the auto-install behavior.'
+  const tableString = table({
+    colAligns: ['right', 'left'],
+    markdown,
+    rows: [
+      ['always', `Runs your package manager's install command automatically after upgrading.`],
+      ['never', `Does not install and does not prompt.`],
+      [
+        'prompt',
+        `Shows a message after upgrading that recommends an install, but does not install. In interactive mode, prompts for install. (default)`,
+      ],
+    ],
+  })
+
+  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+`
+}
+
 /** Extended help for the --group option. */
 const extendedHelpGroupFunction: ExtendedHelp = ({ markdown }) => {
   return `Customize how packages are divided into groups when using \`--format group\`.
@@ -523,6 +543,15 @@ const cliOptions: CLIOption[] = [
     description: `Customize how packages are divided into groups when using \`--format group\`.`,
     type: 'GroupFunction',
     help: extendedHelpGroupFunction,
+  },
+  {
+    long: 'install',
+    arg: 'value',
+    description: 'Control the auto-install behavior: always, never, prompt.',
+    help: extendedHelpInstall,
+    default: 'prompt',
+    choices: ['always', 'never', 'prompt'],
+    type: `'always' | 'never' | 'prompt'`,
   },
   {
     long: 'interactive',
