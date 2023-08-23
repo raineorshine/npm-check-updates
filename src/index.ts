@@ -128,6 +128,7 @@ const npmInstall = async (
     if (options.install === 'always') {
       print(options, '')
     }
+    print(options, 'Installing dependencies...')
 
     // only run npm install once in the root when in workspace mode
     // npm install will install packages for all workspaces
@@ -159,8 +160,12 @@ const npmInstall = async (
           stdout: (data: string) => {
             stdout += data
           },
+          stderr: (data: string) => {
+            console.error(chalk.red(data.toString()))
+          },
         })
         print(options, stdout, 'verbose')
+        print(options, 'Done')
       } catch (err: any) {
         // sometimes packages print errors to stdout instead of stderr
         // if there is nothing on stderr, reject with stdout
