@@ -498,6 +498,7 @@ describe('version-util', () => {
       it('return true if an npm alias', () => {
         should.equal(versionUtil.isNpmAlias('npm:chalk@1.0.0'), true)
         should.equal(versionUtil.isNpmAlias('npm:chalk@^1.0.0'), true)
+        should.equal(versionUtil.isNpmAlias('npm:postman-request@2.88.1-postman.33'), true)
       })
 
       it('return false if not an npm alias', () => {
@@ -509,6 +510,9 @@ describe('version-util', () => {
     describe('upgradeNpmAlias', () => {
       it('replace embedded version', () => {
         versionUtil.upgradeNpmAlias('npm:chalk@^1.0.0', '2.0.0')!.should.equal('npm:chalk@2.0.0')
+        versionUtil
+          .upgradeNpmAlias('npm:postman-request@2.88.1-postman.32', '2.88.1-postman.33')!
+          .should.equal('npm:postman-request@2.88.1-postman.33')
       })
     })
   })
