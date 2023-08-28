@@ -445,11 +445,12 @@ describe('stubbed', () => {
   })
 })
 
-// cnanot be stubbed while npm config printing occurs in viewMany
-// TODO: Move npm config reading to init method
+// cannot be stubbed while npm config printing occurs in viewMany
 describe('not stubbed', () => {
   // TODO: Find a less fragile way to test npm config than comparing exact verbose output
   it('merge local npm config with pnpm workspace npm config', async () => {
+    // colors must be stripped on node v18+
+    const { default: stripAnsi } = await import('strip-ansi')
     const tempDir = await setup(['packages/**'], { pnpm: true })
     try {
       await fs.writeFile(path.join(tempDir, '.npmrc'), 'ncutest=root')
@@ -457,9 +458,9 @@ describe('not stubbed', () => {
       const output = await spawn('node', [bin, '--verbose', '--packageManager', 'pnpm'], {
         cwd: path.join(tempDir, 'packages/a'),
       })
-      output.should.include(`npm config (workspace project):
+      stripAnsi(output).should.include(`npm config (workspace project):
 { ncutest: 'root' }`)
-      output.should.include(`Using merged npm config:
+      stripAnsi(output).should.include(`Using merged npm config:
 {
   ncutest: 'a',`)
     } finally {
