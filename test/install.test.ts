@@ -19,6 +19,7 @@ const bin = path.join(__dirname, '../build/src/bin/cli.js')
 describe('install', () => {
   describe('non-interactive', () => {
     it('print install hint without --install', async () => {
+      const { default: stripAnsi } = await import('strip-ansi')
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -32,7 +33,7 @@ describe('install', () => {
 
       try {
         const output = await spawn('node', [bin, '-u', '--packageFile', pkgFile])
-        output.should.include('Run npm install to install new versions')
+        stripAnsi(output).should.include('Run npm install to install new versions')
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
@@ -42,6 +43,7 @@ describe('install', () => {
     })
 
     it('install packages and do not print install hint with --install always', async () => {
+      const { default: stripAnsi } = await import('strip-ansi')
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -55,7 +57,7 @@ describe('install', () => {
 
       try {
         const output = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'always'])
-        output.should.not.include('Run npm install to install new versions')
+        stripAnsi(output).should.not.include('Run npm install to install new versions')
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
@@ -65,6 +67,7 @@ describe('install', () => {
     })
 
     it('do not print install hint with --install never', async () => {
+      const { default: stripAnsi } = await import('strip-ansi')
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -78,7 +81,7 @@ describe('install', () => {
 
       try {
         const output = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'never'])
-        output.should.not.include('Run npm install to install new versions')
+        stripAnsi(output).should.not.include('Run npm install to install new versions')
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
