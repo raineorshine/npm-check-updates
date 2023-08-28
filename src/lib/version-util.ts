@@ -415,7 +415,14 @@ export const upgradeNpmAlias = (declaration: string, upgraded: string) => {
  */
 export const isGithubUrl = (declaration: string | null) => {
   if (!declaration) return false
-  const parsed = parseGithubUrl(declaration)
+  let parsed = null
+  try {
+    parsed = parseGithubUrl(declaration)
+  } catch {
+    // Strings like `npm:postman-request@2.88.1-postman.33` can throw errors instead of simply returning null
+    // In node 18.17+ due to url.parse regressison: https://github.com/nodejs/node/issues/49330
+    // So if this throws, we can assume it's not a valid Github URL.
+  }
   if (!parsed || !parsed.branch) return false
 
   const version = decodeURIComponent(parsed.branch).replace(/^semver:/, '')
