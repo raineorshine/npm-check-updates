@@ -6,7 +6,9 @@ import table from './lib/table'
 import CLIOption from './types/CLIOption'
 import ExtendedHelp from './types/ExtendedHelp'
 import { Index } from './types/IndexType'
-import { supportedVersionTargets } from './types/Target'
+
+/** Valid strings for the --target option. Indicates the desired version to upgrade to. */
+const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch', 'semver']
 
 /** Pads the left side of each line in a string. */
 const padLeft = (s: string, n: number) =>
@@ -701,9 +703,7 @@ const cliOptions: CLIOption[] = [
     long: 'target',
     short: 't',
     arg: 'value',
-    description: `Determines the version to upgrade to: ${supportedVersionTargets.join(
-      ', ',
-    )}, @[tag], or [function]. (default: latest)`,
+    description: `Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, @[tag], or [function]. (default: latest)`,
     help: extendedHelpTarget,
     // eslint-disable-next-line no-template-curly-in-string
     type: `${supportedVersionTargets.map(s => `'${s}'`).join(' | ')} | ${'`@${string}`'} | TargetFunction`,
