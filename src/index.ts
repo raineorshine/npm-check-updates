@@ -72,6 +72,15 @@ const getPackageManagerForInstall = async (options: Options, pkgFile: string) =>
   return pnpmDetected ? 'pnpm' : 'npm'
 }
 
+/** Returns if analysis contains upgrades */
+const someUpgraded = (pkgs: string[], analysis: Index<PackageFile> | PackageFile) => {
+  // deep mode analysis is of type Index<PackageFile>
+  // non-deep mode analysis is of type <PackageFile>, so we normalize it to Index<PackageFile>
+  const analysisNormalized: Index<PackageFile> =
+    pkgs.length === 1 ? { [pkgs[0]]: analysis as PackageFile } : (analysis as Index<PackageFile>)
+  return Object.values(analysisNormalized).some(upgrades => Object.keys(upgrades).length > 0)
+}
+
 /** Either suggest an install command based on the package manager, or in interactive mode, prompt to auto-install. */
 const npmInstall = async (
   pkgs: string[],
@@ -83,15 +92,9 @@ const npmInstall = async (
     return
   }
 
-  // deep mode analysis is of type Index<PackageFile>
-  // non-deep mode analysis is of type <PackageFile>, so we normalize it to Index<PackageFile>
-  const analysisNormalized: Index<PackageFile> =
-    pkgs.length === 1 ? { [pkgs[0]]: analysis as PackageFile } : (analysis as Index<PackageFile>)
-  const someUpgraded = Object.values(analysisNormalized).some(upgrades => Object.keys(upgrades).length > 0)
-
   // if no packages were upgraded (i.e. all dependencies deselected in interactive mode), then bail without suggesting an install.
   // normalize the analysis for one or many packages
-  if (!someUpgraded) return
+  if (!someUpgraded(pkgs, analysis)) return
 
   // for the purpose of the install hint, just use the package manager used in the first sub-project
   // if auto-installing, the actual package manager in each sub-project will be used
@@ -237,6 +240,10 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
     analysis = await runLocal(options, pkgData, pkgFile)
   }
   clearTimeout(timeout)
+
+  if (options.errorLevel === 2 && someUpgraded(packageFilepaths, analysis)) {
+    programError(options, '\nDependencies not up-to-date')
+  }
 
   // suggest install command or auto-install
   if (options.upgrade) {

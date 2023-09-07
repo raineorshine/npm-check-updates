@@ -281,13 +281,6 @@ async function runLocal(
         print(options, upgradeHint)
       }
     }
-
-    // if errorLevel is 2, exit with non-zero error code
-    if (options.errorLevel === 2) {
-      writePromise.then(() => {
-        programError(options, '\nDependencies not up-to-date')
-      })
-    }
   }
 
   await writePromise

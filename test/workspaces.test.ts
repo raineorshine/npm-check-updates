@@ -367,6 +367,29 @@ describe('workspaces', () => {
         }
       })
 
+      it('update root project and workspaces if errorLevel=2', async () => {
+        const tempDir = await setup()
+        try {
+          await spawn('node', [bin, '--upgrade', '--workspaces', '--root', '--errorLevel', '2'], {
+            cwd: tempDir,
+          }).should.eventually.be.rejectedWith('Dependencies not up-to-date')
+          const upgradedPkg = JSON.parse(await fs.readFile(path.join(tempDir, 'package.json'), 'utf-8'))
+          upgradedPkg.should.have.property('dependencies')
+          upgradedPkg.dependencies.should.have.property('ncu-test-v2')
+          upgradedPkg.dependencies['ncu-test-v2'].should.not.equal('1.0.0')
+          const upgradedPkgA = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/a/package.json'), 'utf-8'))
+          upgradedPkgA.should.have.property('dependencies')
+          upgradedPkgA.dependencies.should.have.property('ncu-test-tag')
+          upgradedPkgA.dependencies['ncu-test-tag'].should.not.equal('1.0.0')
+          const upgradedPkgB = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/b/package.json'), 'utf-8'))
+          upgradedPkgB.should.have.property('dependencies')
+          upgradedPkgB.dependencies.should.have.property('ncu-test-return-version')
+          upgradedPkgB.dependencies['ncu-test-return-version'].should.not.equal('1.0.0')
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+
       it('do not update non-workspace subpackages', async () => {
         const tempDir = await setup()
         await fs.mkdir(path.join(tempDir, 'other'), { recursive: true })
