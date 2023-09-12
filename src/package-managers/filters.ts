@@ -40,7 +40,7 @@ export function satisfiesNodeEngine(versionResult: Packument, nodeEngineVersion:
   const minVersion = get(semver.minVersion(nodeEngineVersion), 'version')
   if (!minVersion) return true
   const versionNodeEngine: string | undefined = get(versionResult, 'engines.node')
-  return !!versionNodeEngine && semver.satisfies(minVersion, versionNodeEngine)
+  return !versionNodeEngine || semver.satisfies(minVersion, versionNodeEngine)
 }
 
 /**

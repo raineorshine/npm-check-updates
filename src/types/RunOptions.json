@@ -299,6 +299,12 @@
       "description": "Customize how packages are divided into groups when using `--format group`. Run \"ncu --help --groupFunction\" for details.",
       "type": "object"
     },
+    "install": {
+      "default": "prompt",
+      "description": "Control the auto-install behavior: always, never, prompt. Run \"ncu --help --install\" for details.",
+      "enum": ["always", "never", "prompt"],
+      "type": "string"
+    },
     "interactive": {
       "description": "Enable interactive prompts for each dependency; implies `-u` unless one of the json options are set.",
       "type": "boolean"
@@ -361,7 +367,12 @@
       "type": "string"
     },
     "registry": {
-      "description": "Third-party npm registry. Run \"ncu --help --registry\" for details.",
+      "description": "Specify the registry to use when looking up package versions.",
+      "type": "string"
+    },
+    "registryType": {
+      "description": "Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: npm) Run \"ncu --help --registryType\" for details.",
+      "enum": ["json", "npm"],
       "type": "string"
     },
     "reject": {

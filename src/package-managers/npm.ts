@@ -388,7 +388,7 @@ async function viewMany(
   }
 
   if (npmConfigProject && Object.keys(npmConfigProject).length > 0) {
-    print(options, `\npm config (project: ${npmConfigProjectPath}):`, 'verbose')
+    print(options, `\nnpm config (project: ${npmConfigProjectPath}):`, 'verbose')
     print(options, omit(npmConfigProject, 'cache'), 'verbose')
   }
 

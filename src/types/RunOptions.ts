@@ -91,6 +91,12 @@ export interface RunOptions {
   /** Customize how packages are divided into groups when using `--format group`. Run "ncu --help --groupFunction" for details. */
   groupFunction?: GroupFunction
 
+  /** Control the auto-install behavior: always, never, prompt. Run "ncu --help --install" for details.
+   *
+   * @default "prompt"
+   */
+  install?: 'always' | 'never' | 'prompt'
+
   /** Enable interactive prompts for each dependency; implies `-u` unless one of the json options are set. */
   interactive?: boolean
 
@@ -133,8 +139,11 @@ export interface RunOptions {
   /** Current working directory of npm. */
   prefix?: string
 
-  /** Third-party npm registry. Run "ncu --help --registry" for details. */
+  /** Specify the registry to use when looking up package versions. */
   registry?: string
+
+  /** Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: npm) Run "ncu --help --registryType" for details. */
+  registryType?: 'npm' | 'json'
 
   /** Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. */
   reject?: string | string[] | RegExp | RegExp[] | FilterFunction

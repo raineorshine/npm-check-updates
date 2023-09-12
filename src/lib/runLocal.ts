@@ -55,6 +55,7 @@ export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersi
 const chooseUpgrades = async (
   oldDependencies: Index<string>,
   newDependencies: Index<string>,
+  pkgFile: Maybe<string>,
   options: Options,
 ): Promise<Index<string>> => {
   let chosenDeps: string[] = []
@@ -64,6 +65,7 @@ const chooseUpgrades = async (
     from: oldDependencies,
     to: newDependencies,
     format: options.format,
+    pkgFile: pkgFile || undefined,
   })
 
   const formattedLines = keyValueBy(table.toString().split('\n'), line => {
@@ -215,7 +217,7 @@ async function runLocal(
     : undefined
 
   const chosenUpgraded = options.interactive
-    ? await chooseUpgrades(current, filteredUpgraded, options)
+    ? await chooseUpgrades(current, filteredUpgraded, pkgFile, options)
     : filteredUpgraded
 
   if (!options.json || options.deep) {
@@ -230,6 +232,7 @@ async function runLocal(
         total: Object.keys(upgraded).length,
         latest: latestResults,
         ownersChangedDeps,
+        pkgFile: pkgFile || undefined,
         errors,
         time,
       },
@@ -277,13 +280,6 @@ async function runLocal(
         }`
         print(options, upgradeHint)
       }
-    }
-
-    // if errorLevel is 2, exit with non-zero error code
-    if (options.errorLevel === 2) {
-      writePromise.then(() => {
-        programError(options, '\nDependencies not up-to-date')
-      })
     }
   }
 

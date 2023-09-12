@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "16.11.1",
+  "version": "16.13.3",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -70,6 +70,7 @@
     "json-parse-helpfulerror": "^1.0.3",
     "jsonlines": "^0.1.1",
     "lodash": "^4.17.21",
+    "make-fetch-happen": "^11.1.1",
     "minimatch": "^9.0.3",
     "p-map": "^4.0.0",
     "pacote": "15.2.0",
@@ -99,6 +100,7 @@
     "@types/json-parse-helpfulerror": "^1.0.1",
     "@types/jsonlines": "^0.1.2",
     "@types/lodash": "^4.14.195",
+    "@types/make-fetch-happen": "^10.0.1",
     "@types/minimatch": "^5.1.2",
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.17.0",
@@ -138,8 +140,8 @@
     "sinon": "^15.2.0",
     "strip-ansi": "^7.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.1.6",
-    "typescript-json-schema": "^0.59.0",
+    "typescript": "5.1.6",
+    "typescript-json-schema": "0.59.0",
     "yarn": "^1.22.19"
   },
   "files": [

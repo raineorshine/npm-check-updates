@@ -9,6 +9,7 @@ import spawn from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
 import { PackageManagerName } from '../src/types/PackageManagerName'
+import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
 chai.use(chaiAsPromised)
@@ -18,6 +19,13 @@ process.env.NCU_TESTS = 'true'
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 const doctorTests = path.join(__dirname, 'test-data/doctor')
+
+const mockNpmVersions = {
+  emitter20: '2.0.0',
+  'ncu-test-return-version': '2.0.0',
+  'ncu-test-tag': '1.1.0',
+  'ncu-test-v2': '2.0.0',
+}
 
 /** Run the ncu CLI. */
 const ncu = (args: string[], options?: Record<string, unknown>) => spawn('node', [bin, ...args], options)
@@ -153,13 +161,17 @@ const testFail = ({ packageManager }: { packageManager: PackageManagerName }) =>
     // package file should only include successful upgrades
     pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
     pkgUpgraded.should.containIgnoreCase('"ncu-test-return-version": "~1.0.0"')
-    pkgUpgraded.should.not.include('"emitter20": "1.0.0"') // assert the negation since emitter20 is a live package and the latest version could change (it would be better to mock this)
+    pkgUpgraded.should.not.include('"emitter20": "1.0.0"')
   })
 }
 
 describe('doctor', function () {
   // 3 min timeout
   this.timeout(3 * 60 * 1000)
+
+  let stub: { restore: () => void }
+  before(() => (stub = stubNpmView(mockNpmVersions, { spawn: true })))
+  after(() => stub.restore())
 
   describe('npm', () => {
     it('print instructions when -u is not specified', async () => {
@@ -368,51 +380,37 @@ describe('doctor', function () {
       const pkgPath = path.join(tempDir, 'package.json')
       await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
 
-      /*
-        - package.json
-        - tsconfig.json
-        - src/
-          - index.ts
-      */
-
       // package.json
       await fs.writeFile(
         pkgPath,
         JSON.stringify({
           scripts: {
-            prepare: 'tsc',
+            prepare: 'node prepare.js',
             test: 'echo "No tests"',
           },
-          devDependencies: {
-            '@types/node': '18.0.0',
-            typescript: '4.7.4',
-          },
           dependencies: {
-            '@kayahr/eddb': '^1.0.0',
+            'ncu-test-v2': '1.0.0',
+            'ncu-test-tag': '1.0.0',
           },
         }),
         'utf-8',
       )
 
-      // tsconfig.json
+      // prepare.js
+      // A script that fails if ncu-test-v2 is not at 1.0.0.
+      // This is an arbitrary fail condition used to test that doctor mode still works when the npm prepare script fails.
       await fs.writeFile(
-        path.join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            rootDir: 'src',
-            outDir: 'lib',
-          },
-        }),
-        'utf-8',
-      )
+        path.join(tempDir, 'prepare.js'),
+        `const ncuTestPkg = require('./node_modules/ncu-test-v2/package.json')
 
-      // src/index.ts
-      await fs.mkdir(path.join(tempDir, 'src'))
-      await fs.writeFile(
-        path.join(tempDir, 'src/index.ts'),
-        `import { createFactories } from "@kayahr/eddb"
-
-console.log(createFactories())`,
+if (ncuTestPkg.version === '1.0.0') {
+  console.log('done')
+  process.exit(0)
+}
+else {
+  console.error('failed')
+  process.exit(1)
+}`,
         'utf-8',
       )
 
@@ -440,20 +438,18 @@ console.log(createFactories())`,
       }
 
       // stdout should include successful upgrades
-      stdout.should.containIgnoreCase('@types/node 18.0.0 →')
-      stdout.should.not.containIgnoreCase('@kayahr/eddb ^1.0.0 →')
+      stdout.should.containIgnoreCase('ncu-test-tag 1.0.0 →')
+      stdout.should.not.containIgnoreCase('ncu-test-v2 1.0.0 →')
 
       // stderr should include failed prepare script
-      stderr.should.containIgnoreCase('Prepare script failed')
-      stderr.should.containIgnoreCase('@kayahr/eddb ^1.0.0 →')
-      stderr.should.not.containIgnoreCase('@types/node → 18.0.0')
+      stderr.should.containIgnoreCase('failed')
+      stderr.should.containIgnoreCase('ncu-test-v2 1.0.0 →')
+      stderr.should.not.containIgnoreCase('ncu-test-tag 1.0.0 →')
 
       // package file should only include successful upgrades
       pkgUpgraded.dependencies.should.deep.equal({
-        '@kayahr/eddb': '^1.0.0',
-      })
-      pkgUpgraded.devDependencies.should.not.deep.equal({
-        '@types/node': '18.0.0',
+        'ncu-test-v2': '1.0.0',
+        'ncu-test-tag': '1.1.0',
       })
     })
   })

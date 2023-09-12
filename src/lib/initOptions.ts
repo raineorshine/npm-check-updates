@@ -76,10 +76,18 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   }
 
   // warn about deprecated options
-  const deprecatedOptions = cliOptions.filter(({ long, deprecated }) => deprecated && options[long as keyof Options])
+  const deprecatedOptions = cliOptions.filter(
+    ({ long, deprecated }) =>
+      (deprecated && options[long as keyof Options]) ||
+      // special case to deprecate a value but not the entire option
+      (long === 'packageManager' && options.packageManager === 'staticRegistry'),
+  )
   if (deprecatedOptions.length > 0) {
     deprecatedOptions.forEach(({ long, description }) => {
-      const deprecationMessage = `--${long}: ${description}`
+      const deprecationMessage =
+        long === 'packageManager'
+          ? '--packageManager staticRegistry is deprecated. Use --registryType json.'
+          : `--${long}: ${description}`
       print(options, chalk.yellow(deprecationMessage), 'warn')
     })
     print(options, '', 'warn')
@@ -140,20 +148,19 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   else if (options.doctor && (options.workspace?.length || options.workspaces)) {
     programError(options, `Doctor mode is not currently supported with --workspace${options.workspaces ? 's' : ''}.`)
   }
-
-  // disallow incorrect or missing registry path when selecting staticRegistry as packageManager
-  if (options.packageManager === 'staticRegistry') {
-    if (options.registry === undefined || options.registry === null) {
-      programError(
-        options,
-
-        'When --package-manager staticRegistry is specified, you must provide the path for the registry file with --registry. Run "ncu --help --packageManager" for details.',
-      )
-    }
-    if (!(await exists(options.registry!))) {
-      programError(options, `The specified static registry file does not exist: ${options.registry}`)
-    }
+  // disallow missing registry path when using registryType
+  else if (options.packageManager === 'staticRegistry' && !options.registry) {
+    programError(
+      options,
+      'When --package-manager staticRegistry is specified, you must provide the path for the registry file with --registry.',
+    )
+  } else if (options.registryType === 'json' && !options.registry) {
+    programError(
+      options,
+      'When --registryType json is specified, you must provide the path for the registry file with --registry. Run "ncu --help registryType" for details.',
+    )
   }
+
   const target: Target = options.target || 'latest'
 
   const autoPre = target === 'newest' || target === 'greatest'
@@ -180,6 +187,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     // imply upgrade in interactive mode when json is not specified as the output
     ...(options.interactive && options.upgrade === undefined ? { upgrade: !json } : null),
     packageManager,
+    registryType: options.registryType || (options.registry?.endsWith('.json') ? 'json' : 'npm'),
   }
   resolvedOptions.cacher = await cacher(resolvedOptions)
 

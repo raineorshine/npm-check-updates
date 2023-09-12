@@ -3,11 +3,12 @@ import path from 'path'
 import { defaultCacheFile } from './lib/cache'
 import chalk from './lib/chalk'
 import table from './lib/table'
-import wrap from './lib/wrap'
 import CLIOption from './types/CLIOption'
 import ExtendedHelp from './types/ExtendedHelp'
 import { Index } from './types/IndexType'
-import { supportedVersionTargets } from './types/Target'
+
+/** Valid strings for the --target option. Indicates the desired version to upgrade to. */
+const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch', 'semver']
 
 /** Pads the left side of each line in a string. */
 const padLeft = (s: string, n: number) =>
@@ -39,7 +40,7 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?:
   }
 
   if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
-    output += `Default: ${option.default}\n`
+    output += `\nDefault: ${option.default}\n`
   }
   if (option.help) {
     const helpText =
@@ -178,6 +179,26 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
 `
 }
 
+/** Extended help for the --install option. */
+const extendedHelpInstall: ExtendedHelp = ({ markdown }) => {
+  const header = 'Control the auto-install behavior.'
+  const tableString = table({
+    colAligns: ['right', 'left'],
+    markdown,
+    rows: [
+      ['always', `Runs your package manager's install command automatically after upgrading.`],
+      ['never', `Does not install and does not prompt.`],
+      [
+        'prompt',
+        `Shows a message after upgrading that recommends an install, but does not install. In interactive mode, prompts for install. (default)`,
+      ],
+    ],
+  })
+
+  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+`
+}
+
 /** Extended help for the --group option. */
 const extendedHelpGroupFunction: ExtendedHelp = ({ markdown }) => {
   return `Customize how packages are divided into groups when using \`--format group\`.
@@ -262,9 +283,9 @@ ${chalk.green(
 `
 }
 
-/** Extended help for the --format option. */
+/** Extended help for the --packageManager option. */
 const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
-  const header = 'Specifies the package manager to use when looking up version numbers.'
+  const header = 'Specifies the package manager to use when looking up versions.'
   const tableString = table({
     colAligns: ['right', 'left'],
     markdown,
@@ -273,15 +294,41 @@ const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
       ['yarn', `System-installed yarn. Automatically used if yarn.lock is present.`],
       ['pnpm', `System-installed pnpm. Automatically used if pnpm-lock.yaml is present.`],
       ['bun', `System-installed bun. Automatically used if bun.lockb is present.`],
+      ['staticRegistry', `Deprecated. Use --registryType json.`],
+    ],
+  })
+
+  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+`
+}
+
+/** Extended help for the --registryType option. */
+const extendedHelpRegistryType: ExtendedHelp = ({ markdown }) => {
+  const header = 'Specify whether --registry refers to a full npm registry or a simple JSON file.'
+  const tableString = table({
+    colAligns: ['right', 'left'],
+    markdown,
+    rows: [
+      ['npm', `Default npm registry`],
       [
-        'staticRegistry',
-        `Checks versions from a static file. Must include the \`--registry\` option with the path to a JSON registry file.
+        'json',
+        `Checks versions from a file or url to a simple JSON registry. Must include the ${chalk.cyan(
+          '`--registry`',
+        )} option.
 
 Example:
 
-    ${chalk.cyan('$')} ncu --packageManager staticRegistry --registry ./my-registry.json
+    ${chalk.gray('// local file')}
+    ${chalk.cyan('$')} ncu --registryType json --registry ./registry.json
 
-my-registry.json:
+    ${chalk.gray('// url')}
+    ${chalk.cyan('$')} ncu --registryType json --registry https://api.mydomain/registry.json
+
+    ${chalk.gray('// you can omit --registryType when the registry ends in .json')}
+    ${chalk.cyan('$')} ncu --registry ./registry.json
+    ${chalk.cyan('$')} ncu --registry https://api.mydomain/registry.json
+
+registry.json:
 
     {
       "prettier": "2.7.1",
@@ -501,6 +548,15 @@ const cliOptions: CLIOption[] = [
     help: extendedHelpGroupFunction,
   },
   {
+    long: 'install',
+    arg: 'value',
+    description: 'Control the auto-install behavior: always, never, prompt.',
+    help: extendedHelpInstall,
+    default: 'prompt',
+    choices: ['always', 'never', 'prompt'],
+    type: `'always' | 'never' | 'prompt'`,
+  },
+  {
     long: 'interactive',
     short: 'i',
     description: 'Enable interactive prompts for each dependency; implies `-u` unless one of the json options are set.',
@@ -587,11 +643,16 @@ const cliOptions: CLIOption[] = [
     long: 'registry',
     short: 'r',
     arg: 'uri',
-    description: 'Third-party npm registry.',
-    help: wrap(`Specify the registry to use when looking up package version numbers.
-
-When \`--packageManager staticRegistry\` is set, \`--registry\` must specify a path to a JSON registry file.`),
+    description: 'Specify the registry to use when looking up package versions.',
     type: 'string',
+  },
+  {
+    long: 'registryType',
+    arg: 'type',
+    description:
+      'Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: npm)',
+    help: extendedHelpRegistryType,
+    type: `'npm' | 'json'`,
   },
   {
     long: 'reject',
@@ -643,9 +704,7 @@ When \`--packageManager staticRegistry\` is set, \`--registry\` must specify a p
     long: 'target',
     short: 't',
     arg: 'value',
-    description: `Determines the version to upgrade to: ${supportedVersionTargets.join(
-      ', ',
-    )}, @[tag], or [function]. (default: latest)`,
+    description: `Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, @[tag], or [function]. (default: latest)`,
     help: extendedHelpTarget,
     // eslint-disable-next-line no-template-curly-in-string
     type: `${supportedVersionTargets.map(s => `'${s}'`).join(' | ')} | ${'`@${string}`'} | TargetFunction`,

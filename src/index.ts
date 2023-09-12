@@ -5,6 +5,7 @@ import spawn from 'spawn-please'
 import { cliOptionsMap } from './cli-options'
 import { cacheClear } from './lib/cache'
 import chalk, { chalkInit } from './lib/chalk'
+import determinePackageManager from './lib/determinePackageManager'
 import doctor from './lib/doctor'
 import exists from './lib/exists'
 import findPackage from './lib/findPackage'
@@ -63,10 +64,21 @@ function checkIfVolta(options: Options): void {
 
 /** Returns the package manager that should be used to install packages after running "ncu -u". Detects pnpm via pnpm-lock.yaml. This is the one place that pnpm needs to be detected, since otherwise it is backwards compatible with npm. */
 const getPackageManagerForInstall = async (options: Options, pkgFile: string) => {
-  if (options.packageManager !== 'npm') return options.packageManager
+  // when packageManager is set to staticRegistry, we need to infer the package manager from lock files
+  if (options.packageManager === 'staticRegistry') determinePackageManager({ ...options, packageManager: undefined })
+  else if (options.packageManager !== 'npm') return options.packageManager
   const cwd = options.cwd ?? pkgFile ? `${pkgFile}/..` : process.cwd()
   const pnpmDetected = await exists(path.join(cwd, 'pnpm-lock.yaml'))
   return pnpmDetected ? 'pnpm' : 'npm'
+}
+
+/** Returns if analysis contains upgrades */
+const someUpgraded = (pkgs: string[], analysis: Index<PackageFile> | PackageFile) => {
+  // deep mode analysis is of type Index<PackageFile>
+  // non-deep mode analysis is of type <PackageFile>, so we normalize it to Index<PackageFile>
+  const analysisNormalized: Index<PackageFile> =
+    pkgs.length === 1 ? { [pkgs[0]]: analysis as PackageFile } : (analysis as Index<PackageFile>)
+  return Object.values(analysisNormalized).some(upgrades => Object.keys(upgrades).length > 0)
 }
 
 /** Either suggest an install command based on the package manager, or in interactive mode, prompt to auto-install. */
@@ -75,15 +87,14 @@ const npmInstall = async (
   analysis: Index<PackageFile> | PackageFile,
   options: Options,
 ): Promise<unknown> => {
-  // deep mode analysis is of type Index<PackageFile>
-  // non-deep mode analysis is of type <PackageFile>, so we normalize it to Index<PackageFile>
-  const analysisNormalized: Index<PackageFile> =
-    pkgs.length === 1 ? { [pkgs[0]]: analysis as PackageFile } : (analysis as Index<PackageFile>)
-  const someUpgraded = Object.values(analysisNormalized).some(upgrades => Object.keys(upgrades).length > 0)
+  if (options.install === 'never') {
+    print(options, '')
+    return
+  }
 
   // if no packages were upgraded (i.e. all dependencies deselected in interactive mode), then bail without suggesting an install.
   // normalize the analysis for one or many packages
-  if (!someUpgraded) return
+  if (!someUpgraded(pkgs, analysis)) return
 
   // for the purpose of the install hint, just use the package manager used in the first sub-project
   // if auto-installing, the actual package manager in each sub-project will be used
@@ -95,10 +106,13 @@ const npmInstall = async (
     pkgs.length > 1 && !options.workspace && !options.workspaces ? ' in each project directory' : ''
   } to install new versions`
 
+  const isInteractive = options.interactive && !process.env.NCU_DOCTOR
+
   // prompt the user if they want ncu to run "npm install"
-  if (options.interactive && !process.env.NCU_DOCTOR) {
+  let response
+  if (isInteractive && options.install === 'prompt') {
     print(options, '')
-    const response = await prompts({
+    response = await prompts({
       type: 'confirm',
       name: 'value',
       message: `${installHint}?`,
@@ -110,52 +124,60 @@ const npmInstall = async (
         }
       },
     })
-
-    // auto-install
-    if (response.value) {
-      // only run npm install once in the root when in workspace mode
-      // npm install will install packages for all workspaces
-      const isWorkspace = options.workspaces || !!options.workspace?.length
-      const pkgsNormalized = isWorkspace ? ['package.json'] : pkgs
-
-      pkgsNormalized.forEach(async pkgFile => {
-        const packageManager = await getPackageManagerForInstall(options, pkgFile)
-        const cmd = packageManager + (process.platform === 'win32' ? '.cmd' : '')
-        const cwd = options.cwd || path.resolve(pkgFile, '..')
-        let stdout = ''
-        try {
-          await spawn(cmd, ['install'], {
-            cwd,
-            ...(packageManager === 'pnpm'
-              ? {
-                  env: {
-                    ...process.env,
-                    // With spawn, pnpm install will fail with ERR_PNPM_PEER_DEP_ISSUES  Unmet peer dependencies.
-                    // When pnpm install is run directly from the terminal, this error does not occur.
-                    // When pnpm install is run from a simple spawn script, this error does not occur.
-                    // The issue only seems to be when pnpm install is executed from npm-check-updates, but it's not clear what configuration or environmental factors are causing this.
-                    // For now, turn off strict-peer-dependencies on pnpm auto-install.
-                    // See: https://github.com/raineorshine/npm-check-updates/issues/1191
-                    npm_config_strict_peer_dependencies: false,
-                  },
-                }
-              : null),
-            stdout: (data: string) => {
-              stdout += data
-            },
-          })
-          print(options, stdout, 'verbose')
-        } catch (err: any) {
-          // sometimes packages print errors to stdout instead of stderr
-          // if there is nothing on stderr, reject with stdout
-          throw new Error(err?.message || err || stdout)
-        }
-      })
-    }
   }
 
+  // auto-install
+  if (options.install === 'always' || (isInteractive && response.value)) {
+    if (options.install === 'always') {
+      print(options, '')
+    }
+    print(options, 'Installing dependencies...')
+
+    // only run npm install once in the root when in workspace mode
+    // npm install will install packages for all workspaces
+    const isWorkspace = options.workspaces || !!options.workspace?.length
+    const pkgsNormalized = isWorkspace ? ['package.json'] : pkgs
+
+    pkgsNormalized.forEach(async pkgFile => {
+      const packageManager = await getPackageManagerForInstall(options, pkgFile)
+      const cmd = packageManager + (process.platform === 'win32' ? '.cmd' : '')
+      const cwd = options.cwd || path.resolve(pkgFile, '..')
+      let stdout = ''
+      try {
+        await spawn(cmd, ['install'], {
+          cwd,
+          ...(packageManager === 'pnpm'
+            ? {
+                env: {
+                  ...process.env,
+                  // With spawn, pnpm install will fail with ERR_PNPM_PEER_DEP_ISSUES  Unmet peer dependencies.
+                  // When pnpm install is run directly from the terminal, this error does not occur.
+                  // When pnpm install is run from a simple spawn script, this error does not occur.
+                  // The issue only seems to be when pnpm install is executed from npm-check-updates, but it's not clear what configuration or environmental factors are causing this.
+                  // For now, turn off strict-peer-dependencies on pnpm auto-install.
+                  // See: https://github.com/raineorshine/npm-check-updates/issues/1191
+                  npm_config_strict_peer_dependencies: false,
+                },
+              }
+            : null),
+          stdout: (data: string) => {
+            stdout += data
+          },
+          stderr: (data: string) => {
+            console.error(chalk.red(data.toString()))
+          },
+        })
+        print(options, stdout, 'verbose')
+        print(options, 'Done')
+      } catch (err: any) {
+        // sometimes packages print errors to stdout instead of stderr
+        // if there is nothing on stderr, reject with stdout
+        throw new Error(err?.message || err || stdout)
+      }
+    })
+  }
   // show the install hint unless auto-install occurred
-  else {
+  else if (!isInteractive) {
     print(options, `\n${installHint}.`)
   }
 }
@@ -218,6 +240,10 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
     analysis = await runLocal(options, pkgData, pkgFile)
   }
   clearTimeout(timeout)
+
+  if (options.errorLevel === 2 && someUpgraded(packageFilepaths, analysis)) {
+    programError(options, '\nDependencies not up-to-date')
+  }
 
   // suggest install command or auto-install
   if (options.upgrade) {
