@@ -1,4 +1,5 @@
 import spawn from 'spawn-please'
+import programError from '../lib/programError'
 import { Index } from '../types/IndexType'
 import { NpmOptions } from '../types/NpmOptions'
 import { latest as npmLatest, list as npmList } from './npm'
@@ -29,7 +30,7 @@ async function spawnBun(
   // Bun not yet supported on Windows.
   // @see https://github.com/oven-sh/bun/issues/43
   if (process.platform === 'win32') {
-    throw new Error('Bun not yet supported on Windows')
+    programError(bunOptions, 'Bun not yet supported on Windows')
   }
 
   const cmd = 'bun'
