@@ -503,7 +503,7 @@ const cliOptions: CLIOption[] = [
     arg: 'p',
     description:
       'Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
-    type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
+    type: 'string | RegExp | (string | RegExp)[] | FilterFunction',
     parse: (value, accum) => [...(accum || []), value],
   },
   {
@@ -518,7 +518,7 @@ const cliOptions: CLIOption[] = [
     long: 'filterVersion',
     arg: 'p',
     description: 'Filter on package version using comma-or-space-delimited list, /regex/, or predicate function.',
-    type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
+    type: 'string | RegExp | (string | RegExp)[] | FilterFunction',
     parse: (value, accum) => [...(accum || []), value],
   },
   {
@@ -659,14 +659,14 @@ const cliOptions: CLIOption[] = [
     arg: 'p',
     description:
       'Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
-    type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
+    type: 'string | RegExp | (string | RegExp)[] | FilterFunction',
     parse: (value, accum) => [...(accum || []), value],
   },
   {
     long: 'rejectVersion',
     arg: 'p',
     description: 'Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function.',
-    type: 'string | string[] | RegExp | RegExp[] | FilterFunction',
+    type: 'string | RegExp | (string | RegExp)[] | FilterFunction',
     parse: (value, accum) => [...(accum || []), value],
   },
   {

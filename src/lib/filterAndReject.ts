@@ -49,7 +49,7 @@ function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec
   // array
   else if (Array.isArray(filterPattern)) {
     predicate = (dependencyName: string, versionSpec: string) =>
-      filterPattern.some((subpattern: string | RegExp) => composeFilter(subpattern)(dependencyName, versionSpec))
+      filterPattern.some(subpattern => composeFilter(subpattern)(dependencyName, versionSpec))
   }
   // raw RegExp
   else if (filterPattern instanceof RegExp) {
