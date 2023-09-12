@@ -74,13 +74,13 @@ export interface RunOptions {
   errorLevel?: number
 
   /** Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. */
-  filter?: string | string[] | RegExp | RegExp[] | FilterFunction
+  filter?: string | RegExp | (string | RegExp)[] | FilterFunction
 
   /** Filters out upgrades based on a user provided function. Run "ncu --help --filterResults" for details. */
   filterResults?: FilterResultsFunction
 
   /** Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. */
-  filterVersion?: string | string[] | RegExp | RegExp[] | FilterFunction
+  filterVersion?: string | RegExp | (string | RegExp)[] | FilterFunction
 
   /** Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines. Run "ncu --help --format" for details. */
   format?: string[]
@@ -146,10 +146,10 @@ export interface RunOptions {
   registryType?: 'npm' | 'json'
 
   /** Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. */
-  reject?: string | string[] | RegExp | RegExp[] | FilterFunction
+  reject?: string | RegExp | (string | RegExp)[] | FilterFunction
 
   /** Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function. */
-  rejectVersion?: string | string[] | RegExp | RegExp[] | FilterFunction
+  rejectVersion?: string | RegExp | (string | RegExp)[] | FilterFunction
 
   /** Remove version ranges from the final package version. */
   removeRange?: boolean

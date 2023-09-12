@@ -21,7 +21,7 @@ function parseFilterExpression(filterExpression: FilterPattern | undefined): Fil
     Array.isArray(filterExpression) &&
     (filterExpression.length === 0 || typeof filterExpression[0] === 'string')
   ) {
-    const filtered = (filterExpression as string[]).map(s => s.trim()).filter(x => x)
+    const filtered = filterExpression.map(s => (typeof s === 'string' ? s.trim() : s)).filter(x => x)
     return filtered.length > 0 ? filtered : undefined
   } else {
     return filterExpression
