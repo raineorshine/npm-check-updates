@@ -449,7 +449,7 @@ filterResults: (packageName, { current, currentSemver, upgraded, upgradedSemver 
 }
 ```
 
-For the SemVer type definition, see: <https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring>
+For the SemVer type definition, see: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring
 
 ## format
 
@@ -522,20 +522,8 @@ Specifies the package manager to use when looking up versions.
   <tr><td>npm</td><td>System-installed npm. Default.</td></tr>
   <tr><td>yarn</td><td>System-installed yarn. Automatically used if yarn.lock is present.</td></tr>
   <tr><td>pnpm</td><td>System-installed pnpm. Automatically used if pnpm-lock.yaml is present.</td></tr>
-  <tr><td>staticRegistry</td><td>Checks versions from a static file. Must include the `--registry` option with the path to a JSON registry file.
-
-Example:
-
-    ncu --packageManager staticRegistry --registry ./my-registry.json
-
-my-registry.json:
-
-    {
-      "prettier": "2.7.1",
-      "typescript": "4.7.4"
-    }
-
-</td></tr>
+  <tr><td>bun</td><td>System-installed bun. Automatically used if bun.lockb is present.</td></tr>
+  <tr><td>staticRegistry</td><td>Deprecated. Use --registryType json.</td></tr>
 </table>
 
 ## peer
