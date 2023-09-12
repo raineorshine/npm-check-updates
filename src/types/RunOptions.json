@@ -232,18 +232,19 @@
           "$ref": "#/definitions/RegExp"
         },
         {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        {
           "description": "Supported function for the --filter and --reject options.",
           "type": "object"
         },
         {
           "items": {
-            "$ref": "#/definitions/RegExp"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/RegExp"
+              },
+              {
+                "type": "string"
+              }
+            ]
           },
           "type": "array"
         },
@@ -263,18 +264,19 @@
           "$ref": "#/definitions/RegExp"
         },
         {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        {
           "description": "Supported function for the --filter and --reject options.",
           "type": "object"
         },
         {
           "items": {
-            "$ref": "#/definitions/RegExp"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/RegExp"
+              },
+              {
+                "type": "string"
+              }
+            ]
           },
           "type": "array"
         },
@@ -381,18 +383,19 @@
           "$ref": "#/definitions/RegExp"
         },
         {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        {
           "description": "Supported function for the --filter and --reject options.",
           "type": "object"
         },
         {
           "items": {
-            "$ref": "#/definitions/RegExp"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/RegExp"
+              },
+              {
+                "type": "string"
+              }
+            ]
           },
           "type": "array"
         },
@@ -408,18 +411,19 @@
           "$ref": "#/definitions/RegExp"
         },
         {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        {
           "description": "Supported function for the --filter and --reject options.",
           "type": "object"
         },
         {
           "items": {
-            "$ref": "#/definitions/RegExp"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/RegExp"
+              },
+              {
+                "type": "string"
+              }
+            ]
           },
           "type": "array"
         },
