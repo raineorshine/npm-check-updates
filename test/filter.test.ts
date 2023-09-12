@@ -158,6 +158,25 @@ describe('filter', () => {
       upgraded.should.have.property('fp-and-or')
     })
 
+    it('filter with array of mixed strings and regex', async () => {
+      const upgraded = (await ncu({
+        packageData: {
+          dependencies: {
+            'fp-and-or': '0.1.0',
+            lodash: '2.0.0',
+            'lodash.map': '2.0.0',
+            'lodash.filter': '2.0.0',
+          },
+        },
+        filter: ['fp-and-or', /lodash\..*/],
+      })) as Index<string>
+      upgraded.should.deep.equal({
+        'fp-and-or': '99.9.9',
+        'lodash.map': '99.9.9',
+        'lodash.filter': '99.9.9',
+      })
+    })
+
     it('filter with array of regex strings', async () => {
       const upgraded = (await ncu({
         packageData: {
