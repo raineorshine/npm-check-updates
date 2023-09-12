@@ -54,7 +54,7 @@ const testPass = ({ packageManager }: { packageManager: PackageManagerName }) =>
 
     // touch yarn.lock
     // yarn.lock is necessary otherwise yarn sees the package.json in the npm-check-updates directory and throws an error.
-    if (packageManager === 'yarn') {
+    if (packageManager === 'yarn' || packageManager === 'bun') {
       await fs.writeFile(lockfilePath, '')
     }
 
@@ -84,13 +84,16 @@ const testPass = ({ packageManager }: { packageManager: PackageManagerName }) =>
       rimraf.sync(path.join(cwd, '.pnp.js'))
     }
 
+    // bun prints the run header to stderr instead of stdout
+    if (packageManager === 'bun') {
+      stripAnsi(stderr).should.equal('$ echo Success\n\n$ echo Success\n\n')
+    } else {
+      stderr.should.equal('')
+    }
+
     // stdout should include normal output
-    stderr.should.equal('')
     stripAnsi(stdout).should.containIgnoreCase('Tests pass')
     stripAnsi(stdout).should.containIgnoreCase('ncu-test-v2  ~1.0.0  →  ~2.0.0')
-
-    // stderr should include first failing upgrade
-    stderr.should.equal('')
 
     // package file should include upgrades
     pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
@@ -459,9 +462,10 @@ else {
     testFail({ packageManager: 'yarn' })
   })
 
-  describe('bun', () => {
-    // TODO: fix doctor bun tests
-    // testPass({ packageManager: 'bun' })
-    // testFail({ packageManager: 'bun' })
+  // Bun not yet supported on Windows
+  const describeSkipWindows = os.platform() === 'win32' ? describe.skip : describe
+  describeSkipWindows('bun', () => {
+    testPass({ packageManager: 'bun' })
+    testFail({ packageManager: 'bun' })
   })
 })
