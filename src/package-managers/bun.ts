@@ -32,6 +32,9 @@ async function spawnBun(
  * (Bun) Fetches the list of all installed packages.
  */
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
+  const { default: stripAnsi } = await import('strip-ansi')
+
+  // bun pm ls
   const stdout = await spawnBun(
     ['pm', 'ls'],
     {
@@ -39,13 +42,21 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
       ...(options.prefix ? { prefix: options.prefix } : null),
     },
     {
+      env: {
+        ...process.env,
+        // Disable color to ensure the output is parsed correctly.
+        // However, this may be ineffective in some environments (see stripAnsi below).
+        // https://bun.sh/docs/runtime/configuration#environment-variables
+        NO_COLOR: '1',
+      },
       ...(options.cwd ? { cwd: options.cwd } : null),
       rejectOnError: false,
     },
   )
 
-  // parse the output of `bun pm ls` into an object { [name]: version }.
-  const lines = stdout.split('\n')
+  // Parse the output of `bun pm ls` into an object { [name]: version }.
+  // When bun is spawned in the GitHub Actions environment, it outputs ANSI color. Unfortunately, it does not respect the `NO_COLOR` envirionment variable. Therefore, we have to manually strip ansi.
+  const lines = stripAnsi(stdout).split('\n')
   const dependencies = keyValueBy(lines, line => {
     const match = line.match(/.* (.*?)@(.+)/)
     if (match) {

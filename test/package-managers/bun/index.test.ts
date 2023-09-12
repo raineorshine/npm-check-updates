@@ -15,7 +15,6 @@ const describeSkipWindows = os.platform() === 'win32' ? describe.skip : describe
 describeSkipWindows('bun', function () {
   it('list', async () => {
     const result = await bun.list({ cwd: __dirname })
-    console.log({ result })
     result.should.have.property('ncu-test-v2')
   })
 

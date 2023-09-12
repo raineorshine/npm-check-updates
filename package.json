@@ -84,6 +84,7 @@
     "semver-utils": "^1.1.4",
     "source-map-support": "^0.5.21",
     "spawn-please": "^2.0.1",
+    "strip-ansi": "^7.1.0",
     "strip-json-comments": "^5.0.1",
     "untildify": "^4.0.0",
     "update-notifier": "^6.0.2"
@@ -138,7 +139,6 @@
     "prettier": "^2.8.8",
     "should": "^13.2.3",
     "sinon": "^15.2.0",
-    "strip-ansi": "^7.1.0",
     "ts-node": "^10.9.1",
     "typescript": "5.1.6",
     "typescript-json-schema": "0.59.0",
