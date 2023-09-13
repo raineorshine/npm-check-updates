@@ -288,7 +288,7 @@ export async function run(
 
   if (!options.prefix) {
     const defaultPrefix =
-      packageManagers[options.packageManager || 'npm'].defaultPrefix || packageManagers.npm.defaultPrefix!
+      packageManagers[options.packageManager || '']?.defaultPrefix || packageManagers.npm.defaultPrefix!
     options.prefix = await defaultPrefix(options)
   }
 
