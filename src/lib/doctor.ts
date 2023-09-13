@@ -42,7 +42,7 @@ const npm = (
   }
 
   const npmOptions = {
-    ...(options.global ? { location: 'global' } : null),
+    ...(options.global ? { global: true } : null),
     ...(options.prefix ? { prefix: options.prefix } : null),
   }
 

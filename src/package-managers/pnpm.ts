@@ -75,7 +75,7 @@ const spawnPnpm = async (
   const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
 
   const fullArgs = [
-    ...(npmOptions.location === 'global' ? 'global' : []),
+    ...(npmOptions.global ? [`--global`] : []),
     ...(Array.isArray(args) ? args : [args]),
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
   ]

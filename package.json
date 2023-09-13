@@ -26,7 +26,8 @@
     "pnpm"
   ],
   "engines": {
-    "node": ">=16"
+    "node": "^16 < 16.15.1 || >16.15.1",
+    "npm": ">=8.12.1"
   },
   "main": "build/src/index.js",
   "scripts": {
