@@ -8,12 +8,13 @@ import isEqual from 'lodash/isEqual'
 import last from 'lodash/last'
 import omit from 'lodash/omit'
 import sortBy from 'lodash/sortBy'
-import pacote from 'pacote'
+import fetch from 'npm-registry-fetch'
 import path from 'path'
 import nodeSemver from 'semver'
 import { parseRange } from 'semver-utils'
 import spawn from 'spawn-please'
 import untildify from 'untildify'
+import pkg from '../../package.json'
 import filterObject from '../lib/filterObject'
 import { keyValueBy } from '../lib/keyValueBy'
 import libnpmconfig from '../lib/libnpmconfig'
@@ -37,6 +38,52 @@ const EXPLICIT_RANGE_OPS = new Set(['-', '||', '&&', '<', '<=', '>', '>='])
 const isExplicitRange = (spec: VersionSpec) => {
   const range = parseRange(spec)
   return range.some(parsed => EXPLICIT_RANGE_OPS.has(parsed.operator || ''))
+}
+
+/** Fetches a packument from the npm registry. */
+const fetchPackument = async (name: string, opts: any): Promise<any> => {
+  const corgiDoc = 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
+  const fullDoc = 'application/json'
+
+  const registry = fetch.pickRegistry(name, opts)
+  const headers = {
+    'user-agent': opts.userAgent || `npm-check-updates/${pkg.version} node/${process.version}`,
+    'ncu-version': pkg.version,
+    'ncu-pkg-id': `registry:${name}`,
+    accept: opts.fullMetadata ? fullDoc : corgiDoc,
+    ...opts.headers,
+  }
+  const packumentUrl = opts.fullMetadata
+    ? path.join(registry, name)
+    : path.join(registry, '-/package', name, 'dist-tags')
+
+  try {
+    const result = await fetch.json(packumentUrl, {
+      ...opts,
+      headers,
+      spec: name,
+      // never check integrity for packuments themselves
+      integrity: null,
+    })
+    return opts.fullMetadata
+      ? result
+      : {
+          name,
+          'dist-tags': result,
+          versions: {
+            [result.latest as string]: {
+              version: result.latest,
+            },
+          },
+        }
+  } catch (err: any) {
+    if (err.code !== 'E404' || opts.fullMetadata) {
+      throw err
+    }
+
+    // possible that corgis are not supported by this registry
+    return fetchPackument(name, { opts, fullMetadata: true })
+  }
 }
 
 /** Normalizes the keys of an npm config for pacote. */
@@ -261,7 +308,7 @@ export async function packageAuthorChanged(
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<boolean> {
-  const result = await pacote.packument(packageName, {
+  const result = await fetchPackument(packageName, {
     ...npmConfigLocal,
     ...npmConfig,
     fullMetadata: true,
@@ -416,7 +463,7 @@ async function viewMany(
 
   let result: any
   try {
-    result = (await pacote.packument(packageName, npmConfigMerged)) as any
+    result = (await fetchPackument(packageName, npmConfigMerged)) as any
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
       return viewMany(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
