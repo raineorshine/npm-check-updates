@@ -8,11 +8,9 @@
 
 - maintains existing semantic versioning _policies_, i.e. `"react": "^16.0.4"` to `"react": "^18.2.0"`.
 - _only_ modifies package.json file. Run `npm install` to update your installed packages and package-lock.json.
-- clean output
-- sensible defaults
-- lots of options for custom behavior
+- sensible defaults, but highly customizable
 - CLI and module usage
-- compatible with `npm`, `yarn`, `pnpm`, `bun`
+- compatible with: `npm`, `yarn`, `pnpm`, `deno`, `bun`
 
 ![npm-check-updates-screenshot](https://github.com/raineorshine/npm-check-updates/blob/main/.github/screenshot.png?raw=true)
 
@@ -36,7 +34,7 @@ npx npm-check-updates
 
 ## Usage
 
-Show all new dependencies ([excluding peerDependencies](https://github.com/raineorshine/npm-check-updates/issues/951)) for the project in the current directory:
+Check the latest versions of all project dependencies:
 
 ```sh
 $ ncu
@@ -74,6 +72,23 @@ Check global packages:
 ```sh
 ncu -g
 ```
+
+## Interactive Mode
+
+Choose which packages to update in interactive mode:
+
+```sh
+ncu --interactive
+ncu -i
+```
+
+![ncu --interactive](https://user-images.githubusercontent.com/750276/175337598-cdbb2c46-64f8-44f5-b54e-4ad74d7b52b4.png)
+
+Combine with `--format group` for a truly _luxe_ experience:
+
+![ncu --interactive --format group](https://user-images.githubusercontent.com/750276/175336533-539261e4-5cf1-458f-9fbb-a7be2b477ebb.png)
+
+## Filter packages
 
 Filter packages using the `--filter` option or adding additional cli arguments. You can exclude specific packages with the `--reject` option or prefixing a filter with `!`. Supports strings, wildcards, globs, comma-or-space-delimited lists, and regular expressions:
 
@@ -637,21 +652,6 @@ target: (dependencyName, [{ semver, version, operator, major, minor, patch, rele
 ```
 
 <!-- END Advanced Options -->
-
-## Interactive Mode
-
-Choose which packages to update in interactive mode:
-
-```sh
-ncu --interactive
-ncu -i
-```
-
-![ncu --interactive](https://user-images.githubusercontent.com/750276/175337598-cdbb2c46-64f8-44f5-b54e-4ad74d7b52b4.png)
-
-Combine with `--format group` for a truly _luxe_ experience:
-
-![ncu --interactive --format group](https://user-images.githubusercontent.com/750276/175336533-539261e4-5cf1-458f-9fbb-a7be2b477ebb.png)
 
 ## Config File
 
