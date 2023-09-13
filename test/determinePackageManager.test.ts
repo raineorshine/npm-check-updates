@@ -6,6 +6,54 @@ chai.should()
 const isWindows = process.platform === 'win32'
 
 describe('determinePackageManager', () => {
+  it('returns bun if bun.lockb exists in cwd', async () => {
+    /** Mock for filesystem calls. */
+    function readdirMock(path: string): Promise<string[]> {
+      switch (path) {
+        case '/home/test-repo':
+        case 'C:\\home\\test-repo':
+          return Promise.resolve(['bun.lockb'])
+      }
+
+      throw new Error(`Mock cannot handle path: ${path}.`)
+    }
+
+    const packageManager = await determinePackageManager(
+      {
+        cwd: isWindows ? 'C:\\home\\test-repo' : '/home/test-repo',
+      },
+      readdirMock,
+    )
+    packageManager.should.equal('bun')
+  })
+
+  it('returns bun if bun.lockb exists in an ancestor directory', async () => {
+    /** Mock for filesystem calls. */
+    function readdirMock(path: string): Promise<string[]> {
+      switch (path) {
+        case '/home/test-repo/packages/package-a':
+        case 'C:\\home\\test-repo\\packages\\package-a':
+          return Promise.resolve(['index.ts'])
+        case '/home/test-repo/packages':
+        case 'C:\\home\\test-repo\\packages':
+          return Promise.resolve([])
+        case '/home/test-repo':
+        case 'C:\\home\\test-repo':
+          return Promise.resolve(['bun.lockb'])
+      }
+
+      throw new Error(`Mock cannot handle path: ${path}.`)
+    }
+
+    const packageManager = await determinePackageManager(
+      {
+        cwd: isWindows ? 'C:\\home\\test-repo\\packages\\package-a' : '/home/test-repo/packages/package-a',
+      },
+      readdirMock,
+    )
+    packageManager.should.equal('bun')
+  })
+
   it('returns yarn if yarn.lock exists in cwd', async () => {
     /** Mock for filesystem calls. */
     function readdirMock(path: string): Promise<string[]> {

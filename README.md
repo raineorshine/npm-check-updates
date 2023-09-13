@@ -12,7 +12,7 @@
 - sensible defaults
 - lots of options for custom behavior
 - CLI and module usage
-- compatible with `npm`, `yarn`, and `pnpm`
+- compatible with `npm`, `yarn`, `pnpm`, `bun`
 
 ![npm-check-updates-screenshot](https://github.com/raineorshine/npm-check-updates/blob/main/.github/screenshot.png?raw=true)
 
@@ -277,7 +277,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>-p, --packageManager <s></td>
-    <td>npm, yarn, pnpm, deno (default: npm).</td>
+    <td>npm, yarn, pnpm, deno, bun, staticRegistry (default: npm).</td>
   </tr>
   <tr>
     <td>--peer</td>
@@ -522,6 +522,7 @@ Specifies the package manager to use when looking up versions.
   <tr><td>npm</td><td>System-installed npm. Default.</td></tr>
   <tr><td>yarn</td><td>System-installed yarn. Automatically used if yarn.lock is present.</td></tr>
   <tr><td>pnpm</td><td>System-installed pnpm. Automatically used if pnpm-lock.yaml is present.</td></tr>
+  <tr><td>bun</td><td>System-installed bun. Automatically used if bun.lockb is present.</td></tr>
   <tr><td>staticRegistry</td><td>Deprecated. Use --registryType json.</td></tr>
 </table>
 

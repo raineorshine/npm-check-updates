@@ -352,8 +352,8 @@
       "type": "string"
     },
     "packageManager": {
-      "description": "npm, yarn, pnpm, deno (default: npm). Run \"ncu --help --packageManager\" for details.",
-      "enum": ["deno", "npm", "pnpm", "staticRegistry", "yarn"],
+      "description": "npm, yarn, pnpm, deno, bun, staticRegistry (default: npm). Run \"ncu --help --packageManager\" for details.",
+      "enum": ["bun", "deno", "npm", "pnpm", "staticRegistry", "yarn"],
       "type": "string"
     },
     "peer": {

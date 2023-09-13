@@ -293,6 +293,7 @@ const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
       ['npm', `System-installed npm. Default.`],
       ['yarn', `System-installed yarn. Automatically used if yarn.lock is present.`],
       ['pnpm', `System-installed pnpm. Automatically used if pnpm-lock.yaml is present.`],
+      ['bun', `System-installed bun. Automatically used if bun.lockb is present.`],
       ['staticRegistry', `Deprecated. Use --registryType json.`],
     ],
   })
@@ -614,9 +615,9 @@ const cliOptions: CLIOption[] = [
     long: 'packageManager',
     short: 'p',
     arg: 's',
-    description: 'npm, yarn, pnpm, deno (default: npm).',
+    description: 'npm, yarn, pnpm, deno, bun, staticRegistry (default: npm).',
     help: extendedHelpPackageManager,
-    type: `'npm' | 'yarn' | 'pnpm' | 'deno' | 'staticRegistry'`,
+    type: `'npm' | 'yarn' | 'pnpm' | 'deno' | 'bun' | 'staticRegistry'`,
   },
   {
     long: 'peer',

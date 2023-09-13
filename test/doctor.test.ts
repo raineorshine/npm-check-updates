@@ -8,6 +8,7 @@ import { rimraf } from 'rimraf'
 import spawn from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
+import { PackageManagerName } from '../src/types/PackageManagerName'
 import stubNpmView from './helpers/stubNpmView'
 
 chai.should()
@@ -30,7 +31,7 @@ const mockNpmVersions = {
 const ncu = (args: string[], options?: Record<string, unknown>) => spawn('node', [bin, ...args], options)
 
 /** Assertions for npm or yarn when tests pass. */
-const testPass = ({ packageManager }: { packageManager: string }) => {
+const testPass = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('upgrade dependencies when tests pass', async function () {
     // use dynamic import for ESM module
     const { default: stripAnsi } = await import('strip-ansi')
@@ -39,7 +40,13 @@ const testPass = ({ packageManager }: { packageManager: string }) => {
     const nodeModulesPath = path.join(cwd, 'node_modules')
     const lockfilePath = path.join(
       cwd,
-      packageManager === 'yarn' ? 'yarn.lock' : packageManager === 'pnpm' ? 'pnpm-lock.yaml' : 'package-lock.json',
+      packageManager === 'yarn'
+        ? 'yarn.lock'
+        : packageManager === 'pnpm'
+        ? 'pnpm-lock.yaml'
+        : packageManager === 'bun'
+        ? 'bun.lockb'
+        : 'package-lock.json',
     )
     const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
@@ -47,7 +54,7 @@ const testPass = ({ packageManager }: { packageManager: string }) => {
 
     // touch yarn.lock
     // yarn.lock is necessary otherwise yarn sees the package.json in the npm-check-updates directory and throws an error.
-    if (packageManager === 'yarn') {
+    if (packageManager === 'yarn' || packageManager === 'bun') {
       await fs.writeFile(lockfilePath, '')
     }
 
@@ -77,13 +84,16 @@ const testPass = ({ packageManager }: { packageManager: string }) => {
       rimraf.sync(path.join(cwd, '.pnp.js'))
     }
 
+    // bun prints the run header to stderr instead of stdout
+    if (packageManager === 'bun') {
+      stripAnsi(stderr).should.equal('$ echo Success\n\n$ echo Success\n\n')
+    } else {
+      stderr.should.equal('')
+    }
+
     // stdout should include normal output
-    stderr.should.equal('')
     stripAnsi(stdout).should.containIgnoreCase('Tests pass')
     stripAnsi(stdout).should.containIgnoreCase('ncu-test-v2  ~1.0.0  →  ~2.0.0')
-
-    // stderr should include first failing upgrade
-    stderr.should.equal('')
 
     // package file should include upgrades
     pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
@@ -91,12 +101,21 @@ const testPass = ({ packageManager }: { packageManager: string }) => {
 }
 
 /** Assertions for npm or yarn when tests fail. */
-const testFail = ({ packageManager }: { packageManager: string }) => {
-  it('identify broken upgrad', async function () {
+const testFail = ({ packageManager }: { packageManager: PackageManagerName }) => {
+  it('identify broken upgrade', async function () {
     const cwd = path.join(doctorTests, 'fail')
     const pkgPath = path.join(cwd, 'package.json')
     const nodeModulesPath = path.join(cwd, 'node_modules')
-    const lockfilePath = path.join(cwd, packageManager === 'npm' ? 'package-lock.json' : 'yarn.lock')
+    const lockfilePath = path.join(
+      cwd,
+      packageManager === 'yarn'
+        ? 'yarn.lock'
+        : packageManager === 'pnpm'
+        ? 'pnpm-lock.yaml'
+        : packageManager === 'bun'
+        ? 'bun.lockb'
+        : 'package-lock.json',
+    )
     const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
     let stderr = ''
@@ -441,5 +460,12 @@ else {
   describe('yarn', () => {
     testPass({ packageManager: 'yarn' })
     testFail({ packageManager: 'yarn' })
+  })
+
+  // Bun not yet supported on Windows
+  const describeSkipWindows = os.platform() === 'win32' ? describe.skip : describe
+  describeSkipWindows('bun', () => {
+    testPass({ packageManager: 'bun' })
+    testFail({ packageManager: 'bun' })
   })
 })

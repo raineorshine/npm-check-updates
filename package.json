@@ -4,7 +4,8 @@
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
-    "Raine Revere (https://github.com/raineorshine)"
+    "Raine Revere (https://github.com/raineorshine)",
+    "Imamuzzaki Abu Salam <imamuzzaki@gmail.com>"
   ],
   "description": "Find newer versions of dependencies than what your package.json allows",
   "keywords": [
@@ -19,7 +20,10 @@
     "updater",
     "version",
     "management",
-    "ncu"
+    "ncu",
+    "bun",
+    "yarn",
+    "pnpm"
   ],
   "engines": {
     "node": ">=14.14"
@@ -33,7 +37,7 @@
     "lint:lockfile": "lockfile-lint",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.js",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --ignore-path .gitignore --report-unused-disable-directives .",
-    "prepare": "husky install",
+    "prepare": "husky install && bash test/bun-setup.sh",
     "prepublishOnly": "npm run build",
     "prettier": "prettier .",
     "test": "mocha test test/package-managers/*",
@@ -80,6 +84,7 @@
     "semver-utils": "^1.1.4",
     "source-map-support": "^0.5.21",
     "spawn-please": "^2.0.1",
+    "strip-ansi": "^7.1.0",
     "strip-json-comments": "^5.0.1",
     "untildify": "^4.0.0",
     "update-notifier": "^6.0.2"
@@ -134,7 +139,6 @@
     "prettier": "^2.8.8",
     "should": "^13.2.3",
     "sinon": "^15.2.0",
-    "strip-ansi": "^7.1.0",
     "ts-node": "^10.9.1",
     "typescript": "5.1.6",
     "typescript-json-schema": "0.59.0",

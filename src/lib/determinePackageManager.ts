@@ -10,6 +10,7 @@ const packageManagerLockfileMap: Index<PackageManagerName> = {
   yarn: 'yarn',
   'pnpm-lock': 'pnpm',
   deno: 'deno',
+  bun: 'bun',
 }
 
 /**
