@@ -241,4 +241,45 @@ describe('run', function () {
     })
     output!.should.deep.equal({})
   })
+
+  describe('overrides', () => {
+    it('upgrade overrides', async () => {
+      const stub = stubNpmView('99.9.9')
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const packageFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        packageFile,
+        JSON.stringify(
+          {
+            dependencies: {
+              'ncu-test-v2': '^1.0.0',
+            },
+            overrides: {
+              'ncu-test-v2': '^1.0.0',
+            },
+          },
+          null,
+          2,
+        ),
+        'utf-8',
+      )
+
+      try {
+        await ncu({ packageFile, upgrade: true })
+
+        const upgradedPkg = JSON.parse(await fs.readFile(packageFile, 'utf-8'))
+        upgradedPkg.should.deep.equal({
+          dependencies: {
+            'ncu-test-v2': '^99.9.9',
+          },
+          overrides: {
+            'ncu-test-v2': '^99.9.9',
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
+  })
 })

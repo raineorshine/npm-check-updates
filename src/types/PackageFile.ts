@@ -13,6 +13,7 @@ export interface PackageFile {
   // https://nodejs.org/api/packages.html#packagemanager
   packageManager?: string
   optionalDependencies?: Index<VersionSpec>
+  overrides?: Index<VersionSpec>
   peerDependencies?: Index<VersionSpec>
   repository?: string | PackageFileRepository
   scripts?: Index<string>
