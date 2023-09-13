@@ -298,7 +298,7 @@ export const mockViewMany =
       },
       version,
       // overwritten below
-      versions: [],
+      versions: {},
       ...(isPackument(partialPackument) ? partialPackument : null),
     }
 
@@ -315,7 +315,9 @@ export const mockViewMany =
               } as Index<string>)
             : ({
                 ...packument,
-                versions: [packument],
+                versions: {
+                  [version]: packument,
+                },
               } as Packument),
       })),
     )
