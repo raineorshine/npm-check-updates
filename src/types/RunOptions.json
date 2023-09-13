@@ -298,7 +298,7 @@
       "type": "boolean"
     },
     "groupFunction": {
-      "description": "Customize how packages are divided into groups when using `--format group`. Run \"ncu --help --groupFunction\" for details.",
+      "description": "Supported function for the --group options.",
       "type": "object"
     },
     "install": {
