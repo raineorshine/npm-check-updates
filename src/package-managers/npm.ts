@@ -476,7 +476,7 @@ export async function viewOne(
 }
 
 /**
- * Spawns npm with --json. Handles different commands for Window and Linux/OSX, and automatically converts --location=global to --global on node < 8.11.0.
+ * Spawns npm with --json. Handles different commands for Window and Linux/OSX, and automatically converts --location=global to --global on npm < 8.11.0.
  *
  * @param args
  * @param [npmOptions={}]
