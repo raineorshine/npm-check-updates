@@ -1,4 +1,5 @@
 import { Options } from 'pacote'
+import path from 'path'
 import spawn from 'spawn-please'
 import keyValueBy from '../lib/keyValueBy'
 import programError from '../lib/programError'
@@ -28,6 +29,18 @@ async function spawnBun(
 
   return spawn('bun', fullArgs, spawnOptions)
 }
+
+/** Returns the global directory of bun. */
+export const defaultPrefix = async (options: Options): Promise<string> => {
+  if (options.prefix) {
+    return options.prefix
+  } else if (process.env.BUN_INSTALL) {
+    return process.env.BUN_INSTALL
+  }
+  const bin = await spawn('bun', ['pm', '-g', 'bin'])
+  return path.dirname(bin)
+}
+
 /**
  * (Bun) Fetches the list of all installed packages.
  */

@@ -287,7 +287,9 @@ export async function run(
   }
 
   if (!options.prefix) {
-    options.prefix = await packageManagers[options.packageManager === 'yarn' ? 'yarn' : 'npm'].defaultPrefix!(options)
+    const defaultPrefix =
+      packageManagers[options.packageManager || 'npm'].defaultPrefix || packageManagers.npm.defaultPrefix!
+    options.prefix = await defaultPrefix(options)
   }
 
   let timeout: NodeJS.Timeout | undefined
