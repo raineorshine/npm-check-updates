@@ -2,6 +2,10 @@ import { Index } from './IndexType'
 import { PackageFileRepository } from './PackageFileRepository'
 import { VersionSpec } from './VersionSpec'
 
+type NestedVersionSpecs = {
+  [name: string]: VersionSpec | NestedVersionSpecs
+}
+
 /** The relevant bits of a parsed package.json file. */
 export interface PackageFile {
   dependencies?: Index<VersionSpec>
@@ -13,7 +17,7 @@ export interface PackageFile {
   // https://nodejs.org/api/packages.html#packagemanager
   packageManager?: string
   optionalDependencies?: Index<VersionSpec>
-  overrides?: Index<VersionSpec>
+  overrides?: NestedVersionSpecs
   peerDependencies?: Index<VersionSpec>
   repository?: string | PackageFileRepository
   scripts?: Index<string>

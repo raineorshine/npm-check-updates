@@ -281,5 +281,143 @@ describe('run', function () {
         stub.restore()
       }
     })
+
+    it('upgrade self override', async () => {
+      const stub = stubNpmView('99.9.9')
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const packageFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        packageFile,
+        JSON.stringify(
+          {
+            dependencies: {
+              'ncu-test-v2': '^1.0.0',
+            },
+            overrides: {
+              'ncu-test-v2': {
+                '.': '^1.0.0',
+                'ncu-test-tag': '^1.0.0',
+              },
+            },
+          },
+          null,
+          2,
+        ),
+        'utf-8',
+      )
+
+      try {
+        await ncu({ packageFile, upgrade: true })
+
+        const pkgDataNew = await fs.readFile(packageFile, 'utf-8')
+        const upgradedPkg = JSON.parse(pkgDataNew)
+        upgradedPkg.should.deep.equal({
+          dependencies: {
+            'ncu-test-v2': '^99.9.9',
+          },
+          overrides: {
+            'ncu-test-v2': {
+              '.': '^99.9.9',
+              'ncu-test-tag': '^1.0.0',
+            },
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
+
+    it('upgrade child override', async () => {
+      const stub = stubNpmView('99.9.9')
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const packageFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        packageFile,
+        JSON.stringify(
+          {
+            dependencies: {
+              'ncu-test-v2': '^1.0.0',
+            },
+            overrides: {
+              'ncu-test-tag': {
+                'ncu-test-v2': '^1.0.0',
+              },
+            },
+          },
+          null,
+          2,
+        ),
+        'utf-8',
+      )
+
+      try {
+        await ncu({ packageFile, upgrade: true })
+
+        const pkgDataNew = await fs.readFile(packageFile, 'utf-8')
+        const upgradedPkg = JSON.parse(pkgDataNew)
+        upgradedPkg.should.deep.equal({
+          dependencies: {
+            'ncu-test-v2': '^99.9.9',
+          },
+          overrides: {
+            'ncu-test-tag': {
+              'ncu-test-v2': '^99.9.9',
+            },
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
+
+    it('upgrade nested override', async () => {
+      const stub = stubNpmView('99.9.9')
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const packageFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        packageFile,
+        JSON.stringify(
+          {
+            dependencies: {
+              'ncu-test-v2': '^1.0.0',
+            },
+            overrides: {
+              foo: {
+                bar: {
+                  'ncu-test-v2': '^1.0.0',
+                },
+              },
+            },
+          },
+          null,
+          2,
+        ),
+        'utf-8',
+      )
+
+      try {
+        await ncu({ packageFile, upgrade: true })
+
+        const pkgDataNew = await fs.readFile(packageFile, 'utf-8')
+        const upgradedPkg = JSON.parse(pkgDataNew)
+        upgradedPkg.should.deep.equal({
+          dependencies: {
+            'ncu-test-v2': '^99.9.9',
+          },
+          overrides: {
+            foo: {
+              bar: {
+                'ncu-test-v2': '^99.9.9',
+              },
+            },
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
   })
 })

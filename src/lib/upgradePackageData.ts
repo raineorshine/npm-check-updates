@@ -26,16 +26,19 @@ async function upgradePackageData(
   upgraded: Index<VersionSpec>,
   options: Options,
 ) {
-  const depSections = resolveDepSections(options.dep)
+  // Always include overrides since any upgraded dependencies needed to be upgraded in overrides as well.
+  // https://github.com/raineorshine/npm-check-updates/issues/1332
+  const depSections = [...resolveDepSections(options.dep), 'overrides']
 
   // iterate through each dependency section
   const sectionRegExp = new RegExp(`"(${depSections.join(`|`)})"s*:[^}]*`, 'g')
   let newPkgData = pkgData.replace(sectionRegExp, section => {
     // replace each upgraded dependency in the section
     Object.keys(upgraded).forEach(dep => {
-      const expression = `"${dep}"\\s*:\\s*"(${escapeRegexp(current[dep])})"`
+      // const expression = `"${dep}"\\s*:\\s*"(${escapeRegexp(current[dep])})"`
+      const expression = `"${dep}"\\s*:\\s*("|{\\s*"."\\s*:\\s*")(${escapeRegexp(current[dep])})"`
       const regExp = new RegExp(expression, 'g')
-      section = section.replace(regExp, `"${dep}": "${upgraded[dep]}"`)
+      section = section.replace(regExp, (match, child) => `"${dep}${child ? `": ${child}` : ': '}${upgraded[dep]}"`)
     })
 
     return section

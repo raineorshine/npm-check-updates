@@ -18,9 +18,7 @@ const resolveDepSections = (dep?: string | string[]): (keyof PackageFile)[] => {
   // map the dependency section option to a full dependency section name
   const depSections = depOptions.map(name => depAliases[name] || name)
 
-  // Always include overrides since any upgraded dependencies needed to be upgraded in overrides as well.
-  // https://github.com/raineorshine/npm-check-updates/issues/1332
-  return [...depSections, 'overrides']
+  return depSections
 }
 
 export default resolveDepSections

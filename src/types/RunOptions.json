@@ -1,6 +1,19 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
+    "NestedVersionSpecs": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/NestedVersionSpecs"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "type": "object"
+    },
     "PackageFile": {
       "description": "The relevant bits of a parsed package.json file.",
       "properties": {
@@ -41,6 +54,9 @@
           },
           "description": "A very generic object.",
           "type": "object"
+        },
+        "overrides": {
+          "$ref": "#/definitions/NestedVersionSpecs"
         },
         "packageManager": {
           "type": "string"
