@@ -111,6 +111,30 @@ export const newest = withNpmWorkspaceConfig(npmNewest)
 export const patch = withNpmWorkspaceConfig(npmPatch)
 export const semver = withNpmWorkspaceConfig(npmPatch)
 
+/**
+ * Spawn pnpm.
+ *
+ * @param args
+ * @param [npmOptions={}]
+ * @param [spawnOptions={}]
+ * @returns
+ */
+export default async function spawnPnpm(
+  args: string | string[],
+  npmOptions: NpmOptions = {},
+  spawnOptions?: SpawnOptions,
+): Promise<string> {
+  const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+
+  const fullArgs = [
+    ...(npmOptions.global ? 'global' : []),
+    ...(Array.isArray(args) ? args : [args]),
+    ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
+  ]
+
+  return spawn(cmd, fullArgs, spawnOptions)
+}
+
 export { defaultPrefix, getPeerDependencies, packageAuthorChanged } from './npm'
 
 export default spawnPnpm

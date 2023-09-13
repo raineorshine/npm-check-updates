@@ -24,7 +24,7 @@ async function spawnBun(
   const fullArgs = [
     ...args,
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
-    ...(npmOptions.location === 'global' ? ['--global'] : []),
+    ...(npmOptions.global ? ['--global'] : []),
   ]
 
   return spawn('bun', fullArgs, spawnOptions)

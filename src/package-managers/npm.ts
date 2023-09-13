@@ -209,21 +209,6 @@ const findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
 // this may be partially overwritten by .npmrc config files when using --deep
 const npmConfig = findNpmConfig()
 
-/** A promise that returns true if --global is deprecated on the system npm. Spawns "npm --version". */
-const isGlobalDeprecated = memoize(async () => {
-  const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-  const output = await spawn(cmd, ['--version'])
-  const npmVersion = output.trim()
-  // --global was deprecated in npm v8.11.0.
-  return nodeSemver.valid(npmVersion) && nodeSemver.gte(npmVersion, '8.11.0')
-})
-
-/**
- * @typedef {object} CommandAndPackageName
- * @property {string} command
- * @property {string} packageName
- */
-
 /**
  * Parse JSON and throw an informative error on failure.
  *
@@ -505,7 +490,7 @@ export async function viewOne(
 }
 
 /**
- * Spawns npm with --json. Handles different commands for Window and Linux/OSX, and automatically converts --location=global to --global on npm < 8.11.0.
+ * Spawns npm with --json. Handles different commands for Window and Linux/OSX.
  *
  * @param args
  * @param [npmOptions={}]
@@ -520,17 +505,12 @@ async function spawnNpm(
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
   args = Array.isArray(args) ? args : [args]
 
-  const fullArgs = args.concat(
-    npmOptions.location
-      ? (await isGlobalDeprecated())
-        ? `--location=${npmOptions.location}`
-        : npmOptions.location === 'global'
-        ? '--global'
-        : ''
-      : [],
-    npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : [],
+  const fullArgs = [
+    ...args,
+    ...(npmOptions.global ? [`--global`] : []),
+    ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
     '--json',
-  )
+  ]
   return spawn(cmd, fullArgs, spawnOptions)
 }
 
@@ -645,8 +625,7 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   const result = await spawnNpm(
     ['ls', '--depth=0'],
     {
-      // spawnNpm takes the modern --location option and converts it to --global on older versions of npm
-      ...(options.global ? { location: 'global' } : null),
+      ...(options.global ? { global: true } : null),
       ...(options.prefix ? { prefix: options.prefix } : null),
     },
     {
@@ -657,9 +636,7 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   const dependencies = parseJson<{
     dependencies: Index<{ version?: Version; required?: { version: Version } }>
   }>(result, {
-    command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --location=global' : ''}${
-      options.prefix ? ' --prefix ' + options.prefix : ''
-    }`,
+    command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --global' : ''}`,
   }).dependencies
 
   return keyValueBy(dependencies, (name, info) => ({
