@@ -96,12 +96,9 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       const errorMessage = err ? (err.message || err).toString() : ''
       if (errorMessage.match(/E404|ENOTFOUND|404 Not Found/i)) {
         return {
-          error: `${errorMessage.replace(
-            / - Not found$/i,
-            '',
-          )}. Either your internet connection is down or unstable and all ${
+          error: `${errorMessage.replace(/ - Not found$/i, '')}. All ${
             options.retry
-          } retry attempts failed, or the registry is not accessible, or the package does not exist.`,
+          } retry attempts failed. Either your internet connection is down, the registry is inaccessible, the authentication credentials are invalid, or the package does not exist.`,
         }
       } else {
         // print a hint about the --timeout option for network timeout errors
