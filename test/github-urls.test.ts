@@ -1,8 +1,7 @@
-import chai from 'chai'
 import ncu from '../src'
+import chaiSetup from './helpers/chaiSetup'
 
-chai.should()
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 describe('github urls', () => {
   it('upgrade github https urls', async () => {

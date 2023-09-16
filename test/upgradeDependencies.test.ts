@@ -1,8 +1,7 @@
-import chai from 'chai'
 import upgradeDependencies from '../src/lib/upgradeDependencies'
+import chaiSetup from './helpers/chaiSetup'
 
-chai.should()
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 describe('upgradeDependencies', () => {
   it('upgrade simple, non-semver versions', () => {

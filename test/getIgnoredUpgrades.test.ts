@@ -1,8 +1,7 @@
-import chai from 'chai'
 import getIgnoredUpgrades from '../src/lib/getIgnoredUpgrades'
+import chaiSetup from './helpers/chaiSetup'
 
-chai.should()
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 describe('getIgnoredUpgrades', function () {
   it('ncu-test-peer-update', async () => {

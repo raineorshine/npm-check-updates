@@ -1,16 +1,12 @@
-import chai from 'chai'
-import chaiString from 'chai-string'
 import ncu from '../src/'
 import { FilterFunction } from '../src/types/FilterFunction'
 import { Index } from '../src/types/IndexType'
 import { TargetFunction } from '../src/types/TargetFunction'
 import { Version } from '../src/types/Version'
+import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
 
-chai.should()
-chai.use(chaiString)
-
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 // TODO: Mock based on real output of viewMany
 describe('target', () => {

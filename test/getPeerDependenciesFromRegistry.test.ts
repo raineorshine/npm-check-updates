@@ -1,9 +1,8 @@
-import chai from 'chai'
 import { chalkInit } from '../src/lib/chalk'
 import getPeerDependenciesFromRegistry from '../src/lib/getPeerDependenciesFromRegistry'
+import chaiSetup from './helpers/chaiSetup'
 
-chai.should()
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 describe('getPeerDependenciesFromRegistry', function () {
   it('single package', async () => {

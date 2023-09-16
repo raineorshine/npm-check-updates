@@ -1,11 +1,8 @@
-import chai from 'chai'
-import chaiAsPromised from 'chai-as-promised'
 import queryVersions from '../src/lib/queryVersions'
+import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
 
-chai.should()
-chai.use(chaiAsPromised)
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 describe('queryVersions', function () {
   it('valid single package', async () => {

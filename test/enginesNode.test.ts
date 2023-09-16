@@ -1,10 +1,9 @@
-import chai from 'chai'
 import ncu from '../src/'
 import { Index } from '../src/types/IndexType'
 import { VersionSpec } from '../src/types/VersionSpec'
+import chaiSetup from './helpers/chaiSetup'
 
-chai.should()
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 describe('enginesNode', () => {
   it("update packages that satisfy the project's engines.node", async () => {

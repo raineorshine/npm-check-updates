@@ -1,18 +1,15 @@
 /* eslint-disable no-unused-expressions */
 // eslint doesn't like .to.be.false syntax
-import chai, { expect } from 'chai'
-import chaiString from 'chai-string'
+import { expect } from 'chai'
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import exists from '../src/lib/exists'
+import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
 
-chai.should()
-chai.use(chaiString)
-
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 

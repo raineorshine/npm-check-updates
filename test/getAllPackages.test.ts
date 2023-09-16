@@ -1,12 +1,10 @@
-import chai from 'chai'
-import chaiAsPromised from 'chai-as-promised'
 import path from 'path'
 import getAllPackages from '../src/lib/getAllPackages'
 import { Options } from '../src/types/Options'
 import { PackageInfo } from '../src/types/PackageInfo'
+import chaiSetup from './helpers/chaiSetup'
 
-chai.should()
-chai.use(chaiAsPromised)
+chaiSetup()
 
 /** forces path to a posix version (windows-style) */
 function asPosixPath(filepath: string): string {

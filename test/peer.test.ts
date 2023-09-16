@@ -1,16 +1,10 @@
-import chai from 'chai'
-import chaiAsPromised from 'chai-as-promised'
-import chaiString from 'chai-string'
 import path from 'path'
 import { rimraf } from 'rimraf'
 import ncu from '../src/'
 import spawnNpm from '../src/package-managers/npm'
+import chaiSetup from './helpers/chaiSetup'
 
-chai.should()
-chai.use(chaiAsPromised)
-chai.use(chaiString)
-
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 describe('peer dependencies', function () {
   it('peer dependencies of installed packages are ignored by default', async () => {

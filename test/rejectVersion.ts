@@ -1,9 +1,8 @@
-import chai from 'chai'
 import ncu from '../src'
+import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
 
-chai.should()
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 describe('rejectVersion', () => {
   it('reject by package version with string', async () => {

@@ -1,12 +1,9 @@
-import chai from 'chai'
-import chaiAsPromised from 'chai-as-promised'
 import path from 'path'
 import * as yarn from '../../../src/package-managers/yarn'
 import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn'
+import chaiSetup from '../../helpers/chaiSetup'
 
-const should = chai.should()
-chai.use(chaiAsPromised)
-process.env.NCU_TESTS = 'true'
+const should = chaiSetup()
 
 const isWindows = process.platform === 'win32'
 

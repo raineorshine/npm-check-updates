@@ -1,8 +1,7 @@
-import chai from 'chai'
 import getPreferredWildcard from '../src/lib/getPreferredWildcard'
+import chaiSetup from './helpers/chaiSetup'
 
-const should = chai.should()
-process.env.NCU_TESTS = 'true'
+const should = chaiSetup()
 
 describe('getPreferredWildcard', () => {
   it('identify ^ when it is preferred', () => {

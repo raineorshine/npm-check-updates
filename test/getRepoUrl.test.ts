@@ -1,7 +1,7 @@
-import chai from 'chai'
 import getRepoUrl from '../src/lib/getRepoUrl'
+import chaiSetup from './helpers/chaiSetup'
 
-const should = chai.should()
+const should = chaiSetup()
 
 describe('getRepoUrl', () => {
   it('return null if package is not installed', async () => {

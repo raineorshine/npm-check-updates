@@ -1,7 +1,7 @@
-import chai from 'chai'
 import cliOptions from '../src/cli-options'
+import chaiSetup from './helpers/chaiSetup'
 
-chai.should()
+chaiSetup()
 
 describe('cli-options', () => {
   it('require long and description properties', () => {

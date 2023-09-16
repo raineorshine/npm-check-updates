@@ -1,8 +1,7 @@
-import chai from 'chai'
 import isUpgradeable from '../src/lib/isUpgradeable'
+import chaiSetup from './helpers/chaiSetup'
 
-chai.should()
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 describe('isUpgradeable', () => {
   it('do not upgrade pure wildcards', () => {

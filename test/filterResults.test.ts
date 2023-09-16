@@ -1,15 +1,12 @@
-import chai, { expect } from 'chai'
-import chaiAsPromised from 'chai-as-promised'
-import chaiString from 'chai-string'
+import { expect } from 'chai'
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import ncu from '../src/'
+import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
 
-chai.should()
-chai.use(chaiAsPromised)
-chai.use(chaiString)
+chaiSetup()
 
 describe('filterResults', () => {
   it('should return only major versions updated', async () => {

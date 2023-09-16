@@ -1,9 +1,9 @@
-import chai from 'chai'
 import { SemVer } from 'semver-utils'
 import getCurrentDependencies from '../src/lib/getCurrentDependencies'
 import { PackageFile } from '../src/types/PackageFile'
+import chaiSetup from './helpers/chaiSetup'
 
-chai.should()
+chaiSetup()
 
 describe('getCurrentDependencies', () => {
   let deps: PackageFile

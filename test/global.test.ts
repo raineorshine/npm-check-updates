@@ -1,7 +1,8 @@
 import path from 'path'
 import spawn from 'spawn-please'
+import chaiSetup from './helpers/chaiSetup'
 
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 

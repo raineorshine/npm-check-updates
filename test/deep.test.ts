@@ -1,17 +1,14 @@
-import chai from 'chai'
-import chaiAsPromised from 'chai-as-promised'
+import { expect } from 'chai'
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
+import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
 
-chai.should()
-chai.use(chaiAsPromised)
-
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
@@ -220,7 +217,7 @@ describe('mergeOptions', function () {
       o1: Record<string, unknown> | null,
       o2: Record<string, unknown> | null,
       result: Record<string, unknown>,
-    ) => chai.expect(mergeOptions(o1, o2)).to.deep.equal(result)
+    ) => expect(mergeOptions(o1, o2)).to.deep.equal(result)
 
     // trivial cases
     eq(null, null, {})

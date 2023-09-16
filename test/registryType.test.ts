@@ -1,7 +1,7 @@
-import chai from 'chai'
 import ncu from '../src/index'
+import chaiSetup from './helpers/chaiSetup'
 
-chai.should()
+chaiSetup()
 
 describe('staticRegistry', function () {
   it('upgrade to the version specified in the static registry file', async () => {

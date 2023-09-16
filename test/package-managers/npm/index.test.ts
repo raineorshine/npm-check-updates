@@ -1,9 +1,7 @@
-import chai from 'chai'
-import chaiAsPromised from 'chai-as-promised'
 import * as npm from '../../../src/package-managers/npm'
+import chaiSetup from '../../helpers/chaiSetup'
 
-chai.should()
-chai.use(chaiAsPromised)
+chaiSetup()
 
 describe('npm', function () {
   it('list', async () => {

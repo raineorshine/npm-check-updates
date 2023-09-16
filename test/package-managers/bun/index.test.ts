@@ -1,14 +1,8 @@
-import chai from 'chai'
-import chaiAsPromised from 'chai-as-promised'
-import chaiString from 'chai-string'
 import os from 'os'
 import * as bun from '../../../src/package-managers/bun'
+import chaiSetup from '../../helpers/chaiSetup'
 
-chai.should()
-chai.use(chaiAsPromised)
-chai.use(chaiString)
-
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 // Bun not yet supported on Windows
 const describeSkipWindows = os.platform() === 'win32' ? describe.skip : describe

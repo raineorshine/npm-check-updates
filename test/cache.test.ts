@@ -1,16 +1,13 @@
-import chai, { expect } from 'chai'
-import chaiString from 'chai-string'
+import { expect } from 'chai'
 import fs from 'fs/promises'
 import { rimraf } from 'rimraf'
 import ncu from '../src/'
 import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
 import { CacheData } from '../src/types/Cacher'
+import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
 
-chai.should()
-chai.use(chaiString)
-
-process.env.NCU_TESTS = 'true'
+chaiSetup()
 
 describe('cache', () => {
   it('cache latest versions', async () => {
