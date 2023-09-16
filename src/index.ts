@@ -289,7 +289,10 @@ export async function run(
   if (!options.prefix) {
     const defaultPrefix =
       packageManagers[options.packageManager || '']?.defaultPrefix || packageManagers.npm.defaultPrefix!
-    options.prefix = await defaultPrefix(options)
+    const prefix = await defaultPrefix(options)
+    if (prefix) {
+      options.prefix = prefix
+    }
   }
 
   let timeout: NodeJS.Timeout | undefined

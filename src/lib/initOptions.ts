@@ -9,6 +9,7 @@ import { Target } from '../types/Target'
 import cacher from './cache'
 import determinePackageManager from './determinePackageManager'
 import exists from './exists'
+import keyValueBy from './keyValueBy'
 import programError from './programError'
 
 function parseFilterExpression(filterExpression: string[] | undefined): string[] | undefined
@@ -191,13 +192,19 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   }
   resolvedOptions.cacher = await cacher(resolvedOptions)
 
+  // remove undefined values
+  const resolvedOptionsFiltered: Options = keyValueBy(
+    resolvedOptions as { [key: string]: Options[keyof Options] },
+    (key, value) => (value !== undefined ? { [key]: value } : null),
+  )
+
   // print 'Using yarn/pnpm/etc' when autodetected
   // use resolved options so that options.json is set
   if (!options.packageManager && packageManager !== 'npm') {
-    print(resolvedOptions, `Using ${packageManager}`)
+    print(resolvedOptionsFiltered, `Using ${packageManager}`)
   }
 
-  return resolvedOptions
+  return resolvedOptionsFiltered
 }
 
 export default initOptions
