@@ -476,7 +476,7 @@ describe('workspaces', () => {
 
   // cannot be stubbed while npm config printing occurs in viewMany
   describe('not stubbed', () => {
-    // TODO: Find a less fragile way to test npm config than comparing exact verbose output
+    // TODO: Find a less fragile way to test npm config than comparing verbose output
     it('merge local npm config with pnpm workspace npm config', async () => {
       // colors must be stripped on node v18+
       const { default: stripAnsi } = await import('strip-ansi')
@@ -489,9 +489,7 @@ describe('workspaces', () => {
         })
         stripAnsi(output).should.include(`npm config (workspace project):
 { ncutest: 'root' }`)
-        stripAnsi(output).should.include(`Using merged npm config:
-{
-  ncutest: 'a',`)
+        stripAnsi(output).split('merged npm config:')[1].should.include(`ncutest: 'a'`)
       } finally {
         await fs.rm(tempDir, { recursive: true, force: true })
       }

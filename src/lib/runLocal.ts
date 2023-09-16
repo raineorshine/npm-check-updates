@@ -17,7 +17,7 @@ import getIgnoredUpgrades from './getIgnoredUpgrades'
 import getPackageManager from './getPackageManager'
 import getPeerDependencies from './getPeerDependencies'
 import keyValueBy from './keyValueBy'
-import { print, printIgnoredUpdates, printJson, printOptionsSorted, printUpgrades, toDependencyTable } from './logging'
+import { print, printIgnoredUpdates, printJson, printSorted, printUpgrades, toDependencyTable } from './logging'
 import programError from './programError'
 import resolveDepSections from './resolveDepSections'
 import upgradePackageData from './upgradePackageData'
@@ -152,7 +152,7 @@ async function runLocal(
   pkgFile?: Maybe<string>,
 ): Promise<PackageFile | Index<VersionSpec>> {
   print(options, '\nOptions:', 'verbose')
-  printOptionsSorted(options, 'verbose')
+  printSorted(options, options, 'verbose')
 
   let pkg: PackageFile
 

@@ -1,5 +1,5 @@
 import pick from 'lodash/pick'
-import { print, printJson, printOptionsSorted, printUpgrades } from '../lib/logging'
+import { print, printJson, printSorted, printUpgrades } from '../lib/logging'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import chalk from './chalk'
@@ -10,7 +10,7 @@ import upgradePackageDefinitions from './upgradePackageDefinitions'
 /** Checks global dependencies for upgrades. */
 async function runGlobal(options: Options): Promise<Index<string> | void> {
   print(options, '\nOptions:', 'verbose')
-  printOptionsSorted(options, 'verbose')
+  printSorted(options, options, 'verbose')
 
   print(options, '\nGetting installed packages', 'verbose')
   const globalPackages = await getInstalledPackages(

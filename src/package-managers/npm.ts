@@ -17,7 +17,7 @@ import untildify from 'untildify'
 import filterObject from '../lib/filterObject'
 import { keyValueBy } from '../lib/keyValueBy'
 import libnpmconfig from '../lib/libnpmconfig'
-import { print } from '../lib/logging'
+import { print, printSorted } from '../lib/logging'
 import * as versionUtil from '../lib/version-util'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
@@ -337,6 +337,74 @@ export const mockViewMany =
     )
   }
 
+/** Merges the workspace, global, user, local, project, and cwd npm configs (in that order). */
+// Note that this is memoized on configs and options, but not on package name. This avoids duplicate messages when log level is verbose. findNpmConfig is memoized on config path, so it is not expensive to call multiple times.
+const mergeNpmConfigs = memoize(
+  (
+    {
+      npmConfigLocal,
+      npmConfigUser,
+      npmConfigWorkspaceProject,
+    }: {
+      npmConfigLocal?: NpmConfig
+      npmConfigUser?: NpmConfig
+      npmConfigWorkspaceProject?: NpmConfig
+    },
+    options: Options,
+  ) => {
+    // merge project npm config with base config
+    const npmConfigProjectPath = options.packageFile ? path.join(options.packageFile, '../.npmrc') : null
+    const npmConfigProject = options.packageFile ? findNpmConfig(npmConfigProjectPath || undefined) : null
+    const npmConfigCWDPath = options.cwd ? path.join(options.cwd, '.npmrc') : null
+    const npmConfigCWD = options.cwd ? findNpmConfig(npmConfigCWDPath!) : null
+
+    if (npmConfigWorkspaceProject && Object.keys(npmConfigWorkspaceProject).length > 0) {
+      print(options, `\nnpm config (workspace project):`, 'verbose')
+      printSorted(options, omit(npmConfigWorkspaceProject, 'cache'), 'verbose')
+    }
+
+    if (npmConfigUser && Object.keys(npmConfigUser).length > 0) {
+      print(options, `\nnpm config (user):`, 'verbose')
+      printSorted(options, omit(npmConfigUser, 'cache'), 'verbose')
+    }
+
+    if (npmConfigLocal && Object.keys(npmConfigLocal).length > 0) {
+      print(options, `\nnpm config (local override):`, 'verbose')
+      printSorted(options, omit(npmConfigLocal, 'cache'), 'verbose')
+    }
+
+    if (npmConfigProject && Object.keys(npmConfigProject).length > 0) {
+      print(options, `\nnpm config (project: ${npmConfigProjectPath}):`, 'verbose')
+      printSorted(options, omit(npmConfigProject, 'cache'), 'verbose')
+    }
+
+    if (npmConfigCWD && Object.keys(npmConfigCWD).length > 0) {
+      print(options, `\nnpm config (cwd: ${npmConfigCWDPath}):`, 'verbose')
+      // omit cache since it is added to every config
+      printSorted(options, omit(npmConfigCWD, 'cache'), 'verbose')
+    }
+
+    const npmConfigMerged = {
+      ...npmConfigWorkspaceProject,
+      ...npmConfigUser,
+      ...npmConfigLocal,
+      ...npmConfigProject,
+      ...npmConfigCWD,
+      ...(options.registry ? { registry: options.registry, silent: true } : null),
+      ...(options.timeout ? { timeout: options.timeout } : null),
+    }
+
+    const isMerged = npmConfigWorkspaceProject || npmConfigLocal || npmConfigProject || npmConfigCWD
+    if (isMerged) {
+      print(options, `\nmerged npm config:`, 'verbose')
+      // omit cache since it is added to every config
+      printSorted(options, omit(npmConfigMerged, 'cache'), 'verbose')
+    }
+
+    return npmConfigMerged
+  },
+)
+
 /**
  * Returns an object of specified values retrieved by npm view.
  *
@@ -366,53 +434,14 @@ async function viewMany(
 
   const fieldsExtended = options.format?.includes('time') ? [...fields, 'time'] : fields
 
-  // merge project npm config with base config
-  const npmConfigProjectPath = options.packageFile ? path.join(options.packageFile, '../.npmrc') : null
-  const npmConfigProject = options.packageFile ? findNpmConfig(npmConfigProjectPath || undefined) : null
-  const npmConfigCWDPath = options.cwd ? path.join(options.cwd, '.npmrc') : null
-  const npmConfigCWD = options.cwd ? findNpmConfig(npmConfigCWDPath!) : null
-
-  if (npmConfigWorkspaceProject && Object.keys(npmConfigWorkspaceProject).length > 0) {
-    print(options, `\nnpm config (workspace project):`, 'verbose')
-    print(options, omit(npmConfigWorkspaceProject, 'cache'), 'verbose')
-  }
-
-  if (npmConfig && Object.keys(npmConfig).length > 0) {
-    print(options, `\nnpm config (local):`, 'verbose')
-    print(options, omit(npmConfig, 'cache'), 'verbose')
-  }
-
-  if (npmConfigLocal && Object.keys(npmConfigLocal).length > 0) {
-    print(options, `\nnpm config (local override):`, 'verbose')
-    print(options, omit(npmConfigLocal, 'cache'), 'verbose')
-  }
-
-  if (npmConfigProject && Object.keys(npmConfigProject).length > 0) {
-    print(options, `\nnpm config (project: ${npmConfigProjectPath}):`, 'verbose')
-    print(options, omit(npmConfigProject, 'cache'), 'verbose')
-  }
-
-  if (npmConfigCWD && Object.keys(npmConfigCWD).length > 0) {
-    print(options, `\nnpm config (cwd: ${npmConfigCWDPath}):`, 'verbose')
-    // omit cache since it is added to every config
-    print(options, omit(npmConfigCWD, 'cache'), 'verbose')
-  }
-
-  const npmConfigMerged = {
-    ...npmConfigWorkspaceProject,
-    ...npmConfig,
-    ...npmConfigLocal,
-    ...npmConfigProject,
-    ...npmConfigCWD,
-    ...(options.registry ? { registry: options.registry, silent: true } : null),
-    ...(options.timeout ? { timeout: options.timeout } : null),
-    fullMetadata: fieldsExtended.includes('time'),
-  }
-
-  const isMerged = npmConfigWorkspaceProject || npmConfigLocal || npmConfigProject || npmConfigCWD
-  print(options, `\nUsing${isMerged ? ' merged' : ''} npm config:`, 'verbose')
-  // omit cache since it is added to every config
-  print(options, omit(npmConfigMerged, 'cache'), 'verbose')
+  const npmConfigMerged = mergeNpmConfigs(
+    {
+      npmConfigUser: { ...npmConfig, fullMetadata: fieldsExtended.includes('time') },
+      npmConfigLocal,
+      npmConfigWorkspaceProject,
+    },
+    options,
+  )
 
   let result: any
   try {

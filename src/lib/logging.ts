@@ -84,18 +84,18 @@ export function printSimpleJoinedString(object: any, join: string) {
   )
 }
 
-/** Prints the options object sorted. */
-export function printOptionsSorted(options: Options, loglevel: LogLevel) {
+/** Prints an object sorted by key. */
+export function printSorted<T extends { [key: string]: any }>(options: Options, obj: T, loglevel: LogLevel) {
   // eslint-disable-next-line fp/no-mutating-methods
-  const sortedKeys = Object.keys(options).sort() as (keyof Options)[]
-  const optionsString = transform<keyof Options, any>(
+  const sortedKeys = Object.keys(obj).sort() as (keyof T)[]
+  const objSorted = transform(
     sortedKeys,
     (accum, key) => {
-      accum[key] = options[key]
+      accum[key] = obj[key]
     },
-    {},
+    {} as T,
   )
-  print(options, optionsString, loglevel)
+  print(options, objSorted, loglevel)
 }
 
 /** Create a table with the appropriate columns and alignment to render dependency upgrades. */
