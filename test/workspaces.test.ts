@@ -129,8 +129,8 @@ describe('workspaces', () => {
     describe('--workspaces', function () {
       this.timeout(60000)
 
-      it('do not allow --workspaces and --deep together', () => {
-        ncu({ workspaces: true, deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+      it('do not allow --workspaces and --deep together', async () => {
+        await ncu({ workspaces: true, deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
       })
 
       it('update workspaces with --workspaces', async () => {
@@ -259,12 +259,12 @@ describe('workspaces', () => {
     describe('--workspace', function () {
       this.timeout(60000)
 
-      it('do not allow --workspace and --deep together', () => {
-        ncu({ workspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+      it('do not allow --workspace and --deep together', async () => {
+        await ncu({ workspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
       })
 
-      it('do not allow --workspace and --workspaces together', () => {
-        ncu({ workspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+      it('do not allow --workspace and --workspaces together', async () => {
+        await ncu({ workspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
       })
 
       it('update single workspace with --workspace', async () => {
