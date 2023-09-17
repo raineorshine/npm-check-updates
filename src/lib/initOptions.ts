@@ -120,6 +120,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   const filterVersion = parseFilterExpression(options.filterVersion)
   const reject = parseFilterExpression(options.reject)
   const rejectVersion = parseFilterExpression(options.rejectVersion)
+
   // convert to string for comparison purposes
   // otherwise ['a b'] will not match ['a', 'b']
   if (options.filter && args && !isEqual(args.join(' '), Array.isArray(filter) ? filter.join(' ') : filter)) {
@@ -135,17 +136,22 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       `Cannot specify both --packageFile and --deep. --deep is an alias for --packageFile '**/package.json'`,
     )
   }
-
+  // disallow --format lines and --jsonUpgraded
+  else if (options.format?.includes('lines') && options.jsonUpgraded) {
+    programError(options, 'Cannot specify both --format lines and --jsonUpgraded.')
+  } else if (options.format?.includes('lines') && options.jsonAll) {
+    programError(options, 'Cannot specify both --format lines and --jsonAll.')
+  } else if (options.format?.includes('lines') && options.format.length > 1) {
+    programError(options, 'Cannot use --format lines with other formatting options.')
+  }
   // disallow --workspace and --workspaces
   else if (options.workspace?.length && options.workspaces) {
     programError(options, 'Cannot specify both --workspace and --workspaces.')
   }
-
   // disallow --workspace(s) and --deep
   else if (options.deep && (options.workspace?.length || options.workspaces)) {
     programError(options, `Cannot specify both --deep and --workspace${options.workspaces ? 's' : ''}.`)
   }
-
   // disallow --workspace(s) and --doctor
   else if (options.doctor && (options.workspace?.length || options.workspaces)) {
     programError(options, `Doctor mode is not currently supported with --workspace${options.workspaces ? 's' : ''}.`)
