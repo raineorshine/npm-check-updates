@@ -146,20 +146,17 @@ const install = async (
       try {
         await spawn(cmd, ['install'], {
           cwd,
-          ...(packageManager === 'pnpm'
-            ? {
-                env: {
-                  ...process.env,
-                  // With spawn, pnpm install will fail with ERR_PNPM_PEER_DEP_ISSUES  Unmet peer dependencies.
-                  // When pnpm install is run directly from the terminal, this error does not occur.
-                  // When pnpm install is run from a simple spawn script, this error does not occur.
-                  // The issue only seems to be when pnpm install is executed from npm-check-updates, but it's not clear what configuration or environmental factors are causing this.
-                  // For now, turn off strict-peer-dependencies on pnpm auto-install.
-                  // See: https://github.com/raineorshine/npm-check-updates/issues/1191
-                  npm_config_strict_peer_dependencies: false,
-                },
-              }
-            : null),
+          env: {
+            ...process.env,
+            ...(options.color !== false ? { FORCE_COLOR: true } : null),
+            // With spawn, pnpm install will fail with ERR_PNPM_PEER_DEP_ISSUES  Unmet peer dependencies.
+            // When pnpm install is run directly from the terminal, this error does not occur.
+            // When pnpm install is run from a simple spawn script, this error does not occur.
+            // The issue only seems to be when pnpm install is executed from npm-check-updates, but it's not clear what configuration or environmental factors are causing this.
+            // For now, turn off strict-peer-dependencies on pnpm auto-install.
+            // See: https://github.com/raineorshine/npm-check-updates/issues/1191
+            ...(packageManager === 'pnpm' ? { npm_config_strict_peer_dependencies: false } : null),
+          },
           stdout: (data: string) => {
             stdout += data
           },
@@ -167,7 +164,7 @@ const install = async (
             console.error(chalk.red(data.toString()))
           },
         })
-        print(options, stdout, 'verbose')
+        print(options, stdout)
         print(options, 'Done')
       } catch (err: any) {
         // sometimes packages print errors to stdout instead of stderr
