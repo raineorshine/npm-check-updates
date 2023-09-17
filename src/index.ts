@@ -82,7 +82,7 @@ const someUpgraded = (pkgs: string[], analysis: Index<PackageFile> | PackageFile
 }
 
 /** Either suggest an install command based on the package manager, or in interactive mode, prompt to auto-install. */
-const npmInstall = async (
+const install = async (
   pkgs: string[],
   analysis: Index<PackageFile> | PackageFile,
   options: Options,
@@ -253,7 +253,7 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
     if (options.packageManager === 'deno') {
       print(options, '')
     } else {
-      await npmInstall(packageFilepaths, analysis, options)
+      await install(packageFilepaths, analysis, options)
     }
   }
 
