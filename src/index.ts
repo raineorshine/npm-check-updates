@@ -45,7 +45,7 @@ process.on('unhandledRejection', (reason: string | Error) => {
  *
  * The ability to use `npm ls -g` is tracked in this Volta issue: https://github.com/volta-cli/volta/issues/1012
  */
-function checkIfVolta(options: Options): void {
+const noVolta = (options: Options) => {
   // The first check is for macOS/Linux and the second check is for Windows
   if (options.global && (!!process.env.VOLTA_HOME || process.env.PATH?.includes('\\Volta'))) {
     const message =
@@ -275,7 +275,7 @@ export async function run(
   // chalkInit is idempotent
   await chalkInit(options.color)
 
-  checkIfVolta(options)
+  noVolta(options)
 
   print(options, 'Initializing', 'verbose')
 
