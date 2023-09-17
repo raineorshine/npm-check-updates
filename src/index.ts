@@ -17,7 +17,6 @@ import mergeOptions from './lib/mergeOptions'
 import programError from './lib/programError'
 import runGlobal from './lib/runGlobal'
 import runLocal from './lib/runLocal'
-import packageManagers from './package-managers'
 import { Index } from './types/IndexType'
 import { Options } from './types/Options'
 import { PackageFile } from './types/PackageFile'
@@ -281,15 +280,6 @@ export async function run(
 
   if (options.cacheClear) {
     await cacheClear(options)
-  }
-
-  if (!options.prefix) {
-    const defaultPrefix =
-      packageManagers[options.packageManager || '']?.defaultPrefix || packageManagers.npm.defaultPrefix!
-    const prefix = await defaultPrefix(options)
-    if (prefix) {
-      options.prefix = prefix
-    }
   }
 
   let timeout: NodeJS.Timeout | undefined

@@ -2,6 +2,7 @@ import isEqual from 'lodash/isEqual'
 import propertyOf from 'lodash/propertyOf'
 import cliOptions, { cliOptionsMap } from '../cli-options'
 import { print } from '../lib/logging'
+import packageManagers from '../package-managers'
 import { FilterPattern } from '../types/FilterPattern'
 import { Options } from '../types/Options'
 import { RunOptions } from '../types/RunOptions'
@@ -188,6 +189,14 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     // imply upgrade in interactive mode when json is not specified as the output
     ...(options.interactive && options.upgrade === undefined ? { upgrade: !json } : null),
     packageManager,
+    ...(options.prefix
+      ? {
+          // use the npm prefix if the package manager does not define defaultPrefix
+          prefix: await (packageManagers[packageManager || '']?.defaultPrefix || packageManagers.npm.defaultPrefix!)(
+            options,
+          ),
+        }
+      : null),
     registryType: options.registryType || (options.registry?.endsWith('.json') ? 'json' : 'npm'),
   }
   resolvedOptions.cacher = await cacher(resolvedOptions)
