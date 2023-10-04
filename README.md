@@ -372,7 +372,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
 
 ## Advanced Options
 
-Some options have advanced usage, or allow per-package values by specifying a function in your ncurc.js file.
+Some options have advanced usage, or allow per-package values by specifying a function in your .ncurc.js file.
 
 Run `ncu --help [OPTION]` to view advanced help for a specific option, or see below:
 
