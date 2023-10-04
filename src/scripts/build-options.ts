@@ -17,9 +17,9 @@ const injectReadme = async () => {
   const optionRows = cliOptions
     .map(option => {
       return `  <tr>
-    <td>${option.short ? `-${option.short}, ` : ''}${option.cli !== false ? '--' : ''}${option.long}${
-        option.arg ? ` <${option.arg}>` : ''
-      }</td>
+    <td>${option.short ? `-${option.short}, ` : ''}${option.help ? `<a href="#${option.long.toLowerCase()}">` : ''}${
+        option.cli !== false ? '--' : ''
+      }${option.long}${option.help ? '</a>' : ''}${option.arg ? ` <${option.arg}>` : ''}</td>
     <td>${codeHtml(option.description)}${option.default ? ` (default: ${JSON.stringify(option.default)})` : ''}</td>
   </tr>`
     })

@@ -207,7 +207,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Include deprecated packages.</td>
   </tr>
   <tr>
-    <td>-d, --doctor</td>
+    <td>-d, <a href="#doctor">--doctor</a></td>
     <td>Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires <code>-u</code> to execute.</td>
   </tr>
   <tr>
@@ -227,19 +227,19 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). (default: 1)</td>
   </tr>
   <tr>
-    <td>-f, --filter <p></td>
+    <td>-f, <a href="#filter">--filter</a> <p></td>
     <td>Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.</td>
   </tr>
   <tr>
-    <td>filterResults <fn></td>
+    <td><a href="#filterresults">filterResults</a> <fn></td>
     <td>Filters out upgrades based on a user provided function.</td>
   </tr>
   <tr>
-    <td>--filterVersion <p></td>
+    <td><a href="#filterversion">--filterVersion</a> <p></td>
     <td>Filter on package version using comma-or-space-delimited list, /regex/, or predicate function.</td>
   </tr>
   <tr>
-    <td>--format <value></td>
+    <td><a href="#format">--format</a> <value></td>
     <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines. (default: [])</td>
   </tr>
   <tr>
@@ -247,11 +247,11 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Check global packages instead of in the current project.</td>
   </tr>
   <tr>
-    <td>groupFunction <fn></td>
+    <td><a href="#groupfunction">groupFunction</a> <fn></td>
     <td>Customize how packages are divided into groups when using <code>--format group</code>.</td>
   </tr>
   <tr>
-    <td>--install <value></td>
+    <td><a href="#install">--install</a> <value></td>
     <td>Control the auto-install behavior: always, never, prompt. (default: "prompt")</td>
   </tr>
   <tr>
@@ -291,11 +291,11 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Package file(s) location. (default: ./package.json)</td>
   </tr>
   <tr>
-    <td>-p, --packageManager <s></td>
+    <td>-p, <a href="#packagemanager">--packageManager</a> <s></td>
     <td>npm, yarn, pnpm, deno, bun, staticRegistry (default: npm).</td>
   </tr>
   <tr>
-    <td>--peer</td>
+    <td><a href="#peer">--peer</a></td>
     <td>Check peer dependencies of installed packages and filter updates to compatible versions.</td>
   </tr>
   <tr>
@@ -311,15 +311,15 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Specify the registry to use when looking up package versions.</td>
   </tr>
   <tr>
-    <td>--registryType <type></td>
+    <td><a href="#registrytype">--registryType</a> <type></td>
     <td>Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: npm)</td>
   </tr>
   <tr>
-    <td>-x, --reject <p></td>
+    <td>-x, <a href="#reject">--reject</a> <p></td>
     <td>Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.</td>
   </tr>
   <tr>
-    <td>--rejectVersion <p></td>
+    <td><a href="#rejectversion">--rejectVersion</a> <p></td>
     <td>Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function.</td>
   </tr>
   <tr>
@@ -343,7 +343,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Read package.json from stdin.</td>
   </tr>
   <tr>
-    <td>-t, --target <value></td>
+    <td>-t, <a href="#target">--target</a> <value></td>
     <td>Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, @[tag], or [function]. (default: latest)</td>
   </tr>
   <tr>
