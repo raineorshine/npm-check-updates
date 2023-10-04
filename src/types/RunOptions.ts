@@ -73,13 +73,13 @@ export interface RunOptions {
    */
   errorLevel?: number
 
-  /** Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. */
+  /** Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Run "ncu --help --filter" for details. */
   filter?: string | RegExp | (string | RegExp)[] | FilterFunction
 
   /** Filters out upgrades based on a user provided function. Run "ncu --help --filterResults" for details. */
   filterResults?: FilterResultsFunction
 
-  /** Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. */
+  /** Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. Run "ncu --help --filterVersion" for details. */
   filterVersion?: string | RegExp | (string | RegExp)[] | FilterFunction
 
   /** Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines. Run "ncu --help --format" for details. */
@@ -145,10 +145,10 @@ export interface RunOptions {
   /** Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: npm) Run "ncu --help --registryType" for details. */
   registryType?: 'npm' | 'json'
 
-  /** Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. */
+  /** Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Run "ncu --help --reject" for details. */
   reject?: string | RegExp | (string | RegExp)[] | FilterFunction
 
-  /** Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function. */
+  /** Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function. Run "ncu --help --rejectVersion" for details. */
   rejectVersion?: string | RegExp | (string | RegExp)[] | FilterFunction
 
   /** Remove version ranges from the final package version. */

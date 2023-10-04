@@ -142,9 +142,9 @@ ${codeBlock(
 ${chalk.green('filterResults')}: (packageName, { current, currentSemver, upgraded, upgradedSemver }) ${chalk.cyan(
     '=>',
   )} {
-  ${chalk.cyan('const')} currentMajor ${chalk.red('=')} parseInt(currentSemver?.[${chalk.cyan(
-    '0',
-  )}]?.major, ${chalk.cyan('10')})
+  ${chalk.cyan('const')} currentMajor ${chalk.red('=')} parseInt(currentSemver[${chalk.cyan('0')}]?.major, ${chalk.cyan(
+    '10',
+  )})
   ${chalk.cyan('const')} upgradedMajor ${chalk.red('=')} parseInt(upgradedSemver?.major, ${chalk.cyan('10')})
   ${chalk.red('if')} (currentMajor ${chalk.red('&&')} upgradedMajor) {
     ${chalk.red('return')} currentMajor ${chalk.red('<')} upgradedMajor
@@ -199,11 +199,125 @@ const extendedHelpInstall: ExtendedHelp = ({ markdown }) => {
 `
 }
 
+/** Extended help for the --filter option. */
+const extendedHelpFilterFunction: ExtendedHelp = ({ markdown }) => {
+  return `Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+
+The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
+
+${codeBlock(
+  `${chalk.gray(`/**
+  @param name     The name of the dependency.
+  @param semver   A parsed Semver array of the upgraded version.
+    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
+  @returns        True if the package should be included, false if it should be excluded.
+*/`)}
+${chalk.green('filterFunction')}: (name, semver) ${chalk.cyan('=>')} {
+  ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)})) {
+    ${chalk.red('return')} ${chalk.cyan('false')}
+  }
+  ${chalk.red('return')} ${chalk.cyan('true')}
+}`,
+  { markdown },
+)}
+
+`
+}
+
+/** Extended help for the --filterVersion option. */
+const extendedHelpFilterVersionFunction: ExtendedHelp = ({ markdown }) => {
+  return `Include only versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+
+The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the filter option function.
+
+${codeBlock(
+  `${chalk.gray(`/**
+  @param name     The name of the dependency.
+  @param semver   A parsed Semver array of the upgraded version.
+    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
+  @returns        True if the package should be included, false if it should be excluded.
+*/`)}
+${chalk.green('filterVersionFunction')}: (name, semver) ${chalk.cyan('=>')} {
+  ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)}) ${chalk.red(
+    '&&',
+  )} parseInt(semver[0]?.major) ${chalk.cyan('>')} ${chalk.cyan(`5`)}) {
+    ${chalk.red('return')} ${chalk.cyan('false')}
+  }
+  ${chalk.red('return')} ${chalk.cyan('true')}
+}`,
+  { markdown },
+)}
+
+`
+}
+
+/** Extended help for the --reject option. */
+const extendedHelpRejectFunction: ExtendedHelp = ({ markdown }) => {
+  /** If markdown, surround inline code with backticks. */
+  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+
+  return `The inverse of ${codeInline(
+    '--filter',
+  )}. Exclude package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+
+The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
+
+${codeBlock(
+  `${chalk.gray(`/**
+  @param name     The name of the dependency.
+  @param semver   A parsed Semver array of the upgraded version.
+    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
+  @returns        True if the package should be excluded, false if it should be included.
+*/`)}
+${chalk.green('rejectFunction')}: (name, semver) ${chalk.cyan('=>')} {
+  ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)})) {
+    ${chalk.red('return')} ${chalk.cyan('true')}
+  }
+  ${chalk.red('return')} ${chalk.cyan('false')}
+}`,
+  { markdown },
+)}
+
+`
+}
+
+/** Extended help for the --rejectVersion option. */
+const extendedHelpRejectVersionFunction: ExtendedHelp = ({ markdown }) => {
+  /** If markdown, surround inline code with backticks. */
+  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+
+  return `The inverse of ${codeInline(
+    '--filterVersion',
+  )}. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+
+The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the reject option function.
+
+${codeBlock(
+  `${chalk.gray(`/**
+  @param name     The name of the dependency.
+  @param semver   A parsed Semver array of the upgraded version.
+    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
+  @returns        True if the package should be excluded, false if it should be included.
+*/`)}
+${chalk.green('filterVersionFunction')}: (name, semver) ${chalk.cyan('=>')} {
+  ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)}) ${chalk.red(
+    '&&',
+  )} parseInt(semver[0]?.major) ${chalk.cyan('>')} ${chalk.cyan(`5`)}) {
+    ${chalk.red('return')} ${chalk.cyan('true')}
+  }
+  ${chalk.red('return')} ${chalk.cyan('false')}
+}`,
+  { markdown },
+)}
+
+`
+}
+
 /** Extended help for the --group option. */
 const extendedHelpGroupFunction: ExtendedHelp = ({ markdown }) => {
   return `Customize how packages are divided into groups when using \`--format group\`.
 
-Only available in .ncurc.js or when importing npm-check-updates as a module.
+Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
 
 ${codeBlock(
   `${chalk.gray(`/**
@@ -220,7 +334,7 @@ ${chalk.green('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec,
   )} defaultGroup ${chalk.red('===')} ${chalk.yellow(`'minor'`)}) {
     ${chalk.red('return')} ${chalk.yellow(`'major'`)}
   }
-  ${chalk.red('if')} (name.startsWith('@myorg/')) {
+  ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)})) {
     ${chalk.red('return')} ${chalk.yellow(`'My Org'`)}
   }
   ${chalk.red('return')} defaultGroup
@@ -265,17 +379,15 @@ You can also specify a custom function in your .ncurc.js file, or when importing
 
 ${codeBlock(
   `${chalk.gray(`/** Upgrade major version zero to the next minor version, and everything else to latest.
-  @param dependencyName The name of the dependency.
-  @param parsedVersion A parsed Semver object from semver-utils.
-    (See https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
-  @returns One of the valid target values (specified in the table above).
+  @param name     The name of the dependency.
+  @param semver   A parsed Semver object of the upgraded version.
+    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
+  @returns        One of the valid target values (specified in the table above).
 */`)}
-${chalk.green(
-  'target',
-)}: (dependencyName, [{ semver, version, operator, major, minor, patch, release, build }]) ${chalk.cyan('=>')} {
-  ${chalk.red('if')} (major ${chalk.red('===')} ${chalk.yellow("'0'")}) ${chalk.red('return')} ${chalk.yellow(
-    "'minor'",
-  )}
+${chalk.green('target')}: (name, semver) ${chalk.cyan('=>')} {
+  ${chalk.red('if')} (parseInt(semver[0]?.major) ${chalk.red('===')} ${chalk.yellow("'0'")}) ${chalk.red(
+    'return',
+  )} ${chalk.yellow("'minor'")}
   ${chalk.red('return')} ${chalk.yellow("'latest'")}
 }`,
   { markdown },
@@ -506,6 +618,7 @@ const cliOptions: CLIOption[] = [
       'Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | RegExp | (string | RegExp)[] | FilterFunction',
     parse: (value, accum) => [...(accum || []), value],
+    help: extendedHelpFilterFunction,
   },
   {
     long: 'filterResults',
@@ -521,6 +634,7 @@ const cliOptions: CLIOption[] = [
     description: 'Filter on package version using comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | RegExp | (string | RegExp)[] | FilterFunction',
     parse: (value, accum) => [...(accum || []), value],
+    help: extendedHelpFilterVersionFunction,
   },
   {
     long: 'format',
@@ -662,6 +776,7 @@ const cliOptions: CLIOption[] = [
       'Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | RegExp | (string | RegExp)[] | FilterFunction',
     parse: (value, accum) => [...(accum || []), value],
+    help: extendedHelpRejectFunction,
   },
   {
     long: 'rejectVersion',
@@ -669,6 +784,7 @@ const cliOptions: CLIOption[] = [
     description: 'Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | RegExp | (string | RegExp)[] | FilterFunction',
     parse: (value, accum) => [...(accum || []), value],
+    help: extendedHelpRejectVersionFunction,
   },
   {
     long: 'removeRange',

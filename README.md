@@ -437,6 +437,32 @@ Example:
       ✓ react-dnd 10.0.0 → 11.1.3
     Saving partially upgraded package.json
 
+## filter
+
+Usage:
+
+    ncu --filter [p]
+    ncu -f [p]
+
+Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+
+The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
+
+```js
+/**
+  @param name     The name of the dependency.
+  @param semver   A parsed Semver array of the upgraded version.
+    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
+  @returns        True if the package should be included, false if it should be excluded.
+*/
+filterFunction: (name, semver) => {
+  if (name.startsWith('@myorg/')) {
+    return false
+  }
+  return true
+}
+```
+
 ## filterResults
 
 Filters out upgrades based on a user provided function.
@@ -455,7 +481,7 @@ Only available in .ncurc.js or when importing npm-check-updates as a module.
   @returns {boolean}                 Return true if the upgrade should be kept, otherwise it will be ignored.
 */
 filterResults: (packageName, { current, currentSemver, upgraded, upgradedSemver }) => {
-  const currentMajor = parseInt(currentSemver?.[0]?.major, 10)
+  const currentMajor = parseInt(currentSemver[0]?.major, 10)
   const upgradedMajor = parseInt(upgradedSemver?.major, 10)
   if (currentMajor && upgradedMajor) {
     return currentMajor < upgradedMajor
@@ -465,6 +491,31 @@ filterResults: (packageName, { current, currentSemver, upgraded, upgradedSemver 
 ```
 
 For the SemVer type definition, see: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring
+
+## filterVersion
+
+Usage:
+
+    ncu --filterVersion [p]
+
+Include only versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+
+The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the filter option function.
+
+```js
+/**
+  @param name     The name of the dependency.
+  @param semver   A parsed Semver array of the upgraded version.
+    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
+  @returns        True if the package should be included, false if it should be excluded.
+*/
+filterVersionFunction: (name, semver) => {
+  if (name.startsWith('@myorg/') && parseInt(semver[0]?.major) > 5) {
+    return false
+  }
+  return true
+}
+```
 
 ## format
 
@@ -486,7 +537,7 @@ Modify the output formatting or show additional information. Specify one or more
 
 Customize how packages are divided into groups when using `--format group`.
 
-Only available in .ncurc.js or when importing npm-check-updates as a module.
+Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
 
 ```js
 /**
@@ -617,6 +668,57 @@ registry.json:
 </td></tr>
 </table>
 
+## reject
+
+Usage:
+
+    ncu --reject [p]
+    ncu -x [p]
+
+The inverse of `--filter`. Exclude package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+
+The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
+
+```js
+/**
+  @param name     The name of the dependency.
+  @param semver   A parsed Semver array of the upgraded version.
+    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
+  @returns        True if the package should be excluded, false if it should be included.
+*/
+rejectFunction: (name, semver) => {
+  if (name.startsWith('@myorg/')) {
+    return true
+  }
+  return false
+}
+```
+
+## rejectVersion
+
+Usage:
+
+    ncu --rejectVersion [p]
+
+The inverse of `--filterVersion`. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+
+The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the reject option function.
+
+```js
+/**
+  @param name     The name of the dependency.
+  @param semver   A parsed Semver array of the upgraded version.
+    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
+  @returns        True if the package should be excluded, false if it should be included.
+*/
+filterVersionFunction: (name, semver) => {
+  if (name.startsWith('@myorg/') && parseInt(semver[0]?.major) > 5) {
+    return true
+  }
+  return false
+}
+```
+
 ## target
 
 Usage:
@@ -640,13 +742,13 @@ You can also specify a custom function in your .ncurc.js file, or when importing
 
 ```js
 /** Upgrade major version zero to the next minor version, and everything else to latest.
-  @param dependencyName The name of the dependency.
-  @param parsedVersion A parsed Semver object from semver-utils.
-    (See https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
-  @returns One of the valid target values (specified in the table above).
+  @param name     The name of the dependency.
+  @param semver   A parsed Semver object of the upgraded version.
+    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
+  @returns        One of the valid target values (specified in the table above).
 */
-target: (dependencyName, [{ semver, version, operator, major, minor, patch, release, build }]) => {
-  if (major === '0') return 'minor'
+target: (name, semver) => {
+  if (parseInt(semver[0]?.major) === '0') return 'minor'
   return 'latest'
 }
 ```

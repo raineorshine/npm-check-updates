@@ -268,7 +268,7 @@
           "type": "string"
         }
       ],
-      "description": "Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function."
+      "description": "Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --filter\" for details."
     },
     "filterResults": {
       "description": "Filters out upgrades based on a user provided function. Run \"ncu --help --filterResults\" for details.",
@@ -300,7 +300,7 @@
           "type": "string"
         }
       ],
-      "description": "Filter on package version using comma-or-space-delimited list, /regex/, or predicate function."
+      "description": "Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --filterVersion\" for details."
     },
     "format": {
       "description": "Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines. Run \"ncu --help --format\" for details.",
@@ -419,7 +419,7 @@
           "type": "string"
         }
       ],
-      "description": "Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function."
+      "description": "Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --reject\" for details."
     },
     "rejectVersion": {
       "anyOf": [
@@ -447,7 +447,7 @@
           "type": "string"
         }
       ],
-      "description": "Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function."
+      "description": "Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --rejectVersion\" for details."
     },
     "removeRange": {
       "description": "Remove version ranges from the final package version.",
