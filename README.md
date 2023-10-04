@@ -167,11 +167,11 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Clear the default cache, or the cache file specified by <code>--cacheFile</code>.</td>
   </tr>
   <tr>
-    <td>--cacheExpiration <min></td>
+    <td>--cacheExpiration &lt;min&gt;</td>
     <td>Cache expiration in minutes. Only works with <code>--cache</code>. (default: 10)</td>
   </tr>
   <tr>
-    <td>--cacheFile <path></td>
+    <td>--cacheFile &lt;path&gt;</td>
     <td>Filepath for the cache file. Only works with <code>--cache</code>. (default: "~/.ncu-cache.json")</td>
   </tr>
   <tr>
@@ -179,19 +179,19 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Force color in terminal.</td>
   </tr>
   <tr>
-    <td>--concurrency <n></td>
+    <td>--concurrency &lt;n&gt;</td>
     <td>Max number of concurrent HTTP requests to registry. (default: 8)</td>
   </tr>
   <tr>
-    <td>--configFileName <s></td>
+    <td>--configFileName &lt;s&gt;</td>
     <td>Config file name. (default: .ncurc.{json,yml,js,cjs})</td>
   </tr>
   <tr>
-    <td>--configFilePath <path></td>
+    <td>--configFilePath &lt;path&gt;</td>
     <td>Directory of .ncurc config file. (default: directory of <code>packageFile</code>)</td>
   </tr>
   <tr>
-    <td>--cwd <path></td>
+    <td>--cwd &lt;path&gt;</td>
     <td>Working directory in which npm will be executed.</td>
   </tr>
   <tr>
@@ -199,7 +199,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Run recursively in current working directory. Alias of (<code>--packageFile '**/package.json'<code>).</td>
   </tr>
   <tr>
-    <td>--dep <value></td>
+    <td>--dep &lt;value&gt;</td>
     <td>Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited). (default: ["prod","dev","optional"])</td>
   </tr>
   <tr>
@@ -207,15 +207,15 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Include deprecated packages.</td>
   </tr>
   <tr>
-    <td>-d, <a href="#doctor">--doctor</a></td>
+    <td><a href="#doctor">-d, --doctor</a></td>
     <td>Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires <code>-u</code> to execute.</td>
   </tr>
   <tr>
-    <td>--doctorInstall <command></td>
+    <td>--doctorInstall &lt;command&gt;</td>
     <td>Specifies the install script to use in doctor mode. (default: <code>npm install/yarn</code>)</td>
   </tr>
   <tr>
-    <td>--doctorTest <command></td>
+    <td>--doctorTest &lt;command&gt;</td>
     <td>Specifies the test script to use in doctor mode. (default: <code>npm test</code>)</td>
   </tr>
   <tr>
@@ -223,23 +223,23 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Include only packages that satisfy engines.node as specified in the package file.</td>
   </tr>
   <tr>
-    <td>-e, --errorLevel <n></td>
+    <td>-e, --errorLevel &lt;n&gt;</td>
     <td>Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). (default: 1)</td>
   </tr>
   <tr>
-    <td>-f, <a href="#filter">--filter</a> <p></td>
+    <td><a href="#filter">-f, --filter &lt;p&gt;</a></td>
     <td>Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.</td>
   </tr>
   <tr>
-    <td><a href="#filterresults">filterResults</a> <fn></td>
+    <td><a href="#filterresults">filterResults &lt;fn&gt;</a></td>
     <td>Filters out upgrades based on a user provided function.</td>
   </tr>
   <tr>
-    <td><a href="#filterversion">--filterVersion</a> <p></td>
+    <td><a href="#filterversion">--filterVersion &lt;p&gt;</a></td>
     <td>Filter on package version using comma-or-space-delimited list, /regex/, or predicate function.</td>
   </tr>
   <tr>
-    <td><a href="#format">--format</a> <value></td>
+    <td><a href="#format">--format &lt;value&gt;</a></td>
     <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines. (default: [])</td>
   </tr>
   <tr>
@@ -247,11 +247,11 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Check global packages instead of in the current project.</td>
   </tr>
   <tr>
-    <td><a href="#groupfunction">groupFunction</a> <fn></td>
+    <td><a href="#groupfunction">groupFunction &lt;fn&gt;</a></td>
     <td>Customize how packages are divided into groups when using <code>--format group</code>.</td>
   </tr>
   <tr>
-    <td><a href="#install">--install</a> <value></td>
+    <td><a href="#install">--install &lt;value&gt;</a></td>
     <td>Control the auto-install behavior: always, never, prompt. (default: "prompt")</td>
   </tr>
   <tr>
@@ -271,7 +271,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Output upgraded dependencies in json.</td>
   </tr>
   <tr>
-    <td>-l, --loglevel <n></td>
+    <td>-l, --loglevel &lt;n&gt;</td>
     <td>Amount to log: silent, error, minimal, warn, info, verbose, silly. (default: "warn")</td>
   </tr>
   <tr>
@@ -283,15 +283,15 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Do not upgrade newer versions that are already satisfied by the version range according to semver.</td>
   </tr>
   <tr>
-    <td>--packageData <value></td>
+    <td>--packageData &lt;value&gt;</td>
     <td>Package file data (you can also use stdin).</td>
   </tr>
   <tr>
-    <td>--packageFile <path|glob></td>
+    <td>--packageFile &lt;path|glob&gt;</td>
     <td>Package file(s) location. (default: ./package.json)</td>
   </tr>
   <tr>
-    <td>-p, <a href="#packagemanager">--packageManager</a> <s></td>
+    <td><a href="#packagemanager">-p, --packageManager &lt;s&gt;</a></td>
     <td>npm, yarn, pnpm, deno, bun, staticRegistry (default: npm).</td>
   </tr>
   <tr>
@@ -299,27 +299,27 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Check peer dependencies of installed packages and filter updates to compatible versions.</td>
   </tr>
   <tr>
-    <td>--pre <n></td>
+    <td>--pre &lt;n&gt;</td>
     <td>Include prerelease versions, e.g. -alpha.0, -beta.5, -rc.2. Automatically set to 1 when <code>--target</code> is newest or greatest, or when the current version is a prerelease. (default: 0)</td>
   </tr>
   <tr>
-    <td>--prefix <path></td>
+    <td>--prefix &lt;path&gt;</td>
     <td>Current working directory of npm.</td>
   </tr>
   <tr>
-    <td>-r, --registry <uri></td>
+    <td>-r, --registry &lt;uri&gt;</td>
     <td>Specify the registry to use when looking up package versions.</td>
   </tr>
   <tr>
-    <td><a href="#registrytype">--registryType</a> <type></td>
+    <td><a href="#registrytype">--registryType &lt;type&gt;</a></td>
     <td>Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: npm)</td>
   </tr>
   <tr>
-    <td>-x, <a href="#reject">--reject</a> <p></td>
+    <td><a href="#reject">-x, --reject &lt;p&gt;</a></td>
     <td>Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.</td>
   </tr>
   <tr>
-    <td><a href="#rejectversion">--rejectVersion</a> <p></td>
+    <td><a href="#rejectversion">--rejectVersion &lt;p&gt;</a></td>
     <td>Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function.</td>
   </tr>
   <tr>
@@ -327,7 +327,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Remove version ranges from the final package version.</td>
   </tr>
   <tr>
-    <td>--retry <n></td>
+    <td>--retry &lt;n&gt;</td>
     <td>Number of times to retry failed requests for package info. (default: 3)</td>
   </tr>
   <tr>
@@ -343,11 +343,11 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Read package.json from stdin.</td>
   </tr>
   <tr>
-    <td>-t, <a href="#target">--target</a> <value></td>
+    <td><a href="#target">-t, --target &lt;value&gt;</a></td>
     <td>Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, @[tag], or [function]. (default: latest)</td>
   </tr>
   <tr>
-    <td>--timeout <ms></td>
+    <td>--timeout &lt;ms&gt;</td>
     <td>Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch)</td>
   </tr>
   <tr>
@@ -359,7 +359,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Log additional information for debugging. Alias for <code>--loglevel</code> verbose.</td>
   </tr>
   <tr>
-    <td>-w, --workspace <s></td>
+    <td>-w, --workspace &lt;s&gt;</td>
     <td>Run on one or more specified workspaces. Add <code>--root</code> to also upgrade the root project. (default: [])</td>
   </tr>
   <tr>
