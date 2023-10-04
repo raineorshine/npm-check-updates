@@ -416,7 +416,10 @@ const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
 
 /** Extended help for the --registryType option. */
 const extendedHelpRegistryType: ExtendedHelp = ({ markdown }) => {
-  const header = 'Specify whether --registry refers to a full npm registry or a simple JSON file.'
+  /** If markdown, surround inline code with backticks. */
+  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+
+  const header = `Specify whether ${codeInline('--registry')} refers to a full npm registry or a simple JSON file.`
   const tableString = table({
     colAligns: ['right', 'left'],
     markdown,
@@ -586,7 +589,8 @@ const cliOptions: CLIOption[] = [
   {
     long: 'doctorInstall',
     arg: 'command',
-    description: 'Specifies the install script to use in doctor mode. (default: `npm install/yarn`)',
+    description:
+      'Specifies the install script to use in doctor mode. (default: `npm install` or the equivalent for your package manager)',
     type: 'string',
   },
   {

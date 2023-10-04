@@ -212,7 +212,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--doctorInstall &lt;command&gt;</td>
-    <td>Specifies the install script to use in doctor mode. (default: <code>npm install/yarn</code>)</td>
+    <td>Specifies the install script to use in doctor mode. (default: <code>npm install</code> or the equivalent for your package manager)</td>
   </tr>
   <tr>
     <td>--doctorTest &lt;command&gt;</td>
@@ -640,7 +640,7 @@ Usage:
 
     ncu --registryType [type]
 
-Specify whether --registry refers to a full npm registry or a simple JSON file.
+Specify whether `--registry` refers to a full npm registry or a simple JSON file.
 
 <table>
   <tr><td>npm</td><td>Default npm registry</td></tr>

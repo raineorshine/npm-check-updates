@@ -58,7 +58,7 @@ export interface RunOptions {
   /** Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires `-u` to execute. Run "ncu --help --doctor" for details. */
   doctor?: boolean
 
-  /** Specifies the install script to use in doctor mode. (default: `npm install/yarn`) */
+  /** Specifies the install script to use in doctor mode. (default: `npm install` or the equivalent for your package manager) */
   doctorInstall?: string
 
   /** Specifies the test script to use in doctor mode. (default: `npm test`) */

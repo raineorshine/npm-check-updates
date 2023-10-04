@@ -226,7 +226,7 @@
       "type": "boolean"
     },
     "doctorInstall": {
-      "description": "Specifies the install script to use in doctor mode. (default: `npm install/yarn`)",
+      "description": "Specifies the install script to use in doctor mode. (default: `npm install` or the equivalent for your package manager)",
       "type": "string"
     },
     "doctorTest": {
