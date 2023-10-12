@@ -79,9 +79,9 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
 
 export const greatest = npm.greatest
 export const latest = npm.latest
-export const newest = npm.newest
-export const semver = npm.semver
 export const minor = npm.minor
+export const newest = npm.newest
 export const patch = npm.patch
+export const semver = npm.semver
 
 export default spawnBun

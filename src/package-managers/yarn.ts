@@ -287,5 +287,6 @@ export const latest = withNpmConfigFromYarn(npmLatest)
 export const minor = withNpmConfigFromYarn(npmMinor)
 export const newest = withNpmConfigFromYarn(npmNewest)
 export const patch = withNpmConfigFromYarn(npmPatch)
+export const semver = withNpmConfigFromYarn(npmPatch)
 
 export default spawnYarn

@@ -85,6 +85,7 @@ export const latest = withNpmWorkspaceConfig(npmLatest)
 export const minor = withNpmWorkspaceConfig(npmMinor)
 export const newest = withNpmWorkspaceConfig(npmNewest)
 export const patch = withNpmWorkspaceConfig(npmPatch)
+export const semver = withNpmWorkspaceConfig(npmPatch)
 
 /**
  * Spawn pnpm.
