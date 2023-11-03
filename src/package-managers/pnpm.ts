@@ -59,30 +59,6 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
   return config
 })
 
-/**
- * Spawn pnpm.
- *
- * @param args
- * @param [npmOptions={}]
- * @param [spawnOptions={}]
- * @returns
- */
-const spawnPnpm = async (
-  args: string | string[],
-  npmOptions: NpmOptions = {},
-  spawnOptions?: SpawnOptions,
-): Promise<string> => {
-  const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
-
-  const fullArgs = [
-    ...(npmOptions.location === 'global' ? 'global' : []),
-    ...(Array.isArray(args) ? args : [args]),
-    ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
-  ]
-
-  return spawn(cmd, fullArgs, spawnOptions)
-}
-
 /** Fetches the list of all installed packages. */
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
   // use npm for local ls for completeness
@@ -136,5 +112,3 @@ export default async function spawnPnpm(
 }
 
 export { defaultPrefix, getPeerDependencies, packageAuthorChanged } from './npm'
-
-export default spawnPnpm
