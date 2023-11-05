@@ -105,7 +105,9 @@ const install = async (
     pkgs.length > 1 && !options.workspace && !options.workspaces ? ' in each project directory' : ''
   } to install new versions`
 
-  const isInteractive = options.interactive && !process.env.NCU_DOCTOR
+  // Disable interactive mode when running doctor EXCEPT when running tests.
+  // Otherwise running doctor mode on npm-check-updates itself will cause interactive.test.ts to fail.
+  const isInteractive = options.interactive && (process.env.NCU_TESTS || !process.env.NCU_DOCTOR)
 
   // prompt the user if they want ncu to run "npm install"
   let response
