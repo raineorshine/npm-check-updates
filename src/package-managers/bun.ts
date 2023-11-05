@@ -5,12 +5,14 @@ import keyValueBy from '../lib/keyValueBy'
 import programError from '../lib/programError'
 import { Index } from '../types/IndexType'
 import { NpmOptions } from '../types/NpmOptions'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import * as npm from './npm'
 
 /** Spawn bun. */
 async function spawnBun(
   args: string | string[],
   npmOptions: NpmOptions = {},
+  spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: Index<any> = {},
 ): Promise<string> {
   // Bun not yet supported on Windows.
@@ -27,7 +29,7 @@ async function spawnBun(
     ...(npmOptions.global ? ['--global'] : []),
   ]
 
-  return spawn('bun', fullArgs, spawnOptions)
+  return spawn('bun', fullArgs, spawnPleaseOptions, spawnOptions)
 }
 
 /** Returns the global directory of bun. */
@@ -50,6 +52,9 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
       ...(options.prefix ? { prefix: options.prefix } : null),
     },
     {
+      rejectOnError: false,
+    },
+    {
       env: {
         ...process.env,
         // Disable color to ensure the output is parsed correctly.
@@ -58,7 +63,6 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
         NO_COLOR: '1',
       },
       ...(options.cwd ? { cwd: options.cwd } : null),
-      rejectOnError: false,
     },
   )
 

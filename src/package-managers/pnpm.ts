@@ -12,6 +12,7 @@ import { NpmConfig } from '../types/NpmConfig'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { SpawnOptions } from '../types/SpawnOptions'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import { Version } from '../types/Version'
 import {
   normalizeNpmConfig,
@@ -71,6 +72,7 @@ const spawnPnpm = async (
   args: string | string[],
   npmOptions: NpmOptions = {},
   spawnOptions?: SpawnOptions,
+  spawnPleaseOptions?: SpawnPleaseOptions,
 ): Promise<string> => {
   const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
 
@@ -80,7 +82,9 @@ const spawnPnpm = async (
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
   ]
 
-  return spawn(cmd, fullArgs, spawnOptions)
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+
+  return stdout
 }
 
 /** Fetches the list of all installed packages. */

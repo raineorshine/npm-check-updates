@@ -84,7 +84,7 @@
     "semver": "^7.5.4",
     "semver-utils": "^1.1.4",
     "source-map-support": "^0.5.21",
-    "spawn-please": "^2.0.2",
+    "spawn-please": "^3.0.0",
     "strip-ansi": "^7.1.0",
     "strip-json-comments": "^5.0.1",
     "untildify": "^4.0.0",

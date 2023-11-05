@@ -26,6 +26,7 @@ import { NpmConfig } from '../types/NpmConfig'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { Packument } from '../types/Packument'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import { Version } from '../types/Version'
 import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
@@ -500,6 +501,7 @@ export async function viewOne(
 async function spawnNpm(
   args: string | string[],
   npmOptions: NpmOptions = {},
+  spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: Index<any> = {},
 ): Promise<any> {
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
@@ -511,7 +513,7 @@ async function spawnNpm(
     ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
     '--json',
   ]
-  return spawn(cmd, fullArgs, spawnOptions)
+  return spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
 }
 
 /**

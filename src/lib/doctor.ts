@@ -11,6 +11,7 @@ import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { PackageInfo } from '../types/PackageInfo'
 import { SpawnOptions } from '../types/SpawnOptions'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import { VersionSpec } from '../types/VersionSpec'
 import chalk, { chalkInit } from './chalk'
 import loadPackageInfoFromFile from './loadPackageInfoFromFile'
@@ -23,7 +24,7 @@ const npm = (
   args: string[],
   options: Options,
   print?: boolean,
-  { spawnOptions }: { spawnOptions?: SpawnOptions } = {},
+  { spawnOptions, spawnPleaseOptions }: { spawnOptions?: SpawnOptions; spawnPleaseOptions?: SpawnPleaseOptions } = {},
 ): Promise<string> => {
   if (print) {
     console.log(chalk.blue([options.packageManager, ...args].join(' ')))
@@ -54,7 +55,7 @@ const npm = (
       : options.packageManager === 'bun'
       ? spawnBun
       : spawnNpm
-  )(args, npmOptions, spawnOptionsMerged as any)
+  )(args, npmOptions, spawnPleaseOptions, spawnOptionsMerged)
 }
 
 /** Load and validate package file and tests. */
@@ -121,7 +122,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
 
   /** Run the tests using "npm run test" or a custom script given by --doctorTest. */
   const runTests = async (): Promise<void> => {
-    const spawnOptions = {
+    const spawnPleaseOptions = {
       stderr: (data: string): void => {
         console.error(chalk.red(data.toString()))
       },
@@ -141,7 +142,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
       }
       const [testCommand, ...testArgs] = groups
       console.log(chalk.blue(options.doctorTest))
-      await spawn(testCommand, testArgs, spawnOptions)
+      await spawn(testCommand, testArgs, spawnPleaseOptions)
     } else {
       await npm(
         ['run', 'test'],
@@ -149,7 +150,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
           packageManager: options.packageManager,
         },
         true,
-        { spawnOptions },
+        { spawnPleaseOptions },
       )
     }
   }

@@ -16,6 +16,7 @@ import { NpmConfig } from '../types/NpmConfig'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { SpawnOptions } from '../types/SpawnOptions'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import { VersionSpec } from '../types/VersionSpec'
 import {
   distTag as npmDistTag,
@@ -197,7 +198,8 @@ function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep
 async function spawnYarn(
   args: string | string[],
   yarnOptions: NpmOptions = {},
-  spawnOptions?: SpawnOptions,
+  spawnPleaseOptions: SpawnPleaseOptions = {},
+  spawnOptions: SpawnOptions = {},
 ): Promise<string> {
   const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
 
@@ -210,7 +212,9 @@ async function spawnYarn(
     '--no-progress',
   ]
 
-  return spawn(cmd, fullArgs, spawnOptions)
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+
+  return stdout
 }
 
 /**
@@ -260,10 +264,15 @@ export async function defaultPrefix(options: Options): Promise<string> {
  * @returns
  */
 export const list = async (options: Options = {}, spawnOptions?: SpawnOptions): Promise<Index<string | undefined>> => {
-  const jsonLines: string = await spawnYarn('list', options as Index<string>, {
-    ...(options.cwd ? { cwd: options.cwd } : {}),
-    ...spawnOptions,
-  })
+  const jsonLines: string = await spawnYarn(
+    'list',
+    options as Index<string>,
+    {},
+    {
+      ...(options.cwd ? { cwd: options.cwd } : {}),
+      ...spawnOptions,
+    },
+  )
   const json: { dependencies: Index<ParsedDep> } = await parseJsonLines(jsonLines)
   const keyValues: Index<string | undefined> = keyValueBy<ParsedDep, string | undefined>(
     json.dependencies,
