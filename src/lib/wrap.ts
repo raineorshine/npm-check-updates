@@ -1,6 +1,5 @@
 /** Wraps a string by inserting newlines every n characters. Wraps on word break. Default: 92 chars. */
 const wrap = (s: string, maxLineLength = 92) => {
-  /* eslint-disable fp/no-mutating-methods */
   const linesIn = s.split('\n')
   const linesOut: string[] = []
   linesIn.forEach(lineIn => {
@@ -10,7 +9,6 @@ const wrap = (s: string, maxLineLength = 92) => {
       return
     }
 
-    // eslint-disable-next-line fp/no-loops
     while (i < lineIn.length) {
       const lineFull = lineIn.slice(i, i + maxLineLength + 1)
 

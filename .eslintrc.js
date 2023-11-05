@@ -34,7 +34,7 @@ module.exports = {
       },
     },
   ],
-  plugins: ['fp', 'jsdoc'],
+  plugins: ['jsdoc'],
   rules: {
     // jsdoc
     'jsdoc/require-jsdoc': [

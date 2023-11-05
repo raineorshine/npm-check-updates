@@ -136,7 +136,6 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
       const regexp = /"(.+?)"|'(.+?)'|[^ ]+/g
       const matches = options.doctorTest.matchAll(regexp)
       let groups: string[] = []
-      // eslint-disable-next-line fp/no-loops
       for (const match of matches) {
         groups = [...groups, match[2] || match[1] || match[0]]
       }
@@ -257,7 +256,6 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
 
     // iterate upgrades
     let name: string, version: VersionSpec
-    // eslint-disable-next-line fp/no-loops
     for ([name, version] of Object.entries(upgrades)) {
       try {
         // install single dependency

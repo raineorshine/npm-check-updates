@@ -587,7 +587,6 @@ export const greatest: GetVersion = async (
   return {
     version:
       last(
-        // eslint-disable-next-line fp/no-mutating-methods
         filter(versions, filterPredicate(options))
           .map(o => o.version)
           .sort(versionUtil.compareVersions),

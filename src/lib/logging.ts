@@ -86,7 +86,6 @@ export function printSimpleJoinedString(object: any, join: string) {
 
 /** Prints an object sorted by key. */
 export function printSorted<T extends { [key: string]: any }>(options: Options, obj: T, loglevel: LogLevel) {
-  // eslint-disable-next-line fp/no-mutating-methods
   const sortedKeys = Object.keys(obj).sort() as (keyof T)[]
   const objSorted = transform(
     sortedKeys,
@@ -121,7 +120,6 @@ function renderDependencyTable(rows: string[][]) {
     },
   })
 
-  // eslint-disable-next-line fp/no-mutating-methods
   table.push(...rows)
 
   // when border is removed, whitespace remains
@@ -170,7 +168,6 @@ export async function toDependencyTable({
 }) {
   const table = renderDependencyTable(
     await Promise.all(
-      // eslint-disable-next-line fp/no-mutating-methods
       Object.keys(toDeps)
         .sort()
         .map(async dep => {
@@ -223,7 +220,6 @@ export async function printUpgradesTable(
   if (options.format?.includes('group')) {
     const groups = getDependencyGroups(upgraded, current, options)
 
-    // eslint-disable-next-line fp/no-loops -- We must await in each iteration of the loop
     for (const { heading, packages } of groups) {
       print(options, '\n' + heading)
       print(
@@ -282,7 +278,6 @@ function printErrors(options: Options, errors?: Index<string>) {
       },
     })
 
-    // eslint-disable-next-line fp/no-mutating-methods
     errorTable.push(...Object.entries(errors).map(([dep, error]) => [dep, chalk.yellow(error)]))
 
     print(options, '\n' + errorTable.toString())

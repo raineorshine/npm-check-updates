@@ -19,7 +19,6 @@ export default async function findLockfile(
     // 3. current directory
     let currentPath = options.cwd ? options.cwd : options.packageFile ? path.dirname(options.packageFile) : '.'
 
-    // eslint-disable-next-line fp/no-loops
     while (true) {
       const files = await readdir(currentPath)
 

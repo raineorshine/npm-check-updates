@@ -86,7 +86,6 @@ const chooseUpgrades = async (
       const choices = groups.flatMap(({ heading, groupName, packages }) => {
         return [
           { title: '\n' + heading, heading: true },
-          // eslint-disable-next-line fp/no-mutating-methods
           ...Object.keys(packages)
             .sort()
             .map(dep => ({
@@ -114,7 +113,6 @@ const chooseUpgrades = async (
 
       chosenDeps = response.value
     } else {
-      // eslint-disable-next-line fp/no-mutating-methods
       const choices = Object.keys(newDependencies)
         .sort()
         .map(dep => ({
