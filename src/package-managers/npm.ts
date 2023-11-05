@@ -267,7 +267,7 @@ export async function packageAuthorChanged(
 }
 
 /** Returns true if an object is a Packument. */
-const isPackument = (o: any): o is Partial<Packument> => o && (o.name || o.engines || o.version || o.versions)
+const isPackument = (o: any): o is Partial<Packument> => !!(o && (o.name || o.engines || o.version || o.versions))
 
 /** Creates a function with the same signature as viewMany that always returns the given versions. */
 export const mockViewMany =
@@ -283,11 +283,10 @@ export const mockViewMany =
 
     const version = isPackument(partialPackument) ? partialPackument.version : partialPackument
 
-    // if there is no version, hard exit
-    // otherwise getPackageProtected will swallow the error
     if (!version) {
-      console.error(`No mock version supplied for ${name}`)
-      process.exit(1)
+      throw new Error(
+        `viewMany is mocked, but no mock version was supplied for ${name}. Make sure that all dependencies are mocked. `,
+      )
     }
 
     const time = (isPackument(partialPackument) && partialPackument.time?.[version]) || new Date().toISOString()
