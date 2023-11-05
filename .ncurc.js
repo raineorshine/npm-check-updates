@@ -19,9 +19,6 @@ module.exports = {
     'make-fetch-happen',
     // major changes required to upgrade to v3
     'spawn-please',
-    // 5.2.0 breaks moduleResolution
-    // Need to upgrade module and moduleResolution together (high risk)
-    'typescript',
     // v0.60.0 breaks cli option description output
     // https://github.com/YousefED/typescript-json-schema/issues/568
     'typescript-json-schema',

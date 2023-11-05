@@ -49,7 +49,7 @@ export const normalizeNpmConfig = (
     cafile: (capath: string): undefined | { ca: string[] } => {
       // load-cafile, based on github.com/npm/cli/blob/40c1b0f/lib/config/load-cafile.js
       if (!capath) return
-      // synchronous since it is loaded once on startup, and to avoid complexity in libnpmconfig.read
+      // synchronous since it is loaded once on startup, and to avoid complexity in libnpmconfig
       // https://github.com/raineorshine/npm-check-updates/issues/636?notification_referrer_id=MDE4Ok5vdGlmaWNhdGlvblRocmVhZDc0Njk2NjAzMjo3NTAyNzY%3D
       const cadata = fs.readFileSync(path.resolve(configPath || '', untildify(capath)), 'utf8')
       const delim = '-----END CERTIFICATE-----'
@@ -193,7 +193,7 @@ const findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
   } else {
     // libnpmconfig incorrectly (?) ignores NPM_CONFIG_USERCONFIG because it is always overridden by the default builtin.userconfig
     // set userconfig manually so that it is prioritized
-    const opts = libnpmconfig.read(null, {
+    const opts = libnpmconfig(null, {
       userconfig: process.env.npm_config_userconfig || process.env.NPM_CONFIG_USERCONFIG,
     })
     config = {
