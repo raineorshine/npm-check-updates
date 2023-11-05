@@ -20,6 +20,8 @@ module.exports = {
     'makdownlint-cli',
     // manually keep in alignment with pacote's version of make-fetch-happen
     'make-fetch-happen',
+    // major changes required to upgrade to v3
+    'spawn-please',
     // 5.2.0 breaks moduleResolution
     // Need to upgrade module and moduleResolution together (high risk)
     'typescript',
