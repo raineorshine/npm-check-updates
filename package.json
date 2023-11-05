@@ -116,7 +116,7 @@
     "@types/semver-utils": "^1.1.2",
     "@types/sinon": "^17.0.0",
     "@types/update-notifier": "^6.0.6",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/eslint-plugin": "^6.9.1",
     "@typescript-eslint/parser": "^6.9.1",
     "c8": "^8.0.1",
     "chai": "^4.3.10",

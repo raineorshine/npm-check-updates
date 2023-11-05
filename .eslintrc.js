@@ -28,7 +28,7 @@ module.exports = {
         '@typescript-eslint/array-type': [
           'error',
           {
-            'array-type': 'array',
+            default: 'array',
           },
         ],
       },
@@ -36,7 +36,6 @@ module.exports = {
   ],
   plugins: ['jsdoc'],
   rules: {
-    // jsdoc
     'jsdoc/require-jsdoc': [
       'error',
       {
