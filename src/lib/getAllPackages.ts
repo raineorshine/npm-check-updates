@@ -97,19 +97,21 @@ async function getWorkspacePackageInfos(
 
   // add workspace packages
   // --workspace
-  const selectedWorkspacePackageInfos: PackageInfo[] = allWorkspacePackageInfos.filter((packageInfo: PackageInfo) =>
-    /* ignore coverage on optional-chaining */
-    /* c8 ignore next */
-    options.workspace?.some((workspace: string) =>
+  const selectedWorkspacePackageInfos: PackageInfo[] = allWorkspacePackageInfos.filter(
+    (packageInfo: PackageInfo) =>
       /* ignore coverage on optional-chaining */
       /* c8 ignore next */
-      workspaces?.some(
-        (workspacePattern: string) =>
-          packageInfo.name === workspace ||
-          packageInfo.filepath ===
-            path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename).replace(/\\/g, '/'),
+      options.workspace?.some(
+        (workspace: string) =>
+          /* ignore coverage on optional-chaining */
+          /* c8 ignore next */
+          workspaces?.some(
+            (workspacePattern: string) =>
+              packageInfo.name === workspace ||
+              packageInfo.filepath ===
+                path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename).replace(/\\/g, '/'),
+          ),
       ),
-    ),
   )
   return [selectedWorkspacePackageInfos, allWorkspacePackageNames]
 }

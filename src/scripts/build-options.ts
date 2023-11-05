@@ -18,8 +18,8 @@ const injectReadme = async () => {
     .map(option => {
       return `  <tr>
     <td>${option.help ? `<a href="#${option.long.toLowerCase()}">` : ''}${option.short ? `-${option.short}, ` : ''}${
-        option.cli !== false ? '--' : ''
-      }${option.long}${option.arg ? ` &lt;${option.arg}&gt;` : ''}${option.help ? '</a>' : ''}</td>
+      option.cli !== false ? '--' : ''
+    }${option.long}${option.arg ? ` &lt;${option.arg}&gt;` : ''}${option.help ? '</a>' : ''}</td>
     <td>${codeHtml(option.description)}${option.default ? ` (default: ${JSON.stringify(option.default)})` : ''}</td>
   </tr>`
     })
