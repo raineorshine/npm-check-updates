@@ -115,7 +115,6 @@ export function stringify(semver: SemVer, precision?: VersionPart) {
 export function getPrecision(version: string) {
   const [semver] = semverutils.parseRange(version)
   // expects VERSION_PARTS to be in correct order
-  // eslint-disable-next-line fp/no-mutating-methods
   return VERSION_PARTS.slice().reverse().find(propertyOf(semver))
 }
 
@@ -325,16 +324,14 @@ export function findGreatestByLevel(versions: string[], current: string, level: 
   }
 
   const cur = semver.minVersion(current)
-  const versionsSorted = [...versions] // eslint-disable-line fp/no-mutating-methods
-    .sort(compareVersions)
-    .filter(v => {
-      const parsed = semver.parse(v)
-      return (
-        parsed &&
-        (level === 'major' || parsed.major === cur?.major) &&
-        (level === 'major' || level === 'minor' || parsed.minor === cur?.minor)
-      )
-    })
+  const versionsSorted = [...versions].sort(compareVersions).filter(v => {
+    const parsed = semver.parse(v)
+    return (
+      parsed &&
+      (level === 'major' || parsed.major === cur?.major) &&
+      (level === 'major' || level === 'minor' || parsed.minor === cur?.minor)
+    )
+  })
 
   return last(versionsSorted) || null
 }

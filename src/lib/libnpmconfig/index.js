@@ -34,8 +34,6 @@ const ConfigOpts = figgyPudding({
   userconfig: { default: path.join(os.homedir(), '.npmrc') },
 })
 
-module.exports.read = getNpmConfig
-
 /** Gets the npm config. */
 function getNpmConfig(_opts, _builtin) {
   const builtin = ConfigOpts(_builtin)
@@ -111,3 +109,5 @@ function getGlobalPrefix() {
     return pref
   }
 }
+
+export default getNpmConfig

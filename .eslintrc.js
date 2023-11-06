@@ -28,15 +28,14 @@ module.exports = {
         '@typescript-eslint/array-type': [
           'error',
           {
-            'array-type': 'array',
+            default: 'array',
           },
         ],
       },
     },
   ],
-  plugins: ['fp', 'jsdoc'],
+  plugins: ['jsdoc'],
   rules: {
-    // jsdoc
     'jsdoc/require-jsdoc': [
       'error',
       {

@@ -288,7 +288,7 @@ describe('--dep', () => {
       })
       const packageData = JSON.stringify(
         {
-          packageManager: '9.0.0',
+          packageManager: 'npm@9.0.0',
           dependencies: {
             'ncu-test-tag': '0.1.0',
           },
@@ -312,7 +312,7 @@ describe('--dep', () => {
         const pkgNew = JSON.parse(pkgDataNew)
 
         pkgNew.should.deep.equal({
-          packageManager: '9.0.0',
+          packageManager: 'npm@9.0.0',
           dependencies: {
             'ncu-test-tag': '1.0.0',
           },

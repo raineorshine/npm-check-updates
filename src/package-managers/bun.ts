@@ -46,7 +46,7 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   const stdout = await spawnBun(
     ['pm', 'ls'],
     {
-      ...(options.global ? { location: 'global' } : null),
+      ...(options.global ? { global: true } : null),
       ...(options.prefix ? { prefix: options.prefix } : null),
     },
     {

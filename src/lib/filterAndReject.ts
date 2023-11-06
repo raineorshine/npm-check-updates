@@ -2,7 +2,7 @@ import { and, or } from 'fp-and-or'
 import identity from 'lodash/identity'
 import negate from 'lodash/negate'
 import { minimatch } from 'minimatch'
-import { SemVer, parseRange } from 'semver-utils'
+import { parseRange } from 'semver-utils'
 import { FilterPattern } from '../types/FilterPattern'
 import { Maybe } from '../types/Maybe'
 import { VersionSpec } from '../types/VersionSpec'
@@ -14,8 +14,8 @@ import { VersionSpec } from '../types/VersionSpec'
  * @param [filterPattern]
  * @returns
  */
-function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec: VersionSpec) => boolean {
-  let predicate: (name: string, versionSpec: VersionSpec) => boolean
+function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec?: string) => boolean {
+  let predicate: (name: string, versionSpec?: string) => boolean
 
   // no filter
   if (!filterPattern) {
@@ -48,7 +48,7 @@ function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec
   }
   // array
   else if (Array.isArray(filterPattern)) {
-    predicate = (dependencyName: string, versionSpec: string) =>
+    predicate = (dependencyName: string, versionSpec?: string) =>
       filterPattern.some(subpattern => composeFilter(subpattern)(dependencyName, versionSpec))
   }
   // raw RegExp
@@ -57,8 +57,8 @@ function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec
   }
   // function
   else if (typeof filterPattern === 'function') {
-    predicate = (dependencyName: string, versionSpec: string) =>
-      filterPattern(dependencyName, parseRange(versionSpec ?? dependencyName))
+    predicate = (dependencyName: string, versionSpec?: string) =>
+      filterPattern(dependencyName, parseRange((versionSpec as string) ?? dependencyName))
   } else {
     throw new TypeError('Invalid filter. Must be a RegExp, array, or comma-or-space-delimited list.')
   }
@@ -82,16 +82,16 @@ function filterAndReject(
 ) {
   return and(
     // filter dep
-    (dependencyName: VersionSpec, version: SemVer[]) =>
-      and(filter ? composeFilter(filter) : identity, reject ? negate(composeFilter(reject)) : identity)(
+    (dependencyName: VersionSpec, version: string) =>
+      and(filter ? composeFilter(filter) : true, reject ? negate(composeFilter(reject)) : true)(
         dependencyName,
         version,
       ),
     // filter version
-    (dependencyName: VersionSpec, version: SemVer[]) =>
+    (dependencyName: VersionSpec, version: string) =>
       and(
-        filterVersion ? composeFilter(filterVersion) : identity,
-        rejectVersion ? negate(composeFilter(rejectVersion)) : identity,
+        filterVersion ? composeFilter(filterVersion) : true,
+        rejectVersion ? negate(composeFilter(rejectVersion)) : true,
       )(version),
   )
 }

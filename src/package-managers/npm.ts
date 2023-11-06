@@ -49,7 +49,7 @@ export const normalizeNpmConfig = (
     cafile: (capath: string): undefined | { ca: string[] } => {
       // load-cafile, based on github.com/npm/cli/blob/40c1b0f/lib/config/load-cafile.js
       if (!capath) return
-      // synchronous since it is loaded once on startup, and to avoid complexity in libnpmconfig.read
+      // synchronous since it is loaded once on startup, and to avoid complexity in libnpmconfig
       // https://github.com/raineorshine/npm-check-updates/issues/636?notification_referrer_id=MDE4Ok5vdGlmaWNhdGlvblRocmVhZDc0Njk2NjAzMjo3NTAyNzY%3D
       const cadata = fs.readFileSync(path.resolve(configPath || '', untildify(capath)), 'utf8')
       const delim = '-----END CERTIFICATE-----'
@@ -193,7 +193,7 @@ const findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
   } else {
     // libnpmconfig incorrectly (?) ignores NPM_CONFIG_USERCONFIG because it is always overridden by the default builtin.userconfig
     // set userconfig manually so that it is prioritized
-    const opts = libnpmconfig.read(null, {
+    const opts = libnpmconfig(null, {
       userconfig: process.env.npm_config_userconfig || process.env.NPM_CONFIG_USERCONFIG,
     })
     config = {
@@ -267,7 +267,7 @@ export async function packageAuthorChanged(
 }
 
 /** Returns true if an object is a Packument. */
-const isPackument = (o: any): o is Partial<Packument> => o && (o.name || o.engines || o.version || o.versions)
+const isPackument = (o: any): o is Partial<Packument> => !!(o && (o.name || o.engines || o.version || o.versions))
 
 /** Creates a function with the same signature as viewMany that always returns the given versions. */
 export const mockViewMany =
@@ -283,11 +283,10 @@ export const mockViewMany =
 
     const version = isPackument(partialPackument) ? partialPackument.version : partialPackument
 
-    // if there is no version, hard exit
-    // otherwise getPackageProtected will swallow the error
     if (!version) {
-      console.error(`No mock version supplied for ${name}`)
-      process.exit(1)
+      throw new Error(
+        `viewMany is mocked, but no mock version was supplied for ${name}. Make sure that all dependencies are mocked. `,
+      )
     }
 
     const time = (isPackument(partialPackument) && partialPackument.time?.[version]) || new Date().toISOString()
@@ -587,7 +586,6 @@ export const greatest: GetVersion = async (
   return {
     version:
       last(
-        // eslint-disable-next-line fp/no-mutating-methods
         filter(versions, filterPredicate(options))
           .map(o => o.version)
           .sort(versionUtil.compareVersions),

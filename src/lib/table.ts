@@ -24,7 +24,6 @@ const table = ({
   // otherwise use cli-table3
   else {
     const t = new Table({ ...(colAligns ? { colAligns } : null) })
-    // eslint-disable-next-line fp/no-mutating-methods
     t.push(...(markdown ? rows : wrapRows(rows)))
     return t.toString()
   }

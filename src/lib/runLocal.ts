@@ -40,15 +40,18 @@ const INTERACTIVE_HINT = `
  */
 export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersion: Index<Version>, options: Options) {
   const packageManager = getPackageManager(options, options.packageManager)
-  return await Object.keys(toVersion).reduce(async (accum, dep) => {
-    const from = fromVersion[dep] || null
-    const to = toVersion[dep] || null
-    const ownerChanged = await packageManager.packageAuthorChanged!(dep, from!, to!, options)
-    return {
-      ...(await accum),
-      [dep]: ownerChanged,
-    }
-  }, {} as Promise<Index<boolean>>)
+  return await Object.keys(toVersion).reduce(
+    async (accum, dep) => {
+      const from = fromVersion[dep] || null
+      const to = toVersion[dep] || null
+      const ownerChanged = await packageManager.packageAuthorChanged!(dep, from!, to!, options)
+      return {
+        ...(await accum),
+        [dep]: ownerChanged,
+      }
+    },
+    {} as Promise<Index<boolean>>,
+  )
 }
 
 /** Prompts the user to choose which upgrades to upgrade. */
@@ -86,7 +89,6 @@ const chooseUpgrades = async (
       const choices = groups.flatMap(({ heading, groupName, packages }) => {
         return [
           { title: '\n' + heading, heading: true },
-          // eslint-disable-next-line fp/no-mutating-methods
           ...Object.keys(packages)
             .sort()
             .map(dep => ({
@@ -114,7 +116,6 @@ const chooseUpgrades = async (
 
       chosenDeps = response.value
     } else {
-      // eslint-disable-next-line fp/no-mutating-methods
       const choices = Object.keys(newDependencies)
         .sort()
         .map(dep => ({
