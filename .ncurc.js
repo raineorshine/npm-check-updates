@@ -6,6 +6,7 @@ module.exports = {
     'find-up',
     'get-stdin',
     'globby',
+    /* pin to 4.0.0 to match make-fetch-happen/cacache. */
     'p-map',
     'remote-git-tags',
     'untildify',
