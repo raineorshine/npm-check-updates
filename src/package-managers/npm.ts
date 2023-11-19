@@ -449,7 +449,18 @@ async function viewMany(
 
   let result: any
   try {
-    result = (await pacote.packument(packageName, npmConfigMerged)) as any
+    // when just fetching the dist-tag, use pacote.manifest instead of pacote.packument for a much smaller payload
+    if (fieldsExtended.length === 1 && fieldsExtended[0] === 'dist-tags.') {
+      const [, tag] = fieldsExtended[0].split('dist-tags')
+      result = {
+        [`dist-tags.${tag}`]: {
+          name: packageName,
+          version: (await pacote.manifest(packageName, npmConfigMerged))?.version,
+        },
+      }
+    } else {
+      result = await pacote.packument(packageName, npmConfigMerged)
+    }
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
       return viewMany(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
