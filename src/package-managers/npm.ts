@@ -436,11 +436,12 @@ async function viewMany(
     return Promise.resolve({} as Index<Packument>)
   }
 
-  const fieldsExtended = options.format?.includes('time') ? [...fields, 'time'] : fields
+  const fullMetadata = !!options.format?.includes('time')
+  const fieldsExtended = fullMetadata ? [...fields, 'time'] : fields
 
   const npmConfigMerged = mergeNpmConfigs(
     {
-      npmConfigUser: { ...npmConfig, fullMetadata: fieldsExtended.includes('time') },
+      npmConfigUser: { ...npmConfig, fullMetadata },
       npmConfigLocal,
       npmConfigWorkspaceProject,
     },
@@ -450,8 +451,8 @@ async function viewMany(
   let result: any
   try {
     // when just fetching the dist-tag, use pacote.manifest instead of pacote.packument for a much smaller payload
-    if (fieldsExtended.length === 1 && fieldsExtended[0].startsWith('dist-tags.')) {
-      const [, tag] = fieldsExtended[0].split('dist-tags.')
+    if (!fullMetadata && fields.length === 1 && fields[0].startsWith('dist-tags.')) {
+      const [, tag] = fields[0].split('dist-tags.')
       const manifest = await pacote.manifest(packageName, npmConfigMerged)
       result = {
         [`dist-tags.${tag}`]: {
@@ -478,7 +479,7 @@ async function viewMany(
     if (field.startsWith('dist-tags.') && result.versions) {
       const packument: Packument = result.versions[get(result, field) as unknown as string]
       // since viewOne only keeps a single field, we need to add time onto the dist-tag field
-      value = options.format?.includes('time') ? { ...packument, time: result.time } : packument
+      value = fullMetadata ? { ...packument, time: result.time } : packument
     }
 
     return {
@@ -729,7 +730,7 @@ export const distTag: GetVersion = async (
     options,
     npmConfig,
     npmConfigProject,
-  )) as unknown as Packument // known type based on dist-tags.latest
+  )) as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
