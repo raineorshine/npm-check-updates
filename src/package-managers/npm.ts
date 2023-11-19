@@ -39,6 +39,10 @@ const isExplicitRange = (spec: VersionSpec) => {
   return range.some(parsed => EXPLICIT_RANGE_OPS.has(parsed.operator || ''))
 }
 
+/** Returns true if the version is sa valid, exact version. */
+const isExactVersion = (version: Version) =>
+  version && (!nodeSemver.validRange(version) || versionUtil.isWildCard(version))
+
 /** Normalizes the keys of an npm config for pacote. */
 export const normalizeNpmConfig = (
   npmConfig: NpmConfig,
@@ -414,15 +418,17 @@ async function viewMany(
     return mockViewMany(mockReturnedVersions)(packageName, fields, currentVersion, options)
   }
 
-  if (currentVersion && (!nodeSemver.validRange(currentVersion) || versionUtil.isWildCard(currentVersion))) {
+  if (isExactVersion(currentVersion)) {
     return Promise.resolve({} as Index<Packument>)
   }
 
+  // fields may already include time
   const fieldsExtended = options.format?.includes('time') ? [...fields, 'time'] : fields
+  const fullMetadata = fieldsExtended.includes('time')
 
   const npmConfigMerged = mergeNpmConfigs(
     {
-      npmConfigUser: { ...npmConfig, fullMetadata: fieldsExtended.includes('time') },
+      npmConfigUser: { ...npmConfig, fullMetadata },
       npmConfigLocal,
       npmConfigWorkspaceProject,
     },
@@ -431,7 +437,7 @@ async function viewMany(
 
   let result: any
   try {
-    result = (await pacote.packument(packageName, npmConfigMerged)) as any
+    result = await pacote.packument(packageName, npmConfigMerged)
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
       return viewMany(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
@@ -448,7 +454,7 @@ async function viewMany(
     if (field.startsWith('dist-tags.') && result.versions) {
       const packument: Packument = result.versions[get(result, field) as unknown as string]
       // since viewOne only keeps a single field, we need to add time onto the dist-tag field
-      value = options.format?.includes('time') ? { ...packument, time: result.time } : packument
+      value = fullMetadata ? { ...packument, time: result.time } : packument
     }
 
     return {
@@ -459,8 +465,31 @@ async function viewMany(
   return resultNormalized
 }
 
-/** Memoize viewMany for --deep performance. */
-export const viewManyMemoized = memoize(viewMany)
+/** Memoize viewMany for --deep and --workspaces performance. */
+export const viewManyMemoized = memoize(viewMany, {
+  // serializer args are incorrectly typed as any[] instead of being generic, so we need to cast it
+  serializer: (([
+    packageName,
+    fields,
+    currentVersion,
+    options,
+    retried,
+    npmConfigLocal,
+    npmConfigWorkspaceProject,
+  ]: Parameters<typeof viewMany>) =>
+    JSON.stringify([
+      packageName,
+      fields,
+      // currentVersion does not change the behavior of viewMany unless it is an invalid/inexact version which causes it to short circuit
+      isExactVersion(currentVersion),
+      // packageFile varies by cwd in workspaces/deep mode, so we do not want to memoize on that
+      omit(options, 'packageFile'),
+      // make sure retries do not get memoized
+      retried,
+      npmConfigLocal,
+      npmConfigWorkspaceProject,
+    ])) as (args: any[]) => string,
+})
 
 /**
  * Returns the value of one of the properties retrieved by npm view.
@@ -667,7 +696,7 @@ export const distTag: GetVersion = async (
     options,
     npmConfig,
     npmConfigProject,
-  )) as unknown as Packument // known type based on dist-tags.latest
+  )) as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
