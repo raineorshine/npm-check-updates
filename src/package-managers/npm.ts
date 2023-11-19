@@ -436,8 +436,9 @@ async function viewMany(
     return Promise.resolve({} as Index<Packument>)
   }
 
-  const fullMetadata = !!options.format?.includes('time')
-  const fieldsExtended = fullMetadata ? [...fields, 'time'] : fields
+  // fields may already include time
+  const fieldsExtended = options.format?.includes('time') ? [...fields, 'time'] : fields
+  const fullMetadata = fieldsExtended.includes('time')
 
   const npmConfigMerged = mergeNpmConfigs(
     {
