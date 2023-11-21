@@ -8,12 +8,13 @@ import isEqual from 'lodash/isEqual'
 import last from 'lodash/last'
 import omit from 'lodash/omit'
 import sortBy from 'lodash/sortBy'
-import pacote from 'pacote'
+import npmRegistryFetch from 'npm-registry-fetch'
 import path from 'path'
 import nodeSemver from 'semver'
 import { parseRange } from 'semver-utils'
 import spawn from 'spawn-please'
 import untildify from 'untildify'
+import pkg from '../../package.json'
 import filterObject from '../lib/filterObject'
 import { keyValueBy } from '../lib/keyValueBy'
 import libnpmconfig from '../lib/libnpmconfig'
@@ -42,6 +43,44 @@ const isExplicitRange = (spec: VersionSpec) => {
 /** Returns true if the version is sa valid, exact version. */
 const isExactVersion = (version: Version) =>
   version && (!nodeSemver.validRange(version) || versionUtil.isWildCard(version))
+
+/** Fetches a packument or dist-tags from the npm registry. */
+const fetchPackageInfo = async (name: string, opts: npmRegistryFetch.FetchOptions): Promise<any> => {
+  const corgiDoc = 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
+  const fullDoc = 'application/json'
+
+  const registry = npmRegistryFetch.pickRegistry(name, opts)
+  const headers = {
+    'user-agent': opts.userAgent || `npm-check-updates/${pkg.version} node/${process.version}`,
+    'ncu-version': pkg.version,
+    'ncu-pkg-id': `registry:${name}`,
+    accept: opts.fullMetadata ? fullDoc : corgiDoc,
+    ...opts.headers,
+  }
+  const url = path.join(registry, name)
+
+  try {
+    const result = await npmRegistryFetch.json(url, {
+      ...opts,
+      headers,
+      spec: name,
+    })
+    return opts.fullMetadata
+      ? result
+      : {
+          name,
+          'dist-tags': result['dist-tags'],
+          versions: result.versions,
+        }
+  } catch (err: any) {
+    if (err.code !== 'E404' || opts.fullMetadata) {
+      throw err
+    }
+
+    // possible that corgis are not supported by this registry
+    return fetchPackageInfo(name, { opts, fullMetadata: true })
+  }
+}
 
 /** Normalizes the keys of an npm config for pacote. */
 export const normalizeNpmConfig = (
@@ -250,7 +289,7 @@ export async function packageAuthorChanged(
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<boolean> {
-  const result = await pacote.packument(packageName, {
+  const result = await fetchPackageInfo(packageName, {
     ...npmConfigLocal,
     ...npmConfig,
     fullMetadata: true,
@@ -440,7 +479,7 @@ async function viewMany(
 
   let result: any
   try {
-    result = await pacote.packument(packageName, npmConfigMerged)
+    result = await fetchPackageInfo(packageName, npmConfigMerged)
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
       return viewMany(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
