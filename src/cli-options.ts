@@ -797,8 +797,9 @@ const cliOptions: CLIOption[] = [
   },
   {
     long: 'root',
+    default: true,
     description:
-      'Runs updates on the root project in addition to specified workspaces. Only allowed with `--workspace` or `--workspaces`. (default: false)',
+      'Runs updates on the root project in addition to specified workspaces. Only allowed with `--workspace` or `--workspaces`. (default: true)',
     type: 'boolean',
   },
   {

@@ -137,7 +137,6 @@ describe('workspaces', () => {
         const tempDir = await setup(['packages/a'])
         try {
           const output = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir }).then(JSON.parse)
-          output.should.not.have.property('package.json')
           output.should.have.property('packages/a/package.json')
           output.should.not.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
@@ -150,7 +149,6 @@ describe('workspaces', () => {
         const tempDir = await setup()
         try {
           const output = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir }).then(JSON.parse)
-          output.should.not.have.property('package.json')
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
@@ -164,7 +162,6 @@ describe('workspaces', () => {
         const tempDir = await setup()
         try {
           const output = await spawn('node', [bin, '--jsonAll', '-ws'], { cwd: tempDir }).then(JSON.parse)
-          output.should.not.have.property('package.json')
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
@@ -189,7 +186,6 @@ describe('workspaces', () => {
 
         try {
           const output = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir }).then(JSON.parse)
-          output.should.not.have.property('package.json')
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
           output.should.not.have.property('other/package.json')
@@ -206,7 +202,6 @@ describe('workspaces', () => {
         const tempDir = await setup({ packages: ['packages/**'] })
         try {
           const output = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir }).then(JSON.parse)
-          output.should.not.have.property('package.json')
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
@@ -224,6 +219,7 @@ describe('workspaces', () => {
             JSON.parse,
           )
           upgrades.should.deep.equal({
+            'package.json': {},
             'packages/foo/package.json': {
               'ncu-test-v2': '2.0.0',
             },
@@ -243,6 +239,7 @@ describe('workspaces', () => {
             JSON.parse,
           )
           upgrades.should.deep.equal({
+            'package.json': {},
             'packages/foo/package.json': {
               'ncu-test-v2': '2.0.0',
             },
@@ -271,7 +268,6 @@ describe('workspaces', () => {
         const tempDir = await setup()
         try {
           const output = await spawn('node', [bin, '--jsonAll', '--workspace', 'a'], { cwd: tempDir }).then(JSON.parse)
-          output.should.not.have.property('package.json')
           output.should.have.property('packages/a/package.json')
           output.should.not.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
@@ -284,7 +280,6 @@ describe('workspaces', () => {
         const tempDir = await setup()
         try {
           const output = await spawn('node', [bin, '--jsonAll', '-w', 'a'], { cwd: tempDir }).then(JSON.parse)
-          output.should.not.have.property('package.json')
           output.should.have.property('packages/a/package.json')
           output.should.not.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
@@ -299,7 +294,6 @@ describe('workspaces', () => {
           const output = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--workspace', 'b'], {
             cwd: tempDir,
           }).then(JSON.parse)
-          output.should.not.have.property('package.json')
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
@@ -316,7 +310,6 @@ describe('workspaces', () => {
           const output = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--cwd', '../../'], {
             cwd: path.join(tempDir, 'packages', 'a'),
           }).then(JSON.parse)
-          output.should.not.have.property('package.json')
           output.should.have.property('packages/a/package.json')
           output.should.not.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
@@ -333,6 +326,7 @@ describe('workspaces', () => {
             cwd: tempDir,
           }).then(JSON.parse)
           upgrades.should.deep.equal({
+            'package.json': {},
             'packages/bar/package.json': {
               'ncu-test-v2': '2.0.0',
             },
@@ -343,10 +337,10 @@ describe('workspaces', () => {
       })
     })
 
-    describe('--workspaces --root', function () {
+    describe('--root/--no-root', function () {
       this.timeout(60000)
 
-      it('update root project and workspaces', async () => {
+      it('update root project by default', async () => {
         const tempDir = await setup()
         try {
           const output = await spawn('node', [bin, '--jsonAll', '--workspaces', '--root'], { cwd: tempDir }).then(
@@ -363,10 +357,26 @@ describe('workspaces', () => {
         }
       })
 
+      it('do not update the root project with --no-root', async () => {
+        const tempDir = await setup()
+        try {
+          const output = await spawn('node', [bin, '--jsonAll', '--workspaces', '--no-root'], { cwd: tempDir }).then(
+            JSON.parse,
+          )
+          output.should.not.have.property('package.json')
+          output.should.have.property('packages/a/package.json')
+          output.should.have.property('packages/b/package.json')
+          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+          output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+
       it('update root project and workspaces if errorLevel=2', async () => {
         const tempDir = await setup()
         try {
-          await spawn('node', [bin, '--upgrade', '--workspaces', '--root', '--errorLevel', '2'], {
+          await spawn('node', [bin, '--upgrade', '--workspaces', '--errorLevel', '2'], {
             cwd: tempDir,
           }).should.eventually.be.rejectedWith('Dependencies not up-to-date')
           const upgradedPkg = JSON.parse(await fs.readFile(path.join(tempDir, 'package.json'), 'utf-8'))
@@ -400,9 +410,7 @@ describe('workspaces', () => {
         )
 
         try {
-          const output = await spawn('node', [bin, '--jsonAll', '--workspaces', '--root'], { cwd: tempDir }).then(
-            JSON.parse,
-          )
+          const output = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir }).then(JSON.parse)
           output.should.have.property('package.json')
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
@@ -416,15 +424,13 @@ describe('workspaces', () => {
       })
     })
 
-    describe('--workspace and --root', function () {
+    describe('--workspace should include --root by default', function () {
       this.timeout(60000)
 
       it('update root project and single workspace', async () => {
         const tempDir = await setup()
         try {
-          const output = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--root'], { cwd: tempDir }).then(
-            JSON.parse,
-          )
+          const output = await spawn('node', [bin, '--jsonAll', '--workspace', 'a'], { cwd: tempDir }).then(JSON.parse)
           output.should.have.property('package.json')
           output.should.have.property('packages/a/package.json')
           output.should.not.have.property('packages/b/package.json')
@@ -438,7 +444,7 @@ describe('workspaces', () => {
       it('update more than one workspace', async () => {
         const tempDir = await setup()
         try {
-          const output = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--workspace', 'b', '--root'], {
+          const output = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--workspace', 'b'], {
             cwd: tempDir,
           }).then(JSON.parse)
           output.should.have.property('package.json')
@@ -458,7 +464,6 @@ describe('workspaces', () => {
         const tempDir = await setup(['packages/**'], { pnpm: true })
         try {
           const output = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir }).then(JSON.parse)
-          output.should.not.have.property('package.json')
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
