@@ -160,7 +160,7 @@ export interface RunOptions {
    */
   retry?: number
 
-  /** Runs updates on the root project in addition to specified workspaces. Only allowed with `--workspace` or `--workspaces`. (default: true)
+  /** Runs updates on the root project in addition to specified workspaces. Only allowed with `--workspace` or `--workspaces`.
    *
    * @default true
    */
