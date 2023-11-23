@@ -44,8 +44,12 @@ const isExplicitRange = (spec: VersionSpec) => {
 const isExactVersion = (version: Version) =>
   version && (!nodeSemver.validRange(version) || versionUtil.isWildCard(version))
 
-/** Fetches a packument or dist-tags from the npm registry. */
-const fetchPackageInfo = async (name: string, opts: npmRegistryFetch.FetchOptions): Promise<any> => {
+/** Fetches a packument or dist-tag from the npm registry. */
+const fetchPackageInfo = async (
+  name: string,
+  tag: string | null = 'latest',
+  opts: npmRegistryFetch.FetchOptions = {},
+): Promise<any> => {
   const corgiDoc = 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
   const fullDoc = 'application/json'
 
@@ -78,7 +82,7 @@ const fetchPackageInfo = async (name: string, opts: npmRegistryFetch.FetchOption
     }
 
     // possible that corgis are not supported by this registry
-    return fetchPackageInfo(name, { opts, fullMetadata: true })
+    return fetchPackageInfo(name, tag, { opts, fullMetadata: true })
   }
 }
 
@@ -289,7 +293,7 @@ export async function packageAuthorChanged(
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<boolean> {
-  const result = await fetchPackageInfo(packageName, {
+  const result = await fetchPackageInfo(packageName, null, {
     ...npmConfigLocal,
     ...npmConfig,
     fullMetadata: true,
@@ -479,7 +483,8 @@ async function viewMany(
 
   let result: any
   try {
-    result = await fetchPackageInfo(packageName, npmConfigMerged)
+    const tag = options.distTag || 'latest'
+    result = await fetchPackageInfo(packageName, fullMetadata ? null : tag, npmConfigMerged)
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
       return viewMany(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
