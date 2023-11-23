@@ -47,7 +47,7 @@ const isExactVersion = (version: Version) =>
 /** Fetches a packument or dist-tag from the npm registry. */
 const fetchPartialPackument = async (
   name: string,
-  tag: string | null = 'latest',
+  tag: string | null,
   opts: npmRegistryFetch.FetchOptions = {},
 ): Promise<any> => {
   const corgiDoc = 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
@@ -62,20 +62,36 @@ const fetchPartialPackument = async (
     ...opts.headers,
   }
   const url = path.join(registry, name)
+  const fetchOptions = {
+    ...opts,
+    headers,
+    spec: name,
+  }
 
   try {
-    const result = await npmRegistryFetch.json(url, {
-      ...opts,
-      headers,
-      spec: name,
-    })
-    return opts.fullMetadata
-      ? result
-      : {
-          name,
-          'dist-tags': result['dist-tags'],
-          versions: result.versions,
+    if (opts.fullMetadata) {
+      return npmRegistryFetch.json(url, fetchOptions)
+    } else {
+      tag = tag || 'latest'
+      // typescript does not type async iteratable stream correctly so we need to cast it
+      const stream = npmRegistryFetch.json.stream(url, '$*', fetchOptions) as unknown as IterableIterator<{
+        key: keyof Packument
+        value: Packument[keyof Packument]
+      }>
+
+      const partialPackument: Partial<Packument> = { name }
+
+      for await (const { key, value } of stream) {
+        if (key === 'dist-tags') {
+          partialPackument['dist-tags'] = value as Index<string>
+        } else if (key === 'versions') {
+          partialPackument.versions = value as Index<Packument>
+          break
         }
+      }
+
+      return partialPackument
+    }
   } catch (err: any) {
     if (err.code !== 'E404' || opts.fullMetadata) {
       throw err
