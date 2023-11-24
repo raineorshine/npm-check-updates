@@ -500,7 +500,6 @@ async function viewMany(
     // index into the result object to get the dist-tag
     if (field.startsWith('dist-tags.') && result.versions) {
       const packument: Packument = result.versions[get(result, field) as unknown as string]
-      // since viewOne only keeps a single field, we need to add time onto the dist-tag field
       value = fullMetadata ? { ...packument, time: result.time } : packument
     }
 
@@ -537,34 +536,6 @@ export const viewManyMemoized = memoize(viewMany, {
       npmConfigWorkspaceProject,
     ])) as (args: any[]) => string,
 })
-
-/**
- * Returns the value of one of the properties retrieved by npm view.
- *
- * @param packageName   Name of the package
- * @param field         Field such as "versions" or "dist-tags.latest" are parsed from the pacote result (https://www.npmjs.com/package/pacote#packument)
- * @param currentVersion
- * @returns            Promised result
- */
-export async function viewOne(
-  packageName: string,
-  field: string,
-  currentVersion: Version,
-  options: Options,
-  npmConfigLocal?: NpmConfig,
-  npmConfigProject?: NpmConfig,
-): Promise<string | boolean | { engines: { node: string } } | undefined | Index<string> | Index<Packument>> {
-  const result = await viewManyMemoized(
-    packageName,
-    [field],
-    currentVersion,
-    options,
-    0,
-    npmConfigLocal,
-    npmConfigProject,
-  )
-  return result[field]
-}
 
 /**
  * Spawns npm with --json. Handles different commands for Window and Linux/OSX.
@@ -652,14 +623,9 @@ export const greatest: GetVersion = async (
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
   // known type based on 'versions'
-  const versions = (await viewOne(
-    packageName,
-    'versions',
-    currentVersion,
-    options,
-    npmConfig,
-    npmConfigProject,
-  )) as Index<Packument>
+  const versions = (
+    await viewManyMemoized(packageName, ['versions'], currentVersion, options, 0, npmConfig, npmConfigProject)
+  ).versions as Index<Packument>
 
   return {
     version:
@@ -736,14 +702,17 @@ export const distTag: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ) => {
-  const packument = (await viewOne(
-    packageName,
-    `dist-tags.${options.distTag}`,
-    currentVersion,
-    options,
-    npmConfig,
-    npmConfigProject,
-  )) as Packument // known type based on dist-tags.latest
+  const packument = (
+    await viewManyMemoized(
+      packageName,
+      [`dist-tags.${options.distTag}`],
+      currentVersion,
+      options,
+      0,
+      npmConfig,
+      npmConfigProject,
+    )
+  )[`dist-tags.${options.distTag}`] as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
@@ -817,7 +786,7 @@ export const newest: GetVersion = async (
   // filter out times that do not satisfy the node engine
   // filter out prereleases if pre:false (same as allowPreOrIsNotPre)
   const timesSatisfyingNodeEngine = filterObject(
-    (result.time || {}) as unknown as Index<string>,
+    (result.time || {}) as Index<string>,
     version => versionsSatisfyingNodeEngine[version] && (options.pre !== false || !versionUtil.isPre(version)),
   )
 
@@ -842,14 +811,9 @@ export const minor: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const versions = (await viewOne(
-    packageName,
-    'versions',
-    currentVersion,
-    options,
-    npmConfig,
-    npmConfigProject,
-  )) as Index<Packument>
+  const versions = (
+    await viewManyMemoized(packageName, ['versions'], currentVersion, options, 0, npmConfig, npmConfigProject)
+  ).versions as Index<Packument>
   const version = versionUtil.findGreatestByLevel(
     filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
@@ -873,14 +837,9 @@ export const patch: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const versions = (await viewOne(
-    packageName,
-    'versions',
-    currentVersion,
-    options,
-    npmConfig,
-    npmConfigProject,
-  )) as Index<Packument>
+  const versions = (
+    await viewManyMemoized(packageName, ['versions'], currentVersion, options, 0, npmConfig, npmConfigProject)
+  ).versions as Index<Packument>
   const version = versionUtil.findGreatestByLevel(
     filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
@@ -904,14 +863,9 @@ export const semver: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const versions = (await viewOne(
-    packageName,
-    'versions',
-    currentVersion,
-    options,
-    npmConfig,
-    npmConfigProject,
-  )) as Index<Packument>
+  const versions = (
+    await viewManyMemoized(packageName, ['versions'], currentVersion, options, 0, npmConfig, npmConfigProject)
+  ).versions as Index<Packument>
   // ignore explicit version ranges
   if (isExplicitRange(currentVersion)) return { version: null }
 
