@@ -296,6 +296,9 @@ export const mockViewMany =
     const time = (isPackument(partialPackument) && partialPackument.time?.[version]) || new Date().toISOString()
     const packument: Packument = {
       name,
+      'dist-tags': {
+        latest: version,
+      },
       engines: { node: '' },
       time: {
         [version]: time,
