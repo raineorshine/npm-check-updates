@@ -49,7 +49,7 @@ const fetchPartialPackument = async (
   name: string,
   tag: string | null,
   opts: npmRegistryFetch.FetchOptions = {},
-): Promise<any> => {
+): Promise<Partial<Packument>> => {
   const corgiDoc = 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
   const fullDoc = 'application/json'
 
@@ -368,25 +368,14 @@ export const mockFetchUpgradedPackument =
       ...(isPackument(partialPackument) ? partialPackument : null),
     }
 
-    return Promise.resolve(
-      keyValueBy(fields, field => ({
-        [field]:
-          field === 'versions'
-            ? ({
-                [version]: packument,
-              } as Index<Packument>)
-            : field === 'time'
-            ? ({
-                [version]: time,
-              } as Index<string>)
-            : ({
-                ...packument,
-                versions: {
-                  [version]: packument,
-                },
-              } as Packument),
-      })),
-    )
+    return Promise.resolve({
+      ...packument,
+      versions: {
+        ...((isPackument(partialPackument) && partialPackument.versions) || {
+          [version]: omit(packument, 'versions'),
+        }),
+      },
+    })
   }
 
 /** Merges the workspace, global, user, local, project, and cwd npm configs (in that order). */
@@ -473,7 +462,7 @@ async function fetchUpgradedPackument(
   retried = 0,
   npmConfigLocal?: NpmConfig,
   npmConfigWorkspaceProject?: NpmConfig,
-): Promise<Index<Packument | Index<string> | Index<Packument>>> {
+): Promise<Partial<Packument> | undefined> {
   // See: /test/helpers/stubNpmView
   if (process.env.STUB_NPM_VIEW) {
     const mockReturnedVersions = JSON.parse(process.env.STUB_NPM_VIEW)
@@ -499,7 +488,7 @@ async function fetchUpgradedPackument(
     options,
   )
 
-  let result: any
+  let result: Partial<Packument> | undefined
   try {
     const tag = options.distTag || 'latest'
     result = await fetchPartialPackument(packageName, fullMetadata ? null : tag, npmConfigMerged)
@@ -511,22 +500,7 @@ async function fetchUpgradedPackument(
     throw err
   }
 
-  // select each field from the result object
-  const resultNormalized = keyValueBy(fields, field => {
-    let value = result[field]
-
-    // index into the result object to get the dist-tag
-    if (field.startsWith('dist-tags.') && result.versions) {
-      const packument: Packument = result.versions[get(result, field) as unknown as string]
-      value = fullMetadata ? { ...packument, time: result.time } : packument
-    }
-
-    return {
-      [field]: value,
-    }
-  })
-
-  return resultNormalized
+  return result
 }
 
 /** Memoize fetchUpgradedPackument for --deep and --workspaces performance. */
@@ -644,7 +618,7 @@ export const greatest: GetVersion = async (
   // known type based on 'versions'
   const versions = (
     await fetchUpgradedPackumentMemo(packageName, ['versions'], currentVersion, options, 0, npmConfig, npmConfigProject)
-  ).versions as Index<Packument>
+  )?.versions
 
   return {
     version:
@@ -721,26 +695,25 @@ export const distTag: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ) => {
-  const packument = (
-    await fetchUpgradedPackumentMemo(
-      packageName,
-      [`dist-tags.${options.distTag}`],
-      currentVersion,
-      options,
-      0,
-      npmConfig,
-      npmConfigProject,
-    )
-  )[`dist-tags.${options.distTag}`] as Packument // known type based on dist-tags.latest
+  const packument = await fetchUpgradedPackumentMemo(
+    packageName,
+    [`dist-tags.${options.distTag}`],
+    currentVersion,
+    options,
+    0,
+    npmConfig,
+    npmConfigProject,
+  )
+  const tagPackument = packument?.versions?.[`dist-tags.${options.distTag}`]
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
   // if latest exists and latest is a prerelease version and --pre is specified, return it
   // if latest exists and latest not satisfies min version of engines.node
-  if (packument && filterPredicate(options)(packument)) {
+  if (tagPackument && filterPredicate(options)(tagPackument)) {
     return {
-      version: packument.version,
-      ...(packument.time?.[packument.version] ? { time: packument.time[packument.version] } : null),
+      version: tagPackument.version,
+      ...(tagPackument.time?.[tagPackument.version] ? { time: tagPackument.time[tagPackument.version] } : null),
     }
   }
 
@@ -798,14 +771,16 @@ export const newest: GetVersion = async (
   // Generate a map of versions that satisfy the node engine.
   // result.versions is an object but is parsed as an array, so manually convert it to an object.
   // Otherwise keyValueBy will pass the predicate arguments in the wrong order.
-  const versionsSatisfyingNodeEngine = keyValueBy(Object.values(result.versions || {}), (packument: Packument) =>
-    satisfiesNodeEngine(packument, options.nodeEngineVersion) ? { [packument.version]: true } : null,
+  const versionsSatisfyingNodeEngine = keyValueBy(
+    result?.versions || {},
+    (version: Version, packument: Packument['versions'][string]) =>
+      satisfiesNodeEngine(packument, options.nodeEngineVersion) ? { [packument.version]: true } : null,
   )
 
   // filter out times that do not satisfy the node engine
   // filter out prereleases if pre:false (same as allowPreOrIsNotPre)
   const timesSatisfyingNodeEngine = filterObject(
-    (result.time || {}) as Index<string>,
+    (result?.time || {}) as Index<string>,
     version => versionsSatisfyingNodeEngine[version] && (options.pre !== false || !versionUtil.isPre(version)),
   )
 
@@ -832,7 +807,7 @@ export const minor: GetVersion = async (
 ): Promise<VersionResult> => {
   const versions = (
     await fetchUpgradedPackumentMemo(packageName, ['versions'], currentVersion, options, 0, npmConfig, npmConfigProject)
-  ).versions as Index<Packument>
+  )?.versions as Index<Packument>
   const version = versionUtil.findGreatestByLevel(
     filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
@@ -858,7 +833,7 @@ export const patch: GetVersion = async (
 ): Promise<VersionResult> => {
   const versions = (
     await fetchUpgradedPackumentMemo(packageName, ['versions'], currentVersion, options, 0, npmConfig, npmConfigProject)
-  ).versions as Index<Packument>
+  )?.versions as Index<Packument>
   const version = versionUtil.findGreatestByLevel(
     filter(versions, filterPredicate(options)).map(o => o.version),
     currentVersion,
@@ -884,7 +859,7 @@ export const semver: GetVersion = async (
 ): Promise<VersionResult> => {
   const versions = (
     await fetchUpgradedPackumentMemo(packageName, ['versions'], currentVersion, options, 0, npmConfig, npmConfigProject)
-  ).versions as Index<Packument>
+  )?.versions as Index<Packument>
   // ignore explicit version ranges
   if (isExplicitRange(currentVersion)) return { version: null }
 

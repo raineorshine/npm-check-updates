@@ -14,7 +14,7 @@ export interface Packument {
   time?: Index<string>
   version: Version
   versions: Index<
-    Packument & {
+    Omit<Packument, 'versions'> & {
       _npmUser?: {
         name: string
       }
