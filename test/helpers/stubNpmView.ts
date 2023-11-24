@@ -17,8 +17,8 @@ const stubNpmView = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?: 
   // stub module
   else {
     return sinon
-      .stub(npmPackageManager, 'viewManyMemoized')
-      .callsFake(npmPackageManager.mockViewMany(mockReturnedVersions))
+      .stub(npmPackageManager, 'fetchUpgradedPackumentMemo')
+      .callsFake(npmPackageManager.mockFetchUpgradedPackument(mockReturnedVersions))
   }
 }
 
