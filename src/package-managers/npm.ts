@@ -45,7 +45,7 @@ const isExactVersion = (version: Version) =>
   version && (!nodeSemver.validRange(version) || versionUtil.isWildCard(version))
 
 /** Fetches a packument or dist-tag from the npm registry. */
-const fetchPackageInfo = async (
+const fetchPartialPackument = async (
   name: string,
   tag: string | null = 'latest',
   opts: npmRegistryFetch.FetchOptions = {},
@@ -82,7 +82,7 @@ const fetchPackageInfo = async (
     }
 
     // possible that corgis are not supported by this registry
-    return fetchPackageInfo(name, tag, { opts, fullMetadata: true })
+    return fetchPartialPackument(name, tag, { opts, fullMetadata: true })
   }
 }
 
@@ -293,7 +293,7 @@ export async function packageAuthorChanged(
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<boolean> {
-  const result = await fetchPackageInfo(packageName, null, {
+  const result = await fetchPartialPackument(packageName, null, {
     ...npmConfigLocal,
     ...npmConfig,
     fullMetadata: true,
@@ -484,7 +484,7 @@ async function viewMany(
   let result: any
   try {
     const tag = options.distTag || 'latest'
-    result = await fetchPackageInfo(packageName, fullMetadata ? null : tag, npmConfigMerged)
+    result = await fetchPartialPackument(packageName, fullMetadata ? null : tag, npmConfigMerged)
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
       return viewMany(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
