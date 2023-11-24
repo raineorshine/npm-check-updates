@@ -319,7 +319,7 @@ const isPackument = (o: any): o is Partial<Packument> => !!(o && (o.name || o.en
 /** Creates a function with the same signature as fetchUpgradedPackument that always returns the given versions. */
 export const mockFetchUpgradedPackument =
   (mockReturnedVersions: MockedVersions): typeof fetchUpgradedPackument =>
-  (name: string, fields: string[], currentVersion: Version, options: Options) => {
+  (name: string, fields: (keyof Packument | `dist-tags.${string}`)[], currentVersion: Version, options: Options) => {
     // a partial Packument
     const partialPackument =
       typeof mockReturnedVersions === 'function'
@@ -451,7 +451,7 @@ const mergeNpmConfigs = memoize(
  */
 async function fetchUpgradedPackument(
   packageName: string,
-  fields: string[],
+  fields: (keyof Packument | `dist-tags.${string}`)[],
   currentVersion: Version,
   options: Options,
   retried = 0,
@@ -469,7 +469,9 @@ async function fetchUpgradedPackument(
   }
 
   // fields may already include time
-  const fieldsExtended = options.format?.includes('time') ? [...fields, 'time'] : fields
+  const fieldsExtended = options.format?.includes('time')
+    ? ([...fields, 'time'] as (keyof Packument | `dist-tags.${string}`)[])
+    : fields
   const fullMetadata = fieldsExtended.includes('time')
 
   const npmConfigMerged = mergeNpmConfigs(
