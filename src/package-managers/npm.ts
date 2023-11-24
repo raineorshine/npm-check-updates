@@ -3,7 +3,6 @@ import fs from 'fs'
 import ini from 'ini'
 import camelCase from 'lodash/camelCase'
 import filter from 'lodash/filter'
-import get from 'lodash/get'
 import isEqual from 'lodash/isEqual'
 import last from 'lodash/last'
 import omit from 'lodash/omit'
@@ -83,7 +82,7 @@ const fetchPartialPackument = async (
 
       for await (const { key, value } of stream) {
         if (key === 'dist-tags') {
-          partialPackument['dist-tags'] = value as Index<string>
+          partialPackument['dist-tags'] = value as Index<Version>
         } else if (key === 'versions') {
           partialPackument.versions = value as Index<Packument>
           break
@@ -335,7 +334,7 @@ const isPackument = (o: any): o is Partial<Packument> => !!(o && (o.name || o.en
 /** Creates a function with the same signature as fetchUpgradedPackument that always returns the given versions. */
 export const mockFetchUpgradedPackument =
   (mockReturnedVersions: MockedVersions): typeof fetchUpgradedPackument =>
-  (name: string, fields: (keyof Packument | `dist-tags.${string}`)[], currentVersion: Version, options: Options) => {
+  (name: string, fields: (keyof Packument)[], currentVersion: Version, options: Options) => {
     // a partial Packument
     const partialPackument =
       typeof mockReturnedVersions === 'function'
@@ -356,7 +355,7 @@ export const mockFetchUpgradedPackument =
     const packument: Packument = {
       name,
       'dist-tags': {
-        latest: version,
+        [options.distTag || 'latest']: version,
       },
       engines: { node: '' },
       time: {
@@ -456,7 +455,7 @@ const mergeNpmConfigs = memoize(
  */
 async function fetchUpgradedPackument(
   packageName: string,
-  fields: (keyof Packument | `dist-tags.${string}`)[],
+  fields: (keyof Packument)[],
   currentVersion: Version,
   options: Options,
   retried = 0,
@@ -474,9 +473,7 @@ async function fetchUpgradedPackument(
   }
 
   // fields may already include time
-  const fieldsExtended = options.format?.includes('time')
-    ? ([...fields, 'time'] as (keyof Packument | `dist-tags.${string}`)[])
-    : fields
+  const fieldsExtended = options.format?.includes('time') ? ([...fields, 'time'] as (keyof Packument)[]) : fields
   const fullMetadata = fieldsExtended.includes('time')
 
   const npmConfigMerged = mergeNpmConfigs(
@@ -697,14 +694,15 @@ export const distTag: GetVersion = async (
 ) => {
   const packument = await fetchUpgradedPackumentMemo(
     packageName,
-    [`dist-tags.${options.distTag}`],
+    ['dist-tags'],
     currentVersion,
     options,
     0,
     npmConfig,
     npmConfigProject,
   )
-  const tagPackument = packument?.versions?.[`dist-tags.${options.distTag}`]
+  const version = packument?.['dist-tags']?.[options.distTag || 'latest']
+  const tagPackument = version && packument.versions?.[version]
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
@@ -723,7 +721,6 @@ export const distTag: GetVersion = async (
   // if latest is a prerelease version and --pre is not specified
   // or latest is deprecated
   // find the next valid version
-  // known type based on dist-tags.latest
   return greatest(packageName, currentVersion, options, npmConfig, npmConfigProject)
 }
 
