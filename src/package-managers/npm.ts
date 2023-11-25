@@ -46,6 +46,7 @@ const isExactVersion = (version: Version) =>
 /** Fetches a packument or dist-tag from the npm registry. */
 const fetchPartialPackument = async (
   name: string,
+  fields: (keyof Packument)[],
   tag: string | null,
   opts: npmRegistryFetch.FetchOptions = {},
 ): Promise<Partial<Packument>> => {
@@ -81,11 +82,12 @@ const fetchPartialPackument = async (
       const partialPackument: Partial<Packument> = { name }
 
       for await (const { key, value } of stream) {
-        if (key === 'dist-tags') {
-          partialPackument['dist-tags'] = value as Index<Version>
-        } else if (key === 'versions') {
-          partialPackument.versions = value as Index<Packument>
-          break
+        if (fields.includes(key)) {
+          // TODO: Fix type
+          partialPackument[key] = value as any
+          if (Object.keys(partialPackument).length === fields.length + 1) {
+            break
+          }
         }
       }
 
@@ -97,7 +99,7 @@ const fetchPartialPackument = async (
     }
 
     // possible that corgis are not supported by this registry
-    return fetchPartialPackument(name, tag, { opts, fullMetadata: true })
+    return fetchPartialPackument(name, fields, tag, { opts, fullMetadata: true })
   }
 }
 
@@ -308,7 +310,7 @@ export async function packageAuthorChanged(
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<boolean> {
-  const result = await fetchPartialPackument(packageName, null, {
+  const result = await fetchPartialPackument(packageName, ['versions'], null, {
     ...npmConfigLocal,
     ...npmConfig,
     fullMetadata: true,
@@ -473,7 +475,8 @@ async function fetchUpgradedPackument(
   }
 
   // fields may already include time
-  const fieldsExtended = options.format?.includes('time') ? ([...fields, 'time'] as (keyof Packument)[]) : fields
+  const fieldsExtended =
+    options.format?.includes('time') && !fields.includes('time') ? ([...fields, 'time'] as (keyof Packument)[]) : fields
   const fullMetadata = fieldsExtended.includes('time')
 
   const npmConfigMerged = mergeNpmConfigs(
@@ -488,7 +491,12 @@ async function fetchUpgradedPackument(
   let result: Partial<Packument> | undefined
   try {
     const tag = options.distTag || 'latest'
-    result = await fetchPartialPackument(packageName, fullMetadata ? null : tag, npmConfigMerged)
+    result = await fetchPartialPackument(
+      packageName,
+      ['deprecated', 'dist-tags', 'engines', 'versions'],
+      fullMetadata ? null : tag,
+      npmConfigMerged,
+    )
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
       return fetchUpgradedPackument(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
