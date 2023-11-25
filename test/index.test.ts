@@ -136,7 +136,7 @@ describe('run', function () {
   })
 
   describe('deprecated', () => {
-    it('deprecated excluded by default', async () => {
+    it('deprecated included by default', async () => {
       const upgrades = await ncu({
         packageData: {
           dependencies: {
@@ -144,10 +144,12 @@ describe('run', function () {
           },
         },
       })
-      upgrades!.should.deep.equal({})
+      upgrades!.should.deep.equal({
+        'ncu-test-deprecated': '2.0.0',
+      })
     })
 
-    it('deprecated included with option', async () => {
+    it('deprecated included with --deprecated', async () => {
       const upgrades = await ncu({
         deprecated: true,
         packageData: {
@@ -159,6 +161,18 @@ describe('run', function () {
       upgrades!.should.deep.equal({
         'ncu-test-deprecated': '2.0.0',
       })
+    })
+
+    it('deprecated excluded with --no-deprecated', async () => {
+      const upgrades = await ncu({
+        deprecated: false,
+        packageData: {
+          dependencies: {
+            'ncu-test-deprecated': '1.0.0',
+          },
+        },
+      })
+      upgrades!.should.deep.equal({})
     })
   })
 
