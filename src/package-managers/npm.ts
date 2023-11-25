@@ -711,7 +711,7 @@ export const distTag: GetVersion = async (
   if (tagPackument && filterPredicate(options)(tagPackument)) {
     return {
       version: tagPackument.version,
-      ...(tagPackument.time?.[tagPackument.version] ? { time: tagPackument.time[tagPackument.version] } : null),
+      ...(packument.time?.[version] ? { time: packument.time[version] } : null),
     }
   }
 
