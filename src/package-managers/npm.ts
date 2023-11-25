@@ -1,6 +1,7 @@
 import memoize from 'fast-memoize'
 import fs from 'fs'
 import ini from 'ini'
+import { uniq } from 'lodash'
 import camelCase from 'lodash/camelCase'
 import filter from 'lodash/filter'
 import isEqual from 'lodash/isEqual'
@@ -493,7 +494,12 @@ async function fetchUpgradedPackument(
     const tag = options.distTag || 'latest'
     result = await fetchPartialPackument(
       packageName,
-      ['deprecated', 'dist-tags', 'engines', 'versions'],
+      uniq([
+        'dist-tags',
+        ...fields,
+        ...(!options.deprecated ? (['deprecated', 'versions'] as const) : []),
+        ...(options.enginesNode ? (['engines', 'versions'] as const) : []),
+      ]),
       fullMetadata ? null : tag,
       npmConfigMerged,
     )
@@ -710,7 +716,14 @@ export const distTag: GetVersion = async (
     npmConfigProject,
   )
   const version = packument?.['dist-tags']?.[options.distTag || 'latest']
-  const tagPackument = version && packument.versions?.[version]
+
+  // if the packument does not contain versions, we need to add a minimal versions property with the upgraded version
+  const tagPackument = packument?.versions
+    ? packument.versions?.[version!]
+    : {
+        name: packageName,
+        version,
+      }
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
@@ -719,7 +732,7 @@ export const distTag: GetVersion = async (
   if (tagPackument && filterPredicate(options)(tagPackument)) {
     return {
       version: tagPackument.version,
-      ...(packument.time?.[version] ? { time: packument.time[version] } : null),
+      ...(packument?.time?.[version!] ? { time: packument.time[version!] } : null),
     }
   }
 
