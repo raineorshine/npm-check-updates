@@ -3,7 +3,7 @@ import os from 'os'
 import path from 'path'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
@@ -21,7 +21,7 @@ const packageData = JSON.stringify({
 
 describe('--dep', () => {
   it('do not upgrade peerDependencies by default', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
 
     const upgraded = await ncu({ packageData })
 
@@ -33,7 +33,7 @@ describe('--dep', () => {
   })
 
   it('only upgrade devDependencies with --dep dev', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
 
     const upgraded = await ncu({ packageData, dep: 'dev' })
 
@@ -45,7 +45,7 @@ describe('--dep', () => {
   })
 
   it('only upgrade devDependencies and peerDependencies with --dep dev,peer', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
     const upgraded = await ncu({ packageData, dep: 'dev,peer' })
 
     upgraded!.should.not.have.property('ncu-test-v2')
@@ -57,7 +57,7 @@ describe('--dep', () => {
 
   describe('section isolation', () => {
     it('do not overwrite the same package in peerDependencies when upgrading devDependencies', async () => {
-      const stub = stubNpmView('99.9.9')
+      const stub = stubVersions('99.9.9')
       const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-v2': '0.1.0',
@@ -104,7 +104,7 @@ describe('--dep', () => {
     })
 
     it('do not overwrite the same package in devDependencies when upgrading peerDependencies', async () => {
-      const stub = stubNpmView('99.9.9')
+      const stub = stubVersions('99.9.9')
       const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-v2': '0.1.0',
@@ -151,7 +151,7 @@ describe('--dep', () => {
     })
 
     it('do not overwrite the same package in devDependencies when upgrading dependencies and peerDependencies', async () => {
-      const stub = stubNpmView('99.9.9')
+      const stub = stubVersions('99.9.9')
       const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-tag': '0.1.0',
@@ -200,7 +200,7 @@ describe('--dep', () => {
 
   describe('packageManager field', () => {
     it('support packageManager field', async () => {
-      const stub = stubNpmView({
+      const stub = stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
       })
@@ -242,7 +242,7 @@ describe('--dep', () => {
     })
 
     it('do nothing if no packageManager field is present', async () => {
-      const stub = stubNpmView({
+      const stub = stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
       })
@@ -282,7 +282,7 @@ describe('--dep', () => {
     })
 
     it('do nothing if packageManager is up-to-date', async () => {
-      const stub = stubNpmView({
+      const stub = stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
       })

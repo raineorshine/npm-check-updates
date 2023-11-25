@@ -4,14 +4,14 @@ import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('format', () => {
-  // do not stubNpmView here, because we need to test if if time is parsed correctly from npm-registry-fetch
+  // do not stubVersions here, because we need to test if if time is parsed correctly from npm-registry-fetch
   it('--format time', async () => {
     const timestamp = '2020-04-27T21:48:11.660Z'
     const packageData = {
@@ -45,7 +45,7 @@ describe('format', () => {
   })
 
   it('--format lines', async () => {
-    const stub = stubNpmView(
+    const stub = stubVersions(
       {
         'ncu-test-v2': '2.0.0',
         'ncu-test-tag': '1.1.0',
@@ -74,7 +74,7 @@ describe('format', () => {
   })
 
   it('disallow --format lines with --jsonUpgraded', async () => {
-    const stub = stubNpmView(
+    const stub = stubVersions(
       {
         'ncu-test-v2': '2.0.0',
         'ncu-test-tag': '1.1.0',
@@ -104,7 +104,7 @@ describe('format', () => {
   })
 
   it('disallow --format lines with --jsonAll', async () => {
-    const stub = stubNpmView(
+    const stub = stubVersions(
       {
         'ncu-test-v2': '2.0.0',
         'ncu-test-tag': '1.1.0',
@@ -134,7 +134,7 @@ describe('format', () => {
   })
 
   it('disallow --format lines with other format options', async () => {
-    const stub = stubNpmView(
+    const stub = stubVersions(
       {
         'ncu-test-v2': '2.0.0',
         'ncu-test-tag': '1.1.0',

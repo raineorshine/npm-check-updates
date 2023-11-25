@@ -462,7 +462,7 @@ async function fetchUpgradedPackument(
   npmConfigLocal?: NpmConfig,
   npmConfigWorkspaceProject?: NpmConfig,
 ): Promise<Partial<Packument> | undefined> {
-  // See: /test/helpers/stubNpmView
+  // See: /test/helpers/stubVersions
   if (process.env.STUB_NPM_VIEW) {
     const mockReturnedVersions = JSON.parse(process.env.STUB_NPM_VIEW)
     return mockFetchUpgradedPackument(mockReturnedVersions)(packageName, fields, currentVersion, options)

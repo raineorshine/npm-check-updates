@@ -2,7 +2,7 @@ import path from 'path'
 import spawn from 'spawn-please'
 import ncu from '../src'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
@@ -12,7 +12,7 @@ describe('filterVersion', () => {
   describe('module', () => {
     let stub: { restore: () => void }
     before(() => {
-      stub = stubNpmView({
+      stub = stubVersions({
         'ncu-test-v2': '2.0.0',
         'ncu-test-return-version': '2.0.0',
       })
@@ -119,7 +119,7 @@ describe('filterVersion', () => {
 
   describe('cli', () => {
     it('allow multiple --filterVersion options', async () => {
-      const stub = stubNpmView('99.9.9', { spawn: true })
+      const stub = stubVersions('99.9.9', { spawn: true })
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -143,7 +143,7 @@ describe('filterVersion', () => {
 describe('rejectVersion', () => {
   describe('cli', () => {
     it('allow multiple --rejectVersion options', async () => {
-      const stub = stubNpmView('99.9.9', { spawn: true })
+      const stub = stubVersions('99.9.9', { spawn: true })
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',

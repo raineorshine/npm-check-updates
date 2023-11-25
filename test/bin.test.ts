@@ -5,7 +5,7 @@ import spawn from 'spawn-please'
 import { Index } from '../src/types/IndexType'
 import { Version } from '../src/types/Version'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
@@ -23,7 +23,7 @@ describe('bin', async function () {
   })
 
   it('output only upgraded with --jsonUpgraded', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const output = await spawn(
       'node',
       [bin, '--jsonUpgraded', '--stdin'],
@@ -35,7 +35,7 @@ describe('bin', async function () {
   })
 
   it('--loglevel verbose', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const output = await spawn(
       'node',
       [bin, '--loglevel', 'verbose'],
@@ -48,7 +48,7 @@ describe('bin', async function () {
   })
 
   it('--verbose', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const output = await spawn('node', [bin, '--verbose'], JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }))
     output.should.containIgnoreCase('Initializing')
     output.should.containIgnoreCase('Running in local mode')
@@ -57,14 +57,14 @@ describe('bin', async function () {
   })
 
   it('accept stdin', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const output = await spawn('node', [bin, '--stdin'], JSON.stringify({ dependencies: { express: '1' } }))
     output.trim().should.startWith('express')
     stub.restore()
   })
 
   it('reject out-of-date stdin with errorLevel 2', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     await spawn(
       'node',
       [bin, '--stdin', '--errorLevel', '2'],
@@ -74,7 +74,7 @@ describe('bin', async function () {
   })
 
   it('fall back to package.json search when receiving empty content on stdin', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const stdout = await spawn('node', [bin, '--stdin'])
     stdout
       .toString()
@@ -84,7 +84,7 @@ describe('bin', async function () {
   })
 
   it('use package.json in cwd by default', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const output = await spawn('node', [bin, '--jsonUpgraded'], { cwd: path.join(__dirname, 'test-data/ncu') })
     const pkgData = JSON.parse(output)
     pkgData.should.have.property('express')
@@ -107,7 +107,7 @@ describe('bin', async function () {
   })
 
   it('read --packageFile', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
@@ -122,7 +122,7 @@ describe('bin', async function () {
   })
 
   it('write to --packageFile', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
@@ -139,7 +139,7 @@ describe('bin', async function () {
   })
 
   it('write to --packageFile if errorLevel=2 and upgrades', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
@@ -159,7 +159,7 @@ describe('bin', async function () {
   })
 
   it('write to --packageFile with jsonUpgraded flag', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
@@ -176,7 +176,7 @@ describe('bin', async function () {
   })
 
   it('ignore stdin if --packageFile is specified', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
@@ -193,14 +193,14 @@ describe('bin', async function () {
   })
 
   it('suppress stdout when --silent is provided', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const output = await spawn('node', [bin, '--silent'], JSON.stringify({ dependencies: { express: '1' } }))
     output.trim().should.equal('')
     stub.restore()
   })
 
   it('quote arguments with spaces in upgrade hint', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const pkgData = {
       dependencies: {
         'ncu-test-v2': '^1.0.0',
@@ -220,7 +220,7 @@ describe('bin', async function () {
   })
 
   it('ignore file: and link: protocols', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const { default: stripAnsi } = await import('strip-ansi')
     const dependencies = {
       editor: 'file:../editor',
@@ -234,7 +234,7 @@ describe('bin', async function () {
   })
 
   it('combine boolean flags with arguments', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const output = await spawn(
       'node',
       [bin, '--stdin', '--jsonUpgraded', 'ncu-test-v2'],
@@ -248,7 +248,7 @@ describe('bin', async function () {
   })
 
   it('combine short boolean options with long options', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     const promise = spawn('node', [bin, '-mp', 'foo'])
     await promise.should.eventually.be.rejectedWith('Invalid package manager: foo')
     stub.restore()
@@ -268,7 +268,7 @@ describe('bin', async function () {
     })
 
     it('strip prefix from npm alias in "to" output', async () => {
-      const stub = stubNpmView('99.9.9', { spawn: true })
+      const stub = stubVersions('99.9.9', { spawn: true })
       // use dynamic import for ESM module
       const { default: stripAnsi } = await import('strip-ansi')
       const dependencies = {

@@ -3,13 +3,13 @@ import os from 'os'
 import path from 'path'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
 describe('run', function () {
   it('return jsonUpgraded by default', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
 
     const output = await ncu({
       packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package.json'), 'utf-8'),
@@ -22,7 +22,7 @@ describe('run', function () {
   })
 
   it('pass object as packageData', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
 
     const output = await ncu({
       packageData: {
@@ -37,7 +37,7 @@ describe('run', function () {
   })
 
   it('do not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimal is true', async () => {
-    const stub = stubNpmView('2.1.1')
+    const stub = stubVersions('2.1.1')
 
     const upgraded = await ncu({
       packageData: { dependencies: { MOCK_PACKAGE: '^2.1.0' } },
@@ -51,7 +51,7 @@ describe('run', function () {
   })
 
   it('write to --packageFile and output jsonUpgraded', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
@@ -174,7 +174,7 @@ describe('run', function () {
   })
 
   it('update devDependency when duplicate dependency is up-to-date', async () => {
-    const stub = stubNpmView('2.0.0')
+    const stub = stubVersions('2.0.0')
     const upgrades = await ncu({
       packageData: {
         dependencies: {
@@ -192,7 +192,7 @@ describe('run', function () {
   })
 
   it('update dependency when duplicate devDependency is up-to-date', async () => {
-    const stub = stubNpmView('2.0.0')
+    const stub = stubVersions('2.0.0')
     const upgrades = await ncu({
       packageData: {
         dependencies: {
@@ -238,7 +238,7 @@ describe('run', function () {
 
   describe('overrides', () => {
     it('upgrade overrides', async () => {
-      const stub = stubNpmView('99.9.9')
+      const stub = stubVersions('99.9.9')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const packageFile = path.join(tempDir, 'package.json')
       await fs.writeFile(
@@ -277,7 +277,7 @@ describe('run', function () {
     })
 
     it('upgrade self override', async () => {
-      const stub = stubNpmView('99.9.9')
+      const stub = stubVersions('99.9.9')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const packageFile = path.join(tempDir, 'package.json')
       await fs.writeFile(
@@ -323,7 +323,7 @@ describe('run', function () {
     })
 
     it('upgrade child override', async () => {
-      const stub = stubNpmView('99.9.9')
+      const stub = stubVersions('99.9.9')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const packageFile = path.join(tempDir, 'package.json')
       await fs.writeFile(
@@ -367,7 +367,7 @@ describe('run', function () {
     })
 
     it('upgrade nested override', async () => {
-      const stub = stubNpmView('99.9.9')
+      const stub = stubVersions('99.9.9')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const packageFile = path.join(tempDir, 'package.json')
       await fs.writeFile(

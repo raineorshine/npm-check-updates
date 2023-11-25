@@ -4,14 +4,14 @@ import os from 'os'
 import path from 'path'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
 describe('filterResults', () => {
   it('should return only major versions updated', async () => {
     const dependencies = { 'ncu-test-v2': '2.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' }
-    const stub = stubNpmView(
+    const stub = stubVersions(
       {
         'ncu-test-v2': '3.0.0',
         'ncu-test-tag': '2.1.0',

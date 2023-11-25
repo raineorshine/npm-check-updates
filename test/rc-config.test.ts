@@ -3,7 +3,7 @@ import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
@@ -12,7 +12,7 @@ const bin = path.join(__dirname, '../build/src/bin/cli.js')
 describe('rc-config', () => {
   // before/after must be placed within the describe block, otherwise they will apply to tests in other files
   let stub: { restore: () => void }
-  before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
+  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
   after(() => stub.restore())
 
   it('print rcConfigPath when there is a non-empty rc config file', async () => {

@@ -5,13 +5,13 @@ import ncu from '../src/'
 import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
 import { CacheData } from '../src/types/Cacher'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
 describe('cache', () => {
   it('cache latest versions', async () => {
-    const stub = stubNpmView({
+    const stub = stubVersions({
       'ncu-test-v2': '2.0.0',
       'ncu-test-tag': '1.1.0',
       'ncu-test-alpha': '1.0.0',
@@ -42,7 +42,7 @@ describe('cache', () => {
   })
 
   it('use different cache key for different target', async () => {
-    const stub = stubNpmView(options =>
+    const stub = stubVersions(options =>
       options.target === 'latest'
         ? {
             'ncu-test-v2': '2.0.0',
@@ -102,7 +102,7 @@ describe('cache', () => {
   })
 
   it('clears the cache file', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
     const packageData = {
       dependencies: {
         'ncu-test-v2': '^1.0.0',

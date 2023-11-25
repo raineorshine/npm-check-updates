@@ -4,7 +4,7 @@ import spawn from 'spawn-please'
 import ncu from '../src'
 import { Index } from '../src/types/IndexType'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
@@ -13,7 +13,7 @@ const bin = path.join(__dirname, '../build/src/bin/cli.js')
 describe('filter', () => {
   describe('module', () => {
     let stub: { restore: () => void }
-    before(() => (stub = stubNpmView('99.9.9')))
+    before(() => (stub = stubVersions('99.9.9')))
     after(() => stub.restore())
 
     it('filter by package name with one arg', async () => {
@@ -203,7 +203,7 @@ describe('filter', () => {
 
   describe('cli', () => {
     let stub: { restore: () => void }
-    before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
+    before(() => (stub = stubVersions('99.9.9', { spawn: true })))
     after(() => stub.restore())
 
     it('filter by package name with --filter', async () => {
@@ -299,7 +299,7 @@ describe('filter', () => {
 describe('reject', () => {
   describe('cli', () => {
     let stub: { restore: () => void }
-    before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
+    before(() => (stub = stubVersions('99.9.9', { spawn: true })))
     after(() => stub.restore())
 
     it('reject by package name with --reject', async () => {

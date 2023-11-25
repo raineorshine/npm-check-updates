@@ -4,7 +4,7 @@ import path from 'path'
 import spawn from 'spawn-please'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
@@ -113,7 +113,7 @@ let stub: { restore: () => void }
 describe('workspaces', () => {
   describe('stubbed', () => {
     before(() => {
-      stub = stubNpmView(
+      stub = stubVersions(
         {
           'ncu-test-v2': '2.0.0',
           'ncu-test-tag': '1.1.0',

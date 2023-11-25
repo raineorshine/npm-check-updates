@@ -3,7 +3,7 @@ import * as npmPackageManager from '../../src/package-managers/npm'
 import { MockedVersions } from '../../src/types/MockedVersions'
 
 /** Stubs the npmView function from package-managers/npm. Returns the stub object. Call stub.restore() after assertions to restore the original function. Set spawn:true to stub ncu spawned as a child process. */
-const stubNpmView = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?: boolean } = {}) => {
+const stubVersions = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?: boolean } = {}) => {
   // stub child process
   // the only way to stub functionality in spawned child processes is to pass data through process.env and stub internally
   if (spawn) {
@@ -22,4 +22,4 @@ const stubNpmView = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?: 
   }
 }
 
-export default stubNpmView
+export default stubVersions

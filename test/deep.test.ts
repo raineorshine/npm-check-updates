@@ -6,7 +6,7 @@ import spawn from 'spawn-please'
 import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
@@ -47,7 +47,7 @@ describe('--deep', function () {
   this.timeout(60000)
 
   let stub: { restore: () => void }
-  before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
+  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
   after(() => stub.restore())
 
   it('do not allow --packageFile and --deep together', async () => {
@@ -126,7 +126,7 @@ describe('--deep with nested ncurc files', function () {
   this.timeout(60000)
 
   let stub: { restore: () => void }
-  before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
+  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
   after(() => stub.restore())
 
   it('use ncurc of nested packages', async () => {

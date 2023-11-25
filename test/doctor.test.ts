@@ -7,7 +7,7 @@ import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
 import { PackageManagerName } from '../src/types/PackageManagerName'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
@@ -167,7 +167,7 @@ describe('doctor', function () {
   this.timeout(3 * 60 * 1000)
 
   let stub: { restore: () => void }
-  before(() => (stub = stubNpmView(mockNpmVersions, { spawn: true })))
+  before(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
   after(() => stub.restore())
 
   describe('npm', () => {
