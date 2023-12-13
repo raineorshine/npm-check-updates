@@ -1,8 +1,8 @@
 import fs from 'fs/promises'
-import { Options } from '../types/Options'
-import { PackageFile } from '../types/PackageFile'
-import { PackageInfo } from '../types/PackageInfo'
-import programError from './programError'
+import { Options } from '../types/Options.js'
+import { PackageFile } from '../types/PackageFile.js'
+import { PackageInfo } from '../types/PackageInfo.js'
+import programError from './programError.js'
 
 /** Load and parse a package file. */
 const loadPackageInfoFromFile = async (options: Options, filepath: string): Promise<PackageInfo> => {

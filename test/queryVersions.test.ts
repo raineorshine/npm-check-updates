@@ -1,6 +1,6 @@
-import queryVersions from '../src/lib/queryVersions'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import queryVersions from '../src/lib/queryVersions.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 

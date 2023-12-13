@@ -3,11 +3,11 @@ import os from 'os'
 import path from 'path'
 import { rimraf } from 'rimraf'
 import spawn from 'spawn-please'
-import { cliOptionsMap } from '../src/cli-options'
-import { chalkInit } from '../src/lib/chalk'
-import { PackageManagerName } from '../src/types/PackageManagerName'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import { cliOptionsMap } from '../src/cli-options.js'
+import { chalkInit } from '../src/lib/chalk.js'
+import { PackageManagerName } from '../src/types/PackageManagerName.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 

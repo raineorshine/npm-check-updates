@@ -1,9 +1,9 @@
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { CacheData, Cacher } from '../types/Cacher'
-import { Options } from '../types/Options'
-import { print } from './logging'
+import { CacheData, Cacher } from '../types/Cacher.js'
+import { Options } from '../types/Options.js'
+import { print } from './logging.js'
 
 export const CACHE_DELIMITER = '___'
 

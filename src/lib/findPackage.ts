@@ -2,10 +2,10 @@ import findUp from 'find-up'
 import fs from 'fs/promises'
 import getstdin from 'get-stdin'
 import path from 'path'
-import { print } from '../lib/logging'
-import { Options } from '../types/Options'
-import chalk from './chalk'
-import programError from './programError'
+import { print } from '../lib/logging.js'
+import { Options } from '../types/Options.js'
+import chalk from './chalk.js'
+import programError from './programError.js'
 
 /**
  * Finds the package file and data.

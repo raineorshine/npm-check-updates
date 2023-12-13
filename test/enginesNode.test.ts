@@ -1,7 +1,7 @@
-import ncu from '../src/index'
-import { Index } from '../src/types/IndexType'
-import { VersionSpec } from '../src/types/VersionSpec'
-import chaiSetup from './helpers/chaiSetup'
+import ncu from '../src/index.js'
+import { Index } from '../src/types/IndexType.js'
+import { VersionSpec } from '../src/types/VersionSpec.js'
+import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
 

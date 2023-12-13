@@ -4,11 +4,11 @@ import cloneDeep from 'lodash/cloneDeep'
 import pickBy from 'lodash/pickBy'
 import semver from 'semver'
 import pkg from '../../package.json'
-import cliOptions, { renderExtendedHelp } from '../cli-options'
-import ncu from '../index'
-import { chalkInit } from '../lib/chalk'
+import cliOptions, { renderExtendedHelp } from '../cli-options.js'
+import ncu from '../index.js'
+import { chalkInit } from '../lib/chalk.js'
 // async global contexts are only available in esm modules -> function
-import getNcuRc from '../lib/getNcuRc'
+import getNcuRc from '../lib/getNcuRc.js'
 
 /** Removes inline code ticks. */
 const uncode = (s: string) => s.replace(/`/g, '')

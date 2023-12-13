@@ -2,10 +2,10 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import { Index } from '../src/types/IndexType'
-import { Version } from '../src/types/Version'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import { Index } from '../src/types/IndexType.js'
+import { Version } from '../src/types/Version.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 

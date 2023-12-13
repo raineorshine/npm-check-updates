@@ -1,5 +1,5 @@
-import { Index } from './IndexType'
-import { Version } from './Version'
+import { Index } from './IndexType.js'
+import { Version } from './Version.js'
 
 /** A pacote packument result object. */
 export interface Packument {

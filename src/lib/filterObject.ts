@@ -1,5 +1,5 @@
-import { Index } from '../types/IndexType'
-import keyValueBy from './keyValueBy'
+import { Index } from '../types/IndexType.js'
+import keyValueBy from './keyValueBy.js'
 
 /** Filters an object by a predicate. */
 const filterObject = <T>(obj: Index<T>, predicate: (key: string, value: T) => boolean) =>

@@ -1,11 +1,11 @@
 import { expect } from 'chai'
 import fs from 'fs/promises'
 import { rimraf } from 'rimraf'
-import ncu from '../src/index'
-import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
-import { CacheData } from '../src/types/Cacher'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import ncu from '../src/index.js'
+import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache.js'
+import { CacheData } from '../src/types/Cacher.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 

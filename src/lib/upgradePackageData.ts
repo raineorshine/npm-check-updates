@@ -1,8 +1,8 @@
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
-import { PackageFile } from '../types/PackageFile'
-import { VersionSpec } from '../types/VersionSpec'
-import resolveDepSections from './resolveDepSections'
+import { Index } from '../types/IndexType.js'
+import { Options } from '../types/Options.js'
+import { PackageFile } from '../types/PackageFile.js'
+import { VersionSpec } from '../types/VersionSpec.js'
+import resolveDepSections from './resolveDepSections.js'
 
 /**
  * @returns String safe for use in `new RegExp()`

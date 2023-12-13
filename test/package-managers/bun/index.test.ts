@@ -1,6 +1,6 @@
 import os from 'os'
-import * as bun from '../../../src/package-managers/bun'
-import chaiSetup from '../../helpers/chaiSetup'
+import * as bun from '../../../src/package-managers/bun.js'
+import chaiSetup from '../../helpers/chaiSetup.js'
 
 chaiSetup()
 

@@ -1,6 +1,6 @@
 import path from 'path'
 import spawn from 'spawn-please'
-import chaiSetup from './helpers/chaiSetup'
+import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
 

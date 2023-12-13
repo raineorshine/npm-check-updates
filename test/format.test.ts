@@ -3,8 +3,8 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 

@@ -1,8 +1,8 @@
 import path from 'path'
-import getAllPackages from '../src/lib/getAllPackages'
-import { Options } from '../src/types/Options'
-import { PackageInfo } from '../src/types/PackageInfo'
-import chaiSetup from './helpers/chaiSetup'
+import getAllPackages from '../src/lib/getAllPackages.js'
+import { Options } from '../src/types/Options.js'
+import { PackageInfo } from '../src/types/PackageInfo.js'
+import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
 

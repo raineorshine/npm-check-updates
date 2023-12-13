@@ -1,11 +1,11 @@
 import sortBy from 'lodash/sortBy'
 import path from 'path'
-import { defaultCacheFile } from './lib/cache'
-import chalk from './lib/chalk'
-import table from './lib/table'
-import CLIOption from './types/CLIOption'
-import ExtendedHelp from './types/ExtendedHelp'
-import { Index } from './types/IndexType'
+import { defaultCacheFile } from './lib/cache.js'
+import chalk from './lib/chalk.js'
+import table from './lib/table.js'
+import CLIOption from './types/CLIOption.js'
+import ExtendedHelp from './types/ExtendedHelp.js'
+import { Index } from './types/IndexType.js'
 
 /** Valid strings for the --target option. Indicates the desired version to upgrade to. */
 const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch', 'semver']

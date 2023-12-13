@@ -1,8 +1,8 @@
-import { GetVersion } from './GetVersion'
-import { Index } from './IndexType'
-import { Options } from './Options'
-import { Version } from './Version'
-import { VersionSpec } from './VersionSpec'
+import { GetVersion } from './GetVersion.js'
+import { Index } from './IndexType.js'
+import { Options } from './Options.js'
+import { Version } from './Version.js'
+import { VersionSpec } from './VersionSpec.js'
 
 /** The package manager API that ncu uses to fetch versions and meta information for packages. Includes npm and yarn, and others can be added as needed. */
 export interface PackageManager {

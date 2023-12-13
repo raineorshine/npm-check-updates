@@ -1,12 +1,12 @@
 import get from 'lodash/get'
 import overEvery from 'lodash/overEvery'
 import semver from 'semver'
-import * as versionUtil from '../lib/version-util'
-import { Index } from '../types/IndexType'
-import { Maybe } from '../types/Maybe'
-import { Options } from '../types/Options'
-import { Packument } from '../types/Packument'
-import { Version } from '../types/Version'
+import * as versionUtil from '../lib/version-util.js'
+import { Index } from '../types/IndexType.js'
+import { Maybe } from '../types/Maybe.js'
+import { Options } from '../types/Options.js'
+import { Packument } from '../types/Packument.js'
+import { Version } from '../types/Version.js'
 
 /**
  * @param versionResult  Available version

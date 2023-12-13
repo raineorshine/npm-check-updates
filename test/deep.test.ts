@@ -3,10 +3,10 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import ncu from '../src/index'
-import mergeOptions from '../src/lib/mergeOptions'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import ncu from '../src/index.js'
+import mergeOptions from '../src/lib/mergeOptions.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 

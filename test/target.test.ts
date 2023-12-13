@@ -1,10 +1,10 @@
-import ncu from '../src/index'
-import { FilterFunction } from '../src/types/FilterFunction'
-import { Index } from '../src/types/IndexType'
-import { TargetFunction } from '../src/types/TargetFunction'
-import { Version } from '../src/types/Version'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import ncu from '../src/index.js'
+import { FilterFunction } from '../src/types/FilterFunction.js'
+import { Index } from '../src/types/IndexType.js'
+import { TargetFunction } from '../src/types/TargetFunction.js'
+import { Version } from '../src/types/Version.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 

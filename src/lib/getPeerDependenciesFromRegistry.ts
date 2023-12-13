@@ -1,8 +1,8 @@
 import ProgressBar from 'progress'
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
-import { VersionSpec } from '../types/VersionSpec'
-import getPackageManager from './getPackageManager'
+import { Index } from '../types/IndexType.js'
+import { Options } from '../types/Options.js'
+import { VersionSpec } from '../types/VersionSpec.js'
+import getPackageManager from './getPackageManager.js'
 
 /**
  * Get the latest or greatest versions from the NPM repository based on the version target.

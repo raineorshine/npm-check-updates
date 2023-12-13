@@ -1,5 +1,5 @@
-import getPreferredWildcard from '../src/lib/getPreferredWildcard'
-import chaiSetup from './helpers/chaiSetup'
+import getPreferredWildcard from '../src/lib/getPreferredWildcard.js'
+import chaiSetup from './helpers/chaiSetup.js'
 
 const should = chaiSetup()
 

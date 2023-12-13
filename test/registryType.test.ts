@@ -1,5 +1,5 @@
-import ncu from '../src/index'
-import chaiSetup from './helpers/chaiSetup'
+import ncu from '../src/index.js'
+import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
 

@@ -3,12 +3,12 @@ import globby from 'globby'
 import yaml from 'js-yaml'
 import path from 'path'
 import untildify from 'untildify'
-import { Options } from '../types/Options'
-import { PackageFile } from '../types/PackageFile'
-import { PackageInfo } from '../types/PackageInfo'
-import findPackage from './findPackage'
-import loadPackageInfoFromFile from './loadPackageInfoFromFile'
-import programError from './programError'
+import { Options } from '../types/Options.js'
+import { PackageFile } from '../types/PackageFile.js'
+import { PackageInfo } from '../types/PackageInfo.js'
+import findPackage from './findPackage.js'
+import loadPackageInfoFromFile from './loadPackageInfoFromFile.js'
+import programError from './programError.js'
 
 type PnpmWorkspaces = string[] | { packages: string[] }
 

@@ -1,6 +1,6 @@
-import { print } from '../lib/logging'
-import { Options } from '../types/Options'
-import chalk from './chalk'
+import { print } from '../lib/logging.js'
+import { Options } from '../types/Options.js'
+import chalk from './chalk.js'
 
 /** Print an error. Exit the process if in CLI mode. */
 function programError(

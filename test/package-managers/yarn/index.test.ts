@@ -1,7 +1,7 @@
 import path from 'path'
-import * as yarn from '../../../src/package-managers/yarn'
-import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn'
-import chaiSetup from '../../helpers/chaiSetup'
+import * as yarn from '../../../src/package-managers/yarn.js'
+import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn.js'
+import chaiSetup from '../../helpers/chaiSetup.js'
 
 const should = chaiSetup()
 

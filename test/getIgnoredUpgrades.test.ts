@@ -1,5 +1,5 @@
-import getIgnoredUpgrades from '../src/lib/getIgnoredUpgrades'
-import chaiSetup from './helpers/chaiSetup'
+import getIgnoredUpgrades from '../src/lib/getIgnoredUpgrades.js'
+import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
 

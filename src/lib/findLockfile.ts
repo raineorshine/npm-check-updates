@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { Options } from '../types/Options'
+import { Options } from '../types/Options.js'
 
 /**
  * Goes up the filesystem tree until it finds a package-lock.json, yarn.lock, pnpm-lock.yaml, deno.json, deno.jsonc, or bun.lockb file.

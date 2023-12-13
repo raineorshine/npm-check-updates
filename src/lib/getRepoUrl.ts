@@ -2,9 +2,9 @@ import fs from 'fs/promises'
 import hostedGitInfo from 'hosted-git-info'
 import path from 'path'
 import { URL } from 'url'
-import { PackageFile } from '../types/PackageFile'
-import { PackageFileRepository } from '../types/PackageFileRepository'
-import exists from './exists'
+import { PackageFile } from '../types/PackageFile.js'
+import { PackageFileRepository } from '../types/PackageFileRepository.js'
+import exists from './exists.js'
 
 // extract the defaultBranchPath so it can be stripped in the final output
 const defaultBranchPath = hostedGitInfo

@@ -1,5 +1,5 @@
-import determinePackageManager from '../src/lib/determinePackageManager'
-import chaiSetup from './helpers/chaiSetup'
+import determinePackageManager from '../src/lib/determinePackageManager.js'
+import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
 

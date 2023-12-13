@@ -1,10 +1,10 @@
 import { satisfies } from 'semver'
-import { IgnoredUpgrade } from '../types/IgnoredUpgrade'
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
-import { Version } from '../types/Version'
-import { VersionSpec } from '../types/VersionSpec'
-import upgradePackageDefinitions from './upgradePackageDefinitions'
+import { IgnoredUpgrade } from '../types/IgnoredUpgrade.js'
+import { Index } from '../types/IndexType.js'
+import { Options } from '../types/Options.js'
+import { Version } from '../types/Version.js'
+import { VersionSpec } from '../types/VersionSpec.js'
+import upgradePackageDefinitions from './upgradePackageDefinitions.js'
 
 /** Get all upgrades that are ignored due to incompatible peer dependencies. */
 export async function getIgnoredUpgrades(

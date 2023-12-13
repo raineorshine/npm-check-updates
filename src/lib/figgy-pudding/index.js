@@ -55,7 +55,6 @@ class FiggyPudding {
     )
   }
 }
-const util = require('util')
 
 function pudGet(pud, key, validate) {
   let spec = pud.__specs[key]
@@ -99,7 +98,6 @@ const proxyHandler = {
   },
 }
 
-module.exports = figgyPudding
 function figgyPudding(specs, opts) {
   function factory(...providers) {
     return new Proxy(new FiggyPudding(specs, opts, providers), proxyHandler)
@@ -116,3 +114,5 @@ function reverse(arr) {
 function entries(obj) {
   return Object.keys(obj).map(k => [k, obj[k]])
 }
+
+export default figgyPudding

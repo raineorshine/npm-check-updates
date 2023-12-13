@@ -1,11 +1,11 @@
 import pick from 'lodash/pick'
-import { print, printJson, printSorted, printUpgrades } from '../lib/logging'
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
-import chalk from './chalk'
-import getInstalledPackages from './getInstalledPackages'
-import { keyValueBy } from './keyValueBy'
-import upgradePackageDefinitions from './upgradePackageDefinitions'
+import { print, printJson, printSorted, printUpgrades } from '../lib/logging.js'
+import { Index } from '../types/IndexType.js'
+import { Options } from '../types/Options.js'
+import chalk from './chalk.js'
+import getInstalledPackages from './getInstalledPackages.js'
+import { keyValueBy } from './keyValueBy.js'
+import upgradePackageDefinitions from './upgradePackageDefinitions.js'
 
 /** Checks global dependencies for upgrades. */
 async function runGlobal(options: Options): Promise<Index<string> | void> {

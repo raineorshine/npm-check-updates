@@ -1,5 +1,5 @@
-import upgradeDependencies from '../src/lib/upgradeDependencies'
-import chaiSetup from './helpers/chaiSetup'
+import upgradeDependencies from '../src/lib/upgradeDependencies.js'
+import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
 

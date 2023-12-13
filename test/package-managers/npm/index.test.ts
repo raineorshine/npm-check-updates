@@ -1,5 +1,5 @@
-import * as npm from '../../../src/package-managers/npm'
-import chaiSetup from '../../helpers/chaiSetup'
+import * as npm from '../../../src/package-managers/npm.js'
+import chaiSetup from '../../helpers/chaiSetup.js'
 
 chaiSetup()
 

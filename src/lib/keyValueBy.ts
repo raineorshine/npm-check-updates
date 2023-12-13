@@ -1,4 +1,4 @@
-import { Index } from '../types/IndexType'
+import { Index } from '../types/IndexType.js'
 
 type KeyValueGenerator<K, V, R> = (key: K, value: V, accum: Index<R>) => Index<R> | null
 type ArrayKeyValueGenerator<T, R> = KeyValueGenerator<T, number, R>

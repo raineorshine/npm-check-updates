@@ -1,5 +1,5 @@
-import { Index } from './IndexType'
-import { Version } from './Version'
+import { Index } from './IndexType.js'
+import { Version } from './Version.js'
 
 /** An object that represents an upgrade that was ignored, along with the reason. */
 export interface IgnoredUpgrade {

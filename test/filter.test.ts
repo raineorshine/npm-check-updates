@@ -1,10 +1,10 @@
 import fs from 'fs/promises'
 import path from 'path'
 import spawn from 'spawn-please'
-import ncu from '../src'
-import { Index } from '../src/types/IndexType'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import ncu from '../src/index.js'
+import { Index } from '../src/types/IndexType.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 

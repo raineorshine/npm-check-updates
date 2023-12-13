@@ -1,7 +1,7 @@
 import groupBy from 'lodash/groupBy'
 import sortBy from 'lodash/sortBy'
-import { Index } from '../types/IndexType'
-import { WILDCARDS } from './version-util'
+import { Index } from '../types/IndexType.js'
+import { WILDCARDS } from './version-util.js'
 
 /**
  *

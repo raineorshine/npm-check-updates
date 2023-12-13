@@ -1,8 +1,8 @@
 import path from 'path'
 import { rimraf } from 'rimraf'
-import ncu from '../src/index'
-import spawnNpm from '../src/package-managers/npm'
-import chaiSetup from './helpers/chaiSetup'
+import ncu from '../src/index.js'
+import spawnNpm from '../src/package-managers/npm.js'
+import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
 

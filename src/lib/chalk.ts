@@ -11,7 +11,7 @@ Call await chalkInit(color) at the beginning of execution and the chalk instance
 It is a hacky solution, but it is the easiest way to import and pass the color option to all chalk instances without brutalizing the syntax.
 
 */
-import keyValueBy from './keyValueBy'
+import keyValueBy from './keyValueBy.js'
 
 type ChalkMethod = ((s: any) => string) & { bold: (s: any) => string }
 
@@ -46,7 +46,7 @@ export const chalkInit = async (color?: boolean | null) => {
 const assertChalk = () => {
   if (!chalkInstance) {
     throw new Error(
-      `Chalk has not been imported yet. Chalk is a dynamic import and requires that you await { chalkInit } from './lib/chalk'.`,
+      `Chalk has not been imported yet. Chalk is a dynamic import and requires that you await { chalkInit } from './lib/chalk.js'.`,
     )
   }
 }

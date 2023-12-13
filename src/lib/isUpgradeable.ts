@@ -1,8 +1,8 @@
 import * as semver from 'semver'
 import semverutils from 'semver-utils'
-import { Version } from '../types/Version'
-import { VersionSpec } from '../types/VersionSpec'
-import { fixPseudoVersion, isComparable, isWildCard, stringify } from './version-util'
+import { Version } from '../types/Version.js'
+import { VersionSpec } from '../types/VersionSpec.js'
+import { fixPseudoVersion, isComparable, isWildCard, stringify } from './version-util.js'
 
 /**
  * Check if a version satisfies the latest, and is not beyond the latest). Ignores `v` prefix.

@@ -1,11 +1,11 @@
-import { Options } from '../types/Options'
-import { Version } from '../types/Version'
-import { VersionSpec } from '../types/VersionSpec'
-import filterAndReject from './filterAndReject'
-import filterObject from './filterObject'
-import getPackageManager from './getPackageManager'
-import programError from './programError'
-import { isWildPart } from './version-util'
+import { Options } from '../types/Options.js'
+import { Version } from '../types/Version.js'
+import { VersionSpec } from '../types/VersionSpec.js'
+import filterAndReject from './filterAndReject.js'
+import filterObject from './filterObject.js'
+import getPackageManager from './getPackageManager.js'
+import programError from './programError.js'
+import { isWildPart } from './version-util.js'
 
 /**
  * @param [options]

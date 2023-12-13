@@ -6,12 +6,12 @@ https://github.com/npm/libnpmconfig
 
 */
 
-const fs = require('fs')
-const figgyPudding = require('../figgy-pudding')
-const findUp = require('find-up')
-const ini = require('ini')
-const os = require('os')
-const path = require('path')
+import fs from 'fs';
+import figgyPudding from '../figgy-pudding/index.js';
+import findUp from 'find-up';
+import ini from 'ini';
+import os from 'os';
+import path from 'path';
 
 const NpmConfig = figgyPudding(
   {},

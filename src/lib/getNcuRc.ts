@@ -4,7 +4,7 @@ import omit from 'lodash/omit'
 import os from 'os'
 import path from 'path'
 import { rcFile } from 'rc-config-loader'
-import { cliOptionsMap } from '../cli-options'
+import { cliOptionsMap } from '../cli-options.js'
 
 interface Options {
   color?: boolean

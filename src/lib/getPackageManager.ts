@@ -1,8 +1,8 @@
-import packageManagers from '../package-managers'
-import { Maybe } from '../types/Maybe'
-import { Options } from '../types/Options'
-import { PackageManager } from '../types/PackageManager'
-import programError from './programError'
+import packageManagers from '../package-managers/index.js'
+import { Maybe } from '../types/Maybe.js'
+import { Options } from '../types/Options.js'
+import { PackageManager } from '../types/PackageManager.js'
+import programError from './programError.js'
 
 /**
  * Resolves the package manager from a string or object. Throws an error if an invalid packageManager is provided.

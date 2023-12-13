@@ -2,9 +2,9 @@ import { expect } from 'chai'
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
-import ncu from '../src/index'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import ncu from '../src/index.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 

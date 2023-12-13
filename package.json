@@ -29,7 +29,8 @@
     "node": "^16 < 16.15.1 || >16.15.1",
     "npm": ">=8.12.1"
   },
-  "main": "build/src/index.js",
+  "exports": "./build/src/index.js",
+  "type": "module",
   "scripts": {
     "build": "npm run build:ts && npm run build:options",
     "build:ts": "tsc",
@@ -163,7 +164,11 @@
   "mocha": {
     "check-leaks": true,
     "extension": [
-      "test.ts"
+      "ts"
+    ],
+    "node-option": [
+      "experimental-specifier-resolution=node",
+      "loader=ts-node/esm"
     ],
     "require": [
       "source-map-support/register",

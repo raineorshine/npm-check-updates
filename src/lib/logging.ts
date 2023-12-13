@@ -3,14 +3,14 @@
  */
 import Table from 'cli-table3'
 import transform from 'lodash/transform'
-import { IgnoredUpgrade } from '../types/IgnoredUpgrade'
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
-import { VersionResult } from '../types/VersionResult'
-import { VersionSpec } from '../types/VersionSpec'
-import chalk from './chalk'
-import filterObject from './filterObject'
-import getRepoUrl from './getRepoUrl'
+import { IgnoredUpgrade } from '../types/IgnoredUpgrade.js'
+import { Index } from '../types/IndexType.js'
+import { Options } from '../types/Options.js'
+import { VersionResult } from '../types/VersionResult.js'
+import { VersionSpec } from '../types/VersionSpec.js'
+import chalk from './chalk.js'
+import filterObject from './filterObject.js'
+import getRepoUrl from './getRepoUrl.js'
 import {
   colorizeDiff,
   getDependencyGroups,
@@ -18,7 +18,7 @@ import {
   isGithubUrl,
   isNpmAlias,
   parseNpmAlias,
-} from './version-util'
+} from './version-util.js'
 
 type LogLevel = 'silent' | 'error' | 'warn' | 'info' | 'verbose' | 'silly' | null
 

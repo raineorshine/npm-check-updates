@@ -1,5 +1,5 @@
 import Table from 'cli-table3'
-import wrap from './wrap'
+import wrap from './wrap.js'
 
 /** Wraps the second column in a list of 2-column cli-table rows. */
 const wrapRows = (rows: string[][]) => rows.map(([col1, col2]) => [col1, wrap(col2)])

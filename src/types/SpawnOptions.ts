@@ -1,4 +1,4 @@
-import { Index } from './IndexType'
+import { Index } from './IndexType.js'
 
 /** Options to the spawn node built-in. */
 export interface SpawnOptions {
