@@ -1,4 +1,4 @@
-import ncu from '../src/'
+import ncu from '../src/index'
 import { FilterFunction } from '../src/types/FilterFunction'
 import { Index } from '../src/types/IndexType'
 import { TargetFunction } from '../src/types/TargetFunction'

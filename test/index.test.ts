@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
-import ncu from '../src/'
+import ncu from '../src/index'
 import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
 

@@ -1,4 +1,4 @@
-import ncu from '../src/'
+import ncu from '../src/index'
 import { Index } from '../src/types/IndexType'
 import { VersionSpec } from '../src/types/VersionSpec'
 import chaiSetup from './helpers/chaiSetup'
