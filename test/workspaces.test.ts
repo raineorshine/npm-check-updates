@@ -113,14 +113,11 @@ let stub: { restore: () => void }
 describe('workspaces', () => {
   describe('stubbed', () => {
     before(() => {
-      stub = stubNpmView(
-        {
-          'ncu-test-v2': '2.0.0',
-          'ncu-test-tag': '1.1.0',
-          'ncu-test-return-version': '2.0.0',
-        },
-        { spawn: true },
-      )
+      stub = stubNpmView({
+        'ncu-test-v2': '2.0.0',
+        'ncu-test-tag': '1.1.0',
+        'ncu-test-return-version': '2.0.0',
+      })
     })
     after(() => {
       stub.restore()

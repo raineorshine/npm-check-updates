@@ -167,7 +167,7 @@ describe('doctor', function () {
   this.timeout(3 * 60 * 1000)
 
   let stub: { restore: () => void }
-  before(() => (stub = stubNpmView(mockNpmVersions, { spawn: true })))
+  before(() => (stub = stubNpmView(mockNpmVersions)))
   after(() => stub.restore())
 
   describe('npm', () => {

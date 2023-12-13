@@ -27,7 +27,7 @@ describe('timeout', function () {
   })
 
   it('completes successfully with timeout', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubNpmView('99.9.9')
     await spawn('node', [bin, '--timeout', '100000'], '{ "dependencies": { "express": "1" } }')
     stub.restore()
   })

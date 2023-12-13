@@ -203,7 +203,7 @@ describe('filter', () => {
 
   describe('cli', () => {
     let stub: { restore: () => void }
-    before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
+    before(() => (stub = stubNpmView('99.9.9')))
     after(() => stub.restore())
 
     it('filter by package name with --filter', async () => {
@@ -299,7 +299,7 @@ describe('filter', () => {
 describe('reject', () => {
   describe('cli', () => {
     let stub: { restore: () => void }
-    before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
+    before(() => (stub = stubNpmView('99.9.9')))
     after(() => stub.restore())
 
     it('reject by package name with --reject', async () => {

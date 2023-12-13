@@ -47,7 +47,7 @@ describe('--deep', function () {
   this.timeout(60000)
 
   let stub: { restore: () => void }
-  before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
+  before(() => (stub = stubNpmView('99.9.9')))
   after(() => stub.restore())
 
   it('do not allow --packageFile and --deep together', async () => {
@@ -126,7 +126,7 @@ describe('--deep with nested ncurc files', function () {
   this.timeout(60000)
 
   let stub: { restore: () => void }
-  before(() => (stub = stubNpmView('99.9.9', { spawn: true })))
+  before(() => (stub = stubNpmView('99.9.9')))
   after(() => stub.restore())
 
   it('use ncurc of nested packages', async () => {

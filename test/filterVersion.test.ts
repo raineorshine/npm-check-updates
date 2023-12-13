@@ -119,7 +119,7 @@ describe('filterVersion', () => {
 
   describe('cli', () => {
     it('allow multiple --filterVersion options', async () => {
-      const stub = stubNpmView('99.9.9', { spawn: true })
+      const stub = stubNpmView('99.9.9')
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -143,7 +143,7 @@ describe('filterVersion', () => {
 describe('rejectVersion', () => {
   describe('cli', () => {
     it('allow multiple --rejectVersion options', async () => {
-      const stub = stubNpmView('99.9.9', { spawn: true })
+      const stub = stubNpmView('99.9.9')
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',

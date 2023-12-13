@@ -18,14 +18,11 @@ async function groupTestScaffold(
   groupFn: GroupFunction,
   expectedOutput: string,
 ): Promise<void> {
-  const stub = stubNpmView(
-    {
-      'ncu-test-v2': '2.0.0',
-      'ncu-test-tag': '1.1.0',
-      'ncu-test-return-version': '2.0.0',
-    },
-    { spawn: true },
-  )
+  const stub = stubNpmView({
+    'ncu-test-v2': '2.0.0',
+    'ncu-test-tag': '1.1.0',
+    'ncu-test-return-version': '2.0.0',
+  })
 
   // use dynamic import for ESM module
   const { default: stripAnsi } = await import('strip-ansi')

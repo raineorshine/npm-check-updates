@@ -12,15 +12,12 @@ const bin = path.join(__dirname, '../build/src/bin/cli.js')
 describe('--interactive', () => {
   let stub: { restore: () => void }
   before(() => {
-    stub = stubNpmView(
-      {
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-tag': '1.1.0',
-        'ncu-test-return-version': '2.0.0',
-        'modern-diacritics': '99.9.9',
-      },
-      { spawn: true },
-    )
+    stub = stubNpmView({
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '1.1.0',
+      'ncu-test-return-version': '2.0.0',
+      'modern-diacritics': '99.9.9',
+    })
   })
   after(() => {
     stub.restore()

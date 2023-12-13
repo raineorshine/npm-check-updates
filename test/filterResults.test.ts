@@ -11,14 +11,11 @@ chaiSetup()
 describe('filterResults', () => {
   it('should return only major versions updated', async () => {
     const dependencies = { 'ncu-test-v2': '2.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' }
-    const stub = stubNpmView(
-      {
-        'ncu-test-v2': '3.0.0',
-        'ncu-test-tag': '2.1.0',
-        'ncu-test-return-version': '1.2.0',
-      },
-      { spawn: true },
-    )
+    const stub = stubNpmView({
+      'ncu-test-v2': '3.0.0',
+      'ncu-test-tag': '2.1.0',
+      'ncu-test-return-version': '1.2.0',
+    })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
