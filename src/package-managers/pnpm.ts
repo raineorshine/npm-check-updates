@@ -22,6 +22,7 @@ import {
   minor as npmMinor,
   newest as npmNewest,
   patch as npmPatch,
+  semver as npmSemver,
 } from './npm'
 
 // return type of pnpm ls --json
@@ -109,7 +110,7 @@ export const latest = withNpmWorkspaceConfig(npmLatest)
 export const minor = withNpmWorkspaceConfig(npmMinor)
 export const newest = withNpmWorkspaceConfig(npmNewest)
 export const patch = withNpmWorkspaceConfig(npmPatch)
-export const semver = withNpmWorkspaceConfig(npmPatch)
+export const semver = withNpmWorkspaceConfig(npmSemver)
 
 export { defaultPrefix, getPeerDependencies, packageAuthorChanged } from './npm'
 
