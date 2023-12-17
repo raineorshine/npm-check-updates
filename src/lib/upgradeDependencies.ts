@@ -1,6 +1,4 @@
-import flow from 'lodash/flow'
-import mapValues from 'lodash/mapValues'
-import pickBy from 'lodash/pickBy'
+import { flow, mapValues, pickBy } from 'lodash-es'
 import { parseRange } from 'semver-utils'
 import { Index } from '../types/IndexType.js'
 import { Options } from '../types/Options.js'

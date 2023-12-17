@@ -1,6 +1,4 @@
-import flatten from 'lodash/flatten'
-import map from 'lodash/map'
-import omit from 'lodash/omit'
+import { flatten, map, omit } from 'lodash-es'
 import os from 'os'
 import path from 'path'
 import { rcFile } from 'rc-config-loader'

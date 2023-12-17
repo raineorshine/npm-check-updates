@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 import Commander, { Help, program } from 'commander'
-import cloneDeep from 'lodash/cloneDeep'
-import pickBy from 'lodash/pickBy'
+import { cloneDeep, pickBy } from 'lodash-es'
 import semver from 'semver'
-import pkg from '../../package.json'
+import pkg from '../../package.json' assert { type: "json" }
 import cliOptions, { renderExtendedHelp } from '../cli-options.js'
 import ncu from '../index.js'
 import { chalkInit } from '../lib/chalk.js'

@@ -1,4 +1,4 @@
-import pick from 'lodash/pick'
+import { pick } from 'lodash-es'
 import { print, printJson, printSorted, printUpgrades } from '../lib/logging.js'
 import { Index } from '../types/IndexType.js'
 import { Options } from '../types/Options.js'

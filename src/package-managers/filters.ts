@@ -1,5 +1,4 @@
-import get from 'lodash/get'
-import overEvery from 'lodash/overEvery'
+import { get, overEvery } from 'lodash-es'
 import semver from 'semver'
 import * as versionUtil from '../lib/version-util.js'
 import { Index } from '../types/IndexType.js'

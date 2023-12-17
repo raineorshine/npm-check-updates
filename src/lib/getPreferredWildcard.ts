@@ -1,5 +1,4 @@
-import groupBy from 'lodash/groupBy'
-import sortBy from 'lodash/sortBy'
+import { groupBy, sortBy } from 'lodash-es'
 import { Index } from '../types/IndexType.js'
 import { WILDCARDS } from './version-util.js'
 

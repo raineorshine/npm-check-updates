@@ -2,7 +2,7 @@
  * Loggin functions.
  */
 import Table from 'cli-table3'
-import transform from 'lodash/transform'
+import { transform } from 'lodash-es'
 import { IgnoredUpgrade } from '../types/IgnoredUpgrade.js'
 import { Index } from '../types/IndexType.js'
 import { Options } from '../types/Options.js'

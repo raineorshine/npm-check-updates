@@ -1,6 +1,5 @@
 import { and, or } from 'fp-and-or'
-import identity from 'lodash/identity'
-import negate from 'lodash/negate'
+import { identity, negate } from 'lodash-es'
 import { minimatch } from 'minimatch'
 import { parseRange } from 'semver-utils'
 import { FilterPattern } from '../types/FilterPattern.js'

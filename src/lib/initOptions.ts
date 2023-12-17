@@ -1,5 +1,4 @@
-import isEqual from 'lodash/isEqual'
-import propertyOf from 'lodash/propertyOf'
+import { isEqual, propertyOf } from 'lodash-es'
 import cliOptions, { cliOptionsMap } from '../cli-options.js'
 import { print } from '../lib/logging.js'
 import packageManagers from '../package-managers/index.js'

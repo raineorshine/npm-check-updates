@@ -1,4 +1,4 @@
-import isString from 'lodash/isString'
+import { isString } from 'lodash-es'
 import path from 'path'
 import prompts from 'prompts-ncu'
 import spawn from 'spawn-please'

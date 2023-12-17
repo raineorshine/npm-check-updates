@@ -1,6 +1,4 @@
-import isEmpty from 'lodash/isEmpty'
-import isEqual from 'lodash/isEqual'
-import pickBy from 'lodash/pickBy'
+import { isEmpty, isEqual, pickBy } from 'lodash-es'
 import { satisfies } from 'semver'
 import { parse, parseRange } from 'semver-utils'
 import { Index } from '../types/IndexType.js'

@@ -1,4 +1,4 @@
-import sortBy from 'lodash/sortBy'
+import { sortBy } from 'lodash-es'
 import path from 'path'
 import { defaultCacheFile } from './lib/cache.js'
 import chalk from './lib/chalk.js'
