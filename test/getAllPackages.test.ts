@@ -1,10 +1,13 @@
 import path from 'path'
+import { fileURLToPath } from 'url'
 import getAllPackages from '../src/lib/getAllPackages.js'
 import { Options } from '../src/types/Options.js'
 import { PackageInfo } from '../src/types/PackageInfo.js'
 import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /** forces path to a posix version (windows-style) */
 function asPosixPath(filepath: string): string {

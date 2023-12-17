@@ -2,6 +2,7 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
+import { fileURLToPath } from 'url'
 import { Index } from '../src/types/IndexType.js'
 import { Version } from '../src/types/Version.js'
 import chaiSetup from './helpers/chaiSetup.js'
@@ -9,6 +10,7 @@ import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('bin', async function () {

@@ -1,8 +1,12 @@
 import os from 'os'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import * as bun from '../../../src/package-managers/bun.js'
 import chaiSetup from '../../helpers/chaiSetup.js'
 
 chaiSetup()
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // Bun not yet supported on Windows
 const describeSkipWindows = os.platform() === 'win32' ? describe.skip : describe

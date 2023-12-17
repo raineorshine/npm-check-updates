@@ -3,6 +3,7 @@ import os from 'os'
 import path from 'path'
 import { rimraf } from 'rimraf'
 import spawn from 'spawn-please'
+import { fileURLToPath } from 'url'
 import { cliOptionsMap } from '../src/cli-options.js'
 import { chalkInit } from '../src/lib/chalk.js'
 import { PackageManagerName } from '../src/types/PackageManagerName.js'
@@ -11,6 +12,7 @@ import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 const doctorTests = path.join(__dirname, 'test-data/doctor')
 

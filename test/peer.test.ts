@@ -1,10 +1,13 @@
 import path from 'path'
 import { rimraf } from 'rimraf'
+import { fileURLToPath } from 'url'
 import ncu from '../src/index.js'
 import spawnNpm from '../src/package-managers/npm.js'
 import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 describe('peer dependencies', function () {
   it('peer dependencies of installed packages are ignored by default', async () => {

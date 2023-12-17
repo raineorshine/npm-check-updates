@@ -3,10 +3,12 @@ import jph from 'json-parse-helpfulerror'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
+import { fileURLToPath } from 'url'
 import chaiSetup from '../../helpers/chaiSetup.js'
 
 chaiSetup()
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const bin = path.join(__dirname, '../../../build/src/bin/cli.js')
 
 describe('deno', async function () {
