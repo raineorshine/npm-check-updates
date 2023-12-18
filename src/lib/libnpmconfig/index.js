@@ -5,13 +5,12 @@ This is a copy of the deprecated libnpmconfig library. It has been brought into 
 https://github.com/npm/libnpmconfig
 
 */
-
-import fs from 'fs';
-import figgyPudding from '../figgy-pudding/index.js';
-import findUp from 'find-up';
-import ini from 'ini';
-import os from 'os';
-import path from 'path';
+import findUp from 'find-up'
+import fs from 'fs'
+import ini from 'ini'
+import os from 'os'
+import path from 'path'
+import figgyPudding from '../figgy-pudding/index.js'
 
 const NpmConfig = figgyPudding(
   {},
