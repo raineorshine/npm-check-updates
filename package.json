@@ -88,7 +88,7 @@
     "strip-ansi": "^7.1.0",
     "strip-json-comments": "^5.0.1",
     "untildify": "^4.0.0",
-    "update-notifier": "^7.0.0"
+    "update-notifier": "^6.0.2"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.2.1",

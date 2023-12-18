@@ -23,5 +23,7 @@ module.exports = {
     // v0.60.0 breaks cli option description output
     // https://github.com/YousefED/typescript-json-schema/issues/568
     'typescript-json-schema',
+    // node >= 18
+    'update-notifier',
   ],
 }
