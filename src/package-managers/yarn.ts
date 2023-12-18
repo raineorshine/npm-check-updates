@@ -24,6 +24,7 @@ import {
   minor as npmMinor,
   newest as npmNewest,
   patch as npmPatch,
+  semver as npmSemver,
 } from './npm.js'
 
 interface ParsedDep {
@@ -287,6 +288,6 @@ export const latest = withNpmConfigFromYarn(npmLatest)
 export const minor = withNpmConfigFromYarn(npmMinor)
 export const newest = withNpmConfigFromYarn(npmNewest)
 export const patch = withNpmConfigFromYarn(npmPatch)
-export const semver = withNpmConfigFromYarn(npmPatch)
+export const semver = withNpmConfigFromYarn(npmSemver)
 
 export default spawnYarn

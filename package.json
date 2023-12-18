@@ -39,7 +39,7 @@
     "lint:lockfile": "lockfile-lint",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.cjs",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --ignore-path .gitignore --report-unused-disable-directives .",
-    "prepare": "husky install && bash test/bun-setup.sh",
+    "prepare": "src/scripts/install-hooks && test/bun-setup.sh",
     "prepublishOnly": "npm run build",
     "prettier": "prettier . --check",
     "test": "mocha test test/package-managers/*",
@@ -56,6 +56,9 @@
   "homepage": "https://github.com/raineorshine/npm-check-updates",
   "bugs": {
     "url": "https://github.com/raineorshine/npm-check-updates/issues"
+  },
+  "overrides": {
+    "@yarnpkg/parsers": "2.6.0"
   },
   "dependencies": {
     "chalk": "^5.3.0",
@@ -89,7 +92,7 @@
     "strip-ansi": "^7.1.0",
     "strip-json-comments": "^5.0.1",
     "untildify": "^4.0.0",
-    "update-notifier": "^7.0.0"
+    "update-notifier": "^6.0.2"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.2.1",
@@ -133,7 +136,6 @@
     "eslint-plugin-jsdoc": "^46.8.2",
     "eslint-plugin-n": "^16.2.0",
     "eslint-plugin-promise": "^6.1.1",
-    "husky": "^8.0.3",
     "lockfile-lint": "^4.12.1",
     "markdownlint-cli": "^0.37.0",
     "mocha": "^10.2.0",
