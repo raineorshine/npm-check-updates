@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 import { Help, Option, program } from 'commander'
+import fs from 'fs/promises'
 import { cloneDeep, pickBy } from 'lodash-es'
+import path from 'path'
 import semver from 'semver'
-import pkg from '../../package.json' assert { type: "json" }
 import cliOptions, { renderExtendedHelp } from '../cli-options.js'
 import ncu from '../index.js'
 import { chalkInit } from '../lib/chalk.js'
 // async global contexts are only available in esm modules -> function
 import getNcuRc from '../lib/getNcuRc.js'
+
+const __dirname = path.dirname(new URL(import.meta.url).pathname)
 
 /** Removes inline code ticks. */
 const uncode = (s: string) => s.replace(/`/g, '')
@@ -15,6 +18,8 @@ const uncode = (s: string) => s.replace(/`/g, '')
 ;(async () => {
   // importing update-notifier dynamically as esm modules are only allowed to be dynamically imported inside of cjs modules
   const { default: updateNotifier } = await import('update-notifier')
+
+  const pkg = JSON.parse(await fs.readFile(path.join(__dirname, '../../package.json'), 'utf-8'))
 
   // check if a new version of ncu is available and print an update notification
   //
