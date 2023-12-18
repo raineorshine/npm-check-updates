@@ -56,6 +56,9 @@
   "bugs": {
     "url": "https://github.com/raineorshine/npm-check-updates/issues"
   },
+  "overrides": {
+    "@yarnpkg/parsers": "2.6.0"
+  },
   "dependencies": {
     "chalk": "^5.3.0",
     "cli-table3": "^0.6.3",
