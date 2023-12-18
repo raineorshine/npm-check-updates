@@ -11,18 +11,14 @@ strip() {
 notify() {
   # if osascript is not supported, do nothing
   if [ -f /usr/bin/osascript ]; then
-    # get '<SHORT_SHA> <FIRST_LINE_OF_COMMIT_MSG>'
-    COMMIT_INFO=$(git log --oneline -n 1 --format="%h %s")
-
     # read back in the lint errors
-    # TODO: update for each tye of error
     ERRORS=$(cat "$LINT_LOG" | sed 1,4d)
 
     # Trigger apple- or OSA-script on supported platforms
-    /usr/bin/osascript -e "display notification \"$ERRORS\" with title \"ncu: $COMMIT_INFO: $*\""
+    /usr/bin/osascript -e "display notification \"$ERRORS\" with title \"$*\""
   fi
 
-  # always clean up the lint output, and do not clag-up TMPDIR
+  # clean up
   rm "$LINT_LOG"
 }
 
@@ -35,9 +31,7 @@ if [ -z "$branch" ]; then
   exit 0
 fi
 
-# Lint asynchrously, not blocking the terminal and piping all output to a file.
-# IFF lint fails trigger a pop-up (on supported platforms) with at least the
-# first error shown.
-# We pipe output so that the terminal (tmux, vim, emacs etc.) isn't borked by
-# stray output.
+# Lint in the background, not blocking the terminal and piping all output to a file.
+# If the lint fails, trigger a notification (on supported platforms) with at least the first error shown.
+# We pipe output so that the terminal (tmux, vim, emacs etc.) isn't borked by stray output.
 npm run lint:src | strip &>"$LINT_LOG" || notify "Lint Error" &
