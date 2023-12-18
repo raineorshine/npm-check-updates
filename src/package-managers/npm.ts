@@ -53,7 +53,7 @@ export const normalizeNpmConfig = (
     cafile: (capath: string): undefined | { ca: string[] } => {
       // load-cafile, based on github.com/npm/cli/blob/40c1b0f/lib/config/load-cafile.js
       if (!capath) return
-      // synchronous since it is loaded once on startup, and to avoid complexity in libnpmconfig.read
+      // synchronous since it is loaded once on startup, and to avoid complexity in libnpmconfig
       // https://github.com/raineorshine/npm-check-updates/issues/636?notification_referrer_id=MDE4Ok5vdGlmaWNhdGlvblRocmVhZDc0Njk2NjAzMjo3NTAyNzY%3D
       const cadata = fs.readFileSync(path.resolve(configPath || '', untildify(capath)), 'utf8')
       const delim = '-----END CERTIFICATE-----'
@@ -197,7 +197,7 @@ const findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
   } else {
     // libnpmconfig incorrectly (?) ignores NPM_CONFIG_USERCONFIG because it is always overridden by the default builtin.userconfig
     // set userconfig manually so that it is prioritized
-    const opts = libnpmconfig.read(null, {
+    const opts = libnpmconfig(null, {
       userconfig: process.env.npm_config_userconfig || process.env.NPM_CONFIG_USERCONFIG,
     })
     config = {
@@ -212,21 +212,6 @@ const findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
 // get the base config that is used for all npm queries
 // this may be partially overwritten by .npmrc config files when using --deep
 const npmConfig = findNpmConfig()
-
-/** A promise that returns true if --global is deprecated on the system npm. Spawns "npm --version". */
-const isGlobalDeprecated = memoize(async () => {
-  const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-  const output = await spawn(cmd, ['--version'])
-  const npmVersion = output.trim()
-  // --global was deprecated in npm v8.11.0.
-  return nodeSemver.valid(npmVersion) && nodeSemver.gte(npmVersion, '8.11.0')
-})
-
-/**
- * @typedef {object} CommandAndPackageName
- * @property {string} command
- * @property {string} packageName
- */
 
 /**
  * Parse JSON and throw an informative error on failure.
@@ -286,7 +271,7 @@ export async function packageAuthorChanged(
 }
 
 /** Returns true if an object is a Packument. */
-const isPackument = (o: any): o is Partial<Packument> => o && (o.name || o.engines || o.version || o.versions)
+const isPackument = (o: any): o is Partial<Packument> => !!(o && (o.name || o.engines || o.version || o.versions))
 
 /** Creates a function with the same signature as viewMany that always returns the given versions. */
 export const mockViewMany =
@@ -302,23 +287,25 @@ export const mockViewMany =
 
     const version = isPackument(partialPackument) ? partialPackument.version : partialPackument
 
-    // if there is no version, hard exit
-    // otherwise getPackageProtected will swallow the error
     if (!version) {
-      console.error(`No mock version supplied for ${name}`)
-      process.exit(1)
+      throw new Error(
+        `viewMany is mocked, but no mock version was supplied for ${name}. Make sure that all dependencies are mocked. `,
+      )
     }
 
     const time = (isPackument(partialPackument) && partialPackument.time?.[version]) || new Date().toISOString()
     const packument: Packument = {
       name,
+      'dist-tags': {
+        latest: version,
+      },
       engines: { node: '' },
       time: {
         [version]: time,
       },
       version,
       // overwritten below
-      versions: [],
+      versions: {},
       ...(isPackument(partialPackument) ? partialPackument : null),
     }
 
@@ -335,7 +322,9 @@ export const mockViewMany =
               } as Index<string>)
             : ({
                 ...packument,
-                versions: [packument],
+                versions: {
+                  [version]: packument,
+                },
               } as Packument),
       })),
     )
@@ -534,7 +523,7 @@ export async function viewOne(
 }
 
 /**
- * Spawns npm with --json. Handles different commands for Window and Linux/OSX, and automatically converts --location=global to --global on npm < 8.11.0.
+ * Spawns npm with --json. Handles different commands for Window and Linux/OSX.
  *
  * @param args
  * @param [npmOptions={}]
@@ -549,17 +538,12 @@ async function spawnNpm(
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
   args = Array.isArray(args) ? args : [args]
 
-  const fullArgs = args.concat(
-    npmOptions.location
-      ? (await isGlobalDeprecated())
-        ? `--location=${npmOptions.location}`
-        : npmOptions.location === 'global'
-        ? '--global'
-        : ''
-      : [],
-    npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : [],
+  const fullArgs = [
+    ...args,
+    ...(npmOptions.global ? [`--global`] : []),
+    ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
     '--json',
-  )
+  ]
   return spawn(cmd, fullArgs, spawnOptions)
 }
 
@@ -636,7 +620,6 @@ export const greatest: GetVersion = async (
   return {
     version:
       last(
-        // eslint-disable-next-line fp/no-mutating-methods
         filter(versions, filterPredicate(options))
           .map(o => o.version)
           .sort(versionUtil.compareVersions),
@@ -674,8 +657,7 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   const result = await spawnNpm(
     ['ls', '--depth=0'],
     {
-      // spawnNpm takes the modern --location option and converts it to --global on older versions of npm
-      ...(options.global ? { location: 'global' } : null),
+      ...(options.global ? { global: true } : null),
       ...(options.prefix ? { prefix: options.prefix } : null),
     },
     {
@@ -686,9 +668,7 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   const dependencies = parseJson<{
     dependencies: Index<{ version?: Version; required?: { version: Version } }>
   }>(result, {
-    command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --location=global' : ''}${
-      options.prefix ? ' --prefix ' + options.prefix : ''
-    }`,
+    command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --global' : ''}`,
   }).dependencies
 
   return keyValueBy(dependencies, (name, info) => ({

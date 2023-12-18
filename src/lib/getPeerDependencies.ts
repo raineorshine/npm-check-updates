@@ -11,7 +11,6 @@ async function getPeerDependencies(current: Index<VersionSpec>, options: Options
   const basePath = options.cwd || './'
   const accum: Index<Index<string>> = {}
 
-  // eslint-disable-next-line fp/no-loops
   for (const dep in current) {
     const path = basePath + `node_modules/${dep}/package.json`
     let peers: Index<string> = {}

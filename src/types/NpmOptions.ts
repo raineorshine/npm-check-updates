@@ -1,6 +1,6 @@
 /** Options that can be provided to npm. */
 export interface NpmOptions {
-  location?: string
+  global?: boolean
   prefix?: string
   registry?: string
 }

@@ -28,7 +28,6 @@ async function getPackageRepo(
   const localNodeModules = [path.join(process.cwd(), 'node_modules')]
   const nodeModulePaths = [...pkgFileNodeModules, ...localNodeModules, ...requirePaths]
 
-  // eslint-disable-next-line fp/no-loops
   for (const basePath of nodeModulePaths) {
     const packageJsonPath = path.join(basePath, packageName, 'package.json')
     if (await exists(packageJsonPath)) {

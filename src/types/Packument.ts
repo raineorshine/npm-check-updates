@@ -5,6 +5,7 @@ import { Version } from './Version'
 export interface Packument {
   name: string
   deprecated?: boolean
+  'dist-tags': Index<Version>
   engines: {
     node: string
   }
@@ -12,5 +13,11 @@ export interface Packument {
   // TODO: store only the time of the latest version?
   time?: Index<string>
   version: Version
-  versions: Packument[]
+  versions: Index<
+    Packument & {
+      _npmUser?: {
+        name: string
+      }
+    }
+  >
 }

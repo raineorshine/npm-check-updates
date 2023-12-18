@@ -332,7 +332,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--root</td>
-    <td>Runs updates on the root project in addition to specified workspaces. Only allowed with <code>--workspace</code> or <code>--workspaces</code>. (default: false)</td>
+    <td>Runs updates on the root project in addition to specified workspaces. Only allowed with <code>--workspace</code> or <code>--workspaces</code>. (default: true)</td>
   </tr>
   <tr>
     <td>-s, --silent</td>

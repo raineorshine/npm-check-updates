@@ -21,7 +21,7 @@ function getPreferredWildcard(dependencies: Index<string | null>) {
     WILDCARDS.find((wildcard: string) => dep && dep.includes(wildcard)),
   )
 
-  delete groups.undefined // eslint-disable-line fp/no-delete
+  delete groups.undefined
 
   const arrOfGroups = Object.entries(groups).map(([wildcard, instances]) => ({ wildcard, instances }))
 

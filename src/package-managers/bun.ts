@@ -1,10 +1,10 @@
-import { Options } from 'pacote'
 import path from 'path'
 import spawn from 'spawn-please'
 import keyValueBy from '../lib/keyValueBy'
 import programError from '../lib/programError'
 import { Index } from '../types/IndexType'
 import { NpmOptions } from '../types/NpmOptions'
+import { Options } from '../types/Options'
 import * as npm from './npm'
 
 /** Spawn bun. */
@@ -24,7 +24,7 @@ async function spawnBun(
   const fullArgs = [
     ...args,
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
-    ...(npmOptions.location === 'global' ? ['--global'] : []),
+    ...(npmOptions.global ? ['--global'] : []),
   ]
 
   return spawn('bun', fullArgs, spawnOptions)
@@ -46,7 +46,7 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   const stdout = await spawnBun(
     ['pm', 'ls'],
     {
-      ...(options.global ? { location: 'global' } : null),
+      ...(options.global ? { global: true } : null),
       ...(options.prefix ? { prefix: options.prefix } : null),
     },
     {

@@ -38,7 +38,6 @@ const getSortedVersions = async (name: string, declaration: VersionSpec, options
     return null
   }
 
-  // eslint-disable-next-line fp/no-mutating-methods
   const tags = Array.from(tagMap.keys())
     .map(versionUtil.fixPseudoVersion)
     // do not pass semver.valid reference directly since the mapping index will be interpreted as the loose option
