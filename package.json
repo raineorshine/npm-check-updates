@@ -37,7 +37,7 @@
     "build:options": "node build/src/scripts/build-options.js && tsc",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
-    "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.js",
+    "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.cjs",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --ignore-path .gitignore --report-unused-disable-directives .",
     "prepare": "husky install && bash test/bun-setup.sh",
     "prepublishOnly": "npm run build",
