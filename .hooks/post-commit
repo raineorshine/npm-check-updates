@@ -1,0 +1,37 @@
+#!/bin/bash
+SHORT_SHA=$(git rev-parse HEAD)
+LINT_LOG="$TMPDIR"/lint."$SHORT_SHA".log
+
+# strip color
+strip() {
+  sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2};?)?)?[mGK]//g"
+}
+
+# display a notification
+notify() {
+  # if osascript is not supported, do nothing
+  if [ -f /usr/bin/osascript ]; then
+    # read back in the lint errors
+    ERRORS=$(cat "$LINT_LOG" | sed 1,4d)
+
+    # Trigger apple- or OSA-script on supported platforms
+    /usr/bin/osascript -e "display notification \"$ERRORS\" with title \"$*\""
+  fi
+
+  # clean up
+  rm "$LINT_LOG"
+}
+
+# ensure failed lint exit code passes through sed
+set -o pipefail
+
+# Do NOT run this when rebasing or we can't get the branch
+branch=$(git branch --show-current)
+if [ -z "$branch" ]; then
+  exit 0
+fi
+
+# Lint in the background, not blocking the terminal and piping all output to a file.
+# If the lint fails, trigger a notification (on supported platforms) with at least the first error shown.
+# We pipe output so that the terminal (tmux, vim, emacs etc.) isn't borked by stray output.
+npm run lint:src | strip &>"$LINT_LOG" || notify "Lint Error" &

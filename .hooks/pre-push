@@ -1,0 +1,9 @@
+#!/bin/bash
+fail=0
+
+npm run lint || fail=1
+npm run prettier -- --check || fail=1
+
+if [ "$fail" -ne 0 ]; then
+  exit 1
+fi
