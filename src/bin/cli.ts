@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import Commander, { Help, program } from 'commander'
+import { Help, Option, program } from 'commander'
 import { cloneDeep, pickBy } from 'lodash-es'
 import semver from 'semver'
 import pkg from '../../package.json' assert { type: "json" }
@@ -100,7 +100,7 @@ ${chalk.dim.underline(
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
     // add hidden -v alias for --V/--version
-    .addOption(new Commander.Option('-v, --version').hideHelp())
+    .addOption(new Option('-v, --version').hideHelp())
     // See: boolean optional arg below
     .configureHelp({
       optionTerm: option =>
@@ -130,7 +130,7 @@ ${chalk.dim.underline(
     // add --no- prefixed boolean options
     // necessary for overriding booleans set to true in the ncurc
     if (type === 'boolean') {
-      program.addOption(new Commander.Option(`--no-${long}`).default(false).hideHelp())
+      program.addOption(new Option(`--no-${long}`).default(false).hideHelp())
     }
   })
 
