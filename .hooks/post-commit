@@ -1,6 +1,4 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
+#!/bin/bash
 SHORT_SHA=$(git rev-parse HEAD)
 LINT_LOG="$TMPDIR"/lint."$SHORT_SHA".log
 
@@ -42,4 +40,4 @@ fi
 # first error shown.
 # We pipe output so that the terminal (tmux, vim, emacs etc.) isn't borked by
 # stray output.
-npm run lint:src | strip &> "$LINT_LOG" || notify "Lint Error" &
+npm run lint:src | strip &>"$LINT_LOG" || notify "Lint Error" &
