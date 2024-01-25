@@ -549,17 +549,18 @@ async function spawnNpm(
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
   args = Array.isArray(args) ? args : [args]
 
-  const fullArgs = args.concat(
-    npmOptions.location
+  const fullArgs = [
+    ...(npmOptions.location
       ? (await isGlobalDeprecated())
         ? `--location=${npmOptions.location}`
         : npmOptions.location === 'global'
         ? '--global'
         : ''
-      : [],
-    npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : [],
+      : []),
+    ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
     '--json',
-  )
+    ...(Array.isArray(args) ? args : [args]),
+  ]
   return spawn(cmd, fullArgs, spawnOptions)
 }
 
