@@ -19,12 +19,10 @@ async function spawnBun(
     programError(npmOptions, 'Bun not yet supported on Windows')
   }
 
-  args = Array.isArray(args) ? args : [args]
-
   const fullArgs = [
-    ...args,
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
     ...(npmOptions.location === 'global' ? ['--global'] : []),
+    ...(Array.isArray(args) ? args : [args]),
   ]
 
   return spawn('bun', fullArgs, spawnOptions)
