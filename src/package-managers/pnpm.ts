@@ -13,17 +13,7 @@ import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { SpawnOptions } from '../types/SpawnOptions'
 import { Version } from '../types/Version'
-import {
-  normalizeNpmConfig,
-  distTag as npmDistTag,
-  greatest as npmGreatest,
-  latest as npmLatest,
-  list as npmList,
-  minor as npmMinor,
-  newest as npmNewest,
-  patch as npmPatch,
-  semver as npmSemver,
-} from './npm'
+import * as npm from './npm'
 
 // return type of pnpm ls --json
 type PnpmList = {
@@ -53,7 +43,7 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
 
   print(options, `\nUsing pnpm workspace config at ${pnpmWorkspaceConfigPath}:`, 'verbose')
 
-  const config = normalizeNpmConfig(ini.parse(pnpmWorkspaceConfig), pnpmWorkspaceDir)
+  const config = npm.normalizeNpmConfig(ini.parse(pnpmWorkspaceConfig), pnpmWorkspaceDir)
 
   print(options, config, 'verbose')
 
@@ -88,7 +78,7 @@ const spawnPnpm = async (
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
   // use npm for local ls for completeness
   // this should never happen since list is only called in runGlobal -> getInstalledPackages
-  if (!options.global) return npmList(options)
+  if (!options.global) return npm.list(options)
 
   const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
   const result = JSON.parse(await spawn(cmd, ['ls', '-g', '--json'])) as PnpmList
@@ -104,13 +94,13 @@ const withNpmWorkspaceConfig =
   async (packageName, currentVersion, options = {}) =>
     getVersion(packageName, currentVersion, options, {}, await npmConfigFromPnpmWorkspace(options))
 
-export const distTag = withNpmWorkspaceConfig(npmDistTag)
-export const greatest = withNpmWorkspaceConfig(npmGreatest)
-export const latest = withNpmWorkspaceConfig(npmLatest)
-export const minor = withNpmWorkspaceConfig(npmMinor)
-export const newest = withNpmWorkspaceConfig(npmNewest)
-export const patch = withNpmWorkspaceConfig(npmPatch)
-export const semver = withNpmWorkspaceConfig(npmSemver)
+export const distTag = withNpmWorkspaceConfig(npm.distTag)
+export const greatest = withNpmWorkspaceConfig(npm.greatest)
+export const latest = withNpmWorkspaceConfig(npm.latest)
+export const minor = withNpmWorkspaceConfig(npm.minor)
+export const newest = withNpmWorkspaceConfig(npm.newest)
+export const patch = withNpmWorkspaceConfig(npm.patch)
+export const semver = withNpmWorkspaceConfig(npm.semver)
 
 export { defaultPrefix, getPeerDependencies, packageAuthorChanged } from './npm'
 

@@ -17,15 +17,7 @@ import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { SpawnOptions } from '../types/SpawnOptions'
 import { VersionSpec } from '../types/VersionSpec'
-import {
-  distTag as npmDistTag,
-  greatest as npmGreatest,
-  latest as npmLatest,
-  minor as npmMinor,
-  newest as npmNewest,
-  patch as npmPatch,
-  semver as npmSemver,
-} from './npm'
+import * as npm from './npm'
 
 interface ParsedDep {
   version: string
@@ -282,12 +274,12 @@ const withNpmConfigFromYarn =
   async (packageName, currentVersion, options = {}) =>
     getVersion(packageName, currentVersion, options, await npmConfigFromYarn(options))
 
-export const distTag = withNpmConfigFromYarn(npmDistTag)
-export const greatest = withNpmConfigFromYarn(npmGreatest)
-export const latest = withNpmConfigFromYarn(npmLatest)
-export const minor = withNpmConfigFromYarn(npmMinor)
-export const newest = withNpmConfigFromYarn(npmNewest)
-export const patch = withNpmConfigFromYarn(npmPatch)
-export const semver = withNpmConfigFromYarn(npmSemver)
+export const distTag = withNpmConfigFromYarn(npm.distTag)
+export const greatest = withNpmConfigFromYarn(npm.greatest)
+export const latest = withNpmConfigFromYarn(npm.latest)
+export const minor = withNpmConfigFromYarn(npm.minor)
+export const newest = withNpmConfigFromYarn(npm.newest)
+export const patch = withNpmConfigFromYarn(npm.patch)
+export const semver = withNpmConfigFromYarn(npm.semver)
 
 export default spawnYarn
