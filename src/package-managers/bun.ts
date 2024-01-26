@@ -20,7 +20,7 @@ async function spawnBun(
   }
 
   const fullArgs = [
-    ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
+    ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
     ...(npmOptions.location === 'global' ? ['--global'] : []),
     ...(Array.isArray(args) ? args : [args]),
   ]

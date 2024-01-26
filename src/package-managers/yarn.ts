@@ -195,9 +195,9 @@ async function spawnYarn(
   const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
 
   const fullArgs = [
-    ...(yarnOptions.location === 'global' ? 'global' : []),
+    ...(yarnOptions.location === 'global' ? ['global'] : []),
+    ...(yarnOptions.prefix ? [`--prefix=${yarnOptions.prefix}`] : []),
     '--depth=0',
-    ...(yarnOptions.prefix ? `--prefix=${yarnOptions.prefix}` : []),
     '--json',
     '--no-progress',
     // args must go after yarn options, otherwise they are passed through to npm scripts
