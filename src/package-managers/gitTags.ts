@@ -86,7 +86,8 @@ export const greatestLevel =
 export const minor = greatestLevel('minor')
 export const patch = greatestLevel('patch')
 
-/** semver is not possible on a remote Git URL, do nothing. */
+/** All git tags are exact versions, so --target semver should never upgrade git tags. */
+// https://github.com/raineorshine/npm-check-updates/pull/1368
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const semver: GetVersion = async (_name: string, _declaration: VersionSpec, _options?: Options) => {
   return { version: null }
