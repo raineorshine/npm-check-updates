@@ -1,7 +1,6 @@
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
-import { rimraf } from 'rimraf'
 import spawn from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
@@ -37,10 +36,10 @@ const testPass = ({ packageManager }: { packageManager: PackageManagerName }) =>
       packageManager === 'yarn'
         ? 'yarn.lock'
         : packageManager === 'pnpm'
-        ? 'pnpm-lock.yaml'
-        : packageManager === 'bun'
-        ? 'bun.lockb'
-        : 'package-lock.json',
+          ? 'pnpm-lock.yaml'
+          : packageManager === 'bun'
+            ? 'bun.lockb'
+            : 'package-lock.json',
     )
     const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
@@ -69,13 +68,13 @@ const testPass = ({ packageManager }: { packageManager: PackageManagerName }) =>
 
     // cleanup before assertions in case they fail
     await fs.writeFile(pkgPath, pkgOriginal)
-    rimraf.sync(nodeModulesPath)
-    rimraf.sync(lockfilePath)
+    await fs.rm(nodeModulesPath)
+    await fs.rm(lockfilePath)
 
     // delete yarn cache
     if (packageManager === 'yarn') {
-      rimraf.sync(path.join(cwd, '.yarn'))
-      rimraf.sync(path.join(cwd, '.pnp.js'))
+      await fs.rm(path.join(cwd, '.yarn'))
+      await fs.rm(path.join(cwd, '.pnp.js'))
     }
 
     // bun prints the run header to stderr instead of stdout
@@ -105,10 +104,10 @@ const testFail = ({ packageManager }: { packageManager: PackageManagerName }) =>
       packageManager === 'yarn'
         ? 'yarn.lock'
         : packageManager === 'pnpm'
-        ? 'pnpm-lock.yaml'
-        : packageManager === 'bun'
-        ? 'bun.lockb'
-        : 'package-lock.json',
+          ? 'pnpm-lock.yaml'
+          : packageManager === 'bun'
+            ? 'bun.lockb'
+            : 'package-lock.json',
     )
     const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
@@ -134,13 +133,13 @@ const testFail = ({ packageManager }: { packageManager: PackageManagerName }) =>
     } finally {
       pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
       await fs.writeFile(pkgPath, pkgOriginal)
-      rimraf.sync(nodeModulesPath)
-      rimraf.sync(lockfilePath)
+      await fs.rm(nodeModulesPath)
+      await fs.rm(lockfilePath)
 
       // delete yarn cache
       if (packageManager === 'yarn') {
-        rimraf.sync(path.join(cwd, '.yarn'))
-        rimraf.sync(path.join(cwd, '.pnp.js'))
+        await fs.rm(path.join(cwd, '.yarn'))
+        await fs.rm(path.join(cwd, '.pnp.js'))
       }
     }
 
@@ -235,8 +234,8 @@ describe('doctor', function () {
 
       // cleanup before assertions in case they fail
       await fs.writeFile(pkgPath, pkgOriginal)
-      rimraf.sync(lockfilePath)
-      rimraf.sync(nodeModulesPath)
+      await fs.rm(lockfilePath)
+      await fs.rm(nodeModulesPath)
 
       // stderr should be empty
       stderr.should.equal('')
@@ -277,8 +276,8 @@ describe('doctor', function () {
 
       // cleanup before assertions in case they fail
       await fs.writeFile(pkgPath, pkgOriginal)
-      rimraf.sync(lockfilePath)
-      rimraf.sync(nodeModulesPath)
+      await fs.rm(lockfilePath)
+      await fs.rm(nodeModulesPath)
 
       // stderr should be empty
       stderr.should.equal('')
@@ -318,8 +317,8 @@ describe('doctor', function () {
 
       // cleanup before assertions in case they fail
       await fs.writeFile(pkgPath, pkgOriginal)
-      rimraf.sync(lockfilePath)
-      rimraf.sync(nodeModulesPath)
+      await fs.rm(lockfilePath)
+      await fs.rm(nodeModulesPath)
 
       // stderr should be empty
       stderr.should.equal('')
@@ -359,8 +358,8 @@ describe('doctor', function () {
 
       // cleanup before assertions in case they fail
       await fs.writeFile(pkgPath, pkgOriginal)
-      rimraf.sync(lockfilePath)
-      rimraf.sync(nodeModulesPath)
+      await fs.rm(lockfilePath)
+      await fs.rm(nodeModulesPath)
 
       // stderr should be empty
       stderr.should.equal('')

@@ -1,5 +1,5 @@
+import fs from 'fs/promises'
 import path from 'path'
-import { rimraf } from 'rimraf'
 import ncu from '../src/'
 import spawnNpm from '../src/package-managers/npm'
 import chaiSetup from './helpers/chaiSetup'
@@ -16,8 +16,8 @@ describe('peer dependencies', function () {
         'ncu-test-return-version': '2.0.0',
       })
     } finally {
-      rimraf.sync(path.join(cwd, 'node_modules'))
-      rimraf.sync(path.join(cwd, 'package-lock.json'))
+      await fs.rm(path.join(cwd, 'node_modules'))
+      await fs.rm(path.join(cwd, 'package-lock.json'))
     }
   })
 
@@ -30,8 +30,8 @@ describe('peer dependencies', function () {
         'ncu-test-return-version': '1.1.0',
       })
     } finally {
-      rimraf.sync(path.join(cwd, 'node_modules'))
-      rimraf.sync(path.join(cwd, 'package-lock.json'))
+      await fs.rm(path.join(cwd, 'node_modules'))
+      await fs.rm(path.join(cwd, 'package-lock.json'))
     }
   })
 
@@ -45,8 +45,8 @@ describe('peer dependencies', function () {
         'ncu-test-peer-update': '1.1.0',
       })
     } finally {
-      rimraf.sync(path.join(cwd, 'node_modules'))
-      rimraf.sync(path.join(cwd, 'package-lock.json'))
+      await fs.rm(path.join(cwd, 'node_modules'))
+      await fs.rm(path.join(cwd, 'package-lock.json'))
     }
   })
 })

@@ -1,5 +1,4 @@
 import fs from 'fs/promises'
-import { rimraf } from 'rimraf'
 import spawn from 'spawn-please'
 import { printUpgrades } from '../lib/logging'
 import spawnBun from '../package-managers/bun'
@@ -233,7 +232,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     if (lockFile) {
       await fs.writeFile(lockFileName, lockFile)
     } else {
-      await rimraf(lockFileName)
+      await fs.rm(lockFileName)
     }
 
     // save the last package file with passing tests
