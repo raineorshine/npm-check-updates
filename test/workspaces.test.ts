@@ -141,7 +141,7 @@ describe('workspaces', () => {
           output.should.not.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -154,7 +154,7 @@ describe('workspaces', () => {
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
           output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -167,7 +167,7 @@ describe('workspaces', () => {
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
           output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -192,7 +192,7 @@ describe('workspaces', () => {
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
           output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -207,7 +207,7 @@ describe('workspaces', () => {
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
           output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -228,7 +228,7 @@ describe('workspaces', () => {
             },
           })
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -248,7 +248,7 @@ describe('workspaces', () => {
             },
           })
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
     })
@@ -272,7 +272,7 @@ describe('workspaces', () => {
           output.should.not.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -284,7 +284,7 @@ describe('workspaces', () => {
           output.should.not.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -299,7 +299,7 @@ describe('workspaces', () => {
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
           output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -314,7 +314,7 @@ describe('workspaces', () => {
           output.should.not.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -332,7 +332,7 @@ describe('workspaces', () => {
             },
           })
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
     })
@@ -353,7 +353,7 @@ describe('workspaces', () => {
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
           output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -369,7 +369,7 @@ describe('workspaces', () => {
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
           output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -392,7 +392,7 @@ describe('workspaces', () => {
           upgradedPkgB.dependencies.should.have.property('ncu-test-return-version')
           upgradedPkgB.dependencies['ncu-test-return-version'].should.not.equal('1.0.0')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -419,7 +419,7 @@ describe('workspaces', () => {
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
           output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
     })
@@ -437,7 +437,7 @@ describe('workspaces', () => {
           output['package.json'].dependencies.should.have.property('ncu-test-v2')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
 
@@ -454,7 +454,7 @@ describe('workspaces', () => {
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
           output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
     })
@@ -469,7 +469,7 @@ describe('workspaces', () => {
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
           output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
         } finally {
-          await fs.rm(tempDir, { recursive: true, force: true })
+          await fs.rm(tempDir, rmOptions)
         }
       })
     })
@@ -491,7 +491,7 @@ describe('workspaces', () => {
         output.should.include(`npm config (workspace project):\n{ ncutest: 'root' }`)
         output.should.include(`Using merged npm config:\n{\n  ncutest: 'a',`)
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await fs.rm(tempDir, rmOptions)
       }
     })
   })

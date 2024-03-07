@@ -5,6 +5,7 @@ import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
 import { CacheData } from '../src/types/Cacher'
 import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
+import { rmOptions } from './helpers/testConstants'
 
 chaiSetup()
 
@@ -35,7 +36,7 @@ describe('cache', () => {
         [`ncu-test-alpha${CACHE_DELIMITER}latest`]: '1.0.0',
       })
     } finally {
-      await fs.rm(resolvedDefaultCacheFile)
+      await fs.rm(resolvedDefaultCacheFile, rmOptions)
       stub.restore()
     }
   })
@@ -95,7 +96,7 @@ describe('cache', () => {
         [`ncu-test-alpha${CACHE_DELIMITER}greatest`]: '2.0.0-alpha.2',
       })
     } finally {
-      await fs.rm(resolvedDefaultCacheFile)
+      await fs.rm(resolvedDefaultCacheFile, rmOptions)
       stub.restore()
     }
   })

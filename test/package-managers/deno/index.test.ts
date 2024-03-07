@@ -28,7 +28,7 @@ describe('deno', async function () {
       const pkg = jph.parse(pkgData)
       pkg.should.have.property('ncu-test-v2')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -48,7 +48,7 @@ describe('deno', async function () {
       const pkg = jph.parse(pkgData)
       pkg.should.have.property('ncu-test-v2')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -71,7 +71,7 @@ describe('deno', async function () {
         },
       })
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -92,7 +92,7 @@ describe('deno', async function () {
       const pkg = jph.parse(pkgData)
       pkg.should.have.property('ncu-test-v2')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -115,7 +115,7 @@ describe('deno', async function () {
         },
       })
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 })

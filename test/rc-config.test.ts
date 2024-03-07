@@ -4,6 +4,7 @@ import path from 'path'
 import spawn from 'spawn-please'
 import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
+import { rmOptions } from './helpers/testConstants'
 
 chaiSetup()
 
@@ -27,7 +28,7 @@ describe('rc-config', () => {
       )
       text.should.containIgnoreCase(`Using config file ${tempConfigFile}`)
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -41,7 +42,7 @@ describe('rc-config', () => {
       )
       text.should.not.include('Using config file')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -57,7 +58,7 @@ describe('rc-config', () => {
       )
       text.should.not.include('Using config file')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -75,7 +76,7 @@ describe('rc-config', () => {
       pkgData.should.have.property('ncu-test-v2')
       pkgData.should.not.have.property('ncu-test-tag')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -94,7 +95,7 @@ describe('rc-config', () => {
       pkgData.should.have.property('ncu-test-v2')
       pkgData.should.not.have.property('ncu-test-tag')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -112,7 +113,7 @@ describe('rc-config', () => {
       pkgData.should.have.property('ncu-test-tag')
       pkgData.should.not.have.property('ncu-test-v2')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -129,7 +130,7 @@ describe('rc-config', () => {
       // if the output contains "Using config file", then we know that jsonUpgraded was overridden
       output.should.include('Using config file')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -147,7 +148,7 @@ describe('rc-config', () => {
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('ncu-test-tag')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -171,7 +172,7 @@ describe('rc-config', () => {
       firstLine.should.contains('Using config file')
       firstLine.should.contains(configFile)
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -195,7 +196,7 @@ describe('rc-config', () => {
       firstLine.should.contains('Using config file')
       firstLine.should.contains(configFile)
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -210,7 +211,7 @@ describe('rc-config', () => {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 })

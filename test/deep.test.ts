@@ -7,6 +7,7 @@ import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
 import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
+import { rmOptions } from './helpers/testConstants'
 
 chaiSetup()
 
@@ -65,7 +66,7 @@ describe('--deep', function () {
       deepJsonOut['packages/sub1/package.json'].dependencies.should.have.property('express')
       deepJsonOut['packages/sub2/package.json'].dependencies.should.have.property('express')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -85,7 +86,7 @@ describe('--deep', function () {
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 
@@ -115,7 +116,7 @@ describe('--deep', function () {
       json.should.have.property(path.join(tempDir, 'packages/sub2/package.json').replace(/\\/g, '/'))
       json.should.have.property(path.join(tempDir, 'package.json').replace(/\\/g, '/'))
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await fs.rm(tempDir, rmOptions)
     }
   })
 })

@@ -5,6 +5,7 @@ import spawn from 'spawn-please'
 import { GroupFunction } from '../src/types/GroupFunction'
 import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
+import { rmOptions } from './helpers/testConstants'
 
 chaiSetup()
 
@@ -46,7 +47,7 @@ async function groupTestScaffold(
     })
     stripAnsi(stdout).should.containIgnoreCase(expectedOutput)
   } finally {
-    await fs.rm(tempDir, { recursive: true, force: true })
+    await fs.rm(tempDir, rmOptions)
     stub.restore()
   }
 }
