@@ -4,7 +4,6 @@ import path from 'path'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
-import { rmOptions } from './helpers/testConstants'
 
 chaiSetup()
 
@@ -69,7 +68,7 @@ describe('run', function () {
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
   })
@@ -272,7 +271,7 @@ describe('run', function () {
           },
         })
       } finally {
-        await fs.rm(tempDir, rmOptions)
+        await fs.rm(tempDir, { recursive: true, force: true })
         stub.restore()
       }
     })
@@ -318,7 +317,7 @@ describe('run', function () {
           },
         })
       } finally {
-        await fs.rm(tempDir, rmOptions)
+        await fs.rm(tempDir, { recursive: true, force: true })
         stub.restore()
       }
     })
@@ -362,7 +361,7 @@ describe('run', function () {
           },
         })
       } finally {
-        await fs.rm(tempDir, rmOptions)
+        await fs.rm(tempDir, { recursive: true, force: true })
         stub.restore()
       }
     })
@@ -410,7 +409,7 @@ describe('run', function () {
           },
         })
       } finally {
-        await fs.rm(tempDir, rmOptions)
+        await fs.rm(tempDir, { recursive: true, force: true })
         stub.restore()
       }
     })

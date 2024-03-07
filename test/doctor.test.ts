@@ -7,7 +7,6 @@ import { chalkInit } from '../src/lib/chalk'
 import { PackageManagerName } from '../src/types/PackageManagerName'
 import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
-import { rmOptions } from './helpers/testConstants'
 
 chaiSetup()
 
@@ -69,13 +68,13 @@ const testPass = ({ packageManager }: { packageManager: PackageManagerName }) =>
 
     // cleanup before assertions in case they fail
     await fs.writeFile(pkgPath, pkgOriginal)
-    await fs.rm(nodeModulesPath, rmOptions)
-    await fs.rm(lockfilePath, rmOptions)
+    await fs.rm(nodeModulesPath, { recursive: true, force: true })
+    await fs.rm(lockfilePath, { recursive: true, force: true })
 
     // delete yarn cache
     if (packageManager === 'yarn') {
-      await fs.rm(path.join(cwd, '.yarn'), rmOptions)
-      await fs.rm(path.join(cwd, '.pnp.js'), rmOptions)
+      await fs.rm(path.join(cwd, '.yarn'), { recursive: true, force: true })
+      await fs.rm(path.join(cwd, '.pnp.js'), { recursive: true, force: true })
     }
 
     // bun prints the run header to stderr instead of stdout
@@ -134,13 +133,13 @@ const testFail = ({ packageManager }: { packageManager: PackageManagerName }) =>
     } finally {
       pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
       await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(nodeModulesPath, rmOptions)
-      await fs.rm(lockfilePath, rmOptions)
+      await fs.rm(nodeModulesPath, { recursive: true, force: true })
+      await fs.rm(lockfilePath, { recursive: true, force: true })
 
       // delete yarn cache
       if (packageManager === 'yarn') {
-        await fs.rm(path.join(cwd, '.yarn'), rmOptions)
-        await fs.rm(path.join(cwd, '.pnp.js'), rmOptions)
+        await fs.rm(path.join(cwd, '.yarn'), { recursive: true, force: true })
+        await fs.rm(path.join(cwd, '.pnp.js'), { recursive: true, force: true })
       }
     }
 
@@ -235,8 +234,8 @@ describe('doctor', function () {
 
       // cleanup before assertions in case they fail
       await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, rmOptions)
-      await fs.rm(nodeModulesPath, rmOptions)
+      await fs.rm(lockfilePath, { recursive: true, force: true })
+      await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty
       stderr.should.equal('')
@@ -277,8 +276,8 @@ describe('doctor', function () {
 
       // cleanup before assertions in case they fail
       await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, rmOptions)
-      await fs.rm(nodeModulesPath, rmOptions)
+      await fs.rm(lockfilePath, { recursive: true, force: true })
+      await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty
       stderr.should.equal('')
@@ -318,8 +317,8 @@ describe('doctor', function () {
 
       // cleanup before assertions in case they fail
       await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, rmOptions)
-      await fs.rm(nodeModulesPath, rmOptions)
+      await fs.rm(lockfilePath, { recursive: true, force: true })
+      await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty
       stderr.should.equal('')
@@ -359,8 +358,8 @@ describe('doctor', function () {
 
       // cleanup before assertions in case they fail
       await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, rmOptions)
-      await fs.rm(nodeModulesPath, rmOptions)
+      await fs.rm(lockfilePath, { recursive: true, force: true })
+      await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty
       stderr.should.equal('')
@@ -431,7 +430,7 @@ else {
 
         pkgUpgraded = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
       } finally {
-        await fs.rm(tempDir, rmOptions)
+        await fs.rm(tempDir, { recursive: true, force: true })
       }
 
       // stdout should include successful upgrades

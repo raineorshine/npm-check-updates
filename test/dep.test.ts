@@ -4,7 +4,6 @@ import path from 'path'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
-import { rmOptions } from './helpers/testConstants'
 
 chaiSetup()
 
@@ -99,7 +98,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, rmOptions)
+        await fs.rm(tempDir, { recursive: true, force: true })
         stub.restore()
       }
     })
@@ -146,7 +145,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, rmOptions)
+        await fs.rm(tempDir, { recursive: true, force: true })
         stub.restore()
       }
     })
@@ -193,7 +192,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, rmOptions)
+        await fs.rm(tempDir, { recursive: true, force: true })
         stub.restore()
       }
     })
@@ -237,7 +236,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, rmOptions)
+        await fs.rm(tempDir, { recursive: true, force: true })
         stub.restore()
       }
     })
@@ -277,7 +276,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, rmOptions)
+        await fs.rm(tempDir, { recursive: true, force: true })
         stub.restore()
       }
     })
@@ -319,7 +318,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, rmOptions)
+        await fs.rm(tempDir, { recursive: true, force: true })
         stub.restore()
       }
     })

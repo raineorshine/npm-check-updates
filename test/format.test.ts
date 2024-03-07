@@ -5,7 +5,6 @@ import path from 'path'
 import spawn from 'spawn-please'
 import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
-import { rmOptions } from './helpers/testConstants'
 
 chaiSetup()
 
@@ -50,7 +49,7 @@ describe('format', () => {
       const output = await spawn('node', [bin, '--format', 'repo'], { cwd: tempDir })
       output.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
@@ -78,7 +77,7 @@ describe('format', () => {
       const output = await spawn('node', [bin, '--format', 'lines'], { cwd: tempDir })
       output.should.equals('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
   })
@@ -108,7 +107,7 @@ describe('format', () => {
         cwd: tempDir,
       }).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonUpgraded.')
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
   })
@@ -138,7 +137,7 @@ describe('format', () => {
         cwd: tempDir,
       }).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonAll.')
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
   })
@@ -168,7 +167,7 @@ describe('format', () => {
         cwd: tempDir,
       }).should.eventually.be.rejectedWith('Cannot use --format lines with other formatting options.')
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
   })

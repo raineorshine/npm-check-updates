@@ -6,7 +6,6 @@ import { Index } from '../src/types/IndexType'
 import { Version } from '../src/types/Version'
 import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
-import { rmOptions } from './helpers/testConstants'
 
 chaiSetup()
 
@@ -117,7 +116,7 @@ describe('bin', async function () {
       const pkgData = JSON.parse(text)
       pkgData.should.have.property('express')
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
   })
@@ -134,7 +133,7 @@ describe('bin', async function () {
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
   })
@@ -154,7 +153,7 @@ describe('bin', async function () {
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
   })
@@ -171,7 +170,7 @@ describe('bin', async function () {
       ugradedPkg.dependencies.should.have.property('express')
       ugradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
   })
@@ -188,7 +187,7 @@ describe('bin', async function () {
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
   })
@@ -215,7 +214,7 @@ describe('bin', async function () {
       const output = await spawn('node', [bin, '--packageFile', pkgFile, '--filter', 'ncu-test-v2 ncu-test-tag'])
       output.should.include('"ncu-test-v2 ncu-test-tag"')
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
   })

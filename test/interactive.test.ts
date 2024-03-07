@@ -4,7 +4,6 @@ import path from 'path'
 import spawn from 'spawn-please'
 import chaiSetup from './helpers/chaiSetup'
 import stubNpmView from './helpers/stubNpmView'
-import { rmOptions } from './helpers/testConstants'
 
 const should = chaiSetup()
 
@@ -60,7 +59,7 @@ describe('--interactive', () => {
         'ncu-test-tag': '1.0.0',
       })
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
@@ -94,7 +93,7 @@ describe('--interactive', () => {
 
       // prompts does not print during injection, so we cannot assert the output in interactive mode
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
@@ -134,7 +133,7 @@ describe('--interactive', () => {
 
       // prompts does not print during injection, so we cannot assert the output in interactive mode
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 
@@ -162,7 +161,7 @@ describe('--interactive', () => {
 
       output.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {
-      await fs.rm(tempDir, rmOptions)
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 })
