@@ -4,8 +4,6 @@ module.exports = {
     // ESM only modules
     // https://github.com/microsoft/TypeScript/issues/46452
     'find-up',
-    'get-stdin',
-    'globby',
     /* pin to 4.0.0 to match make-fetch-happen/cacache. */
     'p-map',
     'remote-git-tags',
