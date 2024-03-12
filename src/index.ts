@@ -202,33 +202,36 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
     clearTimeout(timeout)
     return analysis
   } else if (options.deep) {
-    analysis = await selectedPackageInfos.reduce(async (previousPromise, packageInfo: PackageInfo) => {
-      const packages = await previousPromise
-      // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
-      const rcResult = await getNcuRc({ packageFile: packageInfo.filepath, color: options.color })
-      let rcConfig = rcResult && rcResult.config ? rcResult.config : {}
-      if (options.mergeConfig && Object.keys(rcConfig).length) {
-        // Merge config options.
-        rcConfig = mergeOptions(options, rcConfig)
-      }
-      const pkgOptions: Options = {
-        ...options,
-        ...rcConfig,
-        packageFile: packageInfo.filepath,
-        workspacePackages,
-      }
-      const { pkgData, pkgFile } = await findPackage(pkgOptions)
-      return {
-        ...packages,
-        // index by relative path if cwd was specified
-        [pkgOptions.cwd
-          ? path
-              .relative(path.resolve(pkgOptions.cwd), pkgFile!)
-              // convert Windows path to *nix path for consistency
-              .replace(/\\/g, '/')
-          : pkgFile!]: await runLocal(pkgOptions, pkgData, pkgFile),
-      }
-    }, Promise.resolve({} as Index<PackageFile> | PackageFile))
+    analysis = await selectedPackageInfos.reduce(
+      async (previousPromise, packageInfo: PackageInfo) => {
+        const packages = await previousPromise
+        // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
+        const rcResult = await getNcuRc({ packageFile: packageInfo.filepath, color: options.color })
+        let rcConfig = rcResult && rcResult.config ? rcResult.config : {}
+        if (options.mergeConfig && Object.keys(rcConfig).length) {
+          // Merge config options.
+          rcConfig = mergeOptions(options, rcConfig)
+        }
+        const pkgOptions: Options = {
+          ...options,
+          ...rcConfig,
+          packageFile: packageInfo.filepath,
+          workspacePackages,
+        }
+        const { pkgData, pkgFile } = await findPackage(pkgOptions)
+        return {
+          ...packages,
+          // index by relative path if cwd was specified
+          [pkgOptions.cwd
+            ? path
+                .relative(path.resolve(pkgOptions.cwd), pkgFile!)
+                // convert Windows path to *nix path for consistency
+                .replace(/\\/g, '/')
+            : pkgFile!]: await runLocal(pkgOptions, pkgData, pkgFile),
+        }
+      },
+      Promise.resolve({} as Index<PackageFile> | PackageFile),
+    )
     if (options.json) {
       printJson(options, analysis)
     }

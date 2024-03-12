@@ -55,8 +55,8 @@ const uncode = (s: string) => s.replace(/`/g, '')
         notifier.update.type === 'major'
           ? chalk.red('{latestVersion}')
           : notifier.update.type === 'minor'
-          ? chalk.yellow('{latestVersion}')
-          : chalk.green('{latestVersion}')
+            ? chalk.yellow('{latestVersion}')
+            : chalk.green('{latestVersion}')
       }
 Run ${chalk.cyan('{updateCommand}')} to update
 ${chalk.dim.underline(
@@ -108,14 +108,14 @@ ${chalk.dim.underline(
         option.long && noCli.has(option.long)
           ? option.long.replace('--', '') + '*'
           : option.long === '--version'
-          ? '-v, -V, --version'
-          : option.flags.replace('[bool]', ''),
+            ? '-v, -V, --version'
+            : option.flags.replace('[bool]', ''),
       optionDescription: option =>
         option.long === '--version'
           ? 'Output the version number of npm-check-updates.'
           : option.long === '--help'
-          ? `You're lookin' at it.`
-          : Help.prototype.optionDescription(option),
+            ? `You're lookin' at it.`
+            : Help.prototype.optionDescription(option),
     })
 
   // add cli options

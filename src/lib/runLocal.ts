@@ -40,15 +40,18 @@ const INTERACTIVE_HINT = `
  */
 export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersion: Index<Version>, options: Options) {
   const packageManager = getPackageManager(options, options.packageManager)
-  return await Object.keys(toVersion).reduce(async (accum, dep) => {
-    const from = fromVersion[dep] || null
-    const to = toVersion[dep] || null
-    const ownerChanged = await packageManager.packageAuthorChanged!(dep, from!, to!, options)
-    return {
-      ...(await accum),
-      [dep]: ownerChanged,
-    }
-  }, {} as Promise<Index<boolean>>)
+  return await Object.keys(toVersion).reduce(
+    async (accum, dep) => {
+      const from = fromVersion[dep] || null
+      const to = toVersion[dep] || null
+      const ownerChanged = await packageManager.packageAuthorChanged!(dep, from!, to!, options)
+      return {
+        ...(await accum),
+        [dep]: ownerChanged,
+      }
+    },
+    {} as Promise<Index<boolean>>,
+  )
 }
 
 /** Prompts the user to choose which upgrades to upgrade. */
@@ -248,8 +251,8 @@ async function runLocal(
   const output = options.jsonAll
     ? (jph.parse(newPkgData) as PackageFile)
     : options.jsonDeps
-    ? pick(jph.parse(newPkgData) as PackageFile, resolveDepSections(options.dep))
-    : chosenUpgraded
+      ? pick(jph.parse(newPkgData) as PackageFile, resolveDepSections(options.dep))
+      : chosenUpgraded
 
   // will be overwritten with the result of fs.writeFile so that the return promise waits for the package file to be written
   let writePromise = Promise.resolve()

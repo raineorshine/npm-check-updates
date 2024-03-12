@@ -124,7 +124,9 @@ const extendedHelpFilterResults: ExtendedHelp = ({ markdown }) => {
 
 ${codeInline('filterResults')} runs _after_ new versions are fetched, in contrast to ${codeInline(
     'filter',
-  )} and ${codeInline('filterVersion')}, which run _before_. This allows you to filter out upgrades with ${codeInline(
+  )}, ${codeInline('reject')}, ${codeInline('filterVersion')}, and ${codeInline(
+    'rejectVersion',
+  )}, which run _before_. This allows you to filter out upgrades with ${codeInline(
     'filterResults',
   )} based on how the version has changed (e.g. a major version change).
 
@@ -201,7 +203,16 @@ const extendedHelpInstall: ExtendedHelp = ({ markdown }) => {
 
 /** Extended help for the --filter option. */
 const extendedHelpFilterFunction: ExtendedHelp = ({ markdown }) => {
-  return `Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+  /** If markdown, surround inline code with backticks. */
+  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+
+  return `Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Only included packages will be checked with ${codeInline(
+    '--peer',
+  )}.
+
+${codeInline('--filter')} runs _before_ new versions are fetched, in contrast to ${codeInline(
+    '--filterResults',
+  )} which runs _after_.
 
 The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
 
@@ -258,7 +269,13 @@ const extendedHelpRejectFunction: ExtendedHelp = ({ markdown }) => {
 
   return `The inverse of ${codeInline(
     '--filter',
-  )}. Exclude package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+  )}. Exclude package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. This will also exclude them from the ${codeInline(
+    '--peer',
+  )} check.
+
+${codeInline('--reject')} runs _before_ new versions are fetched, in contrast to ${codeInline(
+    '--filterResults',
+  )} which runs _after_.
 
 The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
 
@@ -299,7 +316,7 @@ ${codeBlock(
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be excluded, false if it should be included.
 */`)}
-${chalk.green('filterVersionFunction')}: (name, semver) ${chalk.cyan('=>')} {
+${chalk.green('rejectVersionFunction')}: (name, semver) ${chalk.cyan('=>')} {
   ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)}) ${chalk.red(
     '&&',
   )} parseInt(semver[0]?.major) ${chalk.cyan('>')} ${chalk.cyan(`5`)}) {
@@ -797,8 +814,9 @@ const cliOptions: CLIOption[] = [
   },
   {
     long: 'root',
+    default: true,
     description:
-      'Runs updates on the root project in addition to specified workspaces. Only allowed with `--workspace` or `--workspaces`. (default: false)',
+      'Runs updates on the root project in addition to specified workspaces. Only allowed with `--workspace` or `--workspaces`.',
     type: 'boolean',
   },
   {

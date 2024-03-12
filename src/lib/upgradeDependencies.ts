@@ -96,8 +96,8 @@ function upgradeDependencies(
         return versionUtil.isNpmAlias(current)
           ? versionUtil.upgradeNpmAlias(current, upgraded)
           : versionUtil.isGithubUrl(current)
-          ? versionUtil.upgradeGithubUrl(current, upgraded)
-          : upgraded
+            ? versionUtil.upgradeGithubUrl(current, upgraded)
+            : upgraded
       }),
   ])(currentDependencies)
 }

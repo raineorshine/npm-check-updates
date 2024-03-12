@@ -1,4 +1,3 @@
-import { Options } from 'pacote'
 import path from 'path'
 import spawn from 'spawn-please'
 import keyValueBy from '../lib/keyValueBy'
@@ -6,6 +5,7 @@ import programError from '../lib/programError'
 import { Index } from '../types/IndexType'
 import { NpmOptions } from '../types/NpmOptions'
 import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
+import { Options } from '../types/Options'
 import * as npm from './npm'
 
 /** Spawn bun. */
@@ -21,12 +21,10 @@ async function spawnBun(
     programError(npmOptions, 'Bun not yet supported on Windows')
   }
 
-  args = Array.isArray(args) ? args : [args]
-
   const fullArgs = [
-    ...args,
-    ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
     ...(npmOptions.global ? ['--global'] : []),
+    ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
+    ...(Array.isArray(args) ? args : [args]),
   ]
 
   return spawn('bun', fullArgs, spawnPleaseOptions, spawnOptions)

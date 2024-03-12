@@ -1,5 +1,4 @@
 import fs from 'fs/promises'
-import { rimraf } from 'rimraf'
 import spawn from 'spawn-please'
 import { printUpgrades } from '../lib/logging'
 import spawnBun from '../package-managers/bun'
@@ -51,10 +50,10 @@ const npm = (
     options.packageManager === 'pnpm'
       ? spawnPnpm
       : options.packageManager === 'yarn'
-      ? spawnYarn
-      : options.packageManager === 'bun'
-      ? spawnBun
-      : spawnNpm
+        ? spawnYarn
+        : options.packageManager === 'bun'
+          ? spawnBun
+          : spawnNpm
   )(args, npmOptions, spawnPleaseOptions, spawnOptionsMerged)
 }
 
@@ -96,10 +95,10 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     options.packageManager === 'yarn'
       ? 'yarn.lock'
       : options.packageManager === 'pnpm'
-      ? 'pnpm-lock.yaml'
-      : options.packageManager === 'bun'
-      ? 'bun.lockb'
-      : 'package-lock.json'
+        ? 'pnpm-lock.yaml'
+        : options.packageManager === 'bun'
+          ? 'bun.lockb'
+          : 'package-lock.json'
   const { pkg, pkgFile }: PackageInfo = await loadPackageFileForDoctor(options)
 
   // flatten all deps into one so we can iterate over them
@@ -234,7 +233,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     if (lockFile) {
       await fs.writeFile(lockFileName, lockFile)
     } else {
-      await rimraf(lockFileName)
+      await fs.rm(lockFileName, { recursive: true, force: true })
     }
 
     // save the last package file with passing tests

@@ -1,7 +1,7 @@
 /** Fetches package metadata from Github tags. */
 import parseGithubUrl from 'parse-github-url'
 import remoteGitTags from 'remote-git-tags'
-import semver from 'semver'
+import { valid } from 'semver'
 import { print } from '../lib/logging'
 import * as versionUtil from '../lib/version-util'
 import { GetVersion } from '../types/GetVersion'
@@ -42,7 +42,7 @@ const getSortedVersions = async (name: string, declaration: VersionSpec, options
     .map(versionUtil.fixPseudoVersion)
     // do not pass semver.valid reference directly since the mapping index will be interpreted as the loose option
     // https://github.com/npm/node-semver#functions
-    .filter(tag => semver.valid(tag))
+    .filter(tag => valid(tag))
     .sort(versionUtil.compareVersions)
 
   return tags
@@ -84,6 +84,13 @@ export const greatestLevel =
 
 export const minor = greatestLevel('minor')
 export const patch = greatestLevel('patch')
+
+/** All git tags are exact versions, so --target semver should never upgrade git tags. */
+// https://github.com/raineorshine/npm-check-updates/pull/1368
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const semver: GetVersion = async (_name: string, _declaration: VersionSpec, _options?: Options) => {
+  return { version: null }
+}
 
 // use greatest for newest rather than leaving newest undefined
 // this allows a mix of npm and github urls to be used in a package file without causing an "Unsupported target" error

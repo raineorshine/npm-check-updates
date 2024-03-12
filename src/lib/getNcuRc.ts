@@ -60,10 +60,10 @@ async function getNcuRc({ color, configFileName, configFilePath, packageFile, gl
           value === true || (cliOptionsMap[name]?.type === 'boolean' && value)
             ? [`--${name}`]
             : // if a boolean option is false, exclude it
-            value === false || (cliOptionsMap[name]?.type === 'boolean' && !value)
-            ? []
-            : // otherwise render as a 2-tuple
-              [`--${name}`, value],
+              value === false || (cliOptionsMap[name]?.type === 'boolean' && !value)
+              ? []
+              : // otherwise render as a 2-tuple
+                [`--${name}`, value],
         ),
       )
     : []

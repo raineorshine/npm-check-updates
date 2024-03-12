@@ -1,7 +1,7 @@
 import { SemVer } from 'semver-utils'
 import { UpgradeGroup } from './UpgradeGroup'
 
-/** Supported function for the --group options. */
+/** Customize how packages are divided into groups when using `--format group`. Run "ncu --help --groupFunction" for details. */
 export type GroupFunction = (
   packageName: string,
   defaultGroup: UpgradeGroup,

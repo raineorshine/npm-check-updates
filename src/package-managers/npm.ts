@@ -40,6 +40,10 @@ const isExplicitRange = (spec: VersionSpec) => {
   return range.some(parsed => EXPLICIT_RANGE_OPS.has(parsed.operator || ''))
 }
 
+/** Returns true if the version is sa valid, exact version. */
+const isExactVersion = (version: Version) =>
+  version && (!nodeSemver.validRange(version) || versionUtil.isWildCard(version))
+
 /** Normalizes the keys of an npm config for pacote. */
 export const normalizeNpmConfig = (
   npmConfig: NpmConfig,
@@ -50,7 +54,7 @@ export const normalizeNpmConfig = (
     cafile: (capath: string): undefined | { ca: string[] } => {
       // load-cafile, based on github.com/npm/cli/blob/40c1b0f/lib/config/load-cafile.js
       if (!capath) return
-      // synchronous since it is loaded once on startup, and to avoid complexity in libnpmconfig.read
+      // synchronous since it is loaded once on startup, and to avoid complexity in libnpmconfig
       // https://github.com/raineorshine/npm-check-updates/issues/636?notification_referrer_id=MDE4Ok5vdGlmaWNhdGlvblRocmVhZDc0Njk2NjAzMjo3NTAyNzY%3D
       const cadata = fs.readFileSync(path.resolve(configPath || '', untildify(capath)), 'utf8')
       const delim = '-----END CERTIFICATE-----'
@@ -155,11 +159,11 @@ export const normalizeNpmConfig = (
       typeof value !== 'string'
         ? value
         : // parse stringified booleans
-        keyTypes[key.replace(/-/g, '').toLowerCase()] === 'boolean'
-        ? stringToBoolean(value)
-        : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
-        ? stringToNumber(value)
-        : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
+          keyTypes[key.replace(/-/g, '').toLowerCase()] === 'boolean'
+          ? stringToBoolean(value)
+          : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
+            ? stringToNumber(value)
+            : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
 
     // normalize the key for pacote
     const { [key]: pacoteKey }: Index<NpmConfig[keyof NpmConfig]> = npmConfigToPacoteMap
@@ -168,10 +172,10 @@ export const normalizeNpmConfig = (
       ? // key is mapped to a string
         { [pacoteKey]: normalizedValue }
       : // key is mapped to a function
-      typeof pacoteKey === 'function'
-      ? { ...(pacoteKey(normalizedValue.toString()) as any) }
-      : // otherwise assign the camel-cased key
-        { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
+        typeof pacoteKey === 'function'
+        ? { ...(pacoteKey(normalizedValue.toString()) as any) }
+        : // otherwise assign the camel-cased key
+          { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
   })
 
   return config
@@ -194,7 +198,7 @@ const findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
   } else {
     // libnpmconfig incorrectly (?) ignores NPM_CONFIG_USERCONFIG because it is always overridden by the default builtin.userconfig
     // set userconfig manually so that it is prioritized
-    const opts = libnpmconfig.read(null, {
+    const opts = libnpmconfig(null, {
       userconfig: process.env.npm_config_userconfig || process.env.NPM_CONFIG_USERCONFIG,
     })
     config = {
@@ -268,7 +272,7 @@ export async function packageAuthorChanged(
 }
 
 /** Returns true if an object is a Packument. */
-const isPackument = (o: any): o is Partial<Packument> => o && (o.name || o.engines || o.version || o.versions)
+const isPackument = (o: any): o is Partial<Packument> => !!(o && (o.name || o.engines || o.version || o.versions))
 
 /** Creates a function with the same signature as viewMany that always returns the given versions. */
 export const mockViewMany =
@@ -279,28 +283,30 @@ export const mockViewMany =
       typeof mockReturnedVersions === 'function'
         ? mockReturnedVersions(options)?.[name]
         : typeof mockReturnedVersions === 'string' || isPackument(mockReturnedVersions)
-        ? mockReturnedVersions
-        : mockReturnedVersions[name]
+          ? mockReturnedVersions
+          : mockReturnedVersions[name]
 
     const version = isPackument(partialPackument) ? partialPackument.version : partialPackument
 
-    // if there is no version, hard exit
-    // otherwise getPackageProtected will swallow the error
     if (!version) {
-      console.error(`No mock version supplied for ${name}`)
-      process.exit(1)
+      throw new Error(
+        `viewMany is mocked, but no mock version was supplied for ${name}. Make sure that all dependencies are mocked. `,
+      )
     }
 
     const time = (isPackument(partialPackument) && partialPackument.time?.[version]) || new Date().toISOString()
     const packument: Packument = {
       name,
+      'dist-tags': {
+        latest: version,
+      },
       engines: { node: '' },
       time: {
         [version]: time,
       },
       version,
       // overwritten below
-      versions: [],
+      versions: {},
       ...(isPackument(partialPackument) ? partialPackument : null),
     }
 
@@ -312,13 +318,15 @@ export const mockViewMany =
                 [version]: packument,
               } as Index<Packument>)
             : field === 'time'
-            ? ({
-                [version]: time,
-              } as Index<string>)
-            : ({
-                ...packument,
-                versions: [packument],
-              } as Packument),
+              ? ({
+                  [version]: time,
+                } as Index<string>)
+              : ({
+                  ...packument,
+                  versions: {
+                    [version]: packument,
+                  },
+                } as Packument),
       })),
     )
   }
@@ -414,15 +422,17 @@ async function viewMany(
     return mockViewMany(mockReturnedVersions)(packageName, fields, currentVersion, options)
   }
 
-  if (currentVersion && (!nodeSemver.validRange(currentVersion) || versionUtil.isWildCard(currentVersion))) {
+  if (isExactVersion(currentVersion)) {
     return Promise.resolve({} as Index<Packument>)
   }
 
+  // fields may already include time
   const fieldsExtended = options.format?.includes('time') ? [...fields, 'time'] : fields
+  const fullMetadata = fieldsExtended.includes('time')
 
   const npmConfigMerged = mergeNpmConfigs(
     {
-      npmConfigUser: { ...npmConfig, fullMetadata: fieldsExtended.includes('time') },
+      npmConfigUser: { ...npmConfig, fullMetadata },
       npmConfigLocal,
       npmConfigWorkspaceProject,
     },
@@ -431,7 +441,7 @@ async function viewMany(
 
   let result: any
   try {
-    result = (await pacote.packument(packageName, npmConfigMerged)) as any
+    result = await pacote.packument(packageName, npmConfigMerged)
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
       return viewMany(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
@@ -448,7 +458,7 @@ async function viewMany(
     if (field.startsWith('dist-tags.') && result.versions) {
       const packument: Packument = result.versions[get(result, field) as unknown as string]
       // since viewOne only keeps a single field, we need to add time onto the dist-tag field
-      value = options.format?.includes('time') ? { ...packument, time: result.time } : packument
+      value = fullMetadata ? { ...packument, time: result.time } : packument
     }
 
     return {
@@ -459,8 +469,31 @@ async function viewMany(
   return resultNormalized
 }
 
-/** Memoize viewMany for --deep performance. */
-export const viewManyMemoized = memoize(viewMany)
+/** Memoize viewMany for --deep and --workspaces performance. */
+export const viewManyMemoized = memoize(viewMany, {
+  // serializer args are incorrectly typed as any[] instead of being generic, so we need to cast it
+  serializer: (([
+    packageName,
+    fields,
+    currentVersion,
+    options,
+    retried,
+    npmConfigLocal,
+    npmConfigWorkspaceProject,
+  ]: Parameters<typeof viewMany>) =>
+    JSON.stringify([
+      packageName,
+      fields,
+      // currentVersion does not change the behavior of viewMany unless it is an invalid/inexact version which causes it to short circuit
+      isExactVersion(currentVersion),
+      // packageFile varies by cwd in workspaces/deep mode, so we do not want to memoize on that
+      omit(options, 'packageFile'),
+      // make sure retries do not get memoized
+      retried,
+      npmConfigLocal,
+      npmConfigWorkspaceProject,
+    ])) as (args: any[]) => string,
+})
 
 /**
  * Returns the value of one of the properties retrieved by npm view.
@@ -505,13 +538,12 @@ async function spawnNpm(
   spawnOptions: Index<any> = {},
 ): Promise<any> {
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-  args = Array.isArray(args) ? args : [args]
 
   const fullArgs = [
-    ...args,
     ...(npmOptions.global ? [`--global`] : []),
     ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
     '--json',
+    ...(Array.isArray(args) ? args : [args]),
   ]
   return spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
 }
@@ -553,12 +585,12 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
   return options.global && prefix?.match('Cellar')
     ? '/usr/local'
     : // Workaround: get prefix on windows for global packages
-    // Only needed when using npm api directly
-    process.platform === 'win32' && options.global && !process.env.prefix
-    ? prefix
-      ? prefix.trim()
-      : `${process.env.AppData}\\npm`
-    : undefined
+      // Only needed when using npm api directly
+      process.platform === 'win32' && options.global && !process.env.prefix
+      ? prefix
+        ? prefix.trim()
+        : `${process.env.AppData}\\npm`
+      : undefined
 }
 
 /**
@@ -668,7 +700,7 @@ export const distTag: GetVersion = async (
     options,
     npmConfig,
     npmConfigProject,
-  )) as unknown as Packument // known type based on dist-tags.latest
+  )) as Packument // known type based on dist-tags.latest
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it

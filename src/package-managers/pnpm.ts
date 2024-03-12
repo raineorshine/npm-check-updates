@@ -14,16 +14,7 @@ import { Options } from '../types/Options'
 import { SpawnOptions } from '../types/SpawnOptions'
 import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import { Version } from '../types/Version'
-import {
-  normalizeNpmConfig,
-  distTag as npmDistTag,
-  greatest as npmGreatest,
-  latest as npmLatest,
-  list as npmList,
-  minor as npmMinor,
-  newest as npmNewest,
-  patch as npmPatch,
-} from './npm'
+import * as npm from './npm'
 
 // return type of pnpm ls --json
 type PnpmList = {
@@ -53,45 +44,18 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
 
   print(options, `\nUsing pnpm workspace config at ${pnpmWorkspaceConfigPath}:`, 'verbose')
 
-  const config = normalizeNpmConfig(ini.parse(pnpmWorkspaceConfig), pnpmWorkspaceDir)
+  const config = npm.normalizeNpmConfig(ini.parse(pnpmWorkspaceConfig), pnpmWorkspaceDir)
 
   print(options, config, 'verbose')
 
   return config
 })
 
-/**
- * Spawn pnpm.
- *
- * @param args
- * @param [npmOptions={}]
- * @param [spawnOptions={}]
- * @returns
- */
-const spawnPnpm = async (
-  args: string | string[],
-  npmOptions: NpmOptions = {},
-  spawnOptions?: SpawnOptions,
-  spawnPleaseOptions?: SpawnPleaseOptions,
-): Promise<string> => {
-  const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
-
-  const fullArgs = [
-    ...(npmOptions.global ? [`--global`] : []),
-    ...(Array.isArray(args) ? args : [args]),
-    ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
-  ]
-
-  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
-
-  return stdout
-}
-
 /** Fetches the list of all installed packages. */
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
   // use npm for local ls for completeness
   // this should never happen since list is only called in runGlobal -> getInstalledPackages
-  if (!options.global) return npmList(options)
+  if (!options.global) return npm.list(options)
 
   const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
   const result = JSON.parse(await spawn(cmd, ['ls', '-g', '--json'])) as PnpmList
@@ -107,14 +71,39 @@ const withNpmWorkspaceConfig =
   async (packageName, currentVersion, options = {}) =>
     getVersion(packageName, currentVersion, options, {}, await npmConfigFromPnpmWorkspace(options))
 
-export const distTag = withNpmWorkspaceConfig(npmDistTag)
-export const greatest = withNpmWorkspaceConfig(npmGreatest)
-export const latest = withNpmWorkspaceConfig(npmLatest)
-export const minor = withNpmWorkspaceConfig(npmMinor)
-export const newest = withNpmWorkspaceConfig(npmNewest)
-export const patch = withNpmWorkspaceConfig(npmPatch)
-export const semver = withNpmWorkspaceConfig(npmPatch)
+export const distTag = withNpmWorkspaceConfig(npm.distTag)
+export const greatest = withNpmWorkspaceConfig(npm.greatest)
+export const latest = withNpmWorkspaceConfig(npm.latest)
+export const minor = withNpmWorkspaceConfig(npm.minor)
+export const newest = withNpmWorkspaceConfig(npm.newest)
+export const patch = withNpmWorkspaceConfig(npm.patch)
+export const semver = withNpmWorkspaceConfig(npm.semver)
+
+/**
+ * Spawn pnpm.
+ *
+ * @param args
+ * @param [npmOptions={}]
+ * @param [spawnOptions={}]
+ * @returns
+ */
+export default async function spawnPnpm(
+  args: string | string[],
+  npmOptions: NpmOptions = {},
+  spawnOptions?: SpawnOptions,
+  spawnPleaseOptions?: SpawnPleaseOptions,
+): Promise<string> {
+  const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+
+  const fullArgs = [
+    ...(npmOptions.global ? 'global' : []),
+    ...(Array.isArray(args) ? args : [args]),
+    ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
+  ]
+
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+
+  return stdout
+}
 
 export { defaultPrefix, getPeerDependencies, packageAuthorChanged } from './npm'
-
-export default spawnPnpm
