@@ -10,7 +10,7 @@ import exists from './exists'
 const defaultBranchPath = hostedGitInfo
   .fromUrl('user/repo')
   ?.browse('')
-  .match(/(\/tree\/[a-z]+)/)?.[0]
+  .match(/(\/tree\/[a-zA-Z]+)/)?.[0]
 const regexDefaultBranchPath = new RegExp(`${defaultBranchPath}$`)
 
 /** Gets the repo url of an installed package. */

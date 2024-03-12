@@ -67,7 +67,7 @@
     "fast-memoize": "^2.5.2",
     "find-up": "5.0.0",
     "fp-and-or": "^1.0.2",
-    "hosted-git-info": "^5.1.0",
+    "hosted-git-info": "^7.0.1",
     "ini": "^4.1.2",
     "js-yaml": "^4.1.0",
     "json-parse-helpfulerror": "^1.0.3",
