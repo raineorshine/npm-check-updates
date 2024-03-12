@@ -41,16 +41,8 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
 
-      # node v14 cannot install from current package-lock.json, so use npm install instea of npm ci.
-      # Cannot read property 'chalk' of undefined
-      # Regression: e88617964a009dbb9f5e973f64ff76ad289df68c
-      - name: Install npm dependencies
-        run: npm i
-        if: 'matrix.node == 14'
-
       - name: Install npm dependencies
         run: npm ci
-        if: 'matrix.node != 14'
 
       - name: Build
         run: npm run build
