@@ -6,13 +6,6 @@ import { PackageFile } from '../types/PackageFile'
 import { PackageFileRepository } from '../types/PackageFileRepository'
 import exists from './exists'
 
-// extract the defaultBranchPath so it can be stripped in the final output
-const defaultBranchPath = hostedGitInfo
-  .fromUrl('user/repo')
-  ?.browse('')
-  .match(/(\/tree\/[a-zA-Z]+)/)?.[0]
-const regexDefaultBranchPath = new RegExp(`${defaultBranchPath}$`)
-
 /** Gets the repo url of an installed package. */
 async function getPackageRepo(
   packageName: string,
@@ -40,9 +33,6 @@ async function getPackageRepo(
 
   return null
 }
-
-/** Remove the default branch path from a git url. */
-const cleanRepoUrl = (url: string) => url.replace(/\/$/, '').replace(regexDefaultBranchPath, '')
 
 /**
  * @param packageName A package name as listed in package.json's dependencies list
@@ -91,7 +81,8 @@ async function getRepoUrl(
   if (typeof gitURL === 'string' && typeof directory === 'string') {
     const hostedGitURL = hostedGitInfo.fromUrl(gitURL)?.browse(directory)
     if (hostedGitURL !== undefined) {
-      return cleanRepoUrl(hostedGitURL)
+      // Remove the default branch path (/tree/HEAD) from a git url
+      return hostedGitURL.replace(/\/$/, '').replace(/\/tree\/HEAD$/, '')
     }
   }
   return null
