@@ -251,8 +251,8 @@ async function runLocal(
   const output = options.jsonAll
     ? (jph.parse(newPkgData) as PackageFile)
     : options.jsonDeps
-    ? pick(jph.parse(newPkgData) as PackageFile, resolveDepSections(options.dep))
-    : chosenUpgraded
+      ? pick(jph.parse(newPkgData) as PackageFile, resolveDepSections(options.dep))
+      : chosenUpgraded
 
   // will be overwritten with the result of fs.writeFile so that the return promise waits for the package file to be written
   let writePromise = Promise.resolve()

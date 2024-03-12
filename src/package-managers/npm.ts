@@ -158,11 +158,11 @@ export const normalizeNpmConfig = (
       typeof value !== 'string'
         ? value
         : // parse stringified booleans
-        keyTypes[key.replace(/-/g, '').toLowerCase()] === 'boolean'
-        ? stringToBoolean(value)
-        : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
-        ? stringToNumber(value)
-        : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
+          keyTypes[key.replace(/-/g, '').toLowerCase()] === 'boolean'
+          ? stringToBoolean(value)
+          : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
+            ? stringToNumber(value)
+            : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
 
     // normalize the key for pacote
     const { [key]: pacoteKey }: Index<NpmConfig[keyof NpmConfig]> = npmConfigToPacoteMap
@@ -171,10 +171,10 @@ export const normalizeNpmConfig = (
       ? // key is mapped to a string
         { [pacoteKey]: normalizedValue }
       : // key is mapped to a function
-      typeof pacoteKey === 'function'
-      ? { ...(pacoteKey(normalizedValue.toString()) as any) }
-      : // otherwise assign the camel-cased key
-        { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
+        typeof pacoteKey === 'function'
+        ? { ...(pacoteKey(normalizedValue.toString()) as any) }
+        : // otherwise assign the camel-cased key
+          { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
   })
 
   return config
@@ -282,8 +282,8 @@ export const mockViewMany =
       typeof mockReturnedVersions === 'function'
         ? mockReturnedVersions(options)?.[name]
         : typeof mockReturnedVersions === 'string' || isPackument(mockReturnedVersions)
-        ? mockReturnedVersions
-        : mockReturnedVersions[name]
+          ? mockReturnedVersions
+          : mockReturnedVersions[name]
 
     const version = isPackument(partialPackument) ? partialPackument.version : partialPackument
 
@@ -317,15 +317,15 @@ export const mockViewMany =
                 [version]: packument,
               } as Index<Packument>)
             : field === 'time'
-            ? ({
-                [version]: time,
-              } as Index<string>)
-            : ({
-                ...packument,
-                versions: {
-                  [version]: packument,
-                },
-              } as Packument),
+              ? ({
+                  [version]: time,
+                } as Index<string>)
+              : ({
+                  ...packument,
+                  versions: {
+                    [version]: packument,
+                  },
+                } as Packument),
       })),
     )
   }
@@ -583,12 +583,12 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
   return options.global && prefix?.match('Cellar')
     ? '/usr/local'
     : // Workaround: get prefix on windows for global packages
-    // Only needed when using npm api directly
-    process.platform === 'win32' && options.global && !process.env.prefix
-    ? prefix
-      ? prefix.trim()
-      : `${process.env.AppData}\\npm`
-    : undefined
+      // Only needed when using npm api directly
+      process.platform === 'win32' && options.global && !process.env.prefix
+      ? prefix
+        ? prefix.trim()
+        : `${process.env.AppData}\\npm`
+      : undefined
 }
 
 /**

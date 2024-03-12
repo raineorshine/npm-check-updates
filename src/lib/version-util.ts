@@ -76,8 +76,8 @@ export function precisionAdd(precision: VersionPart, n: number) {
   const index = VERSION_BASE_PARTS.includes(precision)
     ? VERSION_BASE_PARTS.indexOf(precision) + n
     : VERSION_ADDED_PARTS.includes(precision)
-    ? VERSION_BASE_PARTS.length + n
-    : null
+      ? VERSION_BASE_PARTS.length + n
+      : null
 
   if (index === null || !VERSION_PARTS[index]) {
     throw new Error(`Invalid precision: ${precision}`)
@@ -491,10 +491,10 @@ export function upgradeDependencyDeclaration(
       (isWildPart(declaredSemver[part])
         ? declaredSemver[part]
         : VERSION_BASE_PARTS.includes(part) && declaredSemver[part]
-        ? latestSemver[part]
-        : VERSION_ADDED_PARTS.includes(part)
-        ? latestSemver[part]
-        : null) || null
+          ? latestSemver[part]
+          : VERSION_ADDED_PARTS.includes(part)
+            ? latestSemver[part]
+            : null) || null
     )
   }
 

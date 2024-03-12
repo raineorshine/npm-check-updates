@@ -237,12 +237,12 @@ export async function defaultPrefix(options: Options): Promise<string> {
   return options.global && prefix && prefix.match('Cellar')
     ? '/usr/local'
     : // Workaround: get prefix on windows for global packages
-    // Only needed when using npm api directly
-    process.platform === 'win32' && options.global && !process.env.prefix
-    ? prefix
-      ? prefix.trim()
-      : `${process.env.LOCALAPPDATA}\\Yarn\\Data\\global`
-    : null
+      // Only needed when using npm api directly
+      process.platform === 'win32' && options.global && !process.env.prefix
+      ? prefix
+        ? prefix.trim()
+        : `${process.env.LOCALAPPDATA}\\Yarn\\Data\\global`
+      : null
 }
 
 /**

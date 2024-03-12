@@ -62,10 +62,10 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
       options.packageManager === 'yarn'
         ? 'yarn global upgrade'
         : options.packageManager === 'pnpm'
-        ? 'pnpm -g add'
-        : options.packageManager === 'bun'
-        ? 'bun add -g'
-        : 'npm -g install'
+          ? 'pnpm -g add'
+          : options.packageManager === 'bun'
+            ? 'bun add -g'
+            : 'npm -g install'
 
     print(
       options,

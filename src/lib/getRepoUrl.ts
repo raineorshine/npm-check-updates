@@ -62,8 +62,8 @@ async function getRepoUrl(
   const repositoryMetadata: string | PackageFileRepository | null = !packageJson
     ? await getPackageRepo(packageName, { pkgFile })
     : packageJson.repository
-    ? packageJson.repository
-    : null
+      ? packageJson.repository
+      : null
 
   if (!repositoryMetadata) return null
 
