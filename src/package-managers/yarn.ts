@@ -17,15 +17,7 @@ import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { SpawnOptions } from '../types/SpawnOptions'
 import { VersionSpec } from '../types/VersionSpec'
-import {
-  distTag as npmDistTag,
-  greatest as npmGreatest,
-  latest as npmLatest,
-  minor as npmMinor,
-  newest as npmNewest,
-  patch as npmPatch,
-  semver as npmSemver,
-} from './npm'
+import * as npm from './npm'
 
 interface ParsedDep {
   version: string
@@ -203,12 +195,14 @@ async function spawnYarn(
   const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
 
   const fullArgs = [
-    ...(yarnOptions.global ? 'global' : []),
-    ...(Array.isArray(args) ? args : [args]),
+    ...(yarnOptions.global ? ['global'] : []),
+    ...(yarnOptions.prefix ? [`--prefix=${yarnOptions.prefix}`] : []),
     '--depth=0',
-    ...(yarnOptions.prefix ? `--prefix=${yarnOptions.prefix}` : []),
     '--json',
     '--no-progress',
+    // args must go after yarn options, otherwise they are passed through to npm scripts
+    // https://github.com/raineorshine/npm-check-updates/issues/1362
+    ...(Array.isArray(args) ? args : [args]),
   ]
 
   return spawn(cmd, fullArgs, spawnOptions)
@@ -282,12 +276,12 @@ const withNpmConfigFromYarn =
   async (packageName, currentVersion, options = {}) =>
     getVersion(packageName, currentVersion, options, await npmConfigFromYarn(options))
 
-export const distTag = withNpmConfigFromYarn(npmDistTag)
-export const greatest = withNpmConfigFromYarn(npmGreatest)
-export const latest = withNpmConfigFromYarn(npmLatest)
-export const minor = withNpmConfigFromYarn(npmMinor)
-export const newest = withNpmConfigFromYarn(npmNewest)
-export const patch = withNpmConfigFromYarn(npmPatch)
-export const semver = withNpmConfigFromYarn(npmSemver)
+export const distTag = withNpmConfigFromYarn(npm.distTag)
+export const greatest = withNpmConfigFromYarn(npm.greatest)
+export const latest = withNpmConfigFromYarn(npm.latest)
+export const minor = withNpmConfigFromYarn(npm.minor)
+export const newest = withNpmConfigFromYarn(npm.newest)
+export const patch = withNpmConfigFromYarn(npm.patch)
+export const semver = withNpmConfigFromYarn(npm.semver)
 
 export default spawnYarn

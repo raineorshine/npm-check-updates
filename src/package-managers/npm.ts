@@ -536,13 +536,12 @@ async function spawnNpm(
   spawnOptions: Index<any> = {},
 ): Promise<any> {
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-  args = Array.isArray(args) ? args : [args]
 
   const fullArgs = [
-    ...args,
     ...(npmOptions.global ? [`--global`] : []),
     ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
     '--json',
+    ...(Array.isArray(args) ? args : [args]),
   ]
   return spawn(cmd, fullArgs, spawnOptions)
 }
