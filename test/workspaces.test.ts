@@ -136,7 +136,7 @@ describe('workspaces', () => {
       it('update workspaces with --workspaces', async () => {
         const tempDir = await setup(['packages/a'])
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.not.have.property('packages/b/package.json')
@@ -149,7 +149,7 @@ describe('workspaces', () => {
       it('update workspaces glob', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
@@ -163,7 +163,7 @@ describe('workspaces', () => {
       it('update workspaces with -ws', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '-ws'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '-ws'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
@@ -188,7 +188,7 @@ describe('workspaces', () => {
         )
 
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
@@ -205,7 +205,7 @@ describe('workspaces', () => {
       it('update workspaces/packages', async () => {
         const tempDir = await setup({ packages: ['packages/**'] })
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
@@ -220,7 +220,7 @@ describe('workspaces', () => {
       it('ignore local workspace packages', async () => {
         const tempDir = await setupSymlinkedPackages()
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--workspaces'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--workspaces'], {}, { cwd: tempDir })
           const upgrades = JSON.parse(stdout)
           upgrades.should.deep.equal({
             'package.json': {},
@@ -239,7 +239,7 @@ describe('workspaces', () => {
       it('ignore local workspace packages with different names than their folders', async () => {
         const tempDir = await setupSymlinkedPackages(['packages/**'], 'chalk')
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--workspaces'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--workspaces'], {}, { cwd: tempDir })
           const upgrades = JSON.parse(stdout)
           upgrades.should.deep.equal({
             'package.json': {},
@@ -270,7 +270,7 @@ describe('workspaces', () => {
       it('update single workspace with --workspace', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.not.have.property('packages/b/package.json')
@@ -283,7 +283,7 @@ describe('workspaces', () => {
       it('update single workspace with -w', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '-w', 'a'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '-w', 'a'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.not.have.property('packages/b/package.json')
@@ -296,7 +296,7 @@ describe('workspaces', () => {
       it('update more than one workspace', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--workspace', 'b'], {
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--workspace', 'b'], {}, {
             cwd: tempDir,
           })
           const output = JSON.parse(stdout)
@@ -313,7 +313,7 @@ describe('workspaces', () => {
         const tempDir = await setup()
         try {
           // when npm-check-updates is executed in a workspace directory but uses --cwd to point up to the root, make sure that the root package.json is checked for the workspaces property
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--cwd', '../../'], {
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--cwd', '../../'], {}, {
             cwd: path.join(tempDir, 'packages', 'a'),
           })
           const output = JSON.parse(stdout)
@@ -329,7 +329,7 @@ describe('workspaces', () => {
       it('update namespaced workspace', async () => {
         const tempDir = await setupSymlinkedPackages(['packages/**'], '@ncu/bar')
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--workspace', '@ncu/bar'], {
+          const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--workspace', '@ncu/bar'], {}, {
             cwd: tempDir,
           })
           const upgrades = JSON.parse(stdout)
@@ -351,7 +351,7 @@ describe('workspaces', () => {
       it('update root project by default', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces', '--root'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces', '--root'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('package.json')
           output.should.have.property('packages/a/package.json')
@@ -367,7 +367,7 @@ describe('workspaces', () => {
       it('do not update the root project with --no-root', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces', '--no-root'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces', '--no-root'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.not.have.property('package.json')
           output.should.have.property('packages/a/package.json')
@@ -382,7 +382,7 @@ describe('workspaces', () => {
       it('update root project and workspaces if errorLevel=2', async () => {
         const tempDir = await setup()
         try {
-          await spawn('node', [bin, '--upgrade', '--workspaces', '--errorLevel', '2'], {
+          await spawn('node', [bin, '--upgrade', '--workspaces', '--errorLevel', '2'], {}, {
             cwd: tempDir,
           }).should.eventually.be.rejectedWith('Dependencies not up-to-date')
           const upgradedPkg = JSON.parse(await fs.readFile(path.join(tempDir, 'package.json'), 'utf-8'))
@@ -416,7 +416,7 @@ describe('workspaces', () => {
         )
 
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('package.json')
           output.should.have.property('packages/a/package.json')
@@ -437,7 +437,7 @@ describe('workspaces', () => {
       it('update root project and single workspace', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('package.json')
           output.should.have.property('packages/a/package.json')
@@ -452,7 +452,7 @@ describe('workspaces', () => {
       it('update more than one workspace', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--workspace', 'b'], {
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--workspace', 'b'], {}, {
             cwd: tempDir,
           })
           const output = JSON.parse(stdout)
@@ -472,7 +472,7 @@ describe('workspaces', () => {
       it('read packages from pnpm-workspace.yaml', async () => {
         const tempDir = await setup(['packages/**'], { pnpm: true })
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], { cwd: tempDir })
+          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
@@ -495,7 +495,7 @@ describe('workspaces', () => {
       try {
         await fs.writeFile(path.join(tempDir, '.npmrc'), 'ncutest=root')
         await fs.writeFile(path.join(tempDir, 'packages/a/.npmrc'), 'ncutest=a')
-        const { stdout } = await spawn('node', [bin, '--verbose', '--packageManager', 'pnpm'], {
+        const { stdout } = await spawn('node', [bin, '--verbose', '--packageManager', 'pnpm'], {}, {
           cwd: path.join(tempDir, 'packages/a'),
         })
         stdout.should.include(`npm config (workspace project):\n{ ncutest: 'root' }`)

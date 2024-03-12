@@ -130,7 +130,7 @@ describe('filterVersion', () => {
       const { stdout } = await spawn(
         'node',
         [bin, '--jsonUpgraded', '--verbose', '--stdin', '--filterVersion', '1.0.0', '--filterVersion', '1.0.9'],
-        JSON.stringify(pkgData),
+        { stdin: JSON.stringify(pkgData) },
       )
       const upgraded = JSON.parse(stdout)
       upgraded.should.have.property('ncu-test-v2')
@@ -154,7 +154,7 @@ describe('rejectVersion', () => {
       const { stdout } = await spawn(
         'node',
         [bin, '--jsonUpgraded', '--verbose', '--stdin', '--rejectVersion', '1.0.0', '--rejectVersion', '1.0.9'],
-        JSON.stringify(pkgData),
+        { stdin: JSON.stringify(pkgData) },
       )
       const upgraded = JSON.parse(stdout)
       upgraded.should.not.have.property('ncu-test-v2')

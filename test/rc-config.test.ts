@@ -23,7 +23,7 @@ describe('rc-config', () => {
       const { stdout } = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+        { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }) },
       )
       stdout.should.containIgnoreCase(`Using config file ${tempConfigFile}`)
     } finally {
@@ -37,7 +37,7 @@ describe('rc-config', () => {
       const { stdout } = await spawn(
         'node',
         [bin, '--stdin', '--cwd', tempDir],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
+        { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }) },
       )
       stdout.should.not.include('Using config file')
     } finally {
@@ -53,7 +53,7 @@ describe('rc-config', () => {
       const { stdout } = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+        { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }) },
       )
       stdout.should.not.include('Using config file')
     } finally {
@@ -69,7 +69,7 @@ describe('rc-config', () => {
       const { stdout } = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+        { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }) },
       )
       const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('ncu-test-v2')
@@ -88,7 +88,7 @@ describe('rc-config', () => {
       const { stdout } = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir, '--configFileName', tempConfigFileName],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+        { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }) },
       )
       const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('ncu-test-v2')
@@ -106,7 +106,7 @@ describe('rc-config', () => {
       const { stdout } = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir, '--filter', 'ncu-test-tag'],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+        { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }) },
       )
       const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('ncu-test-tag')
@@ -124,7 +124,7 @@ describe('rc-config', () => {
       const { stdout } = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir, '--no-jsonUpgraded'],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+        { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }) },
       )
       // if the output contains "Using config file", then we know that jsonUpgraded was overridden
       stdout.should.include('Using config file')
@@ -142,7 +142,7 @@ describe('rc-config', () => {
       const { stdout } = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir],
-        JSON.stringify({ dependencies: { 'ncu-test-tag': '0.1.0' } }),
+        { stdin: JSON.stringify({ dependencies: { 'ncu-test-tag': '0.1.0' } }) },
       )
       const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('ncu-test-tag')
@@ -163,7 +163,7 @@ describe('rc-config', () => {
     )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      const { stdout } = await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
+      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
       const firstLine = stdout.split('\n')[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates recieves /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
@@ -187,7 +187,7 @@ describe('rc-config', () => {
     )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      const { stdout } = await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
+      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
       const firstLine = stdout.split('\n')[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates recieves /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
@@ -208,7 +208,7 @@ describe('rc-config', () => {
 
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
+      await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }

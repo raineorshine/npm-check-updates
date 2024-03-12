@@ -419,7 +419,7 @@ else {
 
       try {
         // explicitly set packageManager to avoid auto yarn detection
-        await spawn('npm', ['install'], { cwd: tempDir })
+        await spawn('npm', ['install'], {}, { cwd: tempDir })
 
         await ncu(['--doctor', '-u', '-p', 'npm'], {
           cwd: tempDir,

@@ -102,7 +102,7 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn('node', [bin, '-iu', '--packageFile', pkgFile], {
+        await spawn('node', [bin, '-iu', '--packageFile', pkgFile], {}, {
           env: {
             ...process.env,
             INJECT_PROMPTS: JSON.stringify([['ncu-test-v2'], true]),
@@ -129,7 +129,7 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn('node', [bin, '-iu', '--packageFile', pkgFile], {
+        await spawn('node', [bin, '-iu', '--packageFile', pkgFile], {}, {
           env: {
             ...process.env,
             INJECT_PROMPTS: JSON.stringify([['ncu-test-v2'], false]),
@@ -156,7 +156,7 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn('node', [bin, '-iu', '--packageFile', pkgFile, '--install', 'always'], {
+        await spawn('node', [bin, '-iu', '--packageFile', pkgFile, '--install', 'always'], {}, {
           env: {
             ...process.env,
             // NOTE: We can inject valuees, but we cannot test if the prompt was actually shown or not.
@@ -185,7 +185,7 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn('node', [bin, '-iu', '--packageFile', pkgFile, '--install', 'never'], {
+        await spawn('node', [bin, '-iu', '--packageFile', pkgFile, '--install', 'never'], {}, {
           env: {
             ...process.env,
             // NOTE: We can inject valuees, but we cannot test if the prompt was actually shown or not.
