@@ -4,8 +4,8 @@ import keyValueBy from '../lib/keyValueBy'
 import programError from '../lib/programError'
 import { Index } from '../types/IndexType'
 import { NpmOptions } from '../types/NpmOptions'
-import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import { Options } from '../types/Options'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import * as npm from './npm'
 
 /** Spawn bun. */
@@ -14,7 +14,7 @@ async function spawnBun(
   npmOptions: NpmOptions = {},
   spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: Index<any> = {},
-): Promise<{ stdout: string, stderr: string }> {
+): Promise<{ stdout: string; stderr: string }> {
   // Bun not yet supported on Windows.
   // @see https://github.com/oven-sh/bun/issues/43
   if (process.platform === 'win32') {

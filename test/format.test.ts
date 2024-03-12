@@ -45,7 +45,7 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn('npm', ['install'], {},{ cwd: tempDir })
+      await spawn('npm', ['install'], {}, { cwd: tempDir })
       const { stdout } = await spawn('node', [bin, '--format', 'repo'], {}, { cwd: tempDir })
       stdout.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {
@@ -103,9 +103,14 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn('node', [bin, '--format', 'lines', '--jsonUpgraded'], {}, {
-        cwd: tempDir,
-      }).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonUpgraded.')
+      await spawn(
+        'node',
+        [bin, '--format', 'lines', '--jsonUpgraded'],
+        {},
+        {
+          cwd: tempDir,
+        },
+      ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonUpgraded.')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
@@ -133,9 +138,14 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn('node', [bin, '--format', 'lines', '--jsonAll'], {}, {
-        cwd: tempDir,
-      }).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonAll.')
+      await spawn(
+        'node',
+        [bin, '--format', 'lines', '--jsonAll'],
+        {},
+        {
+          cwd: tempDir,
+        },
+      ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonAll.')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
@@ -163,9 +173,14 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn('node', [bin, '--format', 'lines,group'], {}, {
-        cwd: tempDir,
-      }).should.eventually.be.rejectedWith('Cannot use --format lines with other formatting options.')
+      await spawn(
+        'node',
+        [bin, '--format', 'lines,group'],
+        {},
+        {
+          cwd: tempDir,
+        },
+      ).should.eventually.be.rejectedWith('Cannot use --format lines with other formatting options.')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()

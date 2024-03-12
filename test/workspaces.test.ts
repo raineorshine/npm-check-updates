@@ -296,9 +296,14 @@ describe('workspaces', () => {
       it('update more than one workspace', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--workspace', 'b'], {}, {
-            cwd: tempDir,
-          })
+          const { stdout } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspace', 'a', '--workspace', 'b'],
+            {},
+            {
+              cwd: tempDir,
+            },
+          )
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.have.property('packages/b/package.json')
@@ -313,9 +318,14 @@ describe('workspaces', () => {
         const tempDir = await setup()
         try {
           // when npm-check-updates is executed in a workspace directory but uses --cwd to point up to the root, make sure that the root package.json is checked for the workspaces property
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--cwd', '../../'], {}, {
-            cwd: path.join(tempDir, 'packages', 'a'),
-          })
+          const { stdout } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspace', 'a', '--cwd', '../../'],
+            {},
+            {
+              cwd: path.join(tempDir, 'packages', 'a'),
+            },
+          )
           const output = JSON.parse(stdout)
           output.should.have.property('packages/a/package.json')
           output.should.not.have.property('packages/b/package.json')
@@ -329,9 +339,14 @@ describe('workspaces', () => {
       it('update namespaced workspace', async () => {
         const tempDir = await setupSymlinkedPackages(['packages/**'], '@ncu/bar')
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--workspace', '@ncu/bar'], {}, {
-            cwd: tempDir,
-          })
+          const { stdout } = await spawn(
+            'node',
+            [bin, '--jsonUpgraded', '--workspace', '@ncu/bar'],
+            {},
+            {
+              cwd: tempDir,
+            },
+          )
           const upgrades = JSON.parse(stdout)
           upgrades.should.deep.equal({
             'package.json': {},
@@ -382,9 +397,14 @@ describe('workspaces', () => {
       it('update root project and workspaces if errorLevel=2', async () => {
         const tempDir = await setup()
         try {
-          await spawn('node', [bin, '--upgrade', '--workspaces', '--errorLevel', '2'], {}, {
-            cwd: tempDir,
-          }).should.eventually.be.rejectedWith('Dependencies not up-to-date')
+          await spawn(
+            'node',
+            [bin, '--upgrade', '--workspaces', '--errorLevel', '2'],
+            {},
+            {
+              cwd: tempDir,
+            },
+          ).should.eventually.be.rejectedWith('Dependencies not up-to-date')
           const upgradedPkg = JSON.parse(await fs.readFile(path.join(tempDir, 'package.json'), 'utf-8'))
           upgradedPkg.should.have.property('dependencies')
           upgradedPkg.dependencies.should.have.property('ncu-test-v2')
@@ -452,9 +472,14 @@ describe('workspaces', () => {
       it('update more than one workspace', async () => {
         const tempDir = await setup()
         try {
-          const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a', '--workspace', 'b'], {}, {
-            cwd: tempDir,
-          })
+          const { stdout } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspace', 'a', '--workspace', 'b'],
+            {},
+            {
+              cwd: tempDir,
+            },
+          )
           const output = JSON.parse(stdout)
           output.should.have.property('package.json')
           output.should.have.property('packages/a/package.json')
@@ -495,9 +520,14 @@ describe('workspaces', () => {
       try {
         await fs.writeFile(path.join(tempDir, '.npmrc'), 'ncutest=root')
         await fs.writeFile(path.join(tempDir, 'packages/a/.npmrc'), 'ncutest=a')
-        const { stdout } = await spawn('node', [bin, '--verbose', '--packageManager', 'pnpm'], {}, {
-          cwd: path.join(tempDir, 'packages/a'),
-        })
+        const { stdout } = await spawn(
+          'node',
+          [bin, '--verbose', '--packageManager', 'pnpm'],
+          {},
+          {
+            cwd: path.join(tempDir, 'packages/a'),
+          },
+        )
         stdout.should.include(`npm config (workspace project):\n{ ncutest: 'root' }`)
         stdout.should.include(`Using merged npm config:\n{\n  ncutest: 'a',`)
       } finally {

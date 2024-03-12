@@ -15,7 +15,7 @@
     "noImplicitAny": true,
     "paths": {
       "libnpmconfig": ["./src/types/libnpmconfig"],
-      "prompts-ncu": ["./src/types/prompts-ncu"],
+      "prompts-ncu": ["./src/types/prompts-ncu"]
     },
     "resolveJsonModule": true,
     "outDir": "./build",

@@ -132,7 +132,7 @@ describe('--deep with nested ncurc files', function () {
 
   it('use ncurc of nested packages', async () => {
     const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--deep'], {}, { cwd })
-      const deepJsonOut = JSON.parse(stdout)
+    const deepJsonOut = JSON.parse(stdout)
 
     // root: reject: ['cute-animals']
     deepJsonOut.should.have.property('package.json')

@@ -232,7 +232,7 @@ export async function defaultPrefix(options: Options): Promise<string | null> {
     // catch error to prevent process from crashing
     // https://github.com/raineorshine/npm-check-updates/issues/873
     .catch(() => ({
-      stdout: null
+      stdout: null,
     }))
 
   // FIX: for ncu -g doesn't work on homebrew or windows #146

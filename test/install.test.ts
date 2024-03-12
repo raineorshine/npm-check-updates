@@ -102,12 +102,17 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn('node', [bin, '-iu', '--packageFile', pkgFile], {}, {
-          env: {
-            ...process.env,
-            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2'], true]),
+        await spawn(
+          'node',
+          [bin, '-iu', '--packageFile', pkgFile],
+          {},
+          {
+            env: {
+              ...process.env,
+              INJECT_PROMPTS: JSON.stringify([['ncu-test-v2'], true]),
+            },
           },
-        })
+        )
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
@@ -129,12 +134,17 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn('node', [bin, '-iu', '--packageFile', pkgFile], {}, {
-          env: {
-            ...process.env,
-            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2'], false]),
+        await spawn(
+          'node',
+          [bin, '-iu', '--packageFile', pkgFile],
+          {},
+          {
+            env: {
+              ...process.env,
+              INJECT_PROMPTS: JSON.stringify([['ncu-test-v2'], false]),
+            },
           },
-        })
+        )
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
@@ -156,14 +166,19 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn('node', [bin, '-iu', '--packageFile', pkgFile, '--install', 'always'], {}, {
-          env: {
-            ...process.env,
-            // NOTE: We can inject valuees, but we cannot test if the prompt was actually shown or not.
-            // i.e. Testing that the prompt is not shown with --install always must be done manually.
-            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2']]),
+        await spawn(
+          'node',
+          [bin, '-iu', '--packageFile', pkgFile, '--install', 'always'],
+          {},
+          {
+            env: {
+              ...process.env,
+              // NOTE: We can inject valuees, but we cannot test if the prompt was actually shown or not.
+              // i.e. Testing that the prompt is not shown with --install always must be done manually.
+              INJECT_PROMPTS: JSON.stringify([['ncu-test-v2']]),
+            },
           },
-        })
+        )
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
@@ -185,14 +200,19 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn('node', [bin, '-iu', '--packageFile', pkgFile, '--install', 'never'], {}, {
-          env: {
-            ...process.env,
-            // NOTE: We can inject valuees, but we cannot test if the prompt was actually shown or not.
-            // i.e. Testing that the prompt is not shown with --install never must be done manually.
-            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2']]),
+        await spawn(
+          'node',
+          [bin, '-iu', '--packageFile', pkgFile, '--install', 'never'],
+          {},
+          {
+            env: {
+              ...process.env,
+              // NOTE: We can inject valuees, but we cannot test if the prompt was actually shown or not.
+              // i.e. Testing that the prompt is not shown with --install never must be done manually.
+              INJECT_PROMPTS: JSON.stringify([['ncu-test-v2']]),
+            },
           },
-        })
+        )
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {

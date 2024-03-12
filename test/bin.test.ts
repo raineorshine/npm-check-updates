@@ -13,22 +13,18 @@ const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('bin', async function () {
   it('fetch latest version from registry (not stubbed)', async () => {
-    const { stdout } = await spawn(
-      'node',
-      [bin, '--jsonUpgraded', '--stdin'],
-      { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }) },
-    )
+    const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin'], {
+      stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
+    })
     const pkgData = JSON.parse(stdout)
     pkgData.should.have.property('ncu-test-v2')
   })
 
   it('output only upgraded with --jsonUpgraded', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    const { stdout } = await spawn(
-      'node',
-      [bin, '--jsonUpgraded', '--stdin'],
-      { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }) },
-    )
+    const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin'], {
+      stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
+    })
     const pkgData = JSON.parse(stdout)
     pkgData.should.have.property('ncu-test-v2')
     stub.restore()
@@ -36,11 +32,9 @@ describe('bin', async function () {
 
   it('--loglevel verbose', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    const { stdout } = await spawn(
-      'node',
-      [bin, '--loglevel', 'verbose'],
-      { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }) },
-    )
+    const { stdout } = await spawn('node', [bin, '--loglevel', 'verbose'], {
+      stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
+    })
     stdout.should.containIgnoreCase('Initializing')
     stdout.should.containIgnoreCase('Running in local mode')
     stdout.should.containIgnoreCase('Finding package file data')
@@ -49,7 +43,9 @@ describe('bin', async function () {
 
   it('--verbose', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    const { stdout } = await spawn('node', [bin, '--verbose'], { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }) })
+    const { stdout } = await spawn('node', [bin, '--verbose'], {
+      stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
+    })
     stdout.should.containIgnoreCase('Initializing')
     stdout.should.containIgnoreCase('Running in local mode')
     stdout.should.containIgnoreCase('Finding package file data')
@@ -58,18 +54,18 @@ describe('bin', async function () {
 
   it('accept stdin', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    const { stdout } = await spawn('node', [bin, '--stdin'], { stdin: JSON.stringify({ dependencies: { express: '1' } }) })
+    const { stdout } = await spawn('node', [bin, '--stdin'], {
+      stdin: JSON.stringify({ dependencies: { express: '1' } }),
+    })
     stdout.trim().should.startWith('express')
     stub.restore()
   })
 
   it('reject out-of-date stdin with errorLevel 2', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    await spawn(
-      'node',
-      [bin, '--stdin', '--errorLevel', '2'],
-      { stdin: JSON.stringify({ dependencies: { express: '1' } }) },
-    ).should.eventually.be.rejectedWith('Dependencies not up-to-date')
+    await spawn('node', [bin, '--stdin', '--errorLevel', '2'], {
+      stdin: JSON.stringify({ dependencies: { express: '1' } }),
+    }).should.eventually.be.rejectedWith('Dependencies not up-to-date')
     stub.restore()
   })
 
@@ -181,7 +177,9 @@ describe('bin', async function () {
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
-      await spawn('node', [bin, '-u', '--stdin', '--packageFile', pkgFile], { stdin: JSON.stringify({ dependencies: {} }) })
+      await spawn('node', [bin, '-u', '--stdin', '--packageFile', pkgFile], {
+        stdin: JSON.stringify({ dependencies: {} }),
+      })
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
@@ -194,7 +192,9 @@ describe('bin', async function () {
 
   it('suppress stdout when --silent is provided', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    const { stdout } = await spawn('node', [bin, '--silent'], { stdin: JSON.stringify({ dependencies: { express: '1' } }) })
+    const { stdout } = await spawn('node', [bin, '--silent'], {
+      stdin: JSON.stringify({ dependencies: { express: '1' } }),
+    })
     stdout.trim().should.equal('')
     stub.restore()
   })
@@ -235,11 +235,9 @@ describe('bin', async function () {
 
   it('combine boolean flags with arguments', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    const { stdout } = await spawn(
-      'node',
-      [bin, '--stdin', '--jsonUpgraded', 'ncu-test-v2'],
-      { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }) },
-    )
+    const { stdout } = await spawn('node', [bin, '--stdin', '--jsonUpgraded', 'ncu-test-v2'], {
+      stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+    })
     const upgraded = JSON.parse(stdout) as Index<Version>
     upgraded.should.deep.equal({
       'ncu-test-v2': '99.9.9',

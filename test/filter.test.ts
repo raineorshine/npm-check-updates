@@ -207,22 +207,18 @@ describe('filter', () => {
     after(() => stub.restore())
 
     it('filter by package name with --filter', async () => {
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--jsonUpgraded', '--stdin', '--filter', 'express'],
-        { stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }' },
-      )
+      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin', '--filter', 'express'], {
+        stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
+      })
       const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('express')
       pkgData.should.not.have.property('chalk')
     })
 
     it('filter by package name with -f', async () => {
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--jsonUpgraded', '--stdin', '-f', 'express'],
-        { stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }' },
-      )
+      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin', '-f', 'express'], {
+        stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
+      })
       const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('express')
       pkgData.should.not.have.property('chalk')
@@ -236,8 +232,9 @@ describe('filter', () => {
         },
       }
 
-      await spawn('node', [bin, '--jsonUpgraded', '--filter', 'lodash.map', 'lodash.filter'], { stdin: JSON.stringify(pkgData) })
-        .should.eventually.be.rejected
+      await spawn('node', [bin, '--jsonUpgraded', '--filter', 'lodash.map', 'lodash.filter'], {
+        stdin: JSON.stringify(pkgData),
+      }).should.eventually.be.rejected
     })
 
     it('allow matching --filter and arguments', async () => {
@@ -303,33 +300,27 @@ describe('reject', () => {
     after(() => stub.restore())
 
     it('reject by package name with --reject', async () => {
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--jsonUpgraded', '--stdin', '--reject', 'chalk'],
-        { stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }' },
-      )
+      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin', '--reject', 'chalk'], {
+        stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
+      })
       const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('express')
       pkgData.should.not.have.property('chalk')
     })
 
     it('reject by package name with -x', async () => {
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--jsonUpgraded', '--stdin', '-x', 'chalk'],
-        { stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }' },
-      )
+      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin', '-x', 'chalk'], {
+        stdin: '{ "dependencies": { "express": "1", "chalk": "0.1.0" } }',
+      })
       const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('express')
       pkgData.should.not.have.property('chalk')
     })
 
     it('reject with empty string should not reject anything', async () => {
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--jsonUpgraded', '--reject', '""', '--stdin', '-x', 'chalk'],
-        { stdin: '{ "dependencies": { "ncu-test-v2": "1.0.0", "ncu-test-tag": "1.0.0" } }' },
-      )
+      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--reject', '""', '--stdin', '-x', 'chalk'], {
+        stdin: '{ "dependencies": { "ncu-test-v2": "1.0.0", "ncu-test-tag": "1.0.0" } }',
+      })
       const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('ncu-test-v2')
       pkgData.should.have.property('ncu-test-tag')
