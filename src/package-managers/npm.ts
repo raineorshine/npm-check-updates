@@ -568,7 +568,8 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
   // catch spawn error which can occur on Windows
   // https://github.com/raineorshine/npm-check-updates/issues/703
   try {
-    prefix = await spawn(cmd, ['config', 'get', 'prefix'])
+    const { stdout } = await spawn(cmd, ['config', 'get', 'prefix'])
+    prefix = stdout
   } catch (e: any) {
     const message = (e.message || e || '').toString()
     print(

@@ -21,7 +21,10 @@ const mockNpmVersions = {
 }
 
 /** Run the ncu CLI. */
-const ncu = (args: string[], options?: Record<string, unknown>) => spawn('node', [bin, ...args], options)
+const ncu = async (args: string[], options?: Record<string, unknown>) => {
+  const { stdout } = await spawn('node', [bin, ...args], options)
+  return stdout
+}
 
 /** Assertions for npm or yarn when tests pass. */
 const testPass = ({ packageManager }: { packageManager: PackageManagerName }) => {

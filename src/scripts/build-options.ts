@@ -103,10 +103,12 @@ export interface RunOptions {
 }
 
 /** Generates a JSON schema for the ncurc file. */
-const generateRunOptionsJsonSchema = async (): Promise<string> =>
+const generateRunOptionsJsonSchema = async (): Promise<string> => {
   // programmatic usage of typescript-json-schema does not work, at least not straightforwardly.
   // Use the CLI which works out-of-the-box.
-  spawn('typescript-json-schema', ['tsconfig.json', 'RunOptions'])
+  const { stdout } = await spawn('typescript-json-schema', ['tsconfig.json', 'RunOptions'])
+  return stdout
+}
 
 ;(async () => {
   await fs.writeFile('README.md', await injectReadme())

@@ -14,7 +14,7 @@ async function spawnBun(
   npmOptions: NpmOptions = {},
   spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: Index<any> = {},
-): Promise<string> {
+): Promise<{ stdout: string, stderr: string }> {
   // Bun not yet supported on Windows.
   // @see https://github.com/oven-sh/bun/issues/43
   if (process.platform === 'win32') {
@@ -33,7 +33,7 @@ async function spawnBun(
 /** Returns the global directory of bun. */
 export const defaultPrefix = async (options: Options): Promise<string | undefined> =>
   options.global
-    ? options.prefix || process.env.BUN_INSTALL || path.dirname(await spawn('bun', ['pm', '-g', 'bin']))
+    ? options.prefix || process.env.BUN_INSTALL || path.dirname((await spawn('bun', ['pm', '-g', 'bin'])).stdout)
     : undefined
 
 /**
@@ -43,7 +43,7 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   const { default: stripAnsi } = await import('strip-ansi')
 
   // bun pm ls
-  const stdout = await spawnBun(
+  const { stdout } = await spawnBun(
     ['pm', 'ls'],
     {
       ...(options.global ? { global: true } : null),

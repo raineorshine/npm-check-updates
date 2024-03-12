@@ -29,8 +29,8 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        const output = await spawn('node', [bin, '-u', '--packageFile', pkgFile])
-        stripAnsi(output).should.include('Run npm install to install new versions')
+        const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile])
+        stripAnsi(stdout).should.include('Run npm install to install new versions')
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
@@ -53,8 +53,8 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        const output = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'always'])
-        stripAnsi(output).should.not.include('Run npm install to install new versions')
+        const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'always'])
+        stripAnsi(stdout).should.not.include('Run npm install to install new versions')
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
@@ -77,8 +77,8 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        const output = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'never'])
-        stripAnsi(output).should.not.include('Run npm install to install new versions')
+        const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'never'])
+        stripAnsi(stdout).should.not.include('Run npm install to install new versions')
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {

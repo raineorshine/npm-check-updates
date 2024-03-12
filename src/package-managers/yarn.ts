@@ -220,20 +220,20 @@ async function spawnYarn(
  * @param [options.prefix]
  * @returns
  */
-export async function defaultPrefix(options: Options): Promise<string> {
+export async function defaultPrefix(options: Options): Promise<string | null> {
   if (options.prefix) {
     return Promise.resolve(options.prefix)
   }
 
   const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
 
-  const prefix = await spawn(cmd, ['global', 'dir'])
+  const { stdout: prefix } = await spawn(cmd, ['global', 'dir'])
     // yarn 2.0 does not support yarn global
     // catch error to prevent process from crashing
     // https://github.com/raineorshine/npm-check-updates/issues/873
-    .catch(() => {
-      /* empty */
-    })
+    .catch(() => ({
+      stdout: null
+    }))
 
   // FIX: for ncu -g doesn't work on homebrew or windows #146
   // https://github.com/raineorshine/npm-check-updates/issues/146

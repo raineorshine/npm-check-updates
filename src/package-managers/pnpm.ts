@@ -58,7 +58,8 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   if (!options.global) return npm.list(options)
 
   const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
-  const result = JSON.parse(await spawn(cmd, ['ls', '-g', '--json'])) as PnpmList
+  const { stdout } = await spawn(cmd, ['ls', '-g', '--json'])
+  const result = JSON.parse(stdout) as PnpmList
   const list = keyValueBy(result[0].dependencies || {}, (name, { version }) => ({
     [name]: version,
   }))
