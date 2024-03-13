@@ -1,15 +1,9 @@
 module.exports = {
   format: 'group',
   reject: [
-    // TODO: major version upgrades
-    'chai',
-    'commander',
-    '@typescript-eslint/eslint-plugin',
-    '@typescript-eslint/parser',
-    // ESM only modules
-    // https://github.com/microsoft/TypeScript/issues/46452
+    // esm only modules
     'find-up',
-    /* pin to 4.0.0 to match make-fetch-happen/cacache. */
+    'chai',
     'p-map',
     'remote-git-tags',
     'untildify',
@@ -19,6 +13,9 @@ module.exports = {
     // https://github.com/YousefED/typescript-json-schema/issues/568
     'typescript-json-schema',
     // node >= 18
+    'commander', // https://github.com/tj/commander.js/blob/master/CHANGELOG.md
     'update-notifier',
+    '@typescript-eslint/eslint-plugin',
+    '@typescript-eslint/parser',
   ],
 }
