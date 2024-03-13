@@ -157,7 +157,13 @@ ${chalk.dim.underline(
   // Do not load when tests are running (can be overridden if configFilePath is set explicitly, or --mergeConfig option specified)
   const rcResult =
     !process.env.NCU_TESTS || configFilePath || mergeConfig
-      ? await getNcuRc({ configFileName, configFilePath, global, packageFile, color })
+      ? await getNcuRc({
+          configFileName,
+          configFilePath,
+          global,
+          packageFile,
+          options: { ...programOpts, cli: true },
+        })
       : null
 
   // override rc args with program args

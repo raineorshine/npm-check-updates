@@ -200,7 +200,7 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
       async (previousPromise, packageInfo: PackageInfo) => {
         const packages = await previousPromise
         // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
-        const rcResult = await getNcuRc({ packageFile: packageInfo.filepath, color: options.color })
+        const rcResult = await getNcuRc({ packageFile: packageInfo.filepath, options })
         let rcConfig = rcResult && rcResult.config ? rcResult.config : {}
         if (options.mergeConfig && Object.keys(rcConfig).length) {
           // Merge config options.
