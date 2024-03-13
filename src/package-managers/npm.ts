@@ -545,7 +545,8 @@ async function spawnNpm(
     '--json',
     ...(Array.isArray(args) ? args : [args]),
   ]
-  return spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+  return stdout
 }
 
 /**
@@ -663,8 +664,10 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
       ...(options.prefix ? { prefix: options.prefix } : null),
     },
     {
-      ...(options.cwd ? { cwd: options.cwd } : null),
       rejectOnError: false,
+    },
+    {
+      ...(options.cwd ? { cwd: options.cwd } : null),
     },
   )
   const dependencies = parseJson<{
