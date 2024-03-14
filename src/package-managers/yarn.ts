@@ -16,6 +16,7 @@ import { NpmConfig } from '../types/NpmConfig'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { SpawnOptions } from '../types/SpawnOptions'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import { VersionSpec } from '../types/VersionSpec'
 import * as npm from './npm'
 
@@ -190,7 +191,8 @@ function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep
 async function spawnYarn(
   args: string | string[],
   yarnOptions: NpmOptions = {},
-  spawnOptions?: SpawnOptions,
+  spawnPleaseOptions: SpawnPleaseOptions = {},
+  spawnOptions: SpawnOptions = {},
 ): Promise<string> {
   const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
 
@@ -205,7 +207,9 @@ async function spawnYarn(
     ...(Array.isArray(args) ? args : [args]),
   ]
 
-  return spawn(cmd, fullArgs, spawnOptions)
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+
+  return stdout
 }
 
 /**
@@ -216,20 +220,20 @@ async function spawnYarn(
  * @param [options.prefix]
  * @returns
  */
-export async function defaultPrefix(options: Options): Promise<string> {
+export async function defaultPrefix(options: Options): Promise<string | null> {
   if (options.prefix) {
     return Promise.resolve(options.prefix)
   }
 
   const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
 
-  const prefix = await spawn(cmd, ['global', 'dir'])
+  const { stdout: prefix } = await spawn(cmd, ['global', 'dir'])
     // yarn 2.0 does not support yarn global
     // catch error to prevent process from crashing
     // https://github.com/raineorshine/npm-check-updates/issues/873
-    .catch(() => {
-      /* empty */
-    })
+    .catch(() => ({
+      stdout: null,
+    }))
 
   // FIX: for ncu -g doesn't work on homebrew or windows #146
   // https://github.com/raineorshine/npm-check-updates/issues/146
@@ -255,10 +259,15 @@ export async function defaultPrefix(options: Options): Promise<string> {
  * @returns
  */
 export const list = async (options: Options = {}, spawnOptions?: SpawnOptions): Promise<Index<string | undefined>> => {
-  const jsonLines: string = await spawnYarn('list', options as Index<string>, {
-    ...(options.cwd ? { cwd: options.cwd } : {}),
-    ...spawnOptions,
-  })
+  const jsonLines: string = await spawnYarn(
+    'list',
+    options as Index<string>,
+    {},
+    {
+      ...(options.cwd ? { cwd: options.cwd } : {}),
+      ...spawnOptions,
+    },
+  )
   const json: { dependencies: Index<ParsedDep> } = await parseJsonLines(jsonLines)
   const keyValues: Index<string | undefined> = keyValueBy<ParsedDep, string | undefined>(
     json.dependencies,

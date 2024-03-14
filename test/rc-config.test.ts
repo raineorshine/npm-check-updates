@@ -20,12 +20,10 @@ describe('rc-config', () => {
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, JSON.stringify({ filter: 'ncu-test-v2' }), 'utf-8')
     try {
-      const text = await spawn(
-        'node',
-        [bin, '--stdin', '--configFilePath', tempDir],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
-      )
-      text.should.containIgnoreCase(`Using config file ${tempConfigFile}`)
+      const { stdout } = await spawn('node', [bin, '--stdin', '--configFilePath', tempDir], {
+        stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      })
+      stdout.should.containIgnoreCase(`Using config file ${tempConfigFile}`)
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
@@ -34,12 +32,10 @@ describe('rc-config', () => {
   it('do not print rcConfigPath when there is no rc config file', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     try {
-      const text = await spawn(
-        'node',
-        [bin, '--stdin', '--cwd', tempDir],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
-      )
-      text.should.not.include('Using config file')
+      const { stdout } = await spawn('node', [bin, '--stdin', '--cwd', tempDir], {
+        stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
+      })
+      stdout.should.not.include('Using config file')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
@@ -50,12 +46,10 @@ describe('rc-config', () => {
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, '{}', 'utf-8')
     try {
-      const text = await spawn(
-        'node',
-        [bin, '--stdin', '--configFilePath', tempDir],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
-      )
-      text.should.not.include('Using config file')
+      const { stdout } = await spawn('node', [bin, '--stdin', '--configFilePath', tempDir], {
+        stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+      })
+      stdout.should.not.include('Using config file')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
@@ -65,11 +59,9 @@ describe('rc-config', () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const configFileName = '.ncurc_missing.json'
     try {
-      const result = spawn(
-        'node',
-        [bin, '--stdin', '--configFilePath', tempDir, '--configFileName', configFileName],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
-      )
+      const result = spawn('node', [bin, '--stdin', '--configFilePath', tempDir, '--configFileName', configFileName], {
+        stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+      })
       await result.should.eventually.be.rejectedWith(`Config file ${configFileName} not found in ${tempDir}`)
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
@@ -81,12 +73,10 @@ describe('rc-config', () => {
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, filter: 'ncu-test-v2' }), 'utf-8')
     try {
-      const text = await spawn(
-        'node',
-        [bin, '--stdin', '--configFilePath', tempDir],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
-      )
-      const pkgData = JSON.parse(text)
+      const { stdout } = await spawn('node', [bin, '--stdin', '--configFilePath', tempDir], {
+        stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+      })
+      const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('ncu-test-v2')
       pkgData.should.not.have.property('ncu-test-tag')
     } finally {
@@ -100,12 +90,12 @@ describe('rc-config', () => {
     const tempConfigFile = path.join(tempDir, tempConfigFileName)
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, filter: 'ncu-test-v2' }), 'utf-8')
     try {
-      const text = await spawn(
+      const { stdout } = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir, '--configFileName', tempConfigFileName],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+        { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }) },
       )
-      const pkgData = JSON.parse(text)
+      const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('ncu-test-v2')
       pkgData.should.not.have.property('ncu-test-tag')
     } finally {
@@ -118,12 +108,12 @@ describe('rc-config', () => {
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, filter: 'ncu-test-v2' }), 'utf-8')
     try {
-      const text = await spawn(
+      const { stdout } = await spawn(
         'node',
         [bin, '--stdin', '--configFilePath', tempDir, '--filter', 'ncu-test-tag'],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+        { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }) },
       )
-      const pkgData = JSON.parse(text)
+      const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('ncu-test-tag')
       pkgData.should.not.have.property('ncu-test-v2')
     } finally {
@@ -136,13 +126,11 @@ describe('rc-config', () => {
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true }), 'utf-8')
     try {
-      const output = await spawn(
-        'node',
-        [bin, '--stdin', '--configFilePath', tempDir, '--no-jsonUpgraded'],
-        JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
-      )
+      const { stdout } = await spawn('node', [bin, '--stdin', '--configFilePath', tempDir, '--no-jsonUpgraded'], {
+        stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+      })
       // if the output contains "Using config file", then we know that jsonUpgraded was overridden
-      output.should.include('Using config file')
+      stdout.should.include('Using config file')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
@@ -154,12 +142,10 @@ describe('rc-config', () => {
     // if boolean arguments are not handled as a special case, ncu will incorrectly pass "--deep false" to commander, which will interpret it as two args, i.e. --deep and --filter false
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, deep: false }), 'utf-8')
     try {
-      const text = await spawn(
-        'node',
-        [bin, '--stdin', '--configFilePath', tempDir],
-        JSON.stringify({ dependencies: { 'ncu-test-tag': '0.1.0' } }),
-      )
-      const pkgData = JSON.parse(text)
+      const { stdout } = await spawn('node', [bin, '--stdin', '--configFilePath', tempDir], {
+        stdin: JSON.stringify({ dependencies: { 'ncu-test-tag': '0.1.0' } }),
+      })
+      const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('ncu-test-tag')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
@@ -178,8 +164,8 @@ describe('rc-config', () => {
     )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      const text = await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
-      const firstLine = text.split('\n')[0]
+      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const firstLine = stdout.split('\n')[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates recieves /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
@@ -202,8 +188,8 @@ describe('rc-config', () => {
     )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      const text = await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
-      const firstLine = text.split('\n')[0]
+      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const firstLine = stdout.split('\n')[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates recieves /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
@@ -223,7 +209,7 @@ describe('rc-config', () => {
 
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      await spawn('node', [bin, '--mergeConfig'], { cwd: tempDir })
+      await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }

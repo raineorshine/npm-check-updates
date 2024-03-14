@@ -26,6 +26,7 @@ import { NpmConfig } from '../types/NpmConfig'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { Packument } from '../types/Packument'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import { Version } from '../types/Version'
 import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
@@ -533,6 +534,7 @@ export async function viewOne(
 async function spawnNpm(
   args: string | string[],
   npmOptions: NpmOptions = {},
+  spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: Index<any> = {},
 ): Promise<any> {
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
@@ -543,7 +545,8 @@ async function spawnNpm(
     '--json',
     ...(Array.isArray(args) ? args : [args]),
   ]
-  return spawn(cmd, fullArgs, spawnOptions)
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+  return stdout
 }
 
 /**
@@ -566,7 +569,8 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
   // catch spawn error which can occur on Windows
   // https://github.com/raineorshine/npm-check-updates/issues/703
   try {
-    prefix = await spawn(cmd, ['config', 'get', 'prefix'])
+    const { stdout } = await spawn(cmd, ['config', 'get', 'prefix'])
+    prefix = stdout
   } catch (e: any) {
     const message = (e.message || e || '').toString()
     print(
@@ -660,8 +664,10 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
       ...(options.prefix ? { prefix: options.prefix } : null),
     },
     {
-      ...(options.cwd ? { cwd: options.cwd } : null),
       rejectOnError: false,
+    },
+    {
+      ...(options.cwd ? { cwd: options.cwd } : null),
     },
   )
   const dependencies = parseJson<{

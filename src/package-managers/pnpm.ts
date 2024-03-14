@@ -12,6 +12,7 @@ import { NpmConfig } from '../types/NpmConfig'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { SpawnOptions } from '../types/SpawnOptions'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import { Version } from '../types/Version'
 import * as npm from './npm'
 
@@ -57,7 +58,8 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   if (!options.global) return npm.list(options)
 
   const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
-  const result = JSON.parse(await spawn(cmd, ['ls', '-g', '--json'])) as PnpmList
+  const { stdout } = await spawn(cmd, ['ls', '-g', '--json'])
+  const result = JSON.parse(stdout) as PnpmList
   const list = keyValueBy(result[0].dependencies || {}, (name, { version }) => ({
     [name]: version,
   }))
@@ -90,6 +92,7 @@ export default async function spawnPnpm(
   args: string | string[],
   npmOptions: NpmOptions = {},
   spawnOptions?: SpawnOptions,
+  spawnPleaseOptions?: SpawnPleaseOptions,
 ): Promise<string> {
   const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
 
@@ -99,7 +102,9 @@ export default async function spawnPnpm(
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
   ]
 
-  return spawn(cmd, fullArgs, spawnOptions)
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+
+  return stdout
 }
 
 export { defaultPrefix, getPeerDependencies, packageAuthorChanged } from './npm'

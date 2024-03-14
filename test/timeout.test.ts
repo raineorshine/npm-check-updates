@@ -19,16 +19,14 @@ describe('timeout', function () {
   })
 
   it('exit with error when timeout is exceeded', async () => {
-    return spawn(
-      'node',
-      [bin, '--timeout', '1'],
-      '{ "dependencies": { "express": "1" } }',
-    ).should.eventually.be.rejectedWith('Exceeded global timeout of 1ms')
+    return spawn('node', [bin, '--timeout', '1'], {
+      stdin: '{ "dependencies": { "express": "1" } }',
+    }).should.eventually.be.rejectedWith('Exceeded global timeout of 1ms')
   })
 
   it('completes successfully with timeout', async () => {
     const stub = stubNpmView('99.9.9', { spawn: true })
-    await spawn('node', [bin, '--timeout', '100000'], '{ "dependencies": { "express": "1" } }')
+    await spawn('node', [bin, '--timeout', '100000'], { stdin: '{ "dependencies": { "express": "1" } }' })
     stub.restore()
   })
 })
