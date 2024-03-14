@@ -842,7 +842,7 @@ const cliOptions: CLIOption[] = [
     long: 'target',
     short: 't',
     arg: 'value',
-    description: `Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, @[tag], or [function]. (default: latest)`,
+    description: `Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, \`@[tag]\`, or [function]. (default: latest)`,
     help: extendedHelpTarget,
     // eslint-disable-next-line no-template-curly-in-string
     type: `${supportedVersionTargets.map(s => `'${s}'`).join(' | ')} | ${'`@${string}`'} | TargetFunction`,
