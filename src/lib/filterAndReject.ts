@@ -1,6 +1,6 @@
 import { and, or } from 'fp-and-or'
 import { identity, negate } from 'lodash-es'
-import { minimatch } from 'minimatch'
+import picomatch from 'picomatch'
 import { parseRange } from 'semver-utils'
 import { FilterPattern } from '../types/FilterPattern.js'
 import { Maybe } from '../types/Maybe.js'
@@ -23,7 +23,7 @@ function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec
   // string
   else if (typeof filterPattern === 'string') {
     // RegExp string
-    if (filterPattern[0] === '/' && filterPattern[filterPattern.length - 1] === '/') {
+    if (filterPattern[0] === '/' && filterPattern.at(-1) === '/') {
       const regexp = new RegExp(filterPattern.slice(1, -1))
       predicate = (dependencyName: string) => regexp.test(dependencyName)
     }
@@ -32,13 +32,13 @@ function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec
       const patterns = filterPattern.split(/[\s,]+/)
       predicate = (dependencyName: string) => {
         /** Returns true if the pattern matches an unscoped dependency name. */
-        const matchUnscoped = (pattern: string) => minimatch(dependencyName, pattern)
+        const matchUnscoped = (pattern: string) => picomatch(pattern)(dependencyName)
 
         /** Returns true if the pattern matches a scoped dependency name. */
         const matchScoped = (pattern: string) =>
           !pattern.includes('/') &&
           dependencyName.includes('/') &&
-          minimatch(dependencyName.replace(/\//g, '_'), pattern)
+          picomatch(pattern)(dependencyName.replace(/\//g, '_'))
 
         // return true if any of the provided patterns match the dependency name
         return patterns.some(or(matchUnscoped, matchScoped))

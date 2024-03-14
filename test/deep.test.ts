@@ -59,7 +59,8 @@ describe('--deep', function () {
   it('output json with --jsonAll', async () => {
     const tempDir = await setupDeepTest()
     try {
-      const deepJsonOut = await spawn('node', [bin, '--jsonAll', '--deep'], { cwd: tempDir }).then(JSON.parse)
+      const { stdout } = await spawn('node', [bin, '--jsonAll', '--deep'], {}, { cwd: tempDir })
+      const deepJsonOut = JSON.parse(stdout)
       deepJsonOut.should.have.property('package.json')
       deepJsonOut.should.have.property('packages/sub1/package.json')
       deepJsonOut.should.have.property('packages/sub2/package.json')
@@ -77,7 +78,7 @@ describe('--deep', function () {
       await spawn(
         'node',
         [bin, '-u', '--packageFile', path.join(tempDir, '/**/package.json')],
-        '{ "dependencies": {}}',
+        { stdin: '{ "dependencies": {}}' },
         {
           cwd: tempDir,
         },
@@ -94,10 +95,10 @@ describe('--deep', function () {
   it('update multiple packages', async () => {
     const tempDir = await setupDeepTest()
     try {
-      const output = await spawn(
+      const { stdout } = await spawn(
         'node',
         [bin, '-u', '--jsonUpgraded', '--packageFile', path.join(tempDir, '**/package.json')],
-        '{ "dependencies": {}}',
+        { stdin: '{ "dependencies": {}}' },
         { cwd: tempDir },
       )
 
@@ -111,7 +112,7 @@ describe('--deep', function () {
       upgradedPkg2.dependencies.should.have.property('express')
       upgradedPkg2.dependencies.express.should.not.equal('1')
 
-      const json = JSON.parse(output)
+      const json = JSON.parse(stdout)
       // Make sure to fix windows paths with replace
       json.should.have.property(path.join(tempDir, 'packages/sub1/package.json').replace(/\\/g, '/'))
       json.should.have.property(path.join(tempDir, 'packages/sub2/package.json').replace(/\\/g, '/'))
@@ -132,7 +133,8 @@ describe('--deep with nested ncurc files', function () {
   after(() => stub.restore())
 
   it('use ncurc of nested packages', async () => {
-    const deepJsonOut = await spawn('node', [bin, '--jsonUpgraded', '--deep'], { cwd }).then(JSON.parse)
+    const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--deep'], {}, { cwd })
+    const deepJsonOut = JSON.parse(stdout)
 
     // root: reject: ['cute-animals']
     deepJsonOut.should.have.property('package.json')
@@ -159,9 +161,8 @@ describe('--deep with nested ncurc files', function () {
   })
 
   it('use ncurc of nested packages with --mergeConfig option', async () => {
-    const deepJsonOut = await spawn('node', [bin, '--jsonUpgraded', '--deep', '--mergeConfig'], { cwd }).then(
-      JSON.parse,
-    )
+    const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--deep', '--mergeConfig'], {}, { cwd })
+    const deepJsonOut = JSON.parse(stdout)
 
     // root: reject: ['cute-animals']
     deepJsonOut.should.have.property('package.json')

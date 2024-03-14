@@ -1,6 +1,5 @@
 import { expect } from 'chai'
 import fs from 'fs/promises'
-import { rimraf } from 'rimraf'
 import ncu from '../src/index.js'
 import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache.js'
 import { CacheData } from '../src/types/Cacher.js'
@@ -36,7 +35,7 @@ describe('cache', () => {
         [`ncu-test-alpha${CACHE_DELIMITER}latest`]: '1.0.0',
       })
     } finally {
-      await rimraf(resolvedDefaultCacheFile)
+      await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
       stub.restore()
     }
   })
@@ -50,12 +49,12 @@ describe('cache', () => {
             'ncu-test-alpha': '1.0.0',
           }
         : options.target === 'greatest'
-        ? {
-            'ncu-test-v2': '2.0.0',
-            'ncu-test-tag': '1.2.0-dev.0',
-            'ncu-test-alpha': '2.0.0-alpha.2',
-          }
-        : null,
+          ? {
+              'ncu-test-v2': '2.0.0',
+              'ncu-test-tag': '1.2.0-dev.0',
+              'ncu-test-alpha': '2.0.0-alpha.2',
+            }
+          : null,
     )
     try {
       const packageData = {
@@ -96,7 +95,7 @@ describe('cache', () => {
         [`ncu-test-alpha${CACHE_DELIMITER}greatest`]: '2.0.0-alpha.2',
       })
     } finally {
-      await rimraf(resolvedDefaultCacheFile)
+      await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
       stub.restore()
     }
   })

@@ -5,6 +5,7 @@ import { Options } from '../types/Options.js'
 import chalk from './chalk.js'
 import getInstalledPackages from './getInstalledPackages.js'
 import { keyValueBy } from './keyValueBy.js'
+import programError from './programError.js'
 import upgradePackageDefinitions from './upgradePackageDefinitions.js'
 
 /** Checks global dependencies for upgrades. */
@@ -13,19 +14,24 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
   printSorted(options, options, 'verbose')
 
   print(options, '\nGetting installed packages', 'verbose')
-  const globalPackages = await getInstalledPackages(
-    pick(options, [
-      'cli',
-      'cwd',
-      'filter',
-      'filterVersion',
-      'global',
-      'packageManager',
-      'prefix',
-      'reject',
-      'rejectVersion',
-    ]),
-  )
+  let globalPackages: Index<string> = {}
+  try {
+    globalPackages = await getInstalledPackages(
+      pick(options, [
+        'cli',
+        'cwd',
+        'filter',
+        'filterVersion',
+        'global',
+        'packageManager',
+        'prefix',
+        'reject',
+        'rejectVersion',
+      ]),
+    )
+  } catch (e: any) {
+    programError(options, e.message)
+  }
 
   print(options, 'globalPackages:', 'verbose')
   print(options, globalPackages, 'verbose')
@@ -56,10 +62,10 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
       options.packageManager === 'yarn'
         ? 'yarn global upgrade'
         : options.packageManager === 'pnpm'
-        ? 'pnpm -g add'
-        : options.packageManager === 'bun'
-        ? 'bun add -g'
-        : 'npm -g install'
+          ? 'pnpm -g add'
+          : options.packageManager === 'bun'
+            ? 'bun add -g'
+            : 'npm -g install'
 
     print(
       options,

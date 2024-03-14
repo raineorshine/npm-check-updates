@@ -20,6 +20,7 @@ import { NpmConfig } from '../types/NpmConfig.js'
 import { NpmOptions } from '../types/NpmOptions.js'
 import { Options } from '../types/Options.js'
 import { Packument } from '../types/Packument.js'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions.js'
 import { Version } from '../types/Version.js'
 import { VersionResult } from '../types/VersionResult.js'
 import { VersionSpec } from '../types/VersionSpec.js'
@@ -152,11 +153,11 @@ export const normalizeNpmConfig = (
       typeof value !== 'string'
         ? value
         : // parse stringified booleans
-        keyTypes[key.replace(/-/g, '').toLowerCase()] === 'boolean'
-        ? stringToBoolean(value)
-        : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
-        ? stringToNumber(value)
-        : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
+          keyTypes[key.replace(/-/g, '').toLowerCase()] === 'boolean'
+          ? stringToBoolean(value)
+          : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
+            ? stringToNumber(value)
+            : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
 
     // normalize the key for pacote
     const { [key]: pacoteKey }: Index<NpmConfig[keyof NpmConfig]> = npmConfigToPacoteMap
@@ -165,10 +166,10 @@ export const normalizeNpmConfig = (
       ? // key is mapped to a string
         { [pacoteKey]: normalizedValue }
       : // key is mapped to a function
-      typeof pacoteKey === 'function'
-      ? { ...(pacoteKey(normalizedValue.toString()) as any) }
-      : // otherwise assign the camel-cased key
-        { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
+        typeof pacoteKey === 'function'
+        ? { ...(pacoteKey(normalizedValue.toString()) as any) }
+        : // otherwise assign the camel-cased key
+          { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
   })
 
   return config
@@ -276,8 +277,8 @@ export const mockViewMany =
       typeof mockReturnedVersions === 'function'
         ? mockReturnedVersions(options)?.[name]
         : typeof mockReturnedVersions === 'string' || isPackument(mockReturnedVersions)
-        ? mockReturnedVersions
-        : mockReturnedVersions[name]
+          ? mockReturnedVersions
+          : mockReturnedVersions[name]
 
     const version = isPackument(partialPackument) ? partialPackument.version : partialPackument
 
@@ -311,15 +312,15 @@ export const mockViewMany =
                 [version]: packument,
               } as Index<Packument>)
             : field === 'time'
-            ? ({
-                [version]: time,
-              } as Index<string>)
-            : ({
-                ...packument,
-                versions: {
-                  [version]: packument,
-                },
-              } as Packument),
+              ? ({
+                  [version]: time,
+                } as Index<string>)
+              : ({
+                  ...packument,
+                  versions: {
+                    [version]: packument,
+                  },
+                } as Packument),
       })),
     )
   }
@@ -527,18 +528,19 @@ export async function viewOne(
 async function spawnNpm(
   args: string | string[],
   npmOptions: NpmOptions = {},
+  spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: Index<any> = {},
 ): Promise<any> {
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-  args = Array.isArray(args) ? args : [args]
 
   const fullArgs = [
-    ...args,
     ...(npmOptions.global ? [`--global`] : []),
     ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
     '--json',
+    ...(Array.isArray(args) ? args : [args]),
   ]
-  return spawn(cmd, fullArgs, spawnOptions)
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+  return stdout
 }
 
 /**
@@ -561,7 +563,8 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
   // catch spawn error which can occur on Windows
   // https://github.com/raineorshine/npm-check-updates/issues/703
   try {
-    prefix = await spawn(cmd, ['config', 'get', 'prefix'])
+    const { stdout } = await spawn(cmd, ['config', 'get', 'prefix'])
+    prefix = stdout
   } catch (e: any) {
     const message = (e.message || e || '').toString()
     print(
@@ -578,12 +581,12 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
   return options.global && prefix?.match('Cellar')
     ? '/usr/local'
     : // Workaround: get prefix on windows for global packages
-    // Only needed when using npm api directly
-    process.platform === 'win32' && options.global && !process.env.prefix
-    ? prefix
-      ? prefix.trim()
-      : `${process.env.AppData}\\npm`
-    : undefined
+      // Only needed when using npm api directly
+      process.platform === 'win32' && options.global && !process.env.prefix
+      ? prefix
+        ? prefix.trim()
+        : `${process.env.AppData}\\npm`
+      : undefined
 }
 
 /**
@@ -655,8 +658,10 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
       ...(options.prefix ? { prefix: options.prefix } : null),
     },
     {
-      ...(options.cwd ? { cwd: options.cwd } : null),
       rejectOnError: false,
+    },
+    {
+      ...(options.cwd ? { cwd: options.cwd } : null),
     },
   )
   const dependencies = parseJson<{

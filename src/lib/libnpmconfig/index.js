@@ -62,12 +62,12 @@ function getNpmConfig(_opts, _builtin) {
         cli.cache || env.cache
           ? builtin.cwd
           : proj.cache
-          ? path.dirname(projConfPath)
-          : user.cache
-          ? path.dirname(userConfPath)
-          : global.cache
-          ? path.dirname(globalConfPath)
-          : path.dirname(userConfPath),
+            ? path.dirname(projConfPath)
+            : user.cache
+              ? path.dirname(userConfPath)
+              : global.cache
+                ? path.dirname(globalConfPath)
+                : path.dirname(userConfPath),
         newOpts.cache,
       ),
     })

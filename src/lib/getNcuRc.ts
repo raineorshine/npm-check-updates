@@ -3,34 +3,36 @@ import os from 'os'
 import path from 'path'
 import { rcFile } from 'rc-config-loader'
 import { cliOptionsMap } from '../cli-options.js'
+import { Options } from '../types/Options'
+import programError from './programError'
 
-interface Options {
-  color?: boolean
+/** Loads the .ncurc config file. */
+async function getNcuRc({
+  configFileName,
+  configFilePath,
+  packageFile,
+  global,
+  options,
+}: {
   configFileName?: string
   configFilePath?: string
-  // if true, does not look in package directory
+  /** If true, does not look in package directory. */
   global?: boolean
   packageFile?: string
-}
-
-/**
- * Loads the .ncurc config file.
- *
- * @param [cfg]
- * @param [cfg.configFileName=.ncurc]
- * @param [cfg.configFilePath]
- * @param [cfg.packageFile]
- * @returns
- */
-async function getNcuRc({ color, configFileName, configFilePath, packageFile, global }: Options = {}) {
+  options: Options
+}) {
   const { default: chalkDefault, Chalk } = await import('chalk')
-  const chalk = color ? new Chalk({ level: 1 }) : chalkDefault
+  const chalk = options?.color ? new Chalk({ level: 1 }) : chalkDefault
 
   const rawResult = rcFile('ncurc', {
     configFileName: configFileName || '.ncurc',
     defaultExtension: ['.json', '.yml', '.js'],
     cwd: configFilePath || (global ? os.homedir() : packageFile ? path.dirname(packageFile) : undefined),
   })
+
+  if (configFileName && !rawResult?.filePath) {
+    programError(options, `Config file ${configFileName} not found in ${configFilePath || process.cwd()}`)
+  }
 
   const result = {
     filePath: rawResult?.filePath,
@@ -58,10 +60,10 @@ async function getNcuRc({ color, configFileName, configFilePath, packageFile, gl
           value === true || (cliOptionsMap[name]?.type === 'boolean' && value)
             ? [`--${name}`]
             : // if a boolean option is false, exclude it
-            value === false || (cliOptionsMap[name]?.type === 'boolean' && !value)
-            ? []
-            : // otherwise render as a 2-tuple
-              [`--${name}`, value],
+              value === false || (cliOptionsMap[name]?.type === 'boolean' && !value)
+              ? []
+              : // otherwise render as a 2-tuple
+                [`--${name}`, value],
         ),
       )
     : []

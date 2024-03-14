@@ -59,8 +59,8 @@ const uncode = (s: string) => s.replace(/`/g, '')
         notifier.update.type === 'major'
           ? chalk.red('{latestVersion}')
           : notifier.update.type === 'minor'
-          ? chalk.yellow('{latestVersion}')
-          : chalk.green('{latestVersion}')
+            ? chalk.yellow('{latestVersion}')
+            : chalk.green('{latestVersion}')
       }
 Run ${chalk.cyan('{updateCommand}')} to update
 ${chalk.dim.underline(
@@ -104,22 +104,26 @@ ${chalk.dim.underline(
   program
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
-    // add hidden -v alias for --V/--version
-    .addOption(new Option('-v, --version').hideHelp())
     // See: boolean optional arg below
     .configureHelp({
       optionTerm: option =>
         option.long && noCli.has(option.long)
           ? option.long.replace('--', '') + '*'
           : option.long === '--version'
-          ? '-v, -V, --version'
-          : option.flags.replace('[bool]', ''),
+            ? '-v, -V, --version'
+            : option.flags.replace('[bool]', ''),
       optionDescription: option =>
         option.long === '--version'
           ? 'Output the version number of npm-check-updates.'
           : option.long === '--help'
-          ? `You're lookin' at it.`
-          : Help.prototype.optionDescription(option),
+            ? `You're lookin' at it.`
+            : Help.prototype.optionDescription(option),
+    })
+    // add hidden -v alias for --V/--version
+    .addOption(new Option('-v, --versionAlias').hideHelp())
+    .on('option:versionAlias', () => {
+      console.info(pkg.version)
+      process.exit(0)
     })
 
   // add cli options
@@ -161,7 +165,13 @@ ${chalk.dim.underline(
   // Do not load when tests are running (can be overridden if configFilePath is set explicitly, or --mergeConfig option specified)
   const rcResult =
     !process.env.NCU_TESTS || configFilePath || mergeConfig
-      ? await getNcuRc({ configFileName, configFilePath, global, packageFile, color })
+      ? await getNcuRc({
+          configFileName,
+          configFilePath,
+          global,
+          packageFile,
+          options: { ...programOpts, cli: true },
+        })
       : null
 
   // override rc args with program args

@@ -1,5 +1,5 @@
+import glob, { type Options as GlobOptions } from 'fast-glob'
 import fs from 'fs/promises'
-import globby from 'globby'
 import yaml from 'js-yaml'
 import path from 'path'
 import untildify from 'untildify'
@@ -11,6 +11,10 @@ import loadPackageInfoFromFile from './loadPackageInfoFromFile.js'
 import programError from './programError.js'
 
 type PnpmWorkspaces = string[] | { packages: string[] }
+
+const globOptions: GlobOptions = {
+  ignore: ['**/node_modules/**'],
+}
 
 /** Reads, parses, and resolves workspaces from a pnpm-workspace file at the same path as the package file. */
 const readPnpmWorkspaces = async (pkgPath: string): Promise<PnpmWorkspaces | null> => {
@@ -64,11 +68,7 @@ async function getWorkspacePackageInfos(
   )
 
   // e.g. [packages/a/package.json, ...]
-  const allWorkspacePackageFilepaths: string[] = [
-    ...globby.sync(workspacePackageGlob, {
-      ignore: ['**/node_modules/**'],
-    }),
-  ]
+  const allWorkspacePackageFilepaths: string[] = glob.sync(workspacePackageGlob, globOptions)
 
   // Get the package names from the package files.
   // If a package does not have a name, use the folder name.
@@ -97,21 +97,19 @@ async function getWorkspacePackageInfos(
 
   // add workspace packages
   // --workspace
-  const selectedWorkspacePackageInfos: PackageInfo[] = allWorkspacePackageInfos.filter(
-    (packageInfo: PackageInfo) =>
+  const selectedWorkspacePackageInfos: PackageInfo[] = allWorkspacePackageInfos.filter((packageInfo: PackageInfo) =>
+    /* ignore coverage on optional-chaining */
+    /* c8 ignore next */
+    options.workspace?.some((workspace: string) =>
       /* ignore coverage on optional-chaining */
       /* c8 ignore next */
-      options.workspace?.some(
-        (workspace: string) =>
-          /* ignore coverage on optional-chaining */
-          /* c8 ignore next */
-          workspaces?.some(
-            (workspacePattern: string) =>
-              packageInfo.name === workspace ||
-              packageInfo.filepath ===
-                path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename).replace(/\\/g, '/'),
-          ),
+      workspaces?.some(
+        (workspacePattern: string) =>
+          packageInfo.name === workspace ||
+          packageInfo.filepath ===
+            path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename).replace(/\\/g, '/'),
       ),
+    ),
   )
   return [selectedWorkspacePackageInfos, allWorkspacePackageNames]
 }
@@ -140,9 +138,7 @@ async function getAllPackages(options: Options): Promise<[PackageInfo[], string[
     // * NOT a workspace
     // * a workspace and have requested an upgrade of the workspace-root
     const globPattern = rootPackageFile.replace(/\\/g, '/')
-    const rootPackagePaths = globby.sync(globPattern, {
-      ignore: ['**/node_modules/**'],
-    })
+    const rootPackagePaths = glob.sync(globPattern, globOptions)
     // realistically there should only be zero or one
     const rootPackages = [
       ...(await Promise.all(

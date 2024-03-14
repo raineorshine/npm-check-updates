@@ -1,7 +1,6 @@
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
-import { rimraf } from 'rimraf'
 import spawn from 'spawn-please'
 import { fileURLToPath } from 'url'
 import { cliOptionsMap } from '../src/cli-options.js'
@@ -24,7 +23,14 @@ const mockNpmVersions = {
 }
 
 /** Run the ncu CLI. */
-const ncu = (args: string[], options?: Record<string, unknown>) => spawn('node', [bin, ...args], options)
+const ncu = async (
+  args: string[],
+  spawnPleaseOptions?: Parameters<typeof spawn>[2],
+  spawnOptions?: Parameters<typeof spawn>[3],
+) => {
+  const { stdout } = await spawn('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
+  return stdout
+}
 
 /** Assertions for npm or yarn when tests pass. */
 const testPass = ({ packageManager }: { packageManager: PackageManagerName }) => {
@@ -39,10 +45,10 @@ const testPass = ({ packageManager }: { packageManager: PackageManagerName }) =>
       packageManager === 'yarn'
         ? 'yarn.lock'
         : packageManager === 'pnpm'
-        ? 'pnpm-lock.yaml'
-        : packageManager === 'bun'
-        ? 'bun.lockb'
-        : 'package-lock.json',
+          ? 'pnpm-lock.yaml'
+          : packageManager === 'bun'
+            ? 'bun.lockb'
+            : 'package-lock.json',
     )
     const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
@@ -56,28 +62,31 @@ const testPass = ({ packageManager }: { packageManager: PackageManagerName }) =>
 
     try {
       // explicitly set packageManager to avoid auto yarn detection
-      await ncu(['--doctor', '-u', '-p', packageManager], {
-        cwd,
-        stdout: function (data: string) {
-          stdout += data
+      await ncu(
+        ['--doctor', '-u', '-p', packageManager],
+        {
+          stdout: function (data: string) {
+            stdout += data
+          },
+          stderr: function (data: string) {
+            stderr += data
+          },
         },
-        stderr: function (data: string) {
-          stderr += data
-        },
-      })
+        { cwd },
+      )
     } catch (e) {}
 
     const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
     // cleanup before assertions in case they fail
     await fs.writeFile(pkgPath, pkgOriginal)
-    rimraf.sync(nodeModulesPath)
-    rimraf.sync(lockfilePath)
+    await fs.rm(nodeModulesPath, { recursive: true, force: true })
+    await fs.rm(lockfilePath, { recursive: true, force: true })
 
     // delete yarn cache
     if (packageManager === 'yarn') {
-      rimraf.sync(path.join(cwd, '.yarn'))
-      rimraf.sync(path.join(cwd, '.pnp.js'))
+      await fs.rm(path.join(cwd, '.yarn'), { recursive: true, force: true })
+      await fs.rm(path.join(cwd, '.pnp.js'), { recursive: true, force: true })
     }
 
     // bun prints the run header to stderr instead of stdout
@@ -107,10 +116,10 @@ const testFail = ({ packageManager }: { packageManager: PackageManagerName }) =>
       packageManager === 'yarn'
         ? 'yarn.lock'
         : packageManager === 'pnpm'
-        ? 'pnpm-lock.yaml'
-        : packageManager === 'bun'
-        ? 'bun.lockb'
-        : 'package-lock.json',
+          ? 'pnpm-lock.yaml'
+          : packageManager === 'bun'
+            ? 'bun.lockb'
+            : 'package-lock.json',
     )
     const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
@@ -124,25 +133,28 @@ const testFail = ({ packageManager }: { packageManager: PackageManagerName }) =>
 
     try {
       // explicitly set packageManager to avoid auto yarn detection
-      await ncu(['--doctor', '-u', '-p', packageManager], {
-        cwd,
-        stdout: function (data: string) {
-          stdout += data
+      await ncu(
+        ['--doctor', '-u', '-p', packageManager],
+        {
+          stdout: function (data: string) {
+            stdout += data
+          },
+          stderr: function (data: string) {
+            stderr += data
+          },
         },
-        stderr: function (data: string) {
-          stderr += data
-        },
-      })
+        { cwd },
+      )
     } finally {
       pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
       await fs.writeFile(pkgPath, pkgOriginal)
-      rimraf.sync(nodeModulesPath)
-      rimraf.sync(lockfilePath)
+      await fs.rm(nodeModulesPath, { recursive: true, force: true })
+      await fs.rm(lockfilePath, { recursive: true, force: true })
 
       // delete yarn cache
       if (packageManager === 'yarn') {
-        rimraf.sync(path.join(cwd, '.yarn'))
-        rimraf.sync(path.join(cwd, '.pnp.js'))
+        await fs.rm(path.join(cwd, '.yarn'), { recursive: true, force: true })
+        await fs.rm(path.join(cwd, '.pnp.js'), { recursive: true, force: true })
       }
     }
 
@@ -177,7 +189,7 @@ describe('doctor', function () {
       await chalkInit()
       const { default: stripAnsi } = await import('strip-ansi')
       const cwd = path.join(doctorTests, 'nopackagefile')
-      const output = await ncu(['--doctor'], { cwd })
+      const output = await ncu(['--doctor'], {}, { cwd })
       return stripAnsi(output).should.equal(
         `Usage: ncu --doctor\n\n${stripAnsi(
           (cliOptionsMap.doctor.help as (options: { markdown: boolean }) => string)({ markdown: false }),
@@ -187,12 +199,12 @@ describe('doctor', function () {
 
     it('throw an error if there is no package file', async () => {
       const cwd = path.join(doctorTests, 'nopackagefile')
-      return ncu(['--doctor', '-u'], { cwd }).should.eventually.be.rejectedWith('Missing or invalid package.json')
+      return ncu(['--doctor', '-u'], {}, { cwd }).should.eventually.be.rejectedWith('Missing or invalid package.json')
     })
 
     it('throw an error if there is no test script', async () => {
       const cwd = path.join(doctorTests, 'notestscript')
-      return ncu(['--doctor', '-u'], { cwd }).should.eventually.be.rejectedWith('No npm "test" script')
+      return ncu(['--doctor', '-u'], {}, { cwd }).should.eventually.be.rejectedWith('No npm "test" script')
     })
 
     it('throw an error if --packageData or --packageFile are supplied', async () => {
@@ -222,23 +234,26 @@ describe('doctor', function () {
 
       try {
         // check only ncu-test-v2 (excluding ncu-return-version)
-        await ncu(['--doctor', '-u', '--filter', 'ncu-test-v2'], {
-          cwd,
-          stdout: function (data: string) {
-            stdout += data
+        await ncu(
+          ['--doctor', '-u', '--filter', 'ncu-test-v2'],
+          {
+            stdout: function (data: string) {
+              stdout += data
+            },
+            stderr: function (data: string) {
+              stderr += data
+            },
           },
-          stderr: function (data: string) {
-            stderr += data
-          },
-        })
+          { cwd },
+        )
       } catch (e) {}
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // cleanup before assertions in case they fail
       await fs.writeFile(pkgPath, pkgOriginal)
-      rimraf.sync(lockfilePath)
-      rimraf.sync(nodeModulesPath)
+      await fs.rm(lockfilePath, { recursive: true, force: true })
+      await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty
       stderr.should.equal('')
@@ -264,23 +279,26 @@ describe('doctor', function () {
       let stderr = ''
 
       try {
-        await ncu(['--doctor', '-u', '--doctorInstall', npmCmd + ' run myinstall'], {
-          cwd,
-          stdout: function (data: string) {
-            stdout += data
+        await ncu(
+          ['--doctor', '-u', '--doctorInstall', npmCmd + ' run myinstall'],
+          {
+            stdout: function (data: string) {
+              stdout += data
+            },
+            stderr: function (data: string) {
+              stderr += data
+            },
           },
-          stderr: function (data: string) {
-            stderr += data
-          },
-        })
+          { cwd },
+        )
       } catch (e) {}
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // cleanup before assertions in case they fail
       await fs.writeFile(pkgPath, pkgOriginal)
-      rimraf.sync(lockfilePath)
-      rimraf.sync(nodeModulesPath)
+      await fs.rm(lockfilePath, { recursive: true, force: true })
+      await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty
       stderr.should.equal('')
@@ -305,23 +323,26 @@ describe('doctor', function () {
       let stderr = ''
 
       try {
-        await ncu(['--doctor', '-u', '--doctorTest', npmCmd + ' run mytest'], {
-          cwd,
-          stdout: function (data: string) {
-            stdout += data
+        await ncu(
+          ['--doctor', '-u', '--doctorTest', npmCmd + ' run mytest'],
+          {
+            stdout: function (data: string) {
+              stdout += data
+            },
+            stderr: function (data: string) {
+              stderr += data
+            },
           },
-          stderr: function (data: string) {
-            stderr += data
-          },
-        })
+          { cwd },
+        )
       } catch (e) {}
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // cleanup before assertions in case they fail
       await fs.writeFile(pkgPath, pkgOriginal)
-      rimraf.sync(lockfilePath)
-      rimraf.sync(nodeModulesPath)
+      await fs.rm(lockfilePath, { recursive: true, force: true })
+      await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty
       stderr.should.equal('')
@@ -346,23 +367,26 @@ describe('doctor', function () {
       let stderr = ''
 
       try {
-        await ncu(['--doctor', '-u', '--doctorTest', `node ${echoPath} '123 456'`], {
-          cwd,
-          stdout: function (data: string) {
-            stdout += data
+        await ncu(
+          ['--doctor', '-u', '--doctorTest', `node ${echoPath} '123 456'`],
+          {
+            stdout: function (data: string) {
+              stdout += data
+            },
+            stderr: function (data: string) {
+              stderr += data
+            },
           },
-          stderr: function (data: string) {
-            stderr += data
-          },
-        })
+          { cwd },
+        )
       } catch (e) {}
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // cleanup before assertions in case they fail
       await fs.writeFile(pkgPath, pkgOriginal)
-      rimraf.sync(lockfilePath)
-      rimraf.sync(nodeModulesPath)
+      await fs.rm(lockfilePath, { recursive: true, force: true })
+      await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty
       stderr.should.equal('')
@@ -419,17 +443,20 @@ else {
 
       try {
         // explicitly set packageManager to avoid auto yarn detection
-        await spawn('npm', ['install'], { cwd: tempDir })
+        await spawn('npm', ['install'], {}, { cwd: tempDir })
 
-        await ncu(['--doctor', '-u', '-p', 'npm'], {
-          cwd: tempDir,
-          stdout: function (data: string) {
-            stdout += data
+        await ncu(
+          ['--doctor', '-u', '-p', 'npm'],
+          {
+            stdout: function (data: string) {
+              stdout += data
+            },
+            stderr: function (data: string) {
+              stderr += data
+            },
           },
-          stderr: function (data: string) {
-            stderr += data
-          },
-        })
+          { cwd: tempDir },
+        )
 
         pkgUpgraded = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
       } finally {

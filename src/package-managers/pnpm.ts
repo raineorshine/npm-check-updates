@@ -12,18 +12,9 @@ import { NpmConfig } from '../types/NpmConfig.js'
 import { NpmOptions } from '../types/NpmOptions.js'
 import { Options } from '../types/Options.js'
 import { SpawnOptions } from '../types/SpawnOptions.js'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions.js'
 import { Version } from '../types/Version.js'
-import {
-  normalizeNpmConfig,
-  distTag as npmDistTag,
-  greatest as npmGreatest,
-  latest as npmLatest,
-  list as npmList,
-  minor as npmMinor,
-  newest as npmNewest,
-  patch as npmPatch,
-  semver as npmSemver,
-} from './npm.js'
+import * as npm from './npm.js'
 
 // return type of pnpm ls --json
 type PnpmList = {
@@ -53,7 +44,7 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
 
   print(options, `\nUsing pnpm workspace config at ${pnpmWorkspaceConfigPath}:`, 'verbose')
 
-  const config = normalizeNpmConfig(ini.parse(pnpmWorkspaceConfig), pnpmWorkspaceDir)
+  const config = npm.normalizeNpmConfig(ini.parse(pnpmWorkspaceConfig), pnpmWorkspaceDir)
 
   print(options, config, 'verbose')
 
@@ -64,10 +55,11 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
   // use npm for local ls for completeness
   // this should never happen since list is only called in runGlobal -> getInstalledPackages
-  if (!options.global) return npmList(options)
+  if (!options.global) return npm.list(options)
 
   const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
-  const result = JSON.parse(await spawn(cmd, ['ls', '-g', '--json'])) as PnpmList
+  const { stdout } = await spawn(cmd, ['ls', '-g', '--json'])
+  const result = JSON.parse(stdout) as PnpmList
   const list = keyValueBy(result[0].dependencies || {}, (name, { version }) => ({
     [name]: version,
   }))
@@ -80,13 +72,13 @@ const withNpmWorkspaceConfig =
   async (packageName, currentVersion, options = {}) =>
     getVersion(packageName, currentVersion, options, {}, await npmConfigFromPnpmWorkspace(options))
 
-export const distTag = withNpmWorkspaceConfig(npmDistTag)
-export const greatest = withNpmWorkspaceConfig(npmGreatest)
-export const latest = withNpmWorkspaceConfig(npmLatest)
-export const minor = withNpmWorkspaceConfig(npmMinor)
-export const newest = withNpmWorkspaceConfig(npmNewest)
-export const patch = withNpmWorkspaceConfig(npmPatch)
-export const semver = withNpmWorkspaceConfig(npmSemver)
+export const distTag = withNpmWorkspaceConfig(npm.distTag)
+export const greatest = withNpmWorkspaceConfig(npm.greatest)
+export const latest = withNpmWorkspaceConfig(npm.latest)
+export const minor = withNpmWorkspaceConfig(npm.minor)
+export const newest = withNpmWorkspaceConfig(npm.newest)
+export const patch = withNpmWorkspaceConfig(npm.patch)
+export const semver = withNpmWorkspaceConfig(npm.semver)
 
 /**
  * Spawn pnpm.
@@ -100,6 +92,7 @@ export default async function spawnPnpm(
   args: string | string[],
   npmOptions: NpmOptions = {},
   spawnOptions?: SpawnOptions,
+  spawnPleaseOptions?: SpawnPleaseOptions,
 ): Promise<string> {
   const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
 
@@ -109,7 +102,9 @@ export default async function spawnPnpm(
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
   ]
 
-  return spawn(cmd, fullArgs, spawnOptions)
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+
+  return stdout
 }
 
 export { defaultPrefix, getPeerDependencies, packageAuthorChanged } from './npm.js'

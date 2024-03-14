@@ -26,8 +26,8 @@ describe('format', () => {
         'ncu-test-v2': '^1.0.0',
       },
     }
-    const output = await spawn('node', [bin, '--format', 'time', '--stdin'], JSON.stringify(packageData))
-    expect(output).contains(timestamp)
+    const { stdout } = await spawn('node', [bin, '--format', 'time', '--stdin'], { stdin: JSON.stringify(packageData) })
+    expect(stdout).contains(timestamp)
     stub.restore()
   })
 
@@ -44,9 +44,9 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn('npm', ['install'], { cwd: tempDir })
-      const output = await spawn('node', [bin, '--format', 'repo'], { cwd: tempDir })
-      output.should.include('https://github.com/Mitsunee/modern-diacritics')
+      await spawn('npm', ['install'], {}, { cwd: tempDir })
+      const { stdout } = await spawn('node', [bin, '--format', 'repo'], {}, { cwd: tempDir })
+      stdout.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
@@ -70,8 +70,8 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      const output = await spawn('node', [bin, '--format', 'lines'], { cwd: tempDir })
-      output.should.equals('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
+      const { stdout } = await spawn('node', [bin, '--format', 'lines'], {}, { cwd: tempDir })
+      stdout.should.equals('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
@@ -96,9 +96,14 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn('node', [bin, '--format', 'lines', '--jsonUpgraded'], {
-        cwd: tempDir,
-      }).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonUpgraded.')
+      await spawn(
+        'node',
+        [bin, '--format', 'lines', '--jsonUpgraded'],
+        {},
+        {
+          cwd: tempDir,
+        },
+      ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonUpgraded.')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
@@ -123,9 +128,14 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn('node', [bin, '--format', 'lines', '--jsonAll'], {
-        cwd: tempDir,
-      }).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonAll.')
+      await spawn(
+        'node',
+        [bin, '--format', 'lines', '--jsonAll'],
+        {},
+        {
+          cwd: tempDir,
+        },
+      ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonAll.')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
@@ -150,9 +160,14 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn('node', [bin, '--format', 'lines,group'], {
-        cwd: tempDir,
-      }).should.eventually.be.rejectedWith('Cannot use --format lines with other formatting options.')
+      await spawn(
+        'node',
+        [bin, '--format', 'lines,group'],
+        {},
+        {
+          cwd: tempDir,
+        },
+      ).should.eventually.be.rejectedWith('Cannot use --format lines with other formatting options.')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()

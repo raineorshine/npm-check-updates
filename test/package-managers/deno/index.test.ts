@@ -22,12 +22,12 @@ describe('deno', async function () {
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
     try {
-      const pkgData = await spawn(
+      const { stdout } = await spawn(
         'node',
         [bin, '--jsonUpgraded', '--packageManager', 'deno', '--packageFile', pkgFile],
         undefined,
       )
-      const pkg = jph.parse(pkgData)
+      const pkg = jph.parse(stdout)
       pkg.should.have.property('ncu-test-v2')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
@@ -44,10 +44,10 @@ describe('deno', async function () {
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
     try {
-      const pkgData = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
+      const { stdout } = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
         cwd: tempDir,
       })
-      const pkg = jph.parse(pkgData)
+      const pkg = jph.parse(stdout)
       pkg.should.have.property('ncu-test-v2')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
@@ -88,10 +88,10 @@ describe('deno', async function () {
 }`
     await fs.writeFile(pkgFile, pkgString)
     try {
-      const pkgData = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
+      const { stdout } = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
         cwd: tempDir,
       })
-      const pkg = jph.parse(pkgData)
+      const pkg = jph.parse(stdout)
       pkg.should.have.property('ncu-test-v2')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })

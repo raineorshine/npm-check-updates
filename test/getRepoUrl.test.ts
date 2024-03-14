@@ -49,6 +49,6 @@ describe('getRepoUrl', () => {
     const url = await getRepoUrl('package-name', {
       repository: { url: 'http://github.com/user/repo.git', directory: 'packages/specific-package' },
     })
-    url!.should.equal('https://github.com/user/repo/tree/master/packages/specific-package')
+    url!.should.equal('https://github.com/user/repo/tree/HEAD/packages/specific-package')
   })
 })
