@@ -591,7 +591,6 @@ Specifies the package manager to use when looking up versions.
   <tr><td>yarn</td><td>System-installed yarn. Automatically used if yarn.lock is present.</td></tr>
   <tr><td>pnpm</td><td>System-installed pnpm. Automatically used if pnpm-lock.yaml is present.</td></tr>
   <tr><td>bun</td><td>System-installed bun. Automatically used if bun.lockb is present.</td></tr>
-  <tr><td>staticRegistry</td><td>Deprecated. Use --registryType json.</td></tr>
 </table>
 
 ## peer

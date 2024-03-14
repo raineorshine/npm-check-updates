@@ -423,7 +423,6 @@ const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
       ['yarn', `System-installed yarn. Automatically used if yarn.lock is present.`],
       ['pnpm', `System-installed pnpm. Automatically used if pnpm-lock.yaml is present.`],
       ['bun', `System-installed bun. Automatically used if bun.lockb is present.`],
-      ['staticRegistry', `Deprecated. Use --registryType json.`],
     ],
   })
 
