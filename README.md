@@ -344,7 +344,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#target">-t, --target &lt;value&gt;</a></td>
-    <td>Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, @[tag], or [function]. (default: latest)</td>
+    <td>Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, <code>@[tag]<code>, or [function]. (default: latest)</td>
   </tr>
   <tr>
     <td>--timeout &lt;ms&gt;</td>
@@ -715,7 +715,7 @@ The predicate function is only available in .ncurc.js or when importing npm-chec
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be excluded, false if it should be included.
 */
-filterVersionFunction: (name, semver) => {
+rejectVersionFunction: (name, semver) => {
   if (name.startsWith('@myorg/') && parseInt(semver[0]?.major) > 5) {
     return true
   }

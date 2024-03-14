@@ -100,8 +100,6 @@ ${chalk.dim.underline(
   program
     .description('[filter] is a list or regex of package names to check (all others will be ignored).')
     .usage('[options] [filter]')
-    // add hidden -v alias for --V/--version
-    .addOption(new Commander.Option('-v, --version').hideHelp())
     // See: boolean optional arg below
     .configureHelp({
       optionTerm: option =>
@@ -116,6 +114,12 @@ ${chalk.dim.underline(
           : option.long === '--help'
             ? `You're lookin' at it.`
             : Help.prototype.optionDescription(option),
+    })
+    // add hidden -v alias for --V/--version
+    .addOption(new Commander.Option('-v, --versionAlias').hideHelp())
+    .on('option:versionAlias', () => {
+      console.info(pkg.version)
+      process.exit(0)
     })
 
   // add cli options
@@ -157,7 +161,13 @@ ${chalk.dim.underline(
   // Do not load when tests are running (can be overridden if configFilePath is set explicitly, or --mergeConfig option specified)
   const rcResult =
     !process.env.NCU_TESTS || configFilePath || mergeConfig
-      ? await getNcuRc({ configFileName, configFilePath, global, packageFile, color })
+      ? await getNcuRc({
+          configFileName,
+          configFilePath,
+          global,
+          packageFile,
+          options: { ...programOpts, cli: true },
+        })
       : null
 
   // override rc args with program args

@@ -55,6 +55,19 @@ describe('rc-config', () => {
     }
   })
 
+  it('error on missing --configFileName', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFileName = '.ncurc_missing.json'
+    try {
+      const result = spawn('node', [bin, '--stdin', '--configFilePath', tempDir, '--configFileName', configFileName], {
+        stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+      })
+      await result.should.eventually.be.rejectedWith(`Config file ${configFileName} not found in ${tempDir}`)
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
+
   it('read --configFilePath', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
