@@ -8,9 +8,9 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "lib": ["es2021"],
-    "module": "esnext",
-    "moduleResolution": "node",
+    "lib": ["es2022"],
+    "module": "es2022",
+    "moduleResolution": "Node",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "paths": {
@@ -22,6 +22,6 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2021"
+    "target": "es2022"
   }
 }

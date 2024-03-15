@@ -18,7 +18,7 @@ import { Options } from '../types/Options.js'
 import { SpawnOptions } from '../types/SpawnOptions.js'
 import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions.js'
 import { VersionSpec } from '../types/VersionSpec.js'
-import * as npm from './npm'
+import * as npm from './npm.js'
 
 interface ParsedDep {
   version: string

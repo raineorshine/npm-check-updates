@@ -3,8 +3,8 @@ import os from 'os'
 import path from 'path'
 import { rcFile } from 'rc-config-loader'
 import { cliOptionsMap } from '../cli-options.js'
-import { Options } from '../types/Options'
-import programError from './programError'
+import { Options } from '../types/Options.js'
+import programError from './programError.js'
 
 /** Loads the .ncurc config file. */
 async function getNcuRc({

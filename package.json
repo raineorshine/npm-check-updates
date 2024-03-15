@@ -29,7 +29,12 @@
     "node": "^18.18.0 || >=20.0.0",
     "npm": ">=8.12.1"
   },
-  "exports": "./build/src/index.js",
+  "exports": {
+    ".": {
+      "import": "./build/src/index.js",
+      "require": "./build/src/index.js"
+    }
+  },
   "type": "module",
   "scripts": {
     "build": "npm run build:ts && npm run build:options",

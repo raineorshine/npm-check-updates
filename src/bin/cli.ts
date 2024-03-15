@@ -19,7 +19,7 @@ const uncode = (s: string) => s.replace(/`/g, '')
   // importing update-notifier dynamically as esm modules are only allowed to be dynamically imported inside of cjs modules
   const { default: updateNotifier } = await import('update-notifier')
 
-  const pkg = JSON.parse(await fs.readFile(path.join(__dirname, '../../package.json'), 'utf-8'))
+  const pkg = JSON.parse(await fs.readFile(path.join(__dirname, '../../../package.json'), 'utf-8'))
 
   // check if a new version of ncu is available and print an update notification
   //
