@@ -5,7 +5,7 @@ import chaiSetup from './helpers/chaiSetup'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/src/bin/cli.js')
+const bin = path.join(__dirname, '../build/cli.js')
 
 describe('global', () => {
   // TODO: Hangs on Windows

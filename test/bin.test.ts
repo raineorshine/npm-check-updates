@@ -9,7 +9,7 @@ import stubNpmView from './helpers/stubNpmView'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/src/bin/cli.js')
+const bin = path.join(__dirname, '../build/cli.js')
 
 describe('bin', async function () {
   it('fetch latest version from registry (not stubbed)', async () => {

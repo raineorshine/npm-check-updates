@@ -8,7 +8,7 @@ import stubNpmView from './helpers/stubNpmView'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/src/bin/cli.js')
+const bin = path.join(__dirname, '../build/cli.js')
 
 /**
  * Sets up and tears down the temporary directories required to run each test

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import Commander, { Help, program } from 'commander'
+import { Help, Option, program } from 'commander'
 import cloneDeep from 'lodash/cloneDeep'
 import pickBy from 'lodash/pickBy'
 import semver from 'semver'
@@ -116,7 +116,7 @@ ${chalk.dim.underline(
             : Help.prototype.optionDescription(option),
     })
     // add hidden -v alias for --V/--version
-    .addOption(new Commander.Option('-v, --versionAlias').hideHelp())
+    .addOption(new Option('-v, --versionAlias').hideHelp())
     .on('option:versionAlias', () => {
       console.info(pkg.version)
       process.exit(0)
@@ -135,7 +135,7 @@ ${chalk.dim.underline(
     // add --no- prefixed boolean options
     // necessary for overriding booleans set to true in the ncurc
     if (type === 'boolean') {
-      program.addOption(new Commander.Option(`--no-${long}`).default(false).hideHelp())
+      program.addOption(new Option(`--no-${long}`).default(false).hideHelp())
     }
   })
 

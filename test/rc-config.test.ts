@@ -7,7 +7,7 @@ import stubNpmView from './helpers/stubNpmView'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/src/bin/cli.js')
+const bin = path.join(__dirname, '../build/cli.js')
 
 describe('rc-config', () => {
   // before/after must be placed within the describe block, otherwise they will apply to tests in other files
