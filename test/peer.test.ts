@@ -5,7 +5,7 @@ import chaiSetup from './helpers/chaiSetup'
 chaiSetup()
 
 describe('peer dependencies', function () {
-  it('peer dependencies of installed packages are ignored by default', async () => {
+  it('peer dependencies are ignored by default', async () => {
     const cwd = path.join(__dirname, 'test-data/peer/')
     const upgrades = await ncu({ cwd })
     upgrades!.should.deep.equal({
@@ -13,7 +13,7 @@ describe('peer dependencies', function () {
     })
   })
 
-  it('peer dependencies of installed packages are checked when using option peer', async () => {
+  it('peer dependencies are checked when using option peer', async () => {
     const cwd = path.join(__dirname, 'test-data/peer/')
     const upgrades = await ncu({ cwd, peer: true })
     upgrades!.should.deep.equal({
@@ -21,7 +21,7 @@ describe('peer dependencies', function () {
     })
   })
 
-  it('peer dependencies of installed packages are checked iteratively when using option peer', async () => {
+  it('peer dependencies are checked iteratively when using option peer', async () => {
     const cwd = path.join(__dirname, 'test-data/peer-update/')
     const upgrades = await ncu({ cwd, peer: true })
     upgrades!.should.deep.equal({
