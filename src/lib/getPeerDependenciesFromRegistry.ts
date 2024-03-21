@@ -30,10 +30,12 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<VersionSpec>, o
         bar.tick()
       }
       const accum = await accumPromise
-      if (isCircularPeer({ ...accum, [pkg]: dep }, pkg)) {
-        return accum
+      const newAcc: Index<Index<string>> = { ...accum, [pkg]: dep }
+      const circularData = isCircularPeer(newAcc, pkg)
+      if (circularData.isCircular) {
+        delete newAcc[pkg][circularData.offendingPackage]
       }
-      return { ...accum, [pkg]: dep }
+      return newAcc
     },
     {},
   )
