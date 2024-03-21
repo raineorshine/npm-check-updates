@@ -15,7 +15,7 @@ import chalk from './chalk'
 import getCurrentDependencies from './getCurrentDependencies'
 import getIgnoredUpgrades from './getIgnoredUpgrades'
 import getPackageManager from './getPackageManager'
-import getPeerDependencies from './getPeerDependencies'
+import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
 import keyValueBy from './keyValueBy'
 import { print, printIgnoredUpdates, printJson, printSorted, printUpgrades, toDependencyTable } from './logging'
 import programError from './programError'
@@ -183,7 +183,7 @@ async function runLocal(
   }
 
   if (options.peer) {
-    options.peerDependencies = await getPeerDependencies(current, options)
+    options.peerDependencies = await getPeerDependenciesFromRegistry(current, options)
   }
 
   const [upgraded, latestResults, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)

@@ -3,6 +3,7 @@ import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { VersionSpec } from '../types/VersionSpec'
 import getPackageManager from './getPackageManager'
+import { isCircularPeer } from './isCircularPeer'
 
 /**
  * Get the latest or greatest versions from the NPM repository based on the version target.
@@ -22,14 +23,21 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<VersionSpec>, o
     bar.render()
   }
 
-  return Object.entries(packageMap).reduce(async (accumPromise, [pkg, version]) => {
-    const dep = await packageManager.getPeerDependencies!(pkg, version)
-    if (bar) {
-      bar.tick()
-    }
-    const accum = await accumPromise
-    return { ...accum, [pkg]: dep }
-  }, {})
+  const peerDependencies: Index<Index<string>> = Object.entries(packageMap).reduce(
+    async (accumPromise, [pkg, version]) => {
+      const dep = await packageManager.getPeerDependencies!(pkg, version)
+      if (bar) {
+        bar.tick()
+      }
+      const accum = await accumPromise
+      if (isCircularPeer({ ...accum, [pkg]: dep }, pkg)) {
+        return accum
+      }
+      return { ...accum, [pkg]: dep }
+    },
+    {},
+  )
+  return peerDependencies
 }
 
 export default getPeerDependenciesFromRegistry
