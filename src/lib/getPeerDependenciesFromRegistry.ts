@@ -1,5 +1,4 @@
 import ProgressBar from 'progress'
-import nodeSemver from 'semver'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { Version } from '../types/Version'
@@ -62,7 +61,7 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
 
   const peerDependencies: Index<Index<string>> = Object.entries(packageMap).reduce(
     async (accumPromise, [pkg, version]) => {
-      const dep = await packageManager.getPeerDependencies!(pkg, nodeSemver.coerce(version)?.version ?? version)
+      const dep = await packageManager.getPeerDependencies!(pkg, version)
       if (bar) {
         bar.tick()
       }

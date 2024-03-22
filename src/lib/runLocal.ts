@@ -4,7 +4,7 @@ import get from 'lodash/get'
 import isEmpty from 'lodash/isEmpty'
 import pick from 'lodash/pick'
 import prompts from 'prompts-ncu'
-import { satisfies } from 'semver'
+import nodeSemver from 'semver'
 import { Index } from '../types/IndexType'
 import { Maybe } from '../types/Maybe'
 import { Options } from '../types/Options'
@@ -183,7 +183,14 @@ async function runLocal(
   }
 
   if (options.peer) {
-    options.peerDependencies = await getPeerDependenciesFromRegistry(current, options)
+    options.peerDependencies = await getPeerDependenciesFromRegistry(
+      Object.fromEntries(
+        Object.entries(current).map(([packageName, versionSpec]) => {
+          return [packageName, nodeSemver.minVersion(versionSpec)?.version ?? versionSpec]
+        }),
+      ),
+      options,
+    )
   }
 
   const [upgraded, latestResults, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)
@@ -210,7 +217,9 @@ async function runLocal(
 
   // filter out satisfied deps when using --minimal
   const filteredUpgraded = options.minimal
-    ? keyValueBy(upgraded, (dep, version) => (!satisfies(latest[dep], current[dep]) ? { [dep]: version } : null))
+    ? keyValueBy(upgraded, (dep, version) =>
+        !nodeSemver.satisfies(latest[dep], current[dep]) ? { [dep]: version } : null,
+      )
     : upgraded
 
   const ownersChangedDeps = (options.format || []).includes('ownerChanged')
