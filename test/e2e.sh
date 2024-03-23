@@ -96,8 +96,17 @@ echo Test: cjs
 cd $temp_dir/e2e/cjs
 
 echo Installing
-echo "{}" >package.json
 npm i npm-check-updates@latest --registry $registry_local
 
 echo Running test
 REGISTRY=$registry_local node $temp_dir/e2e/cjs/index.js
+
+# Test: esm
+echo Test: esm
+cd $temp_dir/e2e/esm
+
+echo Installing
+npm i npm-check-updates@latest --registry $registry_local
+
+echo Running test
+REGISTRY=$registry_local node $temp_dir/e2e/esm/index.js
