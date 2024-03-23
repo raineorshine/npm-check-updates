@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cwd=$(pwd)
+e2e_dir=$(dirname "$(readlink -f "$0")")
 temp_dir=$(mktemp -d)
 registry_port=4873
 registry_local="http://localhost:$registry_port"
@@ -8,6 +10,8 @@ verdaccio_config=$temp_dir/verdaccio-config.yaml
 
 # cleanup on exit
 cleanup() {
+
+  exit_status=$?
 
   # shut down verdaccio
   verdaccio_pid=$(lsof -t -i :$registry_port)
@@ -24,7 +28,14 @@ cleanup() {
   # remove temp directory
   rm -rf $temp_dir
 
-  echo Done
+  # return to working directory
+  cd $cwd
+
+  if [ $exit_status -ne 0 ]; then
+    echo Error
+  else
+    echo Done
+  fi
 }
 
 trap cleanup EXIT
@@ -38,6 +49,12 @@ packages:
   npm-check-updates:
     access: \$all
     publish: \$all
+  '**':
+    access: \$all
+    proxy: npmjs
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
 " >$verdaccio_config
 
 # start verdaccio and wait for it to boot
@@ -51,15 +68,15 @@ npm config set "//localhost:$registry_port/:_authToken=e2e_dummy"
 
 # publish to local registry
 echo Publishing to local registry
-npm publish --registry $registry_local --ignore-scripts
+npm publish --registry $registry_local
 
 # Test: ncu -v
 echo ncu -v
 npx --registry $registry_local npm-check-updates -v
 
-# Test: ncu
+# Test: cli
 # Create a package.json file with a dependency on npm-check-updates since it is already published to the local registry
-echo ncu
+echo Test: cli
 echo '{
   "dependencies": {
     "npm-check-updates": "1.0.0"
@@ -70,3 +87,17 @@ echo '{
 # --cwd to point to the temp package file
 # --pre 1 to ensure that an upgrade is always suggested even if npm-check-updates is on a prerelease version
 npx --registry $registry_local npm-check-updates --configFilePath $temp_dir --cwd $temp_dir --pre 1 --registry $registry_local
+
+rm $temp_dir/package.json
+cp -r $e2e_dir/e2e $temp_dir
+
+# Test: cjs
+echo Test: cjs
+cd $temp_dir/e2e/cjs
+
+echo Installing
+echo "{}" >package.json
+npm i npm-check-updates@latest --registry $registry_local
+
+echo Running test
+REGISTRY=$registry_local node $temp_dir/e2e/cjs/index.js
