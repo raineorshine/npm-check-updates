@@ -3,25 +3,24 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import { fileURLToPath } from 'url'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('format', () => {
   it('--format time', async () => {
     const timestamp = '2020-04-27T21:48:11.660Z'
-    const stub = stubNpmView(
-      {
-        version: '99.9.9',
-        time: {
-          '99.9.9': timestamp,
-        },
+    const stub = stubNpmView({
+      version: '99.9.9',
+      time: {
+        '99.9.9': timestamp,
       },
-      { spawn: true },
-    )
+    })
     const packageData = {
       dependencies: {
         'ncu-test-v2': '^1.0.0',
@@ -54,13 +53,10 @@ describe('format', () => {
   })
 
   it('--format lines', async () => {
-    const stub = stubNpmView(
-      {
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-tag': '1.1.0',
-      },
-      { spawn: true },
-    )
+    const stub = stubNpmView({
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '1.1.0',
+    })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -83,13 +79,10 @@ describe('format', () => {
   })
 
   it('disallow --format lines with --jsonUpgraded', async () => {
-    const stub = stubNpmView(
-      {
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-tag': '1.1.0',
-      },
-      { spawn: true },
-    )
+    const stub = stubNpmView({
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '1.1.0',
+    })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -118,13 +111,10 @@ describe('format', () => {
   })
 
   it('disallow --format lines with --jsonAll', async () => {
-    const stub = stubNpmView(
-      {
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-tag': '1.1.0',
-      },
-      { spawn: true },
-    )
+    const stub = stubNpmView({
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '1.1.0',
+    })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -153,13 +143,10 @@ describe('format', () => {
   })
 
   it('disallow --format lines with other format options', async () => {
-    const stub = stubNpmView(
-      {
-        'ncu-test-v2': '2.0.0',
-        'ncu-test-tag': '1.1.0',
-      },
-      { spawn: true },
-    )
+    const stub = stubNpmView({
+      'ncu-test-v2': '2.0.0',
+      'ncu-test-tag': '1.1.0',
+    })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(

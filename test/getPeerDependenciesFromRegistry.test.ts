@@ -1,6 +1,6 @@
-import { chalkInit } from '../src/lib/chalk'
-import getPeerDependenciesFromRegistry from '../src/lib/getPeerDependenciesFromRegistry'
-import chaiSetup from './helpers/chaiSetup'
+import { chalkInit } from '../src/lib/chalk.js'
+import getPeerDependenciesFromRegistry from '../src/lib/getPeerDependenciesFromRegistry.js'
+import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
 

@@ -2,12 +2,14 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import { GroupFunction } from '../src/types/GroupFunction'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import { fileURLToPath } from 'url'
+import { GroupFunction } from '../src/types/GroupFunction.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 /**
@@ -18,14 +20,11 @@ async function groupTestScaffold(
   groupFn: GroupFunction,
   expectedOutput: string,
 ): Promise<void> {
-  const stub = stubNpmView(
-    {
-      'ncu-test-v2': '2.0.0',
-      'ncu-test-tag': '1.1.0',
-      'ncu-test-return-version': '2.0.0',
-    },
-    { spawn: true },
-  )
+  const stub = stubNpmView({
+    'ncu-test-v2': '2.0.0',
+    'ncu-test-tag': '1.1.0',
+    'ncu-test-return-version': '2.0.0',
+  })
 
   // use dynamic import for ESM module
   const { default: stripAnsi } = await import('strip-ansi')

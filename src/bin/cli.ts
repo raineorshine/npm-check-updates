@@ -1,14 +1,16 @@
 #!/usr/bin/env node
-import Commander, { Help, program } from 'commander'
-import cloneDeep from 'lodash/cloneDeep'
-import pickBy from 'lodash/pickBy'
+import { Help, Option, program } from 'commander'
+import fs from 'fs/promises'
+import { cloneDeep, pickBy } from 'lodash-es'
+import path from 'path'
 import semver from 'semver'
-import pkg from '../../package.json'
-import cliOptions, { renderExtendedHelp } from '../cli-options'
-import ncu from '../index'
-import { chalkInit } from '../lib/chalk'
+import cliOptions, { renderExtendedHelp } from '../cli-options.js'
+import ncu from '../index.js'
+import { chalkInit } from '../lib/chalk.js'
 // async global contexts are only available in esm modules -> function
-import getNcuRc from '../lib/getNcuRc'
+import getNcuRc from '../lib/getNcuRc.js'
+
+const __dirname = path.dirname(new URL(import.meta.url).pathname)
 
 /** Removes inline code ticks. */
 const uncode = (s: string) => s.replace(/`/g, '')
@@ -16,6 +18,8 @@ const uncode = (s: string) => s.replace(/`/g, '')
 ;(async () => {
   // importing update-notifier dynamically as esm modules are only allowed to be dynamically imported inside of cjs modules
   const { default: updateNotifier } = await import('update-notifier')
+
+  const pkg = JSON.parse(await fs.readFile(path.join(__dirname, '../../../package.json'), 'utf-8'))
 
   // check if a new version of ncu is available and print an update notification
   //
@@ -116,7 +120,7 @@ ${chalk.dim.underline(
             : Help.prototype.optionDescription(option),
     })
     // add hidden -v alias for --V/--version
-    .addOption(new Commander.Option('-v, --versionAlias').hideHelp())
+    .addOption(new Option('-v, --versionAlias').hideHelp())
     .on('option:versionAlias', () => {
       console.info(pkg.version)
       process.exit(0)
@@ -135,7 +139,7 @@ ${chalk.dim.underline(
     // add --no- prefixed boolean options
     // necessary for overriding booleans set to true in the ncurc
     if (type === 'boolean') {
-      program.addOption(new Commander.Option(`--no-${long}`).default(false).hideHelp())
+      program.addOption(new Option(`--no-${long}`).default(false).hideHelp())
     }
   })
 

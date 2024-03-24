@@ -1,9 +1,12 @@
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
-import ncu from '../src/'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import { fileURLToPath } from 'url'
+import ncu from '../src/index.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 chaiSetup()
 

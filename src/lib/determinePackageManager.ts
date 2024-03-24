@@ -1,8 +1,8 @@
 import fs from 'fs/promises'
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
-import { PackageManagerName } from '../types/PackageManagerName'
-import findLockfile from './findLockfile'
+import { Index } from '../types/IndexType.js'
+import { Options } from '../types/Options.js'
+import { PackageManagerName } from '../types/PackageManagerName.js'
+import findLockfile from './findLockfile.js'
 
 // map lockfiles to package managers
 const packageManagerLockfileMap: Index<PackageManagerName> = {

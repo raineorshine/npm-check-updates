@@ -2,14 +2,16 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import { cliOptionsMap } from '../src/cli-options'
-import { chalkInit } from '../src/lib/chalk'
-import { PackageManagerName } from '../src/types/PackageManagerName'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import { fileURLToPath } from 'url'
+import { cliOptionsMap } from '../src/cli-options.js'
+import { chalkInit } from '../src/lib/chalk.js'
+import { PackageManagerName } from '../src/types/PackageManagerName.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 const doctorTests = path.join(__dirname, 'test-data/doctor')
 
@@ -179,7 +181,7 @@ describe('doctor', function () {
   this.timeout(3 * 60 * 1000)
 
   let stub: { restore: () => void }
-  before(() => (stub = stubNpmView(mockNpmVersions, { spawn: true })))
+  before(() => (stub = stubNpmView(mockNpmVersions)))
   after(() => stub.restore())
 
   describe('npm', () => {

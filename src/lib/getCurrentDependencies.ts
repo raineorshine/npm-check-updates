@@ -1,12 +1,12 @@
 import * as semver from 'semver'
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
-import { PackageFile } from '../types/PackageFile'
-import { VersionSpec } from '../types/VersionSpec'
-import filterAndReject from './filterAndReject'
-import filterObject from './filterObject'
-import { keyValueBy } from './keyValueBy'
-import resolveDepSections from './resolveDepSections'
+import { Index } from '../types/IndexType.js'
+import { Options } from '../types/Options.js'
+import { PackageFile } from '../types/PackageFile.js'
+import { VersionSpec } from '../types/VersionSpec.js'
+import filterAndReject from './filterAndReject.js'
+import filterObject from './filterObject.js'
+import { keyValueBy } from './keyValueBy.js'
+import resolveDepSections from './resolveDepSections.js'
 
 /** Returns true if spec1 is greater than spec2, ignoring invalid version ranges. */
 const isGreaterThanSafe = (spec1: VersionSpec, spec2: VersionSpec) =>

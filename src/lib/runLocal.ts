@@ -1,28 +1,26 @@
 import fs from 'fs/promises'
 import jph from 'json-parse-helpfulerror'
-import get from 'lodash/get'
-import isEmpty from 'lodash/isEmpty'
-import pick from 'lodash/pick'
+import { get, isEmpty, pick } from 'lodash-es'
 import prompts from 'prompts-ncu'
-import nodeSemver from 'semver'
-import { Index } from '../types/IndexType'
-import { Maybe } from '../types/Maybe'
-import { Options } from '../types/Options'
-import { PackageFile } from '../types/PackageFile'
-import { Version } from '../types/Version'
-import { VersionSpec } from '../types/VersionSpec'
-import chalk from './chalk'
-import getCurrentDependencies from './getCurrentDependencies'
-import getIgnoredUpgrades from './getIgnoredUpgrades'
-import getPackageManager from './getPackageManager'
-import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
-import keyValueBy from './keyValueBy'
-import { print, printIgnoredUpdates, printJson, printSorted, printUpgrades, toDependencyTable } from './logging'
-import programError from './programError'
-import resolveDepSections from './resolveDepSections'
-import upgradePackageData from './upgradePackageData'
-import upgradePackageDefinitions from './upgradePackageDefinitions'
-import { getDependencyGroups } from './version-util'
+import { minVersion, satisfies } from 'semver'
+import { Index } from '../types/IndexType.js'
+import { Maybe } from '../types/Maybe.js'
+import { Options } from '../types/Options.js'
+import { PackageFile } from '../types/PackageFile.js'
+import { Version } from '../types/Version.js'
+import { VersionSpec } from '../types/VersionSpec.js'
+import chalk from './chalk.js'
+import getCurrentDependencies from './getCurrentDependencies.js'
+import getIgnoredUpgrades from './getIgnoredUpgrades.js'
+import getPackageManager from './getPackageManager.js'
+import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry.js'
+import keyValueBy from './keyValueBy.js'
+import { print, printIgnoredUpdates, printJson, printSorted, printUpgrades, toDependencyTable } from './logging.js'
+import programError from './programError.js'
+import resolveDepSections from './resolveDepSections.js'
+import upgradePackageData from './upgradePackageData.js'
+import upgradePackageDefinitions from './upgradePackageDefinitions.js'
+import { getDependencyGroups } from './version-util.js'
 
 const INTERACTIVE_HINT = `
   ↑/↓: Select a package
@@ -186,7 +184,7 @@ async function runLocal(
     options.peerDependencies = await getPeerDependenciesFromRegistry(
       Object.fromEntries(
         Object.entries(current).map(([packageName, versionSpec]) => {
-          return [packageName, nodeSemver.minVersion(versionSpec)?.version ?? versionSpec]
+          return [packageName, minVersion(versionSpec)?.version ?? versionSpec]
         }),
       ),
       options,
@@ -217,9 +215,7 @@ async function runLocal(
 
   // filter out satisfied deps when using --minimal
   const filteredUpgraded = options.minimal
-    ? keyValueBy(upgraded, (dep, version) =>
-        !nodeSemver.satisfies(latest[dep], current[dep]) ? { [dep]: version } : null,
-      )
+    ? keyValueBy(upgraded, (dep, version) => (!satisfies(latest[dep], current[dep]) ? { [dep]: version } : null))
     : upgraded
 
   const ownersChangedDeps = (options.format || []).includes('ownerChanged')

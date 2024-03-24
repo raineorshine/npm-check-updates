@@ -1,7 +1,7 @@
-import { Index } from './IndexType'
-import { Options } from './Options'
-import { Packument } from './Packument'
-import { Version } from './Version'
+import { Index } from './IndexType.js'
+import { Options } from './Options.js'
+import { Packument } from './Packument.js'
+import { Version } from './Version.js'
 
 export type MockedVersions =
   | Version

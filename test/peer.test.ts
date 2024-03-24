@@ -1,8 +1,11 @@
 import path from 'path'
-import ncu from '../src/'
-import chaiSetup from './helpers/chaiSetup'
+import { fileURLToPath } from 'url'
+import ncu from '../src/index.js'
+import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 describe('peer dependencies', function () {
   it('peer dependencies are ignored by default', async () => {

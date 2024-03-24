@@ -1,11 +1,11 @@
 import memoize from 'fast-memoize'
 import fs from 'fs/promises'
 import fetch from 'make-fetch-happen'
-import programError from '../lib/programError'
-import { GetVersion } from '../types/GetVersion'
-import { Options } from '../types/Options'
-import { StaticRegistry } from '../types/StaticRegistry'
-import { Version } from '../types/Version'
+import programError from '../lib/programError.js'
+import { GetVersion } from '../types/GetVersion.js'
+import { Options } from '../types/Options.js'
+import { StaticRegistry } from '../types/StaticRegistry.js'
+import { Version } from '../types/Version.js'
 
 /** Returns true if a string is a url. */
 const isUrl = (s: string) => (s && s.startsWith('http://')) || s.startsWith('https://')

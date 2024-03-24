@@ -1,10 +1,12 @@
 import { expect } from 'chai'
 import path from 'path'
 import spawn from 'spawn-please'
-import chaiSetup from './helpers/chaiSetup'
+import { fileURLToPath } from 'url'
+import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('global', () => {

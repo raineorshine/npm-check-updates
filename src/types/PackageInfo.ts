@@ -1,4 +1,4 @@
-import { PackageFile } from './PackageFile'
+import { PackageFile } from './PackageFile.js'
 
 /** Describes package data plus it's filepath */
 export interface PackageInfo {

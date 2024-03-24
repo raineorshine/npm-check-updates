@@ -1,5 +1,5 @@
-import isUpgradeable from '../src/lib/isUpgradeable'
-import chaiSetup from './helpers/chaiSetup'
+import isUpgradeable from '../src/lib/isUpgradeable.js'
+import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
 

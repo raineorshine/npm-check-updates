@@ -5,12 +5,14 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import exists from '../src/lib/exists'
-import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import { fileURLToPath } from 'url'
+import exists from '../src/lib/exists.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubNpmView from './helpers/stubNpmView.js'
 
 chaiSetup()
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const bin = path.join(__dirname, '../build/src/bin/cli.js')
 
 describe('install', () => {
@@ -23,7 +25,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubNpmView('2.0.0', { spawn: true })
+      const stub = stubNpmView('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
@@ -47,7 +49,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubNpmView('2.0.0', { spawn: true })
+      const stub = stubNpmView('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
@@ -71,7 +73,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubNpmView('2.0.0', { spawn: true })
+      const stub = stubNpmView('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
@@ -96,7 +98,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubNpmView('2.0.0', { spawn: true })
+      const stub = stubNpmView('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
@@ -128,7 +130,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubNpmView('2.0.0', { spawn: true })
+      const stub = stubNpmView('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
@@ -160,7 +162,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubNpmView('2.0.0', { spawn: true })
+      const stub = stubNpmView('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
@@ -194,7 +196,7 @@ describe('install', () => {
         },
       }
 
-      const stub = stubNpmView('2.0.0', { spawn: true })
+      const stub = stubNpmView('2.0.0')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
