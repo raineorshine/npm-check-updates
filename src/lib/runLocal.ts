@@ -2,7 +2,7 @@ import fs from 'fs/promises'
 import jph from 'json-parse-helpfulerror'
 import { get, isEmpty, pick } from 'lodash-es'
 import prompts from 'prompts-ncu'
-import { satisfies } from 'semver'
+import { minVersion, satisfies } from 'semver'
 import { Index } from '../types/IndexType.js'
 import { Maybe } from '../types/Maybe.js'
 import { Options } from '../types/Options.js'
@@ -13,7 +13,7 @@ import chalk from './chalk.js'
 import getCurrentDependencies from './getCurrentDependencies.js'
 import getIgnoredUpgrades from './getIgnoredUpgrades.js'
 import getPackageManager from './getPackageManager.js'
-import getPeerDependencies from './getPeerDependencies.js'
+import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry.js'
 import keyValueBy from './keyValueBy.js'
 import { print, printIgnoredUpdates, printJson, printSorted, printUpgrades, toDependencyTable } from './logging.js'
 import programError from './programError.js'
@@ -181,7 +181,14 @@ async function runLocal(
   }
 
   if (options.peer) {
-    options.peerDependencies = await getPeerDependencies(current, options)
+    options.peerDependencies = await getPeerDependenciesFromRegistry(
+      Object.fromEntries(
+        Object.entries(current).map(([packageName, versionSpec]) => {
+          return [packageName, minVersion(versionSpec)?.version ?? versionSpec]
+        }),
+      ),
+      options,
+    )
   }
 
   const [upgraded, latestResults, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)

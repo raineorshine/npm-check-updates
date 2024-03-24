@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "17.0.0-1",
+  "version": "17.0.0-2",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -47,7 +47,9 @@
     "prepare": "src/scripts/install-hooks && test/bun-setup.sh",
     "prepublishOnly": "npm run build",
     "prettier": "prettier . --check",
-    "test": "mocha test test/package-managers/*",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "mocha test test/package-managers/*",
+    "test:e2e": "./test/e2e.sh",
     "ncu": "node build/src/bin/cli.js"
   },
   "bin": {
@@ -147,6 +149,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.4.2",
     "typescript-json-schema": "^0.63.0",
+    "verdaccio": "^5.29.2",
     "yarn": "^1.22.22"
   },
   "files": [

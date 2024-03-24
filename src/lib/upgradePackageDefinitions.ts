@@ -44,8 +44,10 @@ export async function upgradePackageDefinitions(
     return !options.jsonUpgraded || !options.minimal || !satisfies(latestVersions[dep], currentDependencies[dep])
   })
 
+  const filteredLatestDependencies = pickBy(latestVersions, (spec, dep) => filteredUpgradedDependencies[dep])
+
   if (options.peer && !isEmpty(filteredUpgradedDependencies)) {
-    const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredUpgradedDependencies, options)
+    const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredLatestDependencies, options)
     const peerDependencies = { ...options.peerDependencies, ...upgradedPeerDependencies }
     if (!isEqual(options.peerDependencies, peerDependencies)) {
       const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(

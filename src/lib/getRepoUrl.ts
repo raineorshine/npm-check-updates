@@ -67,7 +67,7 @@ async function getRepoUrl(
       // It may already be a valid Repo URL
       const url = new URL(gitURL)
       // Some packages put a full URL in this field although it's not spec compliant. Let's detect that and use it if present
-      if (['github.com', 'gitlab.com', 'bitbucket.org'].includes(url.hostname) && url.protocol === 'https:') {
+      if (url.protocol === 'https:' || url.protocol === 'http:') {
         return gitURL
       }
     } catch (e) {}
@@ -84,6 +84,7 @@ async function getRepoUrl(
       // Remove the default branch path (/tree/HEAD) from a git url
       return hostedGitURL.replace(/\/$/, '').replace(/\/tree\/HEAD$/, '')
     }
+    return gitURL
   }
   return null
 }

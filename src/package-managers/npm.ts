@@ -632,11 +632,7 @@ export const greatest: GetVersion = async (
  * @returns Promised {packageName: version} collection
  */
 export const getPeerDependencies = async (packageName: string, version: Version): Promise<Index<Version>> => {
-  // if version number uses >, omit the version and find latest
-  // otherwise, it will error out in the shell
-  // https://github.com/raineorshine/npm-check-updates/issues/1181
-  const atVersion = !version.startsWith('>') ? `@${version}` : ''
-  const args = ['view', `${packageName}${atVersion}`, 'peerDependencies']
+  const args = ['view', `${packageName}@${version}`, 'peerDependencies']
   const result = await spawnNpm(args, {}, { rejectOnError: false })
   return result ? parseJson(result, { command: [...args, '--json'].join(' ') }) : {}
 }
