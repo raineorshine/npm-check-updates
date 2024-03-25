@@ -10,7 +10,7 @@ import stubNpmView from './helpers/stubNpmView'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/src/bin/cli.js')
+const bin = path.join(__dirname, '../build/cli.js')
 
 /** Creates a temp directory with nested package files for --deep testing. Returns the temp directory name (should be removed by caller).
  *

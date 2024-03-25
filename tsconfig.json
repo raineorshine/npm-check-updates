@@ -1,5 +1,5 @@
 {
-  "include": ["src", "test"],
+  "include": ["src", "test", "vite.config.mts"],
   "exclude": ["test/deep", "test/doctor"],
   "compilerOptions": {
     "allowJs": true,

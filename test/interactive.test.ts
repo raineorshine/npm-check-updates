@@ -7,7 +7,7 @@ import stubNpmView from './helpers/stubNpmView'
 
 const should = chaiSetup()
 
-const bin = path.join(__dirname, '../build/src/bin/cli.js')
+const bin = path.join(__dirname, '../build/cli.js')
 
 describe('--interactive', () => {
   let stub: { restore: () => void }

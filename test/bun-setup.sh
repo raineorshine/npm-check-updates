@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Install bun if not installed.
 # Must be run in a prepare script instead of devDependencies to avoid npm install failing on Windows.
 bun -v &> /dev/null
