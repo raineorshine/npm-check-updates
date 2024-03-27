@@ -285,12 +285,12 @@ describe('bin', async function () {
     })
 
     it('long option without "--" prefix', async () => {
-      const { stdout } = await spawn('node', [bin, '--help', '-f'])
+      const { stdout } = await spawn('node', [bin, '--help', 'filter'])
       stdout.trim().should.match(/^Usage:\s+ncu --filter/)
     })
 
     it('short option', async () => {
-      const { stdout } = await spawn('node', [bin, '--help', 'filter'])
+      const { stdout } = await spawn('node', [bin, '--help', '-f'])
       stdout.trim().should.match(/^Usage:\s+ncu --filter/)
     })
 
