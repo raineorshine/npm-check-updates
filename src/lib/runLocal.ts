@@ -4,7 +4,7 @@ import get from 'lodash/get'
 import isEmpty from 'lodash/isEmpty'
 import pick from 'lodash/pick'
 import prompts from 'prompts-ncu'
-import { satisfies } from 'semver'
+import nodeSemver from 'semver'
 import { Index } from '../types/IndexType'
 import { Maybe } from '../types/Maybe'
 import { Options } from '../types/Options'
@@ -15,7 +15,7 @@ import chalk from './chalk'
 import getCurrentDependencies from './getCurrentDependencies'
 import getIgnoredUpgrades from './getIgnoredUpgrades'
 import getPackageManager from './getPackageManager'
-import getPeerDependencies from './getPeerDependencies'
+import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
 import keyValueBy from './keyValueBy'
 import { print, printIgnoredUpdates, printJson, printSorted, printUpgrades, toDependencyTable } from './logging'
 import programError from './programError'
@@ -183,7 +183,14 @@ async function runLocal(
   }
 
   if (options.peer) {
-    options.peerDependencies = await getPeerDependencies(current, options)
+    options.peerDependencies = await getPeerDependenciesFromRegistry(
+      Object.fromEntries(
+        Object.entries(current).map(([packageName, versionSpec]) => {
+          return [packageName, nodeSemver.minVersion(versionSpec)?.version ?? versionSpec]
+        }),
+      ),
+      options,
+    )
   }
 
   const [upgraded, latestResults, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)
@@ -210,7 +217,9 @@ async function runLocal(
 
   // filter out satisfied deps when using --minimal
   const filteredUpgraded = options.minimal
-    ? keyValueBy(upgraded, (dep, version) => (!satisfies(latest[dep], current[dep]) ? { [dep]: version } : null))
+    ? keyValueBy(upgraded, (dep, version) =>
+        !nodeSemver.satisfies(latest[dep], current[dep]) ? { [dep]: version } : null,
+      )
     : upgraded
 
   const ownersChangedDeps = (options.format || []).includes('ownerChanged')
@@ -251,8 +260,8 @@ async function runLocal(
   const output = options.jsonAll
     ? (jph.parse(newPkgData) as PackageFile)
     : options.jsonDeps
-    ? pick(jph.parse(newPkgData) as PackageFile, resolveDepSections(options.dep))
-    : chosenUpgraded
+      ? pick(jph.parse(newPkgData) as PackageFile, resolveDepSections(options.dep))
+      : chosenUpgraded
 
   // will be overwritten with the result of fs.writeFile so that the return promise waits for the package file to be written
   let writePromise = Promise.resolve()

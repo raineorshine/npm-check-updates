@@ -204,7 +204,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--deprecated</td>
-    <td>Include deprecated packages.</td>
+    <td>Include deprecated packages. (default: true)</td>
   </tr>
   <tr>
     <td><a href="#doctor">-d, --doctor</a></td>
@@ -344,7 +344,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#target">-t, --target &lt;value&gt;</a></td>
-    <td>Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, @[tag], or [function]. (default: latest)</td>
+    <td>Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, <code>@[tag]<code>, or [function]. (default: latest)</td>
   </tr>
   <tr>
     <td>--timeout &lt;ms&gt;</td>
@@ -444,7 +444,9 @@ Usage:
     ncu --filter [p]
     ncu -f [p]
 
-Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Only included packages will be checked with `--peer`.
+
+`--filter` runs _before_ new versions are fetched, in contrast to `--filterResults` which runs _after_.
 
 The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
 
@@ -467,7 +469,7 @@ filterFunction: (name, semver) => {
 
 Filters out upgrades based on a user provided function.
 
-`filterResults` runs _after_ new versions are fetched, in contrast to `filter` and `filterVersion`, which run _before_. This allows you to filter out upgrades with `filterResults` based on how the version has changed (e.g. a major version change).
+`filterResults` runs _after_ new versions are fetched, in contrast to `filter`, `reject`, `filterVersion`, and `rejectVersion`, which run _before_. This allows you to filter out upgrades with `filterResults` based on how the version has changed (e.g. a major version change).
 
 Only available in .ncurc.js or when importing npm-check-updates as a module.
 
@@ -589,7 +591,6 @@ Specifies the package manager to use when looking up versions.
   <tr><td>yarn</td><td>System-installed yarn. Automatically used if yarn.lock is present.</td></tr>
   <tr><td>pnpm</td><td>System-installed pnpm. Automatically used if pnpm-lock.yaml is present.</td></tr>
   <tr><td>bun</td><td>System-installed bun. Automatically used if bun.lockb is present.</td></tr>
-  <tr><td>staticRegistry</td><td>Deprecated. Use --registryType json.</td></tr>
 </table>
 
 ## peer
@@ -675,7 +676,9 @@ Usage:
     ncu --reject [p]
     ncu -x [p]
 
-The inverse of `--filter`. Exclude package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+The inverse of `--filter`. Exclude package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. This will also exclude them from the `--peer` check.
+
+`--reject` runs _before_ new versions are fetched, in contrast to `--filterResults` which runs _after_.
 
 The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
 
@@ -711,7 +714,7 @@ The predicate function is only available in .ncurc.js or when importing npm-chec
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be excluded, false if it should be included.
 */
-filterVersionFunction: (name, semver) => {
+rejectVersionFunction: (name, semver) => {
   if (name.startsWith('@myorg/') && parseInt(semver[0]?.major) > 5) {
     return true
   }

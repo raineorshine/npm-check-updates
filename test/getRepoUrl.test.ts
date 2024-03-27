@@ -13,17 +13,13 @@ describe('getRepoUrl', () => {
   it('return null repository field is unknown type', async () => {
     should.equal(await getRepoUrl('package-name', { repository: true as any /* allow to compile */ }), null)
   })
-  it('return url directly from repository field if valid github url', async () => {
+  it('return url directly from repository field if valid https url', async () => {
     const url = await getRepoUrl('package-name', { repository: 'https://github.com/user/repo' })
     url!.should.equal('https://github.com/user/repo')
   })
-  it('return url directly from repository field if valid gitlab url', async () => {
-    const url = await getRepoUrl('package-name', { repository: 'https://gitlab.com/user/repo' })
-    url!.should.equal('https://gitlab.com/user/repo')
-  })
-  it('return url directly from repository field if valid bitbucket url', async () => {
-    const url = await getRepoUrl('package-name', { repository: 'https://bitbucket.org/user/repo' })
-    url!.should.equal('https://bitbucket.org/user/repo')
+  it('return url directly from repository field if valid http url', async () => {
+    const url = await getRepoUrl('package-name', { repository: 'http://anything.com/user/repo' })
+    url!.should.equal('http://anything.com/user/repo')
   })
   it('return url constructed from github shortcut syntax string', async () => {
     const url = await getRepoUrl('package-name', { repository: 'user/repo' })
@@ -32,6 +28,10 @@ describe('getRepoUrl', () => {
   it('return url constructed from repository specific shortcut syntax string', async () => {
     const url = await getRepoUrl('package-name', { repository: 'github:user/repo' })
     url!.should.equal('https://github.com/user/repo')
+  })
+  it('return url directly from url field if not a known git host', async () => {
+    const url = await getRepoUrl('package-name', { repository: { url: 'https://any.website.com/some/path' } })
+    url!.should.equal('https://any.website.com/some/path')
   })
   it('return url constructed from git-https protocol', async () => {
     const url = await getRepoUrl('package-name', { repository: { url: 'git+https://github.com/user/repo.git' } })
@@ -49,6 +49,6 @@ describe('getRepoUrl', () => {
     const url = await getRepoUrl('package-name', {
       repository: { url: 'http://github.com/user/repo.git', directory: 'packages/specific-package' },
     })
-    url!.should.equal('https://github.com/user/repo/tree/master/packages/specific-package')
+    url!.should.equal('https://github.com/user/repo/tree/HEAD/packages/specific-package')
   })
 })

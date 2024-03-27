@@ -11,7 +11,7 @@ on:
 
 env:
   FORCE_COLOR: 2
-  NODE_COV: 18
+  NODE_COV: 20
 
 permissions:
   contents: read
@@ -28,42 +28,38 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [16, 18, 20]
+        node: [18, 20]
         os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
           cache: npm
 
-      # node v14 cannot install from current package-lock.json, so use npm install instea of npm ci.
-      # Cannot read property 'chalk' of undefined
-      # Regression: e88617964a009dbb9f5e973f64ff76ad289df68c
-      - name: Install npm dependencies
-        run: npm i
-        if: 'matrix.node == 14'
-
       - name: Install npm dependencies
         run: npm ci
-        if: 'matrix.node != 14'
 
       - name: Build
         run: npm run build
 
-      - name: Run tests
-        run: npm run test
-        if: (!(startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV))
-
-      - name: Run tests with coverage
-        run: npx c8 -- npm test
+      - name: E2E Tests
+        run: npm run test:e2e
         if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
 
-      - name: Run Coveralls
+      - name: Unit Tests
+        run: npm run test:unit
+        if: (!(startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV))
+
+      - name: Tests with coverage
+        run: npx c8 -- npm run test:unit
+        if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
+
+      - name: Coveralls
         uses: coverallsapp/github-action@v1.1.2
         if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
         with:

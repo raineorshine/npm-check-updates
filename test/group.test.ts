@@ -8,7 +8,7 @@ import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/src/bin/cli.js')
+const bin = path.join(__dirname, '../build/cli.js')
 
 /**
  * Sets up and tears down the temporary directories required to run each test
@@ -41,9 +41,14 @@ async function groupTestScaffold(
   const configFile = path.join(tempDir, '.ncurc.js')
   await fs.writeFile(configFile, `module.exports = { groupFunction: ${groupFn.toString()} }`, 'utf-8')
   try {
-    const stdout = await spawn('node', [bin, '--format', 'group', '--configFilePath', tempDir], {
-      cwd: tempDir,
-    })
+    const { stdout } = await spawn(
+      'node',
+      [bin, '--format', 'group', '--configFilePath', tempDir],
+      {},
+      {
+        cwd: tempDir,
+      },
+    )
     stripAnsi(stdout).should.containIgnoreCase(expectedOutput)
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true })

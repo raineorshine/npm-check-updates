@@ -52,7 +52,10 @@ export interface RunOptions {
    */
   dep?: string | string[]
 
-  /** Include deprecated packages. */
+  /** Include deprecated packages.
+   *
+   * @default true
+   */
   deprecated?: boolean
 
   /** Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires `-u` to execute. Run "ncu --help --doctor" for details. */
@@ -172,7 +175,7 @@ export interface RunOptions {
   /** Read package.json from stdin. */
   stdin?: string
 
-  /** Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, @[tag], or [function]. (default: latest) Run "ncu --help --target" for details. */
+  /** Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, `@[tag]`, or [function]. (default: latest) Run "ncu --help --target" for details. */
   target?: 'latest' | 'newest' | 'greatest' | 'minor' | 'patch' | 'semver' | `@${string}` | TargetFunction
 
   /** Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch) */

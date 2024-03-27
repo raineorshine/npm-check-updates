@@ -5,35 +5,35 @@ import programError from '../lib/programError'
 import { Index } from '../types/IndexType'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import * as npm from './npm'
 
 /** Spawn bun. */
 async function spawnBun(
   args: string | string[],
   npmOptions: NpmOptions = {},
+  spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: Index<any> = {},
-): Promise<string> {
+): Promise<{ stdout: string; stderr: string }> {
   // Bun not yet supported on Windows.
   // @see https://github.com/oven-sh/bun/issues/43
   if (process.platform === 'win32') {
     programError(npmOptions, 'Bun not yet supported on Windows')
   }
 
-  args = Array.isArray(args) ? args : [args]
-
   const fullArgs = [
-    ...args,
-    ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
     ...(npmOptions.global ? ['--global'] : []),
+    ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
+    ...(Array.isArray(args) ? args : [args]),
   ]
 
-  return spawn('bun', fullArgs, spawnOptions)
+  return spawn('bun', fullArgs, spawnPleaseOptions, spawnOptions)
 }
 
 /** Returns the global directory of bun. */
 export const defaultPrefix = async (options: Options): Promise<string | undefined> =>
   options.global
-    ? options.prefix || process.env.BUN_INSTALL || path.dirname(await spawn('bun', ['pm', '-g', 'bin']))
+    ? options.prefix || process.env.BUN_INSTALL || path.dirname((await spawn('bun', ['pm', '-g', 'bin'])).stdout)
     : undefined
 
 /**
@@ -43,11 +43,14 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   const { default: stripAnsi } = await import('strip-ansi')
 
   // bun pm ls
-  const stdout = await spawnBun(
+  const { stdout } = await spawnBun(
     ['pm', 'ls'],
     {
       ...(options.global ? { global: true } : null),
       ...(options.prefix ? { prefix: options.prefix } : null),
+    },
+    {
+      rejectOnError: false,
     },
     {
       env: {
@@ -58,7 +61,6 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
         NO_COLOR: '1',
       },
       ...(options.cwd ? { cwd: options.cwd } : null),
-      rejectOnError: false,
     },
   )
 

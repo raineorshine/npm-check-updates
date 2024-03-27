@@ -1,6 +1,6 @@
 import findUp from 'find-up'
 import fs from 'fs/promises'
-import getstdin from 'get-stdin'
+import { text } from 'node:stream/consumers'
 import path from 'path'
 import { print } from '../lib/logging'
 import { Options } from '../types/Options'
@@ -65,7 +65,7 @@ async function findPackage(options: Options): Promise<{
 
     // get data from stdin
     // trim stdin to account for \r\n
-    const stdinData = await getstdin()
+    const stdinData = await text(process.stdin)
     const data = stdinData.trim().length > 0 ? stdinData : null
 
     // if no stdin content fall back to searching for package.json from pwd and up to root

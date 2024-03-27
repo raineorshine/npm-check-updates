@@ -7,7 +7,7 @@ import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/src/bin/cli.js')
+const bin = path.join(__dirname, '../build/cli.js')
 
 describe('timeout', function () {
   it('throw an exception instead of printing to the console when timeout is exceeded', async () => {
@@ -19,16 +19,14 @@ describe('timeout', function () {
   })
 
   it('exit with error when timeout is exceeded', async () => {
-    return spawn(
-      'node',
-      [bin, '--timeout', '1'],
-      '{ "dependencies": { "express": "1" } }',
-    ).should.eventually.be.rejectedWith('Exceeded global timeout of 1ms')
+    return spawn('node', [bin, '--timeout', '1'], {
+      stdin: '{ "dependencies": { "express": "1" } }',
+    }).should.eventually.be.rejectedWith('Exceeded global timeout of 1ms')
   })
 
   it('completes successfully with timeout', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    await spawn('node', [bin, '--timeout', '100000'], '{ "dependencies": { "express": "1" } }')
+    await spawn('node', [bin, '--timeout', '100000'], { stdin: '{ "dependencies": { "express": "1" } }' })
     stub.restore()
   })
 })

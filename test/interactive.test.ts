@@ -7,7 +7,7 @@ import stubVersions from './helpers/stubVersions'
 
 const should = chaiSetup()
 
-const bin = path.join(__dirname, '../build/src/bin/cli.js')
+const bin = path.join(__dirname, '../build/cli.js')
 
 describe('--interactive', () => {
   let stub: { restore: () => void }
@@ -37,13 +37,18 @@ describe('--interactive', () => {
       'utf-8',
     )
     try {
-      const stdout = await spawn('node', [bin, '--interactive'], {
-        cwd: tempDir,
-        env: {
-          ...process.env,
-          INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
+      const { stdout } = await spawn(
+        'node',
+        [bin, '--interactive'],
+        {},
+        {
+          cwd: tempDir,
+          env: {
+            ...process.env,
+            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
+          },
         },
-      })
+      )
 
       should.equal(/^Upgrading/m.test(stdout), true)
 
@@ -74,13 +79,18 @@ describe('--interactive', () => {
       'utf-8',
     )
     try {
-      await spawn('node', [bin, '--interactive', '--format', 'group'], {
-        cwd: tempDir,
-        env: {
-          ...process.env,
-          INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
+      await spawn(
+        'node',
+        [bin, '--interactive', '--format', 'group'],
+        {},
+        {
+          cwd: tempDir,
+          env: {
+            ...process.env,
+            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
+          },
         },
-      })
+      )
 
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.dependencies.should.deep.equal({
@@ -114,13 +124,18 @@ describe('--interactive', () => {
     const configFile = path.join(tempDir, '.ncurc.js')
     await fs.writeFile(configFile, `module.exports = { groupFunction: () => 'minor' }`, 'utf-8')
     try {
-      await spawn('node', [bin, '--interactive', '--format', 'group', '--configFilePath', tempDir], {
-        cwd: tempDir,
-        env: {
-          ...process.env,
-          INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
+      await spawn(
+        'node',
+        [bin, '--interactive', '--format', 'group', '--configFilePath', tempDir],
+        {},
+        {
+          cwd: tempDir,
+          env: {
+            ...process.env,
+            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
+          },
         },
-      })
+      )
 
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.dependencies.should.deep.equal({
@@ -150,16 +165,21 @@ describe('--interactive', () => {
       'utf-8',
     )
     try {
-      await spawn('npm', ['install'], { cwd: tempDir })
-      const output = await spawn('node', [bin, '--interactive', '--format', 'repo'], {
-        cwd: tempDir,
-        env: {
-          ...process.env,
-          INJECT_PROMPTS: JSON.stringify([['modern-diacritics'], true]),
+      await spawn('npm', ['install'], {}, { cwd: tempDir })
+      const { stdout } = await spawn(
+        'node',
+        [bin, '--interactive', '--format', 'repo'],
+        {},
+        {
+          cwd: tempDir,
+          env: {
+            ...process.env,
+            INJECT_PROMPTS: JSON.stringify([['modern-diacritics'], true]),
+          },
         },
-      })
+      )
 
-      output.should.include('https://github.com/Mitsunee/modern-diacritics')
+      stdout.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
     }

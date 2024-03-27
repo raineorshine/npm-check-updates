@@ -27,6 +27,7 @@ import { NpmConfig } from '../types/NpmConfig'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { Packument } from '../types/Packument'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import { Version } from '../types/Version'
 import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
@@ -219,11 +220,11 @@ export const normalizeNpmConfig = (
       typeof value !== 'string'
         ? value
         : // parse stringified booleans
-        keyTypes[key.replace(/-/g, '').toLowerCase()] === 'boolean'
-        ? stringToBoolean(value)
-        : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
-        ? stringToNumber(value)
-        : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
+          keyTypes[key.replace(/-/g, '').toLowerCase()] === 'boolean'
+          ? stringToBoolean(value)
+          : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
+            ? stringToNumber(value)
+            : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
 
     // normalize the key for pacote
     const { [key]: pacoteKey }: Index<NpmConfig[keyof NpmConfig]> = npmConfigToPacoteMap
@@ -232,10 +233,10 @@ export const normalizeNpmConfig = (
       ? // key is mapped to a string
         { [pacoteKey]: normalizedValue }
       : // key is mapped to a function
-      typeof pacoteKey === 'function'
-      ? { ...(pacoteKey(normalizedValue.toString()) as any) }
-      : // otherwise assign the camel-cased key
-        { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
+        typeof pacoteKey === 'function'
+        ? { ...(pacoteKey(normalizedValue.toString()) as any) }
+        : // otherwise assign the camel-cased key
+          { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
   })
 
   return config
@@ -343,8 +344,8 @@ export const mockFetchUpgradedPackument =
       typeof mockReturnedVersions === 'function'
         ? mockReturnedVersions(options)?.[name]
         : typeof mockReturnedVersions === 'string' || isPackument(mockReturnedVersions)
-        ? mockReturnedVersions
-        : mockReturnedVersions[name]
+          ? mockReturnedVersions
+          : mockReturnedVersions[name]
 
     const version = isPackument(partialPackument) ? partialPackument.version : partialPackument
 
@@ -466,8 +467,8 @@ async function fetchUpgradedPackument(
   npmConfigWorkspaceProject?: NpmConfig,
 ): Promise<Partial<Packument> | undefined> {
   // See: /test/helpers/stubVersions
-  if (process.env.STUB_NPM_VIEW) {
-    const mockReturnedVersions = JSON.parse(process.env.STUB_NPM_VIEW)
+  if (process.env.STUB_VERSIONS) {
+    const mockReturnedVersions = JSON.parse(process.env.STUB_VERSIONS)
     return mockFetchUpgradedPackument(mockReturnedVersions)(packageName, fields, currentVersion, options)
   }
 
@@ -552,18 +553,19 @@ export const fetchUpgradedPackumentMemo = memoize(fetchUpgradedPackument, {
 async function spawnNpm(
   args: string | string[],
   npmOptions: NpmOptions = {},
+  spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: Index<any> = {},
 ): Promise<any> {
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-  args = Array.isArray(args) ? args : [args]
 
   const fullArgs = [
-    ...args,
     ...(npmOptions.global ? [`--global`] : []),
     ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
     '--json',
+    ...(Array.isArray(args) ? args : [args]),
   ]
-  return spawn(cmd, fullArgs, spawnOptions)
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+  return stdout
 }
 
 /**
@@ -586,7 +588,8 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
   // catch spawn error which can occur on Windows
   // https://github.com/raineorshine/npm-check-updates/issues/703
   try {
-    prefix = await spawn(cmd, ['config', 'get', 'prefix'])
+    const { stdout } = await spawn(cmd, ['config', 'get', 'prefix'])
+    prefix = stdout
   } catch (e: any) {
     const message = (e.message || e || '').toString()
     print(
@@ -603,12 +606,12 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
   return options.global && prefix?.match('Cellar')
     ? '/usr/local'
     : // Workaround: get prefix on windows for global packages
-    // Only needed when using npm api directly
-    process.platform === 'win32' && options.global && !process.env.prefix
-    ? prefix
-      ? prefix.trim()
-      : `${process.env.AppData}\\npm`
-    : undefined
+      // Only needed when using npm api directly
+      process.platform === 'win32' && options.global && !process.env.prefix
+      ? prefix
+        ? prefix.trim()
+        : `${process.env.AppData}\\npm`
+      : undefined
 }
 
 /**
@@ -649,11 +652,7 @@ export const greatest: GetVersion = async (
  * @returns Promised {packageName: version} collection
  */
 export const getPeerDependencies = async (packageName: string, version: Version): Promise<Index<Version>> => {
-  // if version number uses >, omit the version and find latest
-  // otherwise, it will error out in the shell
-  // https://github.com/raineorshine/npm-check-updates/issues/1181
-  const atVersion = !version.startsWith('>') ? `@${version}` : ''
-  const args = ['view', `${packageName}${atVersion}`, 'peerDependencies']
+  const args = ['view', `${packageName}@${version}`, 'peerDependencies']
   const result = await spawnNpm(args, {}, { rejectOnError: false })
   return result ? parseJson(result, { command: [...args, '--json'].join(' ') }) : {}
 }
@@ -675,8 +674,10 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
       ...(options.prefix ? { prefix: options.prefix } : null),
     },
     {
-      ...(options.cwd ? { cwd: options.cwd } : null),
       rejectOnError: false,
+    },
+    {
+      ...(options.cwd ? { cwd: options.cwd } : null),
     },
   )
   const dependencies = parseJson<{

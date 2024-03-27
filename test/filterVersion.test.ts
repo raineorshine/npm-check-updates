@@ -6,7 +6,7 @@ import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/src/bin/cli.js')
+const bin = path.join(__dirname, '../build/cli.js')
 
 describe('filterVersion', () => {
   describe('module', () => {
@@ -127,12 +127,12 @@ describe('filterVersion', () => {
         },
       }
 
-      const output = await spawn(
+      const { stdout } = await spawn(
         'node',
         [bin, '--jsonUpgraded', '--verbose', '--stdin', '--filterVersion', '1.0.0', '--filterVersion', '1.0.9'],
-        JSON.stringify(pkgData),
+        { stdin: JSON.stringify(pkgData) },
       )
-      const upgraded = JSON.parse(output)
+      const upgraded = JSON.parse(stdout)
       upgraded.should.have.property('ncu-test-v2')
       upgraded.should.have.property('ncu-test-10')
       stub.restore()
@@ -151,12 +151,12 @@ describe('rejectVersion', () => {
         },
       }
 
-      const output = await spawn(
+      const { stdout } = await spawn(
         'node',
         [bin, '--jsonUpgraded', '--verbose', '--stdin', '--rejectVersion', '1.0.0', '--rejectVersion', '1.0.9'],
-        JSON.stringify(pkgData),
+        { stdin: JSON.stringify(pkgData) },
       )
-      const upgraded = JSON.parse(output)
+      const upgraded = JSON.parse(stdout)
       upgraded.should.not.have.property('ncu-test-v2')
       upgraded.should.not.have.property('ncu-test-10')
       stub.restore()
