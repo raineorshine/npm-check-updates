@@ -3,7 +3,7 @@ import path from 'path'
 import spawn from 'spawn-please'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
@@ -25,7 +25,7 @@ describe('timeout', function () {
   })
 
   it('completes successfully with timeout', async () => {
-    const stub = stubNpmView('99.9.9', { spawn: true })
+    const stub = stubVersions('99.9.9', { spawn: true })
     await spawn('node', [bin, '--timeout', '100000'], { stdin: '{ "dependencies": { "express": "1" } }' })
     stub.restore()
   })

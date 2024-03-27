@@ -4,7 +4,7 @@ import path from 'path'
 import spawn from 'spawn-please'
 import { GroupFunction } from '../src/types/GroupFunction'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
 
@@ -18,7 +18,7 @@ async function groupTestScaffold(
   groupFn: GroupFunction,
   expectedOutput: string,
 ): Promise<void> {
-  const stub = stubNpmView(
+  const stub = stubVersions(
     {
       'ncu-test-v2': '2.0.0',
       'ncu-test-tag': '1.1.0',

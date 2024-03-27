@@ -14,8 +14,6 @@ export default defineConfig(({ mode }) => ({
   ssr: {
     // bundle and treeshake everything
     noExternal: true,
-    // except our one dependency
-    external: ['node-gyp'],
   },
   build: {
     ssr: true,

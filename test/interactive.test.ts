@@ -3,7 +3,7 @@ import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import chaiSetup from './helpers/chaiSetup'
-import stubNpmView from './helpers/stubNpmView'
+import stubVersions from './helpers/stubVersions'
 
 const should = chaiSetup()
 
@@ -12,7 +12,7 @@ const bin = path.join(__dirname, '../build/cli.js')
 describe('--interactive', () => {
   let stub: { restore: () => void }
   before(() => {
-    stub = stubNpmView(
+    stub = stubVersions(
       {
         'ncu-test-v2': '2.0.0',
         'ncu-test-tag': '1.1.0',

@@ -218,7 +218,8 @@
       "description": "Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited)."
     },
     "deprecated": {
-      "description": "Include deprecated packages.",
+      "default": true,
+      "description": "Include deprecated packages. Use `--no-deprecated` to exclude deprecated packages (uses more bandwidth).",
       "type": "boolean"
     },
     "doctor": {

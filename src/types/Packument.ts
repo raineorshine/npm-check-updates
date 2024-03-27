@@ -1,7 +1,7 @@
 import { Index } from './IndexType'
 import { Version } from './Version'
 
-/** A pacote packument result object. */
+/** A packument result object from npm-registry-fetch. */
 export interface Packument {
   name: string
   deprecated?: boolean
@@ -14,7 +14,7 @@ export interface Packument {
   time?: Index<string>
   version: Version
   versions: Index<
-    Packument & {
+    Omit<Packument, 'versions'> & {
       _npmUser?: {
         name: string
       }
