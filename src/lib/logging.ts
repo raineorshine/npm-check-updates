@@ -305,7 +305,7 @@ export async function printUpgrades(
   }: {
     // Current package versions
     current: Index<VersionSpec>
-    // Latest package versions according to the target. This is only used to detect an empty result from npm/pacote.
+    // Latest package versions according to the target. This is only used to detect an empty result from npm.
     latest?: Index<VersionResult>
     // Upgraded package specifications
     upgraded: Index<VersionSpec>

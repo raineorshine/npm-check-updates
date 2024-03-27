@@ -30,7 +30,7 @@ export function allowPreOrIsNotPre(versionResult: Partial<Packument>, options: O
 /**
  * Returns true if the node engine requirement is satisfied or not specified for a given package version.
  *
- * @param versionResult     Version object returned by pacote.packument.
+ * @param versionResult     Version object returned by packument.
  * @param nodeEngineVersion The value of engines.node in the package file.
  * @returns                 True if the node engine requirement is satisfied or not specified.
  */
@@ -45,7 +45,7 @@ export function satisfiesNodeEngine(versionResult: Partial<Packument>, nodeEngin
 /**
  * Returns true if the peer dependencies requirement is satisfied or not specified for a given package version.
  *
- * @param versionResult     Version object returned by pacote.packument.
+ * @param versionResult     Version object returned by packument.
  * @param peerDependencies  The list of peer dependencies.
  * @returns                 True if the peer dependencies are satisfied or not specified.
  */
@@ -57,7 +57,7 @@ export function satisfiesPeerDependencies(versionResult: Partial<Packument>, pee
   )
 }
 
-/** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by pacote.packument. */
+/** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by packument. */
 export function filterPredicate(options: Options): (o: Partial<Packument>) => boolean {
   return overEvery([
     o => allowDeprecatedOrIsNotDeprecated(o, options),

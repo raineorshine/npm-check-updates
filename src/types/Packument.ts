@@ -1,7 +1,7 @@
 import { Index } from './IndexType'
 import { Version } from './Version'
 
-/** A pacote packument result object. */
+/** A packument result object from npm-registry-fetch. */
 export interface Packument {
   name: string
   deprecated?: boolean
