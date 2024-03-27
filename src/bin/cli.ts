@@ -127,7 +127,7 @@ ${chalk.dim.underline(
         option.long === '--version'
           ? optionVersionDescription
           : option.long === '--help'
-            ? `You're lookin' at it.`
+            ? `You're lookin' at it. Run "ncu --help <option>" for a specific option.`
             : Help.prototype.optionDescription(option),
     })
     // add hidden -v alias for --V/--version
