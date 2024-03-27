@@ -319,9 +319,52 @@ describe('bin', async function () {
       stdout.trim().should.containIgnoreCase('Unknown option')
     })
 
-    it('special --help --help', async () => {
-      const { stdout } = await spawn('node', [bin, '--help', '--help'])
-      stdout.trim().should.not.include('Usage')
+    it('multiple options', async () => {
+      const { stdout } = await spawn('node', [bin, '--help', '--interactive', '--minimal'])
+      stdout.trim().should.containIgnoreCase('ncu --interactive')
+      stdout.trim().should.containIgnoreCase('ncu --minimal')
+    })
+
+    describe('special --help help', () => {
+      it('--help --help', async () => {
+        const { stdout } = await spawn('node', [bin, '--help', '--help'])
+        stdout.trim().should.not.include('Usage')
+      })
+
+      it('--help help', async () => {
+        const { stdout } = await spawn('node', [bin, '--help', 'help'])
+        stdout.trim().should.not.include('Usage')
+      })
+
+      it('--help -h', async () => {
+        const { stdout } = await spawn('node', [bin, '--help', '-h'])
+        stdout.trim().should.not.include('Usage')
+      })
+
+      it('--help h', async () => {
+        const { stdout } = await spawn('node', [bin, '--help', 'h'])
+        stdout.trim().should.not.include('Usage')
+      })
+
+      it('-h --help', async () => {
+        const { stdout } = await spawn('node', [bin, '-h', '--help'])
+        stdout.trim().should.not.include('Usage')
+      })
+
+      it('-h help', async () => {
+        const { stdout } = await spawn('node', [bin, '-h', 'help'])
+        stdout.trim().should.not.include('Usage')
+      })
+
+      it('-h -h', async () => {
+        const { stdout } = await spawn('node', [bin, '-h', '-h'])
+        stdout.trim().should.not.include('Usage')
+      })
+
+      it('-h h', async () => {
+        const { stdout } = await spawn('node', [bin, '-h', 'h'])
+        stdout.trim().should.not.include('Usage')
+      })
     })
   })
 })

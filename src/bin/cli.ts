@@ -68,26 +68,29 @@ ${chalk.dim.underline(
   // manually detect option-specific help
   // https://github.com/raineorshine/npm-check-updates/issues/787
   const rawArgs = process.argv.slice(2)
-  if ((rawArgs[0] === '--help' || rawArgs[0] === '-h') && rawArgs.length === 2) {
-    await chalkInit()
-    const nonHelpArgs = rawArgs.filter(arg => arg !== '--help' && arg !== '-h')
-    nonHelpArgs.forEach(arg => {
-      // match option by long or short
-      const query = arg.replace(/^-*/, '')
-      const option = cliOptions.find(
-        option =>
-          query === option.long ||
-          query === option.short ||
-          (query === `no-${option.long}` && option.type === 'boolean'),
-      )
-      if (option) {
-        console.info(renderExtendedHelp(option) + '\n')
-      } else {
-        console.info(`Unknown option: ${arg}`)
-      }
-    })
-    if (rawArgs.length - nonHelpArgs.length > 1) {
+  const indexHelp = rawArgs.findIndex(arg => arg === '--help' || arg === '-h')
+  if (indexHelp !== -1 && rawArgs[indexHelp + 1]) {
+    const helpOption = rawArgs[indexHelp + 1].replace(/^-*/, '')
+    if (helpOption === 'help' || helpOption === 'h') {
       console.info('Would you like some help with your help?')
+    } else {
+      await chalkInit()
+      const nonHelpArgs = [...rawArgs.slice(0, indexHelp), ...rawArgs.slice(indexHelp + 1)]
+      nonHelpArgs.forEach(arg => {
+        // match option by long or short
+        const query = arg.replace(/^-*/, '')
+        const option = cliOptions.find(
+          option =>
+            query === option.long ||
+            query === option.short ||
+            (query === `no-${option.long}` && option.type === 'boolean'),
+        )
+        if (option) {
+          console.info(renderExtendedHelp(option) + '\n')
+        } else {
+          console.info(`Unknown option: ${arg}`)
+        }
+      })
     }
     process.exit(0)
   }
