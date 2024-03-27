@@ -61,12 +61,6 @@
   "overrides": {
     "@yarnpkg/parsers": "2.6.0"
   },
-  "dependencies_annotation": {
-    "node-gyp": "required for pacote which uses @npmcli/run-script"
-  },
-  "dependencies": {
-    "node-gyp": "^10.0.1"
-  },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/chai": "^4.3.14",
