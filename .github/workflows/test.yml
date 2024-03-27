@@ -11,7 +11,6 @@ on:
 
 env:
   FORCE_COLOR: 2
-  NODE_COV: 20
 
 permissions:
   contents: read
@@ -19,7 +18,6 @@ permissions:
 jobs:
   run:
     permissions:
-      checks: write # for coverallsapp/github-action to create new checks
       contents: read # for actions/checkout to fetch code
 
     name: Node ${{ matrix.node }} on ${{ matrix.os }}
@@ -47,20 +45,9 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: E2E Tests
-        run: npm run test:e2e
-        if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
-
       - name: Unit Tests
         run: npm run test:unit
-        if: (!(startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV))
 
-      - name: Tests with coverage
-        run: npx c8 -- npm run test:unit
-        if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
-
-      - name: Coveralls
-        uses: coverallsapp/github-action@v1.1.2
-        if: startsWith(matrix.os, 'ubuntu') && matrix.node == env.NODE_COV
-        with:
-          github-token: '${{ secrets.GITHUB_TOKEN }}'
+      - name: E2E Tests
+        run: npm run test:e2e
+        if: startsWith(matrix.os, 'ubuntu') && matrix.node == 20
