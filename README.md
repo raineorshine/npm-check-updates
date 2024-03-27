@@ -133,9 +133,8 @@ ncu "/^(?!react-).*$/" # windows
   - `1.0.0 < 2.0.0` → `^3.0.0`
 - "Any version" is preserved:
   - `*` → `*`
-- Prerelease and deprecated versions are ignored by default.
+- Prerelease versions are ignored by default.
   - Use `--pre` to include prerelease versions (e.g. `alpha`, `beta`, `build1235`)
-  - Use `--deprecated` to include deprecated versions
 - With `--target minor`, only update patch and minor:
   - `0.1.0` → `0.2.1`
 - With `--target patch`, only update patch:
@@ -204,7 +203,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--deprecated</td>
-    <td>Include deprecated packages. (default: true)</td>
+    <td>Include deprecated packages. Use <code>--no-deprecated</code> to exclude deprecated packages (uses more bandwidth). (default: true)</td>
   </tr>
   <tr>
     <td><a href="#doctor">-d, --doctor</a></td>

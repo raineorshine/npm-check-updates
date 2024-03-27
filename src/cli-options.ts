@@ -592,7 +592,8 @@ const cliOptions: CLIOption[] = [
   {
     long: 'deprecated',
     default: true,
-    description: 'Include deprecated packages.',
+    description:
+      'Include deprecated packages. Use `--no-deprecated` to exclude deprecated packages (uses more bandwidth).',
     type: 'boolean',
   },
   {

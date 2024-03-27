@@ -52,7 +52,7 @@ export interface RunOptions {
    */
   dep?: string | string[]
 
-  /** Include deprecated packages.
+  /** Include deprecated packages. Use `--no-deprecated` to exclude deprecated packages (uses more bandwidth).
    *
    * @default true
    */
