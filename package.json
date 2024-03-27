@@ -9,21 +9,12 @@
   ],
   "description": "Find newer versions of dependencies than what your package.json allows",
   "keywords": [
-    "npm",
-    "check",
-    "find",
-    "discover",
-    "updates",
-    "upgrades",
     "dependencies",
+    "npm",
     "package.json",
-    "updater",
-    "version",
-    "management",
-    "ncu",
-    "bun",
-    "yarn",
-    "pnpm"
+    "update",
+    "upgrade",
+    "versions"
   ],
   "engines": {
     "node": "^18.18.0 || >=20.0.0",
