@@ -309,6 +309,11 @@ describe('bin', async function () {
       stdout.trim().should.containIgnoreCase('Upgrade to the highest version number')
     })
 
+    it('-h', async () => {
+      const { stdout } = await spawn('node', [bin, '-h', '--filter'])
+      stdout.trim().should.match(/^Usage:\s+ncu --filter/)
+    })
+
     it('unknown option', async () => {
       const { stdout } = await spawn('node', [bin, '--help', '--foo'])
       stdout.trim().should.containIgnoreCase('Unknown option')
