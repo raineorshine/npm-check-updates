@@ -120,7 +120,8 @@ ${chalk.dim.underline(
         option.long && noCli.has(option.long)
           ? option.long.replace('--', '') + '*'
           : option.long === '--version'
-            ? '-v, -V, --version'
+            ? // add -v to version help to cover the alias added below
+              '-v, -V, --version'
             : option.flags.replace('[bool]', ''),
       optionDescription: option =>
         option.long === '--version'
