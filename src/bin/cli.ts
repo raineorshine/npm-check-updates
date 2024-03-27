@@ -68,7 +68,7 @@ ${chalk.dim.underline(
   // manually detect option-specific help
   // https://github.com/raineorshine/npm-check-updates/issues/787
   const rawArgs = process.argv.slice(2)
-  if ((rawArgs.includes('--help') || rawArgs.includes('-h')) && rawArgs.length > 1) {
+  if ((rawArgs[0] === '--help' || rawArgs[0] === '-h') && rawArgs.length === 2) {
     const color = rawArgs.includes('--color')
     await chalkInit(color)
     const nonHelpArgs = rawArgs.filter(arg => arg !== '--help' && arg !== '-h')
