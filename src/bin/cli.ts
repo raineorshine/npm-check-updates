@@ -69,8 +69,7 @@ ${chalk.dim.underline(
   // https://github.com/raineorshine/npm-check-updates/issues/787
   const rawArgs = process.argv.slice(2)
   if ((rawArgs[0] === '--help' || rawArgs[0] === '-h') && rawArgs.length === 2) {
-    const color = rawArgs.includes('--color')
-    await chalkInit(color)
+    await chalkInit()
     const nonHelpArgs = rawArgs.filter(arg => arg !== '--help' && arg !== '-h')
     nonHelpArgs.forEach(arg => {
       // match option by long or short
