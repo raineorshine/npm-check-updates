@@ -10,6 +10,8 @@ import { chalkInit } from '../lib/chalk'
 // async global contexts are only available in esm modules -> function
 import getNcuRc from '../lib/getNcuRc'
 
+const optionVersionDescription = 'Output the version number of npm-check-updates.'
+
 /** Removes inline code ticks. */
 const uncode = (s: string) => s.replace(/`/g, '')
 
@@ -87,6 +89,16 @@ ${chalk.dim.underline(
         )
         if (option) {
           console.info(renderExtendedHelp(option) + '\n')
+        } else if (query === 'version' || query === 'v' || query === 'V') {
+          console.info(
+            renderExtendedHelp({
+              long: 'version',
+              short: 'v',
+              description: optionVersionDescription,
+              // do not pass boolean or it will print --no-version
+              type: 'string',
+            }) + '\n',
+          )
         } else {
           console.info(`Unknown option: ${arg}`)
         }
@@ -112,7 +124,7 @@ ${chalk.dim.underline(
             : option.flags.replace('[bool]', ''),
       optionDescription: option =>
         option.long === '--version'
-          ? 'Output the version number of npm-check-updates.'
+          ? optionVersionDescription
           : option.long === '--help'
             ? `You're lookin' at it.`
             : Help.prototype.optionDescription(option),

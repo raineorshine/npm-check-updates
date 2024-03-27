@@ -325,6 +325,22 @@ describe('bin', async function () {
       stdout.trim().should.containIgnoreCase('ncu --minimal')
     })
 
+    // version is a special case since it is not included in cli-options.ts
+    it('--version', async () => {
+      const { stdout } = await spawn('node', [bin, '-h', '--version'])
+      stdout.trim().should.match(/^Usage:\s+ncu --version/)
+    })
+
+    it('-V', async () => {
+      const { stdout } = await spawn('node', [bin, '-h', '--version'])
+      stdout.trim().should.match(/^Usage:\s+ncu --version/)
+    })
+
+    it('-v', async () => {
+      const { stdout } = await spawn('node', [bin, '-h', '--version'])
+      stdout.trim().should.match(/^Usage:\s+ncu --version/)
+    })
+
     describe('special --help help', () => {
       it('--help --help', async () => {
         const { stdout } = await spawn('node', [bin, '--help', '--help'])
