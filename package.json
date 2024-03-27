@@ -79,7 +79,6 @@
     "@types/update-notifier": "^6.0.8",
     "@typescript-eslint/eslint-plugin": "^7.3.1",
     "@typescript-eslint/parser": "^7.3.1",
-    "c8": "^9.1.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "chai-string": "^1.5.0",
@@ -168,12 +167,5 @@
     "trace-deprecation": true,
     "trace-warnings": true,
     "use_strict": true
-  },
-  "c8": {
-    "reporter": [
-      "html",
-      "lcov",
-      "text-summary"
-    ]
   }
 }
