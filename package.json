@@ -50,6 +50,7 @@
     "url": "https://github.com/raineorshine/npm-check-updates/issues"
   },
   "overrides": {
+    "jsonparse": "https://github.com/ARitz-Cracker/jsonparse/tree/patch-1",
     "@yarnpkg/parsers": "2.6.0"
   },
   "devDependencies": {
@@ -145,10 +146,12 @@
   ],
   "lockfile-lint": {
     "allowed-schemes": [
-      "https:"
+      "https:",
+      "git+ssh:"
     ],
     "allowed-hosts": [
-      "npm"
+      "npm",
+      "github.com"
     ],
     "empty-hostname": false,
     "type": "npm ",
