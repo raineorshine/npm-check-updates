@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { Help, Option, program } from 'commander'
-import fs from 'fs/promises'
 import { cloneDeep, pickBy } from 'lodash-es'
-import path from 'path'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import semver from 'semver'
 import cliOptions, { renderExtendedHelp } from '../cli-options.js'
 import ncu from '../index.js'
@@ -11,6 +11,8 @@ import { chalkInit } from '../lib/chalk.js'
 import getNcuRc from '../lib/getNcuRc.js'
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname)
+
+const optionVersionDescription = 'Output the version number of npm-check-updates.'
 
 /** Removes inline code ticks. */
 const uncode = (s: string) => s.replace(/`/g, '')
@@ -72,27 +74,39 @@ ${chalk.dim.underline(
   // manually detect option-specific help
   // https://github.com/raineorshine/npm-check-updates/issues/787
   const rawArgs = process.argv.slice(2)
-  if (rawArgs.includes('--help') && rawArgs.length > 1) {
-    const color = rawArgs.includes('--color')
-    await chalkInit(color)
-    const nonHelpArgs = rawArgs.filter(arg => arg !== '--help')
-    nonHelpArgs.forEach(arg => {
-      // match option by long or short
-      const query = arg.replace(/^-*/, '')
-      const option = cliOptions.find(
-        option =>
-          query === option.long ||
-          query === option.short ||
-          (query === `no-${option.long}` && option.type === 'boolean'),
-      )
-      if (option) {
-        console.info(renderExtendedHelp(option) + '\n')
-      } else {
-        console.info(`Unknown option: ${arg}`)
-      }
-    })
-    if (rawArgs.length - nonHelpArgs.length > 1) {
+  const indexHelp = rawArgs.findIndex(arg => arg === '--help' || arg === '-h')
+  if (indexHelp !== -1 && rawArgs[indexHelp + 1]) {
+    const helpOption = rawArgs[indexHelp + 1].replace(/^-*/, '')
+    if (helpOption === 'help' || helpOption === 'h') {
       console.info('Would you like some help with your help?')
+    } else {
+      await chalkInit()
+      const nonHelpArgs = [...rawArgs.slice(0, indexHelp), ...rawArgs.slice(indexHelp + 1)]
+      nonHelpArgs.forEach(arg => {
+        // match option by long or short
+        const query = arg.replace(/^-*/, '')
+        const option = cliOptions.find(
+          option =>
+            query === option.long ||
+            query === option.short ||
+            (query === `no-${option.long}` && option.type === 'boolean'),
+        )
+        if (option) {
+          console.info(renderExtendedHelp(option) + '\n')
+        } else if (query === 'version' || query === 'v' || query === 'V') {
+          console.info(
+            renderExtendedHelp({
+              long: 'version',
+              short: 'v',
+              description: optionVersionDescription,
+              // do not pass boolean or it will print --no-version
+              type: 'string',
+            }) + '\n',
+          )
+        } else {
+          console.info(`Unknown option: ${arg}`)
+        }
+      })
     }
     process.exit(0)
   }
@@ -110,13 +124,14 @@ ${chalk.dim.underline(
         option.long && noCli.has(option.long)
           ? option.long.replace('--', '') + '*'
           : option.long === '--version'
-            ? '-v, -V, --version'
+            ? // add -v to version help to cover the alias added below
+              '-v, -V, --version'
             : option.flags.replace('[bool]', ''),
       optionDescription: option =>
         option.long === '--version'
-          ? 'Output the version number of npm-check-updates.'
+          ? optionVersionDescription
           : option.long === '--help'
-            ? `You're lookin' at it.`
+            ? `You're lookin' at it. Run "ncu --help <option>" for a specific option.`
             : Help.prototype.optionDescription(option),
     })
     // add hidden -v alias for --V/--version

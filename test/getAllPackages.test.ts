@@ -1,5 +1,5 @@
-import path from 'path'
-import { fileURLToPath } from 'url'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import getAllPackages from '../src/lib/getAllPackages.js'
 import { Options } from '../src/types/Options.js'
 import { PackageInfo } from '../src/types/PackageInfo.js'

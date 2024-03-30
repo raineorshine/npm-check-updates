@@ -1,7 +1,7 @@
 import glob, { type Options as GlobOptions } from 'fast-glob'
-import fs from 'fs/promises'
 import yaml from 'js-yaml'
-import path from 'path'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import untildify from 'untildify'
 import { Options } from '../types/Options.js'
 import { PackageFile } from '../types/PackageFile.js'
@@ -59,7 +59,6 @@ async function getWorkspacePackageInfos(
 
   // build a glob from the workspaces
   // FIXME: the following workspaces check is redundant
-  /* c8 ignore next */
   const workspacePackageGlob: string[] = (workspaces || []).map(workspace =>
     path
       .join(cwd, workspace, 'package.json')
@@ -98,11 +97,7 @@ async function getWorkspacePackageInfos(
   // add workspace packages
   // --workspace
   const selectedWorkspacePackageInfos: PackageInfo[] = allWorkspacePackageInfos.filter((packageInfo: PackageInfo) =>
-    /* ignore coverage on optional-chaining */
-    /* c8 ignore next */
     options.workspace?.some((workspace: string) =>
-      /* ignore coverage on optional-chaining */
-      /* c8 ignore next */
       workspaces?.some(
         (workspacePattern: string) =>
           packageInfo.name === workspace ||

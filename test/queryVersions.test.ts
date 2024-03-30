@@ -1,19 +1,19 @@
 import queryVersions from '../src/lib/queryVersions.js'
 import chaiSetup from './helpers/chaiSetup.js'
-import stubNpmView from './helpers/stubNpmView.js'
+import stubVersions from './helpers/stubVersions.js'
 
 chaiSetup()
 
 describe('queryVersions', function () {
   it('valid single package', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
     const latestVersions = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })
     latestVersions.should.have.property('async')
     stub.restore()
   })
 
   it('valid packages', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
     const latestVersions = await queryVersions({ async: '1.5.1', npm: '3.10.3' }, { loglevel: 'silent' })
     latestVersions.should.have.property('async')
     latestVersions.should.have.property('npm')
@@ -34,14 +34,14 @@ describe('queryVersions', function () {
   })
 
   it('set the target explicitly to latest', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
     const result = await queryVersions({ async: '1.5.1' }, { target: 'latest', loglevel: 'silent' })
     result.should.have.property('async')
     stub.restore()
   })
 
   it('set the target to greatest', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
     const result = await queryVersions({ async: '1.5.1' }, { target: 'greatest', loglevel: 'silent' })
     result.should.have.property('async')
     stub.restore()

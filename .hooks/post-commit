@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 SHORT_SHA=$(git rev-parse HEAD)
 LINT_LOG="$TMPDIR"/lint."$SHORT_SHA".log
 
@@ -12,7 +12,7 @@ notify() {
   # if osascript is not supported, do nothing
   if [ -f /usr/bin/osascript ]; then
     # read back in the lint errors
-    ERRORS=$(cat "$LINT_LOG" | sed 1,4d)
+    ERRORS=$(sed 1,4d "$LINT_LOG")
 
     # Trigger apple- or OSA-script on supported platforms
     /usr/bin/osascript -e "display notification \"$ERRORS\" with title \"$*\""

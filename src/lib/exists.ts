@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
 
 /** Returns true if a file exists. */
 const exists = (path: string) =>

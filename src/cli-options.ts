@@ -1,5 +1,5 @@
 import { sortBy } from 'lodash-es'
-import path from 'path'
+import path from 'node:path'
 import { defaultCacheFile } from './lib/cache.js'
 import chalk from './lib/chalk.js'
 import table from './lib/table.js'
@@ -585,13 +585,15 @@ const cliOptions: CLIOption[] = [
     arg: 'value',
     description:
       'Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited).',
-    default: ['prod', 'dev', 'optional'],
+    default: ['prod', 'dev', 'optional', 'packageManager'],
     parse: value => (value && typeof value === 'string' ? value.split(',') : value),
     type: 'string | string[]',
   },
   {
     long: 'deprecated',
-    description: 'Include deprecated packages.',
+    default: true,
+    description:
+      'Include deprecated packages. Use `--no-deprecated` to exclude deprecated packages (uses more bandwidth).',
     type: 'boolean',
   },
   {

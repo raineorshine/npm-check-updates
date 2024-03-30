@@ -6,10 +6,10 @@ https://github.com/npm/libnpmconfig
 
 */
 import findUp from 'find-up'
-import fs from 'fs'
 import ini from 'ini'
-import os from 'os'
-import path from 'path'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import figgyPudding from '../figgy-pudding/index.js'
 
 const NpmConfig = figgyPudding(

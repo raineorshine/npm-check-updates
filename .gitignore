@@ -20,8 +20,6 @@ build
 yarn.lock
 .DS_store
 
-/coverage/
-
 # test files
 /test/temp_package*.json
 /test/.ncurc.json

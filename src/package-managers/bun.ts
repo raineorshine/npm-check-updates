@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 import spawn from 'spawn-please'
 import keyValueBy from '../lib/keyValueBy.js'
 import programError from '../lib/programError.js'

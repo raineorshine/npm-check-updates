@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
 import { Index } from '../types/IndexType.js'
 import { Options } from '../types/Options.js'
 import { PackageManagerName } from '../types/PackageManagerName.js'

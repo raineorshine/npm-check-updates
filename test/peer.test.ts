@@ -1,5 +1,5 @@
-import path from 'path'
-import { fileURLToPath } from 'url'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import ncu from '../src/index.js'
 import chaiSetup from './helpers/chaiSetup.js'
 

@@ -4,7 +4,7 @@ import { Index } from '../src/types/IndexType.js'
 import { TargetFunction } from '../src/types/TargetFunction.js'
 import { Version } from '../src/types/Version.js'
 import chaiSetup from './helpers/chaiSetup.js'
-import stubNpmView from './helpers/stubNpmView.js'
+import stubVersions from './helpers/stubVersions.js'
 
 chaiSetup()
 
@@ -542,7 +542,7 @@ describe('tags', () => {
   })
 
   it('do not downgrade nonprerelease version to lower version with specific tag', async () => {
-    const stub = stubNpmView('1.0.0-1')
+    const stub = stubVersions('1.0.0-1')
 
     const upgraded = await ncu({
       target: '@next',
@@ -559,7 +559,7 @@ describe('tags', () => {
   })
 
   it('do not downgrade to latest with lower version by default', async () => {
-    const stub = stubNpmView('1.1.0')
+    const stub = stubVersions('1.1.0')
 
     const upgraded = await ncu({
       packageData: {
@@ -575,7 +575,7 @@ describe('tags', () => {
   })
 
   it('do not downgrade to latest with lower version with --target latest', async () => {
-    const stub = stubNpmView('1.1.0')
+    const stub = stubVersions('1.1.0')
 
     const upgraded = await ncu({
       target: 'latest',
@@ -592,7 +592,7 @@ describe('tags', () => {
   })
 
   it('downgrade to latest with lower version with explicit --target @latest', async () => {
-    const stub = stubNpmView('1.1.0')
+    const stub = stubVersions('1.1.0')
 
     const upgraded = (await ncu({
       target: '@latest',
@@ -609,7 +609,7 @@ describe('tags', () => {
   })
 
   it('downgrade to latest with lower version with target function returning @latest', async () => {
-    const stub = stubNpmView('1.1.0')
+    const stub = stubVersions('1.1.0')
 
     const upgraded = (await ncu({
       target: () => '@latest',

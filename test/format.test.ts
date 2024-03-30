@@ -1,21 +1,21 @@
 import { expect } from 'chai'
-import fs from 'fs/promises'
-import os from 'os'
-import path from 'path'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import { fileURLToPath } from 'url'
 import chaiSetup from './helpers/chaiSetup.js'
-import stubNpmView from './helpers/stubNpmView.js'
+import stubVersions from './helpers/stubVersions.js'
 
 chaiSetup()
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const bin = path.join(__dirname, '../build/src/bin/cli.js')
+const bin = path.join(__dirname, '../build/src/cli.js')
 
 describe('format', () => {
   it('--format time', async () => {
     const timestamp = '2020-04-27T21:48:11.660Z'
-    const stub = stubNpmView({
+    const stub = stubVersions({
       version: '99.9.9',
       time: {
         '99.9.9': timestamp,
@@ -26,9 +26,14 @@ describe('format', () => {
         'ncu-test-v2': '^1.0.0',
       },
     }
-    const { stdout } = await spawn('node', [bin, '--format', 'time', '--stdin'], { stdin: JSON.stringify(packageData) })
-    expect(stdout).contains(timestamp)
-    stub.restore()
+    try {
+      const { stdout } = await spawn('node', [bin, '--format', 'time', '--stdin'], {
+        stdin: JSON.stringify(packageData),
+      })
+      expect(stdout).contains(timestamp)
+    } finally {
+      stub.restore()
+    }
   })
 
   it('--format repo', async () => {
@@ -53,7 +58,7 @@ describe('format', () => {
   })
 
   it('--format lines', async () => {
-    const stub = stubNpmView({
+    const stub = stubVersions({
       'ncu-test-v2': '2.0.0',
       'ncu-test-tag': '1.1.0',
     })
@@ -79,7 +84,7 @@ describe('format', () => {
   })
 
   it('disallow --format lines with --jsonUpgraded', async () => {
-    const stub = stubNpmView({
+    const stub = stubVersions({
       'ncu-test-v2': '2.0.0',
       'ncu-test-tag': '1.1.0',
     })
@@ -111,7 +116,7 @@ describe('format', () => {
   })
 
   it('disallow --format lines with --jsonAll', async () => {
-    const stub = stubNpmView({
+    const stub = stubVersions({
       'ncu-test-v2': '2.0.0',
       'ncu-test-tag': '1.1.0',
     })
@@ -143,7 +148,7 @@ describe('format', () => {
   })
 
   it('disallow --format lines with other format options', async () => {
-    const stub = stubNpmView({
+    const stub = stubVersions({
       'ncu-test-v2': '2.0.0',
       'ncu-test-tag': '1.1.0',
     })

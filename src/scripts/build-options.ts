@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
 import spawn from 'spawn-please'
 import cliOptions, { renderExtendedHelp } from '../cli-options.js'
 import { chalkInit } from '../lib/chalk.js'

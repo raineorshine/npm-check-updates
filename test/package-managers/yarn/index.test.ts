@@ -1,5 +1,5 @@
-import path from 'path'
-import { fileURLToPath } from 'url'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import * as yarn from '../../../src/package-managers/yarn.js'
 import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn.js'
 import chaiSetup from '../../helpers/chaiSetup.js'

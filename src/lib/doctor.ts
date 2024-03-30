@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
 import spawn from 'spawn-please'
 import { printUpgrades } from '../lib/logging.js'
 import spawnBun from '../package-managers/bun.js'

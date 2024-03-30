@@ -1,5 +1,5 @@
 import { isString } from 'lodash-es'
-import path from 'path'
+import path from 'node:path'
 import prompts from 'prompts-ncu'
 import spawn from 'spawn-please'
 import { cliOptionsMap } from './cli-options.js'

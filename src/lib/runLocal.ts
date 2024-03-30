@@ -1,6 +1,6 @@
-import fs from 'fs/promises'
 import jph from 'json-parse-helpfulerror'
 import { get, isEmpty, pick } from 'lodash-es'
+import fs from 'node:fs/promises'
 import prompts from 'prompts-ncu'
 import { minVersion, satisfies } from 'semver'
 import { Index } from '../types/IndexType.js'

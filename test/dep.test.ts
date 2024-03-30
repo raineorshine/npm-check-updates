@@ -1,9 +1,9 @@
-import fs from 'fs/promises'
-import os from 'os'
-import path from 'path'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 import ncu from '../src/index.js'
 import chaiSetup from './helpers/chaiSetup.js'
-import stubNpmView from './helpers/stubNpmView.js'
+import stubVersions from './helpers/stubVersions.js'
 
 chaiSetup()
 
@@ -21,7 +21,7 @@ const packageData = JSON.stringify({
 
 describe('--dep', () => {
   it('do not upgrade peerDependencies by default', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
 
     const upgraded = await ncu({ packageData })
 
@@ -33,7 +33,7 @@ describe('--dep', () => {
   })
 
   it('only upgrade devDependencies with --dep dev', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
 
     const upgraded = await ncu({ packageData, dep: 'dev' })
 
@@ -45,7 +45,7 @@ describe('--dep', () => {
   })
 
   it('only upgrade devDependencies and peerDependencies with --dep dev,peer', async () => {
-    const stub = stubNpmView('99.9.9')
+    const stub = stubVersions('99.9.9')
     const upgraded = await ncu({ packageData, dep: 'dev,peer' })
 
     upgraded!.should.not.have.property('ncu-test-v2')
@@ -57,7 +57,7 @@ describe('--dep', () => {
 
   describe('section isolation', () => {
     it('do not overwrite the same package in peerDependencies when upgrading devDependencies', async () => {
-      const stub = stubNpmView('99.9.9')
+      const stub = stubVersions('99.9.9')
       const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-v2': '0.1.0',
@@ -104,7 +104,7 @@ describe('--dep', () => {
     })
 
     it('do not overwrite the same package in devDependencies when upgrading peerDependencies', async () => {
-      const stub = stubNpmView('99.9.9')
+      const stub = stubVersions('99.9.9')
       const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-v2': '0.1.0',
@@ -151,7 +151,7 @@ describe('--dep', () => {
     })
 
     it('do not overwrite the same package in devDependencies when upgrading dependencies and peerDependencies', async () => {
-      const stub = stubNpmView('99.9.9')
+      const stub = stubVersions('99.9.9')
       const packageData = JSON.stringify({
         dependencies: {
           'ncu-test-tag': '0.1.0',
@@ -199,8 +199,8 @@ describe('--dep', () => {
   })
 
   describe('packageManager field', () => {
-    it('support packageManager field', async () => {
-      const stub = stubNpmView({
+    it('upgrade packageManager field by default', async () => {
+      const stub = stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
       })
@@ -224,13 +224,54 @@ describe('--dep', () => {
           packageFile: pkgFile,
           jsonUpgraded: false,
           upgrade: true,
-          dep: 'prod,packageManager',
         })
         const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
         const pkgNew = JSON.parse(pkgDataNew)
 
         pkgNew.should.deep.equal({
           packageManager: 'npm@9.0.0',
+          dependencies: {
+            'ncu-test-tag': '1.0.0',
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
+
+    it('do not upgrade packageManager field if missing from --dep', async () => {
+      const stub = stubVersions({
+        'ncu-test-tag': '1.0.0',
+        npm: '9.0.0',
+      })
+      const packageData = JSON.stringify(
+        {
+          packageManager: 'npm@6.0.0',
+          dependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+        },
+        null,
+        2,
+      )
+
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, packageData)
+
+      try {
+        await ncu({
+          packageFile: pkgFile,
+          jsonUpgraded: false,
+          upgrade: true,
+          dep: ['prod'],
+        })
+        const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+        const pkgNew = JSON.parse(pkgDataNew)
+
+        pkgNew.should.deep.equal({
+          packageManager: 'npm@6.0.0',
           dependencies: {
             'ncu-test-tag': '1.0.0',
           },
@@ -242,7 +283,7 @@ describe('--dep', () => {
     })
 
     it('do nothing if no packageManager field is present', async () => {
-      const stub = stubNpmView({
+      const stub = stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
       })
@@ -265,7 +306,6 @@ describe('--dep', () => {
           packageFile: pkgFile,
           jsonUpgraded: false,
           upgrade: true,
-          dep: 'prod,packageManager',
         })
         const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
         const pkgNew = JSON.parse(pkgDataNew)
@@ -281,8 +321,50 @@ describe('--dep', () => {
       }
     })
 
+    it('upgrade packageManager field if specified in --dep', async () => {
+      const stub = stubVersions({
+        'ncu-test-tag': '1.0.0',
+        npm: '9.0.0',
+      })
+      const packageData = JSON.stringify(
+        {
+          packageManager: 'npm@6.0.0',
+          dependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+        },
+        null,
+        2,
+      )
+
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, packageData)
+
+      try {
+        await ncu({
+          packageFile: pkgFile,
+          jsonUpgraded: false,
+          upgrade: true,
+          dep: ['prod', 'packageManager'],
+        })
+        const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+        const pkgNew = JSON.parse(pkgDataNew)
+
+        pkgNew.should.deep.equal({
+          packageManager: 'npm@9.0.0',
+          dependencies: {
+            'ncu-test-tag': '1.0.0',
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
+
     it('do nothing if packageManager is up-to-date', async () => {
-      const stub = stubNpmView({
+      const stub = stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
       })
@@ -306,7 +388,6 @@ describe('--dep', () => {
           packageFile: pkgFile,
           jsonUpgraded: false,
           upgrade: true,
-          dep: 'prod,packageManager',
         })
         const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
         const pkgNew = JSON.parse(pkgDataNew)

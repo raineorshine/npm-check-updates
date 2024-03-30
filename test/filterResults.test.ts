@@ -1,17 +1,17 @@
 import { expect } from 'chai'
-import fs from 'fs/promises'
-import os from 'os'
-import path from 'path'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 import ncu from '../src/index.js'
 import chaiSetup from './helpers/chaiSetup.js'
-import stubNpmView from './helpers/stubNpmView.js'
+import stubVersions from './helpers/stubVersions.js'
 
 chaiSetup()
 
 describe('filterResults', () => {
   it('should return only major versions updated', async () => {
     const dependencies = { 'ncu-test-v2': '2.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' }
-    const stub = stubNpmView({
+    const stub = stubVersions({
       'ncu-test-v2': '3.0.0',
       'ncu-test-tag': '2.1.0',
       'ncu-test-return-version': '1.2.0',

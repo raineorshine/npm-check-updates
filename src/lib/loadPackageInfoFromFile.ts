@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
 import { Options } from '../types/Options.js'
 import { PackageFile } from '../types/PackageFile.js'
 import { PackageInfo } from '../types/PackageInfo.js'

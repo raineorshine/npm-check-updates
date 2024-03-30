@@ -1,15 +1,15 @@
-import fs from 'fs/promises'
 import jph from 'json-parse-helpfulerror'
-import os from 'os'
-import path from 'path'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import { fileURLToPath } from 'url'
 import chaiSetup from '../../helpers/chaiSetup.js'
 
 chaiSetup()
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const bin = path.join(__dirname, '../../../build/src/bin/cli.js')
+const bin = path.join(__dirname, '../../../build/cli.js')
 
 describe('deno', async function () {
   it('handle import map', async () => {

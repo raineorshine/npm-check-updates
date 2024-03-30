@@ -12,9 +12,8 @@ import { Version } from '../types/Version.js'
  * @param options     Options
  * @returns         True if deprecated versions are allowed or the version is not deprecated
  */
-export function allowDeprecatedOrIsNotDeprecated(versionResult: Packument, options: Options): boolean {
-  if (options.deprecated) return true
-  return !versionResult.deprecated
+export function allowDeprecatedOrIsNotDeprecated(versionResult: Partial<Packument>, options: Options): boolean {
+  return options.deprecated || !versionResult.deprecated
 }
 
 /**
@@ -22,19 +21,19 @@ export function allowDeprecatedOrIsNotDeprecated(versionResult: Packument, optio
  * @param options     Options
  * @returns         True if pre-releases are allowed or the version is not a pre-release
  */
-export function allowPreOrIsNotPre(versionResult: Packument, options: Options): boolean {
+export function allowPreOrIsNotPre(versionResult: Partial<Packument>, options: Options): boolean {
   if (options.pre) return true
-  return !versionUtil.isPre(versionResult.version)
+  return !versionResult.version || !versionUtil.isPre(versionResult.version)
 }
 
 /**
  * Returns true if the node engine requirement is satisfied or not specified for a given package version.
  *
- * @param versionResult     Version object returned by pacote.packument.
+ * @param versionResult     Version object returned by packument.
  * @param nodeEngineVersion The value of engines.node in the package file.
  * @returns                 True if the node engine requirement is satisfied or not specified.
  */
-export function satisfiesNodeEngine(versionResult: Packument, nodeEngineVersion: Maybe<string>): boolean {
+export function satisfiesNodeEngine(versionResult: Partial<Packument>, nodeEngineVersion: Maybe<string>): boolean {
   if (!nodeEngineVersion) return true
   const minVersion = get(semver.minVersion(nodeEngineVersion), 'version')
   if (!minVersion) return true
@@ -45,20 +44,20 @@ export function satisfiesNodeEngine(versionResult: Packument, nodeEngineVersion:
 /**
  * Returns true if the peer dependencies requirement is satisfied or not specified for a given package version.
  *
- * @param versionResult     Version object returned by pacote.packument.
+ * @param versionResult     Version object returned by packument.
  * @param peerDependencies  The list of peer dependencies.
  * @returns                 True if the peer dependencies are satisfied or not specified.
  */
-export function satisfiesPeerDependencies(versionResult: Packument, peerDependencies: Index<Index<Version>>) {
+export function satisfiesPeerDependencies(versionResult: Partial<Packument>, peerDependencies: Index<Index<Version>>) {
   if (!peerDependencies) return true
   return Object.values(peerDependencies).every(
     peers =>
-      peers[versionResult.name] === undefined || semver.satisfies(versionResult.version, peers[versionResult.name]),
+      peers[versionResult.name!] === undefined || semver.satisfies(versionResult.version!, peers[versionResult.name!]),
   )
 }
 
-/** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by pacote.packument. */
-export function filterPredicate(options: Options): (o: Packument) => boolean {
+/** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by packument. */
+export function filterPredicate(options: Options): (o: Partial<Packument>) => boolean {
   return overEvery([
     o => allowDeprecatedOrIsNotDeprecated(o, options),
     o => allowPreOrIsNotPre(o, options),

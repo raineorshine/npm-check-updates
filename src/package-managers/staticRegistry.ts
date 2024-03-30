@@ -1,6 +1,6 @@
 import memoize from 'fast-memoize'
-import fs from 'fs/promises'
 import fetch from 'make-fetch-happen'
+import fs from 'node:fs/promises'
 import programError from '../lib/programError.js'
 import { GetVersion } from '../types/GetVersion.js'
 import { Options } from '../types/Options.js'

@@ -1,6 +1,6 @@
 import { flatten, map, omit } from 'lodash-es'
-import os from 'os'
-import path from 'path'
+import os from 'node:os'
+import path from 'node:path'
 import { rcFile } from 'rc-config-loader'
 import { cliOptionsMap } from '../cli-options.js'
 import { Options } from '../types/Options.js'
