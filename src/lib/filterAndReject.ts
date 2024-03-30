@@ -1,11 +1,10 @@
 import { and, or } from 'fp-and-or'
-import identity from 'lodash/identity'
-import negate from 'lodash/negate'
+import { identity, negate } from 'lodash-es'
 import picomatch from 'picomatch'
 import { parseRange } from 'semver-utils'
-import { FilterPattern } from '../types/FilterPattern'
-import { Maybe } from '../types/Maybe'
-import { VersionSpec } from '../types/VersionSpec'
+import { FilterPattern } from '../types/FilterPattern.js'
+import { Maybe } from '../types/Maybe.js'
+import { VersionSpec } from '../types/VersionSpec.js'
 
 /**
  * Creates a filter function from a given filter string. Supports

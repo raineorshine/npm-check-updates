@@ -1,7 +1,7 @@
-import { NpmConfig } from './NpmConfig'
-import { Options } from './Options'
-import { Version } from './Version'
-import { VersionResult } from './VersionResult'
+import { NpmConfig } from './NpmConfig.js'
+import { Options } from './Options.js'
+import { Version } from './Version.js'
+import { VersionResult } from './VersionResult.js'
 
 /** A function that gets a target version of a dependency. */
 export type GetVersion = (

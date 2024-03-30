@@ -1,5 +1,5 @@
-import cliOptions from '../src/cli-options'
-import chaiSetup from './helpers/chaiSetup'
+import cliOptions from '../src/cli-options.js'
+import chaiSetup from './helpers/chaiSetup.js'
 
 chaiSetup()
 

@@ -98,7 +98,7 @@ const proxyHandler = {
   },
 }
 
-export default function figgyPudding(specs, opts) {
+function figgyPudding(specs, opts) {
   function factory(...providers) {
     return new Proxy(new FiggyPudding(specs, opts, providers), proxyHandler)
   }
@@ -114,3 +114,5 @@ function reverse(arr) {
 function entries(obj) {
   return Object.keys(obj).map(k => [k, obj[k]])
 }
+
+export default figgyPudding

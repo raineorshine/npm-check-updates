@@ -1,16 +1,18 @@
-import fs from 'fs/promises'
-import os from 'os'
-import path from 'path'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import { cliOptionsMap } from '../src/cli-options'
-import { chalkInit } from '../src/lib/chalk'
-import { PackageManagerName } from '../src/types/PackageManagerName'
-import chaiSetup from './helpers/chaiSetup'
-import stubVersions from './helpers/stubVersions'
+import { cliOptionsMap } from '../src/cli-options.js'
+import { chalkInit } from '../src/lib/chalk.js'
+import { PackageManagerName } from '../src/types/PackageManagerName.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubVersions from './helpers/stubVersions.js'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/cli.js')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const bin = path.join(__dirname, '../build/src/cli.js')
 const doctorTests = path.join(__dirname, 'test-data/doctor')
 
 const mockNpmVersions = {
@@ -179,7 +181,7 @@ describe('doctor', function () {
   this.timeout(3 * 60 * 1000)
 
   let stub: { restore: () => void }
-  before(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
+  before(() => (stub = stubVersions(mockNpmVersions)))
   after(() => stub.restore())
 
   describe('npm', () => {

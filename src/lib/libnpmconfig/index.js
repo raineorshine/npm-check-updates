@@ -10,7 +10,7 @@ import ini from 'ini'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import figgyPudding from '../figgy-pudding'
+import figgyPudding from '../figgy-pudding/index.js'
 
 const NpmConfig = figgyPudding(
   {},

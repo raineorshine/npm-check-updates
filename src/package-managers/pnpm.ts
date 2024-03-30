@@ -1,20 +1,20 @@
 import memoize from 'fast-memoize'
 import findUp from 'find-up'
-import fs from 'fs/promises'
 import ini from 'ini'
-import path from 'path'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import spawn from 'spawn-please'
-import keyValueBy from '../lib/keyValueBy'
-import { print } from '../lib/logging'
-import { GetVersion } from '../types/GetVersion'
-import { Index } from '../types/IndexType'
-import { NpmConfig } from '../types/NpmConfig'
-import { NpmOptions } from '../types/NpmOptions'
-import { Options } from '../types/Options'
-import { SpawnOptions } from '../types/SpawnOptions'
-import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
-import { Version } from '../types/Version'
-import * as npm from './npm'
+import keyValueBy from '../lib/keyValueBy.js'
+import { print } from '../lib/logging.js'
+import { GetVersion } from '../types/GetVersion.js'
+import { Index } from '../types/IndexType.js'
+import { NpmConfig } from '../types/NpmConfig.js'
+import { NpmOptions } from '../types/NpmOptions.js'
+import { Options } from '../types/Options.js'
+import { SpawnOptions } from '../types/SpawnOptions.js'
+import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions.js'
+import { Version } from '../types/Version.js'
+import * as npm from './npm.js'
 
 // return type of pnpm ls --json
 type PnpmList = {
@@ -107,4 +107,4 @@ export default async function spawnPnpm(
   return stdout
 }
 
-export { defaultPrefix, getPeerDependencies, packageAuthorChanged } from './npm'
+export { defaultPrefix, getPeerDependencies, packageAuthorChanged } from './npm.js'

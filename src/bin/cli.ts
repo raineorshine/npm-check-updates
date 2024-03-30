@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 import { Help, Option, program } from 'commander'
-import cloneDeep from 'lodash/cloneDeep'
-import pickBy from 'lodash/pickBy'
+import { cloneDeep, pickBy } from 'lodash-es'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import semver from 'semver'
-import pkg from '../../package.json'
-import cliOptions, { renderExtendedHelp } from '../cli-options'
-import ncu from '../index'
-import { chalkInit } from '../lib/chalk'
+import cliOptions, { renderExtendedHelp } from '../cli-options.js'
+import ncu from '../index.js'
+import { chalkInit } from '../lib/chalk.js'
 // async global contexts are only available in esm modules -> function
-import getNcuRc from '../lib/getNcuRc'
+import getNcuRc from '../lib/getNcuRc.js'
+
+const __dirname = path.dirname(new URL(import.meta.url).pathname)
 
 const optionVersionDescription = 'Output the version number of npm-check-updates.'
 
@@ -18,6 +20,8 @@ const uncode = (s: string) => s.replace(/`/g, '')
 ;(async () => {
   // importing update-notifier dynamically as esm modules are only allowed to be dynamically imported inside of cjs modules
   const { default: updateNotifier } = await import('update-notifier')
+
+  const pkg = JSON.parse(await fs.readFile(path.join(__dirname, '../../../package.json'), 'utf-8'))
 
   // check if a new version of ncu is available and print an update notification
   //

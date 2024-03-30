@@ -1,16 +1,18 @@
 import { expect } from 'chai'
-import fs from 'fs/promises'
-import os from 'os'
-import path from 'path'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import ncu from '../src/'
-import mergeOptions from '../src/lib/mergeOptions'
-import chaiSetup from './helpers/chaiSetup'
-import stubVersions from './helpers/stubVersions'
+import ncu from '../src/index.js'
+import mergeOptions from '../src/lib/mergeOptions.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubVersions from './helpers/stubVersions.js'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/cli.js')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const bin = path.join(__dirname, '../build/src/cli.js')
 
 /** Creates a temp directory with nested package files for --deep testing. Returns the temp directory name (should be removed by caller).
  *
@@ -47,7 +49,7 @@ describe('--deep', function () {
   this.timeout(60000)
 
   let stub: { restore: () => void }
-  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
+  before(() => (stub = stubVersions('99.9.9')))
   after(() => stub.restore())
 
   it('do not allow --packageFile and --deep together', async () => {
@@ -127,7 +129,7 @@ describe('--deep with nested ncurc files', function () {
   this.timeout(60000)
 
   let stub: { restore: () => void }
-  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
+  before(() => (stub = stubVersions('99.9.9')))
   after(() => stub.restore())
 
   it('use ncurc of nested packages', async () => {

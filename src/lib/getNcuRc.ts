@@ -1,12 +1,10 @@
-import flatten from 'lodash/flatten'
-import map from 'lodash/map'
-import omit from 'lodash/omit'
-import os from 'os'
-import path from 'path'
+import { flatten, map, omit } from 'lodash-es'
+import os from 'node:os'
+import path from 'node:path'
 import { rcFile } from 'rc-config-loader'
-import { cliOptionsMap } from '../cli-options'
-import { Options } from '../types/Options'
-import programError from './programError'
+import { cliOptionsMap } from '../cli-options.js'
+import { Options } from '../types/Options.js'
+import programError from './programError.js'
 
 /** Loads the .ncurc config file. */
 async function getNcuRc({

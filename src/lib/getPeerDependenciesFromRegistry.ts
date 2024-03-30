@@ -1,8 +1,8 @@
 import ProgressBar from 'progress'
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
-import { Version } from '../types/Version'
-import getPackageManager from './getPackageManager'
+import { Index } from '../types/IndexType.js'
+import { Options } from '../types/Options.js'
+import { Version } from '../types/Version.js'
+import getPackageManager from './getPackageManager.js'
 
 type CircularData =
   | {

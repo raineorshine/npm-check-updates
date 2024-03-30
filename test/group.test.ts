@@ -1,14 +1,16 @@
-import fs from 'fs/promises'
-import os from 'os'
-import path from 'path'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import { GroupFunction } from '../src/types/GroupFunction'
-import chaiSetup from './helpers/chaiSetup'
-import stubVersions from './helpers/stubVersions'
+import { GroupFunction } from '../src/types/GroupFunction.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubVersions from './helpers/stubVersions.js'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/cli.js')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const bin = path.join(__dirname, '../build/src/cli.js')
 
 /**
  * Sets up and tears down the temporary directories required to run each test
@@ -18,14 +20,11 @@ async function groupTestScaffold(
   groupFn: GroupFunction,
   expectedOutput: string,
 ): Promise<void> {
-  const stub = stubVersions(
-    {
-      'ncu-test-v2': '2.0.0',
-      'ncu-test-tag': '1.1.0',
-      'ncu-test-return-version': '2.0.0',
-    },
-    { spawn: true },
-  )
+  const stub = stubVersions({
+    'ncu-test-v2': '2.0.0',
+    'ncu-test-tag': '1.1.0',
+    'ncu-test-return-version': '2.0.0',
+  })
 
   // use dynamic import for ESM module
   const { default: stripAnsi } = await import('strip-ansi')

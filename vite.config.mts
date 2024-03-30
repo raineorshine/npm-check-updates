@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => ({
     ssr: true,
     lib: {
       entry: ['src/index.ts', 'src/bin/cli.ts'],
-      formats: ['cjs'],
+      formats: ['es'],
     },
     target: 'node18',
     outDir: 'build',

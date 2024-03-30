@@ -1,14 +1,16 @@
-import fs from 'fs/promises'
-import path from 'path'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import ncu from '../src'
-import { Index } from '../src/types/IndexType'
-import chaiSetup from './helpers/chaiSetup'
-import stubVersions from './helpers/stubVersions'
+import ncu from '../src/index.js'
+import { Index } from '../src/types/IndexType.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubVersions from './helpers/stubVersions.js'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/cli.js')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const bin = path.join(__dirname, '../build/src/cli.js')
 
 describe('filter', () => {
   describe('module', () => {
@@ -203,7 +205,7 @@ describe('filter', () => {
 
   describe('cli', () => {
     let stub: { restore: () => void }
-    before(() => (stub = stubVersions('99.9.9', { spawn: true })))
+    before(() => (stub = stubVersions('99.9.9')))
     after(() => stub.restore())
 
     it('filter by package name with --filter', async () => {
@@ -296,7 +298,7 @@ describe('filter', () => {
 describe('reject', () => {
   describe('cli', () => {
     let stub: { restore: () => void }
-    before(() => (stub = stubVersions('99.9.9', { spawn: true })))
+    before(() => (stub = stubVersions('99.9.9')))
     after(() => stub.restore())
 
     it('reject by package name with --reject', async () => {

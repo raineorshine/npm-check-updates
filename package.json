@@ -20,6 +20,13 @@
     "node": "^18.18.0 || >=20.0.0",
     "npm": ">=8.12.1"
   },
+  "exports": {
+    ".": {
+      "import": "./build/index.js",
+      "require": "./build/index.js"
+    }
+  },
+  "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
@@ -27,7 +34,7 @@
     "build:options": "vite-node src/scripts/build-options.ts",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
-    "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.js",
+    "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.cjs",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --ignore-path .gitignore --report-unused-disable-directives .",
     "prepare": "src/scripts/install-hooks && test/bun-setup.sh",
     "prepublishOnly": "npm run build",
@@ -64,7 +71,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/json-parse-helpfulerror": "^1.0.3",
     "@types/jsonlines": "^0.1.5",
-    "@types/lodash": "^4.17.0",
+    "@types/lodash-es": "^4.17.12",
     "@types/make-fetch-happen": "^10.0.4",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.30",
@@ -105,7 +112,7 @@
     "json-parse-helpfulerror": "^1.0.3",
     "jsonlines": "^0.1.1",
     "lockfile-lint": "^4.13.2",
-    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "make-fetch-happen": "^13.0.0",
     "markdownlint-cli": "^0.39.0",
     "mocha": "^10.4.0",
@@ -124,7 +131,6 @@
     "semver": "^7.6.0",
     "semver-utils": "^1.1.4",
     "should": "^13.2.3",
-    "sinon": "^17.0.1",
     "source-map-support": "^0.5.21",
     "spawn-please": "^3.0.0",
     "strip-ansi": "^7.1.0",
@@ -160,7 +166,11 @@
   "mocha": {
     "check-leaks": true,
     "extension": [
-      "test.ts"
+      "ts"
+    ],
+    "node-option": [
+      "experimental-specifier-resolution=node",
+      "loader=ts-node/esm"
     ],
     "require": [
       "source-map-support/register",

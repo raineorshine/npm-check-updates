@@ -1,5 +1,5 @@
-import getRepoUrl from '../src/lib/getRepoUrl'
-import chaiSetup from './helpers/chaiSetup'
+import getRepoUrl from '../src/lib/getRepoUrl.js'
+import chaiSetup from './helpers/chaiSetup.js'
 
 const should = chaiSetup()
 

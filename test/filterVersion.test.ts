@@ -1,12 +1,14 @@
-import path from 'path'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import ncu from '../src'
-import chaiSetup from './helpers/chaiSetup'
-import stubVersions from './helpers/stubVersions'
+import ncu from '../src/index.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubVersions from './helpers/stubVersions.js'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/cli.js')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const bin = path.join(__dirname, '../build/src/cli.js')
 
 describe('filterVersion', () => {
   describe('module', () => {
@@ -119,7 +121,7 @@ describe('filterVersion', () => {
 
   describe('cli', () => {
     it('allow multiple --filterVersion options', async () => {
-      const stub = stubVersions('99.9.9', { spawn: true })
+      const stub = stubVersions('99.9.9')
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -143,7 +145,7 @@ describe('filterVersion', () => {
 describe('rejectVersion', () => {
   describe('cli', () => {
     it('allow multiple --rejectVersion options', async () => {
-      const stub = stubVersions('99.9.9', { spawn: true })
+      const stub = stubVersions('99.9.9')
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',

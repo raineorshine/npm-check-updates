@@ -1,13 +1,15 @@
-import path from 'path'
-import * as yarn from '../../../src/package-managers/yarn'
-import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn'
-import chaiSetup from '../../helpers/chaiSetup'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import * as yarn from '../../../src/package-managers/yarn.js'
+import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn.js'
+import chaiSetup from '../../helpers/chaiSetup.js'
 
 const should = chaiSetup()
 
 const isWindows = process.platform === 'win32'
 
 // append the local node_modules bin directory to process.env.PATH so local yarn is used during tests
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const localBin = path.resolve(__dirname.replace('build/', ''), '../../../node_modules/.bin')
 const localYarnSpawnOptions = {
   env: {

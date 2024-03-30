@@ -1,14 +1,16 @@
-import fs from 'fs/promises'
-import os from 'os'
-import path from 'path'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import ncu from '../src/'
-import chaiSetup from './helpers/chaiSetup'
-import stubVersions from './helpers/stubVersions'
+import ncu from '../src/index.js'
+import chaiSetup from './helpers/chaiSetup.js'
+import stubVersions from './helpers/stubVersions.js'
 
 chaiSetup()
 
-const bin = path.join(__dirname, '../build/cli.js')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const bin = path.join(__dirname, '../build/src/cli.js')
 
 /** Creates a temp directory with nested package files for --workspaces testing. Returns the temp directory name (should be removed by caller).
  *
@@ -113,14 +115,11 @@ let stub: { restore: () => void }
 describe('workspaces', () => {
   describe('stubbed', () => {
     before(() => {
-      stub = stubVersions(
-        {
-          'ncu-test-v2': '2.0.0',
-          'ncu-test-tag': '1.1.0',
-          'ncu-test-return-version': '2.0.0',
-        },
-        { spawn: true },
-      )
+      stub = stubVersions({
+        'ncu-test-v2': '2.0.0',
+        'ncu-test-tag': '1.1.0',
+        'ncu-test-return-version': '2.0.0',
+      })
     })
     after(() => {
       stub.restore()
