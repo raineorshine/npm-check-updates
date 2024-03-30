@@ -198,7 +198,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--dep &lt;value&gt;</td>
-    <td>Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited). (default: ["prod","dev","optional"])</td>
+    <td>Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited). (default: ["prod","dev","optional","packageManager"])</td>
   </tr>
   <tr>
     <td>--deprecated</td>

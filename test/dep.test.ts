@@ -199,7 +199,7 @@ describe('--dep', () => {
   })
 
   describe('packageManager field', () => {
-    it('support packageManager field', async () => {
+    it('upgrade packageManager field by default', async () => {
       const stub = stubVersions({
         'ncu-test-tag': '1.0.0',
         npm: '9.0.0',
@@ -224,13 +224,54 @@ describe('--dep', () => {
           packageFile: pkgFile,
           jsonUpgraded: false,
           upgrade: true,
-          dep: 'prod,packageManager',
         })
         const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
         const pkgNew = JSON.parse(pkgDataNew)
 
         pkgNew.should.deep.equal({
           packageManager: 'npm@9.0.0',
+          dependencies: {
+            'ncu-test-tag': '1.0.0',
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
+
+    it('do not upgrade packageManager field if missing from --dep', async () => {
+      const stub = stubVersions({
+        'ncu-test-tag': '1.0.0',
+        npm: '9.0.0',
+      })
+      const packageData = JSON.stringify(
+        {
+          packageManager: 'npm@6.0.0',
+          dependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+        },
+        null,
+        2,
+      )
+
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, packageData)
+
+      try {
+        await ncu({
+          packageFile: pkgFile,
+          jsonUpgraded: false,
+          upgrade: true,
+          dep: ['prod'],
+        })
+        const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+        const pkgNew = JSON.parse(pkgDataNew)
+
+        pkgNew.should.deep.equal({
+          packageManager: 'npm@6.0.0',
           dependencies: {
             'ncu-test-tag': '1.0.0',
           },
@@ -265,12 +306,53 @@ describe('--dep', () => {
           packageFile: pkgFile,
           jsonUpgraded: false,
           upgrade: true,
-          dep: 'prod,packageManager',
         })
         const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
         const pkgNew = JSON.parse(pkgDataNew)
 
         pkgNew.should.deep.equal({
+          dependencies: {
+            'ncu-test-tag': '1.0.0',
+          },
+        })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
+
+    it('upgrade packageManager field if specified in --dep', async () => {
+      const stub = stubVersions({
+        'ncu-test-tag': '1.0.0',
+        npm: '9.0.0',
+      })
+      const packageData = JSON.stringify(
+        {
+          packageManager: 'npm@6.0.0',
+          dependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+        },
+        null,
+        2,
+      )
+
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, packageData)
+
+      try {
+        await ncu({
+          packageFile: pkgFile,
+          jsonUpgraded: false,
+          upgrade: true,
+          dep: ['prod', 'packageManager'],
+        })
+        const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+        const pkgNew = JSON.parse(pkgDataNew)
+
+        pkgNew.should.deep.equal({
+          packageManager: 'npm@9.0.0',
           dependencies: {
             'ncu-test-tag': '1.0.0',
           },
@@ -306,7 +388,6 @@ describe('--dep', () => {
           packageFile: pkgFile,
           jsonUpgraded: false,
           upgrade: true,
-          dep: 'prod,packageManager',
         })
         const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
         const pkgNew = JSON.parse(pkgDataNew)

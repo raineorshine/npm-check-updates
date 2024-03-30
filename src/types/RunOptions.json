@@ -214,7 +214,7 @@
           "type": "string"
         }
       ],
-      "default": ["prod", "dev", "optional"],
+      "default": ["prod", "dev", "optional", "packageManager"],
       "description": "Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited)."
     },
     "deprecated": {

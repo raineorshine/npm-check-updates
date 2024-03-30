@@ -48,7 +48,7 @@ export interface RunOptions {
 
   /** Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited).
    *
-   * @default ["prod","dev","optional"]
+   * @default ["prod","dev","optional","packageManager"]
    */
   dep?: string | string[]
 
