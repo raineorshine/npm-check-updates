@@ -20,6 +20,7 @@
     "node": "^18.18.0 || >=20.0.0",
     "npm": ">=8.12.1"
   },
+  "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {

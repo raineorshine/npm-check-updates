@@ -1,6 +1,6 @@
 /** NOTE: This script is copied into a temp directory by the e2e test and dependencies are installed from the local verdaccio registry. */
 import assert from 'assert'
-import ncu from 'npm-check-updates'
+import { run } from 'npm-check-updates'
 
 const registry = process.env.REGISTRY || 'http://localhost:4873'
 
@@ -11,7 +11,7 @@ process.on('unhandledRejection', (reason, p) => {
 
 // test
 ;(async () => {
-  const upgraded = await ncu.run({
+  const upgraded = await run({
     // --pre 1 to ensure that an upgrade is always suggested even if npm-check-updates is on a prerelease version
     pre: true,
     packageData: JSON.stringify({

@@ -9,8 +9,8 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "lib": ["es2021"],
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "paths": {
