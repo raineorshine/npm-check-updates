@@ -4,7 +4,6 @@ import ini from 'ini'
 import camelCase from 'lodash/camelCase'
 import filter from 'lodash/filter'
 import isEqual from 'lodash/isEqual'
-import last from 'lodash/last'
 import sortBy from 'lodash/sortBy'
 import uniq from 'lodash/uniq'
 import npmRegistryFetch from 'npm-registry-fetch'
@@ -646,11 +645,10 @@ export const greatest: GetVersion = async (
 
   return {
     version:
-      last(
-        filter(versions, filterPredicate(options))
-          .map(o => o.version)
-          .sort(versionUtil.compareVersions),
-      ) || null,
+      filter(versions, filterPredicate(options))
+        .map(o => o.version)
+        .sort(versionUtil.compareVersions)
+        .at(-1) || null,
   }
 }
 
@@ -816,7 +814,7 @@ export const newest: GetVersion = async (
   // sort by timestamp (entry[1]) and map versions
   const versionsSortedByTime = sortBy(Object.entries(timesSatisfyingNodeEngine), 1).map(([version]) => version)
 
-  return { version: last(versionsSortedByTime) }
+  return { version: versionsSortedByTime.at(-1) }
 }
 
 /**
