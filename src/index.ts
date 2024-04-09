@@ -1,4 +1,3 @@
-import isString from 'lodash/isString'
 import path from 'path'
 import prompts from 'prompts-ncu'
 import spawn from 'spawn-please'
@@ -296,7 +295,7 @@ export async function run(
   let timeout: NodeJS.Timeout | undefined
   let timeoutPromise: Promise<void> = new Promise(() => null)
   if (options.timeout) {
-    const timeoutMs = isString(options.timeout) ? Number.parseInt(options.timeout, 10) : options.timeout
+    const timeoutMs = typeof options.timeout === 'string' ? Number.parseInt(options.timeout, 10) : options.timeout
     timeoutPromise = new Promise((resolve, reject) => {
       timeout = setTimeout(() => {
         // must catch the error and reject explicitly since we are in a setTimeout
