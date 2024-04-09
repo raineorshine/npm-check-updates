@@ -1,4 +1,3 @@
-import isEmpty from 'lodash/isEmpty'
 import isEqual from 'lodash/isEqual'
 import pickBy from 'lodash/pickBy'
 import { satisfies } from 'semver'
@@ -48,7 +47,7 @@ export async function upgradePackageDefinitions(
 
   const filteredLatestDependencies = pickBy(latestVersions, (spec, dep) => filteredUpgradedDependencies[dep])
 
-  if (options.peer && !isEmpty(filteredUpgradedDependencies)) {
+  if (options.peer && Object.keys(filteredLatestDependencies).length > 0) {
     const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredLatestDependencies, options)
     const peerDependencies = { ...options.peerDependencies, ...upgradedPeerDependencies }
     if (!isEqual(options.peerDependencies, peerDependencies)) {
