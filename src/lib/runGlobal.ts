@@ -15,17 +15,7 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
   print(options, '\nGetting installed packages', 'verbose')
   let globalPackages: Index<string> = {}
   try {
-    const {
-      cli,
-      cwd,
-      filter,
-      filterVersion,
-      global,
-      packageManager,
-      prefix,
-      reject,
-      rejectVersion
-    } = options
+    const { cli, cwd, filter, filterVersion, global, packageManager, prefix, reject, rejectVersion } = options
 
     globalPackages = await getInstalledPackages({
       cli,
@@ -36,7 +26,7 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
       packageManager,
       prefix,
       reject,
-      rejectVersion
+      rejectVersion,
     })
   } catch (e: any) {
     programError(options, e.message)

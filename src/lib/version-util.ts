@@ -536,7 +536,7 @@ const revertMissingPatch = (current: string) => {
 
 /** Reverts a valid semver version to a pseudo version with a leading 'v'. NOOP If the original version was a valid semver version. */
 const revertLeadingV = (current: string) => {
-  const leadingV = v(current);
+  const leadingV = v(current)
   return (latest: string) => (leadingV ? leadingV + latest : latest)
 }
 

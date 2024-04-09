@@ -57,14 +57,12 @@ export function satisfiesPeerDependencies(versionResult: Partial<Packument>, pee
 
 /** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by packument. */
 export function filterPredicate(options: Options) {
-  const predicators: Array<((o: Partial<Packument>) => boolean) | null> = [
+  const predicators: (((o: Partial<Packument>) => boolean) | null)[] = [
     o => allowDeprecatedOrIsNotDeprecated(o, options),
     o => allowPreOrIsNotPre(o, options),
     options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null,
     options.peerDependencies ? o => satisfiesPeerDependencies(o, options.peerDependencies!) : null,
-  ];
+  ]
 
-  return (o: Partial<Packument>) => predicators.every(
-    predicator => predicator?.(o)
-  )
+  return (o: Partial<Packument>) => predicators.every(predicator => predicator?.(o))
 }
