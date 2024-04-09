@@ -643,13 +643,9 @@ export const greatest: GetVersion = async (
     await fetchUpgradedPackumentMemo(packageName, ['versions'], currentVersion, options, 0, npmConfig, npmConfigProject)
   )?.versions
 
-  if (!versions) {
-    return { version: null }
-  }
-
   return {
     version:
-      Object.values(versions)
+      Object.values(versions || {})
         .filter(filterPredicate(options))
         .map(o => o.version)
         .sort(versionUtil.compareVersions)

@@ -33,12 +33,8 @@ async function getNcuRc({
     programError(options, `Config file ${configFileName} not found in ${configFilePath || process.cwd()}`)
   }
 
-  let rawConfigWithoutSchema = {}
-  if (rawResult?.config) {
-    // @ts-expect-error -- rawResult.config is not typed thus TypeScript does not know that it has a $schema property
-    const { $schema: _, ...rest } = rawResult.config
-    rawConfigWithoutSchema = rest
-  }
+  // @ts-expect-error -- rawResult.config is not typed thus TypeScript does not know that it has a $schema property
+  const { $schema: _, ...rawConfigWithoutSchema } = rawResult?.config || {}
 
   const result = {
     filePath: rawResult?.filePath,
@@ -59,7 +55,7 @@ async function getNcuRc({
 
   // flatten config object into command line arguments to be read by commander
   const args = result
-    ? Object.entries(result.config).flatMap(([name, value]): string[] =>
+    ? Object.entries(result.config).flatMap(([name, value]): any[] =>
         // if a boolean option is true, include only the nullary option --${name}
         // an option is considered boolean if its type is explicitly set to boolean, or if it is has a proper Javascript boolean value
         value === true || (cliOptionsMap[name]?.type === 'boolean' && value)
@@ -68,7 +64,7 @@ async function getNcuRc({
             value === false || (cliOptionsMap[name]?.type === 'boolean' && !value)
             ? []
             : // otherwise render as a 2-tuple
-              [`--${name}`, String(value)],
+              [`--${name}`, value],
       )
     : []
 
