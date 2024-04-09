@@ -1,5 +1,6 @@
 import { nodeExternals } from 'rollup-plugin-node-externals'
 import { defineConfig } from 'vite'
+import { analyzer } from 'vite-bundle-analyzer'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig(({ mode }) => ({
@@ -10,6 +11,7 @@ export default defineConfig(({ mode }) => ({
       include: ['src'],
     }),
     nodeExternals(),
+    process.env.ANALYZER && analyzer(),
   ],
   ssr: {
     // bundle and treeshake everything
