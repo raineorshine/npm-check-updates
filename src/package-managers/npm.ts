@@ -1,12 +1,12 @@
 import memoize from 'fast-memoize'
 import fs from 'fs'
 import ini from 'ini'
-import uniq from 'lodash/uniq'
 import camelCase from 'lodash/camelCase'
 import filter from 'lodash/filter'
 import isEqual from 'lodash/isEqual'
 import last from 'lodash/last'
 import sortBy from 'lodash/sortBy'
+import uniq from 'lodash/uniq'
 import npmRegistryFetch from 'npm-registry-fetch'
 import path from 'path'
 import nodeSemver from 'semver'
@@ -370,7 +370,7 @@ export const mockFetchUpgradedPackument =
       ...(isPackument(partialPackument) ? partialPackument : null),
     }
 
-    const { versions, ...packumentWithoutVersions } = packument
+    const { versions: _, ...packumentWithoutVersions } = packument
 
     return Promise.resolve({
       ...packument,
@@ -405,32 +405,32 @@ const mergeNpmConfigs = memoize(
 
     if (npmConfigWorkspaceProject && Object.keys(npmConfigWorkspaceProject).length > 0) {
       print(options, `\nnpm config (workspace project):`, 'verbose')
-      const { cache, ...npmConfigWorkspaceProjectWithoutCache } = npmConfigWorkspaceProject
+      const { cache: _, ...npmConfigWorkspaceProjectWithoutCache } = npmConfigWorkspaceProject
       printSorted(options, npmConfigWorkspaceProjectWithoutCache, 'verbose')
     }
 
     if (npmConfigUser && Object.keys(npmConfigUser).length > 0) {
       print(options, `\nnpm config (user):`, 'verbose')
-      const { cache, ...npmConfigUserWithoutCache } = npmConfigUser
+      const { cache: _, ...npmConfigUserWithoutCache } = npmConfigUser
       printSorted(options, npmConfigUserWithoutCache, 'verbose')
     }
 
     if (npmConfigLocal && Object.keys(npmConfigLocal).length > 0) {
       print(options, `\nnpm config (local override):`, 'verbose')
-      const { cache, ...npmConfigLocalWithoutCache } = npmConfigLocal
+      const { cache: _, ...npmConfigLocalWithoutCache } = npmConfigLocal
       printSorted(options, npmConfigLocalWithoutCache, 'verbose')
     }
 
     if (npmConfigProject && Object.keys(npmConfigProject).length > 0) {
       print(options, `\nnpm config (project: ${npmConfigProjectPath}):`, 'verbose')
-      const { cache, ...npmConfigProjectWithoutCache } = npmConfigProject
+      const { cache: _, ...npmConfigProjectWithoutCache } = npmConfigProject
       printSorted(options, npmConfigProjectWithoutCache, 'verbose')
     }
 
     if (npmConfigCWD && Object.keys(npmConfigCWD).length > 0) {
       print(options, `\nnpm config (cwd: ${npmConfigCWDPath}):`, 'verbose')
       // omit cache since it is added to every config
-      const { cache, ...npmConfigCWDWithoutCache } = npmConfigCWD
+      const { cache: _, ...npmConfigCWDWithoutCache } = npmConfigCWD
       printSorted(options, npmConfigCWDWithoutCache, 'verbose')
     }
 
@@ -449,7 +449,7 @@ const mergeNpmConfigs = memoize(
       print(options, `\nmerged npm config:`, 'verbose')
       // omit cache since it is added to every config
       // @ts-expect-error -- though not typed, but the "cache" property does exist on the object and needs to be omitted
-      const { cache, ...npmConfigMergedWithoutCache } = npmConfigMerged
+      const { cache: _, ...npmConfigMergedWithoutCache } = npmConfigMerged
       printSorted(options, npmConfigMergedWithoutCache, 'verbose')
     }
 
@@ -537,7 +537,7 @@ export const fetchUpgradedPackumentMemo = memoize(fetchUpgradedPackument, {
     npmConfigWorkspaceProject,
   ]: Parameters<typeof fetchUpgradedPackument>) => {
     // packageFile varies by cwd in workspaces/deep mode, so we do not want to memoize on that
-    const { packageFile, ...optionsWithoutPackageFile } = options
+    const { packageFile: _, ...optionsWithoutPackageFile } = options
     return JSON.stringify([
       packageName,
       fields,
@@ -548,9 +548,9 @@ export const fetchUpgradedPackumentMemo = memoize(fetchUpgradedPackument, {
       retried,
       npmConfigLocal,
       npmConfigWorkspaceProject,
-    ]);
-  }) as (args: any[]) => string
-});
+    ])
+  }) as (args: any[]) => string,
+})
 
 /**
  * Spawns npm with --json. Handles different commands for Window and Linux/OSX.

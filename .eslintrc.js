@@ -24,7 +24,15 @@ module.exports = {
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-use-before-define': 'error',
-        '@typescript-eslint/no-unused-vars': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          {
+            // using destructuring to omit properties from objects
+            destructuredArrayIgnorePattern: '^_',
+            argsIgnorePattern: '^_',
+            varsIgnorePattern: '^_',
+          },
+        ],
         '@typescript-eslint/array-type': [
           'error',
           {
