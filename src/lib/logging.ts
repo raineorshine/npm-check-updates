@@ -2,7 +2,6 @@
  * Loggin functions.
  */
 import Table from 'cli-table3'
-import transform from 'lodash/transform'
 import { IgnoredUpgrade } from '../types/IgnoredUpgrade'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -87,13 +86,10 @@ export function printSimpleJoinedString(object: any, join: string) {
 /** Prints an object sorted by key. */
 export function printSorted<T extends { [key: string]: any }>(options: Options, obj: T, loglevel: LogLevel) {
   const sortedKeys = Object.keys(obj).sort() as (keyof T)[]
-  const objSorted = transform(
-    sortedKeys,
-    (accum, key) => {
-      accum[key] = obj[key]
-    },
-    {} as T,
-  )
+  const objSorted = sortedKeys.reduce<T>((accum, key) => {
+    accum[key] = obj[key]
+    return accum
+  }, {} as T)
   print(options, objSorted, loglevel)
 }
 
