@@ -1,5 +1,3 @@
-import flatten from 'lodash/flatten'
-import map from 'lodash/map'
 import os from 'os'
 import path from 'path'
 import { rcFile } from 'rc-config-loader'
@@ -61,19 +59,17 @@ async function getNcuRc({
 
   // flatten config object into command line arguments to be read by commander
   const args = result
-    ? flatten(
-        map(result.config, (value, name) =>
-          // if a boolean option is true, include only the nullary option --${name}
-          // an option is considered boolean if its type is explicitly set to boolean, or if it is has a proper Javascript boolean value
-          value === true || (cliOptionsMap[name]?.type === 'boolean' && value)
-            ? [`--${name}`]
-            : // if a boolean option is false, exclude it
-              value === false || (cliOptionsMap[name]?.type === 'boolean' && !value)
-              ? []
-              : // otherwise render as a 2-tuple
-                [`--${name}`, value],
-        ),
-      )
+    ? Object.entries(result.config).flatMap(([name, value]): string[] =>
+      // if a boolean option is true, include only the nullary option --${name}
+      // an option is considered boolean if its type is explicitly set to boolean, or if it is has a proper Javascript boolean value
+      value === true || (cliOptionsMap[name]?.type === 'boolean' && value)
+        ? [`--${name}`]
+        : // if a boolean option is false, exclude it
+        value === false || (cliOptionsMap[name]?.type === 'boolean' && !value)
+          ? []
+          : // otherwise render as a 2-tuple
+          [`--${name}`, String(value)],
+    )
     : []
 
   return result ? { ...result, args } : null
