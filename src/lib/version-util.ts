@@ -1,5 +1,4 @@
 import ary from 'lodash/ary'
-import curry from 'lodash/curry'
 import flow from 'lodash/flow'
 import intersection from 'lodash/intersection'
 import propertyOf from 'lodash/propertyOf'
@@ -524,17 +523,22 @@ export function upgradeDependencyDeclaration(
 }
 
 /** Reverts a valid semver version to a pseudo version that is missing its minor and patch components. NOOP If the original version was a valid semver version. */
-const revertMissingMinorAndPatch = curry((current: string, latest: string) =>
-  isMissingMinorAndPatch(current) ? latest.slice(0, latest.length - '.0.0'.length) : latest,
-)
+const revertMissingMinorAndPatch = (current: string) => {
+  const missing = isMissingMinorAndPatch(current)
+  return (latest: string) => (missing ? latest.slice(0, latest.length - '.0.0'.length) : latest)
+}
 
 /** Reverts a valid semver version to a pseudo version that is missing its patch components. NOOP If the original version was a valid semver version. */
-const revertMissingPatch = curry((current: string, latest: string) =>
-  isMissingPatch(current) ? latest.slice(0, latest.length - '.0'.length) : latest,
-)
+const revertMissingPatch = (current: string) => {
+  const missing = isMissingPatch(current)
+  return (latest: string) => (missing ? latest.slice(0, latest.length - '.0'.length) : latest)
+}
 
 /** Reverts a valid semver version to a pseudo version with a leading 'v'. NOOP If the original version was a valid semver version. */
-const revertLeadingV = curry((current: string, latest: string) => (v(current) ? v(current) + latest : latest))
+const revertLeadingV = (current: string) => {
+  const leadingV = v(current);
+  return (latest: string) => (leadingV ? leadingV + latest : latest)
+}
 
 /** Reverts a valid semver version to a pseudo version. NOOP If the original version was a valid semver version. */
 const revertPseudoVersion = (current: string, latest: string) =>
