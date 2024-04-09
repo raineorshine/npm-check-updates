@@ -1,6 +1,5 @@
 import flatten from 'lodash/flatten'
 import map from 'lodash/map'
-import omit from 'lodash/omit'
 import os from 'os'
 import path from 'path'
 import { rcFile } from 'rc-config-loader'
@@ -36,10 +35,17 @@ async function getNcuRc({
     programError(options, `Config file ${configFileName} not found in ${configFilePath || process.cwd()}`)
   }
 
+  let rawConfigWithoutSchema = {};
+  if (rawResult?.config) {
+    // @ts-expect-error -- rawResult.config is not typed thus TypeScript does not know that it has a $schema property
+    const { $schema, ...rest } = rawResult.config
+    rawConfigWithoutSchema = rest
+  }
+
   const result = {
     filePath: rawResult?.filePath,
     // Prevent the cli tool from choking because of an unknown option "$schema"
-    config: omit(rawResult?.config, '$schema'),
+    config: rawConfigWithoutSchema,
   }
 
   // validate arguments here to provide a better error message

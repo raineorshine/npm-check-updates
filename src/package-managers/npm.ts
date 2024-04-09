@@ -1,12 +1,11 @@
 import memoize from 'fast-memoize'
 import fs from 'fs'
 import ini from 'ini'
-import { uniq } from 'lodash'
+import uniq from 'lodash/uniq'
 import camelCase from 'lodash/camelCase'
 import filter from 'lodash/filter'
 import isEqual from 'lodash/isEqual'
 import last from 'lodash/last'
-import omit from 'lodash/omit'
 import sortBy from 'lodash/sortBy'
 import npmRegistryFetch from 'npm-registry-fetch'
 import path from 'path'
@@ -371,11 +370,13 @@ export const mockFetchUpgradedPackument =
       ...(isPackument(partialPackument) ? partialPackument : null),
     }
 
+    const { versions, ...packumentWithoutVersions } = packument
+
     return Promise.resolve({
       ...packument,
       versions: {
         ...((isPackument(partialPackument) && partialPackument.versions) || {
-          [version]: omit(packument, 'versions'),
+          [version]: packumentWithoutVersions,
         }),
       },
     })
@@ -404,28 +405,33 @@ const mergeNpmConfigs = memoize(
 
     if (npmConfigWorkspaceProject && Object.keys(npmConfigWorkspaceProject).length > 0) {
       print(options, `\nnpm config (workspace project):`, 'verbose')
-      printSorted(options, omit(npmConfigWorkspaceProject, 'cache'), 'verbose')
+      const { cache, ...npmConfigWorkspaceProjectWithoutCache } = npmConfigWorkspaceProject
+      printSorted(options, npmConfigWorkspaceProjectWithoutCache, 'verbose')
     }
 
     if (npmConfigUser && Object.keys(npmConfigUser).length > 0) {
       print(options, `\nnpm config (user):`, 'verbose')
-      printSorted(options, omit(npmConfigUser, 'cache'), 'verbose')
+      const { cache, ...npmConfigUserWithoutCache } = npmConfigUser
+      printSorted(options, npmConfigUserWithoutCache, 'verbose')
     }
 
     if (npmConfigLocal && Object.keys(npmConfigLocal).length > 0) {
       print(options, `\nnpm config (local override):`, 'verbose')
-      printSorted(options, omit(npmConfigLocal, 'cache'), 'verbose')
+      const { cache, ...npmConfigLocalWithoutCache } = npmConfigLocal
+      printSorted(options, npmConfigLocalWithoutCache, 'verbose')
     }
 
     if (npmConfigProject && Object.keys(npmConfigProject).length > 0) {
       print(options, `\nnpm config (project: ${npmConfigProjectPath}):`, 'verbose')
-      printSorted(options, omit(npmConfigProject, 'cache'), 'verbose')
+      const { cache, ...npmConfigProjectWithoutCache } = npmConfigProject
+      printSorted(options, npmConfigProjectWithoutCache, 'verbose')
     }
 
     if (npmConfigCWD && Object.keys(npmConfigCWD).length > 0) {
       print(options, `\nnpm config (cwd: ${npmConfigCWDPath}):`, 'verbose')
       // omit cache since it is added to every config
-      printSorted(options, omit(npmConfigCWD, 'cache'), 'verbose')
+      const { cache, ...npmConfigCWDWithoutCache } = npmConfigCWD
+      printSorted(options, npmConfigCWDWithoutCache, 'verbose')
     }
 
     const npmConfigMerged = {
@@ -442,7 +448,9 @@ const mergeNpmConfigs = memoize(
     if (isMerged) {
       print(options, `\nmerged npm config:`, 'verbose')
       // omit cache since it is added to every config
-      printSorted(options, omit(npmConfigMerged, 'cache'), 'verbose')
+      // @ts-expect-error -- though not typed, but the "cache" property does exist on the object and needs to be omitted
+      const { cache, ...npmConfigMergedWithoutCache } = npmConfigMerged
+      printSorted(options, npmConfigMergedWithoutCache, 'verbose')
     }
 
     return npmConfigMerged
@@ -527,20 +535,22 @@ export const fetchUpgradedPackumentMemo = memoize(fetchUpgradedPackument, {
     retried,
     npmConfigLocal,
     npmConfigWorkspaceProject,
-  ]: Parameters<typeof fetchUpgradedPackument>) =>
-    JSON.stringify([
+  ]: Parameters<typeof fetchUpgradedPackument>) => {
+    // packageFile varies by cwd in workspaces/deep mode, so we do not want to memoize on that
+    const { packageFile, ...optionsWithoutPackageFile } = options
+    return JSON.stringify([
       packageName,
       fields,
       // currentVersion does not change the behavior of fetchUpgradedPackument unless it is an invalid/inexact version which causes it to short circuit
       isExactVersion(currentVersion),
-      // packageFile varies by cwd in workspaces/deep mode, so we do not want to memoize on that
-      omit(options, 'packageFile'),
+      optionsWithoutPackageFile,
       // make sure retries do not get memoized
       retried,
       npmConfigLocal,
       npmConfigWorkspaceProject,
-    ])) as (args: any[]) => string,
-})
+    ]);
+  }) as (args: any[]) => string
+});
 
 /**
  * Spawns npm with --json. Handles different commands for Window and Linux/OSX.
