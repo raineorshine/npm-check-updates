@@ -2,7 +2,6 @@ import memoize from 'fast-memoize'
 import fs from 'fs'
 import ini from 'ini'
 import camelCase from 'lodash/camelCase'
-import filter from 'lodash/filter'
 import isEqual from 'lodash/isEqual'
 import sortBy from 'lodash/sortBy'
 import uniq from 'lodash/uniq'
@@ -837,7 +836,9 @@ export const minor: GetVersion = async (
     await fetchUpgradedPackumentMemo(packageName, ['versions'], currentVersion, options, 0, npmConfig, npmConfigProject)
   )?.versions as Index<Packument>
   const version = versionUtil.findGreatestByLevel(
-    filter(versions, filterPredicate(options)).map(o => o.version),
+    Object.values(versions || {})
+      .filter(filterPredicate(options))
+      .map(o => o.version),
     currentVersion,
     'minor',
   )
@@ -863,7 +864,9 @@ export const patch: GetVersion = async (
     await fetchUpgradedPackumentMemo(packageName, ['versions'], currentVersion, options, 0, npmConfig, npmConfigProject)
   )?.versions as Index<Packument>
   const version = versionUtil.findGreatestByLevel(
-    filter(versions, filterPredicate(options)).map(o => o.version),
+    Object.values(versions || {})
+      .filter(filterPredicate(options))
+      .map(o => o.version),
     currentVersion,
     'patch',
   )
@@ -891,7 +894,9 @@ export const semver: GetVersion = async (
   // ignore explicit version ranges
   if (isExplicitRange(currentVersion)) return { version: null }
 
-  const versionsFiltered = filter(versions, filterPredicate(options)).map(o => o.version)
+  const versionsFiltered = Object.values(versions || {})
+    .filter(filterPredicate(options))
+    .map(o => o.version)
   // TODO: Upgrading within a prerelease does not seem to work.
   // { includePrerelease: true } does not help.
   const version = nodeSemver.maxSatisfying(versionsFiltered, currentVersion)
