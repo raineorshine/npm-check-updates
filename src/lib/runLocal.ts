@@ -1,7 +1,5 @@
 import fs from 'fs/promises'
 import jph from 'json-parse-helpfulerror'
-import get from 'lodash/get'
-import isEmpty from 'lodash/isEmpty'
 import pick from 'lodash/pick'
 import prompts from 'prompts-ncu'
 import nodeSemver from 'semver'
@@ -179,7 +177,7 @@ async function runLocal(
   print(options, current, 'verbose')
 
   if (options.enginesNode) {
-    options.nodeEngineVersion = get(pkg, 'engines.node')
+    options.nodeEngineVersion = pkg?.engines?.node
   }
 
   if (options.peer) {
@@ -249,7 +247,7 @@ async function runLocal(
     )
     if (options.peer) {
       const ignoredUpdates = await getIgnoredUpgrades(current, upgraded, upgradedPeerDependencies!, options)
-      if (!isEmpty(ignoredUpdates)) {
+      if (Object.keys(ignoredUpdates).length > 0) {
         printIgnoredUpdates(options, ignoredUpdates)
       }
     }

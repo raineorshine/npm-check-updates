@@ -1,6 +1,3 @@
-import flatten from 'lodash/flatten'
-import map from 'lodash/map'
-import omit from 'lodash/omit'
 import os from 'os'
 import path from 'path'
 import { rcFile } from 'rc-config-loader'
@@ -36,10 +33,13 @@ async function getNcuRc({
     programError(options, `Config file ${configFileName} not found in ${configFilePath || process.cwd()}`)
   }
 
+  // @ts-expect-error -- rawResult.config is not typed thus TypeScript does not know that it has a $schema property
+  const { $schema: _, ...rawConfigWithoutSchema } = rawResult?.config || {}
+
   const result = {
     filePath: rawResult?.filePath,
     // Prevent the cli tool from choking because of an unknown option "$schema"
-    config: omit(rawResult?.config, '$schema'),
+    config: rawConfigWithoutSchema,
   }
 
   // validate arguments here to provide a better error message
@@ -55,18 +55,16 @@ async function getNcuRc({
 
   // flatten config object into command line arguments to be read by commander
   const args = result
-    ? flatten(
-        map(result.config, (value, name) =>
-          // if a boolean option is true, include only the nullary option --${name}
-          // an option is considered boolean if its type is explicitly set to boolean, or if it is has a proper Javascript boolean value
-          value === true || (cliOptionsMap[name]?.type === 'boolean' && value)
-            ? [`--${name}`]
-            : // if a boolean option is false, exclude it
-              value === false || (cliOptionsMap[name]?.type === 'boolean' && !value)
-              ? []
-              : // otherwise render as a 2-tuple
-                [`--${name}`, value],
-        ),
+    ? Object.entries(result.config).flatMap(([name, value]): any[] =>
+        // if a boolean option is true, include only the nullary option --${name}
+        // an option is considered boolean if its type is explicitly set to boolean, or if it is has a proper Javascript boolean value
+        value === true || (cliOptionsMap[name]?.type === 'boolean' && value)
+          ? [`--${name}`]
+          : // if a boolean option is false, exclude it
+            value === false || (cliOptionsMap[name]?.type === 'boolean' && !value)
+            ? []
+            : // otherwise render as a 2-tuple
+              [`--${name}`, value],
       )
     : []
 

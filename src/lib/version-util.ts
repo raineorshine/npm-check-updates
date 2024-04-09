@@ -2,7 +2,6 @@ import ary from 'lodash/ary'
 import curry from 'lodash/curry'
 import flow from 'lodash/flow'
 import intersection from 'lodash/intersection'
-import last from 'lodash/last'
 import propertyOf from 'lodash/propertyOf'
 import reject from 'lodash/reject'
 import sortBy from 'lodash/sortBy'
@@ -333,7 +332,7 @@ export function findGreatestByLevel(versions: string[], current: string, level: 
     )
   })
 
-  return last(versionsSorted) || null
+  return versionsSorted.at(-1) || null
 }
 
 /**
