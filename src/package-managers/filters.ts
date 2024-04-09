@@ -1,4 +1,3 @@
-import get from 'lodash/get'
 import overEvery from 'lodash/overEvery'
 import semver from 'semver'
 import * as versionUtil from '../lib/version-util'
@@ -36,9 +35,9 @@ export function allowPreOrIsNotPre(versionResult: Partial<Packument>, options: O
  */
 export function satisfiesNodeEngine(versionResult: Partial<Packument>, nodeEngineVersion: Maybe<string>): boolean {
   if (!nodeEngineVersion) return true
-  const minVersion = get(semver.minVersion(nodeEngineVersion), 'version')
+  const minVersion = semver.minVersion(nodeEngineVersion)?.version
   if (!minVersion) return true
-  const versionNodeEngine: string | undefined = get(versionResult, 'engines.node')
+  const versionNodeEngine: string | undefined = versionResult?.engines?.node
   return !versionNodeEngine || semver.satisfies(minVersion, versionNodeEngine)
 }
 

@@ -1,6 +1,5 @@
 import fs from 'fs/promises'
 import jph from 'json-parse-helpfulerror'
-import get from 'lodash/get'
 import pick from 'lodash/pick'
 import prompts from 'prompts-ncu'
 import nodeSemver from 'semver'
@@ -178,7 +177,7 @@ async function runLocal(
   print(options, current, 'verbose')
 
   if (options.enginesNode) {
-    options.nodeEngineVersion = get(pkg, 'engines.node')
+    options.nodeEngineVersion = pkg?.engines?.node
   }
 
   if (options.peer) {
