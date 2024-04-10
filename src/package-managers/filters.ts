@@ -64,5 +64,5 @@ export function filterPredicate(options: Options) {
     options.peerDependencies ? o => satisfiesPeerDependencies(o, options.peerDependencies!) : null,
   ]
 
-  return (o: Partial<Packument>) => predicators.every(predicator => predicator?.(o))
+  return (o: Partial<Packument>) => predicators.every(predicator => (predicator ? predicator(o) : true))
 }

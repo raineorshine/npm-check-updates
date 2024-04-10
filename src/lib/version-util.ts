@@ -2,7 +2,6 @@ import ary from 'lodash/ary'
 import flow from 'lodash/flow'
 import intersection from 'lodash/intersection'
 import propertyOf from 'lodash/propertyOf'
-import reject from 'lodash/reject'
 import sortBy from 'lodash/sortBy'
 import uniq from 'lodash/uniq'
 import parseGithubUrl from 'parse-github-url'
@@ -470,12 +469,11 @@ export function upgradeDependencyDeclaration(
 
   // parse the declaration
   // if multiple ranges, use the semver with the least number of parts
-  const parsedRange: SemVer[] = flow([
-    // semver-utils includes empty entries for the || and - operators. We can remove them completely
-    ranges => reject(ranges, { operator: '||' }),
-    ranges => reject(ranges, { operator: '-' }),
-    ranges => sortBy(ranges, ary(flow(stringify, numParts), 1)),
-  ])(semverutils.parseRange(declaration))
+  const parsedRange = sortBy(
+    semverutils.parseRange(declaration).filter(range => range.operator !== '||' && range.operator !== '-'),
+    ary(flow(stringify, numParts), 1),
+  ) as SemVer[]
+
   const [declaredSemver] = parsedRange
 
   /**
