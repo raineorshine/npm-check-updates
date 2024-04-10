@@ -1,4 +1,3 @@
-import groupBy from 'lodash/groupBy'
 import sortBy from 'lodash/sortBy'
 import { Index } from '../types/IndexType'
 import { WILDCARDS } from './version-util'
@@ -17,11 +16,14 @@ function getPreferredWildcard(dependencies: Index<string | null>) {
   }
 
   // group the dependencies by wildcard
-  const groups = groupBy(Object.values(dependencies), dep =>
-    WILDCARDS.find((wildcard: string) => dep && dep.includes(wildcard)),
-  )
-
-  delete groups.undefined
+  const groups = Object.values(dependencies).reduce<Record<string, (string | null)[]>>((acc, dep) => {
+    const wildcard = WILDCARDS.find((wildcard: string) => dep && dep.includes(wildcard));
+    if (wildcard !== undefined) {
+      acc[wildcard] ||= []
+      acc[wildcard].push(dep)
+    }
+    return acc
+  }, {});
 
   const arrOfGroups = Object.entries(groups).map(([wildcard, instances]) => ({ wildcard, instances }))
 
