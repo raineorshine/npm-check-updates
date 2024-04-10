@@ -4,7 +4,6 @@ import ini from 'ini'
 import camelCase from 'lodash/camelCase'
 import isEqual from 'lodash/isEqual'
 import sortBy from 'lodash/sortBy'
-import uniq from 'lodash/uniq'
 import npmRegistryFetch from 'npm-registry-fetch'
 import path from 'path'
 import nodeSemver from 'semver'
@@ -501,12 +500,14 @@ async function fetchUpgradedPackument(
     const tag = options.distTag || 'latest'
     result = await fetchPartialPackument(
       packageName,
-      uniq([
-        'dist-tags',
-        ...fields,
-        ...(!options.deprecated ? (['deprecated', 'versions'] as const) : []),
-        ...(options.enginesNode ? (['engines', 'versions'] as const) : []),
-      ]),
+      Array.from(
+        new Set([
+          'dist-tags',
+          ...fields,
+          ...(!options.deprecated ? (['deprecated', 'versions'] as const) : []),
+          ...(options.enginesNode ? (['engines', 'versions'] as const) : []),
+        ]),
+      ),
       fullMetadata ? null : tag,
       npmConfigMerged,
     )

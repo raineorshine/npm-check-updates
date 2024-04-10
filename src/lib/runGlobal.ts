@@ -1,4 +1,3 @@
-import pick from 'lodash/pick'
 import { print, printJson, printSorted, printUpgrades } from '../lib/logging'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -16,19 +15,19 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
   print(options, '\nGetting installed packages', 'verbose')
   let globalPackages: Index<string> = {}
   try {
-    globalPackages = await getInstalledPackages(
-      pick(options, [
-        'cli',
-        'cwd',
-        'filter',
-        'filterVersion',
-        'global',
-        'packageManager',
-        'prefix',
-        'reject',
-        'rejectVersion',
-      ]),
-    )
+    const { cli, cwd, filter, filterVersion, global, packageManager, prefix, reject, rejectVersion } = options
+
+    globalPackages = await getInstalledPackages({
+      cli,
+      cwd,
+      filter,
+      filterVersion,
+      global,
+      packageManager,
+      prefix,
+      reject,
+      rejectVersion,
+    })
   } catch (e: any) {
     programError(options, e.message)
   }

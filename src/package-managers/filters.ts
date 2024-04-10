@@ -1,4 +1,3 @@
-import overEvery from 'lodash/overEvery'
 import semver from 'semver'
 import * as versionUtil from '../lib/version-util'
 import { Index } from '../types/IndexType'
@@ -57,11 +56,13 @@ export function satisfiesPeerDependencies(versionResult: Partial<Packument>, pee
 }
 
 /** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by packument. */
-export function filterPredicate(options: Options): (o: Partial<Packument>) => boolean {
-  return overEvery([
+export function filterPredicate(options: Options) {
+  const predicators: (((o: Partial<Packument>) => boolean) | null)[] = [
     o => allowDeprecatedOrIsNotDeprecated(o, options),
     o => allowPreOrIsNotPre(o, options),
-    options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null!,
-    options.peerDependencies ? o => satisfiesPeerDependencies(o, options.peerDependencies!) : null!,
-  ])
+    options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null,
+    options.peerDependencies ? o => satisfiesPeerDependencies(o, options.peerDependencies!) : null,
+  ]
+
+  return (o: Partial<Packument>) => predicators.every(predicator => (predicator ? predicator(o) : true))
 }
