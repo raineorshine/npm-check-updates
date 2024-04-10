@@ -358,7 +358,7 @@ const fixMissingMinorAndPatch = (s: string) => (isMissingMinorAndPatch(s) ? s + 
 const fixMissingPatch = (s: string) => (isMissingPatch(s) ? s + '.0' : s)
 
 /** Converts a pseudo version into a valid semver version. NOOP for valid semver versions. */
-export const fixPseudoVersion = flow(fixLeadingV, fixMissingMinorAndPatch, fixMissingPatch)
+export const fixPseudoVersion = (s: string) => fixMissingPatch(fixMissingMinorAndPatch(fixLeadingV(s)))
 
 /**
  * Returns 'v' if the string starts with a v, otherwise returns empty string.
@@ -521,27 +521,22 @@ export function upgradeDependencyDeclaration(
       (isGreaterThan ? '>=' : operator) + version
 }
 
-/** Reverts a valid semver version to a pseudo version that is missing its minor and patch components. NOOP If the original version was a valid semver version. */
-const revertMissingMinorAndPatch = (current: string) => {
-  const missing = isMissingMinorAndPatch(current)
-  return (latest: string) => (missing ? latest.slice(0, latest.length - '.0.0'.length) : latest)
-}
-
-/** Reverts a valid semver version to a pseudo version that is missing its patch components. NOOP If the original version was a valid semver version. */
-const revertMissingPatch = (current: string) => {
-  const missing = isMissingPatch(current)
-  return (latest: string) => (missing ? latest.slice(0, latest.length - '.0'.length) : latest)
-}
-
-/** Reverts a valid semver version to a pseudo version with a leading 'v'. NOOP If the original version was a valid semver version. */
-const revertLeadingV = (current: string) => {
-  const leadingV = v(current)
-  return (latest: string) => (leadingV ? leadingV + latest : latest)
-}
-
 /** Reverts a valid semver version to a pseudo version. NOOP If the original version was a valid semver version. */
-const revertPseudoVersion = (current: string, latest: string) =>
-  flow(revertLeadingV(current), revertMissingMinorAndPatch(current), revertMissingPatch(current))(latest)
+const revertPseudoVersion = (current: string, latest: string) => {
+  /** Reverts a valid semver version to a pseudo version with a leading 'v'. NOOP If the original version was a valid semver version. */
+  const leadingV = v(current)
+  let result = leadingV ? leadingV + latest : latest;
+
+  /** Reverts a valid semver version to a pseudo version that is missing its minor and patch components. NOOP If the original version was a valid semver version. */
+  const missingMinorAndPatch = isMissingMinorAndPatch(current)
+  result = missingMinorAndPatch ? result.slice(0, result.length - '.0.0'.length) : result;
+
+  /** Reverts a valid semver version to a pseudo version that is missing its patch components. NOOP If the original version was a valid semver version. */
+  const missingPatch = isMissingPatch(current)
+  result = missingPatch ? result.slice(0, result.length - '.0'.length) : result;
+
+  return result;
+}
 
 /**
  * Replaces the version number embedded in a Github URL.
