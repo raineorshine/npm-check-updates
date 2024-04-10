@@ -1,5 +1,3 @@
-import ary from 'lodash/ary'
-import flow from 'lodash/flow'
 import intersection from 'lodash/intersection'
 import propertyOf from 'lodash/propertyOf'
 import sortBy from 'lodash/sortBy'
@@ -472,7 +470,7 @@ export function upgradeDependencyDeclaration(
   // if multiple ranges, use the semver with the least number of parts
   const parsedRange = sortBy(
     semverutils.parseRange(declaration).filter(range => range.operator !== '||' && range.operator !== '-'),
-    ary(flow(stringify, numParts), 1),
+    s => numParts(stringify(s)),
   ) as SemVer[]
 
   const [declaredSemver] = parsedRange
@@ -525,17 +523,17 @@ export function upgradeDependencyDeclaration(
 const revertPseudoVersion = (current: string, latest: string) => {
   /** Reverts a valid semver version to a pseudo version with a leading 'v'. NOOP If the original version was a valid semver version. */
   const leadingV = v(current)
-  let result = leadingV ? leadingV + latest : latest;
+  let result = leadingV ? leadingV + latest : latest
 
   /** Reverts a valid semver version to a pseudo version that is missing its minor and patch components. NOOP If the original version was a valid semver version. */
   const missingMinorAndPatch = isMissingMinorAndPatch(current)
-  result = missingMinorAndPatch ? result.slice(0, result.length - '.0.0'.length) : result;
+  result = missingMinorAndPatch ? result.slice(0, result.length - '.0.0'.length) : result
 
   /** Reverts a valid semver version to a pseudo version that is missing its patch components. NOOP If the original version was a valid semver version. */
   const missingPatch = isMissingPatch(current)
-  result = missingPatch ? result.slice(0, result.length - '.0'.length) : result;
+  result = missingPatch ? result.slice(0, result.length - '.0'.length) : result
 
-  return result;
+  return result
 }
 
 /**
