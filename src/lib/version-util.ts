@@ -3,7 +3,6 @@ import flow from 'lodash/flow'
 import intersection from 'lodash/intersection'
 import propertyOf from 'lodash/propertyOf'
 import sortBy from 'lodash/sortBy'
-import uniq from 'lodash/uniq'
 import parseGithubUrl from 'parse-github-url'
 import semver from 'semver'
 import semverutils, { SemVer, parse, parseRange } from 'semver-utils'
@@ -222,7 +221,9 @@ export function getDependencyGroups(
     majorVersionZero: chalk.magenta(chalk.bold('Major version zero') + '   Anything may change'),
   }
 
-  const groupOrder = uniq(['patch', 'minor', 'major', 'majorVersionZero', ...sortBy(Object.keys(groups))])
+  const groupOrder = Array.from(
+    new Set(['patch', 'minor', 'major', 'majorVersionZero', ...sortBy(Object.keys(groups))]),
+  )
 
   return groupOrder
     .filter(groupName => {
@@ -503,7 +504,7 @@ export function upgradeDependencyDeclaration(
 
   // determine the operator
   // do not compact, because [undefined, '<'] must be differentiated from ['<']
-  const uniqueOperators = uniq(parsedRange.map(range => range.operator))
+  const uniqueOperators = Array.from(new Set(parsedRange.map(range => range.operator)))
   const operator = uniqueOperators[0] || ''
 
   const hasWildCard = WILDCARDS.some(wildcard => newSemverString.includes(wildcard))
