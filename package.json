@@ -25,6 +25,7 @@
   "scripts": {
     "build": "rimraf build && npm run build:options && vite build",
     "build:options": "vite-node src/scripts/build-options.ts",
+    "build:analyze": "rimraf build && npm run build:options && ANALYZER=true vite build",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.js",
@@ -136,6 +137,7 @@
     "update-notifier": "^7.0.0",
     "verdaccio": "^5.30.2",
     "vite": "^5.2.6",
+    "vite-bundle-analyzer": "^0.9.3",
     "vite-node": "^1.4.0",
     "vite-plugin-dts": "^3.8.0",
     "yarn": "^1.22.22"
