@@ -1,5 +1,4 @@
 import flow from 'lodash/flow'
-import mapValues from 'lodash/mapValues'
 import { parseRange } from 'semver-utils'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -52,7 +51,7 @@ function upgradeDependencies(
       pickBy(deps, (current, packageName) => packageName in latestVersions),
     // unpack npm alias and git urls
     (deps: Index<VersionSpec>): Index<UpgradeSpec> =>
-      mapValues(deps, (current: string, packageName: string) => {
+      Object.entries(deps).reduce<Index<UpgradeSpec>>((acc, [packageName, current]) => {
         const latest = latestVersions[packageName]
         let currentParsed = null
         let latestParsed = null
@@ -78,8 +77,9 @@ function upgradeDependencies(
           latestParsed = versionUtil.stringify(latestSemver)
         }
 
-        return { current, currentParsed, latest, latestParsed }
-      }),
+        acc[packageName] = { current, currentParsed, latest, latestParsed }
+        return acc
+      }, {}),
     // pick the packages that are upgradeable
     (deps: Index<UpgradeSpec>): Index<UpgradeSpec> =>
       pickBy(deps, ({ current, currentParsed, latest, latestParsed }: UpgradeSpec, name: string) => {
@@ -91,14 +91,19 @@ function upgradeDependencies(
       }),
     // pack embedded versions: npm aliases and git urls
     (deps: Index<UpgradeSpec>): Index<Version | null> =>
-      mapValues(deps, ({ current, currentParsed, latest, latestParsed }: UpgradeSpec) => {
-        const upgraded = upgradeDep(currentParsed || current, latestParsed || latest)
-        return versionUtil.isNpmAlias(current)
-          ? versionUtil.upgradeNpmAlias(current, upgraded)
-          : versionUtil.isGithubUrl(current)
-            ? versionUtil.upgradeGithubUrl(current, upgraded)
-            : upgraded
-      }),
+      Object.entries(deps).reduce<Index<Version | null>>(
+        (acc, [packageName, { current, currentParsed, latest, latestParsed }]) => {
+          const upgraded = upgradeDep(currentParsed || current, latestParsed || latest)
+
+          acc[packageName] = versionUtil.isNpmAlias(current)
+            ? versionUtil.upgradeNpmAlias(current, upgraded)
+            : versionUtil.isGithubUrl(current)
+              ? versionUtil.upgradeGithubUrl(current, upgraded)
+              : upgraded
+          return acc
+        },
+        {},
+      ),
   ])(currentDependencies)
 }
 
