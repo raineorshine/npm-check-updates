@@ -15,12 +15,12 @@ import getPackageManager from './getPackageManager'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
 import keyValueBy from './keyValueBy'
 import { print, printIgnoredUpdates, printJson, printSorted, printUpgrades, toDependencyTable } from './logging'
+import { pick } from './pick'
 import programError from './programError'
 import resolveDepSections from './resolveDepSections'
 import upgradePackageData from './upgradePackageData'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
 import { getDependencyGroups } from './version-util'
-import { pick } from './pick'
 
 const INTERACTIVE_HINT = `
   ↑/↓: Select a package

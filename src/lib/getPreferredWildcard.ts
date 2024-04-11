@@ -1,5 +1,5 @@
-import sortBy from 'lodash/sortBy'
 import { Index } from '../types/IndexType'
+import { sortBy } from './sortBy'
 import { WILDCARDS } from './version-util'
 
 /**
