@@ -1,6 +1,5 @@
 import fs from 'fs/promises'
 import jph from 'json-parse-helpfulerror'
-import pick from 'lodash/pick'
 import prompts from 'prompts-ncu'
 import nodeSemver from 'semver'
 import { Index } from '../types/IndexType'
@@ -21,6 +20,7 @@ import resolveDepSections from './resolveDepSections'
 import upgradePackageData from './upgradePackageData'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
 import { getDependencyGroups } from './version-util'
+import { pick } from './pick'
 
 const INTERACTIVE_HINT = `
   ↑/↓: Select a package
@@ -255,7 +255,7 @@ async function runLocal(
 
   const newPkgData = await upgradePackageData(pkgData, current, chosenUpgraded, options)
 
-  const output = options.jsonAll
+  const output: PackageFile | Index<VersionSpec> = options.jsonAll
     ? (jph.parse(newPkgData) as PackageFile)
     : options.jsonDeps
       ? pick(jph.parse(newPkgData) as PackageFile, resolveDepSections(options.dep))

@@ -7,7 +7,7 @@ import { VersionSpec } from '../types/VersionSpec'
 import filterObject from './filterObject'
 import getPreferredWildcard from './getPreferredWildcard'
 import isUpgradeable from './isUpgradeable'
-import pickBy from './pickBy'
+import { pickBy } from './pick'
 import * as versionUtil from './version-util'
 
 interface UpgradeSpec {
@@ -82,7 +82,7 @@ function upgradeDependencies(
       }, {}),
     // pick the packages that are upgradeable
     (deps: Index<UpgradeSpec>): Index<UpgradeSpec> =>
-      pickBy(deps, ({ current, currentParsed, latest, latestParsed }: UpgradeSpec, name: string) => {
+      pickBy(deps, ({ current, currentParsed, latest, latestParsed }: UpgradeSpec, name) => {
         // allow downgrades from prereleases when explicit tag is given
         const downgrade: boolean =
           versionUtil.isPre(current) &&
