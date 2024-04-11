@@ -1,6 +1,5 @@
 import memoize from 'fast-memoize'
 import fs from 'fs/promises'
-import fetch from 'make-fetch-happen'
 import programError from '../lib/programError'
 import { GetVersion } from '../types/GetVersion'
 import { Options } from '../types/Options'

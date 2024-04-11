@@ -1,4 +1,4 @@
-import isEqual from 'lodash/isEqual'
+import { dequal } from 'dequal'
 import pickBy from 'lodash/pickBy'
 import { satisfies } from 'semver'
 import { parse, parseRange } from 'semver-utils'
@@ -50,7 +50,7 @@ export async function upgradePackageDefinitions(
   if (options.peer && Object.keys(filteredLatestDependencies).length > 0) {
     const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredLatestDependencies, options)
     const peerDependencies = { ...options.peerDependencies, ...upgradedPeerDependencies }
-    if (!isEqual(options.peerDependencies, peerDependencies)) {
+    if (!dequal(options.peerDependencies, peerDependencies)) {
       const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
         { ...currentDependencies, ...filteredUpgradedDependencies },
         { ...options, peerDependencies, loglevel: 'silent' },

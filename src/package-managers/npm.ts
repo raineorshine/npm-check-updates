@@ -1,8 +1,7 @@
+import camelCase from 'camelcase'
 import memoize from 'fast-memoize'
 import fs from 'fs'
 import ini from 'ini'
-import camelCase from 'lodash/camelCase'
-import isEqual from 'lodash/isEqual'
 import sortBy from 'lodash/sortBy'
 import npmRegistryFetch from 'npm-registry-fetch'
 import path from 'path'
@@ -321,7 +320,7 @@ export async function packageAuthorChanged(
     if (current && upgraded && result.versions[current]._npmUser && result.versions[upgraded]._npmUser) {
       const currentAuthor = result.versions[current]._npmUser?.name
       const latestAuthor = result.versions[upgraded]._npmUser?.name
-      return !isEqual(currentAuthor, latestAuthor)
+      return currentAuthor !== latestAuthor
     }
   }
 
