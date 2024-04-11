@@ -1,5 +1,4 @@
 import { dequal } from 'dequal'
-import pickBy from 'lodash/pickBy'
 import { satisfies } from 'semver'
 import { parse, parseRange } from 'semver-utils'
 import { Index } from '../types/IndexType'
@@ -8,6 +7,7 @@ import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
 import keyValueBy from './keyValueBy'
+import pickBy from './pickBy'
 import queryVersions from './queryVersions'
 import upgradeDependencies from './upgradeDependencies'
 

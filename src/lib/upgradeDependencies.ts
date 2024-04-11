@@ -1,6 +1,5 @@
 import flow from 'lodash/flow'
 import mapValues from 'lodash/mapValues'
-import pickBy from 'lodash/pickBy'
 import { parseRange } from 'semver-utils'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -9,6 +8,7 @@ import { VersionSpec } from '../types/VersionSpec'
 import filterObject from './filterObject'
 import getPreferredWildcard from './getPreferredWildcard'
 import isUpgradeable from './isUpgradeable'
+import pickBy from './pickBy'
 import * as versionUtil from './version-util'
 
 interface UpgradeSpec {
