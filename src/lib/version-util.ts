@@ -1,4 +1,3 @@
-import intersection from 'lodash/intersection'
 import propertyOf from 'lodash/propertyOf'
 import parseGithubUrl from 'parse-github-url'
 import semver from 'semver'
@@ -54,7 +53,7 @@ export function numParts(version: string) {
     )
   }
 
-  return intersection(VERSION_PARTS, Object.keys(semver)).length
+  return VERSION_PARTS.reduce((count, part) => (semver[part] ? count + 1 : count), 0)
 }
 
 /**
