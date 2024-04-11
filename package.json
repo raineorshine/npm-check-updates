@@ -28,7 +28,7 @@
     "build:analyze": "rimraf build && npm run build:options && ANALYZER=true vite build",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
-    "lint:markdown": "markdownlint \"**/*.md\" --ignore node_modules --ignore build --config .markdownlint.js",
+    "lint:markdown": "markdownlint \"**/*.md\" --ignore \"**/node_modules/**/*.md\" --ignore build --config .markdownlint.js",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --ignore-path .gitignore --report-unused-disable-directives .",
     "prepare": "src/scripts/install-hooks && test/bun-setup.sh",
     "prepublishOnly": "npm run build",
