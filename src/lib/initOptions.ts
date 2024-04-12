@@ -1,4 +1,4 @@
-import isEqual from 'lodash/isEqual'
+import { dequal } from 'dequal'
 import propertyOf from 'lodash/propertyOf'
 import cliOptions, { cliOptionsMap } from '../cli-options'
 import { print } from '../lib/logging'
@@ -123,7 +123,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
 
   // convert to string for comparison purposes
   // otherwise ['a b'] will not match ['a', 'b']
-  if (options.filter && args && !isEqual(args.join(' '), Array.isArray(filter) ? filter.join(' ') : filter)) {
+  if (options.filter && args && !dequal(args.join(' '), Array.isArray(filter) ? filter.join(' ') : filter)) {
     programError(
       options,
       'Cannot specify a filter using both --filter and args. Did you forget to quote an argument?\nSee: https://github.com/raineorshine/npm-check-updates/issues/759#issuecomment-723587297',

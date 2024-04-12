@@ -1,7 +1,7 @@
-import sortBy from 'lodash/sortBy'
 import path from 'path'
 import { defaultCacheFile } from './lib/cache'
 import chalk from './lib/chalk'
+import { sortBy } from './lib/sortBy'
 import table from './lib/table'
 import CLIOption from './types/CLIOption'
 import ExtendedHelp from './types/ExtendedHelp'
@@ -893,6 +893,6 @@ export const cliOptionsMap = cliOptions.reduce(
   {} as Index<CLIOption>,
 )
 
-const cliOptionsSorted = sortBy(cliOptions, 'long')
+const cliOptionsSorted = sortBy(cliOptions, v => v.long)
 
 export default cliOptionsSorted

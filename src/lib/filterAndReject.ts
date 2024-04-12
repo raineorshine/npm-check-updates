@@ -1,6 +1,5 @@
 import { and, or } from 'fp-and-or'
 import identity from 'lodash/identity'
-import negate from 'lodash/negate'
 import picomatch from 'picomatch'
 import { parseRange } from 'semver-utils'
 import { FilterPattern } from '../types/FilterPattern'
@@ -83,7 +82,7 @@ function filterAndReject(
   return and(
     // filter dep
     (dependencyName: VersionSpec, version: string) =>
-      and(filter ? composeFilter(filter) : true, reject ? negate(composeFilter(reject)) : true)(
+      and(filter ? composeFilter(filter) : true, reject ? (...args) => !composeFilter(reject)(...args) : true)(
         dependencyName,
         version,
       ),
@@ -91,7 +90,7 @@ function filterAndReject(
     (dependencyName: VersionSpec, version: string) =>
       and(
         filterVersion ? composeFilter(filterVersion) : true,
-        rejectVersion ? negate(composeFilter(rejectVersion)) : true,
+        rejectVersion ? (...args) => !composeFilter(rejectVersion)(...args) : true,
       )(version),
   )
 }

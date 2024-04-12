@@ -1,6 +1,4 @@
-import intersection from 'lodash/intersection'
 import propertyOf from 'lodash/propertyOf'
-import sortBy from 'lodash/sortBy'
 import parseGithubUrl from 'parse-github-url'
 import semver from 'semver'
 import semverutils, { SemVer, parse, parseRange } from 'semver-utils'
@@ -12,6 +10,7 @@ import { UpgradeGroup } from '../types/UpgradeGroup'
 import { VersionLevel } from '../types/VersionLevel'
 import chalk from './chalk'
 import { keyValueBy } from './keyValueBy'
+import { sortBy } from './sortBy'
 
 type VersionPart = keyof SemVer
 
@@ -54,7 +53,7 @@ export function numParts(version: string) {
     )
   }
 
-  return intersection(VERSION_PARTS, Object.keys(semver)).length
+  return VERSION_PARTS.reduce((count, part) => (semver[part] ? count + 1 : count), 0)
 }
 
 /**
@@ -219,9 +218,7 @@ export function getDependencyGroups(
     majorVersionZero: chalk.magenta(chalk.bold('Major version zero') + '   Anything may change'),
   }
 
-  const groupOrder = Array.from(
-    new Set(['patch', 'minor', 'major', 'majorVersionZero', ...sortBy(Object.keys(groups))]),
-  )
+  const groupOrder = Array.from(new Set(['patch', 'minor', 'major', 'majorVersionZero', ...Object.keys(groups).sort()]))
 
   return groupOrder
     .filter(groupName => {

@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { Help, Option, program } from 'commander'
-import cloneDeep from 'lodash/cloneDeep'
-import pickBy from 'lodash/pickBy'
+import createCloneDeep from 'rfdc'
 import semver from 'semver'
 import pkg from '../../package.json'
 import cliOptions, { renderExtendedHelp } from '../cli-options'
@@ -9,11 +8,14 @@ import ncu from '../index'
 import { chalkInit } from '../lib/chalk'
 // async global contexts are only available in esm modules -> function
 import getNcuRc from '../lib/getNcuRc'
+import { pickBy } from '../lib/pick'
 
 const optionVersionDescription = 'Output the version number of npm-check-updates.'
 
 /** Removes inline code ticks. */
 const uncode = (s: string) => s.replace(/`/g, '')
+
+const cloneDeep = createCloneDeep()
 
 ;(async () => {
   // importing update-notifier dynamically as esm modules are only allowed to be dynamically imported inside of cjs modules
@@ -203,7 +205,7 @@ ${chalk.dim.underline(
   // filter out undefined program options and combine cli options with config file options
   const options = {
     ...(rcResult && Object.keys(rcResult.config).length > 0 ? { rcConfigPath: rcResult.filePath } : null),
-    ...pickBy(program.opts(), value => value !== undefined),
+    ...pickBy(program.opts(), (value: unknown) => value !== undefined),
     args: program.args,
     ...(combinedProgramOpts.filter ? { filter: combinedProgramOpts.filter } : null),
     ...(combinedProgramOpts.reject ? { reject: combinedProgramOpts.reject } : null),

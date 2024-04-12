@@ -1,9 +1,7 @@
+import camelCase from 'camelcase'
 import memoize from 'fast-memoize'
 import fs from 'fs'
 import ini from 'ini'
-import camelCase from 'lodash/camelCase'
-import isEqual from 'lodash/isEqual'
-import sortBy from 'lodash/sortBy'
 import npmRegistryFetch from 'npm-registry-fetch'
 import path from 'path'
 import nodeSemver from 'semver'
@@ -15,6 +13,7 @@ import filterObject from '../lib/filterObject'
 import { keyValueBy } from '../lib/keyValueBy'
 import libnpmconfig from '../lib/libnpmconfig'
 import { print, printSorted } from '../lib/logging'
+import { sortBy } from '../lib/sortBy'
 import * as versionUtil from '../lib/version-util'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
@@ -321,7 +320,7 @@ export async function packageAuthorChanged(
     if (current && upgraded && result.versions[current]._npmUser && result.versions[upgraded]._npmUser) {
       const currentAuthor = result.versions[current]._npmUser?.name
       const latestAuthor = result.versions[upgraded]._npmUser?.name
-      return !isEqual(currentAuthor, latestAuthor)
+      return currentAuthor !== latestAuthor
     }
   }
 
@@ -813,7 +812,7 @@ export const newest: GetVersion = async (
   )
 
   // sort by timestamp (entry[1]) and map versions
-  const versionsSortedByTime = sortBy(Object.entries(timesSatisfyingNodeEngine), 1).map(([version]) => version)
+  const versionsSortedByTime = sortBy(Object.entries(timesSatisfyingNodeEngine), v => v[1]).map(([version]) => version)
 
   return { version: versionsSortedByTime.at(-1) }
 }

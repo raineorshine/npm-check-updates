@@ -1,6 +1,5 @@
 import fs from 'fs/promises'
 import jph from 'json-parse-helpfulerror'
-import pick from 'lodash/pick'
 import prompts from 'prompts-ncu'
 import nodeSemver from 'semver'
 import { Index } from '../types/IndexType'
@@ -16,6 +15,7 @@ import getPackageManager from './getPackageManager'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
 import keyValueBy from './keyValueBy'
 import { print, printIgnoredUpdates, printJson, printSorted, printUpgrades, toDependencyTable } from './logging'
+import { pick } from './pick'
 import programError from './programError'
 import resolveDepSections from './resolveDepSections'
 import upgradePackageData from './upgradePackageData'
@@ -255,7 +255,7 @@ async function runLocal(
 
   const newPkgData = await upgradePackageData(pkgData, current, chosenUpgraded, options)
 
-  const output = options.jsonAll
+  const output: PackageFile | Index<VersionSpec> = options.jsonAll
     ? (jph.parse(newPkgData) as PackageFile)
     : options.jsonDeps
       ? pick(jph.parse(newPkgData) as PackageFile, resolveDepSections(options.dep))
