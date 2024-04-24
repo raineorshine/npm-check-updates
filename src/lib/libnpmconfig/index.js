@@ -24,14 +24,14 @@ const NpmConfig = figgyPudding(
 )
 
 const ConfigOpts = figgyPudding({
-  cache: { default: path.join(os.homedir(), '.npm') },
+  cache: { default: path.join(process.env.HOME || os.homedir(), '.npm') },
   configNames: { default: ['npmrc', '.npmrc'] },
   envPrefix: { default: /^npm_config_/i },
   cwd: { default: () => process.cwd() },
   globalconfig: {
     default: () => path.join(getGlobalPrefix(), 'etc', 'npmrc'),
   },
-  userconfig: { default: path.join(os.homedir(), '.npmrc') },
+  userconfig: { default: path.join(process.env.HOME || os.homedir(), '.npmrc') },
 })
 
 module.exports.read = getNpmConfig
