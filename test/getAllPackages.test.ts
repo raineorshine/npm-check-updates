@@ -23,7 +23,6 @@ async function stripDir(dirPath: string, paths: [string[], string[]]): Promise<[
 /** convenience function to call getAllPackages for a given test-path  */
 async function getAllPackagesForTest(testPath: string, options: Options): Promise<[string[], string[]]> {
   const testCwd = path.join(__dirname, testPath).replace(/\\/g, '/')
-  process.chdir(testCwd) // FIXME: remove the setting of cwd, the tests should work without it
   const optionsWithTestCwd: Options = { cwd: testCwd, ...options }
   const [pkgInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages(optionsWithTestCwd)
   const packagePaths: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
@@ -32,17 +31,6 @@ async function getAllPackagesForTest(testPath: string, options: Options): Promis
 }
 
 describe('getAllPackages', () => {
-  let originalCwd = process.cwd()
-  beforeEach(() => {
-    // FIXME: delete me
-    originalCwd = process.cwd()
-  })
-
-  afterEach(() => {
-    // FIXME: delete me
-    process.chdir(originalCwd)
-  })
-
   it('returns default package without cwd', async () => {
     const [pkgInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages({})
     const packagePaths: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
