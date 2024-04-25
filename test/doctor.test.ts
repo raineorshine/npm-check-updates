@@ -456,7 +456,6 @@ else {
     testFail({ packageManager: 'yarn' })
   })
 
-  // Bun not yet supported on Windows
   // const describeSkipWindows = os.platform() === 'win32' ? describe.skip : describe
   // TODO: Works locally, but not in GitHub action.
   describe.skip('bun', () => {
