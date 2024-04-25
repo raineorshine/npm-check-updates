@@ -1,6 +1,7 @@
 import path from 'path'
 import spawn from 'spawn-please'
 import keyValueBy from '../lib/keyValueBy'
+import programError from '../lib/programError'
 import { Index } from '../types/IndexType'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
@@ -14,6 +15,12 @@ async function spawnBun(
   spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: Index<any> = {},
 ): Promise<{ stdout: string; stderr: string }> {
+  // Bun not yet supported on Windows.
+  // @see https://github.com/oven-sh/bun/issues/43
+  if (process.platform === 'win32') {
+    programError(npmOptions, 'Bun not yet supported on Windows')
+  }
+
   const fullArgs = [
     ...(npmOptions.global ? ['--global'] : []),
     ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
