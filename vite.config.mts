@@ -12,8 +12,8 @@ export default defineConfig(({ mode }) => ({
       rollupTypes: true,
       include: ['src'],
     }),
-    nodeExternals(),
     process.env.ANALYZER && analyzer(),
+    mode !== 'test' && nodeExternals(),
     {
       name: 'fixBinPerm',
       writeBundle: () => {
@@ -39,5 +39,13 @@ export default defineConfig(({ mode }) => ({
     target: 'node18',
     outDir: 'build',
     minify: mode === 'production' && 'esbuild',
+  },
+  test: {
+    globals: true,
+    typecheck: { enabled: true },
+    testOptions: {
+      files: ['test/**/*.test.ts'],
+    },
+    pool: 'forks',
   },
 }))

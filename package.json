@@ -29,14 +29,14 @@
     "build:analyze": "rimraf build && npm run build:options && ANALYZER=true vite build",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
-    "lint:markdown": "markdownlint \"**/*.md\" --ignore \"**/node_modules/**/*.md\" --ignore build --config .markdownlint.js",
+    "lint:markdown": "markdownlint \"**/*.md\" --ignore \"**/node_modules/**/*.md\" --ignore build --config .markdownlint.cjs",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --ignore-path .gitignore --report-unused-disable-directives .",
     "prepare": "src/scripts/install-hooks",
     "prepublishOnly": "npm run build",
     "prettier": "prettier . --check",
     "test": "npm run test:unit && npm run test:e2e",
     "test:bun": "test/bun-install.sh && mocha test/bun",
-    "test:unit": "mocha test test/package-managers/*",
+    "test:unit": "vitest test test/package-managers/*",
     "test:e2e": "./test/e2e.sh",
     "ncu": "node build/cli.js"
   },
@@ -68,7 +68,6 @@
     "@types/json-parse-helpfulerror": "^1.0.3",
     "@types/jsonlines": "^0.1.5",
     "@types/lodash": "^4.17.0",
-    "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.30",
     "@types/npm-registry-fetch": "^8.0.7",
     "@types/parse-github-url": "^1.0.3",
@@ -111,7 +110,6 @@
     "lockfile-lint": "^4.13.2",
     "lodash": "^4.17.21",
     "markdownlint-cli": "^0.39.0",
-    "mocha": "^10.4.0",
     "npm-registry-fetch": "^16.1.0",
     "npm-run-all": "^4.1.5",
     "p-map": "^4.0.0",
@@ -133,7 +131,6 @@
     "spawn-please": "^3.0.0",
     "strip-ansi": "^7.1.0",
     "strip-json-comments": "^5.0.1",
-    "ts-node": "^10.9.2",
     "typescript": "^5.4.3",
     "typescript-json-schema": "^0.63.0",
     "untildify": "^4.0.0",
@@ -143,6 +140,7 @@
     "vite-bundle-analyzer": "^0.9.3",
     "vite-node": "^1.4.0",
     "vite-plugin-dts": "^3.8.0",
+    "vitest": "^1.4.0",
     "yarn": "^1.22.22"
   },
   "files": [
@@ -161,19 +159,5 @@
     "empty-hostname": false,
     "type": "npm ",
     "path": "package-lock.json"
-  },
-  "mocha": {
-    "check-leaks": true,
-    "extension": [
-      "test.ts"
-    ],
-    "require": [
-      "source-map-support/register",
-      "ts-node/register"
-    ],
-    "timeout": 60000,
-    "trace-deprecation": true,
-    "trace-warnings": true,
-    "use_strict": true
   }
 }

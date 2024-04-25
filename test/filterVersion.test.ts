@@ -11,13 +11,13 @@ const bin = path.join(__dirname, '../build/cli.js')
 describe('filterVersion', () => {
   describe('module', () => {
     let stub: { restore: () => void }
-    before(() => {
+    beforeEach(() => {
       stub = stubVersions({
         'ncu-test-v2': '2.0.0',
         'ncu-test-return-version': '2.0.0',
       })
     })
-    after(() => {
+    afterEach(() => {
       stub.restore()
     })
 

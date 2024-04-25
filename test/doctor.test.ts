@@ -30,13 +30,13 @@ const ncu = async (
   return stdout
 }
 
-describe('doctor', function () {
-  // 3 min timeout
-  this.timeout(3 * 60 * 1000)
-
+// 3 min timeout
+describe('doctor', { timeout: 3 * 60 * 1000 }, function () {
   let stub: { restore: () => void }
-  before(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
-  after(() => stub.restore())
+  beforeEach(() => {
+    stub = stubVersions(mockNpmVersions, { spawn: true })
+  })
+  afterEach(() => stub.restore())
 
   describe('npm', () => {
     it('print instructions when -u is not specified', async () => {

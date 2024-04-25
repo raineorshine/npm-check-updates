@@ -112,7 +112,7 @@ let stub: { restore: () => void }
 
 describe('workspaces', () => {
   describe('stubbed', () => {
-    before(() => {
+    beforeEach(() => {
       stub = stubVersions(
         {
           'ncu-test-v2': '2.0.0',
@@ -122,13 +122,11 @@ describe('workspaces', () => {
         { spawn: true },
       )
     })
-    after(() => {
+    afterEach(() => {
       stub.restore()
     })
 
-    describe('--workspaces', function () {
-      this.timeout(60000)
-
+    describe('--workspaces', { timeout: 60000 }, function () {
       it('do not allow --workspaces and --deep together', async () => {
         await ncu({ workspaces: true, deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
       })
@@ -256,9 +254,7 @@ describe('workspaces', () => {
       })
     })
 
-    describe('--workspace', function () {
-      this.timeout(60000)
-
+    describe('--workspace', { timeout: 60000 }, function () {
       it('do not allow --workspace and --deep together', async () => {
         await ncu({ workspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
       })
@@ -360,9 +356,7 @@ describe('workspaces', () => {
       })
     })
 
-    describe('--root/--no-root', function () {
-      this.timeout(60000)
-
+    describe('--root/--no-root', { timeout: 60000 }, function () {
       it('update root project by default', async () => {
         const tempDir = await setup()
         try {
@@ -451,9 +445,7 @@ describe('workspaces', () => {
       })
     })
 
-    describe('--workspace should include --root by default', function () {
-      this.timeout(60000)
-
+    describe('--workspace should include --root by default', { timeout: 60000 }, function () {
       it('update root project and single workspace', async () => {
         const tempDir = await setup()
         try {

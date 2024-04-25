@@ -13,8 +13,10 @@ const bin = path.join(__dirname, '../build/cli.js')
 describe('filter', () => {
   describe('module', () => {
     let stub: { restore: () => void }
-    before(() => (stub = stubVersions('99.9.9')))
-    after(() => stub.restore())
+    beforeEach(() => {
+      stub = stubVersions('99.9.9')
+    })
+    afterEach(() => stub.restore())
 
     it('filter by package name with one arg', async () => {
       const upgraded = (await ncu({
@@ -203,8 +205,10 @@ describe('filter', () => {
 
   describe('cli', () => {
     let stub: { restore: () => void }
-    before(() => (stub = stubVersions('99.9.9', { spawn: true })))
-    after(() => stub.restore())
+    beforeEach(() => {
+      stub = stubVersions('99.9.9', { spawn: true })
+    })
+    afterEach(() => stub.restore())
 
     it('filter by package name with --filter', async () => {
       const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin', '--filter', 'express'], {
@@ -296,8 +300,10 @@ describe('filter', () => {
 describe('reject', () => {
   describe('cli', () => {
     let stub: { restore: () => void }
-    before(() => (stub = stubVersions('99.9.9', { spawn: true })))
-    after(() => stub.restore())
+    beforeEach(() => {
+      stub = stubVersions('99.9.9', { spawn: true })
+    })
+    afterEach(() => stub.restore())
 
     it('reject by package name with --reject', async () => {
       const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin', '--reject', 'chalk'], {

@@ -12,8 +12,10 @@ const bin = path.join(__dirname, '../build/cli.js')
 describe('rc-config', () => {
   // before/after must be placed within the describe block, otherwise they will apply to tests in other files
   let stub: { restore: () => void }
-  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
-  after(() => stub.restore())
+  beforeEach(() => {
+    stub = stubVersions('99.9.9', { spawn: true })
+  })
+  afterEach(() => stub.restore())
 
   it('print rcConfigPath when there is a non-empty rc config file', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))

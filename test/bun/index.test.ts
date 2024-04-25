@@ -23,12 +23,10 @@ describe('bun', function () {
     version!.should.equal('2.0.0')
   })
 
-  describe('doctor', function () {
-    this.timeout(3 * 60 * 1000)
-
+  describe('doctor', { timeout: 3 * 60 * 1000 }, function () {
     let stub: { restore: () => void }
-    before(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
-    after(() => stub.restore())
+    beforeEach(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
+    afterEach(() => stub.restore())
 
     testPass({ packageManager: 'bun' })
     testFail({ packageManager: 'bun' })
