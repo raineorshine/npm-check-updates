@@ -139,7 +139,7 @@ const install = async (
 
     pkgsNormalized.forEach(async pkgFile => {
       const packageManager = await getPackageManagerForInstall(options, pkgFile)
-      const cmd = packageManager + (process.platform === 'win32' ? '.cmd' : '')
+      const cmd = packageManager + (process.platform === 'win32' && packageManager !== 'bun' ? '.cmd' : '')
       const cwd = options.cwd || path.resolve(pkgFile, '..')
       let stdout = ''
       try {
