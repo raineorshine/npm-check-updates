@@ -48,6 +48,9 @@ jobs:
       - name: Unit Tests
         run: npm run test:unit
 
+      - name: Bun Tests
+        run: npm run test:bun
+
       - name: E2E Tests
         run: npm run test:e2e
         if: startsWith(matrix.os, 'ubuntu') && matrix.node == 20

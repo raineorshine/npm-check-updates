@@ -30,10 +30,11 @@
     "lint:lockfile": "lockfile-lint",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore \"**/node_modules/**/*.md\" --ignore build --config .markdownlint.js",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --ignore-path .gitignore --report-unused-disable-directives .",
-    "prepare": "src/scripts/install-hooks && test/bun-setup.sh",
+    "prepare": "src/scripts/install-hooks",
     "prepublishOnly": "npm run build",
     "prettier": "prettier . --check",
     "test": "npm run test:unit && npm run test:e2e",
+    "test:bun": "test/bun-install.sh && mocha test/bun",
     "test:unit": "mocha test test/package-managers/*",
     "test:e2e": "./test/e2e.sh",
     "ncu": "node build/cli.js"
