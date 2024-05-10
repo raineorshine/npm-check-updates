@@ -52,6 +52,7 @@
     "url": "https://github.com/raineorshine/npm-check-updates/issues"
   },
   "overrides": {
+    "ip": "2.0.1",
     "jsonparse": "https://github.com/ARitz-Cracker/jsonparse/tree/patch-1",
     "@yarnpkg/parsers": "2.6.0"
   },
