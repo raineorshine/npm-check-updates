@@ -274,7 +274,7 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
  * | void                         --global upgrade returns void.
  * >
  */
-export async function run(
+async function run(
   runOptions: RunOptions = {},
   { cli }: { cli?: boolean } = {},
 ): Promise<PackageFile | Index<VersionSpec> | void> {

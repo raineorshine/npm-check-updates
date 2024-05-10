@@ -120,7 +120,7 @@ npm i npm-check-updates@latest --registry $registry_local
 npm i typescript@5.4.5
 echo 'import ncu from "npm-check-updates"
 
-ncu.run({})' >index.ts
+ncu({})' >index.ts
 
 echo Running test
 npx tsc index.ts
