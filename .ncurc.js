@@ -8,7 +8,5 @@ module.exports = {
     'p-map',
     'remote-git-tags',
     'untildify',
-    // major changes required to upgrade to v3
-    'spawn-please',
   ],
 }
