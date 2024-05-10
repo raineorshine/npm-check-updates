@@ -1,3 +1,5 @@
+import { chmodSync, existsSync } from 'fs'
+import path from 'path'
 import { nodeExternals } from 'rollup-plugin-node-externals'
 import { defineConfig } from 'vite'
 import { analyzer } from 'vite-bundle-analyzer'
@@ -10,8 +12,19 @@ export default defineConfig(({ mode }) => ({
       rollupTypes: true,
       include: ['src'],
     }),
-    nodeExternals(),
     process.env.ANALYZER && analyzer(),
+    mode !== 'test' && nodeExternals(),
+    {
+      name: 'fixBinPerm',
+      writeBundle: () => {
+        const scriptFile = path.resolve('build', 'cli.js')
+        console.log('end', scriptFile)
+        if (existsSync(scriptFile)) {
+          console.log('exist', scriptFile)
+          chmodSync(scriptFile, '0755')
+        }
+      },
+    },
   ],
   ssr: {
     // bundle and treeshake everything
@@ -21,11 +34,18 @@ export default defineConfig(({ mode }) => ({
     ssr: true,
     lib: {
       entry: ['src/index.ts', 'src/bin/cli.ts'],
-      formats: ['cjs'],
+      formats: ['es'],
     },
     target: 'node18',
     outDir: 'build',
-    sourcemap: true,
     minify: mode === 'production' && 'esbuild',
+  },
+  test: {
+    globals: true,
+    typecheck: { enabled: true },
+    testOptions: {
+      files: ['test/**/*.test.ts'],
+    },
+    pool: 'forks',
   },
 }))

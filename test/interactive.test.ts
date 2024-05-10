@@ -11,7 +11,7 @@ const bin = path.join(__dirname, '../build/cli.js')
 
 describe('--interactive', () => {
   let stub: { restore: () => void }
-  before(() => {
+  beforeEach(() => {
     stub = stubVersions(
       {
         'ncu-test-v2': '2.0.0',
@@ -22,7 +22,7 @@ describe('--interactive', () => {
       { spawn: true },
     )
   })
-  after(() => {
+  afterEach(() => {
     stub.restore()
   })
 

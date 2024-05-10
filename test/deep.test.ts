@@ -43,12 +43,12 @@ const setupDeepTest = async () => {
   return tempDir
 }
 
-describe('--deep', function () {
-  this.timeout(60000)
-
+describe('--deep', { timeout: 60000 }, function () {
   let stub: { restore: () => void }
-  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
-  after(() => stub.restore())
+  beforeEach(() => {
+    stub = stubVersions('99.9.9', { spawn: true })
+  })
+  afterEach(() => stub.restore())
 
   it('do not allow --packageFile and --deep together', async () => {
     await ncu({ packageFile: './package.json', deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
@@ -121,14 +121,14 @@ describe('--deep', function () {
   })
 })
 
-describe('--deep with nested ncurc files', function () {
+describe('--deep with nested ncurc files', { timeout: 60000 }, function () {
   const cwd = path.join(__dirname, 'test-data/deep-ncurc')
 
-  this.timeout(60000)
-
   let stub: { restore: () => void }
-  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
-  after(() => stub.restore())
+  beforeEach(() => {
+    stub = stubVersions('99.9.9', { spawn: true })
+  })
+  afterEach(() => stub.restore())
 
   it('use ncurc of nested packages', async () => {
     const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--deep'], {}, { cwd })

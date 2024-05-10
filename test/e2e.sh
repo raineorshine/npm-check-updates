@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 cwd=$(pwd)
 e2e_dir=$(dirname "$(readlink -f "$0")")
 temp_dir=$(mktemp -d)
@@ -10,15 +9,16 @@ verdaccio_config=$temp_dir/verdaccio-config.yaml
 
 # cleanup on exit
 cleanup() {
-
   exit_status=$?
 
+  # turn off stop on error
+  set +e
+
   # shut down verdaccio
-  verdaccio_pid=$(lsof -t -i :$registry_port)
   if [ -n "$verdaccio_pid" ]; then
-    echo Shutting down verdaccio
-    kill -9 $verdaccio_pid
-    wait $verdaccio_pid 2>/dev/null
+    echo "Shutting down verdaccio (PID $verdaccio_pid)"
+    kill "$verdaccio_pid"
+    wait "$verdaccio_pid" 2>/dev/null
   fi
 
   # delete authToken
@@ -26,10 +26,10 @@ cleanup() {
   npm config delete "//localhost:$registry_port/:_authToken"
 
   # remove temp directory
-  rm -rf $temp_dir
+  rm -rf "$temp_dir"
 
   # return to working directory
-  cd $cwd
+  cd "$cwd"
 
   if [ $exit_status -ne 0 ]; then
     echo Error
@@ -39,6 +39,8 @@ cleanup() {
 }
 
 trap cleanup EXIT
+# stop at first error
+set -e
 
 # create verdaccio config
 #   - store packages in temp directory so they are deleted on exit
@@ -55,12 +57,13 @@ packages:
 uplinks:
   npmjs:
     url: https://registry.npmjs.org/
-" >$verdaccio_config
+" >"$verdaccio_config"
 
 # start verdaccio and wait for it to boot
 echo Starting local registry
-nohup verdaccio -l $registry_port -c $verdaccio_config &>$registry_log &
-grep -q 'http address' <(tail -f $registry_log)
+verdaccio -l $registry_port -c "$verdaccio_config" &>"$registry_log" &
+verdaccio_pid=$!
+grep -q 'http address' <(tail -f "$registry_log")
 
 # set dummy authToken which is required to publish
 # https://github.com/verdaccio/verdaccio/issues/212#issuecomment-308578500
@@ -81,32 +84,22 @@ echo '{
   "dependencies": {
     "npm-check-updates": "1.0.0"
   }
-}' >$temp_dir/package.json
+}' >"$temp_dir"/package.json
 
 # --configFilePath to avoid reading the repo .ncurc
 # --cwd to point to the temp package file
 # --pre 1 to ensure that an upgrade is always suggested even if npm-check-updates is on a prerelease version
-npx --registry $registry_local npm-check-updates --configFilePath $temp_dir --cwd $temp_dir --pre 1 --registry $registry_local
+npx --registry $registry_local npm-check-updates --configFilePath "$temp_dir" --cwd "$temp_dir" --pre 1 --registry $registry_local
 
-rm $temp_dir/package.json
-cp -r $e2e_dir/e2e $temp_dir
-
-# Test: cjs
-echo Test: cjs
-cd $temp_dir/e2e/cjs
-
-echo Installing
-npm i npm-check-updates@latest --registry $registry_local
-
-echo Running test
-REGISTRY=$registry_local node $temp_dir/e2e/cjs/index.js
+rm "$temp_dir"/package.json
+cp -r "$e2e_dir"/e2e "$temp_dir"
 
 # Test: esm
 echo Test: esm
-cd $temp_dir/e2e/esm
+cd "$temp_dir"/e2e/esm
 
 echo Installing
 npm i npm-check-updates@latest --registry $registry_local
 
 echo Running test
-REGISTRY=$registry_local node $temp_dir/e2e/esm/index.js
+REGISTRY=$registry_local node "$temp_dir"/e2e/esm/index.js
