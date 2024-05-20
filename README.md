@@ -381,13 +381,13 @@ Run `ncu --help [OPTION]` to view advanced help for a specific option, or see be
 
 Usage:
 
-    ncu --doctor
+    ncu --doctor -u
     ncu --no-doctor
-    ncu -d
+    ncu -du
 
-Iteratively installs upgrades and runs tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
+Iteratively installs upgrades and runs your project's tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
 
-Add `-u` to execute (modifies your package file, lock file, and node_modules)
+Requires `-u` to execute (modifies your package file, lock file, and node_modules)
 
 To be more precise:
 

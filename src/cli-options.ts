@@ -28,15 +28,17 @@ const uncode = (s: string) => s.replace(/`/g, '')
 export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?: boolean } = {}) => {
   let output = ''
   if (option.cli !== false) {
+    // add -u to doctor option
     output = `Usage:
 
-    ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}\n`
+    ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}${option.long === 'doctor' ? ' -u' : ''}\n`
   }
   if (option.type === 'boolean') {
     output += `    ncu --no-${option.long}\n`
   }
   if (option.short) {
-    output += `    ncu -${option.short}${option.arg ? ` [${option.arg}]` : ''}\n`
+    // add -u to doctor option
+    output += `    ncu -${option.short}${option.arg ? ` [${option.arg}]` : ''}${option.long === 'doctor' ? 'u' : ''}\n`
   }
 
   if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
@@ -61,9 +63,9 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?:
 /** Extended help for the --doctor option. */
 const extendedHelpDoctor: ExtendedHelp = ({
   markdown,
-}) => `Iteratively installs upgrades and runs tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
+}) => `Iteratively installs upgrades and runs your project's tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
 
-${chalk.yellow('Add `-u` to execute')} (modifies your package file, lock file, and node_modules)
+${chalk.yellow('Requires `-u` to execute')} (modifies your package file, lock file, and node_modules)
 
 To be more precise:
 
