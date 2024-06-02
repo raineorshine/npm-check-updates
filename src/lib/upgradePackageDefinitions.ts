@@ -16,14 +16,23 @@ import upgradeDependencies from './upgradeDependencies'
  *
  * @returns
  */
-const checkIfInPeerViolation = (
+const checkIfInPeerViolation = async (
   currentDependencies: Index<VersionSpec>,
   filteredUpgradedDependencies: Index<VersionSpec>,
   upgradedPeerDependencies: Index<Index<VersionSpec>>,
-  latestVersionResults: Index<VersionResult>,
+  options: Options,
 ) => {
   const upgradedDependencies = { ...currentDependencies, ...filteredUpgradedDependencies }
-  const filteredLatestDependencies = pickBy(latestVersionResults, (spec, dep) => upgradedDependencies[dep])
+  const currentVersionResults = await queryVersions(upgradedDependencies, {
+    ...options,
+    target: 'semver',
+    peer: false,
+    pre: true,
+    deprecated: true,
+    enginesNode: false,
+    peerDependencies: undefined,
+  })
+  const filteredLatestDependencies = pickBy(currentVersionResults, (spec, dep) => upgradedDependencies[dep])
   const filteredUpgradedPeerDependencies = { ...upgradedPeerDependencies }
   let wereUpgradedDependenceFiltered = false
   const filteredUpgradedDependenciesAfterPeers = pickBy(filteredUpgradedDependencies, (spec, dep) => {
@@ -113,11 +122,11 @@ export async function upgradePackageDefinitions(
 
   if (options.peer && Object.keys(filteredLatestDependencies).length > 0) {
     const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredLatestDependencies, options)
-    const checkPeerViolationResult = checkIfInPeerViolation(
+    const checkPeerViolationResult = await checkIfInPeerViolation(
       currentDependencies,
       filteredUpgradedDependencies,
       upgradedPeerDependencies,
-      latestVersionResults,
+      options,
     )
     if (checkPeerViolationResult.issuesFound) {
       const fullRerunResult = await rerunUpgradeIfChangedPeers(
@@ -128,11 +137,11 @@ export async function upgradePackageDefinitions(
         options,
       )
       if (fullRerunResult) {
-        const checkPeerViolationResultFullRerun = checkIfInPeerViolation(
+        const checkPeerViolationResultFullRerun = await checkIfInPeerViolation(
           currentDependencies,
           fullRerunResult[0],
           fullRerunResult[2]!,
-          fullRerunResult[1],
+          options,
         )
         if (!checkPeerViolationResultFullRerun.issuesFound) {
           return fullRerunResult
@@ -146,11 +155,11 @@ export async function upgradePackageDefinitions(
         options,
       )
       if (partialRerunResult) {
-        const checkPeerViolationResultPartialRerun = checkIfInPeerViolation(
+        const checkPeerViolationResultPartialRerun = await checkIfInPeerViolation(
           currentDependencies,
           partialRerunResult[0],
           partialRerunResult[2]!,
-          partialRerunResult[1],
+          options,
         )
         if (!checkPeerViolationResultPartialRerun.issuesFound) {
           return partialRerunResult
