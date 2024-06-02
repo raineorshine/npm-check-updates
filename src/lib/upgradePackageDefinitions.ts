@@ -11,41 +11,42 @@ import { pickBy } from './pick'
 import queryVersions from './queryVersions'
 import upgradeDependencies from './upgradeDependencies'
 
+type CheckIfInPeerViolationResult = {
+  issuesFound: boolean;
+  filteredUpgradedDependencies: Index<VersionSpec>;
+  upgradedPeerDependencies: Index<Index<VersionSpec>>;
+  removedUpgradedDependencies: Index<VersionSpec>;
+}
+
 /**
  * check if in peer violation
  *
  * @returns
  */
-const checkIfInPeerViolation = async (
+const checkIfInPeerViolation = (
   currentDependencies: Index<VersionSpec>,
   filteredUpgradedDependencies: Index<VersionSpec>,
   upgradedPeerDependencies: Index<Index<VersionSpec>>,
-  options: Options,
-) => {
+): CheckIfInPeerViolationResult => {
   const upgradedDependencies = { ...currentDependencies, ...filteredUpgradedDependencies }
-  const currentVersionResults = await queryVersions(upgradedDependencies, {
-    ...options,
-    target: 'semver',
-    peer: false,
-    pre: true,
-    deprecated: true,
-    enginesNode: false,
-    peerDependencies: undefined,
-  })
-  const filteredLatestDependencies = pickBy(currentVersionResults, (spec, dep) => upgradedDependencies[dep])
+  const upgradedDependenciesVersions= Object.fromEntries(
+    Object.entries(upgradedDependencies).map(([packageName, versionSpec]) => {
+      return [packageName, semver.minVersion(versionSpec)?.version ?? versionSpec]
+    }),
+  );
   const filteredUpgradedPeerDependencies = { ...upgradedPeerDependencies }
+  const removedUpgradedDependencies:Index<VersionSpec> = {}
   let wereUpgradedDependenceFiltered = false
   const filteredUpgradedDependenciesAfterPeers = pickBy(filteredUpgradedDependencies, (spec, dep) => {
     const peerDeps = filteredUpgradedPeerDependencies[dep]
     if (!peerDeps) {
       return true
     }
-    const valid = Object.entries(peerDeps).every(([peer, peerSpec]) => {
-      const version = filteredLatestDependencies[peer]?.version
-      return !version || semver.satisfies(version, peerSpec)
-    })
+    const valid = Object.entries(peerDeps).every(([peer, peerSpec]) =>
+      upgradedDependenciesVersions[peer] === undefined || semver.satisfies(upgradedDependenciesVersions[peer], peerSpec))
     if (!valid) {
       wereUpgradedDependenceFiltered = true
+      removedUpgradedDependencies[dep] = spec
       delete filteredUpgradedPeerDependencies[dep]
     }
     return valid
@@ -54,6 +55,7 @@ const checkIfInPeerViolation = async (
     issuesFound: wereUpgradedDependenceFiltered,
     filteredUpgradedDependencies: filteredUpgradedDependenciesAfterPeers,
     upgradedPeerDependencies: filteredUpgradedPeerDependencies,
+    removedUpgradedDependencies,
   }
 }
 
@@ -69,6 +71,9 @@ const rerunUpgradeIfChangedPeers = async (
   latestVersionResults: Index<VersionResult>,
   options: Options,
 ): Promise<void | [Index<VersionSpec>, Index<VersionResult>, Index<Index<VersionSpec>>?]> => {
+  if (Object.keys(filteredUpgradedDependencies).length === 0) {
+    return [{}, latestVersionResults, options.peerDependencies]
+  }
   const peerDependencies = { ...options.peerDependencies, ...upgradedPeerDependencies }
   if (!dequal(options.peerDependencies, peerDependencies)) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -122,64 +127,81 @@ export async function upgradePackageDefinitions(
 
   if (options.peer && Object.keys(filteredLatestDependencies).length > 0) {
     const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredLatestDependencies, options)
-    const checkPeerViolationResult = await checkIfInPeerViolation(
+    let checkPeerViolationResult = checkIfInPeerViolation(
       currentDependencies,
       filteredUpgradedDependencies,
       upgradedPeerDependencies,
+    )
+    // Try another run to see if we can upgrade some more
+    let rerunResult = await rerunUpgradeIfChangedPeers(
+      currentDependencies,
+      filteredUpgradedDependencies,
+      upgradedPeerDependencies,
+      latestVersionResults,
       options,
     )
-    if (checkPeerViolationResult.issuesFound) {
-      const fullRerunResult = await rerunUpgradeIfChangedPeers(
-        currentDependencies,
-        filteredUpgradedDependencies,
-        upgradedPeerDependencies,
-        latestVersionResults,
-        options,
-      )
-      if (fullRerunResult) {
-        const checkPeerViolationResultFullRerun = await checkIfInPeerViolation(
+    if (!rerunResult) {
+      // Nothing changed in the rerun
+      if (!checkPeerViolationResult.issuesFound) {
+        // No issues were found, return
+        return [filteredUpgradedDependencies, latestVersionResults, options.peerDependencies]
+      }
+      // Issues found, will keep trying without problematic packages
+      while (true) {
+        rerunResult = await rerunUpgradeIfChangedPeers(
           currentDependencies,
-          fullRerunResult[0],
-          fullRerunResult[2]!,
+          checkPeerViolationResult.filteredUpgradedDependencies,
+          checkPeerViolationResult.upgradedPeerDependencies,
+          latestVersionResults,
           options,
         )
-        if (!checkPeerViolationResultFullRerun.issuesFound) {
-          return fullRerunResult
+        if (!rerunResult) {
+          // We can't find anything to do, will not upgrade anything
+          return [{}, latestVersionResults, options.peerDependencies]
         }
-      }
-      const partialRerunResult = await rerunUpgradeIfChangedPeers(
-        currentDependencies,
-        checkPeerViolationResult.filteredUpgradedDependencies,
-        checkPeerViolationResult.upgradedPeerDependencies,
-        latestVersionResults,
-        options,
-      )
-      if (partialRerunResult) {
-        const checkPeerViolationResultPartialRerun = await checkIfInPeerViolation(
+        checkPeerViolationResult = checkIfInPeerViolation(
           currentDependencies,
-          partialRerunResult[0],
-          partialRerunResult[2]!,
-          options,
+          rerunResult[0],
+          rerunResult[2]!,
         )
-        if (!checkPeerViolationResultPartialRerun.issuesFound) {
-          return partialRerunResult
+        if (!checkPeerViolationResult.issuesFound) {
+          // We found a stable solution
+          return rerunResult
         }
       }
-      return [
-        checkPeerViolationResult.filteredUpgradedDependencies,
-        latestVersionResults,
-        checkPeerViolationResult.upgradedPeerDependencies,
-      ]
     } else {
-      const rerunResult = await rerunUpgradeIfChangedPeers(
+      // Rerun managed to make some more upgrades
+      checkPeerViolationResult = checkIfInPeerViolation(
         currentDependencies,
-        filteredUpgradedDependencies,
-        upgradedPeerDependencies,
-        latestVersionResults,
-        options,
+        rerunResult[0],
+        rerunResult[2]!,
       )
-      if (rerunResult) {
+      if (!checkPeerViolationResult.issuesFound) {
+        // No issues were found, return
         return rerunResult
+      }
+      // Issues found, will keep trying without problematic packages
+      while (true) {
+        rerunResult = await rerunUpgradeIfChangedPeers(
+          currentDependencies,
+          checkPeerViolationResult.filteredUpgradedDependencies,
+          checkPeerViolationResult.upgradedPeerDependencies,
+          latestVersionResults,
+          options,
+        )
+        if (!rerunResult) {
+          // We can't find anything to do, will not upgrade anything
+          return [{}, latestVersionResults, options.peerDependencies]
+        }
+        checkPeerViolationResult = checkIfInPeerViolation(
+          currentDependencies,
+          rerunResult[0],
+          rerunResult[2]!,
+        )
+        if (!checkPeerViolationResult.issuesFound) {
+          // We found a stable solution
+          return rerunResult
+        }
       }
     }
   }
