@@ -45,6 +45,6 @@ describe('peer dependencies', function () {
         return packageName === 'eslint-plugin-unused-imports' ? 'latest' : 'minor'
       },
     })
-    upgrades!.should.contain.keys('@vitest/ui', 'vitest')
+    upgrades!.should.have.all.keys('@vitest/ui', 'vitest')
   })
 })
