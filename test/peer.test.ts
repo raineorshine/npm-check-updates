@@ -1,3 +1,4 @@
+import path from 'path'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
 
@@ -70,6 +71,30 @@ describe('peer dependencies', function () {
         dependencies: {
           '@libraries/project-4-utils': 'git+gitlab.com/projects/libraries/project-4-utils.git',
         },
+      },
+    })
+    upgrades!.should.deep.equal({})
+  })
+
+  it('ignores if post upgrade peers are unmet', async () => {
+    const cwd = path.join(__dirname, 'test-data/peer-post-upgrade/')
+    const upgrades = await ncu({
+      cwd,
+      peer: true,
+      target: packageName => {
+        return packageName === 'eslint-plugin-unused-imports' ? 'latest' : 'minor'
+      },
+    })
+    upgrades!.should.have.all.keys('@vitest/ui', 'vitest')
+  })
+
+  it('ignores if post upgrade peers are unmet - no upgrades', async () => {
+    const cwd = path.join(__dirname, 'test-data/peer-post-upgrade-no-upgrades/')
+    const upgrades = await ncu({
+      cwd,
+      peer: true,
+      target: packageName => {
+        return packageName === 'eslint-plugin-unused-imports' ? 'latest' : 'minor'
       },
     })
     upgrades!.should.deep.equal({})
