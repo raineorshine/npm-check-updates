@@ -294,3 +294,5 @@ export const patch = withNpmConfigFromYarn(npm.patch)
 export const semver = withNpmConfigFromYarn(npm.semver)
 
 export default spawnYarn
+
+export { getPeerDependencies, packageAuthorChanged } from './npm'
