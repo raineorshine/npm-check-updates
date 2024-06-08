@@ -1,4 +1,4 @@
-import semver, { satisfies } from 'semver'
+import { minVersion, satisfies } from 'semver'
 import { IgnoredUpgrade } from '../types/IgnoredUpgrade'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -19,7 +19,7 @@ export async function getIgnoredUpgrades(
       ...current,
       ...upgraded,
     }).map(([packageName, versionSpec]) => {
-      return [packageName, semver.minVersion(versionSpec)?.version ?? versionSpec]
+      return [packageName, minVersion(versionSpec)?.version ?? versionSpec]
     }),
   )
   const [upgradedLatestVersions, latestVersionResults] = await upgradePackageDefinitions(current, {
