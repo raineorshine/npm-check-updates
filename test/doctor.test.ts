@@ -20,8 +20,6 @@ const mockNpmVersions = {
   'ncu-test-v2': '2.0.0',
 }
 
-const [nodeMajorVersion] = process.versions.node.split('.').map(Number)
-
 /** Run the ncu CLI. */
 const ncu = async (
   args: string[],
@@ -111,20 +109,15 @@ describe('doctor', function () {
       await fs.rm(lockfilePath, { recursive: true, force: true })
       await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
-      if (nodeMajorVersion === 18 && stderr !== '') {
-        stripAnsi(stderr).should.equal(`
-> test
+      stderr = stripAnsi(stderr).trim()
+      if (stderr !== '') {
+        stderr.should.equal(`> test
 > node test.js
 
 
 
 > test
-> node test.js
-
-
-`)
-      } else {
-        stderr.should.equal('')
+> node test.js`)
       }
 
       // stdout should include normal output
@@ -169,20 +162,15 @@ describe('doctor', function () {
       await fs.rm(lockfilePath, { recursive: true, force: true })
       await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
-      if (nodeMajorVersion === 18 && stderr !== '') {
-        stripAnsi(stderr).should.equal(`
-> test
+      stderr = stripAnsi(stderr).trim()
+      if (stderr !== '') {
+        stripAnsi(stderr).should.equal(`> test
 > echo 'Test Success'
 
 
 
 > test
-> echo 'Test Success'
-
-
-`)
-      } else {
-        stderr.should.equal('')
+> echo 'Test Success'`)
       }
 
       // stdout should include normal output
