@@ -77,7 +77,19 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
     if (packageManager === 'bun') {
       stripAnsi(stderr).should.equal('$ echo Success\n\n$ echo Success\n\n')
     } else {
-      stderr.should.equal('')
+      const [nodeMajorVersion] = process.versions.node.split('.').map(Number)
+      stderr = stderr.trim()
+      if (nodeMajorVersion === 18 && stderr !== '') {
+        stripAnsi(stderr).should.equal(`> test
+> echo Success
+
+
+
+> test
+> echo Success`)
+      } else {
+        stderr.should.equal('')
+      }
     }
 
     // stdout should include normal output

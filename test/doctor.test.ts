@@ -20,6 +20,8 @@ const mockNpmVersions = {
   'ncu-test-v2': '2.0.0',
 }
 
+const [nodeMajorVersion] = process.versions.node.split('.').map(Number)
+
 /** Run the ncu CLI. */
 const ncu = async (
   args: string[],
@@ -109,8 +111,21 @@ describe('doctor', function () {
       await fs.rm(lockfilePath, { recursive: true, force: true })
       await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
-      // stderr should be empty
-      stderr.should.equal('')
+      if (nodeMajorVersion === 18 && stderr !== '') {
+        stripAnsi(stderr).should.equal(`
+> test
+> node test.js
+
+
+
+> test
+> node test.js
+
+
+`)
+      } else {
+        stderr.should.equal('')
+      }
 
       // stdout should include normal output
       stripAnsi(stdout).should.containIgnoreCase('Tests pass')
@@ -154,8 +169,21 @@ describe('doctor', function () {
       await fs.rm(lockfilePath, { recursive: true, force: true })
       await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
-      // stderr should be empty
-      stderr.should.equal('')
+      if (nodeMajorVersion === 18 && stderr !== '') {
+        stripAnsi(stderr).should.equal(`
+> test
+> echo 'Test Success'
+
+
+
+> test
+> echo 'Test Success'
+
+
+`)
+      } else {
+        stderr.should.equal('')
+      }
 
       // stdout should include normal output
       stripAnsi(stdout).should.containIgnoreCase('Tests pass')
