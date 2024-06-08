@@ -666,6 +666,19 @@ export const getPeerDependencies = async (packageName: string, version: Version)
 }
 
 /**
+ * Fetches the engines list from the registry for a specific package version.
+ *
+ * @param packageName
+ * @param version
+ * @returns Promised engines collection
+ */
+export const getEngines = async (packageName: string, version: Version): Promise<Index<Version | undefined>> => {
+  const args = ['view', `${packageName}@${version}`, 'engines']
+  const result = await spawnNpm(args, {}, { rejectOnError: false })
+  return result ? parseJson<{ node?: string }>(result, { command: [...args, '--json'].join(' ') }) : {}
+}
+
+/**
  * Fetches the list of all installed packages.
  *
  * @param [options]

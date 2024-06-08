@@ -1,11 +1,11 @@
-import getIgnoredUpgrades from '../src/lib/getIgnoredUpgrades'
+import getIgnoredUpgradesDueToPeerDeps from '../src/lib/getIgnoredUpgradesDueToPeerDeps'
 import chaiSetup from './helpers/chaiSetup'
 
 chaiSetup()
 
-describe('getIgnoredUpgrades', function () {
+describe('getIgnoredUpgradesDueToPeerDeps', function () {
   it('ncu-test-peer-update', async () => {
-    const data = await getIgnoredUpgrades(
+    const data = await getIgnoredUpgradesDueToPeerDeps(
       {
         'ncu-test-return-version': '1.0.0',
         'ncu-test-peer': '1.0.0',

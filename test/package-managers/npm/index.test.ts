@@ -31,4 +31,9 @@ describe('npm', function () {
       'ncu-test-return-version': '1.x',
     })
   })
+
+  it('getEngines', async () => {
+    await npm.getEngines('del', '2.0.0').should.eventually.deep.equal({ node: '>=0.10.0' })
+    await npm.getEngines('ncu-test-return-version', '1.0').should.eventually.deep.equal({})
+  })
 })

@@ -107,4 +107,4 @@ export default async function spawnPnpm(
   return stdout
 }
 
-export { defaultPrefix, getPeerDependencies, packageAuthorChanged } from './npm'
+export { defaultPrefix, getPeerDependencies, getEngines, packageAuthorChanged } from './npm'

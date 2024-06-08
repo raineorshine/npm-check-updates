@@ -1,7 +1,7 @@
 import { Cacher } from './Cacher'
 import { Index } from './IndexType'
 import { RunOptions } from './RunOptions'
-import { VersionSpec } from './VersionSpec'
+import { Version } from './Version'
 
 /** Internal, normalized options for all ncu behavior. Includes RunOptions that are specified in the CLI or passed to the ncu module, as well as meta information including CLI arguments, package information, and ncurc config. */
 export type Options = RunOptions & {
@@ -10,7 +10,7 @@ export type Options = RunOptions & {
   cli?: boolean
   distTag?: string
   json?: boolean
-  nodeEngineVersion?: VersionSpec
+  nodeEngineVersion?: Version
   packageData?: string
   peerDependencies?: Index<any>
   rcConfigPath?: string
