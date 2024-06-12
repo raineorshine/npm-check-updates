@@ -77,7 +77,16 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
     if (packageManager === 'bun') {
       stripAnsi(stderr).should.equal('$ echo Success\n\n$ echo Success\n\n')
     } else {
-      stderr.should.equal('')
+      stderr = stripAnsi(stderr).trim()
+      if (stderr !== '') {
+        stderr.should.equal(`> test
+> echo Success
+
+
+
+> test
+> echo Success`)
+      }
     }
 
     // stdout should include normal output

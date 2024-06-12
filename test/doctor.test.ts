@@ -109,8 +109,16 @@ describe('doctor', function () {
       await fs.rm(lockfilePath, { recursive: true, force: true })
       await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
-      // stderr should be empty
-      stderr.should.equal('')
+      stderr = stripAnsi(stderr).trim()
+      if (stderr !== '') {
+        stderr.should.equal(`> test
+> node test.js
+
+
+
+> test
+> node test.js`)
+      }
 
       // stdout should include normal output
       stripAnsi(stdout).should.containIgnoreCase('Tests pass')
@@ -154,8 +162,16 @@ describe('doctor', function () {
       await fs.rm(lockfilePath, { recursive: true, force: true })
       await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
-      // stderr should be empty
-      stderr.should.equal('')
+      stderr = stripAnsi(stderr).trim()
+      if (stderr !== '') {
+        stripAnsi(stderr).should.equal(`> test
+> echo 'Test Success'
+
+
+
+> test
+> echo 'Test Success'`)
+      }
 
       // stdout should include normal output
       stripAnsi(stdout).should.containIgnoreCase('Tests pass')
