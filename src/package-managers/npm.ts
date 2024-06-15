@@ -681,7 +681,7 @@ export const getEngines = async (
   version: Version,
   options: Options = {},
   npmConfigLocal?: NpmConfig,
-): Promise<Index<Version | undefined>> => {
+): Promise<Index<VersionSpec | undefined>> => {
   const result = await fetchPartialPackument(
     packageName,
     [`engines`],

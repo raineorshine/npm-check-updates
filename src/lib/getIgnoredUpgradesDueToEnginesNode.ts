@@ -9,7 +9,7 @@ import getEnginesNodeFromRegistry from './getEnginesNodeFromRegistry'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
 
 /** Checks if package.json min node version satisfies given package engine.node spec */
-const satisfiesNodeEngine = (enginesNode: Maybe<Version>, optionsEnginesNodeMinVersion: string) =>
+const satisfiesNodeEngine = (enginesNode: Maybe<VersionSpec>, optionsEnginesNodeMinVersion: Version) =>
   !enginesNode || satisfies(optionsEnginesNodeMinVersion, enginesNode)
 
 /** Get all upgrades that are ignored due to incompatible engines.node. */

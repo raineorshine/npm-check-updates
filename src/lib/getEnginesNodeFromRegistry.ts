@@ -1,7 +1,7 @@
 import ProgressBar from 'progress'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
-import { Version } from '../types/Version'
+import { VersionSpec } from '../types/VersionSpec'
 import getPackageManager from './getPackageManager'
 
 /**
@@ -11,7 +11,7 @@ import getPackageManager from './getPackageManager'
  * @param [options={}] Options.
  * @returns Promised {packageName: engines.node} collection
  */
-async function getEnginesNodeFromRegistry(packageMap: Index<Version>, options: Options) {
+async function getEnginesNodeFromRegistry(packageMap: Index<VersionSpec>, options: Options) {
   const packageManager = getPackageManager(options, options.packageManager)
   if (!packageManager.getEngines) return {}
 
@@ -29,7 +29,7 @@ async function getEnginesNodeFromRegistry(packageMap: Index<Version>, options: O
     }
     const accum = await accumPromise
     return { ...accum, [pkg]: enginesNode }
-  }, Promise.resolve<Index<Version | undefined>>({}))
+  }, Promise.resolve<Index<VersionSpec | undefined>>({}))
 }
 
 export default getEnginesNodeFromRegistry
