@@ -1,5 +1,5 @@
 import { dequal } from 'dequal'
-import { minVersion, satisfies } from 'semver'
+import { intersects, satisfies } from 'semver'
 import { parse, parseRange } from 'semver-utils'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -29,12 +29,6 @@ const checkIfInPeerViolation = (
   upgradedPeerDependencies: Index<Index<VersionSpec>>,
 ): CheckIfInPeerViolationResult => {
   const upgradedDependencies = { ...currentDependencies, ...filteredUpgradedDependencies }
-  const upgradedDependenciesVersions = Object.fromEntries(
-    Object.entries(upgradedDependencies).map(([packageName, versionSpec]) => [
-      packageName,
-      minVersion(versionSpec)?.version ?? versionSpec,
-    ]),
-  )
   const violatedDependencies = new Set<string>()
   const filteredUpgradedDependenciesAfterPeers = pickBy(filteredUpgradedDependencies, (spec, dep) => {
     const peerDeps = upgradedPeerDependencies[dep]
@@ -43,7 +37,7 @@ const checkIfInPeerViolation = (
     }
     const valid = Object.entries(peerDeps).every(
       ([peer, peerSpec]) =>
-        upgradedDependenciesVersions[peer] === undefined || satisfies(upgradedDependenciesVersions[peer], peerSpec),
+        upgradedDependencies[peer] === undefined || intersects(upgradedDependencies[peer], peerSpec),
     )
     if (!valid) {
       violatedDependencies.add(dep)

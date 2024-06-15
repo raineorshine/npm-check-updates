@@ -1,4 +1,4 @@
-import { minVersion, satisfies } from 'semver'
+import { intersects, satisfies } from 'semver'
 import { IgnoredUpgrade } from '../types/IgnoredUpgrade'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -14,14 +14,10 @@ export async function getIgnoredUpgrades(
   upgradedPeerDependencies: Index<Index<Version>>,
   options: Options = {},
 ) {
-  const upgradedPackagesWithPeerRestriction = Object.fromEntries(
-    Object.entries({
-      ...current,
-      ...upgraded,
-    }).map(([packageName, versionSpec]) => {
-      return [packageName, minVersion(versionSpec)?.version ?? versionSpec]
-    }),
-  )
+  const upgradedPackagesWithPeerRestriction = {
+    ...current,
+    ...upgraded,
+  }
   const [upgradedLatestVersions, latestVersionResults] = await upgradePackageDefinitions(current, {
     ...options,
     peer: false,
@@ -46,7 +42,7 @@ export async function getIgnoredUpgrades(
           .filter(
             ([peer, peerSpec]) =>
               upgradedPackagesWithPeerRestriction[peer] &&
-              !satisfies(upgradedPackagesWithPeerRestriction[peer], peerSpec),
+              !intersects(upgradedPackagesWithPeerRestriction[peer], peerSpec),
           )
           .reduce(
             (accumReason, [peerPkg, peerSpec]) => ({ ...accumReason, [pkgName]: `${peerPkg} ${peerSpec}` }),
