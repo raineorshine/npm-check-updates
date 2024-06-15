@@ -1,5 +1,5 @@
 import { satisfies } from 'semver'
-import { IgnoredUpgrade } from '../types/IgnoredUpgrade'
+import { IgnoredUpgradeDueToPeerDeps } from '../types/IgnoredUpgradeDueToPeerDeps'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { Version } from '../types/Version'
@@ -7,7 +7,7 @@ import { VersionSpec } from '../types/VersionSpec'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
 
 /** Get all upgrades that are ignored due to incompatible peer dependencies. */
-export async function getIgnoredUpgrades(
+export async function getIgnoredUpgradesDueToPeerDeps(
   current: Index<VersionSpec>,
   upgraded: Index<VersionSpec>,
   upgradedPeerDependencies: Index<Index<Version>>,
@@ -41,8 +41,8 @@ export async function getIgnoredUpgrades(
             ),
         },
       }),
-      {} as Index<IgnoredUpgrade>,
+      {} as Index<IgnoredUpgradeDueToPeerDeps>,
     )
 }
 
-export default getIgnoredUpgrades
+export default getIgnoredUpgradesDueToPeerDeps
