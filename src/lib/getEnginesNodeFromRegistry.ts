@@ -23,7 +23,7 @@ async function getEnginesNodeFromRegistry(packageMap: Index<Version>, options: O
   }
 
   return Object.entries(packageMap).reduce(async (accumPromise, [pkg, version]) => {
-    const enginesNode = (await packageManager.getEngines!(pkg, version)).node
+    const enginesNode = (await packageManager.getEngines!(pkg, version, options)).node
     if (bar) {
       bar.tick()
     }

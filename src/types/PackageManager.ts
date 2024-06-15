@@ -1,5 +1,6 @@
 import { GetVersion } from './GetVersion'
 import { Index } from './IndexType'
+import { NpmConfig } from './NpmConfig'
 import { Options } from './Options'
 import { Version } from './Version'
 import { VersionSpec } from './VersionSpec'
@@ -21,5 +22,10 @@ export interface PackageManager {
     options?: Options,
   ) => Promise<boolean>
   getPeerDependencies?: (packageName: string, version: Version) => Promise<Index<Version>>
-  getEngines?: (packageName: string, version: Version) => Promise<Index<VersionSpec | undefined>>
+  getEngines?: (
+    packageName: string,
+    version: Version,
+    options: Options,
+    npmConfigLocal?: NpmConfig,
+  ) => Promise<Index<VersionSpec | undefined>>
 }

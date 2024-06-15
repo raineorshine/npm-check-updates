@@ -46,6 +46,7 @@ const fetchPartialPackument = async (
   fields: (keyof Packument)[],
   tag: string | null,
   opts: npmRegistryFetch.FetchOptions = {},
+  version?: Version,
 ): Promise<Partial<Packument>> => {
   const corgiDoc = 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
   const fullDoc = 'application/json'
@@ -58,7 +59,10 @@ const fetchPartialPackument = async (
     accept: opts.fullMetadata ? fullDoc : corgiDoc,
     ...opts.headers,
   }
-  const url = path.join(registry, name)
+  let url = path.join(registry, name)
+  if (version) {
+    url = path.join(url, version)
+  }
   const fetchOptions = {
     ...opts,
     headers,
@@ -672,10 +676,24 @@ export const getPeerDependencies = async (packageName: string, version: Version)
  * @param version
  * @returns Promised engines collection
  */
-export const getEngines = async (packageName: string, version: Version): Promise<Index<Version | undefined>> => {
-  const args = ['view', `${packageName}@${version}`, 'engines']
-  const result = await spawnNpm(args, {}, { rejectOnError: false })
-  return result ? parseJson<{ node?: string }>(result, { command: [...args, '--json'].join(' ') }) : {}
+export const getEngines = async (
+  packageName: string,
+  version: Version,
+  options: Options = {},
+  npmConfigLocal?: NpmConfig,
+): Promise<Index<Version | undefined>> => {
+  const result = await fetchPartialPackument(
+    packageName,
+    [`engines`],
+    null,
+    {
+      ...npmConfigLocal,
+      ...npmConfig,
+      ...(options.registry ? { registry: options.registry, silent: true } : null),
+    },
+    version,
+  )
+  return result.engines || {}
 }
 
 /**
