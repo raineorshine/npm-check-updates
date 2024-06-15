@@ -1,6 +1,5 @@
 import { Index } from './IndexType'
 import { PackageFileRepository } from './PackageFileRepository'
-import { Version } from './Version'
 import { VersionSpec } from './VersionSpec'
 
 type NestedVersionSpecs = {
@@ -13,7 +12,7 @@ export interface PackageFile {
   devDependencies?: Index<VersionSpec>
   // deno only
   imports?: Index<VersionSpec>
-  engines?: Index<Version | undefined>
+  engines?: Index<VersionSpec | undefined>
   name?: string
   // https://nodejs.org/api/packages.html#packagemanager
   packageManager?: string
