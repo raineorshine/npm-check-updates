@@ -58,36 +58,11 @@ const checkIfInPeerViolation = (
   }
 }
 
-type RerunUpgradeResult = null | [Index<VersionSpec>, Index<VersionResult>, Index<Index<VersionSpec>>?]
-
-/**
- * rerun upgrade if changed peers
- *
- * @returns `null` if no changes were made to the peer dependence as a result of the recent upgrade
- * else returns the upgrade result
- */
-const rerunUpgradeIfChangedPeers = async (
-  currentDependencies: Index<VersionSpec>,
-  filteredUpgradedDependencies: Index<VersionSpec>,
-  upgradedPeerDependencies: Index<Index<VersionSpec>>,
+export type UpgradePackageDefinitionsResult = [
+  upgradedDependencies: Index<VersionSpec>,
   latestVersionResults: Index<VersionResult>,
-  options: Options,
-): Promise<RerunUpgradeResult> => {
-  const peerDependencies = { ...options.peerDependencies, ...upgradedPeerDependencies }
-  if (dequal(options.peerDependencies, peerDependencies)) {
-    return null
-  }
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
-    { ...currentDependencies, ...filteredUpgradedDependencies },
-    { ...options, peerDependencies, loglevel: 'silent' },
-  )
-  return [
-    { ...filteredUpgradedDependencies, ...newUpgradedDependencies },
-    { ...latestVersionResults, ...newLatestVersions },
-    newPeerDependencies,
-  ]
-}
+  newPeerDependencies?: Index<Index<VersionSpec>>,
+]
 
 /**
  * Returns a 3-tuple of upgradedDependencies, their latest versions and the resulting peer dependencies.
@@ -99,7 +74,7 @@ const rerunUpgradeIfChangedPeers = async (
 export async function upgradePackageDefinitions(
   currentDependencies: Index<VersionSpec>,
   options: Options,
-): Promise<[Index<VersionSpec>, Index<VersionResult>, Index<Index<VersionSpec>>?]> {
+): Promise<UpgradePackageDefinitionsResult> {
   const latestVersionResults = await queryVersions(currentDependencies, options)
 
   const latestVersions = keyValueBy(latestVersionResults, (dep, result) =>
@@ -128,46 +103,41 @@ export async function upgradePackageDefinitions(
   if (options.peer && Object.keys(filteredLatestDependencies).length > 0) {
     const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredLatestDependencies, options)
 
-    let rerunResult: RerunUpgradeResult
     let checkPeerViolationResult: CheckIfInPeerViolationResult = {
       violated: false,
       filteredUpgradedDependencies,
       upgradedPeerDependencies,
     }
+    let rerunResult: UpgradePackageDefinitionsResult
     let runIndex = 0
     do {
-      rerunResult = await rerunUpgradeIfChangedPeers(
-        currentDependencies,
-        checkPeerViolationResult.filteredUpgradedDependencies,
-        checkPeerViolationResult.upgradedPeerDependencies,
-        latestVersionResults,
-        options,
-      )
-      if (!rerunResult) {
-        if (runIndex > 0) {
+      if (runIndex++ > 6) {
+        throw new Error(`Stuck in a while loop. Please report an issue`)
+      }
+      const peerDependenciesAfterUpgrade = {
+        ...options.peerDependencies,
+        ...checkPeerViolationResult.upgradedPeerDependencies,
+      }
+      if (dequal(options.peerDependencies, peerDependenciesAfterUpgrade)) {
+        if (runIndex > 1) {
           // We can't find anything to do, will not upgrade anything
           return [{}, latestVersionResults, options.peerDependencies]
         }
-        checkPeerViolationResult = checkIfInPeerViolation(
-          currentDependencies,
-          filteredUpgradedDependencies,
-          upgradedPeerDependencies,
-        )
-        if (!checkPeerViolationResult.violated) {
-          // No issues were found, return
-          return [filteredUpgradedDependencies, latestVersionResults, options.peerDependencies]
-        }
+        rerunResult = [filteredUpgradedDependencies, latestVersionResults, options.peerDependencies]
       } else {
-        checkPeerViolationResult = checkIfInPeerViolation(currentDependencies, rerunResult[0], rerunResult[2]!)
-        if (!checkPeerViolationResult.violated) {
-          // We found a stable solution
-          return rerunResult
-        }
+        const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
+          { ...currentDependencies, ...checkPeerViolationResult.filteredUpgradedDependencies },
+          { ...options, peerDependencies: peerDependenciesAfterUpgrade, loglevel: 'silent' },
+        )
+        rerunResult = [
+          { ...checkPeerViolationResult.filteredUpgradedDependencies, ...newUpgradedDependencies },
+          { ...latestVersionResults, ...newLatestVersions },
+          newPeerDependencies,
+        ]
       }
-      if (runIndex++ > 5) {
-        throw new Error(`Stuck in a while loop. Please report an issue`)
-      }
-    } while (true)
+      checkPeerViolationResult = checkIfInPeerViolation(currentDependencies, rerunResult[0], rerunResult[2]!)
+    } while (checkPeerViolationResult.violated)
+    return rerunResult
   }
   return [filteredUpgradedDependencies, latestVersionResults, options.peerDependencies]
 }
