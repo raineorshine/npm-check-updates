@@ -30,14 +30,14 @@ const checkIfInPeerViolation = (
 ): CheckIfInPeerViolationResult => {
   const upgradedDependencies = { ...currentDependencies, ...filteredUpgradedDependencies }
   const upgradedDependenciesVersions = Object.fromEntries(
-    Object.entries(upgradedDependencies).map(([packageName, versionSpec]) => {
-      return [packageName, minVersion(versionSpec)?.version ?? versionSpec]
-    }),
+    Object.entries(upgradedDependencies).map(([packageName, versionSpec]) => [
+      packageName,
+      minVersion(versionSpec)?.version ?? versionSpec,
+    ]),
   )
-  const filteredUpgradedPeerDependencies = { ...upgradedPeerDependencies }
-  let violated = false
+  const violatedDependencies = new Set<string>()
   const filteredUpgradedDependenciesAfterPeers = pickBy(filteredUpgradedDependencies, (spec, dep) => {
-    const peerDeps = filteredUpgradedPeerDependencies[dep]
+    const peerDeps = upgradedPeerDependencies[dep]
     if (!peerDeps) {
       return true
     }
@@ -46,11 +46,15 @@ const checkIfInPeerViolation = (
         upgradedDependenciesVersions[peer] === undefined || satisfies(upgradedDependenciesVersions[peer], peerSpec),
     )
     if (!valid) {
-      violated = true
-      delete filteredUpgradedPeerDependencies[dep]
+      violatedDependencies.add(dep)
     }
     return valid
   })
+  const violated = violatedDependencies.size > 0
+  let filteredUpgradedPeerDependencies = upgradedPeerDependencies
+  if (violated) {
+    filteredUpgradedPeerDependencies = pickBy(upgradedPeerDependencies, (spec, dep) => !violatedDependencies.has(dep))
+  }
   return {
     violated,
     filteredUpgradedDependencies: filteredUpgradedDependenciesAfterPeers,
