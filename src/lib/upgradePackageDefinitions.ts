@@ -1,5 +1,5 @@
 import { dequal } from 'dequal'
-import { satisfies } from 'semver'
+import { intersects, satisfies } from 'semver'
 import { parse, parseRange } from 'semver-utils'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -11,6 +11,57 @@ import { pickBy } from './pick'
 import queryVersions from './queryVersions'
 import upgradeDependencies from './upgradeDependencies'
 
+type CheckIfInPeerViolationResult = {
+  violated: boolean
+  filteredUpgradedDependencies: Index<VersionSpec>
+  upgradedPeerDependencies: Index<Index<VersionSpec>>
+}
+
+/**
+ * Check if the peer dependencies constraints of each upgraded package, are in violation,
+ * thus rendering the upgrade to be invalid
+ *
+ * @returns Whether there was any violation, and the upgrades that are not in violation
+ */
+const checkIfInPeerViolation = (
+  currentDependencies: Index<VersionSpec>,
+  filteredUpgradedDependencies: Index<VersionSpec>,
+  upgradedPeerDependencies: Index<Index<VersionSpec>>,
+): CheckIfInPeerViolationResult => {
+  const upgradedDependencies = { ...currentDependencies, ...filteredUpgradedDependencies }
+  const violatedDependencies = new Set<string>()
+  const filteredUpgradedDependenciesAfterPeers = pickBy(filteredUpgradedDependencies, (spec, dep) => {
+    const peerDeps = upgradedPeerDependencies[dep]
+    if (!peerDeps) {
+      return true
+    }
+    const valid = Object.entries(peerDeps).every(
+      ([peer, peerSpec]) =>
+        upgradedDependencies[peer] === undefined || intersects(upgradedDependencies[peer], peerSpec),
+    )
+    if (!valid) {
+      violatedDependencies.add(dep)
+    }
+    return valid
+  })
+  const violated = violatedDependencies.size > 0
+  let filteredUpgradedPeerDependencies = upgradedPeerDependencies
+  if (violated) {
+    filteredUpgradedPeerDependencies = pickBy(upgradedPeerDependencies, (spec, dep) => !violatedDependencies.has(dep))
+  }
+  return {
+    violated,
+    filteredUpgradedDependencies: filteredUpgradedDependenciesAfterPeers,
+    upgradedPeerDependencies: filteredUpgradedPeerDependencies,
+  }
+}
+
+export type UpgradePackageDefinitionsResult = [
+  upgradedDependencies: Index<VersionSpec>,
+  latestVersionResults: Index<VersionResult>,
+  newPeerDependencies?: Index<Index<VersionSpec>>,
+]
+
 /**
  * Returns a 3-tuple of upgradedDependencies, their latest versions and the resulting peer dependencies.
  *
@@ -21,7 +72,7 @@ import upgradeDependencies from './upgradeDependencies'
 export async function upgradePackageDefinitions(
   currentDependencies: Index<VersionSpec>,
   options: Options,
-): Promise<[Index<VersionSpec>, Index<VersionResult>, Index<Index<VersionSpec>>?]> {
+): Promise<UpgradePackageDefinitionsResult> {
   const latestVersionResults = await queryVersions(currentDependencies, options)
 
   const latestVersions = keyValueBy(latestVersionResults, (dep, result) =>
@@ -49,18 +100,42 @@ export async function upgradePackageDefinitions(
 
   if (options.peer && Object.keys(filteredLatestDependencies).length > 0) {
     const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredLatestDependencies, options)
-    const peerDependencies = { ...options.peerDependencies, ...upgradedPeerDependencies }
-    if (!dequal(options.peerDependencies, peerDependencies)) {
-      const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
-        { ...currentDependencies, ...filteredUpgradedDependencies },
-        { ...options, peerDependencies, loglevel: 'silent' },
-      )
-      return [
-        { ...filteredUpgradedDependencies, ...newUpgradedDependencies },
-        { ...latestVersionResults, ...newLatestVersions },
-        newPeerDependencies,
-      ]
+
+    let checkPeerViolationResult: CheckIfInPeerViolationResult = {
+      violated: false,
+      filteredUpgradedDependencies,
+      upgradedPeerDependencies,
     }
+    let rerunResult: UpgradePackageDefinitionsResult
+    let runIndex = 0
+    do {
+      if (runIndex++ > 6) {
+        throw new Error(`Stuck in a while loop. Please report an issue`)
+      }
+      const peerDependenciesAfterUpgrade = {
+        ...options.peerDependencies,
+        ...checkPeerViolationResult.upgradedPeerDependencies,
+      }
+      if (dequal(options.peerDependencies, peerDependenciesAfterUpgrade)) {
+        if (runIndex > 1) {
+          // We can't find anything to do, will not upgrade anything
+          return [{}, latestVersionResults, options.peerDependencies]
+        }
+        rerunResult = [filteredUpgradedDependencies, latestVersionResults, options.peerDependencies]
+      } else {
+        const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
+          { ...currentDependencies, ...checkPeerViolationResult.filteredUpgradedDependencies },
+          { ...options, peerDependencies: peerDependenciesAfterUpgrade, loglevel: 'silent' },
+        )
+        rerunResult = [
+          { ...checkPeerViolationResult.filteredUpgradedDependencies, ...newUpgradedDependencies },
+          { ...latestVersionResults, ...newLatestVersions },
+          newPeerDependencies,
+        ]
+      }
+      checkPeerViolationResult = checkIfInPeerViolation(currentDependencies, rerunResult[0], rerunResult[2]!)
+    } while (checkPeerViolationResult.violated)
+    return rerunResult
   }
   return [filteredUpgradedDependencies, latestVersionResults, options.peerDependencies]
 }

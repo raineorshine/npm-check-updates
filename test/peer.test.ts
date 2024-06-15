@@ -35,4 +35,28 @@ describe('peer dependencies', function () {
     const upgrades = await ncu({ cwd, peer: true })
     upgrades!.should.contain.keys('@vitest/ui', 'vitest')
   })
+
+  it('ignores if post upgrade peers are unmet', async () => {
+    const cwd = path.join(__dirname, 'test-data/peer-post-upgrade/')
+    const upgrades = await ncu({
+      cwd,
+      peer: true,
+      target: packageName => {
+        return packageName === 'eslint-plugin-unused-imports' ? 'latest' : 'minor'
+      },
+    })
+    upgrades!.should.have.all.keys('@vitest/ui', 'vitest')
+  })
+
+  it('ignores if post upgrade peers are unmet - no upgrades', async () => {
+    const cwd = path.join(__dirname, 'test-data/peer-post-upgrade-no-upgrades/')
+    const upgrades = await ncu({
+      cwd,
+      peer: true,
+      target: packageName => {
+        return packageName === 'eslint-plugin-unused-imports' ? 'latest' : 'minor'
+      },
+    })
+    upgrades!.should.deep.equal({})
+  })
 })
