@@ -110,3 +110,18 @@ npm i npm-check-updates@latest --registry $registry_local
 
 echo Running test
 REGISTRY=$registry_local node $temp_dir/e2e/esm/index.js
+
+# Test: typescript
+echo Test: typescript
+cd $temp_dir/e2e/typescript
+
+echo Installing
+npm i npm-check-updates@latest --registry $registry_local
+npm i typescript@5.4.5
+echo 'import ncu from "npm-check-updates"
+
+ncu({})' >index.ts
+
+echo Running test
+npx tsc index.ts
+REGISTRY=$registry_local node $temp_dir/e2e/typescript/index.js
