@@ -10,11 +10,20 @@ import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
 import chalk from './chalk'
 import getCurrentDependencies from './getCurrentDependencies'
-import getIgnoredUpgrades from './getIgnoredUpgrades'
+import { getIgnoredUpgradesDueToEnginesNode } from './getIgnoredUpgradesDueToEnginesNode'
+import getIgnoredUpgradesDueToPeerDeps from './getIgnoredUpgradesDueToPeerDeps'
 import getPackageManager from './getPackageManager'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
 import keyValueBy from './keyValueBy'
-import { print, printIgnoredUpdates, printJson, printSorted, printUpgrades, toDependencyTable } from './logging'
+import {
+  print,
+  printIgnoredUpdatesDueToEnginesNode,
+  printIgnoredUpdatesDueToPeerDeps,
+  printJson,
+  printSorted,
+  printUpgrades,
+  toDependencyTable,
+} from './logging'
 import { pick } from './pick'
 import programError from './programError'
 import resolveDepSections from './resolveDepSections'
@@ -246,9 +255,20 @@ async function runLocal(
       },
     )
     if (options.peer) {
-      const ignoredUpdates = await getIgnoredUpgrades(current, upgraded, upgradedPeerDependencies!, options)
+      const ignoredUpdates = await getIgnoredUpgradesDueToPeerDeps(
+        current,
+        upgraded,
+        upgradedPeerDependencies!,
+        options,
+      )
       if (Object.keys(ignoredUpdates).length > 0) {
-        printIgnoredUpdates(options, ignoredUpdates)
+        printIgnoredUpdatesDueToPeerDeps(options, ignoredUpdates)
+      }
+    }
+    if (options.enginesNode) {
+      const ignoredUpdates = await getIgnoredUpgradesDueToEnginesNode(current, upgraded, options)
+      if (Object.keys(ignoredUpdates).length > 0) {
+        printIgnoredUpdatesDueToEnginesNode(options, ignoredUpdates)
       }
     }
   }

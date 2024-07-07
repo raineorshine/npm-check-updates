@@ -2,7 +2,8 @@
  * Loggin functions.
  */
 import Table from 'cli-table3'
-import { IgnoredUpgrade } from '../types/IgnoredUpgrade'
+import { IgnoredUpgradeDueToEnginesNode } from '../types/IgnoredUpgradeDueToEnginesNode'
+import { IgnoredUpgradeDueToPeerDeps } from '../types/IgnoredUpgradeDueToPeerDeps'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { VersionResult } from '../types/VersionResult'
@@ -368,7 +369,7 @@ export async function printUpgrades(
 }
 
 /** Print updates that were ignored due to incompatible peer dependencies. */
-export function printIgnoredUpdates(options: Options, ignoredUpdates: Index<IgnoredUpgrade>) {
+export function printIgnoredUpdatesDueToPeerDeps(options: Options, ignoredUpdates: Index<IgnoredUpgradeDueToPeerDeps>) {
   print(options, `\nIgnored incompatible updates (peer dependencies):\n`)
   const table = renderDependencyTable(
     Object.entries(ignoredUpdates).map(([pkgName, { from, to, reason }]) => {
@@ -379,6 +380,24 @@ export function printIgnoredUpdates(options: Options, ignoredUpdates: Index<Igno
           .join(', ')
       return [pkgName, from, '→', colorizeDiff(from, to), strReason]
     }),
+  )
+  print(options, table)
+}
+
+/** Print updates that were ignored due to incompatible engines.node. */
+export function printIgnoredUpdatesDueToEnginesNode(
+  options: Options,
+  ignoredUpdates: Index<IgnoredUpgradeDueToEnginesNode>,
+) {
+  print(options, `\nIgnored incompatible updates (engines node):\n`)
+  const table = renderDependencyTable(
+    Object.entries(ignoredUpdates).map(([pkgName, { from, to, enginesNode }]) => [
+      pkgName,
+      from,
+      '→',
+      colorizeDiff(from, to),
+      `reason: requires node ${enginesNode}`,
+    ]),
   )
   print(options, table)
 }

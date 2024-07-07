@@ -59,23 +59,19 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
     bar.render()
   }
 
-  const peerDependencies: Index<Index<string>> = Object.entries(packageMap).reduce(
-    async (accumPromise, [pkg, version]) => {
-      const dep = await packageManager.getPeerDependencies!(pkg, version)
-      if (bar) {
-        bar.tick()
-      }
-      const accum = await accumPromise
-      const newAcc: Index<Index<string>> = { ...accum, [pkg]: dep }
-      const circularData = isCircularPeer(newAcc, pkg)
-      if (circularData.isCircular) {
-        delete newAcc[pkg][circularData.offendingPackage]
-      }
-      return newAcc
-    },
-    {},
-  )
-  return peerDependencies
+  return Object.entries(packageMap).reduce(async (accumPromise, [pkg, version]) => {
+    const dep = await packageManager.getPeerDependencies!(pkg, version)
+    if (bar) {
+      bar.tick()
+    }
+    const accum = await accumPromise
+    const newAcc: Index<Index<string>> = { ...accum, [pkg]: dep }
+    const circularData = isCircularPeer(newAcc, pkg)
+    if (circularData.isCircular) {
+      delete newAcc[pkg][circularData.offendingPackage]
+    }
+    return newAcc
+  }, Promise.resolve<Index<Index<string>>>({}))
 }
 
 export default getPeerDependenciesFromRegistry

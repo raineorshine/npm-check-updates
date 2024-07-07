@@ -295,4 +295,4 @@ export const semver = withNpmConfigFromYarn(npm.semver)
 
 export default spawnYarn
 
-export { getPeerDependencies, packageAuthorChanged } from './npm'
+export { getEngines, getPeerDependencies, packageAuthorChanged } from './npm'
