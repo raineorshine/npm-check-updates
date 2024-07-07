@@ -5,10 +5,6 @@
       "description": "A very generic object.",
       "type": "object"
     },
-    "Index<string|undefined>": {
-      "description": "A very generic object.",
-      "type": "object"
-    },
     "NestedVersionSpecs": {
       "additionalProperties": {
         "anyOf": [
@@ -34,7 +30,7 @@
           "description": "A very generic object."
         },
         "engines": {
-          "$ref": "#/definitions/Index<string|undefined>",
+          "$ref": "#/definitions/Index<string>",
           "description": "A very generic object."
         },
         "imports": {
