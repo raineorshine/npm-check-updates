@@ -12,7 +12,7 @@ export interface PackageFile {
   devDependencies?: Index<VersionSpec>
   // deno only
   imports?: Index<VersionSpec>
-  engines?: Index<VersionSpec | undefined>
+  engines?: Index<VersionSpec>
   name?: string
   // https://nodejs.org/api/packages.html#packagemanager
   packageManager?: string
