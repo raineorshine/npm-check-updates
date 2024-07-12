@@ -109,6 +109,7 @@ describe('doctor', function () {
       await fs.rm(lockfilePath, { recursive: true, force: true })
       await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
+      // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
       if (stderr !== '') {
         stderr.should.equal(`> test
@@ -162,6 +163,7 @@ describe('doctor', function () {
       await fs.rm(lockfilePath, { recursive: true, force: true })
       await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
+      // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
       if (stderr !== '') {
         stripAnsi(stderr).should.equal(`> test
@@ -214,8 +216,17 @@ describe('doctor', function () {
       await fs.rm(lockfilePath, { recursive: true, force: true })
       await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
-      // stderr should be empty
-      stderr.should.equal('')
+      // stderr should be empty or equal to the test script output (output varies by platform/node version)
+      stderr = stripAnsi(stderr).trim()
+      if (stderr !== '') {
+        stderr.should.equal(`> mytest
+> echo Success
+
+
+
+> mytest
+> echo Success`)
+      }
 
       // stdout should include normal output
       stripAnsi(stdout).should.containIgnoreCase('Tests pass')
