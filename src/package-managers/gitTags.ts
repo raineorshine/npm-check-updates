@@ -27,8 +27,8 @@ const getSortedVersions = async (name: string, declaration: VersionSpec, options
   } else {
     // try ssh first, then https on failure
     tagsPromise = tagsPromise
-      .then(() => remoteGitTags(`ssh://git@${host}/${path}`))
-      .catch(() => remoteGitTags(`https://${auth ? auth + '@' : ''}${host}/${path?.replace(/^:/, '')}`))
+      .then(() => remoteGitTags(`ssh://git@${host}/${path?.replace(/^:/, '')}`))
+      .catch(() => remoteGitTags(`https://${auth ? auth + '@' : ''}${host}/${path}`))
   }
 
   // fetch remote tags
