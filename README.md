@@ -490,7 +490,7 @@ filterResults: (packageName, { current, currentSemver, upgraded, upgradedSemver 
 }
 ```
 
-For the SemVer type definition, see: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring
+For the SemVer type definition, see: <https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring>
 
 ## filterVersion
 
@@ -800,7 +800,7 @@ npm-check-updates can be imported as a module:
 ```js
 import ncu from 'npm-check-updates'
 
-const upgraded = await ncu.run({
+const upgraded = await ncu({
   // Pass any cli option
   packageFile: '../package.json',
   upgrade: true,
