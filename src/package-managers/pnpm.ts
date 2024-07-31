@@ -88,7 +88,7 @@ export const semver = withNpmWorkspaceConfig(npm.semver)
  * @param [spawnOptions={}]
  * @returns
  */
-export default async function spawnPnpm(
+async function spawnPnpm(
   args: string | string[],
   npmOptions: NpmOptions = {},
   spawnOptions?: SpawnOptions,
@@ -108,3 +108,5 @@ export default async function spawnPnpm(
 }
 
 export { defaultPrefix, getPeerDependencies, getEngines, packageAuthorChanged } from './npm'
+
+export default spawnPnpm

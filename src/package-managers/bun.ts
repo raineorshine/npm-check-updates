@@ -79,4 +79,6 @@ export const newest = npm.newest
 export const patch = npm.patch
 export const semver = npm.semver
 
+export { getEngines, getPeerDependencies, packageAuthorChanged } from './npm'
+
 export default spawnBun

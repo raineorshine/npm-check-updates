@@ -293,6 +293,6 @@ export const newest = withNpmConfigFromYarn(npm.newest)
 export const patch = withNpmConfigFromYarn(npm.patch)
 export const semver = withNpmConfigFromYarn(npm.semver)
 
-export default spawnYarn
-
 export { getEngines, getPeerDependencies, packageAuthorChanged } from './npm'
+
+export default spawnYarn
