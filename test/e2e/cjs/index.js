@@ -11,7 +11,7 @@ process.on('unhandledRejection', (reason, p) => {
 
 // test
 ;(async () => {
-  const upgraded = await ncu({
+  const upgraded = await ncu.run({
     // --pre 1 to ensure that an upgrade is always suggested even if npm-check-updates is on a prerelease version
     pre: true,
     packageData: JSON.stringify({
