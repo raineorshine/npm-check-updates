@@ -91,7 +91,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       versionResult.version =
         !isGithubDependency && npmAlias && versionResult?.version
           ? createNpmAlias(name, versionResult.version)
-          : versionResult?.version ?? null
+          : (versionResult?.version ?? null)
     } catch (err: any) {
       const errorMessage = err ? (err.message || err).toString() : ''
       if (errorMessage.match(/E404|ENOTFOUND|404 Not Found/i)) {

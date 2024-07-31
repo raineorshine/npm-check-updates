@@ -65,7 +65,7 @@ const getPackageManagerForInstall = async (options: Options, pkgFile: string) =>
   // when packageManager is set to staticRegistry, we need to infer the package manager from lock files
   if (options.packageManager === 'staticRegistry') determinePackageManager({ ...options, packageManager: undefined })
   else if (options.packageManager !== 'npm') return options.packageManager
-  const cwd = options.cwd ?? pkgFile ? `${pkgFile}/..` : process.cwd()
+  const cwd = (options.cwd ?? pkgFile) ? `${pkgFile}/..` : process.cwd()
   const pnpmDetected = await exists(path.join(cwd, 'pnpm-lock.yaml'))
   return pnpmDetected ? 'pnpm' : 'npm'
 }
