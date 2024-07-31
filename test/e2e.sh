@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# These can be set once the fnm permission errors are figured out
+# See: https://github.com/Schniz/fnm
+# set -e
+# set -o pipefail
+
 cwd=$(pwd)
 e2e_dir=$(dirname "$(readlink -f "$0")")
 temp_dir=$(mktemp -d)
@@ -99,7 +104,7 @@ echo Installing
 npm i npm-check-updates@latest --registry $registry_local
 
 echo Running test
-REGISTRY=$registry_local node $temp_dir/e2e/cjs/index.js
+REGISTRY=$registry_local node $temp_dir/e2e/cjs/index.js || { exit 1; }
 
 # Test: esm
 echo Test: esm
@@ -109,7 +114,7 @@ echo Installing
 npm i npm-check-updates@latest --registry $registry_local
 
 echo Running test
-REGISTRY=$registry_local node $temp_dir/e2e/esm/index.js
+REGISTRY=$registry_local node $temp_dir/e2e/esm/index.js || { exit 1; }
 
 # Test: typescript
 echo Test: typescript
@@ -124,4 +129,4 @@ ncu({})' >index.ts
 
 echo Running test
 npx tsc index.ts
-REGISTRY=$registry_local node $temp_dir/e2e/typescript/index.js
+REGISTRY=$registry_local node $temp_dir/e2e/typescript/index.js || { exit 1; }
