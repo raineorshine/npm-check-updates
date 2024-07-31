@@ -5,27 +5,27 @@
 
 **npm-check-updates upgrades your package.json dependencies to the _latest_ versions, ignoring specified versions.**
 
-- maintains existing semantic versioning _policies_, i.e. `"react": "^16.0.4"` to `"react": "^18.2.0"`.
+- maintains existing semantic versioning _policies_, i.e. `"react": "^17.0.2"` to `"react": "^18.3.1"`.
 - _only_ modifies package.json file. Run `npm install` to update your installed packages and package-lock.json.
 - sensible defaults, but highly customizable
+- compatible with npm, yarn, pnpm, deno, and bun
 - CLI and module usage
-- compatible with: `npm`, `yarn`, `pnpm`, `deno`, `bun`
 
-![npm-check-updates-screenshot](https://github.com/raineorshine/npm-check-updates/blob/main/.github/screenshot.png?raw=true)
+<img width="500" alt="example output" src="https://github.com/user-attachments/assets/4808618b-ac20-4fc0-92e0-a777de70a2b6">
 
-- Red = major upgrade (and all [major version zero](https://semver.org/#spec-item-4))
-- Cyan = minor upgrade
-- Green = patch upgrade
+$${\color{red}Red}$$ major upgrade (and all [major version zero](https://semver.org/#spec-item-4))<br/>
+$${\color{cyan}Cyan}$$ minor upgrade<br/>
+$${\color{green}Green}$$ patch upgrade<br/>
 
 ## Installation
 
-Install globally:
+Install globally to use `npm-check-updates` or the shorter `ncu`:
 
 ```sh
 npm install -g npm-check-updates
 ```
 
-Or run with [npx](https://docs.npmjs.com/cli/v7/commands/npx):
+Or run with [npx](https://docs.npmjs.com/cli/v7/commands/npx) (only the long form is supported):
 
 ```sh
 npx npm-check-updates
