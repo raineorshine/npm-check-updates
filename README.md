@@ -89,7 +89,7 @@ Combine with `--format group` for a truly _luxe_ experience:
 
 ## Filter packages
 
-Filter packages using the `--filter` option or adding additional cli arguments. You can exclude specific packages with the `--reject` option or prefixing a filter with `!`. Supports strings, wildcards, globs, comma-or-space-delimited lists, and regular expressions:
+Filter packages using the `--filter` option or adding additional cli arguments:
 
 ```sh
 # upgrade only mocha
@@ -97,25 +97,35 @@ ncu mocha
 ncu -f mocha
 ncu --filter mocha
 
-# upgrade packages that start with "react-"
-ncu react-*
-ncu "/^react-.*$/"
-
-# upgrade everything except nodemon
-ncu \!nodemon
-ncu -x nodemon
-ncu --reject nodemon
-
 # upgrade only chalk, mocha, and react
 ncu chalk mocha react
 ncu chalk, mocha, react
 ncu -f "chalk mocha react"
+```
+
+Filter with wildcards or regex:
+
+```sh
+# upgrade packages that start with "react-"
+ncu react-*
+ncu "/^react-.*$/"
+```
+
+Exclude specific packages with the `--reject` option or prefixing a filter with `!`. Supports strings, wildcards, globs, comma-or-space-delimited lists, and regex:
+
+```sh
+# upgrade everything except nodemon
+ncu \!nodemon
+ncu -x nodemon
+ncu --reject nodemon
 
 # upgrade packages that do not start with "react-".
 ncu \!react-*
 ncu '/^(?!react-).*$/' # mac/linux
 ncu "/^(?!react-).*$/" # windows
 ```
+
+Advanced filters: [filter](https://github.com/raineorshine/npm-check-updates#filter), [filterResults](https://github.com/raineorshine/npm-check-updates#filterresults), [filterVersion](https://github.com/raineorshine/npm-check-updates#filterversion)
 
 ## How dependency updates are determined
 
@@ -134,18 +144,21 @@ ncu "/^(?!react-).*$/" # windows
   - `*` → `*`
 - Prerelease versions are ignored by default.
   - Use `--pre` to include prerelease versions (e.g. `alpha`, `beta`, `build1235`)
-- With `--target minor`, only update patch and minor:
-  - `0.1.0` → `0.2.1`
-- With `--target patch`, only update patch:
-  - `0.1.0` → `0.1.2`
-- With `--target @next`, update to the version published on the `next` tag:
-  - `0.1.0` -> `0.1.1-next.1`
+- Choose what level to upgrade to:
+  - With `--target semver`, update according to your specified [semver](https://semver.org/) version ranges:
+    - `^1.1.0` → `^1.9.99`
+  - With `--target minor`, strictly update the patch and minor versions (including major version zero):
+    - `0.1.0` → `0.2.1`
+  - With `--target patch`, strictly update the patch version (including major version zero):
+    - `0.1.0` → `0.1.2`
+  - With `--target @next`, update to the version published on the `next` tag:
+    - `0.1.0` -> `0.1.1-next.1`
 
 ## Options
 
 Options are merged with the following precedence:
 
-1. CLI
+1. Command line options
 2. Local [Config File](#config-file)
 3. Project Config File
 4. User Config File
