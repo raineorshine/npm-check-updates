@@ -59,9 +59,9 @@ const fetchPartialPackument = async (
     accept: opts.fullMetadata ? fullDoc : corgiDoc,
     ...opts.headers,
   }
-  let url = path.join(registry, name)
+  const url = new URL(encodeURIComponent(name), registry)
   if (version) {
-    url = path.join(url, version)
+    url.pathname += `/${version}`
   }
   const fetchOptions = {
     ...opts,
@@ -71,11 +71,11 @@ const fetchPartialPackument = async (
 
   try {
     if (opts.fullMetadata) {
-      return npmRegistryFetch.json(url, fetchOptions)
+      return npmRegistryFetch.json(url.href, fetchOptions)
     } else {
       tag = tag || 'latest'
       // typescript does not type async iteratable stream correctly so we need to cast it
-      const stream = npmRegistryFetch.json.stream(url, '$*', fetchOptions) as unknown as IterableIterator<{
+      const stream = npmRegistryFetch.json.stream(url.href, '$*', fetchOptions) as unknown as IterableIterator<{
         key: keyof Packument
         value: Packument[keyof Packument]
       }>
