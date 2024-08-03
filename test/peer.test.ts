@@ -35,4 +35,17 @@ describe('peer dependencies', function () {
     const upgrades = await ncu({ cwd, peer: true })
     upgrades!.should.contain.keys('@vitest/ui', 'vitest')
   })
+
+  // https://github.com/raineorshine/npm-check-updates/issues/1437
+  it('git urls are ignored', async () => {
+    const upgrades = await ncu({
+      peer: true,
+      packageData: {
+        dependencies: {
+          '@libraries/project-4-utils': 'git+gitlab.com/projects/libraries/project-4-utils.git',
+        },
+      },
+    })
+    upgrades!.should.deep.equal({})
+  })
 })

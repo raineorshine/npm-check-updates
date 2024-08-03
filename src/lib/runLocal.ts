@@ -193,7 +193,14 @@ async function runLocal(
     options.peerDependencies = await getPeerDependenciesFromRegistry(
       Object.fromEntries(
         Object.entries(current).map(([packageName, versionSpec]) => {
-          return [packageName, nodeSemver.minVersion(versionSpec)?.version ?? versionSpec]
+          return [
+            packageName,
+            // git urls and other non-semver versions are ignored.
+            // Make sure versionSpec is a valid semver range, otherwise minVersion will throw.
+            nodeSemver.validRange(versionSpec)
+              ? (nodeSemver.minVersion(versionSpec)?.version ?? versionSpec)
+              : versionSpec,
+          ]
         }),
       ),
       options,
