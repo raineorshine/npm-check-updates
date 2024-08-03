@@ -1,4 +1,3 @@
-import path from 'path'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
 
@@ -6,24 +5,44 @@ chaiSetup()
 
 describe('peer dependencies', function () {
   it('peer dependencies are ignored by default', async () => {
-    const cwd = path.join(__dirname, 'test-data/peer/')
-    const upgrades = await ncu({ cwd })
+    const upgrades = await ncu({
+      packageData: {
+        dependencies: {
+          'ncu-test-peer': '1.0.0',
+          'ncu-test-return-version': '1.0.0',
+        },
+      },
+    })
     upgrades!.should.deep.equal({
       'ncu-test-return-version': '2.0.0',
     })
   })
 
   it('peer dependencies are checked when using option peer', async () => {
-    const cwd = path.join(__dirname, 'test-data/peer/')
-    const upgrades = await ncu({ cwd, peer: true })
+    const upgrades = await ncu({
+      peer: true,
+      packageData: {
+        dependencies: {
+          'ncu-test-peer': '1.0.0',
+          'ncu-test-return-version': '1.0.0',
+        },
+      },
+    })
     upgrades!.should.deep.equal({
       'ncu-test-return-version': '1.1.0',
     })
   })
 
   it('peer dependencies are checked iteratively when using option peer', async () => {
-    const cwd = path.join(__dirname, 'test-data/peer-update/')
-    const upgrades = await ncu({ cwd, peer: true })
+    const upgrades = await ncu({
+      peer: true,
+      packageData: {
+        dependencies: {
+          'ncu-test-peer-update': '1.0.0',
+          'ncu-test-return-version': '1.0.0',
+        },
+      },
+    })
     upgrades!.should.deep.equal({
       'ncu-test-return-version': '1.1.0',
       'ncu-test-peer-update': '1.1.0',
@@ -31,8 +50,15 @@ describe('peer dependencies', function () {
   })
 
   it('circular peer dependencies are ignored', async () => {
-    const cwd = path.join(__dirname, 'test-data/peer-lock/')
-    const upgrades = await ncu({ cwd, peer: true })
+    const upgrades = await ncu({
+      peer: true,
+      packageData: {
+        dependencies: {
+          '@vitest/ui': '^1.3.1',
+          vitest: '^1.3.1',
+        },
+      },
+    })
     upgrades!.should.contain.keys('@vitest/ui', 'vitest')
   })
 
