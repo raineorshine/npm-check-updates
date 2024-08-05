@@ -59,7 +59,24 @@ const fetchPartialPackument = async (
     accept: opts.fullMetadata ? fullDoc : corgiDoc,
     ...opts.headers,
   }
-  const url = new URL(encodeURIComponent(name), registry)
+  const url = new URL(
+    // since the registry API expects /package or /package/version encoding
+    // scoped packages is needed as to not treat the package scope as the full
+    // package name and the actual package name as the version/dist-tag
+    encodeURIComponent(name),
+    // the WhatWG URL standard, when given a base URL to place the first
+    // parameter relative to, will find the dirname of the base, treating the
+    // last segment as a file name and not a directory name if it isn't
+    // terminated by a / and thus remove it before adding the first argument
+    // to the URL.
+    // this is undesirable for registries configured without a trailing slash
+    // in the npm config since, for example looking up the package @foo/bar
+    // will give the following results given these configured registry URL:s
+    //    https://example.com/npm  => https://example.com/%40foo%2fbar
+    //    https://example.com/npm/ => https://example.com/npm/%40foo%2fbar
+    // however, like npm itself does there should be leniency allowed in this.
+    registry.endsWith('/') ? registry : `${registry}/`,
+  )
   if (version) {
     url.pathname += `/${version}`
   }
