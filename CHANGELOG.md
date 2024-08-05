@@ -2,6 +2,18 @@
 
 This file documents all **major version** releases. For other releases, please read the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
 
+## [17.0.0] - 2024-07-31
+
+### Breaking
+
+- Require node >= 18.18.0
+- In workspaces mode, `--root` is now set by default (#1353)
+  - To **not** check the root package.json, use `--no-root`.
+- If you have a [packageManager](https://nodejs.org/api/packages.html#packagemanager) field in your package.json, it is now upgraded by default (#1390)
+  - Use `--dep prod,dev,optional` for the old behavior.
+
+<https://github.com/raineorshine/npm-check-updates/compare/v16.14.20...v17.0.0>
+
 ## [16.0.0] - 2022-07-23
 
 ### Breaking
