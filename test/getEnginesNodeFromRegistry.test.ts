@@ -15,7 +15,7 @@ describe('getEnginesNodeFromRegistry', function () {
 
   it('single package empty', async () => {
     await chalkInit()
-    const data = await getEnginesNodeFromRegistry({ 'ncu-test-return-version': '1.0' }, {})
+    const data = await getEnginesNodeFromRegistry({ 'ncu-test-return-version': '1.0.0' }, {})
     data.should.deep.equal({ 'ncu-test-return-version': undefined })
   })
 
