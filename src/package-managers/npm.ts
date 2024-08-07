@@ -683,7 +683,8 @@ export const greatest: GetVersion = async (
 export const getPeerDependencies = async (packageName: string, version: Version): Promise<Index<Version>> => {
   const args = ['view', `${packageName}@${version}`, 'peerDependencies']
   const result = await spawnNpm(args, {}, { rejectOnError: false })
-  return result ? parseJson(result, { command: [...args, '--json'].join(' ') }) : {}
+  const parsed = result ? parseJson(result, { command: [...args, '--json'].join(' ') }) : {}
+  return Array.isArray(parsed) ? parsed.at(-1) : parsed
 }
 
 /**

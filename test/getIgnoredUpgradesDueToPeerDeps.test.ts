@@ -75,7 +75,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
       'eslint-plugin-unused-imports': {
         from: '^3',
         reason: {
-          'eslint-plugin-unused-imports': 'eslint 9',
+          'eslint-plugin-unused-imports': 'eslint ^9.0.0',
         },
         to: '^4',
       },
