@@ -117,7 +117,7 @@ const fetchPartialPackument = async (
     }
 
     // possible that corgis are not supported by this registry
-    return fetchPartialPackument(name, fields, tag, { opts, fullMetadata: true })
+    return fetchPartialPackument(name, fields, tag, { ...opts, fullMetadata: true }, version)
   }
 }
 
