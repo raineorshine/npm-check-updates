@@ -35,6 +35,8 @@ describe('npm', function () {
   it('getEngines', async () => {
     await npm.getEngines('del', '2.0.0').should.eventually.deep.equal({ node: '>=0.10.0' })
     await npm.getEngines('ncu-test-return-version', '1.0.0').should.eventually.deep.equal({})
-    await npm.getEngines('ncu-test-return-version', '1.0').should.eventually.be.rejectedWith('404 Not Found - GET https://registry.npmjs.org/ncu-test-return-version/1.0')
+    await npm
+      .getEngines('ncu-test-return-version', '1.0')
+      .should.eventually.be.rejectedWith('404 Not Found - GET https://registry.npmjs.org/ncu-test-return-version/1.0')
   })
 })
