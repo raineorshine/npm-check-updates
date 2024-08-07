@@ -21,13 +21,13 @@ export async function getIgnoredUpgradesDueToEnginesNode(
   if (!options.nodeEngineVersion) return {}
   const optionsEnginesNodeMinVersion = minVersion(options.nodeEngineVersion)?.version
   if (!optionsEnginesNodeMinVersion) return {}
-  const [upgradedLatestVersions] = await upgradePackageDefinitions(current, {
+  const [upgradedLatestVersions, latestVersionResults] = await upgradePackageDefinitions(current, {
     ...options,
     enginesNode: false,
     nodeEngineVersion: undefined,
     loglevel: 'silent',
   })
-  const enginesNodes = await getEnginesNodeFromRegistry(upgradedLatestVersions, options)
+  const enginesNodes = await getEnginesNodeFromRegistry(latestVersionResults, options)
   return Object.entries(upgradedLatestVersions)
     .filter(
       ([pkgName, newVersion]) =>
