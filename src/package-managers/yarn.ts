@@ -17,6 +17,7 @@ import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { SpawnOptions } from '../types/SpawnOptions'
 import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
+import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
 import * as npm from './npm'
 
@@ -293,6 +294,37 @@ export const newest = withNpmConfigFromYarn(npm.newest)
 export const patch = withNpmConfigFromYarn(npm.patch)
 export const semver = withNpmConfigFromYarn(npm.semver)
 
-export { getEngines, getPeerDependencies, packageAuthorChanged } from './npm'
+export { getPeerDependencies } from './npm'
+
+/**
+ * Fetches the engines list from the registry for a specific package version.
+ *
+ * @param packageName
+ * @param version
+ * @returns Promised engines collection
+ */
+export const getEngines = async (
+  packageName: string,
+  version: Version,
+  options: Options = {},
+): Promise<Index<VersionSpec | undefined>> =>
+  npm.getEngines(packageName, version, options, await npmConfigFromYarn(options))
+
+/**
+ * Check if package author changed between current and upgraded version.
+ *
+ * @param packageName Name of the package
+ * @param currentVersion Current version declaration (may be range)
+ * @param upgradedVersion Upgraded version declaration (may be range)
+ * @param npmConfigLocal Additional npm config variables that are merged into the system npm config
+ * @returns A promise that fulfills with boolean value.
+ */
+export const packageAuthorChanged = async (
+  packageName: string,
+  currentVersion: VersionSpec,
+  upgradedVersion: VersionSpec,
+  options: Options = {},
+): Promise<boolean> =>
+  npm.packageAuthorChanged(packageName, currentVersion, upgradedVersion, options, await npmConfigFromYarn(options))
 
 export default spawnYarn
