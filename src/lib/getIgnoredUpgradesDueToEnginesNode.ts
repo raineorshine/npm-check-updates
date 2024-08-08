@@ -6,6 +6,7 @@ import { Options } from '../types/Options'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
 import getEnginesNodeFromRegistry from './getEnginesNodeFromRegistry'
+import keyValueBy from './keyValueBy'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
 
 /** Checks if package.json min node version satisfies given package engine.node spec */
@@ -21,13 +22,23 @@ export async function getIgnoredUpgradesDueToEnginesNode(
   if (!options.nodeEngineVersion) return {}
   const optionsEnginesNodeMinVersion = minVersion(options.nodeEngineVersion)?.version
   if (!optionsEnginesNodeMinVersion) return {}
-  const [upgradedLatestVersions] = await upgradePackageDefinitions(current, {
+  const [upgradedLatestVersions, latestVersionResults] = await upgradePackageDefinitions(current, {
     ...options,
     enginesNode: false,
     nodeEngineVersion: undefined,
     loglevel: 'silent',
   })
-  const enginesNodes = await getEnginesNodeFromRegistry(upgradedLatestVersions, options)
+
+  // Use the latest versions since getEnginesNodeFromRegistry requires exact versions.
+  // Filter down to only the upgraded latest versions, as there is no point in checking the engines.node for packages that have been filtered out, e.g. by options.minimal or options.filterResults.
+  const latestVersions = keyValueBy(latestVersionResults, (dep, result) =>
+    upgradedLatestVersions[dep] && result?.version
+      ? {
+          [dep]: result.version,
+        }
+      : null,
+  )
+  const enginesNodes = await getEnginesNodeFromRegistry(latestVersions, options)
   return Object.entries(upgradedLatestVersions)
     .filter(
       ([pkgName, newVersion]) =>
