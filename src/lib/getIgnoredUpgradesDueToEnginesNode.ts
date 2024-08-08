@@ -29,7 +29,7 @@ export async function getIgnoredUpgradesDueToEnginesNode(
     loglevel: 'silent',
   })
   const latestVersions = keyValueBy(latestVersionResults, (dep, result) =>
-    result?.version
+    upgradedLatestVersions[dep] && result?.version
       ? {
           [dep]: result.version,
         }
