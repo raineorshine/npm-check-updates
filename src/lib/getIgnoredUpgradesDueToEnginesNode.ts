@@ -28,6 +28,9 @@ export async function getIgnoredUpgradesDueToEnginesNode(
     nodeEngineVersion: undefined,
     loglevel: 'silent',
   })
+
+  // Use the latest versions since getEnginesNodeFromRegistry requires exact versions.
+  // Filter down to only the upgraded latest versions, as there is no point in checking the engines.node for packages that have been filtered out, e.g. by options.minimal or options.filterResults.
   const latestVersions = keyValueBy(latestVersionResults, (dep, result) =>
     upgradedLatestVersions[dep] && result?.version
       ? {
