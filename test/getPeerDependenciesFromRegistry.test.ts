@@ -15,6 +15,17 @@ describe('getPeerDependenciesFromRegistry', function () {
     })
   })
 
+  it('single package with range', async () => {
+    await chalkInit()
+    const data = await getPeerDependenciesFromRegistry({ 'eslint-plugin-unused-imports': '^4' }, {})
+    data.should.deep.equal({
+      'eslint-plugin-unused-imports': {
+        '@typescript-eslint/eslint-plugin': '^8.0.0-0',
+        eslint: '^9.0.0',
+      },
+    })
+  })
+
   it('single package empty', async () => {
     await chalkInit()
     const data = await getPeerDependenciesFromRegistry({ 'ncu-test-return-version': '1.0' }, {})
