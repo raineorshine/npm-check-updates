@@ -170,7 +170,7 @@ export async function toDependencyTable({
         .sort()
         .map(async dep => {
           const from =
-            (format?.includes('exactCurrentVersion')
+            (format?.includes('installedVersion')
               ? await getPackageVersion(dep, undefined, { pkgFile })
               : fromDeps[dep]) || ''
           const toRaw = toDeps[dep] || ''
