@@ -68,6 +68,9 @@
           "$ref": "#/definitions/Index<string>",
           "description": "A very generic object."
         },
+        "version": {
+          "type": "string"
+        },
         "workspaces": {
           "anyOf": [
             {
@@ -284,7 +287,7 @@
       "description": "Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --filterVersion\" for details."
     },
     "format": {
-      "description": "Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines. Run \"ncu --help --format\" for details.",
+      "description": "Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines, exactCurrentVersion. Run \"ncu --help --format\" for details.",
       "items": {
         "type": "string"
       },

@@ -1,10 +1,8 @@
-import fs from 'fs/promises'
 import hostedGitInfo from 'hosted-git-info'
-import path from 'path'
 import { URL } from 'url'
 import { PackageFile } from '../types/PackageFile'
 import { PackageFileRepository } from '../types/PackageFileRepository'
-import exists from './exists'
+import getPackageJson from './getPackageJson'
 
 /** Gets the repo url of an installed package. */
 async function getPackageRepo(
@@ -15,23 +13,9 @@ async function getPackageRepo(
     /** Specify the package file location to add to the node_modules search paths. Needed in workspaces/deep mode. */
     pkgFile?: string
   } = {},
-): Promise<string | { url: string } | null> {
-  const requirePaths = require.resolve.paths(packageName) || []
-  const pkgFileNodeModules = pkgFile ? [path.join(path.dirname(pkgFile), 'node_modules')] : []
-  const localNodeModules = [path.join(process.cwd(), 'node_modules')]
-  const nodeModulePaths = [...pkgFileNodeModules, ...localNodeModules, ...requirePaths]
-
-  for (const basePath of nodeModulePaths) {
-    const packageJsonPath = path.join(basePath, packageName, 'package.json')
-    if (await exists(packageJsonPath)) {
-      try {
-        const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
-        return packageJson.repository
-      } catch (e) {}
-    }
-  }
-
-  return null
+): Promise<string | PackageFileRepository | null> {
+  const packageJson = await getPackageJson(packageName, { pkgFile })
+  return packageJson?.repository ?? null
 }
 
 /**

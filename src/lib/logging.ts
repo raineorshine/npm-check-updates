@@ -10,6 +10,7 @@ import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
 import chalk from './chalk'
 import filterObject from './filterObject'
+import getPackageVersion from './getPackageVersion'
 import getRepoUrl from './getRepoUrl'
 import {
   colorizeDiff,
@@ -168,7 +169,10 @@ export async function toDependencyTable({
       Object.keys(toDeps)
         .sort()
         .map(async dep => {
-          const from = fromDeps[dep] || ''
+          const from =
+            (format?.includes('exactCurrentVersion')
+              ? await getPackageVersion(dep, undefined, { pkgFile })
+              : fromDeps[dep]) || ''
           const toRaw = toDeps[dep] || ''
           const to = getVersion(toRaw)
           const ownerChanged = ownersChangedDeps
