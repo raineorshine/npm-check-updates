@@ -22,4 +22,5 @@ export interface PackageFile {
   repository?: string | PackageFileRepository
   scripts?: Index<string>
   workspaces?: string[] | { packages: string[] }
+  version?: string
 }

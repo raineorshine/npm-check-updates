@@ -251,7 +251,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#format">--format &lt;value&gt;</a></td>
-    <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines. (default: [])</td>
+    <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines, installedVersion. (default: [])</td>
   </tr>
   <tr>
     <td>-g, --global</td>
@@ -544,6 +544,7 @@ Modify the output formatting or show additional information. Specify one or more
   <tr><td>repo</td><td>Infers and displays links to the package's source code repository. Requires packages to be installed.</td></tr>
   <tr><td>time</td><td>Shows the publish time of each upgrade.</td></tr>
   <tr><td>lines</td><td>Prints name@version on separate lines. Useful for piping to npm install.</td></tr>
+  <tr><td>installedVersion</td><td>Prints the exact current version number instead of a range.</td></tr>
 </table>
 
 ## groupFunction
