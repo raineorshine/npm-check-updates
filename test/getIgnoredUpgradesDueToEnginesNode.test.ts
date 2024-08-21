@@ -27,7 +27,7 @@ describe('getIgnoredUpgradesDueToEnginesNode', function () {
       '@typescript-eslint/eslint-plugin': {
         enginesNode: '^18.18.0 || ^20.9.0 || >=21.1.0',
         from: '^7.18.0',
-        to: '^8.0.1',
+        to: '^8.2.0',
       },
       del: {
         enginesNode: '>=14.16',
