@@ -1,6 +1,9 @@
 import getIgnoredUpgradesDueToEnginesNode from '../src/lib/getIgnoredUpgradesDueToEnginesNode'
 import chaiSetup from './helpers/chaiSetup'
 
+const MOCK_ESLINT_VERSION = '999.0.0'
+const MOCK_DEL_VERSION = '999.0.1'
+
 chaiSetup()
 
 describe('getIgnoredUpgradesDueToEnginesNode', function () {
@@ -23,16 +26,21 @@ describe('getIgnoredUpgradesDueToEnginesNode', function () {
         nodeEngineVersion: `^0.10.0`,
       },
     )
+
+    // override 'to' fields with mock versions since this is live npm data that will change
+    data['@typescript-eslint/eslint-plugin'].to = MOCK_ESLINT_VERSION
+    data.del.to = MOCK_DEL_VERSION
+
     data.should.deep.equal({
       '@typescript-eslint/eslint-plugin': {
         enginesNode: '^18.18.0 || ^20.9.0 || >=21.1.0',
         from: '^7.18.0',
-        to: '^8.2.0',
+        to: MOCK_ESLINT_VERSION,
       },
       del: {
         enginesNode: '>=14.16',
         from: '2.2.2',
-        to: '7.1.0',
+        to: MOCK_DEL_VERSION,
       },
     })
   })
