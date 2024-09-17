@@ -6,6 +6,7 @@ import { VersionSpec } from '../types/VersionSpec'
 import filterAndReject from './filterAndReject'
 import filterObject from './filterObject'
 import { keyValueBy } from './keyValueBy'
+import programError from './programError'
 import resolveDepSections from './resolveDepSections'
 
 /** Returns true if spec1 is greater than spec2, ignoring invalid version ranges. */
@@ -51,15 +52,20 @@ function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}
 
   // filter & reject dependencies and versions
   const workspacePackageMap = keyValueBy(options.workspacePackages || [])
-  const filteredDependencies = filterObject(
-    filterObject(allDependencies, name => !workspacePackageMap[name]),
-    filterAndReject(
-      options.filter || null,
-      options.reject || null,
-      options.filterVersion || null,
-      options.rejectVersion || null,
-    ),
-  )
+  let filteredDependencies: Index<VersionSpec> = {}
+  try {
+    filteredDependencies = filterObject(
+      filterObject(allDependencies, name => !workspacePackageMap[name]),
+      filterAndReject(
+        options.filter || null,
+        options.reject || null,
+        options.filterVersion || null,
+        options.rejectVersion || null,
+      ),
+    )
+  } catch (err: any) {
+    programError(options, 'Invalid filter: ' + err.message || err)
+  }
 
   return filteredDependencies
 }

@@ -1,3 +1,4 @@
+import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
@@ -29,10 +30,17 @@ async function getInstalledPackages(options: Options = {}) {
 
   // filter out undefined packages or those with a wildcard
   const filterFunction = filterAndReject(options.filter, options.reject, options.filterVersion, options.rejectVersion)
-  return filterObject(
-    packages,
-    (dep: VersionSpec, version: Version) => !!version && !isWildPart(version) && filterFunction(dep, version),
-  )
+  let filteredPackages: Index<VersionSpec> = {}
+  try {
+    filteredPackages = filterObject(
+      packages,
+      (dep: VersionSpec, version: Version) => !!version && !isWildPart(version) && filterFunction(dep, version),
+    )
+  } catch (err: any) {
+    programError(options, 'Invalid filter: ' + err.message || err)
+  }
+
+  return filteredPackages
 }
 
 export default getInstalledPackages

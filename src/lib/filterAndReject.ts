@@ -7,8 +7,9 @@ import { Maybe } from '../types/Maybe'
 import { VersionSpec } from '../types/VersionSpec'
 
 /**
- * Creates a filter function from a given filter string. Supports
- * strings, wildcards, comma-or-space-delimited lists, and regexes.
+ * Creates a filter function from a given filter string.
+ * Supports strings, wildcards, comma-or-space-delimited lists, and regexes.
+ * The filter function *may* throw an exception if the filter pattern is invalid.
  *
  * @param [filterPattern]
  * @returns
@@ -65,8 +66,9 @@ function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec
   // limit the arity to 1 to avoid passing the value
   return predicate
 }
+
 /**
- * Composes a filter function from filter, reject, filterVersion, and rejectVersion patterns.
+ * Composes a filter function from filter, reject, filterVersion, and rejectVersion patterns. The filter function *may* throw an exception if the filter pattern is invalid.
  *
  * @param [filter]
  * @param [reject]

@@ -191,13 +191,21 @@ describe('filter', () => {
       upgraded.should.have.property('fp-and-or')
     })
 
-    it('trim and ignore empty filter', async () => {
+    it('trim and ignore empty array', async () => {
       const upgraded = (await ncu({
         packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package2.json'), 'utf-8'),
         filter: [],
       })) as Index<string>
       upgraded.should.have.property('lodash.map')
       upgraded.should.have.property('lodash.filter')
+    })
+
+    it('empty string is invalid', async () => {
+      const promise = ncu({
+        packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package2.json'), 'utf-8'),
+        filter: ',test',
+      })
+      promise.should.eventually.be.rejectedWith('Invalid filter: Expected pattern to be a non-empty string')
     })
   })
 
