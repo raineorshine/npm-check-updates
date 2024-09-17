@@ -1,6 +1,7 @@
 import path from 'path'
 import prompts from 'prompts-ncu'
 import spawn from 'spawn-please'
+import pkg from '../package.json'
 import { cliOptionsMap } from './cli-options'
 import { cacheClear } from './lib/cache'
 import chalk, { chalkInit } from './lib/chalk'
@@ -28,12 +29,17 @@ if (process.env.INJECT_PROMPTS) {
   prompts.inject(JSON.parse(process.env.INJECT_PROMPTS))
 }
 
-// Exit with non-zero error code when there is an unhandled promise rejection.
+/** Tracks the (first) unhandled rejection so the process can exit with an error code at the end. This allows other errors to be logged before the process exits. */
+let unhandledRejectionError = false
+
 // Use `node --trace-uncaught ...` to show where the exception was thrown.
 // See: https://nodejs.org/api/process.html#event-unhandledrejection
 process.on('unhandledRejection', (reason: string | Error) => {
   // do not rethrow, as there may be other errors to print out
   console.error(reason)
+
+  // ensure the process exits with a non-zero code at the end
+  unhandledRejectionError = true
 })
 
 /**
@@ -279,6 +285,14 @@ export async function run(
   { cli }: { cli?: boolean } = {},
 ): Promise<PackageFile | Index<VersionSpec> | void> {
   const options = await initOptions(runOptions, { cli })
+
+  // ensure that the process exits with an error code if there was an unhandled rejection
+  const bugsUrl = pkg.bugs.url
+  process.on('exit', () => {
+    if (unhandledRejectionError) {
+      programError(options, `Unhandled Rejection! This is a bug and should be reported: ${bugsUrl}`)
+    }
+  })
 
   // chalk may already have been initialized in cli.ts, but when imported as a module
   // chalkInit is idempotent

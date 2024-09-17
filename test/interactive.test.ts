@@ -17,7 +17,8 @@ describe('--interactive', () => {
         'ncu-test-v2': '2.0.0',
         'ncu-test-tag': '1.1.0',
         'ncu-test-return-version': '2.0.0',
-        'modern-diacritics': '99.9.9',
+        // this must be a real version for --format repo to work
+        'modern-diacritics': '2.0.0',
       },
       { spawn: true },
     )
