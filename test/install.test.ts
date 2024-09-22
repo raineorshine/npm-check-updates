@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-expressions */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 // eslint doesn't like .to.be.false syntax
 import { expect } from 'chai'
 import fs from 'fs/promises'
