@@ -27,6 +27,7 @@ module.exports = {
         '@typescript-eslint/no-unused-vars': [
           'error',
           {
+            caughtErrors: 'none',
             // using destructuring to omit properties from objects
             destructuredArrayIgnorePattern: '^_',
             argsIgnorePattern: '^_',
