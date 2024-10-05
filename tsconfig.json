@@ -15,6 +15,7 @@
     "noImplicitAny": true,
     "paths": {
       "libnpmconfig": ["./src/types/libnpmconfig"],
+      "@types/semver-utils": ["./node_modules/@types/semver-utils"],
       "prompts-ncu": ["./src/types/prompts-ncu"]
     },
     "resolveJsonModule": true,
