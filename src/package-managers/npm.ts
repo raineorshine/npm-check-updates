@@ -609,17 +609,15 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
   if (options.prefix) {
     return Promise.resolve(options.prefix)
   }
-  const spawnOptions = {}
 
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-  const sanitizedSpawnOptions = process.platform === 'win32' ? { ...spawnOptions, shell: true } : spawnOptions
 
   let prefix: string | undefined
 
   // catch spawn error which can occur on Windows
   // https://github.com/raineorshine/npm-check-updates/issues/703
   try {
-    const { stdout } = await spawn(cmd, ['config', 'get', 'prefix'], {}, sanitizedSpawnOptions)
+    const { stdout } = await spawn(cmd, ['config', 'get', 'prefix'])
     prefix = stdout
   } catch (e: any) {
     const message = (e.message || e || '').toString()
