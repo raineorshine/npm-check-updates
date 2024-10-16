@@ -174,6 +174,7 @@ const install = async (
               // See: https://github.com/raineorshine/npm-check-updates/issues/1191
               ...(packageManager === 'pnpm' ? { npm_config_strict_peer_dependencies: false } : null),
             },
+            shell: process.platform === 'win32',
           },
         )
         print(options, stdout)

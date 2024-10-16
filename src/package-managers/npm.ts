@@ -586,6 +586,7 @@ async function spawnNpm(
   spawnOptions: Index<any> = {},
 ): Promise<any> {
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+  const sanitizedSpawnOptions = process.platform === 'win32' ? { ...spawnOptions, shell: true } : spawnOptions
 
   const fullArgs = [
     ...(npmOptions.global ? [`--global`] : []),
@@ -593,7 +594,7 @@ async function spawnNpm(
     '--json',
     ...(Array.isArray(args) ? args : [args]),
   ]
-  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, sanitizedSpawnOptions)
   return stdout
 }
 
@@ -609,15 +610,17 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
   if (options.prefix) {
     return Promise.resolve(options.prefix)
   }
+  const spawnOptions = {}
 
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+  const sanitizedSpawnOptions = process.platform === 'win32' ? { ...spawnOptions, shell: true } : spawnOptions
 
   let prefix: string | undefined
 
   // catch spawn error which can occur on Windows
   // https://github.com/raineorshine/npm-check-updates/issues/703
   try {
-    const { stdout } = await spawn(cmd, ['config', 'get', 'prefix'])
+    const { stdout } = await spawn(cmd, ['config', 'get', 'prefix'], {}, sanitizedSpawnOptions)
     prefix = stdout
   } catch (e: any) {
     const message = (e.message || e || '').toString()
