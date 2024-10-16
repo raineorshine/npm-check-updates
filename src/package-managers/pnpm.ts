@@ -56,11 +56,9 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   // use npm for local ls for completeness
   // this should never happen since list is only called in runGlobal -> getInstalledPackages
   if (!options.global) return npm.list(options)
-  const spawnOptions = {}
 
   const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
-  const sanitzedSpawnOptions = process.platform === 'win32' ? { ...spawnOptions, shell: true } : spawnOptions
-  const { stdout } = await spawn(cmd, ['ls', '-g', '--json'], {}, sanitzedSpawnOptions)
+  const { stdout } = await spawn(cmd, ['ls', '-g', '--json'])
   const result = JSON.parse(stdout) as PnpmList
   const list = keyValueBy(result[0].dependencies || {}, (name, { version }) => ({
     [name]: version,
@@ -93,11 +91,10 @@ export const semver = withNpmWorkspaceConfig(npm.semver)
 async function spawnPnpm(
   args: string | string[],
   npmOptions: NpmOptions = {},
-  spawnOptions: SpawnOptions = {},
+  spawnOptions?: SpawnOptions,
   spawnPleaseOptions?: SpawnPleaseOptions,
 ): Promise<string> {
   const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
-  const sanitzedSpawnOptions = process.platform === 'win32' ? { ...spawnOptions, shell: true } : spawnOptions
 
   const fullArgs = [
     ...(npmOptions.global ? 'global' : []),
@@ -105,7 +102,7 @@ async function spawnPnpm(
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
   ]
 
-  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, sanitzedSpawnOptions)
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
 
   return stdout
 }

@@ -4,5 +4,4 @@ import { Index } from './IndexType'
 export interface SpawnOptions {
   cwd?: string
   env?: Index<string>
-  shell?: boolean
 }
