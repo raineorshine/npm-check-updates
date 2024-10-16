@@ -225,10 +225,12 @@ export async function defaultPrefix(options: Options): Promise<string | null> {
   if (options.prefix) {
     return Promise.resolve(options.prefix)
   }
+  const spawnOptions = {}
 
   const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
+  const sanitizedSpawnOptions = process.platform === 'win32' ? { ...spawnOptions, shell: true } : spawnOptions
 
-  const { stdout: prefix } = await spawn(cmd, ['global', 'dir'])
+  const { stdout: prefix } = await spawn(cmd, ['global', 'dir'], {}, sanitizedSpawnOptions)
     // yarn 2.0 does not support yarn global
     // catch error to prevent process from crashing
     // https://github.com/raineorshine/npm-check-updates/issues/873
