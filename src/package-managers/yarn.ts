@@ -196,7 +196,6 @@ async function spawnYarn(
   spawnOptions: SpawnOptions = {},
 ): Promise<string> {
   const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
-  const sanitizedSpawnOptions = process.platform === 'win32' ? { ...spawnOptions, shell: true } : spawnOptions
 
   const fullArgs = [
     ...(yarnOptions.global ? ['global'] : []),
@@ -209,7 +208,7 @@ async function spawnYarn(
     ...(Array.isArray(args) ? args : [args]),
   ]
 
-  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, sanitizedSpawnOptions)
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
 
   return stdout
 }

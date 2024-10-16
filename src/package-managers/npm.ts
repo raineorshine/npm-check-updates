@@ -586,7 +586,6 @@ async function spawnNpm(
   spawnOptions: Index<any> = {},
 ): Promise<any> {
   const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-  const sanitizedSpawnOptions = process.platform === 'win32' ? { ...spawnOptions, shell: true } : spawnOptions
 
   const fullArgs = [
     ...(npmOptions.global ? [`--global`] : []),
@@ -594,7 +593,7 @@ async function spawnNpm(
     '--json',
     ...(Array.isArray(args) ? args : [args]),
   ]
-  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, sanitizedSpawnOptions)
+  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
   return stdout
 }
 
