@@ -5,7 +5,6 @@ import { Index } from '../types/IndexType'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
-import * as npm from './npm'
 
 /** Spawn bun. */
 async function spawnBun(
@@ -72,13 +71,17 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   return dependencies
 }
 
-export const greatest = npm.greatest
-export const latest = npm.latest
-export const minor = npm.minor
-export const newest = npm.newest
-export const patch = npm.patch
-export const semver = npm.semver
-
-export { getEngines, getPeerDependencies, packageAuthorChanged } from './npm'
+export {
+  distTag,
+  getEngines,
+  getPeerDependencies,
+  greatest,
+  latest,
+  minor,
+  newest,
+  packageAuthorChanged,
+  patch,
+  semver,
+} from './npm'
 
 export default spawnBun
