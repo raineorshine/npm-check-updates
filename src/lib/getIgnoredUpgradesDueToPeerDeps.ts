@@ -1,4 +1,4 @@
-import { intersects, satisfies } from 'semver'
+import { intersects, minVersion, satisfies, validRange } from 'semver'
 import { IgnoredUpgradeDueToPeerDeps } from '../types/IgnoredUpgradeDueToPeerDeps'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -24,7 +24,19 @@ export async function getIgnoredUpgradesDueToPeerDeps(
     peerDependencies: undefined,
     loglevel: 'silent',
   })
-  const upgradedPeerDependenciesLatest = await getPeerDependenciesFromRegistry(upgradedLatestVersions, options)
+  const upgradedPeerDependenciesLatest = await getPeerDependenciesFromRegistry(
+    Object.fromEntries(
+      Object.entries(upgradedLatestVersions).map(([packageName, versionSpec]) => {
+        return [
+          packageName,
+          // git urls and other non-semver versions are ignored.
+          // Make sure versionSpec is a valid semver range, otherwise minVersion will throw.
+          validRange(versionSpec) ? (minVersion(versionSpec)?.version ?? versionSpec) : versionSpec,
+        ]
+      }),
+    ),
+    options,
+  )
   return Object.entries(upgradedLatestVersions)
     .filter(([pkgName, newVersion]) => upgraded[pkgName] !== newVersion)
     .reduce((accum, [pkgName, newVersion]) => {
