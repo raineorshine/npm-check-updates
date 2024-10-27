@@ -298,7 +298,7 @@ const npmConfig = findNpmConfig()
  * @param data
  * @returns
  */
-function parseJson<R>(result: string, data: { command?: string; packageName?: string }): R {
+export function parseJson<R>(result: string, data: { command?: string; packageName?: string }): R {
   let json
   try {
     json = JSON.parse(result)
