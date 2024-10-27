@@ -181,6 +181,8 @@ function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep
   })
 }
 
+const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
+
 /**
  * Spawn yarn requires a different command on Windows.
  *
@@ -195,8 +197,6 @@ async function spawnYarn(
   spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: SpawnOptions = {},
 ): Promise<string> {
-  const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
-
   const fullArgs = [
     ...(yarnOptions.global ? ['global'] : []),
     ...(yarnOptions.prefix ? [`--prefix=${yarnOptions.prefix}`] : []),
@@ -225,8 +225,6 @@ export async function defaultPrefix(options: Options): Promise<string | null> {
   if (options.prefix) {
     return Promise.resolve(options.prefix)
   }
-
-  const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
 
   const { stdout: prefix } = await spawn(cmd, ['global', 'dir'])
     // yarn 2.0 does not support yarn global
@@ -294,7 +292,27 @@ export const newest = withNpmConfigFromYarn(npm.newest)
 export const patch = withNpmConfigFromYarn(npm.patch)
 export const semver = withNpmConfigFromYarn(npm.semver)
 
-export { getPeerDependencies } from './npm'
+/**
+ * Fetches the list of peer dependencies for a specific package version.
+ *
+ * @param packageName
+ * @param version
+ * @returns Promised {packageName: version} collection
+ */
+export const getPeerDependencies = async (packageName: string, version: Version): Promise<Index<Version>> => {
+  const { stdout: yarnVersion } = await spawn(cmd, ['--version'], { rejectOnError: false }, {})
+  if (yarnVersion.startsWith('1')) {
+    const args = ['--json', 'info', `${packageName}@${version}`, 'peerDependencies']
+    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, {})
+    return stdout ? npm.parseJson<{ data?: Index<Version> }>(stdout, { command: args.join(' ') }).data || {} : {}
+  } else {
+    const args = ['--json', 'npm', 'info', `${packageName}@${version}`, '--fields', 'peerDependencies']
+    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, {})
+    return stdout
+      ? npm.parseJson<{ peerDependencies?: Index<Version> }>(stdout, { command: args.join(' ') }).peerDependencies || {}
+      : {}
+  }
+}
 
 /**
  * Fetches the engines list from the registry for a specific package version.
