@@ -47,14 +47,22 @@ export async function getIgnoredUpgradesDueToPeerDeps(
             latestVersionResults[pkgName]?.version &&
             !satisfies(latestVersionResults[pkgName].version!, peers[pkgName]),
         )
-        .reduce((accumReason, [peerPkg, peers]) => ({ ...accumReason, [peerPkg]: peers[pkgName] }), {} as Index<string>)
+        .reduce(
+          (accumReason, [peerPkg, peers]) => ({
+            ...accumReason,
+            [peerPkg]: !validRange(peers[pkgName])
+              ? `a range that semver does not understand: ${peers[pkgName]}. This range does not work with semver.satisfies or semver.intersects, which npm-check-updates relies on to determine peer dependency compatibility. Either this is a mistake in ${peerPkg}, or it relies on a new syntax that is not compatible with the semver package.`
+              : peers[pkgName],
+          }),
+          {} as Index<string>,
+        )
       if (Object.keys(reason).length === 0) {
         const peersOfPkg = upgradedPeerDependenciesLatest?.[pkgName] || {}
         reason = Object.entries(peersOfPkg)
           .filter(
             ([peer, peerSpec]) =>
               upgradedPackagesWithPeerRestriction[peer] &&
-              !intersects(upgradedPackagesWithPeerRestriction[peer], peerSpec),
+              !(!validRange(peerSpec) || intersects(upgradedPackagesWithPeerRestriction[peer], peerSpec)),
           )
           .reduce(
             (accumReason, [peerPkg, peerSpec]) => ({ ...accumReason, [pkgName]: `${peerPkg} ${peerSpec}` }),

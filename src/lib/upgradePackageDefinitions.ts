@@ -1,5 +1,5 @@
 import { dequal } from 'dequal'
-import { intersects, satisfies } from 'semver'
+import { intersects, satisfies, validRange } from 'semver'
 import { parse, parseRange } from 'semver-utils'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -36,7 +36,9 @@ const checkIfInPeerViolation = (
     }
     return Object.entries(peerDeps).every(
       ([peer, peerSpec]) =>
-        upgradedDependencies[peer] === undefined || intersects(upgradedDependencies[peer], peerSpec),
+        upgradedDependencies[peer] === undefined ||
+        !validRange(peerSpec) ||
+        intersects(upgradedDependencies[peer], peerSpec),
     )
   })
   const violated =
