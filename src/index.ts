@@ -144,7 +144,7 @@ const install = async (
     const isWorkspace = options.workspaces || !!options.workspace?.length
     const pkgsNormalized = isWorkspace ? ['package.json'] : pkgs
 
-    pkgsNormalized.forEach(async pkgFile => {
+    for await (const pkgFile of pkgsNormalized) {
       const packageManager = await getPackageManagerForInstall(options, pkgFile)
       const cmd = packageManager + (process.platform === 'win32' ? '.cmd' : '')
       const cwd = options.cwd || path.resolve(pkgFile, '..')
@@ -183,7 +183,7 @@ const install = async (
         // if there is nothing on stderr, reject with stdout
         throw new Error(err?.message || err || stdout)
       }
-    })
+    }
   }
   // show the install hint unless auto-install occurred
   else if (!isInteractive) {
