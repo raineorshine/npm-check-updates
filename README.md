@@ -464,7 +464,7 @@ The predicate function is only available in .ncurc.js or when importing npm-chec
 ```js
 /**
   @param name     The name of the dependency.
-  @param semver   A parsed Semver array of the upgraded version.
+  @param semver   A parsed Semver array of the current version.
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be included, false if it should be excluded.
 */
@@ -485,17 +485,17 @@ Filters out upgrades based on a user provided function.
 Only available in .ncurc.js or when importing npm-check-updates as a module.
 
 ```js
-/** Filter out non-major version updates.
-  @param {string} packageName        The name of the dependency.
-  @param {string} current            Current version declaration (may be a range).
-  @param {SemVer[]} currentSemver    Current version declaration in semantic versioning format (may be a range).
-  @param {string} upgraded           Upgraded version.
-  @param {SemVer} upgradedSemver     Upgraded version in semantic versioning format.
-  @returns {boolean}                 Return true if the upgrade should be kept, otherwise it will be ignored.
+/** Filter out non-major version updates. Note this could also be achieved with --target semver.
+  @param {string} packageName               The name of the dependency.
+  @param {string} current                   Current version declaration (may be a range).
+  @param {SemVer[]} currentVersionSemver    Current version declaration in semantic versioning format (may be a range).
+  @param {string} upgraded                  Upgraded version.
+  @param {SemVer} upgradedVersionSemver     Upgraded version in semantic versioning format.
+  @returns {boolean}                        Return true if the upgrade should be kept, otherwise it will be ignored.
 */
-filterResults: (packageName, { current, currentSemver, upgraded, upgradedSemver }) => {
-  const currentMajor = parseInt(currentSemver[0]?.major, 10)
-  const upgradedMajor = parseInt(upgradedSemver?.major, 10)
+filterResults: (packageName, { current, currentVersionSemver, upgraded, upgradedVersionSemver }) => {
+  const currentMajor = parseInt(currentVersionSemver[0]?.major, 10)
+  const upgradedMajor = parseInt(upgradedVersionSemver?.major, 10)
   if (currentMajor && upgradedMajor) {
     return currentMajor < upgradedMajor
   }
@@ -513,12 +513,14 @@ Usage:
 
 Include only versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
 
-The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the filter option function.
+`--filterVersion` runs _before_ new versions are fetched, in contrast to `--filterResults` which runs _after_.
+
+The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the `filter` option function.
 
 ```js
 /**
   @param name     The name of the dependency.
-  @param semver   A parsed Semver array of the upgraded version.
+  @param semver   A parsed Semver array of the current version.
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be included, false if it should be excluded.
 */
@@ -697,7 +699,7 @@ The predicate function is only available in .ncurc.js or when importing npm-chec
 ```js
 /**
   @param name     The name of the dependency.
-  @param semver   A parsed Semver array of the upgraded version.
+  @param semver   A parsed Semver array of the current version.
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be excluded, false if it should be included.
 */
@@ -717,12 +719,14 @@ Usage:
 
 The inverse of `--filterVersion`. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
 
+`--rejectVersion` runs _before_ new versions are fetched, in contrast to `--filterResults` which runs _after_.
+
 The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the reject option function.
 
 ```js
 /**
   @param name     The name of the dependency.
-  @param semver   A parsed Semver array of the upgraded version.
+  @param semver   A parsed Semver array of the current version.
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be excluded, false if it should be included.
 */

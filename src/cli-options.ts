@@ -135,21 +135,21 @@ ${codeInline('filterResults')} runs _after_ new versions are fetched, in contras
 Only available in .ncurc.js or when importing npm-check-updates as a module.
 
 ${codeBlock(
-  `${chalk.gray(`/** Filter out non-major version updates.
-  @param {string} packageName        The name of the dependency.
-  @param {string} current            Current version declaration (may be a range).
-  @param {SemVer[]} currentSemver    Current version declaration in semantic versioning format (may be a range).
-  @param {string} upgraded           Upgraded version.
-  @param {SemVer} upgradedSemver     Upgraded version in semantic versioning format.
-  @returns {boolean}                 Return true if the upgrade should be kept, otherwise it will be ignored.
+  `${chalk.gray(`/** Filter out non-major version updates. Note this could also be achieved with --target semver.
+  @param {string} packageName               The name of the dependency.
+  @param {string} current                   Current version declaration (may be a range).
+  @param {SemVer[]} currentVersionSemver    Current version declaration in semantic versioning format (may be a range).
+  @param {string} upgraded                  Upgraded version.
+  @param {SemVer} upgradedVersionSemver     Upgraded version in semantic versioning format.
+  @returns {boolean}                        Return true if the upgrade should be kept, otherwise it will be ignored.
 */`)}
-${chalk.green('filterResults')}: (packageName, { current, currentSemver, upgraded, upgradedSemver }) ${chalk.cyan(
+${chalk.green('filterResults')}: (packageName, { current, currentVersionSemver, upgraded, upgradedVersionSemver }) ${chalk.cyan(
     '=>',
   )} {
-  ${chalk.cyan('const')} currentMajor ${chalk.red('=')} parseInt(currentSemver[${chalk.cyan('0')}]?.major, ${chalk.cyan(
+  ${chalk.cyan('const')} currentMajor ${chalk.red('=')} parseInt(currentVersionSemver[${chalk.cyan('0')}]?.major, ${chalk.cyan(
     '10',
   )})
-  ${chalk.cyan('const')} upgradedMajor ${chalk.red('=')} parseInt(upgradedSemver?.major, ${chalk.cyan('10')})
+  ${chalk.cyan('const')} upgradedMajor ${chalk.red('=')} parseInt(upgradedVersionSemver?.major, ${chalk.cyan('10')})
   ${chalk.red('if')} (currentMajor ${chalk.red('&&')} upgradedMajor) {
     ${chalk.red('return')} currentMajor ${chalk.red('<')} upgradedMajor
   }
@@ -222,7 +222,7 @@ The predicate function is only available in .ncurc.js or when importing npm-chec
 ${codeBlock(
   `${chalk.gray(`/**
   @param name     The name of the dependency.
-  @param semver   A parsed Semver array of the upgraded version.
+  @param semver   A parsed Semver array of the current version.
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be included, false if it should be excluded.
 */`)}
@@ -240,14 +240,21 @@ ${chalk.green('filterFunction')}: (name, semver) ${chalk.cyan('=>')} {
 
 /** Extended help for the --filterVersion option. */
 const extendedHelpFilterVersionFunction: ExtendedHelp = ({ markdown }) => {
+  /** If markdown, surround inline code with backticks. */
+  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+
   return `Include only versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
 
-The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the filter option function.
+${codeInline('--filterVersion')} runs _before_ new versions are fetched, in contrast to ${codeInline(
+    '--filterResults',
+  )} which runs _after_.
+
+The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the ${codeInline('filter')} option function.
 
 ${codeBlock(
   `${chalk.gray(`/**
   @param name     The name of the dependency.
-  @param semver   A parsed Semver array of the upgraded version.
+  @param semver   A parsed Semver array of the current version.
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be included, false if it should be excluded.
 */`)}
@@ -285,7 +292,7 @@ The predicate function is only available in .ncurc.js or when importing npm-chec
 ${codeBlock(
   `${chalk.gray(`/**
   @param name     The name of the dependency.
-  @param semver   A parsed Semver array of the upgraded version.
+  @param semver   A parsed Semver array of the current version.
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be excluded, false if it should be included.
 */`)}
@@ -310,12 +317,16 @@ const extendedHelpRejectVersionFunction: ExtendedHelp = ({ markdown }) => {
     '--filterVersion',
   )}. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
 
+${codeInline('--rejectVersion')} runs _before_ new versions are fetched, in contrast to ${codeInline(
+    '--filterResults',
+  )} which runs _after_.
+
 The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the reject option function.
 
 ${codeBlock(
   `${chalk.gray(`/**
   @param name     The name of the dependency.
-  @param semver   A parsed Semver array of the upgraded version.
+  @param semver   A parsed Semver array of the current version.
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be excluded, false if it should be included.
 */`)}
