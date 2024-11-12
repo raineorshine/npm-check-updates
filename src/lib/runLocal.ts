@@ -106,13 +106,17 @@ const chooseUpgrades = async (
         ]
       })
 
+      const optionsPerPage = process.stdout.rows
+        ? Math.max(3, process.stdout.rows - INTERACTIVE_HINT.split('\n').length - 1 - groups.length * 2)
+        : 50
+
       const response = await prompts({
         choices: [...choices, { title: ' ', heading: true }],
         hint: INTERACTIVE_HINT,
         instructions: false,
         message: 'Choose which packages to update',
         name: 'value',
-        optionsPerPage: 50,
+        optionsPerPage,
         type: 'multiselect',
         onState: (state: any) => {
           if (state.aborted) {
@@ -131,13 +135,17 @@ const chooseUpgrades = async (
           selected: true,
         }))
 
+      const optionsPerPage = process.stdout.rows
+        ? Math.max(3, process.stdout.rows - INTERACTIVE_HINT.split('\n').length - 1)
+        : 50
+
       const response = await prompts({
         choices: [...choices, { title: ' ', heading: true }],
         hint: INTERACTIVE_HINT + '\n',
         instructions: false,
         message: 'Choose which packages to update',
         name: 'value',
-        optionsPerPage: 50,
+        optionsPerPage,
         type: 'multiselect',
         onState: (state: any) => {
           if (state.aborted) {
