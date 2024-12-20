@@ -34,6 +34,8 @@ export default async function findLockfile(
         return { directoryPath: currentPath, filename: 'deno.jsonc' }
       } else if (files.includes('bun.lockb')) {
         return { directoryPath: currentPath, filename: 'bun.lockb' }
+      } else if (files.includes('bun.lock')) {
+        return { directoryPath: currentPath, filename: 'bun.lock' }
       }
 
       const pathParent = path.resolve(currentPath, '..')

@@ -604,7 +604,7 @@ Specifies the package manager to use when looking up versions.
   <tr><td>npm</td><td>System-installed npm. Default.</td></tr>
   <tr><td>yarn</td><td>System-installed yarn. Automatically used if yarn.lock is present.</td></tr>
   <tr><td>pnpm</td><td>System-installed pnpm. Automatically used if pnpm-lock.yaml is present.</td></tr>
-  <tr><td>bun</td><td>System-installed bun. Automatically used if bun.lockb is present.</td></tr>
+  <tr><td>bun</td><td>System-installed bun. Automatically used if bun.lock or bun.lockb is present.</td></tr>
 </table>
 
 ## peer

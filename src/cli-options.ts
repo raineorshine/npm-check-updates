@@ -436,7 +436,7 @@ const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
       ['npm', `System-installed npm. Default.`],
       ['yarn', `System-installed yarn. Automatically used if yarn.lock is present.`],
       ['pnpm', `System-installed pnpm. Automatically used if pnpm-lock.yaml is present.`],
-      ['bun', `System-installed bun. Automatically used if bun.lockb is present.`],
+      ['bun', `System-installed bun. Automatically used if bun.lock or bun.lockb is present.`],
     ],
   })
 

@@ -27,6 +27,27 @@ describe('determinePackageManager', () => {
     packageManager.should.equal('bun')
   })
 
+  it('returns bun if bun.lock exists in cwd', async () => {
+    /** Mock for filesystem calls. */
+    function readdirMock(path: string): Promise<string[]> {
+      switch (path) {
+        case '/home/test-repo':
+        case 'C:\\home\\test-repo':
+          return Promise.resolve(['bun.lock'])
+      }
+
+      throw new Error(`Mock cannot handle path: ${path}.`)
+    }
+
+    const packageManager = await determinePackageManager(
+      {
+        cwd: isWindows ? 'C:\\home\\test-repo' : '/home/test-repo',
+      },
+      readdirMock,
+    )
+    packageManager.should.equal('bun')
+  })
+
   it('returns bun if bun.lockb exists in an ancestor directory', async () => {
     /** Mock for filesystem calls. */
     function readdirMock(path: string): Promise<string[]> {

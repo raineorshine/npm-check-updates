@@ -91,13 +91,15 @@ const loadPackageFileForDoctor = async (options: Options): Promise<PackageInfo> 
 // we have to pass run directly since it would be a circular require if doctor included this file
 const doctor = async (run: Run, options: Options): Promise<void> => {
   await chalkInit()
-  const lockFileName =
+
+  // bun lockFileName defaults to bun.lock but will be overwritten to bun.lockb if detected at the readFile step below
+  let lockFileName: 'package-lock.json' | 'yarn.lock' | 'pnpm-lock.yaml' | 'bun.lock' | 'bun.lockb' =
     options.packageManager === 'yarn'
       ? 'yarn.lock'
       : options.packageManager === 'pnpm'
         ? 'pnpm-lock.yaml'
         : options.packageManager === 'bun'
-          ? 'bun.lockb'
+          ? 'bun.lock'
           : 'package-lock.json'
   const { pkg, pkgFile }: PackageInfo = await loadPackageFileForDoctor(options)
 
@@ -163,7 +165,16 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
   let lockFile = ''
   try {
     lockFile = await fs.readFile(lockFileName, 'utf-8')
-  } catch (e) {}
+  } catch (e) {
+    // try bun.lockb if bun.lock was not found
+    // set lockFileName so the rest of doctor mode uses bun.lockb for lock file updating and restoration
+    if (options.packageManager === 'bun') {
+      lockFileName = 'bun.lockb'
+      try {
+        lockFile = await fs.readFile(lockFileName, 'utf-8')
+      } catch (e) {}
+    }
+  }
 
   // make sure current tests pass before we begin
   try {
