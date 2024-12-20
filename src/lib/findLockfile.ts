@@ -2,6 +2,16 @@ import fs from 'fs/promises'
 import path from 'path'
 import { Options } from '../types/Options'
 
+const lockFileNames = [
+  'package-lock.json',
+  'yarn.lock',
+  'pnpm-lock.yaml',
+  'deno.json',
+  'deno.jsonc',
+  'bun.lock',
+  'bun.lockb',
+]
+
 /**
  * Goes up the filesystem tree until it finds a package-lock.json, yarn.lock, pnpm-lock.yaml, deno.json, deno.jsonc, or bun.lockb file.
  *
@@ -22,20 +32,10 @@ export default async function findLockfile(
     while (true) {
       const files = await readdir(currentPath)
 
-      if (files.includes('package-lock.json')) {
-        return { directoryPath: currentPath, filename: 'package-lock.json' }
-      } else if (files.includes('yarn.lock')) {
-        return { directoryPath: currentPath, filename: 'yarn.lock' }
-      } else if (files.includes('pnpm-lock.yaml')) {
-        return { directoryPath: currentPath, filename: 'pnpm-lock.yaml' }
-      } else if (files.includes('deno.json')) {
-        return { directoryPath: currentPath, filename: 'deno.json' }
-      } else if (files.includes('deno.jsonc')) {
-        return { directoryPath: currentPath, filename: 'deno.jsonc' }
-      } else if (files.includes('bun.lockb')) {
-        return { directoryPath: currentPath, filename: 'bun.lockb' }
-      } else if (files.includes('bun.lock')) {
-        return { directoryPath: currentPath, filename: 'bun.lock' }
+      for (const filename of lockFileNames) {
+        if (files.includes(filename)) {
+          return { directoryPath: currentPath, filename }
+        }
       }
 
       const pathParent = path.resolve(currentPath, '..')
