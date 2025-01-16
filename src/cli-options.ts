@@ -132,7 +132,7 @@ ${codeInline('filterResults')} runs _after_ new versions are fetched, in contras
     'filterResults',
   )} based on how the version has changed (e.g. a major version change).
 
-Only available in .ncurc.js or when importing npm-check-updates as a module.
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
 
 ${codeBlock(
   `${chalk.gray(`/** Filter out non-major version updates. Note this could also be achieved with --target semver.
@@ -217,7 +217,9 @@ ${codeInline('--filter')} runs _before_ new versions are fetched, in contrast to
     '--filterResults',
   )} which runs _after_.
 
-The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
+You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
+
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
 
 ${codeBlock(
   `${chalk.gray(`/**
@@ -226,7 +228,7 @@ ${codeBlock(
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be included, false if it should be excluded.
 */`)}
-${chalk.green('filterFunction')}: (name, semver) ${chalk.cyan('=>')} {
+${chalk.green('filter')}: (name, semver) ${chalk.cyan('=>')} {
   ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)})) {
     ${chalk.red('return')} ${chalk.cyan('false')}
   }
@@ -249,7 +251,9 @@ ${codeInline('--filterVersion')} runs _before_ new versions are fetched, in cont
     '--filterResults',
   )} which runs _after_.
 
-The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the ${codeInline('filter')} option function.
+You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
+
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions. This function is an alias for the ${codeInline('filter')} option function.
 
 ${codeBlock(
   `${chalk.gray(`/**
@@ -258,7 +262,7 @@ ${codeBlock(
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be included, false if it should be excluded.
 */`)}
-${chalk.green('filterVersionFunction')}: (name, semver) ${chalk.cyan('=>')} {
+${chalk.green('filterVersion')}: (name, semver) ${chalk.cyan('=>')} {
   ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)}) ${chalk.red(
     '&&',
   )} parseInt(semver[0]?.major) ${chalk.cyan('>')} ${chalk.cyan(`5`)}) {
@@ -287,7 +291,9 @@ ${codeInline('--reject')} runs _before_ new versions are fetched, in contrast to
     '--filterResults',
   )} which runs _after_.
 
-The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
+You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
+
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
 
 ${codeBlock(
   `${chalk.gray(`/**
@@ -296,7 +302,7 @@ ${codeBlock(
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be excluded, false if it should be included.
 */`)}
-${chalk.green('rejectFunction')}: (name, semver) ${chalk.cyan('=>')} {
+${chalk.green('reject')}: (name, semver) ${chalk.cyan('=>')} {
   ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)})) {
     ${chalk.red('return')} ${chalk.cyan('true')}
   }
@@ -321,7 +327,9 @@ ${codeInline('--rejectVersion')} runs _before_ new versions are fetched, in cont
     '--filterResults',
   )} which runs _after_.
 
-The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the reject option function.
+You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
+
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions. This function is an alias for the reject option function.
 
 ${codeBlock(
   `${chalk.gray(`/**
@@ -330,7 +338,7 @@ ${codeBlock(
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be excluded, false if it should be included.
 */`)}
-${chalk.green('rejectVersionFunction')}: (name, semver) ${chalk.cyan('=>')} {
+${chalk.green('rejectVersion')}: (name, semver) ${chalk.cyan('=>')} {
   ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)}) ${chalk.red(
     '&&',
   )} parseInt(semver[0]?.major) ${chalk.cyan('>')} ${chalk.cyan(`5`)}) {
@@ -348,7 +356,7 @@ ${chalk.green('rejectVersionFunction')}: (name, semver) ${chalk.cyan('=>')} {
 const extendedHelpGroupFunction: ExtendedHelp = ({ markdown }) => {
   return `Customize how packages are divided into groups when using \`--format group\`.
 
-Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
+Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
 
 ${codeBlock(
   `${chalk.gray(`/**
@@ -406,7 +414,13 @@ const extendedHelpTarget: ExtendedHelp = ({ markdown }) => {
 
 ${padLeft(tableString, markdown ? 0 : 4)}
 
-You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module:
+e.g.
+
+${codeBlock(`ncu --target semver`)}
+
+You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
+
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
 
 ${codeBlock(
   `${chalk.gray(`/** Upgrade major version zero to the next minor version, and everything else to latest.

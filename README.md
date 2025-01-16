@@ -159,9 +159,9 @@ Advanced filters: [filter](https://github.com/raineorshine/npm-check-updates#fil
 Options are merged with the following precedence:
 
 1. Command line options
-2. Local [Config File](#config-file)
-3. Project Config File
-4. User Config File
+2. Local [Config File](#config-file) (current working directory)
+3. Project Config File (next to package.json)
+4. User Config File (`$HOME`)
 
 Options that take no arguments can be negated by prefixing them with `--no-`, e.g. `--no-peer`.
 
@@ -459,7 +459,9 @@ Include only package names matching the given string, wildcard, glob, comma-or-s
 
 `--filter` runs _before_ new versions are fetched, in contrast to `--filterResults` which runs _after_.
 
-The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
+You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
+
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
 
 ```js
 /**
@@ -468,7 +470,7 @@ The predicate function is only available in .ncurc.js or when importing npm-chec
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be included, false if it should be excluded.
 */
-filterFunction: (name, semver) => {
+filter: (name, semver) => {
   if (name.startsWith('@myorg/')) {
     return false
   }
@@ -482,7 +484,7 @@ Filters out upgrades based on a user provided function.
 
 `filterResults` runs _after_ new versions are fetched, in contrast to `filter`, `reject`, `filterVersion`, and `rejectVersion`, which run _before_. This allows you to filter out upgrades with `filterResults` based on how the version has changed (e.g. a major version change).
 
-Only available in .ncurc.js or when importing npm-check-updates as a module.
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
 
 ```js
 /** Filter out non-major version updates. Note this could also be achieved with --target semver.
@@ -515,7 +517,9 @@ Include only versions matching the given string, wildcard, glob, comma-or-space-
 
 `--filterVersion` runs _before_ new versions are fetched, in contrast to `--filterResults` which runs _after_.
 
-The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the `filter` option function.
+You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
+
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions. This function is an alias for the `filter` option function.
 
 ```js
 /**
@@ -524,7 +528,7 @@ The predicate function is only available in .ncurc.js or when importing npm-chec
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be included, false if it should be excluded.
 */
-filterVersionFunction: (name, semver) => {
+filterVersion: (name, semver) => {
   if (name.startsWith('@myorg/') && parseInt(semver[0]?.major) > 5) {
     return false
   }
@@ -553,7 +557,7 @@ Modify the output formatting or show additional information. Specify one or more
 
 Customize how packages are divided into groups when using `--format group`.
 
-Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
+Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
 
 ```js
 /**
@@ -694,7 +698,9 @@ The inverse of `--filter`. Exclude package names matching the given string, wild
 
 `--reject` runs _before_ new versions are fetched, in contrast to `--filterResults` which runs _after_.
 
-The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line.
+You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
+
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
 
 ```js
 /**
@@ -703,7 +709,7 @@ The predicate function is only available in .ncurc.js or when importing npm-chec
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be excluded, false if it should be included.
 */
-rejectFunction: (name, semver) => {
+reject: (name, semver) => {
   if (name.startsWith('@myorg/')) {
     return true
   }
@@ -721,7 +727,9 @@ The inverse of `--filterVersion`. Exclude versions matching the given string, wi
 
 `--rejectVersion` runs _before_ new versions are fetched, in contrast to `--filterResults` which runs _after_.
 
-The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. This function is an alias for the reject option function.
+You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
+
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions. This function is an alias for the reject option function.
 
 ```js
 /**
@@ -730,7 +738,7 @@ The predicate function is only available in .ncurc.js or when importing npm-chec
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be excluded, false if it should be included.
 */
-rejectVersionFunction: (name, semver) => {
+rejectVersion: (name, semver) => {
   if (name.startsWith('@myorg/') && parseInt(semver[0]?.major) > 5) {
     return true
   }
@@ -757,7 +765,13 @@ Determines the version to upgrade to. (default: "latest")
   <tr><td>@[tag]</td><td>Upgrade to the version published to a specific tag, e.g. 'next' or 'beta'.</td></tr>
 </table>
 
-You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module:
+e.g.
+
+    ncu --target semver
+
+You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
+
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
 
 ```js
 /** Upgrade major version zero to the next minor version, and everything else to latest.
@@ -776,9 +790,7 @@ target: (name, semver) => {
 
 ## Config File
 
-Use a `.ncurc.{json,yml,js,cjs}` file to specify configuration information.
-You can specify the file name and path using `--configFileName` and `--configFilePath`
-command line options.
+Add a `.ncurc.{json,yml,js,cjs}` file to your project directory to specify configuration information.
 
 For example, `.ncurc.json`:
 
@@ -789,6 +801,30 @@ For example, `.ncurc.json`:
   "reject": ["@types/estree", "ts-node"]
 }
 ```
+
+Options are merged with the following precedence:
+
+1. Command line options
+2. Local Config File (current working directory)
+3. Project Config File (next to package.json)
+4. User Config File (`$HOME`)
+
+You can also specify a custom config file name or path using the `--configFileName` or `--configFilePath` command line options.
+
+### Config Functions
+
+Some options offer more advanced configuration using a function definition. These include [filter](https://github.com/raineorshine/npm-check-updates#filter), [filterVersion](https://github.com/raineorshine/npm-check-updates#filterversion), [filterResults](https://github.com/raineorshine/npm-check-updates#filterresults), [reject](https://github.com/raineorshine/npm-check-updates#reject), [rejectVersion](https://github.com/raineorshine/npm-check-updates#rejectversion), and [groupFunction](https://github.com/raineorshine/npm-check-updates#groupfunction). To define an options function, convert the config file to a JS file by adding the `.js` extension and setting module.exports:
+
+For example, `.ncurc.js`:
+
+```js
+module.exports = {
+  upgrade: true,
+  filter: name => name.startsWith('@myorg/'),
+}
+```
+
+### JSON Schema
 
 If you write `.ncurc` config files using json or yaml, you can add the JSON Schema to your IDE settings for completions.
 

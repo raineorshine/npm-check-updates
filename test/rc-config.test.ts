@@ -214,4 +214,141 @@ describe('rc-config', () => {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
+
+  describe('config functions', () => {
+    it('filter function', async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const configFile = path.join(tempDir, '.ncurc.js')
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        configFile,
+        `module.exports = {
+        filter: name => name.endsWith('tag')
+       }`,
+        'utf-8',
+      )
+      await fs.writeFile(
+        pkgFile,
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+        'utf-8',
+      )
+      try {
+        // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+        const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
+        const pkgData = JSON.parse(stdout)
+        pkgData.should.not.have.property('ncu-test-v2')
+        pkgData.should.have.property('ncu-test-tag')
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+      }
+    })
+
+    it('filterVersion function', async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const configFile = path.join(tempDir, '.ncurc.js')
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        configFile,
+        `module.exports = {
+        filterVersion: version => version === '1.0.0'
+       }`,
+        'utf-8',
+      )
+      await fs.writeFile(
+        pkgFile,
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+        'utf-8',
+      )
+      try {
+        // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+        const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
+        const pkgData = JSON.parse(stdout)
+        pkgData.should.have.property('ncu-test-v2')
+        pkgData.should.not.have.property('ncu-test-tag')
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+      }
+    })
+
+    it('filterResults function', async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const configFile = path.join(tempDir, '.ncurc.js')
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        configFile,
+        `module.exports = {
+        filterResults: (name, { upgradedVersion }) => upgradedVersion === '99.9.9'
+       }`,
+        'utf-8',
+      )
+      await fs.writeFile(
+        pkgFile,
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+        'utf-8',
+      )
+      try {
+        // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+        const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
+        const pkgData = JSON.parse(stdout)
+        pkgData.should.have.property('ncu-test-v2')
+        pkgData.should.have.property('ncu-test-tag')
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+      }
+    })
+
+    it('reject function', async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const configFile = path.join(tempDir, '.ncurc.js')
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        configFile,
+        `module.exports = {
+        reject: name => name.endsWith('tag')
+       }`,
+        'utf-8',
+      )
+      await fs.writeFile(
+        pkgFile,
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+        'utf-8',
+      )
+      try {
+        // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+        const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
+        const pkgData = JSON.parse(stdout)
+        pkgData.should.have.property('ncu-test-v2')
+        pkgData.should.not.have.property('ncu-test-tag')
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+      }
+    })
+
+    it('rejectVersion function', async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const configFile = path.join(tempDir, '.ncurc.js')
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        configFile,
+        `module.exports = {
+        rejectVersion: version => version === '1.0.0'
+       }`,
+        'utf-8',
+      )
+      await fs.writeFile(
+        pkgFile,
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+        'utf-8',
+      )
+      try {
+        // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+        const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
+        const pkgData = JSON.parse(stdout)
+        pkgData.should.not.have.property('ncu-test-v2')
+        pkgData.should.have.property('ncu-test-tag')
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+      }
+    })
+  })
 })
