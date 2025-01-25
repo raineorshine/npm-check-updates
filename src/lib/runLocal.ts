@@ -1,5 +1,5 @@
 import fs from 'fs/promises'
-import jph from 'json-parse-helpfulerror'
+import { parse as parseJson } from 'jsonc-parser'
 import prompts from 'prompts-ncu'
 import nodeSemver from 'semver'
 import { Index } from '../types/IndexType'
@@ -177,9 +177,7 @@ async function runLocal(
       programError(options, 'Missing package data')
     } else {
       // strip comments from jsonc files
-      const pkgDataStripped =
-        pkgFile?.endsWith('.jsonc') && pkgData ? (await import('strip-json-comments')).default(pkgData) : pkgData
-      pkg = jph.parse(pkgDataStripped)
+      pkg = parseJson(pkgData)
     }
   } catch (e: any) {
     programError(
@@ -291,9 +289,9 @@ async function runLocal(
   const newPkgData = await upgradePackageData(pkgData, current, chosenUpgraded, options)
 
   const output: PackageFile | Index<VersionSpec> = options.jsonAll
-    ? (jph.parse(newPkgData) as PackageFile)
+    ? (parseJson(newPkgData) as PackageFile)
     : options.jsonDeps
-      ? pick(jph.parse(newPkgData) as PackageFile, resolveDepSections(options.dep))
+      ? pick(parseJson(newPkgData) as PackageFile, resolveDepSections(options.dep))
       : chosenUpgraded
 
   // will be overwritten with the result of fs.writeFile so that the return promise waits for the package file to be written
