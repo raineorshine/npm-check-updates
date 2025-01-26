@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
-import jph from 'json-parse-helpfulerror'
 import prompts from 'prompts-ncu'
 import nodeSemver from 'semver'
+import { DependencyGroup } from '../types/DependencyGroup'
 import { Index } from '../types/IndexType'
 import { Maybe } from '../types/Maybe'
 import { Options } from '../types/Options'
@@ -29,6 +29,7 @@ import programError from './programError'
 import resolveDepSections from './resolveDepSections'
 import upgradePackageData from './upgradePackageData'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
+import parseJson from './utils/parseJson'
 import { getDependencyGroups } from './version-util'
 
 const INTERACTIVE_HINT = `
@@ -36,6 +37,18 @@ const INTERACTIVE_HINT = `
   Space: Toggle selection
   a: Toggle all
   Enter: Upgrade`
+
+/**
+ * Fetches how many options per page can be listed in the dependency table.
+ *
+ * @param groups - found dependency groups.
+ * @returns the amount of options that can be displayed per page.
+ */
+function getOptionsPerPage(groups?: DependencyGroup[]): number {
+  return process.stdout.rows
+    ? Math.max(3, process.stdout.rows - INTERACTIVE_HINT.split('\n').length - 1 - (groups?.length ?? 0) * 2)
+    : 50
+}
 
 /**
  * Return a promise which resolves to object storing package owner changed status for each dependency.
@@ -106,17 +119,13 @@ const chooseUpgrades = async (
         ]
       })
 
-      const optionsPerPage = process.stdout.rows
-        ? Math.max(3, process.stdout.rows - INTERACTIVE_HINT.split('\n').length - 1 - groups.length * 2)
-        : 50
-
       const response = await prompts({
         choices: [...choices, { title: ' ', heading: true }],
         hint: INTERACTIVE_HINT,
         instructions: false,
         message: 'Choose which packages to update',
         name: 'value',
-        optionsPerPage,
+        optionsPerPage: getOptionsPerPage(groups),
         type: 'multiselect',
         onState: (state: any) => {
           if (state.aborted) {
@@ -135,17 +144,13 @@ const chooseUpgrades = async (
           selected: true,
         }))
 
-      const optionsPerPage = process.stdout.rows
-        ? Math.max(3, process.stdout.rows - INTERACTIVE_HINT.split('\n').length - 1)
-        : 50
-
       const response = await prompts({
         choices: [...choices, { title: ' ', heading: true }],
         hint: INTERACTIVE_HINT + '\n',
         instructions: false,
         message: 'Choose which packages to update',
         name: 'value',
-        optionsPerPage,
+        optionsPerPage: getOptionsPerPage(),
         type: 'multiselect',
         onState: (state: any) => {
           if (state.aborted) {
@@ -162,7 +167,7 @@ const chooseUpgrades = async (
 }
 
 /** Checks local project dependencies for upgrades. */
-async function runLocal(
+export default async function runLocal(
   options: Options,
   pkgData?: Maybe<string>,
   pkgFile?: Maybe<string>,
@@ -176,10 +181,7 @@ async function runLocal(
     if (!pkgData) {
       programError(options, 'Missing package data')
     } else {
-      // strip comments from jsonc files
-      const pkgDataStripped =
-        pkgFile?.endsWith('.jsonc') && pkgData ? (await import('strip-json-comments')).default(pkgData) : pkgData
-      pkg = jph.parse(pkgDataStripped)
+      pkg = parseJson(pkgData)
     }
   } catch (e: any) {
     programError(
@@ -291,13 +293,13 @@ async function runLocal(
   const newPkgData = await upgradePackageData(pkgData, current, chosenUpgraded, options)
 
   const output: PackageFile | Index<VersionSpec> = options.jsonAll
-    ? (jph.parse(newPkgData) as PackageFile)
+    ? (parseJson(newPkgData) as PackageFile)
     : options.jsonDeps
-      ? pick(jph.parse(newPkgData) as PackageFile, resolveDepSections(options.dep))
+      ? pick(parseJson(newPkgData) as PackageFile, resolveDepSections(options.dep))
       : chosenUpgraded
 
   // will be overwritten with the result of fs.writeFile so that the return promise waits for the package file to be written
-  let writePromise = Promise.resolve()
+  let writePromise
 
   if (options.json && !options.deep) {
     printJson(options, output)
@@ -330,5 +332,3 @@ async function runLocal(
 
   return output
 }
-
-export default runLocal

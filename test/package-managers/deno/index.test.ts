@@ -1,8 +1,8 @@
-import fs from 'fs/promises'
-import jph from 'json-parse-helpfulerror'
-import os from 'os'
-import path from 'path'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 import spawn from 'spawn-please'
+import parseJson from '../../../src/lib/utils/parseJson'
 import chaiSetup from '../../helpers/chaiSetup'
 
 chaiSetup()
@@ -20,12 +20,15 @@ describe('deno', async function () {
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
     try {
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--jsonUpgraded', '--packageManager', 'deno', '--packageFile', pkgFile],
-        undefined,
-      )
-      const pkg = jph.parse(stdout)
+      const { stdout } = await spawn('node', [
+        bin,
+        '--jsonUpgraded',
+        '--packageManager',
+        'deno',
+        '--packageFile',
+        pkgFile,
+      ])
+      const pkg = parseJson(stdout)
       pkg.should.have.property('ncu-test-v2')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
@@ -45,7 +48,7 @@ describe('deno', async function () {
       const { stdout } = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
         cwd: tempDir,
       })
-      const pkg = jph.parse(stdout)
+      const pkg = parseJson(stdout)
       pkg.should.have.property('ncu-test-v2')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
@@ -64,7 +67,7 @@ describe('deno', async function () {
     try {
       await spawn('node', [bin, '-u'], undefined, { cwd: tempDir })
       const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
-      const pkg = jph.parse(pkgDataNew)
+      const pkg = parseJson(pkgDataNew)
       pkg.should.deep.equal({
         imports: {
           'ncu-test-v2': 'npm:ncu-test-v2@2.0.0',
@@ -89,7 +92,7 @@ describe('deno', async function () {
       const { stdout } = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
         cwd: tempDir,
       })
-      const pkg = jph.parse(stdout)
+      const pkg = parseJson(stdout)
       pkg.should.have.property('ncu-test-v2')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
@@ -108,7 +111,7 @@ describe('deno', async function () {
     try {
       await spawn('node', [bin, '-u'], undefined, { cwd: tempDir })
       const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
-      const pkg = jph.parse(pkgDataNew)
+      const pkg = parseJson(pkgDataNew)
       pkg.should.deep.equal({
         imports: {
           'ncu-test-v2': 'npm:ncu-test-v2@2.0.0',
