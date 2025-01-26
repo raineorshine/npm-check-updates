@@ -1,5 +1,4 @@
 import fs from 'fs/promises'
-import { parse as parseJson } from 'jsonc-parser'
 import prompts from 'prompts-ncu'
 import nodeSemver from 'semver'
 import { Index } from '../types/IndexType'
@@ -29,6 +28,7 @@ import programError from './programError'
 import resolveDepSections from './resolveDepSections'
 import upgradePackageData from './upgradePackageData'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
+import parseJson from './utils/parseJson'
 import { getDependencyGroups } from './version-util'
 
 const INTERACTIVE_HINT = `
@@ -75,7 +75,7 @@ const chooseUpgrades = async (
     from: oldDependencies,
     to: newDependencies,
     format: options.format,
-    pkgFile: pkgFile || undefined,
+    pkgFile: pkgFile ?? undefined,
   })
 
   const formattedLines = keyValueBy(table.toString().split('\n'), line => {
@@ -162,7 +162,7 @@ const chooseUpgrades = async (
 }
 
 /** Checks local project dependencies for upgrades. */
-async function runLocal(
+export default async function runLocal(
   options: Options,
   pkgData?: Maybe<string>,
   pkgFile?: Maybe<string>,
@@ -176,7 +176,6 @@ async function runLocal(
     if (!pkgData) {
       programError(options, 'Missing package data')
     } else {
-      // strip comments from jsonc files
       pkg = parseJson(pkgData)
     }
   } catch (e: any) {
@@ -262,7 +261,7 @@ async function runLocal(
         total: Object.keys(upgraded).length,
         latest: latestResults,
         ownersChangedDeps,
-        pkgFile: pkgFile || undefined,
+        pkgFile: pkgFile ?? undefined,
         errors,
         time,
       },
@@ -295,7 +294,7 @@ async function runLocal(
       : chosenUpgraded
 
   // will be overwritten with the result of fs.writeFile so that the return promise waits for the package file to be written
-  let writePromise = Promise.resolve()
+  let writePromise
 
   if (options.json && !options.deep) {
     printJson(options, output)
@@ -328,5 +327,3 @@ async function runLocal(
 
   return output
 }
-
-export default runLocal

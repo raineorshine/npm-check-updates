@@ -1,8 +1,8 @@
-import fs from 'fs/promises'
-import { parse as parseJson } from 'jsonc-parser'
-import os from 'os'
-import path from 'path'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 import spawn from 'spawn-please'
+import parseJson from '../../../src/lib/utils/parseJson'
 import chaiSetup from '../../helpers/chaiSetup'
 
 chaiSetup()
@@ -20,11 +20,14 @@ describe('deno', async function () {
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
     try {
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--jsonUpgraded', '--packageManager', 'deno', '--packageFile', pkgFile],
-        undefined,
-      )
+      const { stdout } = await spawn('node', [
+        bin,
+        '--jsonUpgraded',
+        '--packageManager',
+        'deno',
+        '--packageFile',
+        pkgFile,
+      ])
       const pkg = parseJson(stdout)
       pkg.should.have.property('ncu-test-v2')
     } finally {
