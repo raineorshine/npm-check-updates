@@ -1,10 +1,10 @@
 import { ParseError, ParseErrorCode, parse } from 'jsonc-parser'
 
 /**
- *  Parses a json string, while also handling errors and comments.
+ * Parses a json string, while also handling errors and comments.
  *
- *  @param jsonString - target json string.
- *  @returns the parsed json object.
+ * @param jsonString - target json string.
+ * @returns the parsed json object.
  */
 export default function parseJson(jsonString: string) {
   const errors: ParseError[] = []
@@ -27,7 +27,7 @@ export default function parseJson(jsonString: string) {
         currentOffset += line.length + 1 // +1 for the newline character
         lineNumber++
       }
-      // @ts-expect-error
+      // @ts-expect-error due to --isolatedModules forbidding to implement ambient constant enums.
       errorString += `Error at line ${lineNumber}, column ${columnNumber}: ${ParseErrorCode[error.error]}\n${lines[lineNumber - 1]}\n${' '.repeat(columnNumber - 1)}^\n\n`
     }
 
