@@ -5,15 +5,14 @@ const stdoutColumns = process.stdout.columns || 80
 /**
  * Ensures the code line or a hint is always displayed for the code snippet.
  * If the line is empty, it outputs `<empty>`.
- * If the line is larger than a line of the terminal windows, it will display as too big. This also prevents minified json files
- * to be displayed in the snippet.
+ * If the line is larger than a line of the terminal windows, it will cut it off. This also prevents too much
+ * garbage data from being displayed.
  *
  * @param line - target line to check.
  * @returns either the hint or the actual line for the code snippet.
  */
 function ensureLineDisplay(line: string): string {
-  if (!line.length) return '<empty>\n'
-  return line.length > stdoutColumns ? '<line too long to display>\n' : `${line}\n`
+  return `${line.length ? line.slice(0, Math.min(line.length, stdoutColumns)) : '<empty>'}\n`
 }
 
 /**
@@ -23,12 +22,12 @@ function ensureLineDisplay(line: string): string {
  * @returns the marker line.
  */
 function getMarker(length: number): string {
-  return `${' '.repeat(length - 1)}^\n`
+  return length > stdoutColumns ? '' : `${' '.repeat(length - 1)}^\n`
 }
 
 /**
  * Builds a json code snippet to mark and contextualize the found error.
- * This snippet consists off 5 lines and the erroneous line is always in the middle.
+ * This snippet consists of 5 lines with the erroneous line in the middle.
  *
  * @param lines - all lines of the json file.
  * @param errorLine - erroneous line.
