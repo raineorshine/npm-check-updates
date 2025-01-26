@@ -38,6 +38,12 @@ const INTERACTIVE_HINT = `
   a: Toggle all
   Enter: Upgrade`
 
+/**
+ * Fetches how many options per page can be listed in the dependency table.
+ *
+ * @param groups - found dependency groups.
+ * @returns the amount of options that can be displayed per page.
+ */
 function getOptionsPerPage(groups?: DependencyGroup[]): number {
   return process.stdout.rows
     ? Math.max(3, process.stdout.rows - INTERACTIVE_HINT.split('\n').length - 1 - (groups?.length ?? 0) * 2)
