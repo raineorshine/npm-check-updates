@@ -1,6 +1,7 @@
 import fs from 'fs/promises'
 import prompts from 'prompts-ncu'
 import nodeSemver from 'semver'
+import { DependencyGroup } from '../types/DependencyGroup'
 import { Index } from '../types/IndexType'
 import { Maybe } from '../types/Maybe'
 import { Options } from '../types/Options'
@@ -36,6 +37,12 @@ const INTERACTIVE_HINT = `
   Space: Toggle selection
   a: Toggle all
   Enter: Upgrade`
+
+function getOptionsPerPage(groups?: DependencyGroup[]): number {
+  return process.stdout.rows
+    ? Math.max(3, process.stdout.rows - INTERACTIVE_HINT.split('\n').length - 1 - (groups?.length ?? 0) * 2)
+    : 50
+}
 
 /**
  * Return a promise which resolves to object storing package owner changed status for each dependency.
@@ -75,7 +82,7 @@ const chooseUpgrades = async (
     from: oldDependencies,
     to: newDependencies,
     format: options.format,
-    pkgFile: pkgFile ?? undefined,
+    pkgFile: pkgFile || undefined,
   })
 
   const formattedLines = keyValueBy(table.toString().split('\n'), line => {
@@ -106,17 +113,13 @@ const chooseUpgrades = async (
         ]
       })
 
-      const optionsPerPage = process.stdout.rows
-        ? Math.max(3, process.stdout.rows - INTERACTIVE_HINT.split('\n').length - 1 - groups.length * 2)
-        : 50
-
       const response = await prompts({
         choices: [...choices, { title: ' ', heading: true }],
         hint: INTERACTIVE_HINT,
         instructions: false,
         message: 'Choose which packages to update',
         name: 'value',
-        optionsPerPage,
+        optionsPerPage: getOptionsPerPage(groups),
         type: 'multiselect',
         onState: (state: any) => {
           if (state.aborted) {
@@ -135,17 +138,13 @@ const chooseUpgrades = async (
           selected: true,
         }))
 
-      const optionsPerPage = process.stdout.rows
-        ? Math.max(3, process.stdout.rows - INTERACTIVE_HINT.split('\n').length - 1)
-        : 50
-
       const response = await prompts({
         choices: [...choices, { title: ' ', heading: true }],
         hint: INTERACTIVE_HINT + '\n',
         instructions: false,
         message: 'Choose which packages to update',
         name: 'value',
-        optionsPerPage,
+        optionsPerPage: getOptionsPerPage(),
         type: 'multiselect',
         onState: (state: any) => {
           if (state.aborted) {
@@ -261,7 +260,7 @@ export default async function runLocal(
         total: Object.keys(upgraded).length,
         latest: latestResults,
         ownersChangedDeps,
-        pkgFile: pkgFile ?? undefined,
+        pkgFile: pkgFile || undefined,
         errors,
         time,
       },

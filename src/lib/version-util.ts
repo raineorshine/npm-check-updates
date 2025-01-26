@@ -3,6 +3,7 @@ import parseGithubUrl from 'parse-github-url'
 import semver from 'semver'
 import semverutils, { SemVer, parse, parseRange } from 'semver-utils'
 import util from 'util'
+import { DependencyGroup } from '../types/DependencyGroup'
 import { Index } from '../types/IndexType'
 import { Maybe } from '../types/Maybe'
 import { Options } from '../types/Options'
@@ -191,7 +192,7 @@ export function getDependencyGroups(
   newDependencies: Index<string>,
   oldDependencies: Index<string>,
   options: Options,
-): { heading: string; groupName: string; packages: Index<string> }[] {
+): DependencyGroup[] {
   const groups = keyValueBy<string, Index<string>>(newDependencies, (dep, to, accum) => {
     const from = oldDependencies[dep]
     const defaultGroup = partChanged(from, to)
