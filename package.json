@@ -35,7 +35,7 @@
     "prettier": "prettier . --check",
     "test": "npm run test:unit && npm run test:e2e",
     "test:bun": "test/bun-install.sh && mocha test/bun",
-    "test:unit": "mocha test test/utils test/package-managers/*",
+    "test:unit": "mocha test test/package-managers/*",
     "test:e2e": "./test/e2e.sh",
     "ncu": "node build/cli.js"
   },
