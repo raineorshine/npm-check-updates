@@ -50,7 +50,7 @@ export interface RunOptions {
    *
    * @default ["prod","dev","optional","packageManager"]
    */
-  dep?: string | string[]
+  dep?: string | readonly string[]
 
   /** Include deprecated packages. Use `--no-deprecated` to exclude deprecated packages (uses more bandwidth).
    *
@@ -77,16 +77,16 @@ export interface RunOptions {
   errorLevel?: number
 
   /** Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Run "ncu --help --filter" for details. */
-  filter?: string | RegExp | (string | RegExp)[] | FilterFunction
+  filter?: string | RegExp | readonly (string | RegExp)[] | FilterFunction
 
   /** Filters out upgrades based on a user provided function. Run "ncu --help --filterResults" for details. */
   filterResults?: FilterResultsFunction
 
   /** Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. Run "ncu --help --filterVersion" for details. */
-  filterVersion?: string | RegExp | (string | RegExp)[] | FilterFunction
+  filterVersion?: string | RegExp | readonly (string | RegExp)[] | FilterFunction
 
   /** Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines, installedVersion. Run "ncu --help --format" for details. */
-  format?: string[]
+  format?: readonly string[]
 
   /** Check global packages instead of in the current project. */
   global?: boolean
@@ -149,10 +149,10 @@ export interface RunOptions {
   registryType?: 'npm' | 'json'
 
   /** Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Run "ncu --help --reject" for details. */
-  reject?: string | RegExp | (string | RegExp)[] | FilterFunction
+  reject?: string | RegExp | readonly (string | RegExp)[] | FilterFunction
 
   /** Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function. Run "ncu --help --rejectVersion" for details. */
-  rejectVersion?: string | RegExp | (string | RegExp)[] | FilterFunction
+  rejectVersion?: string | RegExp | readonly (string | RegExp)[] | FilterFunction
 
   /** Remove version ranges from the final package version. */
   removeRange?: boolean
@@ -188,7 +188,7 @@ export interface RunOptions {
   verbose?: boolean
 
   /** Run on one or more specified workspaces. Add `--root` to also upgrade the root project. */
-  workspace?: string[]
+  workspace?: readonly string[]
 
   /** Run on all workspaces. Add `--root` to also upgrade the root project. */
   workspaces?: boolean
