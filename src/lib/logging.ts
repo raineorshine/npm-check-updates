@@ -158,7 +158,7 @@ export async function toDependencyTable({
 }: {
   from: Index<VersionSpec>
   to: Index<VersionSpec>
-  format?: string[]
+  format?: readonly string[]
   ownersChangedDeps?: Index<boolean>
   /** See: logging/getPackageRepo pkgFile param. */
   pkgFile?: string

@@ -832,7 +832,7 @@ const cliOptions: CLIOption[] = [
     long: 'rejectVersion',
     arg: 'p',
     description: 'Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function.',
-    type: 'string | RegExp | (string | RegExp)[] | FilterFunction',
+    type: 'string | RegExp | readonly (string | RegExp)[] | FilterFunction',
     parse: (value, accum) => [...(accum || []), value],
     help: extendedHelpRejectVersionFunction,
   },

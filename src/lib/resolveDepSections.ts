@@ -11,7 +11,7 @@ const depAliases: Index<keyof PackageFile> = {
 }
 
 /** Gets a list of dependency sections based on options.dep. */
-const resolveDepSections = (dep?: string | string[]): (keyof PackageFile)[] => {
+const resolveDepSections = (dep?: string | readonly string[]): (keyof PackageFile)[] => {
   // parse dep string and set default
   const depOptions: string[] = dep ? (typeof dep === 'string' ? dep.split(',') : dep) : cliOptionsMap.dep.default
 
