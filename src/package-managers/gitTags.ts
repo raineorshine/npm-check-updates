@@ -59,10 +59,14 @@ async function getSortedVersions(
     return
   }
 
-  return Object.keys(tags)
-    .map(versionUtil.fixPseudoVersion)
-    .filter(tag => valid(tag))
-    .sort(versionUtil.compareVersions)
+  return (
+    Object.keys(tags)
+      .map(versionUtil.fixPseudoVersion)
+      // do not pass semver.valid reference directly since the mapping index will be interpreted as the loose option
+      // https://github.com/npm/node-semver#functions
+      .filter(tag => valid(tag))
+      .sort(versionUtil.compareVersions)
+  )
 }
 
 /** Return the highest non-prerelease numbered tag on a remote Git URL. */
