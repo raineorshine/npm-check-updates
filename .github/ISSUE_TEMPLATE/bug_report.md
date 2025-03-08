@@ -4,7 +4,6 @@ about: Create a report to help us improve
 title: ''
 labels: ''
 assignees: ''
-
 ---
 
 - [] I have searched for [similar issues](https://github.com/raineorshine/npm-check-updates/issues)
