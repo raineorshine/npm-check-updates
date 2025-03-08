@@ -14,6 +14,12 @@ import { VersionSpec } from '../types/VersionSpec'
 
 const execFile = promisify(childProcess.execFile)
 
+/**
+ * Fetches and extracts all git tags from a git url.
+ *
+ * @param url - url to a github repository.
+ * @returns the extracted git tags.
+ */
 async function getGitTags(url: string): Promise<Index<string>> {
   const out = (await execFile('git', ['ls-remote', '--tags', url])).stdout
   const tags: Index<string> = {}
@@ -25,7 +31,11 @@ async function getGitTags(url: string): Promise<Index<string>> {
 }
 
 /** Gets remote versions sorted. */
-async function getSortedVersions(name: string, declaration: VersionSpec, options?: Options) {
+async function getSortedVersions(
+  name: string,
+  declaration: VersionSpec,
+  options?: Options,
+): Promise<string[] | undefined> {
   // if present, github: is parsed as the protocol. This is not valid when passed into remote-git-tags.
   declaration = declaration.replace(/^github:/, '')
   const { auth, protocol, host, path } = parseGithubUrl(declaration)!
