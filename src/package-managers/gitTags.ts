@@ -59,16 +59,10 @@ async function getSortedVersions(
     return
   }
 
-  const validTags = []
-
-  for (const key of Object.keys(tags)) {
-    const fixedTag = versionUtil.fixPseudoVersion(key)
-    if (valid(fixedTag)) {
-      validTags.push(fixedTag)
-    }
-  }
-
-  return validTags.sort(versionUtil.compareVersions)
+  return Object.keys(tags)
+    .map(versionUtil.fixPseudoVersion)
+    .filter(tag => valid(tag))
+    .sort(versionUtil.compareVersions)
 }
 
 /** Return the highest non-prerelease numbered tag on a remote Git URL. */
