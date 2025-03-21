@@ -146,7 +146,8 @@ const install = async (
 
     for await (const pkgFile of pkgsNormalized) {
       const packageManager = await getPackageManagerForInstall(options, pkgFile)
-      const cmd = packageManager + (process.platform === 'win32' ? '.cmd' : '')
+      // npm, yarn, pnpm use .cmd on Windows, but bun does not
+      const cmd = packageManager + (process.platform === 'win32' && packageManager !== 'bun' ? '.cmd' : '')
       const cwd = options.cwd || path.resolve(pkgFile, '..')
       let stdout = ''
       try {
