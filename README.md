@@ -487,7 +487,7 @@ Filters out upgrades based on a user provided function.
 > :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
 
 ```js
-/** Filter out non-major version updates. Note this could also be achieved with --target semver.
+/** Filter out non-major version updates.
   @param {string} packageName               The name of the dependency.
   @param {string} current                   Current version declaration (may be a range).
   @param {SemVer[]} currentVersionSemver    Current version declaration in semantic versioning format (may be a range).
