@@ -44,10 +44,9 @@ const INTERACTIVE_HINT = `
  * @param groups - found dependency groups.
  * @returns the amount of options that can be displayed per page.
  */
-function getOptionsPerPage(groups?: DependencyGroup[]): number {
-  return process.stdout.rows
-    ? Math.max(3, process.stdout.rows - INTERACTIVE_HINT.split('\n').length - 1 - (groups?.length ?? 0) * 2)
-    : 50
+function getOptionsPerPage(showHint: boolean, groups?: DependencyGroup[]): number {
+  const hintRows = showHint ? INTERACTIVE_HINT.split('\n').length : 0
+  return process.stdout.rows ? Math.max(3, process.stdout.rows - hintRows - 1 - (groups?.length ?? 0) * 2) : 50
 }
 
 /**
@@ -82,6 +81,9 @@ const chooseUpgrades = async (
   options: Options,
 ): Promise<Index<string>> => {
   let chosenDeps: string[] = []
+
+  // Hide the interactive hint if the terminal is small.  This gives more space for the scrollable list of available updates
+  const showHint = process.stdout.rows > 18
 
   // use toDependencyTable to create choices that are properly padded to align vertically
   const table = await toDependencyTable({
@@ -121,11 +123,11 @@ const chooseUpgrades = async (
 
       const response = await prompts({
         choices: [...choices, { title: ' ', heading: true }],
-        hint: INTERACTIVE_HINT,
+        hint: showHint && INTERACTIVE_HINT,
         instructions: false,
         message: 'Choose which packages to update',
         name: 'value',
-        optionsPerPage: getOptionsPerPage(groups),
+        optionsPerPage: getOptionsPerPage(showHint, groups),
         type: 'multiselect',
         onState: (state: any) => {
           if (state.aborted) {
@@ -146,11 +148,11 @@ const chooseUpgrades = async (
 
       const response = await prompts({
         choices: [...choices, { title: ' ', heading: true }],
-        hint: INTERACTIVE_HINT + '\n',
+        hint: showHint && INTERACTIVE_HINT + '\n',
         instructions: false,
         message: 'Choose which packages to update',
         name: 'value',
-        optionsPerPage: getOptionsPerPage(),
+        optionsPerPage: getOptionsPerPage(showHint),
         type: 'multiselect',
         onState: (state: any) => {
           if (state.aborted) {
