@@ -94,6 +94,9 @@ export interface RunOptions {
   /** Customize how packages are divided into groups when using `--format group`. Run "ncu --help --groupFunction" for details. */
   groupFunction?: GroupFunction
 
+  /** Hides the hint when in interactive mode to allow more options to display on short terminals */
+  hideHint?: boolean
+
   /** Control the auto-install behavior: always, never, prompt. Run "ncu --help --install" for details.
    *
    * @default "prompt"

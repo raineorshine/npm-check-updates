@@ -712,6 +712,11 @@ const cliOptions: CLIOption[] = [
     help: extendedHelpGroupFunction,
   },
   {
+    long: 'hideHint',
+    description: 'Hides the hint when in interactive mode to allow more options to display on short terminals',
+    type: 'boolean',
+  },
+  {
     long: 'install',
     arg: 'value',
     description: 'Control the auto-install behavior: always, never, prompt.',

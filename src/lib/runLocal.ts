@@ -44,10 +44,9 @@ const INTERACTIVE_HINT = `
  * @param groups - found dependency groups.
  * @returns the amount of options that can be displayed per page.
  */
-function getOptionsPerPage(groups?: DependencyGroup[]): number {
-  return process.stdout.rows
-    ? Math.max(3, process.stdout.rows - INTERACTIVE_HINT.split('\n').length - 1 - (groups?.length ?? 0) * 2)
-    : 50
+function getOptionsPerPage(options: Options, groups?: DependencyGroup[]): number {
+  const hintRows = options.hideHint ? 0 : INTERACTIVE_HINT.split('\n').length
+  return process.stdout.rows ? Math.max(3, process.stdout.rows - hintRows - 1 - (groups?.length ?? 0) * 2) : 50
 }
 
 /**
@@ -121,11 +120,11 @@ const chooseUpgrades = async (
 
       const response = await prompts({
         choices: [...choices, { title: ' ', heading: true }],
-        hint: INTERACTIVE_HINT,
+        hint: !options.hideHint && INTERACTIVE_HINT,
         instructions: false,
         message: 'Choose which packages to update',
         name: 'value',
-        optionsPerPage: getOptionsPerPage(groups),
+        optionsPerPage: getOptionsPerPage(options, groups),
         type: 'multiselect',
         onState: (state: any) => {
           if (state.aborted) {
@@ -146,11 +145,11 @@ const chooseUpgrades = async (
 
       const response = await prompts({
         choices: [...choices, { title: ' ', heading: true }],
-        hint: INTERACTIVE_HINT + '\n',
+        hint: !options.hideHint && INTERACTIVE_HINT + '\n',
         instructions: false,
         message: 'Choose which packages to update',
         name: 'value',
-        optionsPerPage: getOptionsPerPage(),
+        optionsPerPage: getOptionsPerPage(options),
         type: 'multiselect',
         onState: (state: any) => {
           if (state.aborted) {

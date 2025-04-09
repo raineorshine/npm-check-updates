@@ -262,6 +262,10 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Customize how packages are divided into groups when using <code>--format group</code>.</td>
   </tr>
   <tr>
+    <td>--hideHint</td>
+    <td>Hides the hint when in interactive mode to allow more options to display on short terminals</td>
+  </tr>
+  <tr>
     <td><a href="#install">--install &lt;value&gt;</a></td>
     <td>Control the auto-install behavior: always, never, prompt. (default: "prompt")</td>
   </tr>
