@@ -122,20 +122,20 @@ const extendedHelpFilterResults: ExtendedHelp = ({ markdown }) => {
   /** If markdown, surround inline code with backticks. */
   const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
 
-  return `Filters out upgrades based on a user provided function.
+  return `Filters results based on a user provided predicate function after fetching new versions.
 
 ${codeInline('filterResults')} runs _after_ new versions are fetched, in contrast to ${codeInline(
     'filter',
   )}, ${codeInline('reject')}, ${codeInline('filterVersion')}, and ${codeInline(
     'rejectVersion',
-  )}, which run _before_. This allows you to filter out upgrades with ${codeInline(
+  )}, which run _before_. This allows you to exclude upgrades with ${codeInline(
     'filterResults',
   )} based on how the version has changed (e.g. a major version change).
 
 > :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
 
 ${codeBlock(
-  `${chalk.gray(`/** Filter out non-major version updates. Note this could also be achieved with --target semver.
+  `${chalk.gray(`/** Exclude major version updates. Note this could also be achieved with --target semver.
   @param {string} packageName               The name of the dependency.
   @param {string} current                   Current version declaration (may be a range).
   @param {SemVer[]} currentVersionSemver    Current version declaration in semantic versioning format (may be a range).
@@ -151,7 +151,7 @@ ${chalk.green('filterResults')}: (packageName, { current, currentVersionSemver, 
   )})
   ${chalk.cyan('const')} upgradedMajor ${chalk.red('=')} parseInt(upgradedVersionSemver?.major, ${chalk.cyan('10')})
   ${chalk.red('if')} (currentMajor ${chalk.red('&&')} upgradedMajor) {
-    ${chalk.red('return')} currentMajor ${chalk.red('<')} upgradedMajor
+    ${chalk.red('return')} currentMajor ${chalk.red('>=')} upgradedMajor
   }
   ${chalk.red('return')} ${chalk.cyan('true')}
 }`,
@@ -674,7 +674,7 @@ const cliOptions: CLIOption[] = [
     long: 'filterResults',
     arg: 'fn',
     cli: false,
-    description: `Filters out upgrades based on a user provided function.`,
+    description: `Filters results based on a user provided predicate function after fetching new versions.`,
     type: 'FilterResultsFunction',
     help: extendedHelpFilterResults,
   },

@@ -255,7 +255,7 @@
       "description": "Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --filter\" for details."
     },
     "filterResults": {
-      "description": "Filters out upgrades based on a user provided function. Run \"ncu --help --filterResults\" for details.",
+      "description": "Filters results based on a user provided predicate function after fetching new versions. Run \"ncu --help --filterResults\" for details.",
       "type": "object"
     },
     "filterVersion": {

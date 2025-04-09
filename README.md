@@ -243,7 +243,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#filterresults">filterResults &lt;fn&gt;</a></td>
-    <td>Filters out upgrades based on a user provided function.</td>
+    <td>Filters results based on a user provided predicate function after fetching new versions.</td>
   </tr>
   <tr>
     <td><a href="#filterversion">--filterVersion &lt;p&gt;</a></td>
@@ -480,14 +480,14 @@ filter: (name, semver) => {
 
 ## filterResults
 
-Filters out upgrades based on a user provided function.
+Filters results based on a user provided predicate function after fetching new versions.
 
-`filterResults` runs _after_ new versions are fetched, in contrast to `filter`, `reject`, `filterVersion`, and `rejectVersion`, which run _before_. This allows you to filter out upgrades with `filterResults` based on how the version has changed (e.g. a major version change).
+`filterResults` runs _after_ new versions are fetched, in contrast to `filter`, `reject`, `filterVersion`, and `rejectVersion`, which run _before_. This allows you to exclude upgrades with `filterResults` based on how the version has changed (e.g. a major version change).
 
 > :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
 
 ```js
-/** Filter out non-major version updates. Note this could also be achieved with --target semver.
+/** Exclude major version updates. Note this could also be achieved with --target semver.
   @param {string} packageName               The name of the dependency.
   @param {string} current                   Current version declaration (may be a range).
   @param {SemVer[]} currentVersionSemver    Current version declaration in semantic versioning format (may be a range).
@@ -499,7 +499,7 @@ filterResults: (packageName, { current, currentVersionSemver, upgraded, upgraded
   const currentMajor = parseInt(currentVersionSemver[0]?.major, 10)
   const upgradedMajor = parseInt(upgradedVersionSemver?.major, 10)
   if (currentMajor && upgradedMajor) {
-    return currentMajor < upgradedMajor
+    return currentMajor >= upgradedMajor
   }
   return true
 }
