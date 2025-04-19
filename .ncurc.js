@@ -5,6 +5,7 @@ module.exports = {
     // https://github.com/tj/commander.js/pull/2312
     'commander',
     // breaking
+    '@types/bun',
     '@types/chai-as-promised',
     '@types/node',
     'chai-as-promised',
