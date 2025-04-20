@@ -1,6 +1,7 @@
 {
   "license": "MIT",
   "dependencies": {
-    "ncu-test-v2": "^1.0.0"
+    "ncu-test-v2": "^1.0.0",
+    "@float-toolkit/core": "^2.1.0"
   }
 }

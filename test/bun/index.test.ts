@@ -16,6 +16,12 @@ describe('bun', function () {
   it('list', async () => {
     const result = await bun.list({ cwd: __dirname })
     result.should.have.property('ncu-test-v2')
+
+    // I promise I'm not shamelessly promoting my own package, I just need a
+    // dependency-less namespaced package for testing
+    //
+    // - LuisFerLCC
+    result.should.have.property('@float-toolkit/core')
   })
 
   it('latest', async () => {
