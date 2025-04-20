@@ -1,0 +1,19 @@
+{
+  "lockfileVersion": 1,
+  "workspaces": {
+    "": {
+      "dependencies": {
+        "emitter20": "2.0.0",
+        "ncu-test-return-version": "~1.0.0",
+        "ncu-test-v2": "~2.0.0",
+      },
+    },
+  },
+  "packages": {
+    "emitter20": ["emitter20@2.0.0", "", {}, "sha512-S6tIABrpAK6CJrZddTwMnLVWP4YUskGCW8jRtZ7OaA/Gdmm0Neg34RJGiUYWUq2RK2suvzZ5hFBg9350+CDuuA=="],
+
+    "ncu-test-return-version": ["ncu-test-return-version@1.0.1", "", {}, "sha512-xen4KcnzVAHxYIGDm1vyKJ6BOKGxATwrW7TMO9/Teg0IwQQ1EaiPi2lr16bqgPnT8odWcZHzdh4WiHsbCaMCqQ=="],
+
+    "ncu-test-v2": ["ncu-test-v2@2.0.0", "", {}, "sha512-Jqu6DzpKkTrUdeL+VN/X4lz4IVDxkNAqVHmyJ+3uVcszqPlU8JMNTA2qeihzMcbd4pOiagKlJno7r+EO2WLmfw=="],
+  }
+}

@@ -164,4 +164,72 @@ describe('determinePackageManager', () => {
     )
     packageManager.should.equal('npm')
   })
+
+  describe('global', () => {
+    it('detects npm', async () => {
+      const oldUserAgent = process.env.npm_config_user_agent
+      const oldExecpath = process.env.npm_execpath
+
+      process.env.npm_config_user_agent = 'bun/1.2.10'
+      process.env.npm_execpath = 'bun'
+      process.versions.bun = '1.2.10'
+
+      const packageManager = await determinePackageManager({
+        global: true,
+      })
+      packageManager.should.equal('bun')
+
+      process.env.npm_config_user_agent = oldUserAgent
+      process.env.npm_execpath = oldExecpath
+      process.versions.bun = ''
+    })
+
+    it('detects yarn', async () => {
+      const oldUserAgent = process.env.npm_config_user_agent
+      const oldExecpath = process.env.npm_execpath
+
+      process.env.npm_config_user_agent = 'yarn/1.2.10'
+      process.env.npm_execpath = 'yarn'
+
+      const packageManager = await determinePackageManager({
+        global: true,
+      })
+      packageManager.should.equal('yarn')
+
+      process.env.npm_config_user_agent = oldUserAgent
+      process.env.npm_execpath = oldExecpath
+    })
+
+    it('detects pnpm', async () => {
+      const oldUserAgent = process.env.npm_config_user_agent
+      const oldExecpath = process.env.npm_execpath
+
+      process.env.npm_config_user_agent = 'pnpm/1.2.10'
+      process.env.npm_execpath = 'pnpm'
+
+      const packageManager = await determinePackageManager({
+        global: true,
+      })
+      packageManager.should.equal('pnpm')
+
+      process.env.npm_config_user_agent = oldUserAgent
+      process.env.npm_execpath = oldExecpath
+    })
+
+    it('defaults to npm', async () => {
+      const oldUserAgent = process.env.npm_config_user_agent
+      const oldExecpath = process.env.npm_execpath
+
+      process.env.npm_config_user_agent = ''
+      process.env.npm_execpath = ''
+
+      const packageManager = await determinePackageManager({
+        global: true,
+      })
+      packageManager.should.equal('npm')
+
+      process.env.npm_config_user_agent = oldUserAgent
+      process.env.npm_execpath = oldExecpath
+    })
+  })
 })
