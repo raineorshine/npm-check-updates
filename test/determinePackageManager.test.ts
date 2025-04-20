@@ -1,4 +1,3 @@
-import { describe } from 'node:test'
 import determinePackageManager from '../src/lib/determinePackageManager'
 import chaiSetup from './helpers/chaiSetup'
 

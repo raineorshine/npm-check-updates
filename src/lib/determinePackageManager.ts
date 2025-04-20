@@ -22,13 +22,9 @@ const getRunningPackageManager = (): PackageManagerName => {
   const userAgent = process.env.npm_config_user_agent ?? ''
   const execpath = process.env.npm_execpath ?? ''
 
-  // Check for Bun first through its global variables, since it doesn't always
-  // set the user agent.
-  if (typeof Bun !== 'undefined' || process.versions.bun) return 'bun'
-
   if (userAgent.startsWith('yarn/') || execpath.includes('yarn')) return 'yarn'
   if (userAgent.startsWith('pnpm/') || execpath.includes('pnpm')) return 'pnpm'
-  if (userAgent.startsWith('bun/')) return 'bun'
+  if (userAgent.startsWith('bun/') || typeof Bun !== 'undefined' || process.versions.bun) return 'bun'
 
   return 'npm'
 }
