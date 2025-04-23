@@ -22,9 +22,28 @@ const getRunningPackageManager = (): PackageManagerName => {
   const userAgent = process.env.npm_config_user_agent ?? ''
   const execpath = process.env.npm_execpath ?? ''
 
-  if (userAgent.startsWith('yarn/') || execpath.includes('yarn')) return 'yarn'
-  if (userAgent.startsWith('pnpm/') || execpath.includes('pnpm')) return 'pnpm'
-  if (userAgent.startsWith('bun/') || typeof Bun !== 'undefined' || process.versions.bun) return 'bun'
+  if (
+    userAgent.startsWith('yarn/') ||
+    execpath.includes('yarn') ||
+    __dirname.includes('/yarn/') ||
+    __dirname.includes('\\Yarn\\')
+  )
+    return 'yarn'
+  if (
+    userAgent.startsWith('pnpm/') ||
+    execpath.includes('pnpm') ||
+    __dirname.includes('/pnpm/') ||
+    __dirname.includes('\\pnpm\\')
+  )
+    return 'pnpm'
+  if (
+    userAgent.startsWith('bun/') ||
+    typeof Bun !== 'undefined' ||
+    process.versions.bun ||
+    __dirname.includes('/.bun/') ||
+    __dirname.includes('\\.bun\\')
+  )
+    return 'bun'
 
   return 'npm'
 }

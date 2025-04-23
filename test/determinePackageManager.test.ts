@@ -166,7 +166,7 @@ describe('determinePackageManager', () => {
   })
 
   describe('global', () => {
-    it('detects npm', async () => {
+    it('detects bun', async () => {
       const oldUserAgent = process.env.npm_config_user_agent
       const oldExecpath = process.env.npm_execpath
 
