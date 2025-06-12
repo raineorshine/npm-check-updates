@@ -94,7 +94,11 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
           : (versionResult?.version ?? null)
     } catch (err: any) {
       const errorMessage = err ? (err.message || err).toString() : ''
-      if (errorMessage.match(/E400|E404|ENOTFOUND|404 Not Found|400 Bad Request/i)) {
+      if (errorMessage.match(/E504|Gateway Timeout/i)) {
+        return {
+          error: `${errorMessage}. All ${options.retry} retry attempts failed.`,
+        }
+      } else if (errorMessage.match(/E400|E404|ENOTFOUND|404 Not Found|400 Bad Request/i)) {
         return {
           error: `${errorMessage.replace(/ - Not found$/i, '')}. All ${
             options.retry
