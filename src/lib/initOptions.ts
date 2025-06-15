@@ -30,6 +30,17 @@ function parseFilterExpression(filterExpression: FilterPattern | undefined): Fil
   }
 }
 
+/** Checks if a string is a valid URL. */
+function isValidUrl(url: string): boolean {
+  try {
+    // eslint-disable-next-line no-new
+    new URL(url)
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** Initializes, validates, sets defaults, and consolidates program options. */
 async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Promise<Options> {
   const { default: chalkDefault, Chalk } = await import('chalk')
@@ -120,6 +131,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   const filterVersion = parseFilterExpression(options.filterVersion)
   const reject = parseFilterExpression(options.reject)
   const rejectVersion = parseFilterExpression(options.rejectVersion)
+  const registryType = options.registryType || (options.registry?.endsWith('.json') ? 'json' : 'npm')
 
   // convert to string for comparison purposes
   // otherwise ['a b'] will not match ['a', 'b']
@@ -167,6 +179,8 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       options,
       'When --registryType json is specified, you must provide the path for the registry file with --registry. Run "ncu --help registryType" for details.',
     )
+  } else if (registryType !== 'json' && options.registry && !isValidUrl(options.registry)) {
+    programError(options, `--registry must be a valid URL. Invalid value: "${options.registry}"`)
   }
 
   const target: Target = options.target || 'latest'
@@ -203,7 +217,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
           ),
         }
       : null),
-    registryType: options.registryType || (options.registry?.endsWith('.json') ? 'json' : 'npm'),
+    registryType,
   }
   resolvedOptions.cacher = await cacher(resolvedOptions)
 

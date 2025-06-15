@@ -104,6 +104,10 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
             options.retry
           } retry attempts failed. Either your internet connection is down, the registry is inaccessible, the authentication credentials are invalid, or the package does not exist.`,
         }
+      } else if (err.code === 'ERR_INVALID_URL') {
+        return {
+          error: errorMessage || 'Invalid URL',
+        }
       } else {
         // print a hint about the --timeout option for network timeout errors
         if (!process.env.NCU_TESTS && /(Response|network) timeout/i.test(errorMessage)) {
