@@ -15,6 +15,10 @@ When filing an issue, please include:
 - the relevant package names and their specified versions from your package file
 - ...or the output from `npm -g ls --depth=0` if using global mode
 
+## Executable Stack Trace
+
+The Vite Build uses SSR to bundle all dependencies for efficiency. There currently is no source map for `./build/cli.js`. To execute npm-check-updates with an accurate stack trace, run `npx ts-node src/bin/cli.ts`.
+
 ## Design Guidelines
 
 The _raison d'être_ of npm-check-updates is to upgrade package.json dependencies to the latest versions, ignoring specified versions. Suggested features that do not fit within this objective will be considered out of scope.
