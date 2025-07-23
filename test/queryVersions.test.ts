@@ -25,6 +25,22 @@ describe('queryVersions', function () {
     result.should.deep.equal({})
   })
 
+  it('error while querying version should be handled', async () => {
+    const stub = stubVersions(() => {
+      throw new Error(`Package inaccessible`)
+    })
+
+    const result = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })
+    result.should.deep.equal({
+      async: {
+        error: 'Error: Package inaccessible',
+        version: null,
+      },
+    })
+
+    stub.restore()
+  })
+
   it('local file urls should be ignored', async () => {
     const result = await queryVersions(
       { 'eslint-plugin-internal': 'file:devtools/eslint-rules' },

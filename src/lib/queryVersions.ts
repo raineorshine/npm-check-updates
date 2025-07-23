@@ -86,6 +86,9 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
         // allow downgrading when explicit tag is used
         pre: options.pre != null ? options.pre : targetString.startsWith('@') || isPre(version),
         retry: options.retry ?? 2,
+      }).catch(reason => {
+        // This might happen if a (private) package cannot be accessed due to a missing or invalid token.
+        return { error: reason?.body?.error || reason.toString() }
       })
 
       versionResult.version =
