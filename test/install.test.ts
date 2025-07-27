@@ -9,27 +9,6 @@ import exists from '../src/lib/exists'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 
-const PACKAGE_MANAGER_LOCK_FILE_NAMES = [
-  'package-lock.json',
-  'yarn.lock',
-  'pnpm-lock.yaml',
-  'bun.lock',
-  'bun.lockb',
-] as const
-
-/** @returns The full path to the lock file that is confirmed to exist. */
-async function getLockFilePath(dirPath: string): Promise<string> {
-  for (const lockFileName of PACKAGE_MANAGER_LOCK_FILE_NAMES) {
-    const lockFilePath = path.join(dirPath, lockFileName)
-    const lockFileExists = await exists(lockFilePath)
-    if (lockFileExists) {
-      return lockFilePath
-    }
-  }
-
-  throw new Error(`Failed to find a package manager lock file in directory: ${dirPath}`)
-}
-
 chaiSetup()
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -77,7 +56,7 @@ describe('install', () => {
       try {
         const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'always'])
         stripAnsi(stdout).should.not.match(/Run (npm|yarn) install to install new versions/)
-        await getLockFilePath(tempDir)
+        expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await fs.rm(tempDir, { recursive: true, force: true })
@@ -136,7 +115,7 @@ describe('install', () => {
             },
           },
         )
-        await getLockFilePath(tempDir)
+        expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await fs.rm(tempDir, { recursive: true, force: true })
@@ -202,7 +181,7 @@ describe('install', () => {
             },
           },
         )
-        await getLockFilePath(tempDir)
+        expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await fs.rm(tempDir, { recursive: true, force: true })
