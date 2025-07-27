@@ -30,7 +30,7 @@ describe('install', () => {
 
       try {
         const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile])
-        stripAnsi(stdout).should.include('Run npm install to install new versions')
+        stripAnsi(stdout).should.match(/Run (npm install|yarn install) to install new versions/)
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
@@ -54,8 +54,13 @@ describe('install', () => {
 
       try {
         const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'always'])
+        const lockFile = (await exists(path.join(tempDir, 'yarn.lock')))
+          ? 'yarn.lock'
+          : (await exists(path.join(tempDir, 'bun.lockb')))
+            ? 'bun.lockb'
+            : 'package-lock.json'
         stripAnsi(stdout).should.not.include('Run npm install to install new versions')
-        expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
+        expect(await exists(path.join(tempDir, lockFile))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await fs.rm(tempDir, { recursive: true, force: true })
@@ -113,7 +118,12 @@ describe('install', () => {
             },
           },
         )
-        expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
+        const lockFile = (await exists(path.join(tempDir, 'yarn.lock')))
+          ? 'yarn.lock'
+          : (await exists(path.join(tempDir, 'bun.lockb')))
+            ? 'bun.lockb'
+            : 'package-lock.json'
+        expect(await exists(path.join(tempDir, lockFile))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await fs.rm(tempDir, { recursive: true, force: true })
@@ -179,7 +189,12 @@ describe('install', () => {
             },
           },
         )
-        expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
+        const lockFile = (await exists(path.join(tempDir, 'yarn.lock')))
+          ? 'yarn.lock'
+          : (await exists(path.join(tempDir, 'bun.lockb')))
+            ? 'bun.lockb'
+            : 'package-lock.json'
+        expect(await exists(path.join(tempDir, lockFile))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await fs.rm(tempDir, { recursive: true, force: true })

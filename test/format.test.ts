@@ -68,6 +68,7 @@ describe('format', () => {
       const { stdout } = await spawn('node', [bin, '--format', 'lines'], {}, { cwd: tempDir })
       stdout.should.equals('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
     } finally {
+      await new Promise(resolve => setTimeout(resolve, 100))
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
@@ -103,6 +104,7 @@ describe('format', () => {
         },
       ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonUpgraded.')
     } finally {
+      await new Promise(resolve => setTimeout(resolve, 100))
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
@@ -138,6 +140,7 @@ describe('format', () => {
         },
       ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonAll.')
     } finally {
+      await new Promise(resolve => setTimeout(resolve, 100))
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
@@ -173,6 +176,7 @@ describe('format', () => {
         },
       ).should.eventually.be.rejectedWith('Cannot use --format lines with other formatting options.')
     } finally {
+      await new Promise(resolve => setTimeout(resolve, 100))
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
