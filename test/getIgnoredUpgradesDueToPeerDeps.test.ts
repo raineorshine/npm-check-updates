@@ -7,10 +7,6 @@ chaiSetup()
 
 describe('getIgnoredUpgradesDueToPeerDeps', function () {
   it('ncu-test-peer-update', async () => {
-    const stub = stubVersions({
-      'ncu-test-return-version': '2.0.0',
-      'ncu-test-peer': '1.1.0',
-    })
     const data = await getIgnoredUpgradesDueToPeerDeps(
       {
         'ncu-test-return-version': '1.0.0',
@@ -36,7 +32,6 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
         },
       },
     })
-    stub.restore()
   })
   it('ignored peer after upgrade', async () => {
     const stub = stubVersions({
