@@ -6,17 +6,15 @@ import spawn from 'spawn-please'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 
-/** @returns Whether the tests are being run on the Windows operating system. */
-function onWindows(): boolean {
-  return process.platform === 'win32'
-}
-
 /**
  * It is necessary to sleep on Windows to get around errors like:
  * Error: EBUSY: resource busy or locked, rmdir 'C:\Users\alice\AppData\Local\Temp\npm-check-updates-yc1wT3'
  */
-async function sleep(milliseconds: number) {
-  await new Promise(resolve => setTimeout(resolve, milliseconds))
+async function sleepOnWindows() {
+  if (process.platform === 'win32') {
+    // 100 milliseconds is arbitrarily chosen, but it seems to successfully resolve the issue.
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
 }
 
 chaiSetup()
@@ -81,9 +79,7 @@ describe('format', () => {
       const { stdout } = await spawn('node', [bin, '--format', 'lines'], {}, { cwd: tempDir })
       stdout.should.equals('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
     } finally {
-      if (onWindows()) {
-        await sleep(100)
-      }
+      await sleepOnWindows()
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
@@ -119,9 +115,7 @@ describe('format', () => {
         },
       ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonUpgraded.')
     } finally {
-      if (onWindows()) {
-        await sleep(100)
-      }
+      await sleepOnWindows()
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
@@ -157,9 +151,7 @@ describe('format', () => {
         },
       ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonAll.')
     } finally {
-      if (onWindows()) {
-        await sleep(100)
-      }
+      await sleepOnWindows()
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
@@ -195,9 +187,7 @@ describe('format', () => {
         },
       ).should.eventually.be.rejectedWith('Cannot use --format lines with other formatting options.')
     } finally {
-      if (onWindows()) {
-        await sleep(100)
-      }
+      await sleepOnWindows()
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
     }
