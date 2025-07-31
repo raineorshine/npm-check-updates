@@ -229,8 +229,8 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
         let pkgData: string
         let pkgFile: string
 
-        if (packageInfo.filepath.includes('#')) {
-          // Virtual catalog file - use PackageInfo data
+        if (packageInfo.filepath.includes('#') || packageInfo.name === 'catalogs') {
+          // Virtual catalog file or catalog package - use PackageInfo data
           pkgData = packageInfo.pkgFile || ''
           pkgFile = packageInfo.filepath
         } else {

@@ -570,7 +570,9 @@ catalogs:
           await fs.rm(tempDir, { recursive: true, force: true })
         }
       })
+    })
 
+    describe('bun', () => {
       it('update bun catalog dependencies from package.json (top-level)', async () => {
         const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
         try {
