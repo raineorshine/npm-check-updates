@@ -507,6 +507,188 @@ describe('workspaces', () => {
           await fs.rm(tempDir, { recursive: true, force: true })
         }
       })
+
+      it('update pnpm catalog dependencies from pnpm-workspace.yaml', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          const pkgDataRoot = JSON.stringify({
+            dependencies: {
+              'ncu-test-v2': '1.0.0',
+            },
+          })
+
+          const pnpmWorkspaceData = `packages:
+  - 'packages/**'
+
+catalogs:
+  default:
+    ncu-test-v2: '1.0.0'
+  test:
+    ncu-test-tag: '1.0.0'
+`
+
+          // write root package file and pnpm-workspace.yaml
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'pnpm-workspace.yaml'), pnpmWorkspaceData, 'utf-8')
+
+          // create workspace package
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              dependencies: {
+                'ncu-test-tag': 'catalog:test',
+              },
+            }),
+            'utf-8',
+          )
+
+          const { stdout, stderr } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspaces'],
+            { rejectOnError: false },
+            { cwd: tempDir },
+          )
+
+          // Debug output if there are errors
+          if (stderr) {
+            console.log('STDERR:', stderr)
+          }
+          if (!stdout || stdout.trim() === '') {
+            console.log('Empty stdout, stderr was:', stderr)
+          }
+
+          const output = JSON.parse(stdout)
+
+          // Should include catalog updates
+          output.should.have.property('pnpm-workspace.yaml')
+          output['pnpm-workspace.yaml'].should.have.property('catalog')
+          output['pnpm-workspace.yaml'].should.have.property('catalogs')
+          output['pnpm-workspace.yaml'].catalog.should.have.property('ncu-test-v2')
+          output['pnpm-workspace.yaml'].catalogs.test.should.have.property('ncu-test-tag')
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+
+      it('update bun catalog dependencies from package.json (top-level)', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          const pkgDataRoot = JSON.stringify({
+            workspaces: ['packages/**'],
+            catalog: {
+              'ncu-test-v2': '1.0.0',
+            },
+            catalogs: {
+              test: {
+                'ncu-test-tag': '1.0.0',
+              },
+            },
+          })
+
+          // write root package file
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+
+          // create workspace package
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              dependencies: {
+                'ncu-test-tag': 'catalog:test',
+              },
+            }),
+            'utf-8',
+          )
+
+          const { stdout, stderr } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspaces'],
+            { rejectOnError: false },
+            { cwd: tempDir },
+          )
+
+          // Debug output if there are errors
+          if (stderr) {
+            console.log('STDERR (top-level):', stderr)
+          }
+          if (!stdout || stdout.trim() === '') {
+            console.log('Empty stdout (top-level), stderr was:', stderr)
+          }
+
+          const output = JSON.parse(stdout)
+
+          // Should include catalog updates in package.json
+          output.should.have.property('package.json')
+          output['package.json'].should.have.property('catalog')
+          output['package.json'].should.have.property('catalogs')
+          output['package.json'].catalog.should.have.property('ncu-test-v2')
+          output['package.json'].catalogs.test.should.have.property('ncu-test-tag')
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+
+      it('update bun catalog dependencies from package.json (workspaces object)', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          const pkgDataRoot = JSON.stringify({
+            workspaces: {
+              packages: ['packages/**'],
+              catalog: {
+                'ncu-test-v2': '1.0.0',
+              },
+              catalogs: {
+                test: {
+                  'ncu-test-tag': '1.0.0',
+                },
+              },
+            },
+          })
+
+          // write root package file
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+
+          // create workspace package
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              dependencies: {
+                'ncu-test-tag': 'catalog:test',
+              },
+            }),
+            'utf-8',
+          )
+
+          const { stdout, stderr } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspaces'],
+            { rejectOnError: false },
+            { cwd: tempDir },
+          )
+
+          // Debug output if there are errors
+          if (stderr) {
+            console.log('STDERR (top-level):', stderr)
+          }
+          if (!stdout || stdout.trim() === '') {
+            console.log('Empty stdout (top-level), stderr was:', stderr)
+          }
+
+          const output = JSON.parse(stdout)
+
+          // Should include catalog updates in package.json
+          output.should.have.property('package.json')
+          output['package.json'].should.have.property('workspaces')
+          output['package.json'].workspaces.should.have.property('catalog')
+          output['package.json'].workspaces.should.have.property('catalogs')
+          output['package.json'].workspaces.catalog.should.have.property('ncu-test-v2')
+          output['package.json'].workspaces.catalogs.test.should.have.property('ncu-test-tag')
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
     })
   })
 

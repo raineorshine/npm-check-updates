@@ -224,7 +224,21 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
           packageFile: packageInfo.filepath,
           workspacePackages,
         }
-        const { pkgData, pkgFile } = await findPackage(pkgOptions)
+        // For virtual catalog files (like package.json#catalog), use the PackageInfo data directly
+        // since the virtual file doesn't exist on disk
+        let pkgData: string
+        let pkgFile: string
+
+        if (packageInfo.filepath.includes('#')) {
+          // Virtual catalog file - use PackageInfo data
+          pkgData = packageInfo.pkgFile || ''
+          pkgFile = packageInfo.filepath
+        } else {
+          // Regular file - read from disk
+          const result = await findPackage(pkgOptions)
+          pkgData = result.pkgData || ''
+          pkgFile = result.pkgFile || packageInfo.filepath
+        }
         return {
           ...packages,
           // index by relative path if cwd was specified

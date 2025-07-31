@@ -1,8 +1,10 @@
+import path from 'path'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { VersionSpec } from '../types/VersionSpec'
 import resolveDepSections from './resolveDepSections'
+import upgradeCatalogData from './upgradeCatalogData'
 
 /**
  * @returns String safe for use in `new RegExp()`
@@ -17,6 +19,8 @@ function escapeRegexp(s: string) {
  * @param pkgData The package.json data, as utf8 text
  * @param oldDependencies Old dependencies {package: range}
  * @param newDependencies New dependencies {package: range}
+ * @param options Options object
+ * @param pkgFile Optional path to the package file
  * @returns The updated package data, as utf8 text
  * @description Side Effect: prompts
  */
@@ -25,7 +29,40 @@ async function upgradePackageData(
   current: Index<VersionSpec>,
   upgraded: Index<VersionSpec>,
   options: Options,
+  pkgFile?: string,
 ) {
+  // Check if this is a catalog file (pnpm-workspace.yaml or package.json with catalogs)
+  if (pkgFile) {
+    const fileName = path.basename(pkgFile)
+    const fileExtension = path.extname(pkgFile)
+
+    // Handle pnpm-workspace.yaml catalog files
+    if (
+      fileName === 'pnpm-workspace.yaml' ||
+      (fileName.includes('catalog') && (fileExtension === '.yaml' || fileExtension === '.yml'))
+    ) {
+      return upgradeCatalogData(pkgFile, current, upgraded)
+    }
+
+    // Handle package.json catalog files (check if content contains catalog/catalogs at root level or in workspaces)
+    if (fileExtension === '.json') {
+      try {
+        const parsed = JSON.parse(pkgData)
+        const hasTopLevelCatalogs = parsed.catalog || parsed.catalogs
+        const hasWorkspacesCatalogs =
+          parsed.workspaces &&
+          !Array.isArray(parsed.workspaces) &&
+          (parsed.workspaces.catalog || parsed.workspaces.catalogs)
+
+        if (hasTopLevelCatalogs || hasWorkspacesCatalogs) {
+          return upgradeCatalogData(pkgFile, current, upgraded)
+        }
+      } catch (e) {
+        // Fall through to regular package.json handling
+      }
+    }
+  }
+
   // Always include overrides since any upgraded dependencies needed to be upgraded in overrides as well.
   // https://github.com/raineorshine/npm-check-updates/issues/1332
   const depSections = [...resolveDepSections(options.dep), 'overrides']

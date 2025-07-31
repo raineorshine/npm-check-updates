@@ -292,7 +292,7 @@ export default async function runLocal(
     }
   }
 
-  const newPkgData = await upgradePackageData(pkgData, current, chosenUpgraded, options)
+  const newPkgData = await upgradePackageData(pkgData, current, chosenUpgraded, options, pkgFile || undefined)
 
   const output: PackageFile | Index<VersionSpec> = options.jsonAll
     ? (parseJson(newPkgData) as PackageFile)
