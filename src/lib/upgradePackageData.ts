@@ -45,44 +45,40 @@ async function upgradePackageData(
     ) {
       // Check if we have synthetic catalog data (JSON with only dependencies and name/version)
       // In this case, we should generate the proper catalog structure
-      try {
-        const parsed = JSON.parse(pkgData)
-        if (parsed.name === 'catalog-dependencies' && parsed.dependencies && Object.keys(parsed).length <= 3) {
-          // This is synthetic catalog data, we need to generate the proper catalog structure
-          // Read the original pnpm-workspace.yaml to get the catalog structure
-          const yamlContent = await fs.readFile(pkgFile, 'utf-8')
-          const yamlData = yaml.load(yamlContent) as any
+      const parsed = JSON.parse(pkgData)
+      if (parsed.name === 'catalog-dependencies' && parsed.dependencies && Object.keys(parsed).length <= 3) {
+        // This is synthetic catalog data, we need to generate the proper catalog structure
+        // Read the original pnpm-workspace.yaml to get the catalog structure
+        const yamlContent = await fs.readFile(pkgFile, 'utf-8')
+        const yamlData = yaml.load(yamlContent) as any
 
-          // Update catalog dependencies with upgraded versions
-          if (yamlData.catalogs) {
-            Object.keys(yamlData.catalogs).forEach(catalogName => {
-              const catalog = yamlData.catalogs[catalogName]
-              Object.keys(catalog).forEach(dep => {
-                if (upgraded[dep]) {
-                  catalog[dep] = upgraded[dep]
-                }
-              })
-            })
-          }
-
-          // Also handle single catalog (if present)
-          if (yamlData.catalog) {
-            Object.keys(yamlData.catalog).forEach(dep => {
+        // Update catalog dependencies with upgraded versions
+        if (yamlData.catalogs) {
+          Object.keys(yamlData.catalogs).forEach(catalogName => {
+            const catalog = yamlData.catalogs[catalogName]
+            Object.keys(catalog).forEach(dep => {
               if (upgraded[dep]) {
-                yamlData.catalog[dep] = upgraded[dep]
+                catalog[dep] = upgraded[dep]
               }
             })
-          }
-
-          // For pnpm, also expose the 'default' catalog as a top-level 'catalog' property
-          if (yamlData.catalogs && yamlData.catalogs.default) {
-            yamlData.catalog = yamlData.catalogs.default
-          }
-
-          return JSON.stringify(yamlData, null, 2)
+          })
         }
-      } catch (e) {
-        // If it's not JSON, fall through to normal catalog handling
+
+        // Also handle single catalog (if present)
+        if (yamlData.catalog) {
+          Object.keys(yamlData.catalog).forEach(dep => {
+            if (upgraded[dep]) {
+              yamlData.catalog[dep] = upgraded[dep]
+            }
+          })
+        }
+
+        // For pnpm, also expose the 'default' catalog as a top-level 'catalog' property
+        if (yamlData.catalogs && yamlData.catalogs.default) {
+          yamlData.catalog = yamlData.catalogs.default
+        }
+
+        return JSON.stringify(yamlData, null, 2)
       }
 
       return upgradeCatalogData(pkgFile, current, upgraded)
@@ -90,19 +86,15 @@ async function upgradePackageData(
 
     // Handle package.json catalog files (check if content contains catalog/catalogs at root level or in workspaces)
     if (fileExtension === '.json') {
-      try {
-        const parsed = JSON.parse(pkgData)
-        const hasTopLevelCatalogs = parsed.catalog || parsed.catalogs
-        const hasWorkspacesCatalogs =
-          parsed.workspaces &&
-          !Array.isArray(parsed.workspaces) &&
-          (parsed.workspaces.catalog || parsed.workspaces.catalogs)
+      const parsed = JSON.parse(pkgData)
+      const hasTopLevelCatalogs = parsed.catalog || parsed.catalogs
+      const hasWorkspacesCatalogs =
+        parsed.workspaces &&
+        !Array.isArray(parsed.workspaces) &&
+        (parsed.workspaces.catalog || parsed.workspaces.catalogs)
 
-        if (hasTopLevelCatalogs || hasWorkspacesCatalogs) {
-          return upgradeCatalogData(pkgFile, current, upgraded)
-        }
-      } catch (e) {
-        // Fall through to regular package.json handling
+      if (hasTopLevelCatalogs || hasWorkspacesCatalogs) {
+        return upgradeCatalogData(pkgFile, current, upgraded)
       }
     }
   }

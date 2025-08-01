@@ -226,17 +226,17 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
         }
         // For virtual catalog files (like package.json#catalog), use the PackageInfo data directly
         // since the virtual file doesn't exist on disk
-        let pkgData: string
+        let pkgData: string | null
         let pkgFile: string
 
         if (packageInfo.filepath.includes('#') || packageInfo.name === 'catalogs') {
           // Virtual catalog file or catalog package - use PackageInfo data
-          pkgData = packageInfo.pkgFile || ''
+          pkgData = packageInfo.pkgFile
           pkgFile = packageInfo.filepath
         } else {
           // Regular file - read from disk
           const result = await findPackage(pkgOptions)
-          pkgData = result.pkgData || ''
+          pkgData = result.pkgData
           pkgFile = result.pkgFile || packageInfo.filepath
         }
         return {

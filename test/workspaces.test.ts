@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+// eslint doesn't like .should.be.empty syntax
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
@@ -550,13 +552,9 @@ catalogs:
             { cwd: tempDir },
           )
 
-          // Debug output if there are errors
-          if (stderr) {
-            console.log('STDERR:', stderr)
-          }
-          if (!stdout || stdout.trim() === '') {
-            console.log('Empty stdout, stderr was:', stderr)
-          }
+          // Assert no errors and valid output
+          stderr.should.be.empty
+          stdout.should.not.be.empty
 
           const output = JSON.parse(stdout)
 
@@ -610,13 +608,9 @@ catalogs:
             { cwd: tempDir },
           )
 
-          // Debug output if there are errors
-          if (stderr) {
-            console.log('STDERR (top-level):', stderr)
-          }
-          if (!stdout || stdout.trim() === '') {
-            console.log('Empty stdout (top-level), stderr was:', stderr)
-          }
+          // Assert no errors and valid output
+          stderr.should.be.empty
+          stdout.should.not.be.empty
 
           const output = JSON.parse(stdout)
 
@@ -670,13 +664,9 @@ catalogs:
             { cwd: tempDir },
           )
 
-          // Debug output if there are errors
-          if (stderr) {
-            console.log('STDERR (top-level):', stderr)
-          }
-          if (!stdout || stdout.trim() === '') {
-            console.log('Empty stdout (top-level), stderr was:', stderr)
-          }
+          // Assert no errors and valid output
+          stderr.should.be.empty
+          stdout.should.not.be.empty
 
           const output = JSON.parse(stdout)
 
