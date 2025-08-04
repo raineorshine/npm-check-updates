@@ -11,14 +11,14 @@ import stubVersions from './helpers/stubVersions'
  * Error: EBUSY: resource busy or locked, rmdir 'C:\Users\alice\AppData\Local\Temp\npm-check-updates-yc1wT3'
  */
 async function removeDir(dirPath: string) {
-  while (true)  {
+  while (true) {
     try {
       await fs.access(dirPath, fs.constants.W_OK)
     } catch {
-      continue;
+      continue
     }
 
-    break;
+    break
   }
 
   await fs.rm(dirPath, { recursive: true, force: true })
