@@ -30,8 +30,9 @@ describe('install', () => {
 
       try {
         const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile])
-        stripAnsi(stdout).should.include('Run npm install to install new versions')
+        stripAnsi(stdout).should.match(/Run (npm|yarn) install to install new versions/)
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
+        expect(await exists(path.join(tempDir, 'yarn.lock'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await fs.rm(tempDir, { recursive: true, force: true })
@@ -54,7 +55,7 @@ describe('install', () => {
 
       try {
         const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'always'])
-        stripAnsi(stdout).should.not.include('Run npm install to install new versions')
+        stripAnsi(stdout).should.not.match(/Run (npm|yarn) install to install new versions/)
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
@@ -78,8 +79,9 @@ describe('install', () => {
 
       try {
         const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'never'])
-        stripAnsi(stdout).should.not.include('Run npm install to install new versions')
+        stripAnsi(stdout).should.not.match(/Run (npm|yarn) install to install new versions/)
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
+        expect(await exists(path.join(tempDir, 'yarn.lock'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await fs.rm(tempDir, { recursive: true, force: true })

@@ -6,6 +6,24 @@ import spawn from 'spawn-please'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 
+/**
+ * Helper function to remove a directory while avoiding errors like:
+ * Error: EBUSY: resource busy or locked, rmdir 'C:\Users\alice\AppData\Local\Temp\npm-check-updates-yc1wT3'
+ */
+async function removeDir(dirPath: string) {
+  while (true) {
+    try {
+      await fs.access(dirPath, fs.constants.W_OK)
+    } catch {
+      continue
+    }
+
+    break
+  }
+
+  await fs.rm(dirPath, { recursive: true, force: true })
+}
+
 chaiSetup()
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -68,7 +86,7 @@ describe('format', () => {
       const { stdout } = await spawn('node', [bin, '--format', 'lines'], {}, { cwd: tempDir })
       stdout.should.equals('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      removeDir(tempDir)
       stub.restore()
     }
   })
@@ -103,7 +121,7 @@ describe('format', () => {
         },
       ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonUpgraded.')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      removeDir(tempDir)
       stub.restore()
     }
   })
@@ -138,7 +156,7 @@ describe('format', () => {
         },
       ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonAll.')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      removeDir(tempDir)
       stub.restore()
     }
   })
@@ -173,7 +191,7 @@ describe('format', () => {
         },
       ).should.eventually.be.rejectedWith('Cannot use --format lines with other formatting options.')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      removeDir(tempDir)
       stub.restore()
     }
   })
