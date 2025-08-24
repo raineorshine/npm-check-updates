@@ -2,6 +2,7 @@ import { GetVersion } from './GetVersion'
 import { Index } from './IndexType'
 import { NpmConfig } from './NpmConfig'
 import { Options } from './Options'
+import { SpawnOptions } from './SpawnOptions'
 import { Version } from './Version'
 import { VersionSpec } from './VersionSpec'
 
@@ -21,7 +22,7 @@ export interface PackageManager {
     to: VersionSpec,
     options?: Options,
   ) => Promise<boolean>
-  getPeerDependencies?: (packageName: string, version: Version, cwd: string | undefined) => Promise<Index<Version>>
+  getPeerDependencies?: (packageName: string, version: Version, spawnOptions: SpawnOptions) => Promise<Index<Version>>
   getEngines?: (
     packageName: string,
     version: Version,

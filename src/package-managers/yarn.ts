@@ -298,22 +298,22 @@ export const semver = withNpmConfigFromYarn(npm.semver)
  *
  * @param packageName
  * @param version
- * @param cwd
+ * @param spawnOptions
  * @returns Promised {packageName: version} collection
  */
 export const getPeerDependencies = async (
   packageName: string,
   version: Version,
-  cwd: string | undefined,
+  spawnOptions: SpawnOptions,
 ): Promise<Index<Version>> => {
-  const { stdout: yarnVersion } = await spawn(cmd, ['--version'], { rejectOnError: false }, { cwd })
+  const { stdout: yarnVersion } = await spawn(cmd, ['--version'], { rejectOnError: false }, spawnOptions)
   if (yarnVersion.startsWith('1')) {
     const args = ['--json', 'info', `${packageName}@${version}`, 'peerDependencies']
-    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, { cwd })
+    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, spawnOptions)
     return stdout ? npm.parseJson<{ data?: Index<Version> }>(stdout, { command: args.join(' ') }).data || {} : {}
   } else {
     const args = ['--json', 'npm', 'info', `${packageName}@${version}`, '--fields', 'peerDependencies']
-    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, { cwd })
+    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, spawnOptions)
     if (!stdout) {
       return {}
     }

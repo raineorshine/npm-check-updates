@@ -22,6 +22,7 @@ import { NpmConfig } from '../types/NpmConfig'
 import { NpmOptions } from '../types/NpmOptions'
 import { Options } from '../types/Options'
 import { Packument } from '../types/Packument'
+import { SpawnOptions } from '../types/SpawnOptions'
 import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import { Version } from '../types/Version'
 import { VersionResult } from '../types/VersionResult'
@@ -678,16 +679,16 @@ export const greatest: GetVersion = async (
  *
  * @param packageName
  * @param version
- * @param cwd
+ * @param spawnOptions
  * @returns Promised {packageName: version} collection
  */
 export const getPeerDependencies = async (
   packageName: string,
   version: Version,
-  cwd: string | undefined,
+  spawnOptions: SpawnOptions,
 ): Promise<Index<Version>> => {
   const args = ['view', `${packageName}@${version}`, 'peerDependencies']
-  const result = await spawnNpm(args, {}, { rejectOnError: false }, { cwd })
+  const result = await spawnNpm(args, {}, { rejectOnError: false }, spawnOptions)
   return result ? parseJson(result, { command: [...args, '--json'].join(' ') }) : {}
 }
 

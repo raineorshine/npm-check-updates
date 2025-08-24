@@ -16,6 +16,15 @@ const localYarnSpawnOptions = {
   },
 }
 
+const filteredPath = (process.env.PATH || '')
+  .split(path.delimiter)
+  .filter(p => !p.includes('node_modules/.bin')) // Avoid running yarn form the node module bin
+  .join(path.delimiter)
+const cleanEnv = {
+  ...process.env,
+  PATH: filteredPath,
+}
+
 describe('yarn', function () {
   it('list', async () => {
     const testDir = path.join(__dirname, 'default')
@@ -48,20 +57,22 @@ describe('yarn', function () {
 
   it('getPeerDependencies v1', async () => {
     const testDir = path.join(__dirname, 'default')
-    await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', testDir).should.eventually.deep.equal({})
-    await yarn.getPeerDependencies('ncu-test-peer', '1.0.0', testDir).should.eventually.deep.equal({
+    const spawnOptions = { cwd: testDir, env: cleanEnv }
+    await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})
+    await yarn.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions).should.eventually.deep.equal({
       'ncu-test-return-version': '1.x',
     })
-    await yarn.getPeerDependencies('fffffffffffff', '1.0.0', testDir).should.eventually.deep.equal({})
+    await yarn.getPeerDependencies('fffffffffffff', '1.0.0', spawnOptions).should.eventually.deep.equal({})
   })
 
   it('getPeerDependencies v4', async () => {
     const testDir = path.join(__dirname, 'v4')
-    await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', testDir).should.eventually.deep.equal({})
-    await yarn.getPeerDependencies('ncu-test-peer', '1.0.0', testDir).should.eventually.deep.equal({
+    const spawnOptions = { cwd: testDir, env: cleanEnv }
+    await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})
+    await yarn.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions).should.eventually.deep.equal({
       'ncu-test-return-version': '1.x',
     })
-    await yarn.getPeerDependencies('fffffffffffff', '1.0.0', testDir).should.eventually.deep.equal({})
+    await yarn.getPeerDependencies('fffffffffffff', '1.0.0', spawnOptions).should.eventually.deep.equal({})
   })
 
   describe('npmAuthTokenKeyValue', () => {
