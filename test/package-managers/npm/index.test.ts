@@ -26,8 +26,8 @@ describe('npm', function () {
   })
 
   it('getPeerDependencies', async () => {
-    await npm.getPeerDependencies('ncu-test-return-version', '1.0.0').should.eventually.deep.equal({})
-    await npm.getPeerDependencies('ncu-test-peer', '1.0.0').should.eventually.deep.equal({
+    await npm.getPeerDependencies('ncu-test-return-version', '1.0.0', __dirname).should.eventually.deep.equal({})
+    await npm.getPeerDependencies('ncu-test-peer', '1.0.0', __dirname).should.eventually.deep.equal({
       'ncu-test-return-version': '1.x',
     })
   })

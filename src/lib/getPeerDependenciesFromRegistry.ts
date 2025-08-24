@@ -60,7 +60,7 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
   }
 
   return Object.entries(packageMap).reduce(async (accumPromise, [pkg, version]) => {
-    const dep = await packageManager.getPeerDependencies!(pkg, version)
+    const dep = await packageManager.getPeerDependencies!(pkg, version, options.cwd)
     if (bar) {
       bar.tick()
     }

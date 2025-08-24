@@ -20,6 +20,7 @@ import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import { Version } from '../types/Version'
 import { VersionSpec } from '../types/VersionSpec'
 import * as npm from './npm'
+import jsonMultiParse from 'json-multi-parse';
 
 interface ParsedDep {
   version: string
@@ -297,20 +298,33 @@ export const semver = withNpmConfigFromYarn(npm.semver)
  *
  * @param packageName
  * @param version
+ * @param cwd
  * @returns Promised {packageName: version} collection
  */
-export const getPeerDependencies = async (packageName: string, version: Version): Promise<Index<Version>> => {
-  const { stdout: yarnVersion } = await spawn(cmd, ['--version'], { rejectOnError: false }, {})
+export const getPeerDependencies = async (packageName: string, version: Version, cwd: string | undefined): Promise<Index<Version>> => {
+  const { stdout: yarnVersion } = await spawn(cmd, ['--version'], { rejectOnError: false }, {cwd})
   if (yarnVersion.startsWith('1')) {
     const args = ['--json', 'info', `${packageName}@${version}`, 'peerDependencies']
-    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, {})
+    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, {cwd})
     return stdout ? npm.parseJson<{ data?: Index<Version> }>(stdout, { command: args.join(' ') }).data || {} : {}
   } else {
     const args = ['--json', 'npm', 'info', `${packageName}@${version}`, '--fields', 'peerDependencies']
-    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, {})
-    return stdout
-      ? npm.parseJson<{ peerDependencies?: Index<Version> }>(stdout, { command: args.join(' ') }).peerDependencies || {}
-      : {}
+    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, {cwd})
+    if (!stdout) {
+      return {};
+    }
+    try {
+      return npm.parseJson<{ peerDependencies?: Index<Version> }>(stdout, { command: args.join(' ') }).peerDependencies || {}
+    } catch (parseError) {
+      try {
+        const firstObj = jsonMultiParse(stdout)[0]
+        if (firstObj) {
+          return npm.parseJson<{ peerDependencies?: Index<Version> }>(JSON.stringify(firstObj), { command: args.join(' ') }).peerDependencies || {}
+        }
+      } catch {
+      }
+      throw parseError
+    }
   }
 }
 

@@ -33,6 +33,7 @@
     "prepare": "src/scripts/install-hooks",
     "prepublishOnly": "npm run build",
     "prettier": "prettier . --check",
+    "prettier:fix": "prettier . --fix",
     "test": "npm run test:unit && npm run test:e2e",
     "test:bun": "test/bun-install.sh && mocha test/bun",
     "test:unit": "mocha test test/package-managers/*",
@@ -105,6 +106,7 @@
     "hosted-git-info": "^8.0.2",
     "ini": "^5.0.0",
     "js-yaml": "^4.1.0",
+    "json-multi-parse": "^1.3.1",
     "jsonc-parser": "^3.3.1",
     "jsonlines": "^0.1.1",
     "lockfile-lint": "^4.14.0",
@@ -172,5 +174,6 @@
     "trace-deprecation": true,
     "trace-warnings": true,
     "use_strict": true
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

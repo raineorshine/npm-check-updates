@@ -21,7 +21,7 @@ export interface PackageManager {
     to: VersionSpec,
     options?: Options,
   ) => Promise<boolean>
-  getPeerDependencies?: (packageName: string, version: Version) => Promise<Index<Version>>
+  getPeerDependencies?: (packageName: string, version: Version, cwd: string | undefined) => Promise<Index<Version>>
   getEngines?: (
     packageName: string,
     version: Version,

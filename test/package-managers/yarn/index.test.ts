@@ -46,11 +46,22 @@ describe('yarn', function () {
     await yarn.list({ cwd: testDir }, localYarnSpawnOptions).should.eventually.be.rejectedWith(lockFileErrorMessage)
   })
 
-  it('getPeerDependencies', async () => {
-    await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0').should.eventually.deep.equal({})
-    await yarn.getPeerDependencies('ncu-test-peer', '1.0.0').should.eventually.deep.equal({
+  it('getPeerDependencies v1', async () => {
+    const testDir = path.join(__dirname, 'default')
+    await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', testDir).should.eventually.deep.equal({})
+    await yarn.getPeerDependencies('ncu-test-peer', '1.0.0', testDir).should.eventually.deep.equal({
       'ncu-test-return-version': '1.x',
     })
+    await yarn.getPeerDependencies('fffffffffffff', '1.0.0', testDir).should.eventually.deep.equal({})
+  })
+
+  it('getPeerDependencies v4', async () => {
+    const testDir = path.join(__dirname, 'v4')
+    await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', testDir).should.eventually.deep.equal({})
+    await yarn.getPeerDependencies('ncu-test-peer', '1.0.0', testDir).should.eventually.deep.equal({
+      'ncu-test-return-version': '1.x',
+    })
+    await yarn.getPeerDependencies('fffffffffffff', '1.0.0', testDir).should.eventually.deep.equal({})
   })
 
   describe('npmAuthTokenKeyValue', () => {
