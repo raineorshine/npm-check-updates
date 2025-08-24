@@ -681,9 +681,13 @@ export const greatest: GetVersion = async (
  * @param cwd
  * @returns Promised {packageName: version} collection
  */
-export const getPeerDependencies = async (packageName: string, version: Version, cwd: string | undefined): Promise<Index<Version>> => {
+export const getPeerDependencies = async (
+  packageName: string,
+  version: Version,
+  cwd: string | undefined,
+): Promise<Index<Version>> => {
   const args = ['view', `${packageName}@${version}`, 'peerDependencies']
-  const result = await spawnNpm(args, {}, { rejectOnError: false }, {cwd})
+  const result = await spawnNpm(args, {}, { rejectOnError: false }, { cwd })
   return result ? parseJson(result, { command: [...args, '--json'].join(' ') }) : {}
 }
 
