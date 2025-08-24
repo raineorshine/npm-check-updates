@@ -18,7 +18,7 @@ const localYarnSpawnOptions = {
 
 const filteredPath = (process.env.PATH || '')
   .split(path.delimiter)
-  .filter(p => !p.includes('node_modules/.bin')) // Avoid running yarn form the node module bin
+  .filter(p => !p.includes(path.join('node_modules', '.bin'))) // Avoid running yarn form the node module bin
   .join(path.delimiter)
 const cleanEnv = {
   ...process.env,
