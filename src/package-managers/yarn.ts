@@ -1,7 +1,6 @@
 import memoize from 'fast-memoize'
 import fs from 'fs/promises'
 import yaml from 'js-yaml'
-import jsonMultiParse from 'json-multi-parse'
 import jsonlines from 'jsonlines'
 import curry from 'lodash/curry'
 import os from 'os'
@@ -182,6 +181,30 @@ function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep
   })
 }
 
+/**
+ * Extract first json line from muli line yarn output
+ *
+ * @param result    Output from yarn command to be parsed
+ */
+function extractFirstJsonLine(result: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const parser = jsonlines.parse()
+    let firstFound = false
+
+    parser.on('data', value => {
+      if (!firstFound) {
+        firstFound = true
+        resolve(JSON.stringify(value))
+      }
+    })
+    parser.on('error', reject)
+
+    parser.write(result)
+
+    parser.end()
+  })
+}
+
 const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
 
 /**
@@ -323,10 +346,10 @@ export const getPeerDependencies = async (
       )
     } catch (parseError) {
       try {
-        const firstObj = jsonMultiParse(stdout)[0]
+        const firstObj = await extractFirstJsonLine(stdout)
         if (firstObj) {
           return (
-            npm.parseJson<{ peerDependencies?: Index<Version> }>(JSON.stringify(firstObj), { command: args.join(' ') })
+            npm.parseJson<{ peerDependencies?: Index<Version> }>(firstObj, { command: args.join(' ') })
               .peerDependencies || {}
           )
         }
