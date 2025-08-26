@@ -345,6 +345,14 @@ export const getPeerDependencies = async (
         npm.parseJson<{ peerDependencies?: Index<Version> }>(stdout, { command: args.join(' ') }).peerDependencies || {}
       )
     } catch (parseError) {
+      /*
+      If package does not exist, yarn returns multiple json errors. As such, we want to extract just the first one, instead of crashing.
+      Example response:
+      {"type":"error","name":35,"displayName":"YN0035","indent":"","data":"Package not found"}
+{"type":"error","name":35,"displayName":"YN0035","indent":"","data":"  \u001b[96mResponse Code\u001b[39m: \u001b]8;;https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404\u0007\u001b[93m404\u001b[39m (Not Found)\u001b]8;;\u0007"}
+{"type":"error","name":35,"displayName":"YN0035","indent":"","data":"  \u001b[96mRequest Method\u001b[39m: GET"}
+{"type":"error","name":35,"displayName":"YN0035","indent":"","data":"  \u001b[96mRequest URL\u001b[39m: \u001b[95mhttps://registry.yarnpkg.com/fffffffffffff\u001b[39m"}
+       */
       try {
         const firstObj = await extractFirstJsonLine(stdout)
         if (firstObj) {
