@@ -19,14 +19,13 @@ async function upgradeYamlCatalogData(
   upgraded: Index<VersionSpec>,
 ): Promise<string> {
   const fileContent = await fs.readFile(filePath, 'utf-8')
-  let newContent = fileContent
 
   // Use regex replacement to maintain original formatting
-  Object.keys(upgraded).forEach(dep => {
-    const currentVersion = current[dep]
-    const newVersion = upgraded[dep]
+  return Object.entries(upgraded)
+    .filter(([dep]) => current[dep])
+    .reduce((content, [dep, newVersion]) => {
+      const currentVersion = current[dep]
 
-    if (currentVersion && newVersion) {
       // Match both quoted and unquoted versions
       const quotedPattern = `(${escapeRegexp(dep)}\\s*:\\s*["'])(${escapeRegexp(currentVersion)})(["'])`
       const unquotedPattern = `(${escapeRegexp(dep)}\\s*:\\s*)(${escapeRegexp(currentVersion)})(\\s*(?:\\n|$))`
@@ -34,12 +33,8 @@ async function upgradeYamlCatalogData(
       const quotedRegex = new RegExp(quotedPattern, 'g')
       const unquotedRegex = new RegExp(unquotedPattern, 'g')
 
-      newContent = newContent.replace(quotedRegex, `$1${newVersion}$3`)
-      newContent = newContent.replace(unquotedRegex, `$1${newVersion}$3`)
-    }
-  })
-
-  return newContent
+      return content.replace(quotedRegex, `$1${newVersion}$3`).replace(unquotedRegex, `$1${newVersion}$3`)
+    }, fileContent)
 }
 
 /**
@@ -51,23 +46,19 @@ async function upgradeJsonCatalogData(
   upgraded: Index<VersionSpec>,
 ): Promise<string> {
   const fileContent = await fs.readFile(filePath, 'utf-8')
-  let newContent = fileContent
 
   // Use regex replacement to maintain JSON formatting
-  Object.keys(upgraded).forEach(dep => {
-    const currentVersion = current[dep]
-    const newVersion = upgraded[dep]
+  return Object.entries(upgraded)
+    .filter(([dep]) => current[dep])
+    .reduce((content, [dep, newVersion]) => {
+      const currentVersion = current[dep]
 
-    if (currentVersion && newVersion) {
       // Match catalog and catalogs sections in JSON (both top-level and within workspaces)
       const catalogPattern = `("${escapeRegexp(dep)}"\\s*:\\s*")(${escapeRegexp(currentVersion)})(")`
       const catalogRegex = new RegExp(catalogPattern, 'g')
 
-      newContent = newContent.replace(catalogRegex, `$1${newVersion}$3`)
-    }
-  })
-
-  return newContent
+      return content.replace(catalogRegex, `$1${newVersion}$3`)
+    }, fileContent)
 }
 
 /**

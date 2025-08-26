@@ -54,23 +54,29 @@ async function upgradePackageData(
 
         // Update catalog dependencies with upgraded versions
         if (yamlData.catalogs) {
-          Object.keys(yamlData.catalogs).forEach(catalogName => {
-            const catalog = yamlData.catalogs[catalogName]
-            Object.keys(catalog).forEach(dep => {
-              if (upgraded[dep]) {
-                catalog[dep] = upgraded[dep]
-              }
-            })
-          })
+          yamlData.catalogs = Object.entries(yamlData.catalogs as Record<string, Record<string, string>>).reduce(
+            (catalogs, [catalogName, catalog]) => ({
+              ...catalogs,
+              [catalogName]: {
+                ...catalog,
+                ...Object.entries(upgraded)
+                  .filter(([dep]) => catalog[dep])
+                  .reduce((acc, [dep, version]) => ({ ...acc, [dep]: version }), {} as Record<string, string>),
+              },
+            }),
+            {} as Record<string, Record<string, string>>,
+          )
         }
 
         // Also handle single catalog (if present)
         if (yamlData.catalog) {
-          Object.keys(yamlData.catalog).forEach(dep => {
-            if (upgraded[dep]) {
-              yamlData.catalog[dep] = upgraded[dep]
-            }
-          })
+          const catalog = yamlData.catalog as Record<string, string>
+          yamlData.catalog = {
+            ...catalog,
+            ...Object.entries(upgraded)
+              .filter(([dep]) => catalog[dep])
+              .reduce((acc, [dep, version]) => ({ ...acc, [dep]: version }), {} as Record<string, string>),
+          }
         }
 
         // For pnpm, also expose the 'default' catalog as a top-level 'catalog' property
@@ -107,14 +113,12 @@ async function upgradePackageData(
   const sectionRegExp = new RegExp(`"(${depSections.join(`|`)})"s*:[^}]*`, 'g')
   let newPkgData = pkgData.replace(sectionRegExp, section => {
     // replace each upgraded dependency in the section
-    Object.keys(upgraded).forEach(dep => {
+    return Object.entries(upgraded).reduce((updatedSection, [dep]) => {
       // const expression = `"${dep}"\\s*:\\s*"(${escapeRegexp(current[dep])})"`
       const expression = `"${dep}"\\s*:\\s*("|{\\s*"."\\s*:\\s*")(${escapeRegexp(current[dep])})"`
       const regExp = new RegExp(expression, 'g')
-      section = section.replace(regExp, (match, child) => `"${dep}${child ? `": ${child}` : ': '}${upgraded[dep]}"`)
-    })
-
-    return section
+      return updatedSection.replace(regExp, (match, child) => `"${dep}${child ? `": ${child}` : ': '}${upgraded[dep]}"`)
+    }, section)
   })
 
   if (depSections.includes('packageManager')) {
