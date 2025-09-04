@@ -38,6 +38,18 @@ async function upgradePackageData(
     const fileName = path.basename(pkgFile)
     const fileExtension = path.extname(pkgFile)
 
+    // Handle synthetic catalog files (package.json#catalog format)
+    if (pkgFile.includes('#catalog')) {
+      // This is a synthetic catalog file, we need to read and update the actual file
+      const actualFilePath = pkgFile.replace('#catalog', '')
+      const actualFileExtension = path.extname(actualFilePath)
+      
+      if (actualFileExtension === '.json') {
+        // Bun format: update package.json catalogs and return the updated content
+        return upgradeCatalogData(actualFilePath, current, upgraded)
+      }
+    }
+
     // Handle pnpm-workspace.yaml catalog files
     if (
       fileName === 'pnpm-workspace.yaml' ||
@@ -46,11 +58,20 @@ async function upgradePackageData(
       // Check if we have synthetic catalog data (JSON with only dependencies and name/version)
       // In this case, we should generate the proper catalog structure
       const parsed = JSON.parse(pkgData)
-      if (parsed.name === 'catalog-dependencies' && parsed.dependencies && Object.keys(parsed).length <= 3) {
+      if (
+        typeof parsed === 'object' &&
+        parsed.name === 'catalog-dependencies' &&
+        typeof parsed.dependencies === 'object' &&
+        Object.keys(parsed).length <= 3
+      ) {
         // This is synthetic catalog data, we need to generate the proper catalog structure
         // Read the original pnpm-workspace.yaml to get the catalog structure
         const yamlContent = await fs.readFile(pkgFile, 'utf-8')
-        const yamlData = yaml.load(yamlContent) as any
+        const yamlData = yaml.load(yamlContent) as {
+          packages?: string[]
+          catalog?: Index<string>
+          catalogs?: Index<Index<string>>
+        }
 
         // Update catalog dependencies with upgraded versions
         if (yamlData.catalogs) {
@@ -80,7 +101,7 @@ async function upgradePackageData(
         }
 
         // For pnpm, also expose the 'default' catalog as a top-level 'catalog' property
-        if (yamlData.catalogs && yamlData.catalogs.default) {
+        if (yamlData.catalogs?.default) {
           yamlData.catalog = yamlData.catalogs.default
         }
 

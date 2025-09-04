@@ -24,68 +24,40 @@ const readPnpmWorkspaces = async (pkgPath: string): Promise<PnpmWorkspaces | nul
   let pnpmWorkspaceFile: string
   try {
     pnpmWorkspaceFile = await fs.readFile(pnpmWorkspacesPath, 'utf-8')
-  } catch (e) {
+  } catch {
     return null
   }
   return yaml.load(pnpmWorkspaceFile) as PnpmWorkspaces
 }
 
 /** Gets catalog dependencies from both pnpm-workspace.yaml and package.json files. */
-const readCatalogDependencies = async (pkgPath: string): Promise<Index<VersionSpec> | null> => {
+const readCatalogDependencies = async (options: Options, pkgPath: string): Promise<Index<VersionSpec> | null> => {
   const catalogDependencies: Index<VersionSpec> = {}
 
-  // First, try to read from pnpm-workspace.yaml
-  const pnpmWorkspaces = await readPnpmWorkspaces(pkgPath)
-  if (pnpmWorkspaces && !Array.isArray(pnpmWorkspaces) && pnpmWorkspaces.catalogs) {
-    Object.values(pnpmWorkspaces.catalogs).forEach(catalog => {
-      Object.entries(catalog).forEach(([name, version]) => {
-        catalogDependencies[name] = version
-      })
-    })
+  // Read from pnpm-workspace.yaml if the package manager is pnpm
+  if (options.packageManager === 'pnpm') {
+    const pnpmWorkspaces = await readPnpmWorkspaces(pkgPath)
+    if (pnpmWorkspaces && !Array.isArray(pnpmWorkspaces) && pnpmWorkspaces.catalogs) {
+      Object.assign(catalogDependencies, ...Object.values(pnpmWorkspaces.catalogs))
+    }
   }
 
-  // Then, try to read from package.json (for Bun and modern pnpm)
+  // Read from package.json (for Bun and modern pnpm)
   const packageData: PackageFile & {
     catalog?: Index<VersionSpec>
     catalogs?: Index<Index<VersionSpec>>
     workspaces?: string[] | { packages: string[]; catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
   } = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
 
-  // Top-level single catalog
-  if (packageData.catalog) {
-    Object.entries(packageData.catalog).forEach(([name, version]) => {
-      catalogDependencies[name] = version
-    })
-  }
-
-  // Top-level multiple catalogs
-  if (packageData.catalogs) {
-    Object.values(packageData.catalogs).forEach(catalog => {
-      Object.entries(catalog).forEach(([name, version]) => {
-        catalogDependencies[name] = version
-      })
-    })
-  }
+  Object.assign(catalogDependencies, packageData.catalog, ...Object.values(packageData.catalogs ?? {}))
 
   // Workspaces catalogs (Bun format)
   if (packageData.workspaces && !Array.isArray(packageData.workspaces)) {
-    const workspaces = packageData.workspaces
-
-    // Single catalog in workspaces
-    if (workspaces.catalog) {
-      Object.entries(workspaces.catalog).forEach(([name, version]) => {
-        catalogDependencies[name] = version
-      })
-    }
-
-    // Multiple catalogs in workspaces
-    if (workspaces.catalogs) {
-      Object.values(workspaces.catalogs).forEach(catalog => {
-        Object.entries(catalog).forEach(([name, version]) => {
-          catalogDependencies[name] = version
-        })
-      })
-    }
+    Object.assign(
+      catalogDependencies,
+      packageData.workspaces.catalog,
+      ...Object.values(packageData.workspaces.catalogs ?? {}),
+    )
   }
 
   return Object.keys(catalogDependencies).length > 0 ? catalogDependencies : null
@@ -171,7 +143,7 @@ async function getWorkspacePackageInfos(
 }
 
 /**
- * Gets pnpm catalog package info from pnpm-workspace.yaml.
+ * Gets catalog package info from pnpm-workspace.yaml or package.json.
  *
  * @param options the application options
  * @param pkgPath the package file path (already resolved)
@@ -182,7 +154,7 @@ async function getCatalogPackageInfo(options: Options, pkgPath: string): Promise
     return null
   }
 
-  const catalogDependencies = await readCatalogDependencies(pkgPath)
+  const catalogDependencies = await readCatalogDependencies(options, pkgPath)
   if (!catalogDependencies) {
     return null
   }
@@ -194,17 +166,10 @@ async function getCatalogPackageInfo(options: Options, pkgPath: string): Promise
     dependencies: catalogDependencies,
   }
 
-  // Determine the correct file path for catalogs
-  const pnpmWorkspacePath = path.join(path.dirname(pkgPath), 'pnpm-workspace.yaml')
-  let catalogFilePath: string
-
-  try {
-    await fs.access(pnpmWorkspacePath)
-    catalogFilePath = pnpmWorkspacePath
-  } catch (e) {
-    // For Bun catalogs in package.json, use a virtual path to avoid conflicts with root package
-    catalogFilePath = pkgPath + '#catalog'
-  }
+  // Determine the correct file path for catalogs. For pnpm, use pnpm-workspace.yaml.
+  // For Bun catalogs in package.json, use a virtual path to avoid conflicts with root package.
+  const catalogFilePath =
+    options.packageManager === 'pnpm' ? path.join(path.dirname(pkgPath), 'pnpm-workspace.yaml') : `${pkgPath}#catalog`
 
   // Create synthetic file content that matches the synthetic PackageFile
   const syntheticFileContent = JSON.stringify(catalogPackageFile, null, 2)

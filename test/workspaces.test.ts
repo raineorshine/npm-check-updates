@@ -559,11 +559,15 @@ catalogs:
           const output = JSON.parse(stdout)
 
           // Should include catalog updates
-          output.should.have.property('pnpm-workspace.yaml')
-          output['pnpm-workspace.yaml'].should.have.property('catalog')
-          output['pnpm-workspace.yaml'].should.have.property('catalogs')
-          output['pnpm-workspace.yaml'].catalog.should.have.property('ncu-test-v2')
-          output['pnpm-workspace.yaml'].catalogs.test.should.have.property('ncu-test-tag')
+          output.should.deep.equal({
+            'pnpm-workspace.yaml': {
+              packages: ['packages/**'],
+              catalog: { 'ncu-test-v2': '2.0.0' },
+              catalogs: { default: { 'ncu-test-v2': '2.0.0' }, test: { 'ncu-test-tag': '1.1.0' } },
+            },
+            'package.json': { dependencies: { 'ncu-test-v2': '2.0.0' } },
+            'packages/a/package.json': { dependencies: { 'ncu-test-tag': 'catalog:test' } },
+          })
         } finally {
           await fs.rm(tempDir, { recursive: true, force: true })
         }
@@ -586,24 +590,21 @@ catalogs:
             },
           })
 
-          // write root package file
+          // write root package.json and bun.lock
           await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'bun.lock'), '{}', 'utf-8')
 
           // create workspace package
           await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
           await fs.writeFile(
             path.join(tempDir, 'packages/a/package.json'),
-            JSON.stringify({
-              dependencies: {
-                'ncu-test-tag': 'catalog:test',
-              },
-            }),
+            JSON.stringify({ dependencies: { 'ncu-test-tag': 'catalog:test' } }),
             'utf-8',
           )
 
           const { stdout, stderr } = await spawn(
             'node',
-            [bin, '--jsonAll', '--workspaces'],
+            [bin, '--jsonAll', '--workspaces', '--root'],
             { rejectOnError: false },
             { cwd: tempDir },
           )
@@ -615,11 +616,14 @@ catalogs:
           const output = JSON.parse(stdout)
 
           // Should include catalog updates in package.json
-          output.should.have.property('package.json')
-          output['package.json'].should.have.property('catalog')
-          output['package.json'].should.have.property('catalogs')
-          output['package.json'].catalog.should.have.property('ncu-test-v2')
-          output['package.json'].catalogs.test.should.have.property('ncu-test-tag')
+          output.should.deep.equal({
+            'package.json': {
+              workspaces: ['packages/**'],
+              catalog: { 'ncu-test-v2': '2.0.0' },
+              catalogs: { test: { 'ncu-test-tag': '1.1.0' } },
+            },
+            'packages/a/package.json': { dependencies: { 'ncu-test-tag': 'catalog:test' } },
+          })
         } finally {
           await fs.rm(tempDir, { recursive: true, force: true })
         }
@@ -642,8 +646,9 @@ catalogs:
             },
           })
 
-          // write root package file
+          // write root package.json and bun.lock
           await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'bun.lock'), '{}', 'utf-8')
 
           // create workspace package
           await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
@@ -659,7 +664,7 @@ catalogs:
 
           const { stdout, stderr } = await spawn(
             'node',
-            [bin, '--jsonAll', '--workspaces'],
+            [bin, '--jsonAll', '--workspaces', '--root'],
             { rejectOnError: false },
             { cwd: tempDir },
           )
@@ -671,12 +676,16 @@ catalogs:
           const output = JSON.parse(stdout)
 
           // Should include catalog updates in package.json
-          output.should.have.property('package.json')
-          output['package.json'].should.have.property('workspaces')
-          output['package.json'].workspaces.should.have.property('catalog')
-          output['package.json'].workspaces.should.have.property('catalogs')
-          output['package.json'].workspaces.catalog.should.have.property('ncu-test-v2')
-          output['package.json'].workspaces.catalogs.test.should.have.property('ncu-test-tag')
+          output.should.deep.equal({
+            'package.json': {
+              workspaces: {
+                packages: ['packages/**'],
+                catalog: { 'ncu-test-v2': '2.0.0' },
+                catalogs: { test: { 'ncu-test-tag': '1.1.0' } },
+              },
+            },
+            'packages/a/package.json': { dependencies: { 'ncu-test-tag': 'catalog:test' } },
+          })
         } finally {
           await fs.rm(tempDir, { recursive: true, force: true })
         }
