@@ -181,6 +181,30 @@ function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep
   })
 }
 
+/**
+ * Extract first json line from muli line yarn output
+ *
+ * @param result    Output from yarn command to be parsed
+ */
+function extractFirstJsonLine(result: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const parser = jsonlines.parse()
+    let firstFound = false
+
+    parser.on('data', value => {
+      if (!firstFound) {
+        firstFound = true
+        resolve(JSON.stringify(value))
+      }
+    })
+    parser.on('error', reject)
+
+    parser.write(result)
+
+    parser.end()
+  })
+}
+
 const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
 
 /**
@@ -297,20 +321,49 @@ export const semver = withNpmConfigFromYarn(npm.semver)
  *
  * @param packageName
  * @param version
+ * @param spawnOptions
  * @returns Promised {packageName: version} collection
  */
-export const getPeerDependencies = async (packageName: string, version: Version): Promise<Index<Version>> => {
-  const { stdout: yarnVersion } = await spawn(cmd, ['--version'], { rejectOnError: false }, {})
+export const getPeerDependencies = async (
+  packageName: string,
+  version: Version,
+  spawnOptions: SpawnOptions,
+): Promise<Index<Version>> => {
+  const { stdout: yarnVersion } = await spawn(cmd, ['--version'], { rejectOnError: false }, spawnOptions)
   if (yarnVersion.startsWith('1')) {
     const args = ['--json', 'info', `${packageName}@${version}`, 'peerDependencies']
-    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, {})
+    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, spawnOptions)
     return stdout ? npm.parseJson<{ data?: Index<Version> }>(stdout, { command: args.join(' ') }).data || {} : {}
   } else {
     const args = ['--json', 'npm', 'info', `${packageName}@${version}`, '--fields', 'peerDependencies']
-    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, {})
-    return stdout
-      ? npm.parseJson<{ peerDependencies?: Index<Version> }>(stdout, { command: args.join(' ') }).peerDependencies || {}
-      : {}
+    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, spawnOptions)
+    if (!stdout) {
+      return {}
+    }
+    try {
+      return (
+        npm.parseJson<{ peerDependencies?: Index<Version> }>(stdout, { command: args.join(' ') }).peerDependencies || {}
+      )
+    } catch (parseError) {
+      /*
+      If package does not exist, yarn returns multiple json errors. As such, we want to extract just the first one, instead of crashing.
+      Example response:
+      {"type":"error","name":35,"displayName":"YN0035","indent":"","data":"Package not found"}
+{"type":"error","name":35,"displayName":"YN0035","indent":"","data":"  \u001b[96mResponse Code\u001b[39m: \u001b]8;;https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404\u0007\u001b[93m404\u001b[39m (Not Found)\u001b]8;;\u0007"}
+{"type":"error","name":35,"displayName":"YN0035","indent":"","data":"  \u001b[96mRequest Method\u001b[39m: GET"}
+{"type":"error","name":35,"displayName":"YN0035","indent":"","data":"  \u001b[96mRequest URL\u001b[39m: \u001b[95mhttps://registry.yarnpkg.com/fffffffffffff\u001b[39m"}
+       */
+      try {
+        const firstObj = await extractFirstJsonLine(stdout)
+        if (firstObj) {
+          return (
+            npm.parseJson<{ peerDependencies?: Index<Version> }>(firstObj, { command: args.join(' ') })
+              .peerDependencies || {}
+          )
+        }
+      } catch {}
+      throw parseError
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "18.0.2",
+  "version": "18.0.3",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -33,6 +33,7 @@
     "prepare": "src/scripts/install-hooks",
     "prepublishOnly": "npm run build",
     "prettier": "prettier . --check",
+    "prettier:fix": "prettier . --write",
     "test": "npm run test:unit && npm run test:e2e",
     "test:bun": "test/bun-install.sh && mocha test/bun",
     "test:unit": "mocha test test/package-managers/*",
