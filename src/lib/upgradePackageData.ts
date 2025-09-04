@@ -43,7 +43,7 @@ async function upgradePackageData(
       // This is a synthetic catalog file, we need to read and update the actual file
       const actualFilePath = pkgFile.replace('#catalog', '')
       const actualFileExtension = path.extname(actualFilePath)
-      
+
       if (actualFileExtension === '.json') {
         // Bun format: update package.json catalogs and return the updated content
         return upgradeCatalogData(actualFilePath, current, upgraded)

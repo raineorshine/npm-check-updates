@@ -235,9 +235,13 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
           pkgData = packageInfo.pkgFile
           pkgFile = packageInfo.filepath
           // For synthetic catalog files, use the actual underlying file path as the index key
-          indexKey = packageInfo.filepath.includes('#catalog') 
+          indexKey = packageInfo.filepath.includes('#catalog')
             ? packageInfo.filepath.replace('#catalog', '')
             : packageInfo.filepath
+
+          // Print the same message as findPackage for consistency
+          const relPathToPackage = path.resolve(indexKey)
+          print(pkgOptions, `${pkgOptions.upgrade ? 'Upgrading' : 'Checking'} ${relPathToPackage} catalog dependencies`)
         } else {
           // Regular file - read from disk
           const result = await findPackage(pkgOptions)
