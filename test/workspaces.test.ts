@@ -532,6 +532,7 @@ catalogs:
           // write root package file and pnpm-workspace.yaml
           await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
           await fs.writeFile(path.join(tempDir, 'pnpm-workspace.yaml'), pnpmWorkspaceData, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'pnpm-lock.yaml'), '', 'utf-8')
 
           // create workspace package
           await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
