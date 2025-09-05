@@ -292,7 +292,7 @@ export default async function runLocal(
     }
   }
 
-  const newPkgData = await upgradePackageData(pkgData, current, chosenUpgraded, options)
+  const newPkgData = await upgradePackageData(pkgData, current, chosenUpgraded, options, pkgFile || undefined)
 
   const output: PackageFile | Index<VersionSpec> = options.jsonAll
     ? (parseJson(newPkgData) as PackageFile)
@@ -313,7 +313,7 @@ export default async function runLocal(
     if (pkgFile) {
       if (options.upgrade) {
         // do not await until the end
-        writePromise = fs.writeFile(pkgFile, newPkgData)
+        writePromise = fs.writeFile(pkgFile.replace('#catalog', ''), newPkgData)
       } else {
         const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'
         // quote arguments with spaces

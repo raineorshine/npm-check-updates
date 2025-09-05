@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+// eslint doesn't like .should.be.empty syntax
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
@@ -503,6 +505,188 @@ describe('workspaces', () => {
           output.should.have.property('packages/b/package.json')
           output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
           output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+
+      it('update pnpm catalog dependencies from pnpm-workspace.yaml', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          const pkgDataRoot = JSON.stringify({
+            dependencies: {
+              'ncu-test-v2': '1.0.0',
+            },
+          })
+
+          const pnpmWorkspaceData = `packages:
+  - 'packages/**'
+
+catalogs:
+  default:
+    ncu-test-v2: '1.0.0'
+  test:
+    ncu-test-tag: '1.0.0'
+`
+
+          // write root package file and pnpm-workspace.yaml
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'pnpm-workspace.yaml'), pnpmWorkspaceData, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'pnpm-lock.yaml'), '', 'utf-8')
+
+          // create workspace package
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              dependencies: {
+                'ncu-test-tag': 'catalog:test',
+              },
+            }),
+            'utf-8',
+          )
+
+          const { stdout, stderr } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspaces'],
+            { rejectOnError: false },
+            { cwd: tempDir },
+          )
+
+          // Assert no errors and valid output
+          stderr.should.be.empty
+          stdout.should.not.be.empty
+
+          const output = JSON.parse(stdout)
+
+          // Should include catalog updates
+          output.should.deep.equal({
+            'pnpm-workspace.yaml': {
+              packages: ['packages/**'],
+              catalog: { 'ncu-test-v2': '2.0.0' },
+              catalogs: { default: { 'ncu-test-v2': '2.0.0' }, test: { 'ncu-test-tag': '1.1.0' } },
+            },
+            'package.json': { dependencies: { 'ncu-test-v2': '2.0.0' } },
+            'packages/a/package.json': { dependencies: { 'ncu-test-tag': 'catalog:test' } },
+          })
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+    })
+
+    describe('bun', () => {
+      it('update bun catalog dependencies from package.json (top-level)', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          const pkgDataRoot = JSON.stringify({
+            workspaces: ['packages/**'],
+            catalog: {
+              'ncu-test-v2': '1.0.0',
+            },
+            catalogs: {
+              test: {
+                'ncu-test-tag': '1.0.0',
+              },
+            },
+          })
+
+          // write root package.json and bun.lock
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'bun.lock'), '{}', 'utf-8')
+
+          // create workspace package
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({ dependencies: { 'ncu-test-tag': 'catalog:test' } }),
+            'utf-8',
+          )
+
+          const { stdout, stderr } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspaces', '--root'],
+            { rejectOnError: false },
+            { cwd: tempDir },
+          )
+
+          // Assert no errors and valid output
+          stderr.should.be.empty
+          stdout.should.not.be.empty
+
+          const output = JSON.parse(stdout)
+
+          // Should include catalog updates in package.json
+          output.should.deep.equal({
+            'package.json': {
+              workspaces: ['packages/**'],
+              catalog: { 'ncu-test-v2': '2.0.0' },
+              catalogs: { test: { 'ncu-test-tag': '1.1.0' } },
+            },
+            'packages/a/package.json': { dependencies: { 'ncu-test-tag': 'catalog:test' } },
+          })
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+
+      it('update bun catalog dependencies from package.json (workspaces object)', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          const pkgDataRoot = JSON.stringify({
+            workspaces: {
+              packages: ['packages/**'],
+              catalog: {
+                'ncu-test-v2': '1.0.0',
+              },
+              catalogs: {
+                test: {
+                  'ncu-test-tag': '1.0.0',
+                },
+              },
+            },
+          })
+
+          // write root package.json and bun.lock
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'bun.lock'), '{}', 'utf-8')
+
+          // create workspace package
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              dependencies: {
+                'ncu-test-tag': 'catalog:test',
+              },
+            }),
+            'utf-8',
+          )
+
+          const { stdout, stderr } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspaces', '--root'],
+            { rejectOnError: false },
+            { cwd: tempDir },
+          )
+
+          // Assert no errors and valid output
+          stderr.should.be.empty
+          stdout.should.not.be.empty
+
+          const output = JSON.parse(stdout)
+
+          // Should include catalog updates in package.json
+          output.should.deep.equal({
+            'package.json': {
+              workspaces: {
+                packages: ['packages/**'],
+                catalog: { 'ncu-test-v2': '2.0.0' },
+                catalogs: { test: { 'ncu-test-tag': '1.1.0' } },
+              },
+            },
+            'packages/a/package.json': { dependencies: { 'ncu-test-tag': 'catalog:test' } },
+          })
         } finally {
           await fs.rm(tempDir, { recursive: true, force: true })
         }
