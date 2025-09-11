@@ -544,6 +544,26 @@ As a comparison: without using the \`--peer\` option, ncu will suggest the lates
 `
 }
 
+/** Extended help for the --cooldown option. */
+const extendedHelpCooldown: ExtendedHelp = ({ markdown }) => {
+  return `Delay upgrades to newer dependency versions that have been released within the specified cooldown period (in days). By default, this option is disabled and all eligible upgrades are considered regardless of release date.
+
+${chalk.bold('Example')}:
+
+Suppose your project depends on version 1.0.0 of a package, and the following versions are available:
+- 1.0.0   Released 60 days ago
+- 1.1.0   Released 45 days ago
+- 1.2.0   Released 20 days ago
+- 2.0.0   Released 10 days ago
+
+If you run:
+${codeBlock(`${chalk.cyan('$')} ncu --cooldown 30`, { markdown })}
+
+ncu will upgrade to version 1.1.0, since it was released 45 days ago and is the latest version outside the 30-day cooldown window. Versions 1.2.0 and 2.0.0 are skipped because they were released within the last 30 days.
+
+`
+}
+
 // store CLI options separately from bin file so that they can be used to build type definitions
 const cliOptions: CLIOption[] = [
   {
@@ -909,6 +929,18 @@ const cliOptions: CLIOption[] = [
     description: 'Run on all workspaces. Add `--root` to also upgrade the root project.',
     type: 'boolean',
   },
+  {
+    long: 'cooldown',
+    short: 'c',
+    arg: 'n',
+    description: 'Cooldown period for dependency updates, allowing updates to be delayed for a configurable number of days',
+    type: 'number',
+    help: extendedHelpCooldown,
+    parse: s => {
+      parseInt(s, 10)
+      // @todo: thrown error if NaN
+    }
+  }
 ]
 
 // put cliOptions into an object for O(1) lookups

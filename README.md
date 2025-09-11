@@ -202,6 +202,10 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Directory of .ncurc config file. (default: directory of <code>packageFile</code>)</td>
   </tr>
   <tr>
+    <td><a href="#cooldown">-c, --cooldown &lt;n&gt;</a></td>
+    <td>Cooldown period for dependency updates, allowing updates to be delayed for a configurable number of days</td>
+  </tr>
+  <tr>
     <td>--cwd &lt;path&gt;</td>
     <td>Working directory in which npm will be executed.</td>
   </tr>
@@ -389,6 +393,30 @@ Run `ncu --help [OPTION]` to view advanced help for a specific option, or see be
 
 <!-- BEGIN Advanced Options -->
 <!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->
+
+## cooldown
+
+Usage:
+
+    ncu --cooldown [n]
+    ncu -c [n]
+
+Delay upgrades to newer dependency versions that have been released within the specified cooldown period (in days). By default, this option is disabled and all eligible upgrades are considered regardless of release date.
+
+Example:
+
+Suppose your project depends on version 1.0.0 of a package, and the following versions are available:
+- 1.0.0   Released 60 days ago
+- 1.1.0   Released 45 days ago
+- 1.2.0   Released 20 days ago
+- 2.0.0   Released 10 days ago
+
+If you run:
+```js
+$ ncu --cooldown 30
+```
+
+ncu will upgrade to version 1.1.0, since it was released 45 days ago and is the latest version outside the 30-day cooldown window. Versions 1.2.0 and 2.0.0 are skipped because they were released within the last 30 days.
 
 ## doctor
 
