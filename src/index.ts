@@ -7,7 +7,6 @@ import { cacheClear } from './lib/cache'
 import chalk, { chalkInit } from './lib/chalk'
 import determinePackageManager from './lib/determinePackageManager'
 import doctor from './lib/doctor'
-import exists from './lib/exists'
 import findPackage from './lib/findPackage'
 import getAllPackages from './lib/getAllPackages'
 import getNcuRc from './lib/getNcuRc'
@@ -66,14 +65,24 @@ const noVolta = (options: Options) => {
   }
 }
 
-/** Returns the package manager that should be used to install packages after running "ncu -u". Detects pnpm via pnpm-lock.yaml. This is the one place that pnpm needs to be detected, since otherwise it is backwards compatible with npm. */
+/** Returns the package manager that should be used to install packages after running "ncu -u". Uses the same detection logic as the main package manager determination. */
 const getPackageManagerForInstall = async (options: Options, pkgFile: string) => {
+  // create options context for the package file location
+  const installOptions: Options = {
+    ...options,
+    cwd: options.cwd || path.resolve(pkgFile, '..'),
+    packageFile: pkgFile,
+  }
+
   // when packageManager is set to staticRegistry, we need to infer the package manager from lock files
-  if (options.packageManager === 'staticRegistry') determinePackageManager({ ...options, packageManager: undefined })
-  else if (options.packageManager !== 'npm') return options.packageManager
-  const cwd = (options.cwd ?? pkgFile) ? `${pkgFile}/..` : process.cwd()
-  const pnpmDetected = await exists(path.join(cwd, 'pnpm-lock.yaml'))
-  return pnpmDetected ? 'pnpm' : 'npm'
+  if (options.packageManager === 'staticRegistry') {
+    return await determinePackageManager({ ...installOptions, packageManager: undefined })
+  } else if (options.packageManager && options.packageManager !== 'npm') {
+    return options.packageManager
+  }
+
+  // use the same logic as the main package manager detection
+  return await determinePackageManager(installOptions)
 }
 
 /** Returns if analysis contains upgrades */
