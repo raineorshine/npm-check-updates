@@ -551,12 +551,14 @@ const extendedHelpCooldown: ExtendedHelp = ({ markdown }) => {
 ${chalk.bold('Example')}:
 
 Suppose your project depends on version 1.0.0 of a package, and the following versions are available:
+
 - 1.0.0   Released 60 days ago
 - 1.1.0   Released 45 days ago
 - 1.2.0   Released 20 days ago
 - 2.0.0   Released 10 days ago
 
 If you run:
+
 ${codeBlock(`${chalk.cyan('$')} ncu --cooldown 30`, { markdown })}
 
 ncu will upgrade to version 1.1.0, since it was released 45 days ago and is the latest version outside the 30-day cooldown window. Versions 1.2.0 and 2.0.0 are skipped because they were released within the last 30 days.

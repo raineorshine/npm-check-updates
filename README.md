@@ -406,12 +406,14 @@ Delay upgrades to newer dependency versions that have been released within the s
 Example:
 
 Suppose your project depends on version 1.0.0 of a package, and the following versions are available:
+
 - 1.0.0   Released 60 days ago
 - 1.1.0   Released 45 days ago
 - 1.2.0   Released 20 days ago
 - 2.0.0   Released 10 days ago
 
 If you run:
+
 ```js
 $ ncu --cooldown 30
 ```
