@@ -183,6 +183,10 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     programError(options, `--registry must be a valid URL. Invalid value: "${options.registry}"`)
   }
 
+  if (options.cooldown != null && (isNaN(options.cooldown) || options.cooldown < 0)) {
+    programError(options, 'Cooldown must be a non-negative integer representing days');
+  }
+
   const target: Target = options.target || 'latest'
 
   const autoPre = target === 'newest' || target === 'greatest'

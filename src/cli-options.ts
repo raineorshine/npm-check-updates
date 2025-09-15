@@ -936,10 +936,7 @@ const cliOptions: CLIOption[] = [
     description: 'Cooldown period for dependency updates, allowing updates to be delayed for a configurable number of days',
     type: 'number',
     help: extendedHelpCooldown,
-    parse: s => {
-      parseInt(s, 10)
-      // @todo: thrown error if NaN
-    }
+    parse: s => parseInt(s, 10),
   }
 ]
 
