@@ -64,13 +64,15 @@ export function satisfiesPeerDependencies(versionResult: Partial<Packument>, pee
  */
 export function satisfiesCooldownPeriod(versionResult: Partial<Packument>, cooldownDays: Maybe<number>): boolean {
   const version = versionResult.version
-  const days = Number(cooldownDays)
-  if (!days) return true
-  if (!versionResult.time || !versionResult.time[version!]) return false
-  if (isNaN(days) || days <= 0) return false
-  const releaseDate = new Date(versionResult.time[version!])
-  const MS_DAY = 86400000 // milliseconds in a day
-  return Date.now() - releaseDate.getTime() >= days * MS_DAY
+  const versionTimeData = versionResult?.time?.[version!]
+
+  if (!cooldownDays) return true
+  if (!versionTimeData) return false
+
+  const versionReleaseDate = new Date(versionTimeData)
+  const DAY_AS_MS = 86400000 // milliseconds in a day
+  const cooldownDaysAsMs = cooldownDays * DAY_AS_MS
+  return Date.now() - versionReleaseDate.getTime() >= cooldownDaysAsMs
 }
 
 /** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by packument. */
