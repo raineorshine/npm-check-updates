@@ -936,7 +936,7 @@ const cliOptions: CLIOption[] = [
     short: 'c',
     arg: 'n',
     description:
-      'Cooldown period for dependency updates, allowing updates to be delayed for a configurable number of days',
+      'Delay updates to newly published versions to reduce risk. Sets a minimum number of days after publication before a version is considered for upgrade.',
     type: 'number',
     help: extendedHelpCooldown,
     parse: s => parseInt(s, 10),

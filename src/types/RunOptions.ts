@@ -40,7 +40,7 @@ export interface RunOptions {
   /** Directory of .ncurc config file. (default: directory of `packageFile`) */
   configFilePath?: string
 
-  /** Cooldown period for dependency updates, allowing updates to be delayed for a configurable number of days Run "ncu --help --cooldown" for details. */
+  /** Delay updates to newly published versions to reduce risk. Sets a minimum number of days after publication before a version is considered for upgrade. Run "ncu --help --cooldown" for details. */
   cooldown?: number
 
   /** Working directory in which npm will be executed. */

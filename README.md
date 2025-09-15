@@ -203,7 +203,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#cooldown">-c, --cooldown &lt;n&gt;</a></td>
-    <td>Cooldown period for dependency updates, allowing updates to be delayed for a configurable number of days</td>
+    <td>Delay updates to newly published versions to reduce risk. Sets a minimum number of days after publication before a version is considered for upgrade.</td>
   </tr>
   <tr>
     <td>--cwd &lt;path&gt;</td>
