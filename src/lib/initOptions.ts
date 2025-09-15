@@ -184,7 +184,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   }
 
   if (options.cooldown != null && (isNaN(options.cooldown) || options.cooldown < 0)) {
-    programError(options, 'Cooldown must be a non-negative integer representing days');
+    programError(options, 'Cooldown must be a non-negative integer representing days')
   }
 
   const target: Target = options.target || 'latest'

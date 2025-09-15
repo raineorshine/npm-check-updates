@@ -130,8 +130,11 @@ const fetchPartialPackument = async (
  * @param packument - The full packument object, potentially containing time metadata for versions.
  * @returns A new packument object that includes the `time` property if available for the tag's version.
  */
-const decorateTagPackumentWithTime = (tagPackument: Partial<Packument>, packument: Partial<Packument>): Partial<Packument> => {
-  const version = tagPackument.version;
+const decorateTagPackumentWithTime = (
+  tagPackument: Partial<Packument>,
+  packument: Partial<Packument>,
+): Partial<Packument> => {
+  const version = tagPackument.version
 
   return {
     ...tagPackument,
@@ -676,13 +679,21 @@ export const greatest: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const fields: (keyof Packument)[] = ['versions'];
+  const fields: (keyof Packument)[] = ['versions']
 
   if (options.cooldown) {
-    fields.push('time');
+    fields.push('time')
   }
 
-  const packument = await fetchUpgradedPackumentMemo(packageName, fields, currentVersion, options, 0, npmConfig, npmConfigProject);
+  const packument = await fetchUpgradedPackumentMemo(
+    packageName,
+    fields,
+    currentVersion,
+    options,
+    0,
+    npmConfig,
+    npmConfigProject,
+  )
 
   // known type based on 'versions'
   const versions = packument?.versions
@@ -690,7 +701,9 @@ export const greatest: GetVersion = async (
   return {
     version:
       Object.values(versions || {})
-        .filter(tagPackument => filterPredicate(options)(decorateTagPackumentWithTime(tagPackument, packument as Partial<Packument>)))
+        .filter(tagPackument =>
+          filterPredicate(options)(decorateTagPackumentWithTime(tagPackument, packument as Partial<Packument>)),
+        )
         .map(o => o.version)
         .sort(versionUtil.compareVersions)
         .at(-1) || null,
@@ -792,10 +805,10 @@ export const distTag: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ) => {
-  const fields: (keyof Packument)[] = ['dist-tags'];
+  const fields: (keyof Packument)[] = ['dist-tags']
 
   if (options.cooldown) {
-    fields.push('time');
+    fields.push('time')
   }
 
   const packument = await fetchUpgradedPackumentMemo(
@@ -817,7 +830,7 @@ export const distTag: GetVersion = async (
         version,
       }
 
-  const tagPackumentWithTime = decorateTagPackumentWithTime(tagPackument, packument as Partial<Packument>);
+  const tagPackumentWithTime = decorateTagPackumentWithTime(tagPackument, packument as Partial<Packument>)
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it

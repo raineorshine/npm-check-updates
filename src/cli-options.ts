@@ -935,11 +935,12 @@ const cliOptions: CLIOption[] = [
     long: 'cooldown',
     short: 'c',
     arg: 'n',
-    description: 'Cooldown period for dependency updates, allowing updates to be delayed for a configurable number of days',
+    description:
+      'Cooldown period for dependency updates, allowing updates to be delayed for a configurable number of days',
     type: 'number',
     help: extendedHelpCooldown,
     parse: s => parseInt(s, 10),
-  }
+  },
 ]
 
 // put cliOptions into an object for O(1) lookups
