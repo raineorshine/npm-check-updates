@@ -546,11 +546,12 @@ As a comparison: without using the \`--peer\` option, ncu will suggest the lates
 
 /** Extended help for the --cooldown option. */
 const extendedHelpCooldown: ExtendedHelp = ({ markdown }) => {
-  return `Delay upgrades to newer dependency versions that have been released within the specified cooldown period (in days). By default, this option is disabled and all eligible upgrades are considered regardless of release date.
+  return `Reduce the risk of installing compromised packages by delaying updates to newly published versions.
+The cooldown option sets a minimum number of days that must pass after a version is published before ncu will consider it for upgrade.
 
 ${chalk.bold('Example')}:
 
-Suppose your project depends on version 1.0.0 of a package, and the following versions are available:
+Imagine your project uses version 1.0.0 of a package, and these versions are available:
 
 - 1.0.0   Released 60 days ago
 - 1.1.0   Released 45 days ago
@@ -561,8 +562,7 @@ If you run:
 
 ${codeBlock(`${chalk.cyan('$')} ncu --cooldown 30`, { markdown })}
 
-ncu will upgrade packge to latest version released >= 30 days ago. In this case, version 1.1.0, since it was released 45 days ago and is the latest version outside the 30-day cooldown window. Versions 1.2.0 and 1.3.0 are skipped because they were released within the last 30 days.
-
+ncu will upgrade to the latest version released at least 30 days ago. In this example, version 1.1.0 is selected because it was published 45 days ago and is the newest version outside the 30-day cooldown period. Versions 1.2.0 and 1.3.0 are skipped since they were published within the last 30 days.
 `
 }
 
