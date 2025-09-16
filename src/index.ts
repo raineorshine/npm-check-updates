@@ -66,12 +66,12 @@ const noVolta = (options: Options) => {
 }
 
 /** Returns the package manager that should be used to install packages after running "ncu -u". Uses the same detection logic as the main package manager determination. */
-const getPackageManagerForInstall = async (options: Options, pkgFile: string) => {
+const getPackageManagerForInstall = async (options: Options, packageFile: string) => {
   // create options context for the package file location
   const installOptions: Options = {
     ...options,
-    cwd: options.cwd || path.resolve(pkgFile, '..'),
-    packageFile: pkgFile,
+    cwd: options.cwd || path.resolve(packageFile, '..'),
+    packageFile,
   }
 
   // when packageManager is set to staticRegistry, we need to infer the package manager from lock files
