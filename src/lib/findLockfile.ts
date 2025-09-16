@@ -48,13 +48,8 @@ export default async function findLockfile(
         }
       }
 
-      // No lock files were found, so go up one directory
       const pathParent = path.resolve(currentPath, '..')
-
-      // Stop if we have reached the filesystem root
-      if (pathParent === currentPath) {
-        break
-      }
+      if (pathParent === currentPath) break
 
       currentPath = pathParent
     }
