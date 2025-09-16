@@ -36,9 +36,7 @@ export default async function findLockfile(
     const tempDir = os.tmpdir()
 
     while (true) {
-      if (currentPath === homeDir || currentPath === tempDir) {
-        break
-      }
+      if (currentPath === homeDir || currentPath === tempDir) break
 
       const files = await readdir(currentPath)
 
