@@ -1,9 +1,0 @@
-{
-  "name": "test-cooldown",
-  "license": "MIT",
-  "private": true,
-  "version": "0.0.0",
-  "dependencies": {
-    "test-package": "1.0.0"
-  }
-}
