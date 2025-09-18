@@ -49,7 +49,7 @@ describe('cooldown', () => {
           packageFile: 'test/test-data/cooldown/package.json',
           cooldown: -1,
         }),
-      ).to.be.rejectedWith('Cooldown must be a non-negative integer representing days')
+      ).to.be.rejectedWith('Cooldown must be a non-negative integer representing days since published')
     })
 
     it('throws error for non-numeric cooldown', () => {
@@ -59,7 +59,7 @@ describe('cooldown', () => {
           // @ts-expect-error -- testing invalid input
           cooldown: 'invalid',
         }),
-      ).to.be.rejectedWith('Cooldown must be a non-negative integer representing days')
+      ).to.be.rejectedWith('Cooldown must be a non-negative integer representing days since published')
     })
   })
 
@@ -211,7 +211,7 @@ describe('cooldown', () => {
       stub.restore()
     })
 
-    it('skips package upgrade completely when latest version is inside cooldown period', async () => {
+    it('skips package upgrade completely when @next version is inside cooldown period', async () => {
       // Given: cooldown days is set to 10 days, test-package is installed in version 1.0.0, and the @next version - 1.1.0-rc.2 was released 5 days ago (inside cooldown period). Another version 1.1.0-rc.1 was released 10 days ago (outside cooldown period), but it is not marked as @next version.
       const cooldown = 10
       const packageData: PackageFile = {
