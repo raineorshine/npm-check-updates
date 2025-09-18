@@ -39,7 +39,9 @@ let exitHandlerRegistered = false
 process.on('unhandledRejection', (reason: string | Error) => {
   // On Windows, fs.rm operations on temporary directories can fail with EBUSY errors
   // when files are still locked. These are harmless and shouldn't cause test failures.
-  if (reason instanceof Error && (reason as any).code === 'EBUSY' && (reason as any).syscall === 'rmdir') {
+  if (reason instanceof Error &&
+      (reason as any).code === 'EBUSY' &&
+      (reason as any).syscall === 'rmdir') {
     // Silently ignore EBUSY rmdir errors - they're expected on Windows
     return
   }
