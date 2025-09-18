@@ -178,7 +178,7 @@
       "type": "string"
     },
     "cooldown": {
-      "description": "Delay updates to newly published versions to reduce risk. Sets a minimum number of days after publication before a version is considered for upgrade. Run \"ncu --help --cooldown\" for details.",
+      "description": "Sets a minimum age (in days) for package versions to be considered for upgrade, reducing the risk of installing newly published, potentially compromised packages. Run \"ncu --help --cooldown\" for details.",
       "type": "number"
     },
     "cwd": {

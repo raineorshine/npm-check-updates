@@ -203,7 +203,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#cooldown">-c, --cooldown &lt;n&gt;</a></td>
-    <td>Delay updates to newly published versions to reduce risk. Sets a minimum number of days after publication before a version is considered for upgrade.</td>
+    <td>Sets a minimum age (in days) for package versions to be considered for upgrade, reducing the risk of installing newly published, potentially compromised packages.</td>
   </tr>
   <tr>
     <td>--cwd &lt;path&gt;</td>
@@ -401,25 +401,62 @@ Usage:
     ncu --cooldown [n]
     ncu -c [n]
 
-Reduce the risk of installing compromised packages by delaying updates to newly published versions.
-The cooldown option sets a minimum number of days that must pass after a version is published before ncu will consider it for upgrade.
+The cooldown option helps protect against supply chain attacks by requiring package versions to be a certain age before considering them for upgrade.
 
 Example:
 
-Imagine your project uses version 1.0.0 of a package, and these versions are available:
+Let's examine how cooldown works with a package that has these versions available:
 
-- 1.0.0 Released 60 days ago
-- 1.1.0 Released 45 days ago
-- 1.2.0 Released 20 days ago
-- 1.3.0 Released 10 days ago
+- 1.0.0 Released 7 days ago (initial version)
+- 1.1.0 Released 6 days ago (minor update)
+- 1.1.1 Released 5 days ago (patch update)
+- 1.2.0 Released 5 days ago (minor update)
+- 2.0.0-beta.1 Released 5 days ago (beta release)
+- 1.2.1 Released 4 days ago (patch update)
+- 1.3.0 Released 4 days ago (minor update) [latest]
+- 2.0.0-beta.2 Released 3 days ago (beta release)
+- 2.0.0-beta.3 Released 2 days ago (beta release) [beta]
 
-If you run:
+With default target (latest):
 
 ```js
-$ ncu --cooldown 30
+$ ncu --cooldown 5
 ```
 
-ncu will upgrade to the latest version released at least 30 days ago. In this example, version 1.1.0 is selected because it was published 45 days ago and is the newest version outside the 30-day cooldown period. Versions 1.2.0 and 1.3.0 are skipped since they were published within the last 30 days.
+No update will be suggested because:
+
+- Latest version (1.3.0) is only 4 days old.
+- Cooldown requires versions to be at least 5 days old
+- Use `--cooldown 4` or lower to allow this update
+
+With `@beta`/`@tag` target:
+
+```js
+$ ncu --cooldown 3 --target @beta
+```
+
+No update will be suggested because:
+
+- Current beta (2.0.0-beta.3) is only 2 days old
+- Cooldown requires versions to be at least 3 days old
+- Use `--cooldown 2` or lower to allow this update
+
+With other targets:
+
+```js
+$ ncu --cooldown 5 --target greatest|newest|minor|patch|semver
+```
+
+Each target will select the best version that is at least 5 days old:
+
+- `greatest` → 1.2.0 (highest version number outside cooldown)
+- `newest` → 2.0.0-beta.1 (most recently published version outside cooldown)
+- `minor` → 1.2.0 (highest minor version outside cooldown)
+- `patch` → 1.1.1 (highest patch version outside cooldown)
+
+Note for latest/tag targets:
+
+> :warning: For packages that update frequently (e.g., daily releases), using a long cooldown period (7+ days) with `--target latest` or `--target @tag` may prevent all updates since new versions will be published before older ones meet the cooldown requirement. Please consider this when setting your cooldown period.
 
 ## doctor
 
