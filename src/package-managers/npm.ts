@@ -836,11 +836,17 @@ export const distTag: GetVersion = async (
   // if latest exists and latest is not a prerelease version, return it
   // if latest exists and latest is a prerelease version and --pre is specified, return it
   // if latest exists and latest not satisfies min version of engines.node
+  // if latest exists and cooldown is specified and latest is within cooldown period, return it
   if (tagPackument && filterPredicate(options)(tagPackumentWithTime)) {
     return {
       version: tagPackument.version,
       ...(packument?.time?.[version!] ? { time: packument.time[version!] } : null),
     }
+  }
+
+  // if version from dist-tag does not meet cooldown requirement skip finding other versions
+  if (options.cooldown) {
+    return {}
   }
 
   // If we use a custom dist-tag, we do not want to get other 'pre' versions, just the ones from this dist-tag
