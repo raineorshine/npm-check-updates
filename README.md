@@ -219,7 +219,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--deprecated</td>
-    <td>Include deprecated packages. Use <code>--no-deprecated</code> to exclude deprecated packages (uses more bandwidth). (default: true)</td>
+    <td>Include deprecated packages. Use <code>--no-deprecated</code> to exclude deprecated packages (20–25% slower). (default: true)</td>
   </tr>
   <tr>
     <td><a href="#doctor">-d, --doctor</a></td>
