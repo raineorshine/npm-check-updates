@@ -1,12 +1,34 @@
 # Changelog
 
-This file documents all **major version** releases. For other releases, please read the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
+This file only documents **major version** releases. For smaller releases, you're stuck reading the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
+
+## [18.0.0] - 2025-04-21
+
+### Breaking
+
+The **only** breaking change in v18 is with the `-g/--global` flag.
+
+`npm-check-updates -g` will now auto-detect your package manager based on the execution path. Previously, it defaulted to `npm`.
+
+- `yarn dlx ncu -g --packageManager yarn` → `yarn dlx ncu -g`
+- `pnpm dlx ncu --global --packageManager pnpm` → `pnpm dlx ncu -g`
+- `bunx ncu -g--packageManager pnpm` → `bunx ncu -g`
+
+If for some reason you were running `ncu -g` with an alternative package manager and relying on it checking the global `npm` packages, you will need to now explicitly specify npm:
+
+- `ncu -g` → `ncu -g--packageManager npm`
+
+Thanks to @LuisFerLCC for the improvement (#1514).
+
+<https://github.com/raineorshine/npm-check-updates/compare/v17.1.18...v18.0.0>
 
 ## [17.0.0] - 2024-07-31
 
 ### Breaking
 
 - Require node >= 18.18.0
+- Deprecated versions are no longer excluded by default, as it requires fetching package info for every published version, significantly slowing down upgrades.
+  - You can opt in with `--no-deprecated` in the CLI or `deprecated: false` in your `ncurc` config.
 - In workspaces mode, `--root` is now set by default (#1353)
   - To **not** check the root package.json, use `--no-root`.
 - If you have a [packageManager](https://nodejs.org/api/packages.html#packagemanager) field in your package.json, it is now upgraded by default (#1390)
