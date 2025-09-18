@@ -331,7 +331,7 @@ describe('cooldown', () => {
 
       stub.restore()
     })
-  });
+  })
 
   describe('when minor target', () => {
     it('upgrades package to newest minor version older than cooldown period', async () => {
@@ -412,7 +412,7 @@ describe('cooldown', () => {
 
       // When ncu is run with the cooldown parameter and target is 'semver'
       const result = await ncu({ packageData, cooldown, target: 'semver' })
-      
+
       // Then: package is upgraded to version ^1.0.1 (newest semver version outside cooldown)
       expect(result).to.have.property('test-package', '^1.0.1')
       stub.restore()
