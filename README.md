@@ -888,6 +888,16 @@ Some options offer more advanced configuration using a function definition. Thes
 For example, `.ncurc.js`:
 
 ```js
+/** @type {import('npm-check-updates').RcOptions } */
+module.exports = {
+  upgrade: true,
+  filter: name => name.startsWith('@myorg/'),
+}
+```
+
+Alternatively, you can use the defineConfig helper which should provide intellisense without the need for jsdoc annotations:
+
+```js
 const { defineConfig } = require('npm-check-updates')
 
 module.exports = defineConfig({
