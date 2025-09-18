@@ -401,21 +401,23 @@ Usage:
     ncu --cooldown [n]
     ncu -c [n]
 
-The cooldown option helps protect against supply chain attacks by requiring package versions to be a certain age before considering them for upgrade.
+The cooldown option helps protect against supply chain attacks by requiring package versions to be published at least the given number of days before considering them for upgrade.
+
+Note that previous stable versions will not be suggested. The package will be completely ignored if its latest published version is within the cooldown period. This is due to a limitation of the npm registry, which does not provide a way to query previous stable versions.
 
 Example:
 
 Let's examine how cooldown works with a package that has these versions available:
 
-- 1.0.0 Released 7 days ago (initial version)
-- 1.1.0 Released 6 days ago (minor update)
-- 1.1.1 Released 5 days ago (patch update)
-- 1.2.0 Released 5 days ago (minor update)
-- 2.0.0-beta.1 Released 5 days ago (beta release)
-- 1.2.1 Released 4 days ago (patch update)
-- 1.3.0 Released 4 days ago (minor update) [latest]
-- 2.0.0-beta.2 Released 3 days ago (beta release)
-- 2.0.0-beta.3 Released 2 days ago (beta release) [beta]
+    1.0.0          Released 7 days ago    (initial version)
+    1.1.0          Released 6 days ago    (minor update)
+    1.1.1          Released 5 days ago    (patch update)
+    1.2.0          Released 5 days ago    (minor update)
+    2.0.0-beta.1   Released 5 days ago    (beta release)
+    1.2.1          Released 4 days ago    (patch update)
+    1.3.0          Released 4 days ago    (minor update) [latest]
+    2.0.0-beta.2   Released 3 days ago    (beta release)
+    2.0.0-beta.3   Released 2 days ago    (beta release) [beta]
 
 With default target (latest):
 
@@ -449,14 +451,14 @@ $ ncu --cooldown 5 --target greatest|newest|minor|patch|semver
 
 Each target will select the best version that is at least 5 days old:
 
-- `greatest` → 1.2.0 (highest version number outside cooldown)
-- `newest` → 2.0.0-beta.1 (most recently published version outside cooldown)
-- `minor` → 1.2.0 (highest minor version outside cooldown)
-- `patch` → 1.1.1 (highest patch version outside cooldown)
+    `greatest` → 1.2.0       (highest version number outside cooldown)
+    `newest`  → 2.0.0-beta.1 (most recently published version outside cooldown)
+    `minor`   → 1.2.0        (highest minor version outside cooldown)
+    `patch`   → 1.1.1        (highest patch version outside cooldown)
 
 Note for latest/tag targets:
 
-> :warning: For packages that update frequently (e.g., daily releases), using a long cooldown period (7+ days) with `--target latest` or `--target @tag` may prevent all updates since new versions will be published before older ones meet the cooldown requirement. Please consider this when setting your cooldown period.
+> :warning: For packages that update frequently (e.g. daily releases), using a long cooldown period (7+ days) with the default `--target latest` or `--target @tag` may prevent all updates since new versions will be published before older ones meet the cooldown requirement. Please consider this when setting your cooldown period.
 
 ## doctor
 
