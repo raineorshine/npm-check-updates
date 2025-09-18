@@ -590,10 +590,10 @@ ${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5 --target greatest|newest|minor|
 
 Each target will select the best version that is at least 5 days old:
 
-    \`greatest\` → 1.2.0       (highest version number outside cooldown)
-    \`newest\`  → 2.0.0-beta.1 (most recently published version outside cooldown)
-    \`minor\`   → 1.2.0        (highest minor version outside cooldown)
-    \`patch\`   → 1.1.1        (highest patch version outside cooldown)
+    greatest → 1.2.0        (highest version number outside cooldown)
+    newest   → 2.0.0-beta.1 (most recently published version outside cooldown)
+    minor    → 1.2.0        (highest minor version outside cooldown)
+    patch    → 1.1.1        (highest patch version outside cooldown)
 
 ${chalk.bold('Note for latest/tag targets')}:
 
