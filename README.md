@@ -888,10 +888,12 @@ Some options offer more advanced configuration using a function definition. Thes
 For example, `.ncurc.js`:
 
 ```js
-module.exports = {
+const { defineConfig } = require('npm-check-updates')
+
+module.exports = defineConfig({
   upgrade: true,
   filter: name => name.startsWith('@myorg/'),
-}
+})
 ```
 
 ### JSON Schema

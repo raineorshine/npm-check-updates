@@ -23,6 +23,9 @@ import { PackageInfo } from './types/PackageInfo'
 import { RunOptions } from './types/RunOptions'
 import { VersionSpec } from './types/VersionSpec'
 
+export { default as defineConfig } from './lib/defineConfig'
+export type { RcOptions } from './types/RcOptions'
+
 // allow prompt injection from environment variable for testing purposes
 if (process.env.INJECT_PROMPTS) {
   prompts.inject(JSON.parse(process.env.INJECT_PROMPTS))
