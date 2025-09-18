@@ -5,7 +5,6 @@ import path from 'path'
 import spawn from 'spawn-please'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
-import { safeRemoveTempDir } from './helpers/tempDir'
 
 /**
  * Helper function to remove a directory while avoiding errors like:
@@ -59,7 +58,7 @@ describe('format', () => {
       const { stdout } = await spawn('node', [bin, '--format', 'repo'], {}, { cwd: tempDir })
       stdout.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {
-      await safeRemoveTempDir(tempDir)
+      await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
 

@@ -31,21 +31,9 @@ if (process.env.INJECT_PROMPTS) {
 /** Tracks the (first) unhandled rejection so the process can exit with an error code at the end. This allows other errors to be logged before the process exits. */
 let unhandledRejectionError = false
 
-/** Flag to ensure the exit handler is only registered once */
-let exitHandlerRegistered = false
-
 // Use `node --trace-uncaught ...` to show where the exception was thrown.
 // See: https://nodejs.org/api/process.html#event-unhandledrejection
 process.on('unhandledRejection', (reason: string | Error) => {
-  // On Windows, fs.rm operations on temporary directories can fail with EBUSY errors
-  // when files are still locked. These are harmless and shouldn't cause test failures.
-  if (reason instanceof Error &&
-      (reason as any).code === 'EBUSY' &&
-      (reason as any).syscall === 'rmdir') {
-    // Silently ignore EBUSY rmdir errors - they're expected on Windows
-    return
-  }
-
   // do not rethrow, as there may be other errors to print out
   console.error(reason)
 
@@ -334,14 +322,11 @@ export async function run(
 
   // ensure that the process exits with an error code if there was an unhandled rejection
   const bugsUrl = pkg.bugs.url
-  if (!exitHandlerRegistered) {
-    process.on('exit', () => {
-      if (unhandledRejectionError) {
-        programError(options, `Unhandled Rejection! This is a bug and should be reported: ${bugsUrl}`)
-      }
-    })
-    exitHandlerRegistered = true
-  }
+  process.on('exit', () => {
+    if (unhandledRejectionError) {
+      programError(options, `Unhandled Rejection! This is a bug and should be reported: ${bugsUrl}`)
+    }
+  })
 
   // chalk may already have been initialized in cli.ts, but when imported as a module
   // chalkInit is idempotent
