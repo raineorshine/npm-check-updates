@@ -202,6 +202,10 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Directory of .ncurc config file. (default: directory of <code>packageFile</code>)</td>
   </tr>
   <tr>
+    <td><a href="#cooldown">-c, --cooldown &lt;n&gt;</a></td>
+    <td>Sets a minimum age (in days) for package versions to be considered for upgrade, reducing the risk of installing newly published, potentially compromised packages.</td>
+  </tr>
+  <tr>
     <td>--cwd &lt;path&gt;</td>
     <td>Working directory in which npm will be executed.</td>
   </tr>
@@ -389,6 +393,72 @@ Run `ncu --help [OPTION]` to view advanced help for a specific option, or see be
 
 <!-- BEGIN Advanced Options -->
 <!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->
+
+## cooldown
+
+Usage:
+
+    ncu --cooldown [n]
+    ncu -c [n]
+
+The cooldown option helps protect against supply chain attacks by requiring package versions to be published at least the given number of days before considering them for upgrade.
+
+Note that previous stable versions will not be suggested. The package will be completely ignored if its latest published version is within the cooldown period. This is due to a limitation of the npm registry, which does not provide a way to query previous stable versions.
+
+Example:
+
+Let's examine how cooldown works with a package that has these versions available:
+
+    1.0.0          Released 7 days ago    (initial version)
+    1.1.0          Released 6 days ago    (minor update)
+    1.1.1          Released 5 days ago    (patch update)
+    1.2.0          Released 5 days ago    (minor update)
+    2.0.0-beta.1   Released 5 days ago    (beta release)
+    1.2.1          Released 4 days ago    (patch update)
+    1.3.0          Released 4 days ago    (minor update) [latest]
+    2.0.0-beta.2   Released 3 days ago    (beta release)
+    2.0.0-beta.3   Released 2 days ago    (beta release) [beta]
+
+With default target (latest):
+
+```js
+$ ncu --cooldown 5
+```
+
+No update will be suggested because:
+
+- Latest version (1.3.0) is only 4 days old.
+- Cooldown requires versions to be at least 5 days old
+- Use `--cooldown 4` or lower to allow this update
+
+With `@beta`/`@tag` target:
+
+```js
+$ ncu --cooldown 3 --target @beta
+```
+
+No update will be suggested because:
+
+- Current beta (2.0.0-beta.3) is only 2 days old
+- Cooldown requires versions to be at least 3 days old
+- Use `--cooldown 2` or lower to allow this update
+
+With other targets:
+
+```js
+$ ncu --cooldown 5 --target greatest|newest|minor|patch|semver
+```
+
+Each target will select the best version that is at least 5 days old:
+
+    greatest → 1.2.0        (highest version number outside cooldown)
+    newest   → 2.0.0-beta.1 (most recently published version outside cooldown)
+    minor    → 1.2.0        (highest minor version outside cooldown)
+    patch    → 1.1.1        (highest patch version outside cooldown)
+
+Note for latest/tag targets:
+
+> :warning: For packages that update frequently (e.g. daily releases), using a long cooldown period (7+ days) with the default `--target latest` or `--target @tag` may prevent all updates since new versions will be published before older ones meet the cooldown requirement. Please consider this when setting your cooldown period.
 
 ## doctor
 
