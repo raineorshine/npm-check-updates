@@ -23,3 +23,6 @@ yarn.lock
 # test files
 /test/temp_package*.json
 /test/.ncurc.json
+
+# Agent files
+.claude
