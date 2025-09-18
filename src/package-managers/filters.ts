@@ -82,7 +82,7 @@ export function filterPredicate(options: Options) {
     o => allowPreOrIsNotPre(o, options),
     options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null,
     options.peerDependencies ? o => satisfiesPeerDependencies(o, options.peerDependencies!) : null,
-    options.cooldown && !isNaN(options.cooldown) ? o => satisfiesCooldownPeriod(o, options.cooldown) : null,
+    options.cooldown ? o => satisfiesCooldownPeriod(o, options.cooldown) : null,
   ]
 
   return (o: Partial<Packument>) => predicators.every(predicator => (predicator ? predicator(o) : true))
