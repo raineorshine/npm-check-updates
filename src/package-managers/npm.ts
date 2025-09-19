@@ -926,8 +926,6 @@ export const newest: GetVersion = async (
       ),
     )
 
-    console.log({ versionsSatisfiesfyingCooldownPeriod, result })
-
     return { version: versionsSatisfiesfyingCooldownPeriod.at(-1) }
   }
 
