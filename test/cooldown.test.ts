@@ -304,6 +304,121 @@ describe('cooldown', () => {
     })
   })
 
+  describe('when newest target', () => {
+    it('upgrades package to newest version older than cooldown period', async () => {
+      // Given: test-package@1.0.0 installed, version 1.2.0 released 5 days ago (within cooldown), version 1.1.0 released 15 days ago (outside 10-day cooldown)
+      const cooldown = 10
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.2.0': new Date(NOW - 5 * DAY).toISOString(),
+            '1.1.0': new Date(NOW - 15 * DAY).toISOString(),
+          },
+        }),
+      )
+
+      // When ncu is run with the cooldown parameter and target is 'newest'
+      const result = await ncu({ packageData, cooldown, target: 'newest' })
+
+      // Then: package is upgraded to version 1.1.0 (newest version outside cooldown)
+      expect(result).to.have.property('test-package', '1.1.0')
+
+      stub.restore()
+    })
+  })
+
+  describe('when minor target', () => {
+    it('upgrades package to newest minor version older than cooldown period', async () => {
+      // Given: test-package@1.0.0 installed, version 1.2.0 released 5 days ago (within cooldown), version 1.1.0 released 15 days ago (outside 10-day cooldown)
+      const cooldown = 10
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.2.0': new Date(NOW - 5 * DAY).toISOString(),
+            '1.1.0': new Date(NOW - 15 * DAY).toISOString(),
+          },
+        }),
+      )
+
+      // When ncu is run with the cooldown parameter and target is 'minor'
+      const result = await ncu({ packageData, cooldown, target: 'minor' })
+
+      // Then: package is upgraded to version 1.1.0 (newest minor version outside cooldown)
+      expect(result).to.have.property('test-package', '1.1.0')
+
+      stub.restore()
+    })
+  })
+
+  describe('when patch target', () => {
+    it('upgrades package to newest patch version older than cooldown period', async () => {
+      // Given: test-package@1.0.0 installed, version 1.0.2 released 5 days ago (within cooldown), version 1.0.1 released 15 days ago (outside 10-day cooldown)
+      const cooldown = 10
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.0.2': new Date(NOW - 5 * DAY).toISOString(),
+            '1.0.1': new Date(NOW - 15 * DAY).toISOString(),
+          },
+        }),
+      )
+
+      // When ncu is run with the cooldown parameter and target is 'patch'
+      const result = await ncu({ packageData, cooldown, target: 'patch' })
+
+      // Then: package is upgraded to version 1.0.1 (newest patch version outside cooldown)
+      expect(result).to.have.property('test-package', '1.0.1')
+
+      stub.restore()
+    })
+  })
+
+  describe('when semver target', () => {
+    it('upgrades package to newest semver version older than cooldown period', async () => {
+      // Given: test-package@1.0.0 installed, version 1.1.0 released 5 days ago (within cooldown), version 1.0.1 released 15 days ago (outside 10-day cooldown)
+      const cooldown = 10
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '^1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 5 * DAY).toISOString(),
+            '1.0.1': new Date(NOW - 15 * DAY).toISOString(),
+          },
+        }),
+      )
+
+      // When ncu is run with the cooldown parameter and target is 'semver'
+      const result = await ncu({ packageData, cooldown, target: 'semver' })
+
+      // Then: package is upgraded to version ^1.0.1 (newest semver version outside cooldown)
+      expect(result).to.have.property('test-package', '^1.0.1')
+      stub.restore()
+    })
+  })
+
   it('skips package upgrade if no time data and cooldown is set', async () => {
     // Given: cooldown days is set to 10 days, test-package is installed in version 1.0.0, and the latest version - 1.1.0 was released 5 days ago (inside cooldown period). Another version 1.0.1 was released 10 days ago (outside cooldown period), but it is not the latest version, so it should not be upgraded either.
     const cooldown = 10
