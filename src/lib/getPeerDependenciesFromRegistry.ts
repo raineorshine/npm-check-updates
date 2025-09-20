@@ -70,7 +70,14 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
    * @returns Promise that resolves when peer dependencies are processed
    */
   const processPeerDependencies = async ([pkg, version]: [string, Version]) => {
-    const dep = await packageManager.getPeerDependencies!(pkg, version, { cwd: options.cwd })
+    let dep: Index<string>
+    const cached = options.cacher?.getPeers(pkg, version)
+    if (cached) {
+      dep = cached
+    } else {
+      dep = await packageManager.getPeerDependencies!(pkg, version, { cwd: options.cwd })
+      options.cacher?.setPeers(pkg, version, dep)
+    }
     if (bar) {
       bar.tick()
     }
@@ -82,6 +89,9 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
   }
 
   await pMap(packageEntries, processPeerDependencies, { concurrency: options.concurrency })
+
+  await options.cacher?.save()
+  options.cacher?.log(true)
 
   return accum
 }
