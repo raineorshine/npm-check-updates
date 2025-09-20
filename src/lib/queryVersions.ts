@@ -81,7 +81,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
 
     try {
       if (options.skipPinned && isPinned(version)) {
-        print(options, `Skipping package ${name} with pinned version ${version}`, 'verbose')
+        print(options, `Skipping package ${name} with pinned version ${version}`, 'warn')
         versionResult = {}
       } else {
         versionResult = await getPackageVersion(name, version, {
