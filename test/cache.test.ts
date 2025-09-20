@@ -24,7 +24,7 @@ describe('cache', () => {
         },
       }
 
-      await ncu({ packageData, cache: true })
+      await ncu({ packageData, cache: true, peer: true })
 
       const cacheData: CacheData = await fs.readFile(resolvedDefaultCacheFile, 'utf-8').then(JSON.parse)
 
@@ -33,6 +33,13 @@ describe('cache', () => {
         [`ncu-test-v2${CACHE_DELIMITER}latest`]: '2.0.0',
         [`ncu-test-tag${CACHE_DELIMITER}latest`]: '1.1.0',
         [`ncu-test-alpha${CACHE_DELIMITER}latest`]: '1.0.0',
+      })
+      expect(cacheData.peers).deep.eq({
+        [`ncu-test-alpha${CACHE_DELIMITER}1.0.0`]: {},
+        [`ncu-test-tag${CACHE_DELIMITER}1.0.0`]: {},
+        [`ncu-test-tag${CACHE_DELIMITER}1.1.0`]: {},
+        [`ncu-test-v2${CACHE_DELIMITER}1.0.0`]: {},
+        [`ncu-test-v2${CACHE_DELIMITER}2.0.0`]: {},
       })
     } finally {
       await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
@@ -75,6 +82,7 @@ describe('cache', () => {
         [`ncu-test-tag${CACHE_DELIMITER}latest`]: '1.1.0',
         [`ncu-test-alpha${CACHE_DELIMITER}latest`]: '1.0.0',
       })
+      expect(cacheData1.peers).deep.eq({})
 
       // second run has a different target so should not use the cache
       const result2 = await ncu({ packageData, cache: true, target: 'greatest' })

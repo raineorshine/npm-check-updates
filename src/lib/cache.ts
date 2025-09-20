@@ -2,7 +2,9 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { CacheData, Cacher } from '../types/Cacher'
+import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
+import { Version } from '../types/Version'
 import { print } from './logging'
 
 export const CACHE_DELIMITER = '___'
@@ -55,7 +57,7 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
 
   const cacheFile = resolveCacheFile(options.cacheFile)
   let cacheData: CacheData = {}
-  const cacheUpdates: Record<string, string> = {}
+  const cacheHits = new Set<string>()
 
   try {
     cacheData = JSON.parse(await fs.promises.readFile(cacheFile, 'utf-8'))
@@ -76,32 +78,53 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
   if (!cacheData.packages) {
     cacheData.packages = {}
   }
+  if (!cacheData.peers) {
+    cacheData.peers = {}
+  }
 
   return {
     get: (name: string, target: string) => {
+      if (!cacheData.packages) return
       const key = `${name}${CACHE_DELIMITER}${target}`
-      if (!key || !cacheData.packages) return
       const cached = cacheData.packages[key]
       if (cached && !key.includes(cached)) {
-        const [name] = key.split(CACHE_DELIMITER)
-        cacheUpdates[name] = cached
+        cacheHits.add(name)
       }
       return cached
     },
     set: (name: string, target: string, version: string) => {
+      if (!cacheData.packages) return
       const key = `${name}${CACHE_DELIMITER}${target}`
-      if (!key || !cacheData.packages) return
       cacheData.packages[key] = version
+    },
+    getPeers: (name: string, version: Version) => {
+      if (!cacheData.peers) return
+      const key = `${name}${CACHE_DELIMITER}${version}`
+      const cached = cacheData.peers[key]
+      if (cached) {
+        cacheHits.add(name)
+      }
+      return cached
+    },
+    setPeers: (name: string, version: Version, peers: Index<string>) => {
+      const key = `${name}${CACHE_DELIMITER}${version}`
+      if (!cacheData.peers) return
+      cacheData.peers[key] = peers
     },
     save: async () => {
       await fs.promises.writeFile(cacheFile, JSON.stringify(cacheData))
     },
-    log: () => {
-      const cacheCount = Object.keys(cacheUpdates).length
+    log: (peers?: boolean) => {
+      const cacheCount = cacheHits.size
       if (cacheCount === 0) return
 
-      print(options, `\nUsing ${cacheCount} cached package version${cacheCount > 1 ? 's' : ''}`, 'warn')
-      print(options, cacheUpdates, 'verbose')
+      print(
+        options,
+        `\nUsing ${cacheCount} cached package ${peers ? 'peer' : 'version'}${cacheCount > 1 ? 's' : ''}`,
+        'warn',
+      )
+      print(options, cacheHits, 'verbose')
+      cacheHits.clear()
     },
-  } as Cacher
+  } satisfies Cacher
 }
