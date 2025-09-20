@@ -1,3 +1,4 @@
+import pMap from 'p-map'
 import ProgressBar from 'progress'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -59,19 +60,30 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
     bar.render()
   }
 
-  return Object.entries(packageMap).reduce(async (accumPromise, [pkg, version]) => {
+  const packageEntries = Object.entries(packageMap)
+  const accum: Index<Index<string>> = {}
+
+  /**
+   * Processes peer dependencies for a package and updates the accumulator
+   * @param pkg - The package name
+   * @param version - The package version
+   * @returns Promise that resolves when peer dependencies are processed
+   */
+  const processPeerDependencies = async ([pkg, version]: [string, Version]) => {
     const dep = await packageManager.getPeerDependencies!(pkg, version, { cwd: options.cwd })
     if (bar) {
       bar.tick()
     }
-    const accum = await accumPromise
-    const newAcc: Index<Index<string>> = { ...accum, [pkg]: dep }
-    const circularData = isCircularPeer(newAcc, pkg)
+    accum[pkg] = dep
+    const circularData = isCircularPeer(accum, pkg)
     if (circularData.isCircular) {
-      delete newAcc[pkg][circularData.offendingPackage]
+      delete accum[pkg][circularData.offendingPackage]
     }
-    return newAcc
-  }, Promise.resolve<Index<Index<string>>>({}))
+  }
+
+  await pMap(packageEntries, processPeerDependencies, { concurrency: options.concurrency })
+
+  return accum
 }
 
 export default getPeerDependenciesFromRegistry
