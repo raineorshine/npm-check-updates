@@ -455,6 +455,10 @@
       "description": "Don't output anything. Alias for `--loglevel` silent.",
       "type": "boolean"
     },
+    "skipPinned": {
+      "description": "Skip upgrading pinned versions (exact versions without range indicators like ^, ~, >=, etc.).",
+      "type": "boolean"
+    },
     "stdin": {
       "description": "Read package.json from stdin.",
       "type": "string"

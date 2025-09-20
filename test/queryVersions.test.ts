@@ -20,6 +20,17 @@ describe('queryVersions', function () {
     stub.restore()
   })
 
+  it('piined version should be ignored when asked packages', async () => {
+    const stub = stubVersions('99.9.9')
+    const latestVersions = await queryVersions(
+      { async: '1.5.1', npm: '^3.10.3' },
+      { loglevel: 'silent', skipPinned: true },
+    )
+    latestVersions.should.not.have.property('async')
+    latestVersions.should.have.property('npm')
+    stub.restore()
+  })
+
   it('unavailable packages should be ignored', async () => {
     const result = await queryVersions({ abchdefntofknacuifnt: '1.2.3' }, { loglevel: 'silent' })
     result.should.deep.equal({})

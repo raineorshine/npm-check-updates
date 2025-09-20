@@ -9,6 +9,7 @@ import { Maybe } from '../types/Maybe'
 import { Options } from '../types/Options'
 import { UpgradeGroup } from '../types/UpgradeGroup'
 import { VersionLevel } from '../types/VersionLevel'
+import { VersionSpec } from '../types/VersionSpec'
 import chalk from './chalk'
 import { keyValueBy } from './keyValueBy'
 import { sortBy } from './sortBy'
@@ -544,4 +545,17 @@ export const upgradeGithubUrl = (declaration: string, upgraded: string) => {
   if (!parsedUrl) return declaration
   const tag = decodeURIComponent(parsedUrl.branch).replace(/^semver:/, '')
   return declaration.replace(tag, upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgradedNormalized)))
+}
+
+/**
+ * Determines if a version is pinned (exact version without range indicators like ^, ~, >=, etc.).
+ *
+ * @param version The version string to check
+ * @returns True if the version is pinned, false otherwise
+ */
+export const isPinned = (version: VersionSpec): boolean => {
+  // Handle npm aliases by extracting the version part
+  const npmAliasMatch = version.match(NPM_ALIAS_REGEX)
+  const versionToCheck = npmAliasMatch ? npmAliasMatch[2] : version
+  return Boolean(semver.valid(versionToCheck))
 }

@@ -354,6 +354,10 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Don't output anything. Alias for <code>--loglevel</code> silent.</td>
   </tr>
   <tr>
+    <td>--skipPinned</td>
+    <td>Skip upgrading pinned versions (exact versions without range indicators like ^, ~, >=, etc.).</td>
+  </tr>
+  <tr>
     <td>--stdin</td>
     <td>Read package.json from stdin.</td>
   </tr>
