@@ -175,6 +175,9 @@ export interface RunOptions {
   /** Don't output anything. Alias for `--loglevel` silent. */
   silent?: boolean
 
+  /** Skip upgrading pinned versions (exact versions without range indicators like ^, ~, >=, etc.). */
+  skipPinned?: boolean
+
   /** Read package.json from stdin. */
   stdin?: string
 

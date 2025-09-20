@@ -920,6 +920,11 @@ const cliOptions: CLIOption[] = [
     type: 'boolean',
   },
   {
+    long: 'skipPinned',
+    description: 'Skip upgrading pinned versions (exact versions without range indicators like ^, ~, >=, etc.).',
+    type: 'boolean',
+  },
+  {
     long: 'stdin',
     description: 'Read package.json from stdin.',
     type: 'string',

@@ -544,4 +544,114 @@ describe('version-util', () => {
       })
     })
   })
+
+  describe('isPinned', () => {
+    it('should return true for exact versions (pinned)', () => {
+      versionUtil.isPinned('1.0.0').should.equal(true)
+      versionUtil.isPinned('2.5.10').should.equal(true)
+      versionUtil.isPinned('0.1.0').should.equal(true)
+      versionUtil.isPinned('10.20.30').should.equal(true)
+    })
+
+    it('should return false for versions with caret (^)', () => {
+      versionUtil.isPinned('^1.0.0').should.equal(false)
+      versionUtil.isPinned('^1.0').should.equal(false)
+      versionUtil.isPinned('^1').should.equal(false)
+    })
+
+    it('should return false for versions with tilde (~)', () => {
+      versionUtil.isPinned('~1.0.0').should.equal(false)
+      versionUtil.isPinned('~1.0').should.equal(false)
+      versionUtil.isPinned('~1').should.equal(false)
+    })
+
+    it('should return false for versions with greater than or equal (>=)', () => {
+      versionUtil.isPinned('>=1.0.0').should.equal(false)
+      versionUtil.isPinned('>=1.0').should.equal(false)
+      versionUtil.isPinned('>=1').should.equal(false)
+    })
+
+    it('should return false for versions with greater than (>)', () => {
+      versionUtil.isPinned('>1.0.0').should.equal(false)
+      versionUtil.isPinned('>1.0').should.equal(false)
+      versionUtil.isPinned('>1').should.equal(false)
+    })
+
+    it('should return false for versions with less than or equal (<=)', () => {
+      versionUtil.isPinned('<=1.0.0').should.equal(false)
+      versionUtil.isPinned('<=1.0').should.equal(false)
+      versionUtil.isPinned('<=1').should.equal(false)
+    })
+
+    it('should return false for versions with less than (<)', () => {
+      versionUtil.isPinned('<1.0.0').should.equal(false)
+      versionUtil.isPinned('<1.0').should.equal(false)
+      versionUtil.isPinned('<1').should.equal(false)
+    })
+
+    it('should return false for wildcard versions', () => {
+      versionUtil.isPinned('*').should.equal(false)
+      versionUtil.isPinned('1.*').should.equal(false)
+      versionUtil.isPinned('1.0.*').should.equal(false)
+      versionUtil.isPinned('x').should.equal(false)
+      versionUtil.isPinned('x.x').should.equal(false)
+      versionUtil.isPinned('x.x.x').should.equal(false)
+      versionUtil.isPinned('1.x').should.equal(false)
+      versionUtil.isPinned('1.0.x').should.equal(false)
+      versionUtil.isPinned('1.x.x').should.equal(false)
+      versionUtil.isPinned('^*').should.equal(false)
+    })
+
+    it('should return false for range versions', () => {
+      versionUtil.isPinned('1.0.0 - 2.0.0').should.equal(false)
+      versionUtil.isPinned('1.0 - 2.0').should.equal(false)
+      versionUtil.isPinned('1 - 2').should.equal(false)
+    })
+
+    it('should return false for OR conditions', () => {
+      versionUtil.isPinned('1.0.0 || 2.0.0').should.equal(false)
+      versionUtil.isPinned('^1.0.0 || ^2.0.0').should.equal(false)
+      versionUtil.isPinned('~1.0.0 || ~2.0.0').should.equal(false)
+    })
+
+    it('should return true for npm aliases with pinned versions', () => {
+      versionUtil.isPinned('npm:chalk@1.0.0').should.equal(true)
+      versionUtil.isPinned('npm:lodash@4.17.21').should.equal(true)
+      versionUtil.isPinned('npm:react@16.8.0').should.equal(true)
+    })
+
+    it('should return false for npm aliases with unpinned versions', () => {
+      versionUtil.isPinned('npm:chalk@^1.0.0').should.equal(false)
+      versionUtil.isPinned('npm:lodash@~4.17.21').should.equal(false)
+      versionUtil.isPinned('npm:react@>=16.8.0').should.equal(false)
+      versionUtil.isPinned('npm:vue@*').should.equal(false)
+    })
+
+    it('should return true for prerelease versions that are pinned', () => {
+      versionUtil.isPinned('1.0.0-alpha.1').should.equal(true)
+      versionUtil.isPinned('2.0.0-beta.3').should.equal(true)
+      versionUtil.isPinned('1.0.0-rc.1').should.equal(true)
+      versionUtil.isPinned('1.0.0-next.1').should.equal(true)
+    })
+
+    it('should return false for prerelease versions with range operators', () => {
+      versionUtil.isPinned('^1.0.0-alpha.1').should.equal(false)
+      versionUtil.isPinned('~2.0.0-beta.3').should.equal(false)
+      versionUtil.isPinned('>=1.0.0-rc.1').should.equal(false)
+    })
+
+    it('should return false for invalid or empty versions', () => {
+      versionUtil.isPinned('').should.equal(false)
+      versionUtil.isPinned('invalid-version').should.equal(false)
+      versionUtil.isPinned('not.a.version').should.equal(false)
+    })
+
+    it('should handle edge cases', () => {
+      versionUtil.isPinned('0.0.0').should.equal(true)
+      versionUtil.isPinned('0.0.1').should.equal(true)
+      versionUtil.isPinned('0.1.0').should.equal(true)
+      versionUtil.isPinned('1.0.0-0').should.equal(true)
+      versionUtil.isPinned('1.0.0+build.1').should.equal(true)
+    })
+  })
 })

@@ -10,8 +10,9 @@ import { VersionResult } from '../types/VersionResult'
 import { VersionSpec } from '../types/VersionSpec'
 import getPackageManager from './getPackageManager'
 import keyValueBy from './keyValueBy'
+import { print } from './logging'
 import programError from './programError'
-import { createNpmAlias, isGithubUrl, isPre, parseNpmAlias } from './version-util'
+import { createNpmAlias, isGithubUrl, isPinned, isPre, parseNpmAlias } from './version-util'
 
 /**
  * Get the latest or greatest versions from the NPM repository based on the version target.
@@ -79,22 +80,27 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
     }
 
     try {
-      versionResult = await getPackageVersion(name, version, {
-        ...options,
-        distTag,
-        // upgrade prereleases to newer prereleases by default
-        // allow downgrading when explicit tag is used
-        pre: options.pre != null ? options.pre : targetString.startsWith('@') || isPre(version),
-        retry: options.retry ?? 2,
-      }).catch(reason => {
-        // This might happen if a (private) package cannot be accessed due to a missing or invalid token.
-        return { error: reason?.body?.error || reason.toString() }
-      })
+      if (options.skipPinned && isPinned(version)) {
+        print(options, `Skipping package ${name} with pinned version ${version}`, 'verbose')
+        versionResult = {}
+      } else {
+        versionResult = await getPackageVersion(name, version, {
+          ...options,
+          distTag,
+          // upgrade prereleases to newer prereleases by default
+          // allow downgrading when explicit tag is used
+          pre: options.pre != null ? options.pre : targetString.startsWith('@') || isPre(version),
+          retry: options.retry ?? 2,
+        }).catch(reason => {
+          // This might happen if a (private) package cannot be accessed due to a missing or invalid token.
+          return { error: reason?.body?.error || reason.toString() }
+        })
 
-      versionResult.version =
-        !isGithubDependency && npmAlias && versionResult?.version
-          ? createNpmAlias(name, versionResult.version)
-          : (versionResult?.version ?? null)
+        versionResult.version =
+          !isGithubDependency && npmAlias && versionResult?.version
+            ? createNpmAlias(name, versionResult.version)
+            : (versionResult?.version ?? null)
+      }
     } catch (err: any) {
       const errorMessage = err ? (err.message || err).toString() : ''
       if (errorMessage.match(/E504|Gateway Timeout/i)) {
