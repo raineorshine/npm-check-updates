@@ -1,3 +1,4 @@
+import pMap from 'p-map'
 import ProgressBar from 'progress'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
@@ -59,19 +60,47 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
     bar.render()
   }
 
-  return Object.entries(packageMap).reduce(async (accumPromise, [pkg, version]) => {
-    const dep = await packageManager.getPeerDependencies!(pkg, version, { cwd: options.cwd })
+  const packageEntries = Object.entries(packageMap)
+
+  /**
+   * Fetches peer dependencies for a package
+   * @param pkg - The package name
+   * @param version - The package version
+   * @returns Promise that resolves to package name and its peer dependencies
+   */
+  const getPeerDepsForPackage = async ([pkg, version]: [string, Version]): Promise<{
+    pkg: string
+    dependencies: Index<string>
+  }> => {
+    let dependencies: Index<string>
+    const cached = options.cacher?.getPeers(pkg, version)
+    if (cached) {
+      dependencies = cached
+    } else {
+      dependencies = await packageManager.getPeerDependencies!(pkg, version, { cwd: options.cwd })
+      options.cacher?.setPeers(pkg, version, dependencies)
+    }
     if (bar) {
       bar.tick()
     }
-    const accum = await accumPromise
-    const newAcc: Index<Index<string>> = { ...accum, [pkg]: dep }
-    const circularData = isCircularPeer(newAcc, pkg)
+    return { pkg, dependencies }
+  }
+
+  const results = await pMap(packageEntries, getPeerDepsForPackage, { concurrency: options.concurrency })
+
+  const accum: Index<Index<string>> = {}
+  for (const { pkg, dependencies } of results) {
+    accum[pkg] = dependencies
+    const circularData = isCircularPeer(accum, pkg)
     if (circularData.isCircular) {
-      delete newAcc[pkg][circularData.offendingPackage]
+      delete accum[pkg][circularData.offendingPackage]
     }
-    return newAcc
-  }, Promise.resolve<Index<Index<string>>>({}))
+  }
+
+  await options.cacher?.save()
+  options.cacher?.log(true)
+
+  return accum
 }
 
 export default getPeerDependenciesFromRegistry
