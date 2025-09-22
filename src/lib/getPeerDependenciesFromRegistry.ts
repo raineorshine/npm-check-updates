@@ -61,34 +61,41 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
   }
 
   const packageEntries = Object.entries(packageMap)
-  const accum: Index<Index<string>> = {}
 
   /**
-   * Processes peer dependencies for a package and updates the accumulator
+   * Fetches peer dependencies for a package
    * @param pkg - The package name
    * @param version - The package version
-   * @returns Promise that resolves when peer dependencies are processed
+   * @returns Promise that resolves to package name and its peer dependencies
    */
-  const processPeerDependencies = async ([pkg, version]: [string, Version]) => {
-    let dep: Index<string>
+  const getPeerDepsForPackage = async ([pkg, version]: [string, Version]): Promise<{
+    pkg: string
+    dependencies: Index<string>
+  }> => {
+    let dependencies: Index<string>
     const cached = options.cacher?.getPeers(pkg, version)
     if (cached) {
-      dep = cached
+      dependencies = cached
     } else {
-      dep = await packageManager.getPeerDependencies!(pkg, version, { cwd: options.cwd })
-      options.cacher?.setPeers(pkg, version, dep)
+      dependencies = await packageManager.getPeerDependencies!(pkg, version, { cwd: options.cwd })
+      options.cacher?.setPeers(pkg, version, dependencies)
     }
     if (bar) {
       bar.tick()
     }
-    accum[pkg] = dep
+    return { pkg, dependencies }
+  }
+
+  const results = await pMap(packageEntries, getPeerDepsForPackage, { concurrency: options.concurrency })
+
+  const accum: Index<Index<string>> = {}
+  for (const { pkg, dependencies } of results) {
+    accum[pkg] = dependencies
     const circularData = isCircularPeer(accum, pkg)
     if (circularData.isCircular) {
       delete accum[pkg][circularData.offendingPackage]
     }
   }
-
-  await pMap(packageEntries, processPeerDependencies, { concurrency: options.concurrency })
 
   await options.cacher?.save()
   options.cacher?.log(true)
