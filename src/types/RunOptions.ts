@@ -190,9 +190,9 @@ export interface RunOptions {
   /** Log additional information for debugging. Alias for `--loglevel` verbose. */
   verbose?: boolean
 
-  /** Run on one or more specified workspaces. Add `--root` to also upgrade the root project. */
+  /** Run on one or more specified workspaces. Add `--no-root` to exclude the root project. */
   workspace?: readonly string[]
 
-  /** Run on all workspaces. Add `--root` to also upgrade the root project. */
+  /** Run on all workspaces. Add `--no-root` to exclude the root project. */
   workspaces?: boolean
 }

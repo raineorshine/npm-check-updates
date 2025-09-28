@@ -957,13 +957,13 @@ const cliOptions: CLIOption[] = [
     arg: 's',
     parse: (value, accum) => [...accum, value],
     default: [],
-    description: 'Run on one or more specified workspaces. Add `--root` to also upgrade the root project.',
+    description: 'Run on one or more specified workspaces. Add `--no-root` to exclude the root project.',
     type: 'readonly string[]',
   },
   {
     long: 'workspaces',
     short: 'ws',
-    description: 'Run on all workspaces. Add `--root` to also upgrade the root project.',
+    description: 'Run on all workspaces. Add `--no-root` to exclude the root project.',
     type: 'boolean',
   },
   {

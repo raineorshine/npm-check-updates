@@ -489,14 +489,14 @@
       "type": "boolean"
     },
     "workspace": {
-      "description": "Run on one or more specified workspaces. Add `--root` to also upgrade the root project.",
+      "description": "Run on one or more specified workspaces. Add `--no-root` to exclude the root project.",
       "items": {
         "type": "string"
       },
       "type": "array"
     },
     "workspaces": {
-      "description": "Run on all workspaces. Add `--root` to also upgrade the root project.",
+      "description": "Run on all workspaces. Add `--no-root` to exclude the root project.",
       "type": "boolean"
     }
   },

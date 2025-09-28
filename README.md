@@ -375,11 +375,11 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>-w, --workspace &lt;s&gt;</td>
-    <td>Run on one or more specified workspaces. Add <code>--root</code> to also upgrade the root project. (default: [])</td>
+    <td>Run on one or more specified workspaces. Add <code>--no-root</code> to exclude the root project. (default: [])</td>
   </tr>
   <tr>
     <td>-ws, --workspaces</td>
-    <td>Run on all workspaces. Add <code>--root</code> to also upgrade the root project.</td>
+    <td>Run on all workspaces. Add <code>--no-root</code> to exclude the root project.</td>
   </tr>
 </table>
 
