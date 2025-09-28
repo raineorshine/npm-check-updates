@@ -1,9 +1,6 @@
 module.exports = {
   format: 'group',
   reject: [
-    // Need to make a breaking change of -ws to --ws
-    // https://github.com/tj/commander.js/pull/2312
-    'commander',
     // breaking
     '@types/bun',
     '@types/chai-as-promised',
