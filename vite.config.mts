@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => ({
       include: ['src'],
     }),
     nodeExternals(),
-    process.env.ANALYZER && analyzer(),
+    ...(process.env.ANALYZER ? [analyzer()] : []),
   ],
   ssr: {
     // bundle and treeshake everything
