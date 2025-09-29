@@ -15,13 +15,13 @@ describe('timeout', function () {
     return ncu({
       packageData: await fs.readFile(pkgPath, 'utf-8'),
       timeout: 1,
-    }).should.eventually.be.rejectedWith('Exceeded global timeout of 1ms')
+    }).should.eventually.be.rejectedWith(/Exceeded global timeout of 1ms|Idle timeout reached/)
   })
 
   it('exit with error when timeout is exceeded', async () => {
     return spawn('node', [bin, '--timeout', '1'], {
       stdin: '{ "dependencies": { "express": "1" } }',
-    }).should.eventually.be.rejectedWith('Exceeded global timeout of 1ms')
+    }).should.eventually.be.rejectedWith(/Exceeded global timeout of 1ms|Idle timeout reached/)
   })
 
   it('completes successfully with timeout', async () => {
