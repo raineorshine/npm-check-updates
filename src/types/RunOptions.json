@@ -118,6 +118,9 @@
         "global": {
           "type": "boolean"
         },
+        "hasIndices": {
+          "type": "boolean"
+        },
         "ignoreCase": {
           "type": "boolean"
         },

@@ -70,7 +70,7 @@
     "@types/jsonlines": "^0.1.5",
     "@types/lodash": "^4.17.20",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.7.5",
+    "@types/node": "^24.5.2",
     "@types/npm-registry-fetch": "^8.0.8",
     "@types/parse-github-url": "^1.0.3",
     "@types/picomatch": "^4.0.2",

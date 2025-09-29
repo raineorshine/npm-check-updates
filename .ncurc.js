@@ -4,7 +4,6 @@ module.exports = {
     // breaking
     '@types/bun',
     '@types/chai-as-promised',
-    '@types/node',
     'chai-as-promised',
     'eslint',
     'eslint-plugin-n',

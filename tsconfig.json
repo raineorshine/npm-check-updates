@@ -8,7 +8,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "lib": ["es2021"],
+    "lib": ["es2022"],
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "noFallthroughCasesInSwitch": true,
