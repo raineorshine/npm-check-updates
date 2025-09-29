@@ -953,7 +953,6 @@ const cliOptions: CLIOption[] = [
   },
   {
     long: 'workspace',
-    short: 'w',
     arg: 's',
     parse: (value, accum) => [...accum, value],
     default: [],
@@ -962,7 +961,7 @@ const cliOptions: CLIOption[] = [
   },
   {
     long: 'workspaces',
-    short: 'ws',
+    short: 'w',
     description: 'Run on all workspaces. Add `--no-root` to exclude the root project.',
     type: 'boolean',
   },

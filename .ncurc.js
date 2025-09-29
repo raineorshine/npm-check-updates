@@ -1,21 +1,16 @@
 module.exports = {
   format: 'group',
   reject: [
-    // Need to make a breaking change of -ws to --ws
-    // https://github.com/tj/commander.js/pull/2312
-    'commander',
     // breaking
-    '@types/bun',
-    '@types/chai-as-promised',
-    '@types/node',
-    'chai-as-promised',
     'eslint',
     'eslint-plugin-n',
     'eslint-plugin-promise',
     // esm only modules
     '@types/chai',
+    '@types/chai-as-promised',
     '@types/remote-git-tags',
     'camelcase',
+    'chai-as-promised',
     'find-up',
     'chai',
     'p-map',

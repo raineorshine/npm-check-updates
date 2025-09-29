@@ -163,6 +163,7 @@ ${chalk.dim.underline(
   // In order to call program.parse again and parse the rc file options, we need to clear commander's internal optionValues
   // Otherwise array options will be duplicated
   const defaultOptionValues = cloneDeep((program as any)._optionValues)
+  program.allowExcessArguments(true)
   program.parse(process.argv)
 
   const programOpts = program.opts()
