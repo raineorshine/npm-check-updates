@@ -59,7 +59,7 @@
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
-    "@types/bun": "^1.2.10",
+    "@types/bun": "^1.2.23",
     "@types/chai": "^4.3.19",
     "@types/chai-as-promised": "^8.0.0",
     "@types/chai-string": "^1.4.5",

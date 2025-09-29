@@ -2,7 +2,6 @@ module.exports = {
   format: 'group',
   reject: [
     // breaking
-    '@types/bun',
     'eslint',
     'eslint-plugin-n',
     'eslint-plugin-promise',
