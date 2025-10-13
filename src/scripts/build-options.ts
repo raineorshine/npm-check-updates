@@ -88,6 +88,7 @@ import { FilterResultsFunction } from './FilterResultsFunction'
 import { GroupFunction } from './GroupFunction'
 import { PackageFile } from './PackageFile'
 import { TargetFunction } from './TargetFunction'
+import { CooldownFunction } from './CooldownFunction'
 
 /** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
 export interface RunOptions {

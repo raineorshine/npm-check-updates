@@ -4,6 +4,7 @@ import { FilterResultsFunction } from './FilterResultsFunction'
 import { GroupFunction } from './GroupFunction'
 import { PackageFile } from './PackageFile'
 import { TargetFunction } from './TargetFunction'
+import { CooldownFunction } from './CooldownFunction'
 
 /** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
 export interface RunOptions {
@@ -41,7 +42,7 @@ export interface RunOptions {
   configFilePath?: string
 
   /** Sets a minimum age (in days) for package versions to be considered for upgrade, reducing the risk of installing newly published, potentially compromised packages. Run "ncu --help --cooldown" for details. */
-  cooldown?: number
+  cooldown?: number | CooldownFunction
 
   /** Working directory in which npm will be executed. */
   cwd?: string
