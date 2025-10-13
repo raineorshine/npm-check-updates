@@ -183,8 +183,13 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     programError(options, `--registry must be a valid URL. Invalid value: "${options.registry}"`)
   }
 
-  if (options.cooldown != null && (isNaN(options.cooldown) || options.cooldown < 0)) {
-    programError(options, 'Cooldown must be a non-negative integer representing days since published')
+  if (options.cooldown != null) {
+    const isValidNumber = typeof options.cooldown === 'number' && !isNaN(options.cooldown) && options.cooldown >= 0
+    const isValidFunction = typeof options.cooldown === 'function'
+
+    if (!isValidNumber && !isValidFunction) {
+      programError(options, 'Cooldown must be a non-negative integer representing days since published or a function')
+    }
   }
 
   const target: Target = options.target || 'latest'
