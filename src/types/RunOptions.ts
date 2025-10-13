@@ -1,4 +1,5 @@
 /** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build" or "npm run build:options" to build. */
+import { CooldownFunction } from './CooldownFunction'
 import { FilterFunction } from './FilterFunction'
 import { FilterResultsFunction } from './FilterResultsFunction'
 import { GroupFunction } from './GroupFunction'
@@ -41,7 +42,7 @@ export interface RunOptions {
   configFilePath?: string
 
   /** Sets a minimum age (in days) for package versions to be considered for upgrade, reducing the risk of installing newly published, potentially compromised packages. Run "ncu --help --cooldown" for details. */
-  cooldown?: number
+  cooldown?: number | CooldownFunction
 
   /** Working directory in which npm will be executed. */
   cwd?: string

@@ -460,6 +460,18 @@ Note for latest/tag targets:
 
 > :warning: For packages that update frequently (e.g. daily releases), using a long cooldown period (7+ days) with the default `--target latest` or `--target @tag` may prevent all updates since new versions will be published before older ones meet the cooldown requirement. Please consider this when setting your cooldown period.
 
+You can also provide a custom function in your .ncurc.js file or when importing npm-check-updates as a module.
+
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+
+```js
+/** Set cooldown to 3 days but skip it for `@my-company` packages.
+  @param packageName     The name of the dependency.
+  @returns               Cooldown days restriction for given package (when null cooldown will be skipped for given package).
+*/
+cooldown: packageName => (packageName.startsWith('@my-company') ? null : 3)
+```
+
 ## doctor
 
 Usage:

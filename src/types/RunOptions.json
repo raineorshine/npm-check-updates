@@ -181,8 +181,16 @@
       "type": "string"
     },
     "cooldown": {
-      "description": "Sets a minimum age (in days) for package versions to be considered for upgrade, reducing the risk of installing newly published, potentially compromised packages. Run \"ncu --help --cooldown\" for details.",
-      "type": "number"
+      "anyOf": [
+        {
+          "description": "A function that can be provided to the --cooldown option for custom cooldown predicate.",
+          "type": "object"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "description": "Sets a minimum age (in days) for package versions to be considered for upgrade, reducing the risk of installing newly published, potentially compromised packages. Run \"ncu --help --cooldown\" for details."
     },
     "cwd": {
       "description": "Working directory in which npm will be executed.",
