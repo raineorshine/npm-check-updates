@@ -483,7 +483,7 @@ describe('cooldown', () => {
       const cooldown = 10
       const packageData: PackageFile = {
         dependencies: {
-          'test-package': '1.0.0'
+          'test-package': '1.0.0',
         },
       }
       const stub = stubVersions(
@@ -501,15 +501,15 @@ describe('cooldown', () => {
       // When: cooldown predicate returns null for test-package
       const result = await ncu({
         packageData,
-        cooldown: packageName => packageName === 'test-package' ? null : cooldown,
-        target: 'latest'
+        cooldown: packageName => (packageName === 'test-package' ? null : cooldown),
+        target: 'latest',
       })
 
-      // Then: test-package is upgraded to version 1.1.0 (cooldown check skipped) 
+      // Then: test-package is upgraded to version 1.1.0 (cooldown check skipped)
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore();
-    });
+      stub.restore()
+    })
 
     it('should apply custom cooldown when predicate returns a number', async () => {
       // Given: default cooldown set to 10, test-package and test-package-2 - both installed in version 1.0.0, and both has the latest version 1.1.0 released 5 days ago (within cooldown)
@@ -544,15 +544,15 @@ describe('cooldown', () => {
       // When: cooldown predicate returns 5 for test-package (skipping cooldown), and 10 for the rest packages
       const result = await ncu({
         packageData,
-        cooldown: (packageName: string) => packageName === 'test-package' ? 5 : cooldown,
-        target: 'latest'
+        cooldown: (packageName: string) => (packageName === 'test-package' ? 5 : cooldown),
+        target: 'latest',
       })
 
       // Then: test-package is upgraded to version 1.1.0 (as cooldown for this package was set to 5), but test-package-2 is not upgraded (as rest of the packages use default cooldown of 10)
       expect(result).to.have.property('test-package', '1.1.0')
       expect(result).to.not.have.property('test-package-2')
 
-      stub.restore();
-    });
-  });
+      stub.restore()
+    })
+  })
 })

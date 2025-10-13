@@ -1,11 +1,11 @@
 import semver from 'semver'
 import * as versionUtil from '../lib/version-util'
+import { CooldownFunction } from '../types/CooldownFunction'
 import { Index } from '../types/IndexType'
 import { Maybe } from '../types/Maybe'
 import { Options } from '../types/Options'
 import { Packument } from '../types/Packument'
 import { Version } from '../types/Version'
-import { CooldownFunction } from '../types/CooldownFunction'
 
 /**
  * @param versionResult  Available version
@@ -63,7 +63,10 @@ export function satisfiesPeerDependencies(versionResult: Partial<Packument>, pee
  * @param cooldownDays - The cooldown period in days. If not specified or invalid, the function returns true.
  * @returns `true` if the version's release date is older than the cooldown period, otherwise `false`.
  */
-export function satisfiesCooldownPeriod(versionResult: Partial<Packument>, cooldownDaysOrPredicateFn: Maybe<number> | Maybe<CooldownFunction>): boolean {
+export function satisfiesCooldownPeriod(
+  versionResult: Partial<Packument>,
+  cooldownDaysOrPredicateFn: Maybe<number> | Maybe<CooldownFunction>,
+): boolean {
   const version = versionResult.version
   const versionTimeData = versionResult?.time?.[version!]
 
@@ -72,9 +75,12 @@ export function satisfiesCooldownPeriod(versionResult: Partial<Packument>, coold
 
   const versionReleaseDate = new Date(versionTimeData)
   const DAY_AS_MS = 86400000 // milliseconds in a day
-  const cooldownDays = typeof cooldownDaysOrPredicateFn === 'function' ? cooldownDaysOrPredicateFn(versionResult.name!) : cooldownDaysOrPredicateFn
+  const cooldownDays =
+    typeof cooldownDaysOrPredicateFn === 'function'
+      ? (cooldownDaysOrPredicateFn(versionResult.name!) ?? 0) // when null or undefined is returned cooldown is skipped for given package
+      : cooldownDaysOrPredicateFn
 
-  return Date.now() - versionReleaseDate.getTime() >= (cooldownDays ?? 0) * DAY_AS_MS;
+  return Date.now() - versionReleaseDate.getTime() >= cooldownDays * DAY_AS_MS
 }
 
 /** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by packument. */

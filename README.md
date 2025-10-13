@@ -469,7 +469,7 @@ You can also provide a custom function in your .ncurc.js file or when importing 
   @param packageName     The name of the dependency.
   @returns               Cooldown days restriction for given package (when null cooldown will be skipped for given package).
 */
-cooldown: (packageName) => packageName.startsWith('@my-company') ? null : 3
+cooldown: packageName => (packageName.startsWith('@my-company') ? null : 3)
 ```
 
 ## doctor
