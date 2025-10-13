@@ -606,9 +606,9 @@ You can also provide a custom function in your .ncurc.js file or when importing 
 ${codeBlock(
   `${chalk.gray(`/** Set cooldown to 3 days but skip it for \`@my-company\` packages.
   @param packageName     The name of the dependency.
-  @returns               Cooldown days restriction for given package (when null cooldown will be skipped for given package).
+  @returns               Cooldown days restriction for given package.
 */`)}
-${chalk.green('cooldown')}: packageName ${chalk.cyan('=>')} (packageName.startsWith(${chalk.yellow("'@my-company'")}) ? ${chalk.cyan('null')} : ${chalk.cyan('3')})`,
+${chalk.green('cooldown')}: packageName ${chalk.cyan('=>')} (packageName.startsWith(${chalk.yellow("'@my-company'")}) ? ${chalk.cyan('0')} : ${chalk.cyan('3')})`,
   { markdown },
 )}
 `

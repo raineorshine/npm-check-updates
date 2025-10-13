@@ -467,9 +467,9 @@ You can also provide a custom function in your .ncurc.js file or when importing 
 ```js
 /** Set cooldown to 3 days but skip it for `@my-company` packages.
   @param packageName     The name of the dependency.
-  @returns               Cooldown days restriction for given package (when null cooldown will be skipped for given package).
+  @returns               Cooldown days restriction for given package.
 */
-cooldown: packageName => (packageName.startsWith('@my-company') ? null : 3)
+cooldown: packageName => (packageName.startsWith('@my-company') ? 0 : 3)
 ```
 
 ## doctor

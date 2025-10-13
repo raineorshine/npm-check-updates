@@ -77,7 +77,7 @@ export function satisfiesCooldownPeriod(
   const DAY_AS_MS = 86400000 // milliseconds in a day
   const cooldownDays =
     typeof cooldownDaysOrPredicateFn === 'function'
-      ? (cooldownDaysOrPredicateFn(versionResult.name!) ?? 0) // when null or undefined is returned cooldown is skipped for given package
+      ? (cooldownDaysOrPredicateFn(versionResult.name!) ?? 0) // 0 days = no cooldown
       : cooldownDaysOrPredicateFn
 
   return Date.now() - versionReleaseDate.getTime() >= cooldownDays * DAY_AS_MS
