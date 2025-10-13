@@ -1,7 +1,6 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import ncu from '../src/'
-import { MockedVersions } from '../src/types/MockedVersions'
 import { PackageFile } from '../src/types/PackageFile'
 import { Packument } from '../src/types/Packument'
 import chaiSetup from './helpers/chaiSetup'
@@ -46,20 +45,18 @@ describe('cooldown', () => {
     it('throws error for negative cooldown', () => {
       expect(
         ncu({
-          packageFile: 'test/test-data/cooldown/package.json',
           cooldown: -1,
         }),
-      ).to.be.rejectedWith('Cooldown must be a non-negative integer representing days since published')
+      ).to.be.rejectedWith('Cooldown must be a non-negative integer representing days since published or a function')
     })
 
     it('throws error for non-numeric cooldown', () => {
       expect(
         ncu({
-          packageFile: 'test/test-data/cooldown/package.json',
           // @ts-expect-error -- testing invalid input
           cooldown: 'invalid',
         }),
-      ).to.be.rejectedWith('Cooldown must be a non-negative integer representing days since published')
+      ).to.be.rejectedWith('Cooldown must be a non-negative integer representing days since published or a function')
     })
   })
 
@@ -524,7 +521,7 @@ describe('cooldown', () => {
         },
       }
       const stub = stubVersions({
-        ...createMockVersion({
+        'test-package': createMockVersion({
           name: 'test-package',
           versions: {
             '1.1.0': new Date(NOW - 5 * DAY).toISOString(),
@@ -533,7 +530,7 @@ describe('cooldown', () => {
             latest: '1.1.0',
           },
         }),
-        ...createMockVersion({
+        'test-package-2': createMockVersion({
           name: 'test-package-2',
           versions: {
             '1.1.0': new Date(NOW - 5 * DAY).toISOString(),
@@ -547,7 +544,7 @@ describe('cooldown', () => {
       // When: cooldown predicate returns 5 for test-package (skipping cooldown), and 10 for the rest packages
       const result = await ncu({
         packageData,
-        cooldown: packageName => packageName === 'test-package' ? 5 : cooldown,
+        cooldown: (packageName: string) => packageName === 'test-package' ? 5 : cooldown,
         target: 'latest'
       })
 
