@@ -5,6 +5,7 @@ import { Maybe } from '../types/Maybe'
 import { Options } from '../types/Options'
 import { Packument } from '../types/Packument'
 import { Version } from '../types/Version'
+import { CooldownFunction } from '../types/CooldownFunction'
 
 /**
  * @param versionResult  Available version
@@ -62,17 +63,18 @@ export function satisfiesPeerDependencies(versionResult: Partial<Packument>, pee
  * @param cooldownDays - The cooldown period in days. If not specified or invalid, the function returns true.
  * @returns `true` if the version's release date is older than the cooldown period, otherwise `false`.
  */
-export function satisfiesCooldownPeriod(versionResult: Partial<Packument>, cooldownDays: Maybe<number>): boolean {
+export function satisfiesCooldownPeriod(versionResult: Partial<Packument>, cooldownDaysOrPredicateFn: Maybe<number> | Maybe<CooldownFunction>): boolean {
   const version = versionResult.version
   const versionTimeData = versionResult?.time?.[version!]
 
-  if (!cooldownDays) return true
+  if (!cooldownDaysOrPredicateFn) return true
   if (!versionTimeData) return false
 
   const versionReleaseDate = new Date(versionTimeData)
   const DAY_AS_MS = 86400000 // milliseconds in a day
-  const cooldownDaysAsMs = cooldownDays * DAY_AS_MS
-  return Date.now() - versionReleaseDate.getTime() >= cooldownDaysAsMs
+  const cooldownDays = typeof cooldownDaysOrPredicateFn === 'function' ? cooldownDaysOrPredicateFn(versionResult.name!) : cooldownDaysOrPredicateFn
+
+  return Date.now() - versionReleaseDate.getTime() >= (cooldownDays ?? 0) * DAY_AS_MS;
 }
 
 /** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by packument. */

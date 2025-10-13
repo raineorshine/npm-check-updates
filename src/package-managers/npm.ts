@@ -123,14 +123,14 @@ const fetchPartialPackument = async (
 }
 
 /**
- * Decorates a tag-specific/version-specific packument object with the `time` property from the full packument,
+ * Decorates a tag-specific/version-specific packument object with the package name and `time` property from the full packument,
  * if the `time` information for the tag's version exists.
  *
  * @param tagPackument - A partial packument object representing a specific tag/version.
  * @param packument - The full packument object, potentially containing time metadata for versions.
- * @returns A new packument object that includes the `time` property if available for the tag's version.
+ * @returns A new packument object that includes the `time` property if available for the tag's version and package name.
  */
-const decorateTagPackumentWithTime = (
+const decorateTagPackumentWithTimeAndName = (
   tagPackument: Partial<Packument>,
   packument: Partial<Packument>,
 ): Partial<Packument> => {
@@ -138,6 +138,7 @@ const decorateTagPackumentWithTime = (
 
   return {
     ...tagPackument,
+    name: packument.name,
     ...(packument?.time?.[version!] ? { time: packument.time } : null),
   }
 }
@@ -702,7 +703,7 @@ export const greatest: GetVersion = async (
     version:
       Object.values(versions || {})
         .filter(tagPackument =>
-          filterPredicate(options)(decorateTagPackumentWithTime(tagPackument, packument as Partial<Packument>)),
+          filterPredicate(options)(decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)),
         )
         .map(o => o.version)
         .sort(versionUtil.compareVersions)
@@ -830,7 +831,7 @@ export const distTag: GetVersion = async (
         version,
       }
 
-  const tagPackumentWithTime = decorateTagPackumentWithTime(tagPackument, packument as Partial<Packument>)
+  const tagPackumentWithTime = decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
@@ -921,7 +922,7 @@ export const newest: GetVersion = async (
   if (options.cooldown) {
     const versionsSatisfiesfyingCooldownPeriod = versionsSortedByTime.filter(version =>
       satisfiesCooldownPeriod(
-        decorateTagPackumentWithTime((result as Packument).versions[version], result as Packument),
+        decorateTagPackumentWithTimeAndName((result as Packument).versions[version], result as Packument),
         options.cooldown,
       ),
     )
@@ -967,7 +968,7 @@ export const minor: GetVersion = async (
   const version = versionUtil.findGreatestByLevel(
     Object.values(versions || {})
       .filter(tagPackument =>
-        filterPredicate(options)(decorateTagPackumentWithTime(tagPackument, packument as Partial<Packument>)),
+        filterPredicate(options)(decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)),
       )
       .map(o => o.version),
     currentVersion,
@@ -1011,7 +1012,7 @@ export const patch: GetVersion = async (
   const version = versionUtil.findGreatestByLevel(
     Object.values(versions || {})
       .filter(tagPackument =>
-        filterPredicate(options)(decorateTagPackumentWithTime(tagPackument, packument as Partial<Packument>)),
+        filterPredicate(options)(decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)),
       )
       .map(o => o.version),
     currentVersion,
@@ -1057,7 +1058,7 @@ export const semver: GetVersion = async (
 
   const versionsFiltered = Object.values(versions || {})
     .filter(tagPackument =>
-      filterPredicate(options)(decorateTagPackumentWithTime(tagPackument, packument as Partial<Packument>)),
+      filterPredicate(options)(decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)),
     )
     .map(o => o.version)
   // TODO: Upgrading within a prerelease does not seem to work.
