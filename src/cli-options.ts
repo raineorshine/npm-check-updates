@@ -608,7 +608,7 @@ ${codeBlock(
   @param packageName     The name of the dependency.
   @returns               Cooldown days restriction for given package (when null cooldown will be skipped for given package).
 */`)}
-${chalk.green('cooldown')}: (packageName) ${chalk.cyan('=>')} packageName.startsWith(${chalk.yellow("'@my-company'")}) ? ${chalk.cyan('null')} : ${chalk.cyan('3')}`,
+${chalk.green('cooldown')}: packageName ${chalk.cyan('=>')} (packageName.startsWith(${chalk.yellow("'@my-company'")}) ? ${chalk.cyan('null')} : ${chalk.cyan('3')})`,
   { markdown },
 )}
 `
