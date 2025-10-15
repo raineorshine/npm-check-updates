@@ -985,7 +985,7 @@ const cliOptions: CLIOption[] = [
       'Sets a minimum age (in days) for package versions to be considered for upgrade, reducing the risk of installing newly published, potentially compromised packages.',
     type: `number | CooldownFunction`,
     help: extendedHelpCooldown,
-    parse: s => parseInt(s, 10),
+    parse: s => (typeof s === 'function' ? s : parseInt(s, 10)),
   },
 ]
 
