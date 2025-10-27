@@ -17,7 +17,12 @@ When filing an issue, please include:
 
 ## Executable Stack Trace
 
-The Vite Build uses SSR to bundle all dependencies for efficiency. There currently is no source map for `./build/cli.js`. To execute npm-check-updates with an accurate stack trace, run `npx ts-node src/bin/cli.ts`.
+The Vite Build uses SSR to bundle all dependencies for efficiency. There currently is no source map for `./build/cli.js`. To execute npm-check-updates with an accurate stack trace run the following
+
+```sh
+git clone https://github.com/raineorshine/npm-check-updates /MY_PROJECTS
+npx tsx /MY_PROJECTS/npm-check-updates/src/bin/cli.ts
+```
 
 ## Design Guidelines
 
