@@ -12,7 +12,7 @@ import findPackage from './findPackage'
 import loadPackageInfoFromFile from './loadPackageInfoFromFile'
 import programError from './programError'
 
-type PnpmWorkspaces = string[] | { packages: string[]; catalogs?: Index<Index<VersionSpec>> }
+type PnpmWorkspaces = string[] | { packages: string[]; catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
 
 const globOptions: GlobOptions = {
   ignore: ['**/node_modules/**'],
@@ -37,8 +37,14 @@ const readCatalogDependencies = async (options: Options, pkgPath: string): Promi
   // Read from pnpm-workspace.yaml if the package manager is pnpm
   if (options.packageManager === 'pnpm') {
     const pnpmWorkspaces = await readPnpmWorkspaces(pkgPath)
-    if (pnpmWorkspaces && !Array.isArray(pnpmWorkspaces) && pnpmWorkspaces.catalogs) {
-      Object.assign(catalogDependencies, ...Object.values(pnpmWorkspaces.catalogs))
+    if (pnpmWorkspaces && !Array.isArray(pnpmWorkspaces)) {
+      // Handle both singular 'catalog' and plural 'catalogs'
+      if (pnpmWorkspaces.catalog) {
+        Object.assign(catalogDependencies, pnpmWorkspaces.catalog)
+      }
+      if (pnpmWorkspaces.catalogs) {
+        Object.assign(catalogDependencies, ...Object.values(pnpmWorkspaces.catalogs))
+      }
     }
   }
 
