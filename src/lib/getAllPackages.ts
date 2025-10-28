@@ -231,7 +231,7 @@ async function getAllPackages(options: Options): Promise<[PackageInfo[], string[
   // Read catalog dependencies first so we can resolve references
   let catalogPackageInfo: PackageInfo | null = null
 
-  if (options.workspaces) {
+  if (useWorkspaces) {
     const { pkgPath: workspacePkgPath } = await findPackage({
       ...options,
       packageFile: rootPackageFile,
