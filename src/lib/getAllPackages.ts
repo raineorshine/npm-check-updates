@@ -12,7 +12,9 @@ import findPackage from './findPackage'
 import loadPackageInfoFromFile from './loadPackageInfoFromFile'
 import programError from './programError'
 
-type PnpmWorkspaces = string[] | { packages: string[]; catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
+type PnpmWorkspaces =
+  | string[]
+  | { packages: string[]; catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
 
 const globOptions: GlobOptions = {
   ignore: ['**/node_modules/**'],

@@ -497,7 +497,7 @@ describe('workspaces', () => {
         }
       })
 
-      it('update pnpm catalog dependencies from pnpm-workspace.yaml', async () => {
+      it('update pnpm catalog dependencies from pnpm-workspace.yaml (named catalogs)', async () => {
         const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
         try {
           const pkgDataRoot = JSON.stringify({
@@ -555,6 +555,140 @@ catalogs:
             },
             'package.json': { dependencies: { 'ncu-test-v2': '2.0.0' } },
             'packages/a/package.json': { dependencies: { 'ncu-test-tag': 'catalog:test' } },
+          })
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+
+      it('update pnpm catalog dependencies from pnpm-workspace.yaml (singular catalog)', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          const pkgDataRoot = JSON.stringify({
+            dependencies: {
+              'ncu-test-v2': '1.0.0',
+            },
+          })
+
+          const pnpmWorkspaceData = `packages:
+  - 'packages/**'
+
+catalog:
+  ncu-test-v2: '1.0.0'
+  ncu-test-tag: '1.0.0'
+`
+
+          // write root package file and pnpm-workspace.yaml
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'pnpm-workspace.yaml'), pnpmWorkspaceData, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'pnpm-lock.yaml'), '', 'utf-8')
+
+          // create workspace package
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              dependencies: {
+                'ncu-test-tag': 'catalog:',
+              },
+            }),
+            'utf-8',
+          )
+
+          const { stdout, stderr } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspaces'],
+            { rejectOnError: false },
+            { cwd: tempDir },
+          )
+
+          // Assert no errors and valid output
+          stderr.should.be.empty
+          stdout.should.not.be.empty
+
+          const output = JSON.parse(stdout)
+
+          // Should include catalog updates
+          output.should.deep.equal({
+            'pnpm-workspace.yaml': {
+              packages: ['packages/**'],
+              catalog: { 'ncu-test-v2': '2.0.0', 'ncu-test-tag': '1.1.0' },
+            },
+            'package.json': { dependencies: { 'ncu-test-v2': '2.0.0' } },
+            'packages/a/package.json': { dependencies: { 'ncu-test-tag': 'catalog:' } },
+          })
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+
+      it('update pnpm catalog with --workspace flag (specific workspace)', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          const pkgDataRoot = JSON.stringify({
+            workspaces: ['packages/*'],
+          })
+
+          const pnpmWorkspaceData = `packages:
+  - 'packages/*'
+
+catalog:
+  ncu-test-v2: '1.0.0'
+`
+
+          // write root package file and pnpm-workspace.yaml
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'pnpm-workspace.yaml'), pnpmWorkspaceData, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'pnpm-lock.yaml'), '', 'utf-8')
+
+          // create workspace packages
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              name: 'a',
+              dependencies: {
+                'ncu-test-v2': 'catalog:',
+              },
+            }),
+            'utf-8',
+          )
+
+          await fs.mkdir(path.join(tempDir, 'packages/b'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/b/package.json'),
+            JSON.stringify({
+              name: 'b',
+              dependencies: {
+                'ncu-test-tag': '1.0.0',
+              },
+            }),
+            'utf-8',
+          )
+
+          const { stdout, stderr } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspace', 'a'],
+            { rejectOnError: false },
+            { cwd: tempDir },
+          )
+
+          // Assert no errors and valid output
+          stderr.should.be.empty
+          stdout.should.not.be.empty
+
+          const output = JSON.parse(stdout)
+
+          // Should include catalog updates even when using --workspace (not --workspaces)
+          output.should.have.property('pnpm-workspace.yaml')
+          output['pnpm-workspace.yaml'].should.deep.equal({
+            packages: ['packages/*'],
+            catalog: { 'ncu-test-v2': '2.0.0' },
+          })
+          output.should.have.property('packages/a/package.json')
+          output['packages/a/package.json'].should.deep.equal({
+            name: 'a',
+            dependencies: { 'ncu-test-v2': 'catalog:' },
           })
         } finally {
           await fs.rm(tempDir, { recursive: true, force: true })
