@@ -120,7 +120,7 @@ const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> =
     ...keyValueBy(yarnConfigLocal?.npmScopes || {}, npmAuthTokenKeyValue(npmConfig)),
   }
 
-  // set auth token after npm registry, since auth token syntax uses regitry
+  // set auth token after npm registry, since auth token syntax uses registry
 
   if (yarnrcLocalExists) {
     print(options, `\nUsing local yarn config at ${yarnrcLocalPath}:`, 'verbose')
