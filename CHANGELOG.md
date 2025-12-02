@@ -121,7 +121,7 @@ See: [#785](https://github.com/raineorshine/npm-check-updates/issues/785)
 
 ### Breaking
 
-- Specifiying both the `--filter` option and argument filters will now throw an error. Use one or the other. Previously the arguments would override the `--filter` option, which made for a confusing result when accidentally not quoting the option in the shell. This change is only breaking for those who are relying on the incorrect behavior of argument filters overriding `--filter`.
+- Specifying both the `--filter` option and argument filters will now throw an error. Use one or the other. Previously the arguments would override the `--filter` option, which made for a confusing result when accidentally not quoting the option in the shell. This change is only breaking for those who are relying on the incorrect behavior of argument filters overriding `--filter`.
 
 See: [#759](https://github.com/raineorshine/npm-check-updates/issues/759#issuecomment-723587297)
 
