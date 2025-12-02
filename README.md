@@ -88,10 +88,11 @@ Combine with `--format group` for a truly _luxe_ experience:
 ![ncu --interactive --format group](https://user-images.githubusercontent.com/750276/175336533-539261e4-5cf1-458f-9fbb-a7be2b477ebb.png)
 
 ### Keys
-  - <kbd>↑</kbd><kbd>↓</kbd> Select a package
-  - <kbd>Space</kbd> Toggle selection
-  - <kbd>a</kbd> Toggle all
-  - <kbd>Enter</kbd> Upgrade
+
+- <kbd>↑</kbd><kbd>↓</kbd> Select a package
+- <kbd>Space</kbd> Toggle selection
+- <kbd>a</kbd> Toggle all
+- <kbd>Enter</kbd> Upgrade
 
 ## Filter packages
 
