@@ -323,7 +323,7 @@ If a prerelease version is published on a different tag, there is no change from
 
 #### node < 8 deprecated
 
-The required node version has been updated to allow the use of newer Javascript features and reduce maintenance efforts for old versions.
+The required node version has been updated to allow the use of newer JavaScript features and reduce maintenance efforts for old versions.
 
 #### System npm used
 
