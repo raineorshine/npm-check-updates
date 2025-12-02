@@ -211,7 +211,7 @@ export function getDependencyGroups(
     }
   })
 
-  // get the the text for the default group headings
+  // get the text for the default group headings
   const headings = {
     patch: chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'),
     minor: chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'),
