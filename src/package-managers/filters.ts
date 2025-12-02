@@ -83,7 +83,7 @@ export function satisfiesCooldownPeriod(
   return Date.now() - versionReleaseDate.getTime() >= cooldownDays * DAY_AS_MS
 }
 
-/** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by packument. */
+/** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilities from version objects returns by packument. */
 export function filterPredicate(options: Options) {
   const predicators: (((o: Partial<Packument>) => boolean) | null)[] = [
     o => allowDeprecatedOrIsNotDeprecated(o, options),
