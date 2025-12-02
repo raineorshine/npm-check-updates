@@ -182,7 +182,7 @@ function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep
 }
 
 /**
- * Extract first json line from muli line yarn output
+ * Extract first json line from multi line yarn output
  *
  * @param result    Output from yarn command to be parsed
  */
