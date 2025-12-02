@@ -58,7 +58,7 @@ export function numParts(version: string) {
 }
 
 /**
- * Increases or decreases the a precision by the given amount, e.g. major+1 -> minor
+ * Increases or decreases precision by the given amount, e.g. major+1 -> minor
  *
  * @param precision
  * @param n

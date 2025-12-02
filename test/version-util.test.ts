@@ -180,7 +180,7 @@ describe('version-util', () => {
         .should.equal('1.2.3+build12345')
     })
 
-    it('pad the version with an optional precison argument', () => {
+    it('pad the version with an optional precision argument', () => {
       versionUtil.stringify({ major: '1' }, 'minor').should.equal('1.0')
       versionUtil.stringify({ major: '1' }, 'patch').should.equal('1.0.0')
     })
