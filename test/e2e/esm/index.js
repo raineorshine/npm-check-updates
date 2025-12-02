@@ -4,7 +4,7 @@ import ncu from 'npm-check-updates'
 
 const registry = process.env.REGISTRY || 'http://localhost:4873'
 
-// must exit with error code on unhandledRejection, otherwise script will exit with 0 if an assertion fails in the async block
+// must exit with error code on unhandledRejection; otherwise, script will exit with 0 if an assertion fails in the async block
 process.on('unhandledRejection', (reason, p) => {
   process.exit(1)
 })

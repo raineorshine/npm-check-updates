@@ -15,8 +15,8 @@ import getRepoUrl from './getRepoUrl'
 import {
   colorizeDiff,
   getDependencyGroups,
-  getGithubUrlTag,
-  isGithubUrl,
+  getGitHubUrlTag,
+  isGitHubUrl,
   isNpmAlias,
   parseNpmAlias,
 } from './version-util'
@@ -136,7 +136,7 @@ function renderDependencyTable(rows: string[][]) {
  * @param dep Raw dependency, could be version / npm: string / Git url
  */
 function getVersion(dep: string): string {
-  return isGithubUrl(dep) ? getGithubUrlTag(dep)! : isNpmAlias(dep) ? parseNpmAlias(dep)![1] : dep
+  return isGitHubUrl(dep) ? getGitHubUrlTag(dep)! : isNpmAlias(dep) ? parseNpmAlias(dep)![1] : dep
 }
 
 /**

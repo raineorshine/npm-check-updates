@@ -10,7 +10,7 @@ chaiSetup()
 const bin = path.join(__dirname, '../build/cli.js')
 
 describe('rc-config', () => {
-  // before/after must be placed within the describe block, otherwise they will apply to tests in other files
+  // before/after must be placed within the describe block; otherwise, they will apply to tests in other files
   let stub: { restore: () => void }
   before(() => (stub = stubVersions('99.9.9', { spawn: true })))
   after(() => stub.restore())
@@ -166,7 +166,7 @@ describe('rc-config', () => {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
       const firstLine = stdout.split('\n')[0]
-      // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates recieves /private/var/folders/cb/12345.
+      // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
       firstLine.should.contains('Using config file')
@@ -190,7 +190,7 @@ describe('rc-config', () => {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
       const firstLine = stdout.split('\n')[0]
-      // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates recieves /private/var/folders/cb/12345.
+      // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
       firstLine.should.contains('Using config file')

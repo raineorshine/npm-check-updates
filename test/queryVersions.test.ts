@@ -181,7 +181,7 @@ describe('queryVersions', function () {
       upgrades.should.deep.equal({})
     })
 
-    it('valid but non-existent github urls with tags should be ignored', async () => {
+    it('valid but nonexistent github urls with tags should be ignored', async () => {
       const upgrades = await queryVersions(
         {
           'ncu-test-alpha': 'git+https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git#v283',

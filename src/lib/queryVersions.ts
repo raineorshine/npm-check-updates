@@ -11,7 +11,7 @@ import { VersionSpec } from '../types/VersionSpec'
 import getPackageManager from './getPackageManager'
 import keyValueBy from './keyValueBy'
 import programError from './programError'
-import { createNpmAlias, isGithubUrl, isPre, parseNpmAlias } from './version-util'
+import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-util'
 
 /**
  * Get the latest or greatest versions from the NPM repository based on the version target.
@@ -58,11 +58,11 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
     }
 
     let versionResult: VersionResult
-    const isGithubDependency = isGithubUrl(packageMap[dep])
+    const isGitHubDependency = isGitHubUrl(packageMap[dep])
 
     // use gitTags package manager for git urls (for this dependency only)
-    const packageManager = isGithubDependency ? packageManagers.gitTags : globalPackageManager
-    const packageManagerName = isGithubDependency ? 'github urls' : options.packageManager || 'npm'
+    const packageManager = isGitHubDependency ? packageManagers.gitTags : globalPackageManager
+    const packageManagerName = isGitHubDependency ? 'github urls' : options.packageManager || 'npm'
 
     const getPackageVersion = packageManager[target as keyof typeof packageManager] as GetVersion
 
@@ -73,7 +73,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
         chalk.red(`\nUnsupported target "${target}" using ${packageManagerName}`) +
           `\nSupported version targets are: ` +
           packageManagerSupportedVersionTargets.join(', ') +
-          (!isGithubDependency ? ', and tags (e.g. @next)' : ''),
+          (!isGitHubDependency ? ', and tags (e.g. @next)' : ''),
         { color: false },
       )
     }
@@ -92,7 +92,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       })
 
       versionResult.version =
-        !isGithubDependency && npmAlias && versionResult?.version
+        !isGitHubDependency && npmAlias && versionResult?.version
           ? createNpmAlias(name, versionResult.version)
           : (versionResult?.version ?? null)
     } catch (err: any) {

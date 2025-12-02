@@ -1,5 +1,5 @@
 import propertyOf from 'lodash/propertyOf'
-import parseGithubUrl from 'parse-github-url'
+import parseGitHubUrl from 'parse-github-url'
 import semver from 'semver'
 import semverutils, { SemVer, parse, parseRange } from 'semver-utils'
 import util from 'util'
@@ -58,7 +58,7 @@ export function numParts(version: string) {
 }
 
 /**
- * Increases or decreases the a precision by the given amount, e.g. major+1 -> minor
+ * Increases or decreases precision by the given amount, e.g. major+1 -> minor
  *
  * @param precision
  * @param n
@@ -211,7 +211,7 @@ export function getDependencyGroups(
     }
   })
 
-  // get the the text for the default group headings
+  // get the text for the default group headings
   const headings = {
     patch: chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'),
     minor: chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'),
@@ -284,7 +284,7 @@ const getPre = (version: string) => {
 /**
  * Check if it is allowed to compare two versions based on their prerelease tag
  *
- * SemVer both states that different prerelease versions can`t be compared
+ * SemVer both states that different prerelease versions can't be compared
  * and at the same time compares them as part of the version via strcmp
  *
  * @param a
@@ -357,7 +357,7 @@ const fixMissingPatch = (s: string) => (isMissingPatch(s) ? s + '.0' : s)
 export const fixPseudoVersion = (s: string) => fixMissingPatch(fixMissingMinorAndPatch(fixLeadingV(s)))
 
 /**
- * Returns 'v' if the string starts with a v, otherwise returns empty string.
+ * Returns 'v' if the string starts with a v; otherwise, returns empty string.
  *
  * @param str
  * @returns
@@ -402,17 +402,17 @@ export const upgradeNpmAlias = (declaration: string, upgraded: string) => {
 }
 
 /**
- * Returns true if a version declaration is a Github URL with a valid semver version.
+ * Returns true if a version declaration is a GitHub URL with a valid semver version.
  */
-export const isGithubUrl = (declaration: string | null) => {
+export const isGitHubUrl = (declaration: string | null) => {
   if (!declaration) return false
   let parsed = null
   try {
-    parsed = parseGithubUrl(declaration)
+    parsed = parseGitHubUrl(declaration)
   } catch {
     // Strings like `npm:postman-request@2.88.1-postman.33` can throw errors instead of simply returning null
-    // In node 18.17+ due to url.parse regressison: https://github.com/nodejs/node/issues/49330
-    // So if this throws, we can assume it's not a valid Github URL.
+    // In node 18.17+ due to url.parse regression: https://github.com/nodejs/node/issues/49330
+    // So if this throws, we can assume it's not a valid GitHub URL.
   }
   if (!parsed || !parsed.branch) return false
 
@@ -421,11 +421,11 @@ export const isGithubUrl = (declaration: string | null) => {
 }
 
 /**
- * Returns the embedded tag in a Github URL.
+ * Returns the embedded tag in a GitHub URL.
  */
-export const getGithubUrlTag = (declaration: string | null) => {
+export const getGitHubUrlTag = (declaration: string | null) => {
   if (!declaration) return null
-  const parsed = parseGithubUrl(declaration)
+  const parsed = parseGitHubUrl(declaration)
   if (!parsed || !parsed.branch) return null
   const version = decodeURIComponent(parsed.branch).replace(/^semver:/, '')
   return parsed && parsed.branch && semver.validRange(version) ? version : null
@@ -535,12 +535,12 @@ const revertPseudoVersion = (current: string, latest: string) => {
 }
 
 /**
- * Replaces the version number embedded in a Github URL.
+ * Replaces the version number embedded in a GitHub URL.
  */
-export const upgradeGithubUrl = (declaration: string, upgraded: string) => {
-  // convert upgraded to a proper semver version if it is a pseudo version, otherwise revertPseudoVersion will return an empty string
+export const upgradeGitHubUrl = (declaration: string, upgraded: string) => {
+  // convert upgraded to a proper semver version if it is a pseudo version; otherwise, revertPseudoVersion will return an empty string
   const upgradedNormalized = fixPseudoVersion(upgraded)
-  const parsedUrl = parseGithubUrl(declaration)
+  const parsedUrl = parseGitHubUrl(declaration)
   if (!parsedUrl) return declaration
   const tag = decodeURIComponent(parsedUrl.branch).replace(/^semver:/, '')
   return declaration.replace(tag, upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgradedNormalized)))

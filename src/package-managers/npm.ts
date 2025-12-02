@@ -92,7 +92,7 @@ const fetchPartialPackument = async (
       return npmRegistryFetch.json(url.href, fetchOptions)
     } else {
       tag = tag || 'latest'
-      // typescript does not type async iteratable stream correctly so we need to cast it
+      // typescript does not type async iterable stream correctly so we need to cast it
       const stream = npmRegistryFetch.json.stream(url.href, '$*', fetchOptions) as unknown as IterableIterator<{
         key: keyof Packument
         value: Packument[keyof Packument]
@@ -920,14 +920,14 @@ export const newest: GetVersion = async (
   const versionsSortedByTime = sortBy(Object.entries(timesSatisfyingNodeEngine), v => v[1]).map(([version]) => version)
 
   if (options.cooldown) {
-    const versionsSatisfiesfyingCooldownPeriod = versionsSortedByTime.filter(version =>
+    const versionsSatisfyingCooldownPeriod = versionsSortedByTime.filter(version =>
       satisfiesCooldownPeriod(
         decorateTagPackumentWithTimeAndName((result as Packument).versions[version], result as Packument),
         options.cooldown,
       ),
     )
 
-    return { version: versionsSatisfiesfyingCooldownPeriod.at(-1) }
+    return { version: versionsSatisfyingCooldownPeriod.at(-1) }
   }
 
   return { version: versionsSortedByTime.at(-1) }

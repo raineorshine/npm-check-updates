@@ -65,14 +65,14 @@ function upgradeDependencies(
         }
 
         // "branch" is also used for tags (refers to everything after the hash character)
-        if (versionUtil.isGithubUrl(current)) {
-          const currentTag = versionUtil.getGithubUrlTag(current)!
+        if (versionUtil.isGitHubUrl(current)) {
+          const currentTag = versionUtil.getGitHubUrlTag(current)!
           const [currentSemver] = parseRange(currentTag)
           currentParsed = versionUtil.stringify(currentSemver)
         }
 
-        if (versionUtil.isGithubUrl(latest)) {
-          const latestTag = versionUtil.getGithubUrlTag(latest)!
+        if (versionUtil.isGitHubUrl(latest)) {
+          const latestTag = versionUtil.getGitHubUrlTag(latest)!
           const [latestSemver] = parseRange(latestTag)
           latestParsed = versionUtil.stringify(latestSemver)
         }
@@ -97,8 +97,8 @@ function upgradeDependencies(
 
           acc[packageName] = versionUtil.isNpmAlias(current)
             ? versionUtil.upgradeNpmAlias(current, upgraded)
-            : versionUtil.isGithubUrl(current)
-              ? versionUtil.upgradeGithubUrl(current, upgraded)
+            : versionUtil.isGitHubUrl(current)
+              ? versionUtil.upgradeGitHubUrl(current, upgraded)
               : upgraded
           return acc
         },

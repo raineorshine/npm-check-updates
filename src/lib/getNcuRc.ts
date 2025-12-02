@@ -55,9 +55,9 @@ async function getNcuRc({
   // flatten config object into command line arguments to be read by commander
   const args = Object.entries(config).flatMap(([name, value]): any[] => {
     // render boolean options as a single parameter
-    // an option is considered boolean if its type is explicitly set to boolean, or if it is has a proper Javascript boolean value
+    // an option is considered boolean if its type is explicitly set to boolean, or if it is has a proper JavaScript boolean value
     if (typeof value === 'boolean' || cliOptionsMap[name]?.type === 'boolean') {
-      // if the boolean option is true, include only the nullary option --${name}, otherwise exclude it
+      // if the boolean option is true, include only the nullary option --${name}; otherwise, exclude it
       return value ? [`--${name}`] : []
     }
     // otherwise render as a 2-tuple with name and value

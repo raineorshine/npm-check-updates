@@ -62,7 +62,7 @@ ${readme.slice(advancedOptionsEnd)}`
 
 /** Renders a single CLI option for a type definition file. */
 const renderOption = (option: CLIOption<unknown>) => {
-  // deepPatternFix needs to be escaped, otherwise it will break the block comment
+  // deepPatternFix needs to be escaped; otherwise, it will break the block comment
   const description = option.long === 'deep' ? option.description.replace('**/', '**\\/') : option.description
 
   // pre must be internally typed as number and externally typed as boolean to maintain compatibility with the CLI option and the RunOption

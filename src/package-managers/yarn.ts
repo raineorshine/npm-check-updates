@@ -120,7 +120,7 @@ const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> =
     ...keyValueBy(yarnConfigLocal?.npmScopes || {}, npmAuthTokenKeyValue(npmConfig)),
   }
 
-  // set auth token after npm registry, since auth token syntax uses regitry
+  // set auth token after npm registry, since auth token syntax uses registry
 
   if (yarnrcLocalExists) {
     print(options, `\nUsing local yarn config at ${yarnrcLocalPath}:`, 'verbose')
@@ -182,7 +182,7 @@ function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep
 }
 
 /**
- * Extract first json line from muli line yarn output
+ * Extract first json line from multi line yarn output
  *
  * @param result    Output from yarn command to be parsed
  */
@@ -227,7 +227,7 @@ async function spawnYarn(
     '--depth=0',
     '--json',
     '--no-progress',
-    // args must go after yarn options, otherwise they are passed through to npm scripts
+    // args must go after yarn options; otherwise, they are passed through to npm scripts
     // https://github.com/raineorshine/npm-check-updates/issues/1362
     ...(Array.isArray(args) ? args : [args]),
   ]

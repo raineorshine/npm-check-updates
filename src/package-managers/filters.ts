@@ -61,7 +61,7 @@ export function satisfiesPeerDependencies(versionResult: Partial<Packument>, pee
  *
  * @param versionResult - Partial packument object containing version and release time information.
  * @param cooldownDays - The cooldown period in days. If not specified or invalid, the function returns true.
- * @returns `true` if the version's release date is older than the cooldown period, otherwise `false`.
+ * @returns `true` if the version's release date is older than the cooldown period; otherwise, `false`.
  */
 export function satisfiesCooldownPeriod(
   versionResult: Partial<Packument>,
@@ -83,9 +83,9 @@ export function satisfiesCooldownPeriod(
   return Date.now() - versionReleaseDate.getTime() >= cooldownDays * DAY_AS_MS
 }
 
-/** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilies from version objects returns by packument. */
+/** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilities from version objects returns by packument. */
 export function filterPredicate(options: Options) {
-  const predicators: (((o: Partial<Packument>) => boolean) | null)[] = [
+  const predicates: (((o: Partial<Packument>) => boolean) | null)[] = [
     o => allowDeprecatedOrIsNotDeprecated(o, options),
     o => allowPreOrIsNotPre(o, options),
     options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null,
@@ -93,5 +93,5 @@ export function filterPredicate(options: Options) {
     options.cooldown ? o => satisfiesCooldownPeriod(o, options.cooldown) : null,
   ]
 
-  return (o: Partial<Packument>) => predicators.every(predicator => (predicator ? predicator(o) : true))
+  return (o: Partial<Packument>) => predicates.every(predicate => (predicate ? predicate(o) : true))
 }

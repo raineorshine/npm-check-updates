@@ -30,7 +30,7 @@ export async function getIgnoredUpgradesDueToPeerDeps(
         return [
           packageName,
           // git urls and other non-semver versions are ignored.
-          // Make sure versionSpec is a valid semver range, otherwise minVersion will throw.
+          // Make sure versionSpec is a valid semver range; otherwise, minVersion will throw.
           validRange(versionSpec) ? (minVersion(versionSpec)?.version ?? versionSpec) : versionSpec,
         ]
       }),

@@ -161,10 +161,10 @@ describe('bin', async function () {
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
       await spawn('node', [bin, '-u', '--jsonUpgraded', '--packageFile', pkgFile])
-      const ugradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-      ugradedPkg.should.have.property('dependencies')
-      ugradedPkg.dependencies.should.have.property('express')
-      ugradedPkg.dependencies.express.should.not.equal('1')
+      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+      upgradedPkg.should.have.property('dependencies')
+      upgradedPkg.dependencies.should.have.property('express')
+      upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true })
       stub.restore()
@@ -253,7 +253,7 @@ describe('bin', async function () {
   })
 
   describe('embedded versions', () => {
-    it('strip url from Github url in "to" output', async () => {
+    it('strip url from GitHub url in "to" output', async () => {
       // use dynamic import for ESM module
       const { default: stripAnsi } = await import('strip-ansi')
       const dependencies = {

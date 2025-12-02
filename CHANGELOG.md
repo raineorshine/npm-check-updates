@@ -93,12 +93,12 @@ If you have a use case where this change is not what is desired, please [report 
 ### Breaking
 
 - node >= 12 is required. Time to upgrade that old-ass server you never touch.
-- `peerDependencies` are now excluded by default. Peer dependencies should use the **lowest** possible version that works. The old behavior encouraged a bad practice of uprading peer dependencies. You can use `--dep prod,dev,optional,peer` for the old behavior ([#951](https://github.com/raineorshine/npm-check-updates/issues/951)).
+- `peerDependencies` are now excluded by default. Peer dependencies should use the **lowest** possible version that works. The old behavior encouraged a bad practice of upgrading peer dependencies. You can use `--dep prod,dev,optional,peer` for the old behavior ([#951](https://github.com/raineorshine/npm-check-updates/issues/951)).
 - Dependencies with `>` will be converted to `>=`. The old behavior was causing upgrades to `> [latest]` which was impossible ([#957](https://github.com/raineorshine/npm-check-updates/issues/957)).
 
 ## Other
 
-- Typescript! There is a new build process, so if you have any issues with the executable or types, please report. It should be a non-breaking change if I did it correctly ([#888](https://github.com/raineorshine/npm-check-updates/issues/888)).
+- TypeScript! There is a new build process, so if you have any issues with the executable or types, please report. It should be a non-breaking change if I did it correctly ([#888](https://github.com/raineorshine/npm-check-updates/issues/888)).
 - WHen using `npm-check-updates` as a module, `vm` (versionmanager) is no longer exported. It was previously exposed for testing purposes, but was never part of the official API.
 
 <https://github.com/raineorshine/npm-check-updates/compare/v11.8.5...v12.0.0>
@@ -107,7 +107,7 @@ If you have a use case where this change is not what is desired, please [report 
 
 ### Breaking
 
-- `--packageFile` - Now interprets its argument as a glob pattern. It is possible that a previously supplied argument may be interepreted differently now (though I'm not aware of specific instances). Due to our conservative release policy we are releasing as a major version upgrade and allowing developers to assess for themselves.
+- `--packageFile` - Now interprets its argument as a glob pattern. It is possible that a previously supplied argument may be interpreted differently now (though I'm not aware of specific instances). Due to our conservative release policy we are releasing as a major version upgrade and allowing developers to assess for themselves.
 
 ### Features
 
@@ -121,7 +121,7 @@ See: [#785](https://github.com/raineorshine/npm-check-updates/issues/785)
 
 ### Breaking
 
-- Specifiying both the `--filter` option and argument filters will now throw an error. Use one or the other. Previously the arguments would override the `--filter` option, which made for a confusing result when accidentally not quoting the option in the shell. This change is only breaking for those who are relying on the incorrect behavior of argument filters overriding `--filter`.
+- Specifying both the `--filter` option and argument filters will now throw an error. Use one or the other. Previously the arguments would override the `--filter` option, which made for a confusing result when accidentally not quoting the option in the shell. This change is only breaking for those who are relying on the incorrect behavior of argument filters overriding `--filter`.
 
 See: [#759](https://github.com/raineorshine/npm-check-updates/issues/759#issuecomment-723587297)
 
@@ -197,7 +197,7 @@ npm run test
 Saving partially upgraded package.json
 ```
 
-#### Github URLs
+#### GitHub URLs
 
 Added support for GitHub URLs.
 
@@ -323,7 +323,7 @@ If a prerelease version is published on a different tag, there is no change from
 
 #### node < 8 deprecated
 
-The required node version has been updated to allow the use of newer Javascript features and reduce maintenance efforts for old versions.
+The required node version has been updated to allow the use of newer JavaScript features and reduce maintenance efforts for old versions.
 
 #### System npm used
 

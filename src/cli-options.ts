@@ -141,7 +141,7 @@ ${codeBlock(
   @param {SemVer[]} currentVersionSemver    Current version declaration in semantic versioning format (may be a range).
   @param {string} upgraded                  Upgraded version.
   @param {SemVer} upgradedVersionSemver     Upgraded version in semantic versioning format.
-  @returns {boolean}                        Return true if the upgrade should be kept, otherwise it will be ignored.
+  @returns {boolean}                        Return true if the upgrade should be kept; otherwise, it will be ignored.
 */`)}
 ${chalk.green('filterResults')}: (packageName, { current, currentVersionSemver, upgraded, upgradedVersionSemver }) ${chalk.cyan(
     '=>',
