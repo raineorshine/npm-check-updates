@@ -3,7 +3,7 @@ import getPackageJson from './getPackageJson'
 
 /**
  * @param packageName A package name as listed in package.json's dependencies list
- * @param packageJson Optional param to specify a object representation of a package.json file instead of loading from node_modules
+ * @param packageJson Optional param to specify an object representation of a package.json file instead of loading from node_modules
  * @returns The package version or null if a version could not be determined
  */
 async function getPackageVersion(
