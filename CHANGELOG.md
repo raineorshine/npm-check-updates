@@ -107,7 +107,7 @@ If you have a use case where this change is not what is desired, please [report 
 
 ### Breaking
 
-- `--packageFile` - Now interprets its argument as a glob pattern. It is possible that a previously supplied argument may be interepreted differently now (though I'm not aware of specific instances). Due to our conservative release policy we are releasing as a major version upgrade and allowing developers to assess for themselves.
+- `--packageFile` - Now interprets its argument as a glob pattern. It is possible that a previously supplied argument may be interpreted differently now (though I'm not aware of specific instances). Due to our conservative release policy we are releasing as a major version upgrade and allowing developers to assess for themselves.
 
 ### Features
 
