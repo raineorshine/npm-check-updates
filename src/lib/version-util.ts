@@ -411,7 +411,7 @@ export const isGitHubUrl = (declaration: string | null) => {
     parsed = parseGitHubUrl(declaration)
   } catch {
     // Strings like `npm:postman-request@2.88.1-postman.33` can throw errors instead of simply returning null
-    // In node 18.17+ due to url.parse regressison: https://github.com/nodejs/node/issues/49330
+    // In node 18.17+ due to url.parse regression: https://github.com/nodejs/node/issues/49330
     // So if this throws, we can assume it's not a valid GitHub URL.
   }
   if (!parsed || !parsed.branch) return false
