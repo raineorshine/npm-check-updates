@@ -284,7 +284,7 @@ const getPre = (version: string) => {
 /**
  * Check if it is allowed to compare two versions based on their prerelease tag
  *
- * SemVer both states that different prerelease versions can`t be compared
+ * SemVer both states that different prerelease versions can't be compared
  * and at the same time compares them as part of the version via strcmp
  *
  * @param a
