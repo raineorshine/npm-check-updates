@@ -920,14 +920,14 @@ export const newest: GetVersion = async (
   const versionsSortedByTime = sortBy(Object.entries(timesSatisfyingNodeEngine), v => v[1]).map(([version]) => version)
 
   if (options.cooldown) {
-    const versionsSatisfiesfyingCooldownPeriod = versionsSortedByTime.filter(version =>
+    const versionsSatisfyingCooldownPeriod = versionsSortedByTime.filter(version =>
       satisfiesCooldownPeriod(
         decorateTagPackumentWithTimeAndName((result as Packument).versions[version], result as Packument),
         options.cooldown,
       ),
     )
 
-    return { version: versionsSatisfiesfyingCooldownPeriod.at(-1) }
+    return { version: versionsSatisfyingCooldownPeriod.at(-1) }
   }
 
   return { version: versionsSortedByTime.at(-1) }
