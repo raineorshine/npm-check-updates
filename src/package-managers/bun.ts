@@ -57,7 +57,7 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   )
 
   // Parse the output of `bun pm ls` into an object { [name]: version }.
-  // When bun is spawned in the GitHub Actions environment, it outputs ANSI color. Unfortunately, it does not respect the `NO_COLOR` envirionment variable. Therefore, we have to manually strip ansi.
+  // When bun is spawned in the GitHub Actions environment, it outputs ANSI color. Unfortunately, it does not respect the `NO_COLOR` environment variable. Therefore, we have to manually strip ansi.
   const lines = stripAnsi(stdout).split('\n')
   const dependencies = keyValueBy(lines, line => {
     // The capturing group for the package name requires a + quantifier; otherwise, namespaced packages like @angular/cli will not be captured correctly.
