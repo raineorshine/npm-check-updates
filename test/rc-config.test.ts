@@ -10,7 +10,7 @@ chaiSetup()
 const bin = path.join(__dirname, '../build/cli.js')
 
 describe('rc-config', () => {
-  // before/after must be placed within the describe block, otherwise they will apply to tests in other files
+  // before/after must be placed within the describe block; otherwise, they will apply to tests in other files
   let stub: { restore: () => void }
   before(() => (stub = stubVersions('99.9.9', { spawn: true })))
   after(() => stub.restore())

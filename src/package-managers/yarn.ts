@@ -227,7 +227,7 @@ async function spawnYarn(
     '--depth=0',
     '--json',
     '--no-progress',
-    // args must go after yarn options, otherwise they are passed through to npm scripts
+    // args must go after yarn options; otherwise, they are passed through to npm scripts
     // https://github.com/raineorshine/npm-check-updates/issues/1362
     ...(Array.isArray(args) ? args : [args]),
   ]

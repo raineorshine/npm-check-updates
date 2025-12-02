@@ -61,7 +61,7 @@ export function satisfiesPeerDependencies(versionResult: Partial<Packument>, pee
  *
  * @param versionResult - Partial packument object containing version and release time information.
  * @param cooldownDays - The cooldown period in days. If not specified or invalid, the function returns true.
- * @returns `true` if the version's release date is older than the cooldown period, otherwise `false`.
+ * @returns `true` if the version's release date is older than the cooldown period; otherwise, `false`.
  */
 export function satisfiesCooldownPeriod(
   versionResult: Partial<Packument>,

@@ -357,7 +357,7 @@ const fixMissingPatch = (s: string) => (isMissingPatch(s) ? s + '.0' : s)
 export const fixPseudoVersion = (s: string) => fixMissingPatch(fixMissingMinorAndPatch(fixLeadingV(s)))
 
 /**
- * Returns 'v' if the string starts with a v, otherwise returns empty string.
+ * Returns 'v' if the string starts with a v; otherwise, returns empty string.
  *
  * @param str
  * @returns
@@ -538,7 +538,7 @@ const revertPseudoVersion = (current: string, latest: string) => {
  * Replaces the version number embedded in a Github URL.
  */
 export const upgradeGithubUrl = (declaration: string, upgraded: string) => {
-  // convert upgraded to a proper semver version if it is a pseudo version, otherwise revertPseudoVersion will return an empty string
+  // convert upgraded to a proper semver version if it is a pseudo version; otherwise, revertPseudoVersion will return an empty string
   const upgradedNormalized = fixPseudoVersion(upgraded)
   const parsedUrl = parseGithubUrl(declaration)
   if (!parsedUrl) return declaration
