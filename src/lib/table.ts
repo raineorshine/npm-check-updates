@@ -17,7 +17,7 @@ const table = ({
   markdown?: boolean
   rows: string[][]
 }): string => {
-  // return HTML table for Github-flavored markdown
+  // return HTML table for GitHub-flavored markdown
   if (markdown) {
     return `<table>${rows.map(row).join('')}\n</table>`
   }

@@ -1,7 +1,7 @@
-/** Fetches package metadata from Github tags. */
+/** Fetches package metadata from GitHub tags. */
 import childProcess from 'node:child_process'
 import { promisify } from 'node:util'
-import parseGithubUrl from 'parse-github-url'
+import parseGitHubUrl from 'parse-github-url'
 import { valid } from 'semver'
 import { print } from '../lib/logging'
 import * as versionUtil from '../lib/version-util'
@@ -38,7 +38,7 @@ async function getSortedVersions(
 ): Promise<string[] | undefined> {
   // if present, github: is parsed as the protocol. This is not valid when passed into remote-git-tags.
   declaration = declaration.replace(/^github:/, '')
-  const { auth, protocol, host, path } = parseGithubUrl(declaration)!
+  const { auth, protocol, host, path } = parseGitHubUrl(declaration)!
   let tags: Index<string>
 
   try {
@@ -75,7 +75,7 @@ export const latest: GetVersion = async (name: string, declaration: VersionSpec,
   if (!versions) return { version: null }
   const versionsFiltered = options?.pre ? versions : versions.filter(v => !versionUtil.isPre(v))
   const latestVersion = versionsFiltered[versionsFiltered.length - 1]
-  return { version: latestVersion ? versionUtil.upgradeGithubUrl(declaration, latestVersion) : null }
+  return { version: latestVersion ? versionUtil.upgradeGitHubUrl(declaration, latestVersion) : null }
 }
 
 /** Return the highest numbered tag on a remote Git URL. */
@@ -83,14 +83,14 @@ export const greatest: GetVersion = async (name: string, declaration: VersionSpe
   const versions = await getSortedVersions(name, declaration, options)
   if (!versions) return { version: null }
   const greatestVersion = versions[versions.length - 1]
-  return { version: greatestVersion ? versionUtil.upgradeGithubUrl(declaration, greatestVersion) : null }
+  return { version: greatestVersion ? versionUtil.upgradeGitHubUrl(declaration, greatestVersion) : null }
 }
 
 /** Returns a function that returns the highest version at the given level. */
 export const greatestLevel =
   (level: VersionLevel) =>
   async (name: string, declaration: VersionSpec, options: Options = {}): Promise<VersionResult> => {
-    const version = decodeURIComponent(parseGithubUrl(declaration)!.branch).replace(/^semver:/, '')
+    const version = decodeURIComponent(parseGitHubUrl(declaration)!.branch).replace(/^semver:/, '')
     const versions = await getSortedVersions(name, declaration, options)
     if (!versions) return { version: null }
 
@@ -100,7 +100,7 @@ export const greatestLevel =
       level,
     )
 
-    return { version: greatestMinor ? versionUtil.upgradeGithubUrl(declaration, greatestMinor) : null }
+    return { version: greatestMinor ? versionUtil.upgradeGitHubUrl(declaration, greatestMinor) : null }
   }
 
 export const minor = greatestLevel('minor')

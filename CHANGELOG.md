@@ -197,7 +197,7 @@ npm run test
 Saving partially upgraded package.json
 ```
 
-#### Github URLs
+#### GitHub URLs
 
 Added support for GitHub URLs.
 

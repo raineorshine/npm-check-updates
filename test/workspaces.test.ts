@@ -817,7 +817,7 @@ catalog:
 
   // cannot be stubbed because npm config printing occurs in viewMany
   describe('not stubbed', () => {
-    // This test fails on Node v20.3.1 on Github Actions (only).
+    // This test fails on Node v20.3.1 on GitHub Actions (only).
     // The stdout fails to match the expected value: "npm config (workspace project):\n{ncutest: 'root' }"
     // Strangely, it matches up to the single quote: "npm config (workspace project):\n{ncutest: "
     it.skip('merge local npm config with pnpm workspace npm config', async () => {

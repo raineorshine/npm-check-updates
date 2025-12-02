@@ -253,7 +253,7 @@ describe('bin', async function () {
   })
 
   describe('embedded versions', () => {
-    it('strip url from Github url in "to" output', async () => {
+    it('strip url from GitHub url in "to" output', async () => {
       // use dynamic import for ESM module
       const { default: stripAnsi } = await import('strip-ansi')
       const dependencies = {

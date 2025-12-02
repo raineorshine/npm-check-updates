@@ -1,5 +1,5 @@
 import propertyOf from 'lodash/propertyOf'
-import parseGithubUrl from 'parse-github-url'
+import parseGitHubUrl from 'parse-github-url'
 import semver from 'semver'
 import semverutils, { SemVer, parse, parseRange } from 'semver-utils'
 import util from 'util'
@@ -402,17 +402,17 @@ export const upgradeNpmAlias = (declaration: string, upgraded: string) => {
 }
 
 /**
- * Returns true if a version declaration is a Github URL with a valid semver version.
+ * Returns true if a version declaration is a GitHub URL with a valid semver version.
  */
-export const isGithubUrl = (declaration: string | null) => {
+export const isGitHubUrl = (declaration: string | null) => {
   if (!declaration) return false
   let parsed = null
   try {
-    parsed = parseGithubUrl(declaration)
+    parsed = parseGitHubUrl(declaration)
   } catch {
     // Strings like `npm:postman-request@2.88.1-postman.33` can throw errors instead of simply returning null
     // In node 18.17+ due to url.parse regressison: https://github.com/nodejs/node/issues/49330
-    // So if this throws, we can assume it's not a valid Github URL.
+    // So if this throws, we can assume it's not a valid GitHub URL.
   }
   if (!parsed || !parsed.branch) return false
 
@@ -421,11 +421,11 @@ export const isGithubUrl = (declaration: string | null) => {
 }
 
 /**
- * Returns the embedded tag in a Github URL.
+ * Returns the embedded tag in a GitHub URL.
  */
-export const getGithubUrlTag = (declaration: string | null) => {
+export const getGitHubUrlTag = (declaration: string | null) => {
   if (!declaration) return null
-  const parsed = parseGithubUrl(declaration)
+  const parsed = parseGitHubUrl(declaration)
   if (!parsed || !parsed.branch) return null
   const version = decodeURIComponent(parsed.branch).replace(/^semver:/, '')
   return parsed && parsed.branch && semver.validRange(version) ? version : null
@@ -535,12 +535,12 @@ const revertPseudoVersion = (current: string, latest: string) => {
 }
 
 /**
- * Replaces the version number embedded in a Github URL.
+ * Replaces the version number embedded in a GitHub URL.
  */
-export const upgradeGithubUrl = (declaration: string, upgraded: string) => {
+export const upgradeGitHubUrl = (declaration: string, upgraded: string) => {
   // convert upgraded to a proper semver version if it is a pseudo version; otherwise, revertPseudoVersion will return an empty string
   const upgradedNormalized = fixPseudoVersion(upgraded)
-  const parsedUrl = parseGithubUrl(declaration)
+  const parsedUrl = parseGitHubUrl(declaration)
   if (!parsedUrl) return declaration
   const tag = decodeURIComponent(parsedUrl.branch).replace(/^semver:/, '')
   return declaration.replace(tag, upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgradedNormalized)))

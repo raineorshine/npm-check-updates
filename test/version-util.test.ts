@@ -515,31 +515,31 @@ describe('version-util', () => {
   })
 
   describe('github urls', () => {
-    describe('isGithubUrl', () => {
-      it('return true if a declaration is a Github url with a semver tag and false otherwise', () => {
-        should.equal(versionUtil.isGithubUrl(null), false)
-        should.equal(versionUtil.isGithubUrl('https://github.com/raineorshine/ncu-test-v2'), false)
-        should.equal(versionUtil.isGithubUrl('https://github.com/raineorshine/ncu-test-v2#1.0.0'), true)
-        should.equal(versionUtil.isGithubUrl('https://github.com/raineorshine/ncu-test-v2#v1.0.0'), true)
+    describe('isGitHubUrl', () => {
+      it('return true if a declaration is a GitHub url with a semver tag and false otherwise', () => {
+        should.equal(versionUtil.isGitHubUrl(null), false)
+        should.equal(versionUtil.isGitHubUrl('https://github.com/raineorshine/ncu-test-v2'), false)
+        should.equal(versionUtil.isGitHubUrl('https://github.com/raineorshine/ncu-test-v2#1.0.0'), true)
+        should.equal(versionUtil.isGitHubUrl('https://github.com/raineorshine/ncu-test-v2#v1.0.0'), true)
       })
     })
 
-    describe('getGithubUrlTag', () => {
-      it('return an embedded tag in a Github URL, or null if not valid', () => {
-        should.equal(versionUtil.getGithubUrlTag(null), null)
-        should.equal(versionUtil.getGithubUrlTag('https://github.com/raineorshine/ncu-test-v2'), null)
-        should.equal(versionUtil.getGithubUrlTag('https://github.com/raineorshine/ncu-test-v2#1.0.0'), '1.0.0')
-        should.equal(versionUtil.getGithubUrlTag('https://github.com/raineorshine/ncu-test-v2#v1.0.0'), 'v1.0.0')
+    describe('getGitHubUrlTag', () => {
+      it('return an embedded tag in a GitHub URL, or null if not valid', () => {
+        should.equal(versionUtil.getGitHubUrlTag(null), null)
+        should.equal(versionUtil.getGitHubUrlTag('https://github.com/raineorshine/ncu-test-v2'), null)
+        should.equal(versionUtil.getGitHubUrlTag('https://github.com/raineorshine/ncu-test-v2#1.0.0'), '1.0.0')
+        should.equal(versionUtil.getGitHubUrlTag('https://github.com/raineorshine/ncu-test-v2#v1.0.0'), 'v1.0.0')
       })
     })
 
-    describe('upgradeGithubUrl', () => {
+    describe('upgradeGitHubUrl', () => {
       it('replace embedded version', () => {
         versionUtil
-          .upgradeGithubUrl('https://github.com/raineorshine/ncu-test-v2#v1.0.0', 'v2.0.0')
+          .upgradeGitHubUrl('https://github.com/raineorshine/ncu-test-v2#v1.0.0', 'v2.0.0')
           .should.equal('https://github.com/raineorshine/ncu-test-v2#v2.0.0')
         versionUtil
-          .upgradeGithubUrl('https://github.com/raineorshine/ncu-test-v2#1.0.0', '2.0.0')
+          .upgradeGitHubUrl('https://github.com/raineorshine/ncu-test-v2#1.0.0', '2.0.0')
           .should.equal('https://github.com/raineorshine/ncu-test-v2#2.0.0')
       })
     })
