@@ -92,7 +92,7 @@ const fetchPartialPackument = async (
       return npmRegistryFetch.json(url.href, fetchOptions)
     } else {
       tag = tag || 'latest'
-      // typescript does not type async iteratable stream correctly so we need to cast it
+      // typescript does not type async iterable stream correctly so we need to cast it
       const stream = npmRegistryFetch.json.stream(url.href, '$*', fetchOptions) as unknown as IterableIterator<{
         key: keyof Packument
         value: Packument[keyof Packument]
