@@ -32,4 +32,4 @@ npm-check-updates maintains a balance between minimalism and customizability. Th
 
 ## Adding a new CLI or module option
 
-All of ncu's options are generated from [/src/cli-options.ts](https://github.com/raineorshine/npm-check-updates/blob/main/src/cli-options.ts). You can add a new option to this file and then run `npm run build` to automatically generate README, CLI help text, and Typescript definitions.
+All of ncu's options are generated from [/src/cli-options.ts](https://github.com/raineorshine/npm-check-updates/blob/main/src/cli-options.ts). You can add a new option to this file and then run `npm run build` to automatically generate README, CLI help text, and TypeScript definitions.

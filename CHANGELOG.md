@@ -98,7 +98,7 @@ If you have a use case where this change is not what is desired, please [report 
 
 ## Other
 
-- Typescript! There is a new build process, so if you have any issues with the executable or types, please report. It should be a non-breaking change if I did it correctly ([#888](https://github.com/raineorshine/npm-check-updates/issues/888)).
+- TypeScript! There is a new build process, so if you have any issues with the executable or types, please report. It should be a non-breaking change if I did it correctly ([#888](https://github.com/raineorshine/npm-check-updates/issues/888)).
 - WHen using `npm-check-updates` as a module, `vm` (versionmanager) is no longer exported. It was previously exposed for testing purposes, but was never part of the official API.
 
 <https://github.com/raineorshine/npm-check-updates/compare/v11.8.5...v12.0.0>
