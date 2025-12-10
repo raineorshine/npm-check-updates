@@ -29,6 +29,54 @@ chaiSetup()
 const bin = path.join(__dirname, '../build/cli.js')
 
 describe('format', () => {
+  it('--format dep', async () => {
+    const stub = stubVersions(
+      {
+        'ncu-test-v2': '2.0.0',
+        'ncu-test-tag': '2.0.0',
+        'ncu-test-peer-update': '2.0.0',
+        'ncu-test-return-version': '2.0.0',
+      },
+      { spawn: true },
+    )
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({
+        dependencies: {
+          'ncu-test-v2': '^1.0.0',
+        },
+        devDependencies: {
+          'ncu-test-tag': '^1.0.0',
+        },
+        peerDependencies: {
+          'ncu-test-peer-update': '^1.0.0',
+        },
+        optionalDependencies: {
+          'ncu-test-return-version': '^1.0.0',
+        },
+      }),
+      'utf-8',
+    )
+    try {
+      const { stdout } = await spawn(
+        'node',
+        // -u was added to avoid accidentally matching dev, peer, optional from "Run ncu --dep prod,dev,peer,optional --format dep -u to upgrade package.json"
+        [bin, '--dep', 'prod,dev,peer,optional', '--format', 'dep', '-u'],
+        {},
+        { cwd: tempDir },
+      )
+
+      stdout.should.include('dev')
+      stdout.should.include('peer')
+      stdout.should.include('optional')
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+      stub.restore()
+    }
+  })
+
   // do not stubVersions here, because we need to test if if time is parsed correctly from npm-registry-fetch
   it('--format time', async () => {
     const timestamp = '2020-04-27T21:48:11.660Z'

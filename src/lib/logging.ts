@@ -2,6 +2,7 @@
  * Loggin functions.
  */
 import Table from 'cli-table3'
+import fs from 'fs/promises'
 import { IgnoredUpgradeDueToEnginesNode } from '../types/IgnoredUpgradeDueToEnginesNode'
 import { IgnoredUpgradeDueToPeerDeps } from '../types/IgnoredUpgradeDueToPeerDeps'
 import { Index } from '../types/IndexType'
@@ -164,6 +165,7 @@ export async function toDependencyTable({
   pkgFile?: string
   time?: Index<string>
 }) {
+  const pkg = format?.includes('dep') && pkgFile ? JSON.parse(await fs.readFile(pkgFile, 'utf-8')) : null
   const table = renderDependencyTable(
     await Promise.all(
       Object.keys(toDeps)
@@ -173,6 +175,14 @@ export async function toDependencyTable({
             (format?.includes('installedVersion')
               ? await getPackageVersion(dep, undefined, { pkgFile })
               : fromDeps[dep]) || ''
+          const depType =
+            dep in (pkg?.devDependencies ?? {})
+              ? 'dev'
+              : dep in (pkg?.peerDependencies ?? {})
+                ? 'peer'
+                : dep in (pkg?.optionalDependencies ?? {})
+                  ? 'optional'
+                  : ''
           const toRaw = toDeps[dep] || ''
           const to = getVersion(toRaw)
           const ownerChanged = ownersChangedDeps
@@ -185,7 +195,15 @@ export async function toDependencyTable({
           const toColorized = colorizeDiff(getVersion(from), to)
           const repoUrl = format?.includes('repo') ? (await getRepoUrl(dep, undefined, { pkgFile })) || '' : ''
           const publishTime = format?.includes('time') && time?.[dep] ? time[dep] : ''
-          return [dep, from, '→', toColorized, ownerChanged, ...[repoUrl, publishTime].filter(x => x)]
+          return [
+            dep,
+            ...(format?.includes('dep') ? [depType ? chalk.gray(depType) : ''] : []),
+            from,
+            '→',
+            toColorized,
+            ownerChanged,
+            ...[repoUrl, publishTime].filter(x => x),
+          ]
         }),
     ),
   )

@@ -171,12 +171,13 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
     colAligns: ['right', 'left'],
     markdown,
     rows: [
+      ['dep', `Prints the dependency type (dev, peer, optional) of each package.`],
       ['group', `Groups packages by major, minor, patch, and major version zero updates.`],
+      ['installedVersion', 'Prints the exact current version number instead of a range.'],
+      ['lines', 'Prints name@version on separate lines. Useful for piping to npm install.'],
       ['ownerChanged', `Shows if the package owner has changed.`],
       ['repo', `Infers and displays links to the package's source code repository. Requires packages to be installed.`],
       ['time', 'Shows the publish time of each upgrade.'],
-      ['lines', 'Prints name@version on separate lines. Useful for piping to npm install.'],
-      ['installedVersion', 'Prints the exact current version number instead of a range.'],
     ],
   })
 
@@ -759,11 +760,11 @@ const cliOptions: CLIOption[] = [
     long: 'format',
     arg: 'value',
     description:
-      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: group, ownerChanged, repo, time, lines, installedVersion.',
+      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion.',
     parse: value => (typeof value === 'string' ? value.split(',') : value),
     default: [],
     type: 'readonly string[]',
-    choices: ['group', 'ownerChanged', 'repo', 'time', 'lines', 'installedVersion'],
+    choices: ['dep', 'group', 'ownerChanged', 'repo', 'time', 'lines', 'installedVersion'],
     help: extendedHelpFormat,
   },
   {
