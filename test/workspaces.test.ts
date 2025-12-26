@@ -550,7 +550,6 @@ catalogs:
           output.should.deep.equal({
             'pnpm-workspace.yaml': {
               packages: ['packages/**'],
-              catalog: { 'ncu-test-v2': '2.0.0' },
               catalogs: { default: { 'ncu-test-v2': '2.0.0' }, test: { 'ncu-test-tag': '1.1.0' } },
             },
             'package.json': { dependencies: { 'ncu-test-v2': '2.0.0' } },
@@ -748,7 +747,6 @@ catalogs:
           // Should include catalog updates
           output.should.deep.equal({
             'yarnrc.yml': {
-              catalog: { 'ncu-test-v2': '2.0.0' },
               catalogs: { default: { 'ncu-test-v2': '2.0.0' }, test: { 'ncu-test-tag': '1.1.0' } },
             },
             'package.json': { workspaces: ['packages/**'], dependencies: { 'ncu-test-v2': '2.0.0' } },
