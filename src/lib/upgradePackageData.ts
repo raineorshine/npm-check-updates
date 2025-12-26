@@ -101,11 +101,6 @@ async function upgradePackageData(
           }
         }
 
-        // For pnpm, also expose the 'default' catalog as a top-level 'catalog' property
-        if (yamlData.catalogs?.default) {
-          yamlData.catalog = yamlData.catalogs.default
-        }
-
         return JSON.stringify(yamlData, null, 2)
       }
 
