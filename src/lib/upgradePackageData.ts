@@ -53,6 +53,7 @@ async function upgradePackageData(
     // Handle pnpm-workspace.yaml catalog files
     if (
       fileName === 'pnpm-workspace.yaml' ||
+      fileName === 'yarnrc.yml' ||
       (fileName.includes('catalog') && (fileExtension === '.yaml' || fileExtension === '.yml'))
     ) {
       // Check if we have synthetic catalog data (JSON with only dependencies and name/version)
