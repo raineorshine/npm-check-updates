@@ -89,11 +89,14 @@ const getPackageManagerForInstall = async (options: Options, packageFile: string
 }
 
 /** Returns if analysis contains upgrades */
-const someUpgraded = (pkgs: string[], analysis: Index<PackageFile> | PackageFile) => {
+const someUpgraded = (pkgs: string[], analysis: Index<PackageFile> | PackageFile, options: Options) => {
   // deep mode analysis is of type Index<PackageFile>
   // non-deep mode analysis is of type <PackageFile>, so we normalize it to Index<PackageFile>
   const analysisNormalized: Index<PackageFile> =
-    pkgs.length === 1 ? { [pkgs[0]]: analysis as PackageFile } : (analysis as Index<PackageFile>)
+    !options.deep && !options.workspaces && !options.workspace
+      ? { [pkgs[0]]: analysis as PackageFile }
+      : (analysis as Index<PackageFile>)
+
   return Object.values(analysisNormalized).some(upgrades => Object.keys(upgrades).length > 0)
 }
 
@@ -110,7 +113,7 @@ const install = async (
 
   // if no packages were upgraded (i.e. all dependencies deselected in interactive mode), then bail without suggesting an install.
   // normalize the analysis for one or many packages
-  if (!someUpgraded(pkgs, analysis)) return
+  if (!someUpgraded(pkgs, analysis, options)) return
 
   // for the purpose of the install hint, just use the package manager used in the first sub-project
   // if auto-installing, the actual package manager in each sub-project will be used
@@ -290,7 +293,7 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
   }
   clearTimeout(timeout)
 
-  if (options.errorLevel === 2 && someUpgraded(packageFilepaths, analysis)) {
+  if (options.errorLevel === 2 && someUpgraded(packageFilepaths, analysis, options)) {
     programError(options, '\nDependencies not up-to-date')
   }
 

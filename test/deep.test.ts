@@ -119,6 +119,32 @@ describe('--deep', function () {
       await fs.rm(tempDir, { recursive: true, force: true })
     }
   })
+
+  it('--deep --errorLevel 2 should exit with code 0 when there are no upgrades', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgData = JSON.stringify({
+      dependencies: {
+        'ncu-test-v2': '99.9.9',
+      },
+    })
+
+    // write root package file
+    await fs.writeFile(path.join(tempDir, 'package.json'), pkgData, 'utf-8')
+
+    try {
+      await spawn(
+        'node',
+        [bin, '--deep', '--errorLevel', '2'],
+        {},
+        {
+          cwd: tempDir,
+        },
+      )
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
+  })
 })
 
 describe('--deep with nested ncurc files', function () {
