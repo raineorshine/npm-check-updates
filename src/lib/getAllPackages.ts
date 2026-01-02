@@ -16,6 +16,8 @@ type PnpmWorkspaces =
   | string[]
   | { packages: string[]; catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
 
+type YarnConfig = { catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
+
 const globOptions: GlobOptions = {
   ignore: ['**/node_modules/**'],
 }
@@ -32,6 +34,18 @@ const readPnpmWorkspaces = async (pkgPath: string): Promise<PnpmWorkspaces | nul
   return yaml.load(pnpmWorkspaceFile) as PnpmWorkspaces
 }
 
+/** Reads, parses, and resolves catalog information from the yarn config file at the same path as the package file. */
+const readYarnConfig = async (pkgPath: string): Promise<YarnConfig | null> => {
+  const yarnConfigPath = path.join(path.dirname(pkgPath), 'yarnrc.yml')
+  let yarnConfig: string
+  try {
+    yarnConfig = await fs.readFile(yarnConfigPath, 'utf-8')
+  } catch {
+    return null
+  }
+  return yaml.load(yarnConfig) as YarnConfig
+}
+
 /** Gets catalog dependencies from both pnpm-workspace.yaml and package.json files. */
 const readCatalogDependencies = async (options: Options, pkgPath: string): Promise<Index<VersionSpec> | null> => {
   const catalogDependencies: Index<VersionSpec> = {}
@@ -46,6 +60,18 @@ const readCatalogDependencies = async (options: Options, pkgPath: string): Promi
       }
       if (pnpmWorkspaces.catalogs) {
         Object.assign(catalogDependencies, ...Object.values(pnpmWorkspaces.catalogs))
+      }
+    }
+  }
+
+  if (options.packageManager === 'yarn') {
+    const yarnConfig = await readYarnConfig(pkgPath)
+    if (yarnConfig) {
+      if (yarnConfig.catalog) {
+        Object.assign(catalogDependencies, yarnConfig.catalog)
+      }
+      if (yarnConfig.catalogs) {
+        Object.assign(catalogDependencies, ...Object.values(yarnConfig.catalogs))
       }
     }
   }
@@ -177,7 +203,11 @@ async function getCatalogPackageInfo(options: Options, pkgPath: string): Promise
   // Determine the correct file path for catalogs. For pnpm, use pnpm-workspace.yaml.
   // For Bun catalogs in package.json, use a virtual path to avoid conflicts with root package.
   const catalogFilePath =
-    options.packageManager === 'pnpm' ? path.join(path.dirname(pkgPath), 'pnpm-workspace.yaml') : `${pkgPath}#catalog`
+    options.packageManager === 'pnpm'
+      ? path.join(path.dirname(pkgPath), 'pnpm-workspace.yaml')
+      : options.packageManager === 'yarn'
+        ? path.join(path.dirname(pkgPath), 'yarnrc.yml')
+        : `${pkgPath}#catalog`
 
   // Create synthetic file content that matches the synthetic PackageFile
   const syntheticFileContent = JSON.stringify(catalogPackageFile, null, 2)

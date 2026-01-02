@@ -550,7 +550,6 @@ catalogs:
           output.should.deep.equal({
             'pnpm-workspace.yaml': {
               packages: ['packages/**'],
-              catalog: { 'ncu-test-v2': '2.0.0' },
               catalogs: { default: { 'ncu-test-v2': '2.0.0' }, test: { 'ncu-test-tag': '1.1.0' } },
             },
             'package.json': { dependencies: { 'ncu-test-v2': '2.0.0' } },
@@ -689,6 +688,128 @@ catalog:
           output['packages/a/package.json'].should.deep.equal({
             name: 'a',
             dependencies: { 'ncu-test-v2': 'catalog:' },
+          })
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+    })
+
+    describe('yarn', () => {
+      it('update yarn catalog dependencies from yarnrc.yml (named catalogs)', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          const pkgDataRoot = JSON.stringify({
+            workspaces: ['packages/**'],
+            dependencies: {
+              'ncu-test-v2': '1.0.0',
+            },
+          })
+
+          const yarnConfig = `
+catalogs:
+  default:
+    ncu-test-v2: '1.0.0'
+  test:
+    ncu-test-tag: '1.0.0'
+`
+
+          // write root package file and yarnrc.yml
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'yarnrc.yml'), yarnConfig, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'yarn.lock'), '', 'utf-8')
+
+          // create workspace package
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              dependencies: {
+                'ncu-test-tag': 'catalog:test',
+              },
+            }),
+            'utf-8',
+          )
+
+          const { stdout, stderr } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspaces'],
+            { rejectOnError: false },
+            { cwd: tempDir },
+          )
+
+          // Assert no errors and valid output
+          stderr.should.be.empty
+          stdout.should.not.be.empty
+
+          const output = JSON.parse(stdout)
+
+          // Should include catalog updates
+          output.should.deep.equal({
+            'yarnrc.yml': {
+              catalogs: { default: { 'ncu-test-v2': '2.0.0' }, test: { 'ncu-test-tag': '1.1.0' } },
+            },
+            'package.json': { workspaces: ['packages/**'], dependencies: { 'ncu-test-v2': '2.0.0' } },
+            'packages/a/package.json': { dependencies: { 'ncu-test-tag': 'catalog:test' } },
+          })
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+
+      it('update yarn catalog dependencies from yarnrc.yml (singular catalog)', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          const pkgDataRoot = JSON.stringify({
+            workspaces: ['packages/**'],
+            dependencies: {
+              'ncu-test-v2': '1.0.0',
+            },
+          })
+
+          const yarnConfig = `
+catalog:
+  ncu-test-v2: '1.0.0'
+  ncu-test-tag: '1.0.0'
+`
+
+          // write root package file and pnpm-workspace.yaml
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'yarnrc.yml'), yarnConfig, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'yarn.lock'), '', 'utf-8')
+
+          // create workspace package
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              dependencies: {
+                'ncu-test-tag': 'catalog:',
+              },
+            }),
+            'utf-8',
+          )
+
+          const { stdout, stderr } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspaces'],
+            { rejectOnError: false },
+            { cwd: tempDir },
+          )
+
+          // Assert no errors and valid output
+          stderr.should.be.empty
+          stdout.should.not.be.empty
+
+          const output = JSON.parse(stdout)
+
+          // Should include catalog updates
+          output.should.deep.equal({
+            'yarnrc.yml': {
+              catalog: { 'ncu-test-v2': '2.0.0', 'ncu-test-tag': '1.1.0' },
+            },
+            'package.json': { workspaces: ['packages/**'], dependencies: { 'ncu-test-v2': '2.0.0' } },
+            'packages/a/package.json': { dependencies: { 'ncu-test-tag': 'catalog:' } },
           })
         } finally {
           await fs.rm(tempDir, { recursive: true, force: true })

@@ -53,6 +53,7 @@ async function upgradePackageData(
     // Handle pnpm-workspace.yaml catalog files
     if (
       fileName === 'pnpm-workspace.yaml' ||
+      fileName === 'yarnrc.yml' ||
       (fileName.includes('catalog') && (fileExtension === '.yaml' || fileExtension === '.yml'))
     ) {
       // Check if we have synthetic catalog data (JSON with only dependencies and name/version)
@@ -98,11 +99,6 @@ async function upgradePackageData(
               .filter(([dep]) => catalog[dep])
               .reduce((acc, [dep, version]) => ({ ...acc, [dep]: version }), {} as Record<string, string>),
           }
-        }
-
-        // For pnpm, also expose the 'default' catalog as a top-level 'catalog' property
-        if (yamlData.catalogs?.default) {
-          yamlData.catalog = yamlData.catalogs.default
         }
 
         return JSON.stringify(yamlData, null, 2)
