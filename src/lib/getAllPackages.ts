@@ -36,7 +36,7 @@ const readPnpmWorkspaces = async (pkgPath: string): Promise<PnpmWorkspaces | nul
 
 /** Reads, parses, and resolves catalog information from the yarn config file at the same path as the package file. */
 const readYarnConfig = async (pkgPath: string): Promise<YarnConfig | null> => {
-  const yarnConfigPath = path.join(path.dirname(pkgPath), 'yarnrc.yml')
+  const yarnConfigPath = path.join(path.dirname(pkgPath), '.yarnrc.yml')
   let yarnConfig: string
   try {
     yarnConfig = await fs.readFile(yarnConfigPath, 'utf-8')
@@ -206,7 +206,7 @@ async function getCatalogPackageInfo(options: Options, pkgPath: string): Promise
     options.packageManager === 'pnpm'
       ? path.join(path.dirname(pkgPath), 'pnpm-workspace.yaml')
       : options.packageManager === 'yarn'
-        ? path.join(path.dirname(pkgPath), 'yarnrc.yml')
+        ? path.join(path.dirname(pkgPath), '.yarnrc.yml')
         : `${pkgPath}#catalog`
 
   // Create synthetic file content that matches the synthetic PackageFile
