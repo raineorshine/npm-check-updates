@@ -714,9 +714,9 @@ catalogs:
     ncu-test-tag: '1.0.0'
 `
 
-          // write root package file and yarnrc.yml
+          // write root package file and .yarnrc.yml
           await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
-          await fs.writeFile(path.join(tempDir, 'yarnrc.yml'), yarnConfig, 'utf-8')
+          await fs.writeFile(path.join(tempDir, '.yarnrc.yml'), yarnConfig, 'utf-8')
           await fs.writeFile(path.join(tempDir, 'yarn.lock'), '', 'utf-8')
 
           // create workspace package
@@ -746,7 +746,7 @@ catalogs:
 
           // Should include catalog updates
           output.should.deep.equal({
-            'yarnrc.yml': {
+            '.yarnrc.yml': {
               catalogs: { default: { 'ncu-test-v2': '2.0.0' }, test: { 'ncu-test-tag': '1.1.0' } },
             },
             'package.json': { workspaces: ['packages/**'], dependencies: { 'ncu-test-v2': '2.0.0' } },
@@ -757,7 +757,7 @@ catalogs:
         }
       })
 
-      it('update yarn catalog dependencies from yarnrc.yml (singular catalog)', async () => {
+      it('update yarn catalog dependencies from .yarnrc.yml (singular catalog)', async () => {
         const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
         try {
           const pkgDataRoot = JSON.stringify({
@@ -775,7 +775,7 @@ catalog:
 
           // write root package file and pnpm-workspace.yaml
           await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
-          await fs.writeFile(path.join(tempDir, 'yarnrc.yml'), yarnConfig, 'utf-8')
+          await fs.writeFile(path.join(tempDir, '.yarnrc.yml'), yarnConfig, 'utf-8')
           await fs.writeFile(path.join(tempDir, 'yarn.lock'), '', 'utf-8')
 
           // create workspace package
@@ -805,7 +805,7 @@ catalog:
 
           // Should include catalog updates
           output.should.deep.equal({
-            'yarnrc.yml': {
+            '.yarnrc.yml': {
               catalog: { 'ncu-test-v2': '2.0.0', 'ncu-test-tag': '1.1.0' },
             },
             'package.json': { workspaces: ['packages/**'], dependencies: { 'ncu-test-v2': '2.0.0' } },
