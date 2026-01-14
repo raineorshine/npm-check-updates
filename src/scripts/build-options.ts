@@ -8,7 +8,7 @@ const INJECT_HEADER =
   '<!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->'
 
 /** Replaces markdown code ticks with <code>...</code> tag. */
-const codeHtml = (code: string) => code.replace(/\b`/g, '</code>').replace(/`/g, '<code>')
+const codeHtml = (code: string) => code.replace(/`(.+?)`/g, '<code>$1</code>')
 
 /** Replaces the "Options" and "Advanced Options" sections of the README with direct output from "ncu --help". */
 const injectReadme = async () => {

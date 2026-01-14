@@ -218,7 +218,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--deep</td>
-    <td>Run recursively in current working directory. Alias of (<code>--packageFile '**/package.json'<code>).</td>
+    <td>Run recursively in current working directory. Alias of (<code>--packageFile '**/package.json'</code>).</td>
   </tr>
   <tr>
     <td>--dep &lt;value&gt;</td>
@@ -366,7 +366,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#target">-t, --target &lt;value&gt;</a></td>
-    <td>Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, <code>@[tag]<code>, or [function]. (default: latest)</td>
+    <td>Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, <code>@[tag]</code>, or [function]. (default: latest)</td>
   </tr>
   <tr>
     <td>--timeout &lt;ms&gt;</td>
