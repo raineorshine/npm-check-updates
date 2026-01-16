@@ -1,12 +1,14 @@
 import fs from 'fs/promises'
-import yaml from 'js-yaml'
 import path from 'path'
+import { parseDocument } from 'yaml'
+import { CatalogsConfig } from '../types/CatalogConfig'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'
 import { PackageFile } from '../types/PackageFile'
 import { VersionSpec } from '../types/VersionSpec'
 import resolveDepSections from './resolveDepSections'
-import upgradeCatalogData from './upgradeCatalogData'
+import { upgradeJsonCatalogDependencies } from './upgradeJsonCatalogDependencies'
+import { updateYamlCatalogDependencies } from './upgradeYamlCatalogDependencies'
 
 /**
  * @returns String safe for use in `new RegExp()`
@@ -46,65 +48,46 @@ async function upgradePackageData(
 
       if (actualFileExtension === '.json') {
         // Bun format: update package.json catalogs and return the updated content
-        return upgradeCatalogData(actualFilePath, current, upgraded)
+        return upgradeJsonCatalogDependencies(actualFilePath, current, upgraded)
       }
     }
 
-    // Handle pnpm-workspace.yaml catalog files
-    if (
-      fileName === 'pnpm-workspace.yaml' ||
-      fileName === '.yarnrc.yml' ||
-      (fileName.includes('catalog') && (fileExtension === '.yaml' || fileExtension === '.yml'))
-    ) {
-      // Check if we have synthetic catalog data (JSON with only dependencies and name/version)
-      // In this case, we should generate the proper catalog structure
-      const parsed = JSON.parse(pkgData)
-      if (
-        typeof parsed === 'object' &&
-        parsed.name === 'catalog-dependencies' &&
-        typeof parsed.dependencies === 'object' &&
-        Object.keys(parsed).length <= 3
-      ) {
-        // This is synthetic catalog data, we need to generate the proper catalog structure
-        // Read the original pnpm-workspace.yaml to get the catalog structure
-        const yamlContent = await fs.readFile(pkgFile, 'utf-8')
-        const yamlData = yaml.load(yamlContent) as {
-          packages?: string[]
-          catalog?: Index<string>
-          catalogs?: Index<Index<string>>
-        }
-
-        // Update catalog dependencies with upgraded versions
-        if (yamlData.catalogs) {
-          yamlData.catalogs = Object.entries(yamlData.catalogs as Record<string, Record<string, string>>).reduce(
-            (catalogs, [catalogName, catalog]) => ({
-              ...catalogs,
-              [catalogName]: {
-                ...catalog,
-                ...Object.entries(upgraded)
-                  .filter(([dep]) => catalog[dep])
-                  .reduce((acc, [dep, version]) => ({ ...acc, [dep]: version }), {} as Record<string, string>),
-              },
-            }),
-            {} as Record<string, Record<string, string>>,
-          )
-        }
-
-        // Also handle single catalog (if present)
-        if (yamlData.catalog) {
-          const catalog = yamlData.catalog as Record<string, string>
-          yamlData.catalog = {
-            ...catalog,
-            ...Object.entries(upgraded)
-              .filter(([dep]) => catalog[dep])
-              .reduce((acc, [dep, version]) => ({ ...acc, [dep]: version }), {} as Record<string, string>),
-          }
-        }
-
-        return JSON.stringify(yamlData, null, 2)
+    // Handle yaml catalog files
+    if (fileName === 'pnpm-workspace.yaml' || fileName === '.yarnrc.yml') {
+      const yamlContent = await fs.readFile(pkgFile, 'utf-8')
+      const catalogData: CatalogsConfig = CatalogsConfig.parse(parseDocument(yamlContent).toJSON())
+      const reconstructedUpdates: { path: string[]; newValue: string }[] = []
+      // Update catalog dependencies with upgraded versions
+      if (catalogData.catalogs) {
+        Object.entries(catalogData.catalogs).forEach(([catalogName, catalog]) => {
+          Object.entries(upgraded).forEach(([dep, version]) => {
+            if (catalog[dep]) {
+              reconstructedUpdates.push({ path: ['catalogs', catalogName, dep], newValue: version })
+            }
+          })
+        })
       }
 
-      return upgradeCatalogData(pkgFile, current, upgraded)
+      if (catalogData.catalog) {
+        Object.entries(upgraded).forEach(([dep, version]) => {
+          if (catalogData.catalog?.[dep]) {
+            reconstructedUpdates.push({ path: ['catalog', dep], newValue: version })
+          }
+        })
+      }
+
+      let updatedContent = yamlContent
+      reconstructedUpdates.forEach(upgrade => {
+        const updatedYaml = updateYamlCatalogDependencies({
+          fileContent: updatedContent,
+          upgrade,
+        })
+        if (updatedYaml) {
+          updatedContent = updatedYaml
+        }
+      })
+
+      return updatedContent
     }
 
     // Handle package.json catalog files (check if content contains catalog/catalogs at root level or in workspaces)
@@ -117,7 +100,7 @@ async function upgradePackageData(
         (parsed.workspaces.catalog || parsed.workspaces.catalogs)
 
       if (hasTopLevelCatalogs || hasWorkspacesCatalogs) {
-        return upgradeCatalogData(pkgFile, current, upgraded)
+        return upgradeJsonCatalogDependencies(pkgFile, current, upgraded)
       }
     }
   }
