@@ -66,17 +66,10 @@ export function updateYamlCatalogDependencies({
   const { path } = upgrade
 
   if (!(path.length > 1) && path[0] !== 'catalog' && path[0] !== 'catalogs') {
-    // logger.error(
-    //   'No catalogName was found; this is likely an extraction error.',
-    // );
     return null
   }
 
   const { newValue } = upgrade
-
-  // logger.trace(
-  //   `npm.updateYarnrcCatalogDependency(): ${depType}::${catalogName}.${depName} = ${newValue}`,
-  // );
 
   let document: ReturnType<typeof parseDocument>
   let parsedContents: CatalogsConfig
@@ -91,7 +84,6 @@ export function updateYamlCatalogDependencies({
     document = parseDocument(fileContent, { keepSourceTokens: true })
     parsedContents = CatalogsConfig.parse(document.toJSON())
   } catch (err) {
-    // logger.debug({ err }, 'Could not parse yarnrc YAML file.');
     return null
   }
 
@@ -103,7 +95,6 @@ export function updateYamlCatalogDependencies({
         : undefined
 
   if (oldVersion === newValue) {
-    // logger.trace('Version is already updated');
     return fileContent
   }
 
