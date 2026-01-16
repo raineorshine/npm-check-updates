@@ -56,8 +56,10 @@ async function upgradePackageData(
     if (fileName === 'pnpm-workspace.yaml' || fileName === '.yarnrc.yml') {
       const yamlContent = await fs.readFile(pkgFile, 'utf-8')
       const catalogData: CatalogsConfig = CatalogsConfig.parse(parseDocument(yamlContent).toJSON())
+
+      // Reconstruct the list of updates to apply unfortunately we lost the path information during extraction before
       const reconstructedUpdates: { path: string[]; newValue: string }[] = []
-      // Update catalog dependencies with upgraded versions
+
       if (catalogData.catalogs) {
         Object.entries(catalogData.catalogs).forEach(([catalogName, catalog]) => {
           Object.entries(upgraded).forEach(([dep, version]) => {

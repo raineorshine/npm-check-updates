@@ -299,7 +299,7 @@ export default async function runLocal(
     ? pkgFile?.endsWith('.yaml') || pkgFile?.endsWith('.yml')
       ? parseDocument(newPkgData).toJSON()
       : (parseJson(newPkgData) as PackageFile)
-    : options.jsonDeps
+    : options.jsonDeps && pkgFile?.endsWith('.json')
       ? pick(parseJson(newPkgData) as PackageFile, resolveDepSections(options.dep))
       : chosenUpgraded
 
