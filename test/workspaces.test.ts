@@ -621,6 +621,63 @@ catalog:
         }
       })
 
+      it('update pnpm catalog dependencies from pnpm-workspace.yaml', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          const pkgDataRoot = JSON.stringify({
+            dependencies: {
+              'ncu-test-v2': '1.0.0',
+            },
+          })
+
+          const pnpmWorkspaceData = `packages:
+  - 'packages/**'
+
+catalog:
+  ncu-test-tag: '1.0.0'
+  ncu-test-v2: '1.0.0'
+
+catalogs:
+  test:
+    ncu-test-tag: '1.0.0'
+`
+
+          // write root package file and pnpm-workspace.yaml
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'pnpm-workspace.yaml'), pnpmWorkspaceData, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'pnpm-lock.yaml'), '', 'utf-8')
+
+          // create workspace package
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              dependencies: {
+                'ncu-test-tag': 'catalog:',
+              },
+            }),
+            'utf-8',
+          )
+
+          await spawn('node', [bin, '-u', '--workspaces'], { rejectOnError: false }, { cwd: tempDir })
+
+          const updatedConfig = await fs.readFile(path.join(tempDir, 'pnpm-workspace.yaml'), 'utf-8')
+          updatedConfig.should.be.equal(`packages:
+  - 'packages/**'
+
+catalog:
+  ncu-test-tag: '1.1.0'
+  ncu-test-v2: '2.0.0'
+
+catalogs:
+  test:
+    ncu-test-tag: '1.1.0'
+`)
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+
       it('update pnpm catalog with --workspace flag (specific workspace)', async () => {
         const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
         try {
@@ -811,6 +868,65 @@ catalog:
             'package.json': { workspaces: ['packages/**'], dependencies: { 'ncu-test-v2': '2.0.0' } },
             'packages/a/package.json': { dependencies: { 'ncu-test-tag': 'catalog:' } },
           })
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+      it('update yarn catalog dependencies from .yarnrc.yml', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          const pkgDataRoot = JSON.stringify({
+            workspaces: ['packages/**'],
+            dependencies: {
+              'ncu-test-v2': '1.0.0',
+            },
+          })
+
+          const yarnConfig = `
+catalog:
+  ncu-test-v2: '1.0.0'
+  ncu-test-tag: '1.0.0'
+
+catalogs:
+  test:
+    ncu-test-tag: '1.0.0'
+`
+
+          // write root package file and pnpm-workspace.yaml
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+          await fs.writeFile(path.join(tempDir, '.yarnrc.yml'), yarnConfig, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'yarn.lock'), '', 'utf-8')
+
+          // create workspace package
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              dependencies: {
+                'ncu-test-tag': 'catalog:',
+              },
+            }),
+            'utf-8',
+          )
+
+          const { stdout } = await spawn(
+            'node',
+            [bin, '-u', '--workspaces'],
+            { rejectOnError: false },
+            { cwd: tempDir },
+          )
+
+          stdout.should.not.be.empty
+
+          const updatedConfig = await fs.readFile(path.join(tempDir, '.yarnrc.yml'), 'utf-8')
+          updatedConfig.should.equal(`catalog:
+  ncu-test-v2: '2.0.0'
+  ncu-test-tag: '1.1.0'
+
+catalogs:
+  test:
+    ncu-test-tag: '1.1.0'
+`)
         } finally {
           await fs.rm(tempDir, { recursive: true, force: true })
         }
