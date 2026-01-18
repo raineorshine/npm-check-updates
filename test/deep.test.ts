@@ -6,6 +6,7 @@ import spawn from 'spawn-please'
 import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
 import chaiSetup from './helpers/chaiSetup'
+import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
@@ -66,7 +67,7 @@ describe('--deep', function () {
       deepJsonOut['packages/sub1/package.json'].dependencies.should.have.property('express')
       deepJsonOut['packages/sub2/package.json'].dependencies.should.have.property('express')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
     }
   })
 
@@ -86,7 +87,7 @@ describe('--deep', function () {
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
     }
   })
 
@@ -116,7 +117,7 @@ describe('--deep', function () {
       json.should.have.property(path.join(tempDir, 'packages/sub2/package.json').replace(/\\/g, '/'))
       json.should.have.property(path.join(tempDir, 'package.json').replace(/\\/g, '/'))
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
     }
   })
 
@@ -142,7 +143,7 @@ describe('--deep', function () {
         },
       )
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
     }
   })
 })

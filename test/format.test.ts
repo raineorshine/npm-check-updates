@@ -4,25 +4,8 @@ import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import chaiSetup from './helpers/chaiSetup'
+import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
-
-/**
- * Helper function to remove a directory while avoiding errors like:
- * Error: EBUSY: resource busy or locked, rmdir 'C:\Users\alice\AppData\Local\Temp\npm-check-updates-yc1wT3'
- */
-async function removeDir(dirPath: string) {
-  while (true) {
-    try {
-      await fs.access(dirPath, fs.constants.W_OK)
-    } catch {
-      continue
-    }
-
-    break
-  }
-
-  await fs.rm(dirPath, { recursive: true, force: true })
-}
 
 chaiSetup()
 
@@ -72,7 +55,7 @@ describe('format', () => {
       stdout.should.include('peer')
       stdout.should.include('optional')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
       stub.restore()
     }
   })
@@ -106,7 +89,7 @@ describe('format', () => {
       const { stdout } = await spawn('node', [bin, '--format', 'repo'], {}, { cwd: tempDir })
       stdout.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
     }
   })
 
@@ -134,7 +117,7 @@ describe('format', () => {
       const { stdout } = await spawn('node', [bin, '--format', 'lines'], {}, { cwd: tempDir })
       stdout.should.equals('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
     } finally {
-      removeDir(tempDir)
+      await removeDir(tempDir)
       stub.restore()
     }
   })
@@ -169,7 +152,7 @@ describe('format', () => {
         },
       ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonUpgraded.')
     } finally {
-      removeDir(tempDir)
+      await removeDir(tempDir)
       stub.restore()
     }
   })
@@ -204,7 +187,7 @@ describe('format', () => {
         },
       ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonAll.')
     } finally {
-      removeDir(tempDir)
+      await removeDir(tempDir)
       stub.restore()
     }
   })
@@ -239,7 +222,7 @@ describe('format', () => {
         },
       ).should.eventually.be.rejectedWith('Cannot use --format lines with other formatting options.')
     } finally {
-      removeDir(tempDir)
+      await removeDir(tempDir)
       stub.restore()
     }
   })
