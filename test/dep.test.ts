@@ -3,6 +3,7 @@ import os from 'os'
 import path from 'path'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
+import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
@@ -98,7 +99,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
@@ -145,7 +146,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
@@ -192,7 +193,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
@@ -235,7 +236,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
@@ -277,7 +278,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
@@ -316,7 +317,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
@@ -358,7 +359,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
@@ -399,7 +400,7 @@ describe('--dep', () => {
           },
         })
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })

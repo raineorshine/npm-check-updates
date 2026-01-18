@@ -6,6 +6,7 @@ import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
 import chaiSetup from './helpers/chaiSetup'
 import { testFail, testPass } from './helpers/doctorHelpers'
+import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
@@ -341,7 +342,7 @@ else {
 
         pkgUpgraded = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
       }
 
       // stdout should include successful upgrades
