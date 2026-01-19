@@ -4,6 +4,7 @@ import path from 'node:path'
 import spawn from 'spawn-please'
 import parseJson from '../../../src/lib/utils/parseJson'
 import chaiSetup from '../../helpers/chaiSetup'
+import removeDir from '../../helpers/removeDir'
 
 chaiSetup()
 
@@ -31,7 +32,7 @@ describe('deno', async function () {
       const pkg = parseJson(stdout)
       pkg.should.have.property('ncu-test-v2')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
     }
   })
 
@@ -51,7 +52,7 @@ describe('deno', async function () {
       const pkg = parseJson(stdout)
       pkg.should.have.property('ncu-test-v2')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
     }
   })
 
@@ -74,7 +75,7 @@ describe('deno', async function () {
         },
       })
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
     }
   })
 
@@ -95,7 +96,7 @@ describe('deno', async function () {
       const pkg = parseJson(stdout)
       pkg.should.have.property('ncu-test-v2')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
     }
   })
 
@@ -118,7 +119,7 @@ describe('deno', async function () {
         },
       })
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
     }
   })
 })

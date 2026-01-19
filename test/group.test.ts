@@ -4,6 +4,7 @@ import path from 'path'
 import spawn from 'spawn-please'
 import { GroupFunction } from '../src/types/GroupFunction'
 import chaiSetup from './helpers/chaiSetup'
+import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
@@ -51,7 +52,7 @@ async function groupTestScaffold(
     )
     stripAnsi(stdout).should.containIgnoreCase(expectedOutput)
   } finally {
-    await fs.rm(tempDir, { recursive: true, force: true })
+    await removeDir(tempDir)
     stub.restore()
   }
 }

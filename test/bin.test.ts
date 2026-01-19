@@ -5,6 +5,7 @@ import spawn from 'spawn-please'
 import { Index } from '../src/types/IndexType'
 import { Version } from '../src/types/Version'
 import chaiSetup from './helpers/chaiSetup'
+import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
@@ -112,7 +113,7 @@ describe('bin', async function () {
       const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('express')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
       stub.restore()
     }
   })
@@ -129,7 +130,7 @@ describe('bin', async function () {
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
       stub.restore()
     }
   })
@@ -149,7 +150,7 @@ describe('bin', async function () {
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
       stub.restore()
     }
   })
@@ -166,7 +167,7 @@ describe('bin', async function () {
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
       stub.restore()
     }
   })
@@ -185,7 +186,7 @@ describe('bin', async function () {
       upgradedPkg.dependencies.should.have.property('express')
       upgradedPkg.dependencies.express.should.not.equal('1')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
       stub.restore()
     }
   })
@@ -214,7 +215,7 @@ describe('bin', async function () {
       const { stdout } = await spawn('node', [bin, '--packageFile', pkgFile, '--filter', 'ncu-test-v2 ncu-test-tag'])
       stdout.should.include('"ncu-test-v2 ncu-test-tag"')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
       stub.restore()
     }
   })

@@ -4,6 +4,7 @@ import os from 'os'
 import path from 'path'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
+import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
@@ -49,7 +50,7 @@ describe('filterResults', () => {
       expect(upgraded).to.have.property('ncu-test-v2', '3.0.0')
       expect(upgraded).to.not.have.property('ncu-test-return-version')
     } finally {
-      await fs.rm(tempDir, { recursive: true, force: true })
+      await removeDir(tempDir)
       stub.restore()
     }
   })

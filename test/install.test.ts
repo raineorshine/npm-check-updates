@@ -7,6 +7,7 @@ import path from 'path'
 import spawn from 'spawn-please'
 import exists from '../src/lib/exists'
 import chaiSetup from './helpers/chaiSetup'
+import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
@@ -35,7 +36,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'yarn.lock'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
@@ -59,7 +60,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
@@ -84,7 +85,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'yarn.lock'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
@@ -118,7 +119,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
@@ -150,7 +151,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
@@ -184,7 +185,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
@@ -218,7 +219,7 @@ describe('install', () => {
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
+        await removeDir(tempDir)
         stub.restore()
       }
     })
