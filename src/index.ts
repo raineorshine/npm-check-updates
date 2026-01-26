@@ -197,7 +197,13 @@ const install = async (
       } catch (err: any) {
         // sometimes packages print errors to stdout instead of stderr
         // if there is nothing on stderr, reject with stdout
-        throw new Error(err?.message || err || stdout)
+        console.error(err?.message || err || stdout)
+
+        // use a program error to exit with a non-zero code rather than throwing a new Error and allowing it to bubble up to the "this is a bug and should be reported message".
+        programError(
+          options,
+          'Install failed. This is not a bug in npm-check-updates. The most common causes are invalid peer dependencies, networking issues, or failing postinstall scripts. Consider using --peer to filter updates to compatible versions (takes longer) or --doctor to identify breaking upgrades.',
+        )
       }
     }
   }
