@@ -253,6 +253,29 @@ describe('bin', async function () {
     stub.restore()
   })
 
+  // TODO
+  // https://github.com/raineorshine/npm-check-updates/issues/1594
+  it.skip('upgrade duplicate dependencies with different versions', async () => {
+    const stub = stubVersions('99.9.9', { spawn: true })
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' }, devDependencies: { 'ncu-test-v2': '1.0.1' } }),
+      'utf-8',
+    )
+    try {
+      await spawn('node', [bin, '-u', '--packageFile', pkgFile])
+      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+      console.log(upgradedPkg)
+      upgradedPkg.dependencies.should.deep.equal({ 'ncu-test-v2': '99.9.9' })
+      upgradedPkg.devDependencies.should.deep.equal({ 'ncu-test-v2': '99.9.9' })
+    } finally {
+      await removeDir(tempDir)
+      stub.restore()
+    }
+  })
+
   describe('embedded versions', () => {
     it('strip url from GitHub url in "to" output', async () => {
       // use dynamic import for ESM module
