@@ -792,6 +792,44 @@ describe('cooldown', () => {
       stub.restore()
     })
 
+    it('should accept a string ("3m") returned from the predicate for per-package unit suffixes', async () => {
+      // Given: predicate returns "3m" (3 minutes) for test-package and 10 (days) for test-package-2;
+      //        test-package released 4 minutes ago (outside 3m cooldown),
+      //        test-package-2 released 1 day ago (inside 10-day cooldown)
+      const MINUTE = DAY / (24 * 60)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+          'test-package-2': '1.0.0',
+        },
+      }
+      const stub = stubVersions({
+        'test-package': createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 4 * MINUTE).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+        'test-package-2': createMockVersion({
+          name: 'test-package-2',
+          versions: { '1.1.0': new Date(NOW - DAY).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+      })
+
+      // When: predicate returns a string for one package and a number for another
+      const result = await ncu({
+        packageData,
+        cooldown: (packageName: string) => (packageName === 'test-package' ? '3m' : 10),
+        target: 'latest',
+      })
+
+      // Then: test-package is upgraded (4 min > 3 min cooldown), test-package-2 is not (1 day < 10 days)
+      expect(result).to.have.property('test-package', '1.1.0')
+      expect(result).to.not.have.property('test-package-2')
+
+      stub.restore()
+    })
+
     it('should upgrade when predicate returns 0, disabling cooldown for that package', async () => {
       // Given: predicate returns 0 for test-package (no cooldown) and 10 for others; version released 1 day ago
       const packageData: PackageFile = {

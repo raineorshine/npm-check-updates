@@ -1,4 +1,5 @@
 import semver from 'semver'
+import { parseCooldownString } from '../lib/parseCooldown'
 import * as versionUtil from '../lib/version-util'
 import type { CooldownFunction } from '../types/CooldownFunction'
 import type { Index } from '../types/IndexType'
@@ -75,10 +76,11 @@ export function satisfiesCooldownPeriod(
 
   const versionReleaseDate = new Date(versionTimeData)
   const DAY_AS_MS = 86400000 // milliseconds in a day
-  const cooldownDays =
+  const rawCooldown =
     typeof cooldownDaysOrPredicateFn === 'function'
-      ? (cooldownDaysOrPredicateFn(versionResult.name!) ?? 0) // 0 days = no cooldown
+      ? (cooldownDaysOrPredicateFn(versionResult.name!) ?? 0) // null → 0 days = no cooldown
       : cooldownDaysOrPredicateFn
+  const cooldownDays = typeof rawCooldown === 'string' ? (parseCooldownString(rawCooldown) ?? 0) : rawCooldown
 
   return Date.now() - versionReleaseDate.getTime() >= cooldownDays * DAY_AS_MS
 }
