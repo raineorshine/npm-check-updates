@@ -11,6 +11,7 @@ import cacher from './cache'
 import determinePackageManager from './determinePackageManager'
 import exists from './exists'
 import keyValueBy from './keyValueBy'
+import { parseCooldownString } from './parseCooldown'
 import programError from './programError'
 
 function parseFilterExpression(filterExpression: string[] | undefined): string[] | undefined
@@ -184,11 +185,27 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   }
 
   if (options.cooldown != null) {
+    // Normalize string formats ("7d", "12h", "30m") to a fractional number of days.
+    if (typeof options.cooldown === 'string') {
+      const days = parseCooldownString(options.cooldown)
+      if (days === null) {
+        programError(
+          options,
+          `Invalid cooldown value: "${options.cooldown}". Use a number (days) or a string like "7d", "12h", or "30m".`,
+        )
+      } else {
+        options.cooldown = days
+      }
+    }
+
     const isValidNumber = typeof options.cooldown === 'number' && !isNaN(options.cooldown) && options.cooldown >= 0
     const isValidFunction = typeof options.cooldown === 'function'
 
     if (!isValidNumber && !isValidFunction) {
-      programError(options, 'Cooldown must be a non-negative integer representing days since published or a function')
+      programError(
+        options,
+        'Cooldown must be a non-negative number (days), a string like "7d", "12h", or "30m", or a predicate function.',
+      )
     }
   }
 

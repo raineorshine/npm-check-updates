@@ -209,8 +209,8 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Directory of .ncurc config file. (default: directory of <code>packageFile</code>)</td>
   </tr>
   <tr>
-    <td><a href="#cooldown">-c, --cooldown &lt;n&gt;</a></td>
-    <td>Sets a minimum age (in days) for package versions to be considered for upgrade, reducing the risk of installing newly published, potentially compromised packages.</td>
+    <td><a href="#cooldown">-c, --cooldown &lt;period&gt;</a></td>
+    <td>Sets a minimum age for package versions to be considered for upgrade. Accepts a number (days) or a string with a unit: "7d" (days), "12h" (hours), "30m" (minutes). Reduces the risk of installing newly published, potentially compromised packages.</td>
   </tr>
   <tr>
     <td>--cwd &lt;path&gt;</td>
@@ -405,10 +405,17 @@ Run `ncu --help [OPTION]` to view advanced help for a specific option, or see be
 
 Usage:
 
-    ncu --cooldown [n]
-    ncu -c [n]
+    ncu --cooldown [period]
+    ncu -c [period]
 
-The cooldown option helps protect against supply chain attacks by requiring package versions to be published at least the given number of days before considering them for upgrade.
+The cooldown option helps protect against supply chain attacks by requiring package versions to be published at least the given amount of time before considering them for upgrade.
+
+The value can be a plain number (days) or a string with a unit suffix:
+
+    --cooldown 7       7 days
+    --cooldown 7d      7 days (same as above)
+    --cooldown 12h     12 hours
+    --cooldown 30m     30 minutes
 
 Note that previous stable versions will not be suggested. The package will be completely ignored if its latest published version is within the cooldown period. This is due to a limitation of the npm registry, which does not provide a way to query previous stable versions.
 

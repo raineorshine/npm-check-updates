@@ -1,8 +1,8 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import ncu from '../src/'
-import { PackageFile } from '../src/types/PackageFile'
-import { Packument } from '../src/types/Packument'
+import type { PackageFile } from '../src/types/PackageFile'
+import type { Packument } from '../src/types/Packument'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 
@@ -47,16 +47,199 @@ describe('cooldown', () => {
         ncu({
           cooldown: -1,
         }),
-      ).to.be.rejectedWith('Cooldown must be a non-negative integer representing days since published or a function')
+      ).to.be.rejectedWith(
+        'Cooldown must be a non-negative number (days), a string like "7d", "12h", or "30m", or a predicate function.',
+      )
     })
 
-    it('throws error for non-numeric cooldown', () => {
+    it('throws error for unrecognized string cooldown', () => {
       expect(
         ncu({
-          // @ts-expect-error -- testing invalid input
           cooldown: 'invalid',
         }),
-      ).to.be.rejectedWith('Cooldown must be a non-negative integer representing days since published or a function')
+      ).to.be.rejectedWith(
+        'Invalid cooldown value: "invalid". Use a number (days) or a string like "7d", "12h", or "30m".',
+      )
+    })
+  })
+
+  describe('cooldown string formats', () => {
+    it('upgrades package when cooldown is given in days ("6d")', async () => {
+      // Given: cooldown "6d" (6 days), version released 7 days ago — outside cooldown
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 7 * DAY).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      const result = await ncu({
+        packageData,
+        cooldown: '6d',
+        target: 'latest',
+      })
+
+      expect(result).to.have.property('test-package', '1.1.0')
+
+      stub.restore()
+    })
+
+    it('skips upgrade when cooldown is given in days ("6d") and version is inside period', async () => {
+      // Given: cooldown "6d" (6 days), version released 5 days ago — inside cooldown
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 5 * DAY).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      const result = await ncu({
+        packageData,
+        cooldown: '6d',
+        target: 'latest',
+      })
+
+      expect(result).to.not.have.property('test-package')
+
+      stub.restore()
+    })
+
+    it('upgrades package when cooldown is given in hours ("12h")', async () => {
+      // Given: cooldown "12h" (12 hours), version released 13 hours ago — outside cooldown
+      const HOUR = DAY / 24
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 13 * HOUR).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      const result = await ncu({
+        packageData,
+        cooldown: '12h',
+        target: 'latest',
+      })
+
+      expect(result).to.have.property('test-package', '1.1.0')
+
+      stub.restore()
+    })
+
+    it('skips upgrade when cooldown is given in hours ("12h") and version is inside period', async () => {
+      // Given: cooldown "12h" (12 hours), version released 11 hours ago — inside cooldown
+      const HOUR = DAY / 24
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 11 * HOUR).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      const result = await ncu({
+        packageData,
+        cooldown: '12h',
+        target: 'latest',
+      })
+
+      expect(result).to.not.have.property('test-package')
+
+      stub.restore()
+    })
+
+    it('upgrades package when cooldown is given in minutes ("30m")', async () => {
+      // Given: cooldown "30m" (30 minutes), version released 31 minutes ago — outside cooldown
+      const MINUTE = DAY / (24 * 60)
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 31 * MINUTE).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      const result = await ncu({
+        packageData,
+        cooldown: '30m',
+        target: 'latest',
+      })
+
+      expect(result).to.have.property('test-package', '1.1.0')
+
+      stub.restore()
+    })
+
+    it('skips upgrade when cooldown is given in minutes ("30m") and version is inside period', async () => {
+      // Given: cooldown "30m" (30 minutes), version released 29 minutes ago — inside cooldown
+      const MINUTE = DAY / (24 * 60)
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 29 * MINUTE).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      const result = await ncu({
+        packageData,
+        cooldown: '30m',
+        target: 'latest',
+      })
+
+      expect(result).to.not.have.property('test-package')
+
+      stub.restore()
+    })
+
+    it('"6d" string is equivalent to the number 6', async () => {
+      // Given: both cooldown forms should produce identical results
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const mockData = createMockVersion({
+        name: 'test-package',
+        versions: { '1.1.0': new Date(NOW - 7 * DAY).toISOString() },
+        distTags: { latest: '1.1.0' },
+      })
+
+      const stub1 = stubVersions(mockData)
+      const resultNumber = await ncu({
+        packageData,
+        cooldown: 6,
+        target: 'latest',
+      })
+      stub1.restore()
+
+      const stub2 = stubVersions(mockData)
+      const resultString = await ncu({
+        packageData,
+        cooldown: '6d',
+        target: 'latest',
+      })
+      stub2.restore()
+
+      expect(resultNumber).to.deep.equal(resultString)
     })
   })
 
@@ -549,6 +732,95 @@ describe('cooldown', () => {
       })
 
       // Then: test-package is upgraded to version 1.1.0 (as cooldown for this package was set to 5), but test-package-2 is not upgraded (as rest of the packages use default cooldown of 10)
+      expect(result).to.have.property('test-package', '1.1.0')
+      expect(result).to.not.have.property('test-package-2')
+
+      stub.restore()
+    })
+
+    it('should upgrade when predicate returns a sub-day (fractional) value and version is outside that period', async () => {
+      // Given: predicate returns 12/24 (= 12 hours), version released 13 hours ago — outside cooldown
+      const HOUR = DAY / 24
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 13 * HOUR).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      // When: cooldown predicate returns 12/24 (fractional days = 12 hours)
+      const result = await ncu({
+        packageData,
+        cooldown: () => 12 / 24,
+        target: 'latest',
+      })
+
+      // Then: test-package is upgraded to 1.1.0
+      expect(result).to.have.property('test-package', '1.1.0')
+
+      stub.restore()
+    })
+
+    it('should skip upgrade when predicate returns a sub-day (fractional) value and version is inside that period', async () => {
+      // Given: predicate returns 12/24 (= 12 hours), version released 11 hours ago — inside cooldown
+      const HOUR = DAY / 24
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 11 * HOUR).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      // When: cooldown predicate returns 12/24 (fractional days = 12 hours)
+      const result = await ncu({
+        packageData,
+        cooldown: () => 12 / 24,
+        target: 'latest',
+      })
+
+      // Then: test-package is not upgraded
+      expect(result).to.not.have.property('test-package')
+
+      stub.restore()
+    })
+
+    it('should upgrade when predicate returns 0, disabling cooldown for that package', async () => {
+      // Given: predicate returns 0 for test-package (no cooldown) and 10 for others; version released 1 day ago
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+          'test-package-2': '1.0.0',
+        },
+      }
+      const stub = stubVersions({
+        'test-package': createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - DAY).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+        'test-package-2': createMockVersion({
+          name: 'test-package-2',
+          versions: { '1.1.0': new Date(NOW - DAY).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+      })
+
+      // When: predicate returns 0 for test-package and 10 for everything else
+      const result = await ncu({
+        packageData,
+        cooldown: (packageName: string) => (packageName === 'test-package' ? 0 : 10),
+        target: 'latest',
+      })
+
+      // Then: test-package is upgraded (cooldown disabled for it), test-package-2 is not
       expect(result).to.have.property('test-package', '1.1.0')
       expect(result).to.not.have.property('test-package-2')
 

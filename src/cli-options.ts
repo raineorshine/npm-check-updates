@@ -1,6 +1,7 @@
 import path from 'path'
 import { defaultCacheFile } from './lib/cache'
 import chalk from './lib/chalk'
+import { parseCooldownString } from './lib/parseCooldown'
 import { sortBy } from './lib/sortBy'
 import table from './lib/table'
 import CLIOption from './types/CLIOption'
@@ -547,7 +548,14 @@ As a comparison: without using the \`--peer\` option, ncu will suggest the lates
 
 /** Extended help for the --cooldown option. */
 const extendedHelpCooldown: ExtendedHelp = ({ markdown }) => {
-  return `The cooldown option helps protect against supply chain attacks by requiring package versions to be published at least the given number of days before considering them for upgrade.
+  return `The cooldown option helps protect against supply chain attacks by requiring package versions to be published at least the given amount of time before considering them for upgrade.
+
+The value can be a plain number (days) or a string with a unit suffix:
+
+    --cooldown 7       7 days
+    --cooldown 7d      7 days (same as above)
+    --cooldown 12h     12 hours
+    --cooldown 30m     30 minutes
 
 Note that previous stable versions will ${chalk.bold('not')} be suggested. The package will be completely ignored if its latest published version is within the cooldown period. This is due to a limitation of the npm registry, which does not provide a way to query previous stable versions.
 
@@ -981,12 +989,16 @@ const cliOptions: CLIOption[] = [
   {
     long: 'cooldown',
     short: 'c',
-    arg: 'n',
+    arg: 'period',
     description:
-      'Sets a minimum age (in days) for package versions to be considered for upgrade, reducing the risk of installing newly published, potentially compromised packages.',
-    type: `number | CooldownFunction`,
+      'Sets a minimum age for package versions to be considered for upgrade. Accepts a number (days) or a string with a unit: "7d" (days), "12h" (hours), "30m" (minutes). Reduces the risk of installing newly published, potentially compromised packages.',
+    type: `number | string | CooldownFunction`,
     help: extendedHelpCooldown,
-    parse: s => (typeof s === 'function' ? s : parseInt(s, 10)),
+    parse: s => {
+      if (typeof s === 'function') return s
+      const days = parseCooldownString(s)
+      return days !== null ? days : parseInt(s, 10)
+    },
   },
 ]
 

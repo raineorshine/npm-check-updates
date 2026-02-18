@@ -1,11 +1,11 @@
 import semver from 'semver'
 import * as versionUtil from '../lib/version-util'
-import { CooldownFunction } from '../types/CooldownFunction'
-import { Index } from '../types/IndexType'
-import { Maybe } from '../types/Maybe'
-import { Options } from '../types/Options'
-import { Packument } from '../types/Packument'
-import { Version } from '../types/Version'
+import type { CooldownFunction } from '../types/CooldownFunction'
+import type { Index } from '../types/IndexType'
+import type { Maybe } from '../types/Maybe'
+import type { Options } from '../types/Options'
+import type { Packument } from '../types/Packument'
+import type { Version } from '../types/Version'
 
 /**
  * @param versionResult  Available version
@@ -90,7 +90,7 @@ export function filterPredicate(options: Options) {
     o => allowPreOrIsNotPre(o, options),
     options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null,
     options.peerDependencies ? o => satisfiesPeerDependencies(o, options.peerDependencies!) : null,
-    options.cooldown ? o => satisfiesCooldownPeriod(o, options.cooldown) : null,
+    options.cooldown ? o => satisfiesCooldownPeriod(o, options.cooldown as number | CooldownFunction) : null,
   ]
 
   return (o: Partial<Packument>) => predicates.every(predicate => (predicate ? predicate(o) : true))
