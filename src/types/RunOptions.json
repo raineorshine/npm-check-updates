@@ -187,10 +187,10 @@
           "type": "object"
         },
         {
-          "type": "number"
+          "type": ["string", "number"]
         }
       ],
-      "description": "Sets a minimum age (in days) for package versions to be considered for upgrade, reducing the risk of installing newly published, potentially compromised packages. Run \"ncu --help --cooldown\" for details."
+      "description": "Sets a minimum age for package versions to be considered for upgrade. Accepts a number (days) or a string with a unit: \"7d\" (days), \"12h\" (hours), \"30m\" (minutes). Reduces the risk of installing newly published, potentially compromised packages. Run \"ncu --help --cooldown\" for details."
     },
     "cwd": {
       "description": "Working directory in which npm will be executed.",

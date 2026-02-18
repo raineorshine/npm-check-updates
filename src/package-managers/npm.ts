@@ -15,18 +15,19 @@ import libnpmconfig from '../lib/libnpmconfig'
 import { print, printSorted } from '../lib/logging'
 import { sortBy } from '../lib/sortBy'
 import * as versionUtil from '../lib/version-util'
-import { GetVersion } from '../types/GetVersion'
-import { Index } from '../types/IndexType'
-import { MockedVersions } from '../types/MockedVersions'
-import { NpmConfig } from '../types/NpmConfig'
-import { NpmOptions } from '../types/NpmOptions'
-import { Options } from '../types/Options'
-import { Packument } from '../types/Packument'
-import { SpawnOptions } from '../types/SpawnOptions'
-import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
-import { Version } from '../types/Version'
-import { VersionResult } from '../types/VersionResult'
-import { VersionSpec } from '../types/VersionSpec'
+import type { CooldownFunction } from '../types/CooldownFunction'
+import type { GetVersion } from '../types/GetVersion'
+import type { Index } from '../types/IndexType'
+import type { MockedVersions } from '../types/MockedVersions'
+import type { NpmConfig } from '../types/NpmConfig'
+import type { NpmOptions } from '../types/NpmOptions'
+import type { Options } from '../types/Options'
+import type { Packument } from '../types/Packument'
+import type { SpawnOptions } from '../types/SpawnOptions'
+import type { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
+import type { Version } from '../types/Version'
+import type { VersionResult } from '../types/VersionResult'
+import type { VersionSpec } from '../types/VersionSpec'
 import { filterPredicate, satisfiesCooldownPeriod, satisfiesNodeEngine } from './filters'
 
 const EXPLICIT_RANGE_OPS = new Set(['-', '||', '&&', '<', '<=', '>', '>='])
@@ -923,7 +924,7 @@ export const newest: GetVersion = async (
     const versionsSatisfyingCooldownPeriod = versionsSortedByTime.filter(version =>
       satisfiesCooldownPeriod(
         decorateTagPackumentWithTimeAndName((result as Packument).versions[version], result as Packument),
-        options.cooldown,
+        options.cooldown as number | CooldownFunction,
       ),
     )
 

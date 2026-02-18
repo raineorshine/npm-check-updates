@@ -41,8 +41,8 @@ export interface RunOptions {
   /** Directory of .ncurc config file. (default: directory of `packageFile`) */
   configFilePath?: string
 
-  /** Sets a minimum age (in days) for package versions to be considered for upgrade, reducing the risk of installing newly published, potentially compromised packages. Run "ncu --help --cooldown" for details. */
-  cooldown?: number | CooldownFunction
+  /** Sets a minimum age for package versions to be considered for upgrade. Accepts a number (days) or a string with a unit: "7d" (days), "12h" (hours), "30m" (minutes). Reduces the risk of installing newly published, potentially compromised packages. Run "ncu --help --cooldown" for details. */
+  cooldown?: number | string | CooldownFunction
 
   /** Working directory in which npm will be executed. */
   cwd?: string
