@@ -11,7 +11,7 @@ import cacher from './cache'
 import determinePackageManager from './determinePackageManager'
 import exists from './exists'
 import keyValueBy from './keyValueBy'
-import { parseCooldownString } from './parseCooldown'
+import parseCooldown from './parseCooldown'
 import programError from './programError'
 
 function parseFilterExpression(filterExpression: string[] | undefined): string[] | undefined
@@ -187,7 +187,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   if (options.cooldown != null) {
     // Normalize string formats ("7d", "12h", "30m") to a fractional number of days.
     if (typeof options.cooldown === 'string') {
-      const days = parseCooldownString(options.cooldown)
+      const days = parseCooldown(options.cooldown)
       if (days === null) {
         programError(
           options,

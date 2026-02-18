@@ -1,7 +1,7 @@
 import path from 'path'
 import { defaultCacheFile } from './lib/cache'
 import chalk from './lib/chalk'
-import { parseCooldownString } from './lib/parseCooldown'
+import parseCooldown from './lib/parseCooldown'
 import { sortBy } from './lib/sortBy'
 import table from './lib/table'
 import CLIOption from './types/CLIOption'
@@ -996,7 +996,7 @@ const cliOptions: CLIOption[] = [
     help: extendedHelpCooldown,
     parse: s => {
       if (typeof s === 'function') return s
-      const days = parseCooldownString(s)
+      const days = parseCooldown(s)
       return days !== null ? days : parseInt(s, 10)
     },
   },
