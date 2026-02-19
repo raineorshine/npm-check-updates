@@ -5,7 +5,6 @@ import parseCooldown from './lib/parseCooldown'
 import { sortBy } from './lib/sortBy'
 import table from './lib/table'
 import CLIOption from './types/CLIOption'
-import { CooldownFunction } from './types/CooldownFunction'
 import ExtendedHelp from './types/ExtendedHelp'
 import { Index } from './types/IndexType'
 
@@ -25,6 +24,22 @@ const codeBlock = (code: string, { markdown }: { markdown?: boolean } = {}) =>
 
 /** Removes inline code ticks. */
 const uncode = (s: string) => s.replace(/`/g, '')
+
+/** Parses a number from a string or number input. Throws if the value is not a number. */
+const parseNumberOption =
+  (optionName: string) =>
+  (value: unknown): number => {
+    if (typeof value === 'number') {
+      return value
+    } else if (typeof value === 'string') {
+      const parsed = parseInt(value, 10)
+      if (!isNaN(parsed)) {
+        return parsed
+      }
+    }
+
+    throw new Error(`${optionName} must be a number`)
+  }
 
 /** Renders the extended help for an option with usage information. */
 export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?: boolean } = {}) => {
@@ -640,7 +655,7 @@ const cliOptions: CLIOption[] = [
     long: 'cacheExpiration',
     arg: 'min',
     description: 'Cache expiration in minutes. Only works with `--cache`.',
-    parse: s => parseInt(s, 10),
+    parse: parseNumberOption('cacheExpiration'),
     default: 10,
     type: 'number',
   },
@@ -648,7 +663,12 @@ const cliOptions: CLIOption[] = [
     long: 'cacheFile',
     arg: 'path',
     description: 'Filepath for the cache file. Only works with `--cache`.',
-    parse: s => (path.isAbsolute(s) ? s : path.join(process.cwd(), s)),
+    parse: value => {
+      if (typeof value !== 'string') {
+        throw new Error('cacheFile must be a string')
+      }
+      return path.isAbsolute(value) ? value : path.join(process.cwd(), value)
+    },
     default: defaultCacheFile,
     type: 'string',
   },
@@ -661,7 +681,7 @@ const cliOptions: CLIOption[] = [
     long: 'concurrency',
     arg: 'n',
     description: 'Max number of concurrent HTTP requests to registry.',
-    parse: s => parseInt(s, 10),
+    parse: parseNumberOption('concurrency'),
     default: 8,
     type: 'number',
   },
@@ -735,7 +755,7 @@ const cliOptions: CLIOption[] = [
     arg: 'n',
     description:
       'Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration).',
-    parse: s => parseInt(s, 10),
+    parse: parseNumberOption('errorLevel'),
     default: 1,
     type: 'number',
   },
@@ -873,7 +893,15 @@ const cliOptions: CLIOption[] = [
     arg: 'n',
     description:
       'Include prerelease versions, e.g. -alpha.0, -beta.5, -rc.2. Automatically set to 1 when `--target` is newest or greatest, or when the current version is a prerelease. (default: 0)',
-    parse: s => !!parseInt(s, 10),
+    parse: (value: unknown): boolean => {
+      if (typeof value === 'number') {
+        return !!value
+      } else if (typeof value === 'string') {
+        return !!parseInt(value, 10)
+      } else {
+        throw new Error('pre must be a number')
+      }
+    },
     type: 'number',
   },
   {
@@ -931,7 +959,7 @@ const cliOptions: CLIOption[] = [
     long: 'retry',
     arg: 'n',
     description: 'Number of times to retry failed requests for package info.',
-    parse: s => parseInt(s, 10),
+    parse: parseNumberOption('retry'),
     default: 3,
     type: 'number',
   },
@@ -959,7 +987,7 @@ const cliOptions: CLIOption[] = [
     long: 'timeout',
     arg: 'ms',
     description: 'Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch)',
-    parse: s => parseInt(s, 10),
+    parse: parseNumberOption('timeout'),
     type: 'number',
   },
   {
@@ -995,10 +1023,15 @@ const cliOptions: CLIOption[] = [
       'Sets a minimum age for package versions to be considered for upgrade. Accepts a number (days) or a string with a unit: "7d" (days), "12h" (hours), "30m" (minutes). Reduces the risk of installing newly published, potentially compromised packages.',
     type: `number | string | CooldownFunction`,
     help: extendedHelpCooldown,
-    parse: (value: number | string | CooldownFunction) => {
-      if (typeof value === 'number' || typeof value === 'function') return value
-      const days = parseCooldown(value)
-      return days !== null ? days : parseInt(value, 10)
+    parse: value => {
+      if (typeof value === 'number' || typeof value === 'function') {
+        return value
+      } else if (typeof value === 'string') {
+        const days = parseCooldown(value)
+        return days !== null ? days : parseInt(value, 10)
+      } else {
+        throw new Error('cooldown must be a number, string, or function')
+      }
     },
   },
 ]
