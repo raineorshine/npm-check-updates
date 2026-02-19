@@ -1,6 +1,7 @@
 import fs from 'fs/promises'
 import prompts from 'prompts-ncu'
 import nodeSemver from 'semver'
+import { parseDocument } from 'yaml'
 import { DependencyGroup } from '../types/DependencyGroup'
 import { Index } from '../types/IndexType'
 import { Maybe } from '../types/Maybe'
@@ -295,8 +296,10 @@ export default async function runLocal(
   const newPkgData = await upgradePackageData(pkgData, current, chosenUpgraded, options, pkgFile || undefined)
 
   const output: PackageFile | Index<VersionSpec> = options.jsonAll
-    ? (parseJson(newPkgData) as PackageFile)
-    : options.jsonDeps
+    ? pkgFile?.endsWith('.yaml') || pkgFile?.endsWith('.yml')
+      ? parseDocument(newPkgData).toJSON()
+      : (parseJson(newPkgData) as PackageFile)
+    : options.jsonDeps && pkgFile?.endsWith('.json')
       ? pick(parseJson(newPkgData) as PackageFile, resolveDepSections(options.dep))
       : chosenUpgraded
 

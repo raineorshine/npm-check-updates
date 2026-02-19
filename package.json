@@ -141,7 +141,9 @@
     "vite-bundle-analyzer": "^1.2.3",
     "vite-node": "^3.2.4",
     "vite-plugin-dts": "^4.5.4",
-    "yarn": "^1.22.22"
+    "yaml": "^2.8.2",
+    "yarn": "^1.22.22",
+    "zod": "^4.3.5"
   },
   "files": [
     "build",
