@@ -5,6 +5,7 @@ import parseCooldown from './lib/parseCooldown'
 import { sortBy } from './lib/sortBy'
 import table from './lib/table'
 import CLIOption from './types/CLIOption'
+import { CooldownFunction } from './types/CooldownFunction'
 import ExtendedHelp from './types/ExtendedHelp'
 import { Index } from './types/IndexType'
 
@@ -994,10 +995,10 @@ const cliOptions: CLIOption[] = [
       'Sets a minimum age for package versions to be considered for upgrade. Accepts a number (days) or a string with a unit: "7d" (days), "12h" (hours), "30m" (minutes). Reduces the risk of installing newly published, potentially compromised packages.',
     type: `number | string | CooldownFunction`,
     help: extendedHelpCooldown,
-    parse: s => {
-      if (typeof s === 'function') return s
-      const days = parseCooldown(s)
-      return days !== null ? days : parseInt(s, 10)
+    parse: (value: number | string | CooldownFunction) => {
+      if (typeof value === 'number' || typeof value === 'function') return value
+      const days = parseCooldown(value)
+      return days !== null ? days : parseInt(value, 10)
     },
   },
 ]
