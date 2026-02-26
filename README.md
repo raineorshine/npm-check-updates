@@ -648,6 +648,7 @@ Modify the output formatting or show additional information. Specify one or more
   <tr><td>lines</td><td>Prints name@version on separate lines. Useful for piping to npm install.</td></tr>
   <tr><td>ownerChanged</td><td>Shows if the package owner has changed.</td></tr>
   <tr><td>repo</td><td>Infers and displays links to the package's source code repository. Requires packages to be installed.</td></tr>
+  <tr><td>diff</td><td>Display link to compare the changes between package versions.</td></tr>
   <tr><td>time</td><td>Shows the publish time of each upgrade.</td></tr>
 </table>
 

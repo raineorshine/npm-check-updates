@@ -195,6 +195,7 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
       ['lines', 'Prints name@version on separate lines. Useful for piping to npm install.'],
       ['ownerChanged', `Shows if the package owner has changed.`],
       ['repo', `Infers and displays links to the package's source code repository. Requires packages to be installed.`],
+      ['diff', `Display link to compare the changes between package versions.`],
       ['time', 'Shows the publish time of each upgrade.'],
     ],
   })
@@ -794,7 +795,7 @@ const cliOptions: CLIOption[] = [
     parse: value => (typeof value === 'string' ? value.split(',') : value),
     default: [],
     type: 'readonly string[]',
-    choices: ['dep', 'group', 'homepage', 'ownerChanged', 'repo', 'time', 'lines', 'installedVersion'],
+    choices: ['dep', 'group', 'homepage', 'ownerChanged', 'repo', 'diff', 'time', 'lines', 'installedVersion'],
     help: extendedHelpFormat,
   },
   {

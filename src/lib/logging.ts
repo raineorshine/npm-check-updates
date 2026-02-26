@@ -198,6 +198,9 @@ export async function toDependencyTable({
             ? (await getPackageJson(dep, { pkgFile }))?.homepage || ''
             : ''
           const repoUrl = format?.includes('repo') ? (await getRepoUrl(dep, undefined, { pkgFile })) || '' : ''
+          const diffUrl = format?.includes('diff')
+            ? `https://my.diffend.io/npm/${dep}/${from.replace(/^\W+/, '')}/${to.replace(/^\W+/, '')}`
+            : ''
           const publishTime = format?.includes('time') && time?.[dep] ? time[dep] : ''
           return [
             dep,
@@ -206,7 +209,7 @@ export async function toDependencyTable({
             '→',
             toColorized,
             ownerChanged,
-            ...[homepageUrl, repoUrl, publishTime].filter(x => x),
+            ...[homepageUrl, repoUrl, diffUrl, publishTime].filter(x => x),
           ]
         }),
     ),
