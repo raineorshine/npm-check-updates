@@ -60,6 +60,50 @@ describe('format', () => {
     }
   })
 
+  describe('diff', () => {
+    it('basic', async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        pkgFile,
+        JSON.stringify({
+          dependencies: {
+            'ncu-test-v2': '^1.0.0',
+          },
+        }),
+        'utf-8',
+      )
+      try {
+        const { stdout } = await spawn('node', [bin, '--format', 'diff'], {}, { cwd: tempDir })
+        stdout.should.include('https://npmdiff.dev/ncu-test-v2/1.0.0/2.0.0')
+      } finally {
+        await removeDir(tempDir)
+      }
+    })
+
+    // https://github.com/raineorshine/npm-check-updates/pull/1603/changes/BASE..4ab36b01b5f90e8d2563361a3b18ed2b3f9d2280#r2865386584
+    it('encodeURIComponent', async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        pkgFile,
+        JSON.stringify({
+          dependencies: {
+            '@types/jsonlines': '0.1.0',
+          },
+        }),
+        'utf-8',
+      )
+      try {
+        const { stdout } = await spawn('node', [bin, '--format', 'diff'], {}, { cwd: tempDir })
+        // purposefully omit 'to' version since this is a live package
+        stdout.should.include('https://npmdiff.dev/%40types%2Fjsonlines/0.1.0/')
+      } finally {
+        await removeDir(tempDir)
+      }
+    })
+  })
+
   // do not stubVersions here, because we need to test if if time is parsed correctly from npm-registry-fetch
   it('--format time', async () => {
     const timestamp = '2020-04-27T21:48:11.660Z'

@@ -199,7 +199,7 @@ export async function toDependencyTable({
             : ''
           const repoUrl = format?.includes('repo') ? (await getRepoUrl(dep, undefined, { pkgFile })) || '' : ''
           const diffUrl = format?.includes('diff')
-            ? `${process.env.NCU_DIFF || 'https://npmdiff.dev'}/${dep}/${from.replace(/^\W+/, '')}/${to.replace(/^\W+/, '')}`
+            ? `${process.env.NCU_DIFF || 'https://npmdiff.dev'}/${encodeURIComponent(dep)}/${from.replace(/^\W+/, '')}/${to.replace(/^\W+/, '')}`
             : ''
           const publishTime = format?.includes('time') && time?.[dep] ? time[dep] : ''
           return [
