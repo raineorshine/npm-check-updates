@@ -51,13 +51,29 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
   return config
 })
 
+/**
+ * Resolves the pnpm command to use. On Windows, prefers `pnpm.cmd` (the shim created by npm
+ * global installs) but falls back to `pnpm` for installs that do not create .cmd shims
+ * (e.g. mise, scoop).
+ */
+const getPnpmCmd = memoize(async (): Promise<string> => {
+  if (process.platform !== 'win32') return 'pnpm'
+  try {
+    await spawn('pnpm.cmd', ['--version'])
+    return 'pnpm.cmd'
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'ENOENT') return 'pnpm'
+    return 'pnpm.cmd'
+  }
+})
+
 /** Fetches the list of all installed packages. */
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
   // use npm for local ls for completeness
   // this should never happen since list is only called in runGlobal -> getInstalledPackages
   if (!options.global) return npm.list(options)
 
-  const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+  const cmd = await getPnpmCmd()
   const { stdout } = await spawn(cmd, ['ls', '-g', '--json'])
   const result = JSON.parse(stdout) as PnpmList
   const list = keyValueBy(result[0].dependencies || {}, (name, { version }) => ({
@@ -94,7 +110,7 @@ async function spawnPnpm(
   spawnOptions?: SpawnOptions,
   spawnPleaseOptions?: SpawnPleaseOptions,
 ): Promise<string> {
-  const cmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+  const cmd = await getPnpmCmd()
 
   const fullArgs = [
     ...(npmOptions.global ? 'global' : []),
