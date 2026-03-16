@@ -3,9 +3,9 @@ import findUp from 'find-up'
 import fs from 'fs/promises'
 import ini from 'ini'
 import path from 'path'
-import spawn from 'spawn-please'
 import keyValueBy from '../lib/keyValueBy'
 import { print } from '../lib/logging'
+import spawnCommand from '../lib/spawnCommand'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
 import { NpmConfig } from '../types/NpmConfig'
@@ -50,26 +50,6 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
 
   return config
 })
-
-/**
- * Spawn a command. On Windows, prefer `<command>.cmd` but fall back to `<command>` when the
- * `.cmd` shim is not available (e.g. mise, scoop).
- */
-async function spawnCommand(command: string, args: string[], spawnPleaseOptions?: SpawnPleaseOptions, spawnOptions?: SpawnOptions) {
-  if (process.platform !== 'win32') {
-    return spawn(command, args, spawnPleaseOptions, spawnOptions)
-  }
-
-  try {
-    return await spawn(`${command}.cmd`, args, spawnPleaseOptions, spawnOptions)
-  } catch (e) {
-    if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
-      return spawn(command, args, spawnPleaseOptions, spawnOptions)
-    }
-
-    throw e
-  }
-}
 
 /** Fetches the list of all installed packages. */
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
