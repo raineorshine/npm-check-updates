@@ -52,19 +52,19 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
 })
 
 /**
- * Spawn pnpm. On Windows, prefer `pnpm.cmd` but fall back to `pnpm` when the
+ * Spawn a command. On Windows, prefer `<command>.cmd` but fall back to `<command>` when the
  * `.cmd` shim is not available (e.g. mise, scoop).
  */
-async function spawnPnpmCommand(args: string[], spawnPleaseOptions?: SpawnPleaseOptions, spawnOptions?: SpawnOptions) {
+async function spawnCommand(command: string, args: string[], spawnPleaseOptions?: SpawnPleaseOptions, spawnOptions?: SpawnOptions) {
   if (process.platform !== 'win32') {
-    return spawn('pnpm', args, spawnPleaseOptions, spawnOptions)
+    return spawn(command, args, spawnPleaseOptions, spawnOptions)
   }
 
   try {
-    return await spawn('pnpm.cmd', args, spawnPleaseOptions, spawnOptions)
+    return await spawn(`${command}.cmd`, args, spawnPleaseOptions, spawnOptions)
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
-      return spawn('pnpm', args, spawnPleaseOptions, spawnOptions)
+      return spawn(command, args, spawnPleaseOptions, spawnOptions)
     }
 
     throw e
@@ -77,7 +77,7 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   // this should never happen since list is only called in runGlobal -> getInstalledPackages
   if (!options.global) return npm.list(options)
 
-  const { stdout } = await spawnPnpmCommand(['ls', '-g', '--json'])
+  const { stdout } = await spawnCommand('pnpm', ['ls', '-g', '--json'])
   const result = JSON.parse(stdout) as PnpmList
   const list = keyValueBy(result[0].dependencies || {}, (name, { version }) => ({
     [name]: version,
@@ -119,7 +119,7 @@ async function spawnPnpm(
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
   ]
 
-  const { stdout } = await spawnPnpmCommand(fullArgs, spawnPleaseOptions, spawnOptions)
+  const { stdout } = await spawnCommand('pnpm', fullArgs, spawnPleaseOptions, spawnOptions)
 
   return stdout
 }
