@@ -1,6 +1,5 @@
 import path from 'path'
 import prompts from 'prompts-ncu'
-import spawn from 'spawn-please'
 import pkg from '../package.json'
 import { cliOptionsMap } from './cli-options'
 import { cacheClear } from './lib/cache'
@@ -16,6 +15,7 @@ import mergeOptions from './lib/mergeOptions'
 import programError from './lib/programError'
 import runGlobal from './lib/runGlobal'
 import runLocal from './lib/runLocal'
+import spawnCommand from './lib/spawnCommand'
 import { Index } from './types/IndexType'
 import { Options } from './types/Options'
 import { PackageFile } from './types/PackageFile'
@@ -161,13 +161,11 @@ const install = async (
 
     for await (const pkgFile of pkgsNormalized) {
       const packageManager = await getPackageManagerForInstall(options, pkgFile)
-      // npm, yarn, pnpm use .cmd on Windows, but bun does not
-      const cmd = packageManager + (process.platform === 'win32' && packageManager !== 'bun' ? '.cmd' : '')
       const cwd = options.cwd || path.resolve(pkgFile, '..')
       let stdout = ''
       try {
-        await spawn(
-          cmd,
+        await spawnCommand(
+          packageManager,
           ['install'],
           {
             stdout: (data: string) => {
@@ -179,6 +177,8 @@ const install = async (
           },
           {
             cwd,
+            // spawnCommand takes the native SpawnOptions type, but the env property is missing some of the type definitions for environment variables that npm-check-updates uses. Cast to any to allow these extra environment variables.
+            // npm_config_strict_peer_dependencies is expected to be a string for some reason
             env: {
               ...process.env,
               ...(options.color !== false ? { FORCE_COLOR: true } : null),
@@ -189,7 +189,7 @@ const install = async (
               // For now, turn off strict-peer-dependencies on pnpm auto-install.
               // See: https://github.com/raineorshine/npm-check-updates/issues/1191
               ...(packageManager === 'pnpm' ? { npm_config_strict_peer_dependencies: false } : null),
-            },
+            } as any,
           },
         )
         print(options, stdout)

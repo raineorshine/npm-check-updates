@@ -12,12 +12,12 @@ async function spawnCommand(
   spawnPleaseOptions?: SpawnPleaseOptions,
   spawnOptions?: SpawnOptions,
 ) {
-  if (process.platform !== 'win32') {
+  if (process.platform !== 'win32' || command === 'bun') {
     return spawn(command, args, spawnPleaseOptions, spawnOptions)
   }
 
   try {
-    return await spawn(`${command}.cmd`, args, spawnPleaseOptions, spawnOptions)
+    return spawn(`${command}.cmd`, args, spawnPleaseOptions, spawnOptions)
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
       return spawn(command, args, spawnPleaseOptions, spawnOptions)

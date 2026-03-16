@@ -6,7 +6,6 @@ import npmRegistryFetch from 'npm-registry-fetch'
 import path from 'path'
 import nodeSemver from 'semver'
 import { parseRange } from 'semver-utils'
-import spawn from 'spawn-please'
 import untildify from 'untildify'
 import pkg from '../../package.json'
 import filterObject from '../lib/filterObject'
@@ -14,6 +13,7 @@ import { keyValueBy } from '../lib/keyValueBy'
 import libnpmconfig from '../lib/libnpmconfig'
 import { print, printSorted } from '../lib/logging'
 import { sortBy } from '../lib/sortBy'
+import spawnCommand from '../lib/spawnCommand'
 import * as versionUtil from '../lib/version-util'
 import type { CooldownFunction } from '../types/CooldownFunction'
 import type { GetVersion } from '../types/GetVersion'
@@ -608,15 +608,13 @@ async function spawnNpm(
   spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: Index<any> = {},
 ): Promise<any> {
-  const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-
   const fullArgs = [
     ...(npmOptions.global ? [`--global`] : []),
     ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
     '--json',
     ...(Array.isArray(args) ? args : [args]),
   ]
-  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+  const { stdout } = await spawnCommand('npm', fullArgs, spawnPleaseOptions, spawnOptions)
   return stdout
 }
 
@@ -633,14 +631,12 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
     return Promise.resolve(options.prefix)
   }
 
-  const cmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-
   let prefix: string | undefined
 
   // catch spawn error which can occur on Windows
   // https://github.com/raineorshine/npm-check-updates/issues/703
   try {
-    const { stdout } = await spawn(cmd, ['config', 'get', 'prefix'])
+    const { stdout } = await spawnCommand('npm', ['config', 'get', 'prefix'])
     prefix = stdout
   } catch (e: any) {
     const message = (e.message || e || '').toString()

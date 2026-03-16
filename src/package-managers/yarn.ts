@@ -5,11 +5,11 @@ import jsonlines from 'jsonlines'
 import curry from 'lodash/curry'
 import os from 'os'
 import path from 'path'
-import spawn from 'spawn-please'
 import exists from '../lib/exists'
 import findLockfile from '../lib/findLockfile'
 import { keyValueBy } from '../lib/keyValueBy'
 import { print } from '../lib/logging'
+import spawnCommand from '../lib/spawnCommand'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
 import { NpmConfig } from '../types/NpmConfig'
@@ -205,8 +205,6 @@ function extractFirstJsonLine(result: string): Promise<string> {
   })
 }
 
-const cmd = process.platform === 'win32' ? 'yarn.cmd' : 'yarn'
-
 /**
  * Spawn yarn requires a different command on Windows.
  *
@@ -232,7 +230,7 @@ async function spawnYarn(
     ...(Array.isArray(args) ? args : [args]),
   ]
 
-  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+  const { stdout } = await spawnCommand('yarn', fullArgs, spawnPleaseOptions, spawnOptions)
 
   return stdout
 }
@@ -250,7 +248,7 @@ export async function defaultPrefix(options: Options): Promise<string | null> {
     return Promise.resolve(options.prefix)
   }
 
-  const { stdout: prefix } = await spawn(cmd, ['global', 'dir'])
+  const { stdout: prefix } = await spawnCommand('yarn', ['global', 'dir'])
     // yarn 2.0 does not support yarn global
     // catch error to prevent process from crashing
     // https://github.com/raineorshine/npm-check-updates/issues/873
@@ -329,14 +327,14 @@ export const getPeerDependencies = async (
   version: Version,
   spawnOptions: SpawnOptions,
 ): Promise<Index<Version>> => {
-  const { stdout: yarnVersion } = await spawn(cmd, ['--version'], { rejectOnError: false }, spawnOptions)
+  const { stdout: yarnVersion } = await spawnCommand('yarn', ['--version'], { rejectOnError: false }, spawnOptions)
   if (yarnVersion.startsWith('1')) {
     const args = ['--json', 'info', `${packageName}@${version}`, 'peerDependencies']
-    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, spawnOptions)
+    const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, spawnOptions)
     return stdout ? npm.parseJson<{ data?: Index<Version> }>(stdout, { command: args.join(' ') }).data || {} : {}
   } else {
     const args = ['--json', 'npm', 'info', `${packageName}@${version}`, '--fields', 'peerDependencies']
-    const { stdout } = await spawn(cmd, args, { rejectOnError: false }, spawnOptions)
+    const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, spawnOptions)
     if (!stdout) {
       return {}
     }
