@@ -52,20 +52,28 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
 })
 
 /**
- * Resolves the pnpm command to use. On Windows, prefers `pnpm.cmd` (the shim created by npm
- * global installs) but falls back to `pnpm` for installs that do not create .cmd shims
- * (e.g. mise, scoop).
+ * Spawn pnpm. On Windows, prefer `pnpm.cmd` but fall back to `pnpm` when the
+ * `.cmd` shim is not available (e.g. mise, scoop).
  */
-const getPnpmCmd = memoize(async (): Promise<string> => {
-  if (process.platform !== 'win32') return 'pnpm'
-  try {
-    await spawn('pnpm.cmd', ['--version'])
-    return 'pnpm.cmd'
-  } catch (e) {
-    if ((e as NodeJS.ErrnoException).code === 'ENOENT') return 'pnpm'
-    return 'pnpm.cmd'
+async function spawnPnpmCommand(
+  args: string[],
+  spawnPleaseOptions?: SpawnPleaseOptions,
+  spawnOptions?: SpawnOptions,
+) {
+  if (process.platform !== 'win32') {
+    return spawn('pnpm', args, spawnPleaseOptions, spawnOptions)
   }
-})
+
+  try {
+    return await spawn('pnpm.cmd', args, spawnPleaseOptions, spawnOptions)
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
+      return spawn('pnpm', args, spawnPleaseOptions, spawnOptions)
+    }
+
+    throw e
+  }
+}
 
 /** Fetches the list of all installed packages. */
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
@@ -73,8 +81,7 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   // this should never happen since list is only called in runGlobal -> getInstalledPackages
   if (!options.global) return npm.list(options)
 
-  const cmd = await getPnpmCmd()
-  const { stdout } = await spawn(cmd, ['ls', '-g', '--json'])
+  const { stdout } = await spawnPnpmCommand(['ls', '-g', '--json'])
   const result = JSON.parse(stdout) as PnpmList
   const list = keyValueBy(result[0].dependencies || {}, (name, { version }) => ({
     [name]: version,
@@ -110,15 +117,13 @@ async function spawnPnpm(
   spawnOptions?: SpawnOptions,
   spawnPleaseOptions?: SpawnPleaseOptions,
 ): Promise<string> {
-  const cmd = await getPnpmCmd()
-
   const fullArgs = [
     ...(npmOptions.global ? 'global' : []),
     ...(Array.isArray(args) ? args : [args]),
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
   ]
 
-  const { stdout } = await spawn(cmd, fullArgs, spawnPleaseOptions, spawnOptions)
+  const { stdout } = await spawnPnpmCommand(fullArgs, spawnPleaseOptions, spawnOptions)
 
   return stdout
 }
