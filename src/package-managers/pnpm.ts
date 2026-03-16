@@ -55,11 +55,7 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
  * Spawn pnpm. On Windows, prefer `pnpm.cmd` but fall back to `pnpm` when the
  * `.cmd` shim is not available (e.g. mise, scoop).
  */
-async function spawnPnpmCommand(
-  args: string[],
-  spawnPleaseOptions?: SpawnPleaseOptions,
-  spawnOptions?: SpawnOptions,
-) {
+async function spawnPnpmCommand(args: string[], spawnPleaseOptions?: SpawnPleaseOptions, spawnOptions?: SpawnOptions) {
   if (process.platform !== 'win32') {
     return spawn('pnpm', args, spawnPleaseOptions, spawnOptions)
   }
