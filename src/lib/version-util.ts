@@ -1,5 +1,5 @@
 import propertyOf from 'lodash/propertyOf'
-import parseGitHubUrl from 'parse-github-url'
+import parseGitHubUrl from './parseGitHubUrl'
 import semver from 'semver'
 import semverutils, { SemVer, parse, parseRange } from 'semver-utils'
 import util from 'util'
@@ -406,14 +406,7 @@ export const upgradeNpmAlias = (declaration: string, upgraded: string) => {
  */
 export const isGitHubUrl = (declaration: string | null) => {
   if (!declaration) return false
-  let parsed = null
-  try {
-    parsed = parseGitHubUrl(declaration)
-  } catch {
-    // Strings like `npm:postman-request@2.88.1-postman.33` can throw errors instead of simply returning null
-    // In node 18.17+ due to url.parse regression: https://github.com/nodejs/node/issues/49330
-    // So if this throws, we can assume it's not a valid GitHub URL.
-  }
+  const parsed = parseGitHubUrl(declaration)
   if (!parsed || !parsed.branch) return false
 
   const version = decodeURIComponent(parsed.branch).replace(/^semver:/, '')
