@@ -35,12 +35,7 @@ function parseGitHubUrl(str: string): ParsedGitHubUrl | null {
 
   if (parsed) {
     const protocol = parsed.protocol || null
-    const auth =
-      parsed.username
-        ? parsed.password
-          ? `${parsed.username}:${parsed.password}`
-          : parsed.username
-        : null
+    const auth = parsed.username ? (parsed.password ? `${parsed.username}:${parsed.password}` : parsed.username) : null
     // For opaque-origin URLs like `github:owner/repo`, hostname is empty string
     const host = parsed.hostname || 'github.com'
     // For opaque-origin URLs the owner is in the pathname without a leading slash

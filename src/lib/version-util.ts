@@ -1,5 +1,4 @@
 import propertyOf from 'lodash/propertyOf'
-import parseGitHubUrl from './parseGitHubUrl'
 import semver from 'semver'
 import semverutils, { SemVer, parse, parseRange } from 'semver-utils'
 import util from 'util'
@@ -11,6 +10,7 @@ import { UpgradeGroup } from '../types/UpgradeGroup'
 import { VersionLevel } from '../types/VersionLevel'
 import chalk from './chalk'
 import { keyValueBy } from './keyValueBy'
+import parseGitHubUrl from './parseGitHubUrl'
 import { sortBy } from './sortBy'
 
 type VersionPart = keyof SemVer
