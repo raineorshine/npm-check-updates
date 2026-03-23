@@ -347,7 +347,7 @@ export async function printUpgrades(
     errors?: Index<string>
   },
 ) {
-  if (!options.format?.includes('group')) {
+  if (!options.deep && !options.format?.includes('group')) {
     print(options, '')
   }
 

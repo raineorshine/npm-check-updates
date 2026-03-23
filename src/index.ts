@@ -232,6 +232,7 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
     analysis = await selectedPackageInfos.reduce(
       async (previousPromise, packageInfo: PackageInfo) => {
         const packages = await previousPromise
+        const isSubsequentPackage = Object.keys(packages).length > 0
         // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
         const rcResult = await getNcuRc({ packageFile: packageInfo.filepath, options })
         let rcConfig = rcResult.config
@@ -262,9 +263,15 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
 
           // Print the same message as findPackage for consistency
           const relPathToPackage = path.resolve(indexKey)
+          if (isSubsequentPackage) {
+            print(pkgOptions, '')
+          }
           print(pkgOptions, `${pkgOptions.upgrade ? 'Upgrading' : 'Checking'} ${relPathToPackage} catalog dependencies`)
         } else {
           // Regular file - read from disk
+          if (isSubsequentPackage) {
+            print(pkgOptions, '')
+          }
           const result = await findPackage(pkgOptions)
           pkgData = result.pkgData
           pkgFile = result.pkgFile || packageInfo.filepath
