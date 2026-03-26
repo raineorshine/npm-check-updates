@@ -54,10 +54,10 @@
   },
   "overrides": {
     "ip": "2.0.1",
-    "jsonparse": "https://github.com/ARitz-Cracker/jsonparse/tree/patch-1",
     "@yarnpkg/parsers": "2.6.0"
   },
   "devDependencies": {
+    "@streamparser/json": "^0.0.22",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/bun": "^1.2.23",
     "@types/chai": "^4.3.19",

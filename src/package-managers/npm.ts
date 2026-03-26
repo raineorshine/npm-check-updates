@@ -1,3 +1,4 @@
+import { JSONParser } from '@streamparser/json'
 import camelCase from 'camelcase'
 import memoize from 'fast-memoize'
 import fs from 'fs'
@@ -93,23 +94,33 @@ const fetchPartialPackument = async (
       return npmRegistryFetch.json(url.href, fetchOptions)
     } else {
       tag = tag || 'latest'
-      // typescript does not type async iterable stream correctly so we need to cast it
-      const stream = npmRegistryFetch.json.stream(url.href, '$*', fetchOptions) as unknown as IterableIterator<{
-        key: keyof Packument
-        value: Packument[keyof Packument]
-      }>
-
+      const response = await npmRegistryFetch(url.href, fetchOptions)
+      const parser = new JSONParser({ paths: ['$.*'], keepStack: false })
       const partialPackument: Partial<Packument> = { name }
+      let foundAll = false
+      let parseError: Error | null = null
 
-      for await (const { key, value } of stream) {
-        if (fields.includes(key)) {
+      parser.onValue = ({ key, value }) => {
+        if (foundAll || key === undefined) return
+        const k = key as keyof Packument
+        if (fields.includes(k)) {
           // TODO: Fix type
-          partialPackument[key] = value as any
+          partialPackument[k] = value as any
           if (Object.keys(partialPackument).length === fields.length + 1) {
-            break
+            foundAll = true
           }
         }
       }
+      parser.onError = (err: Error) => {
+        parseError = err
+      }
+
+      for await (const chunk of response.body as unknown as AsyncIterable<Buffer>) {
+        parser.write(chunk)
+        if (parseError) throw parseError
+        if (foundAll) break
+      }
+      if (parseError) throw parseError
 
       return partialPackument
     }
