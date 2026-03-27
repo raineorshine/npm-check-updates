@@ -98,7 +98,7 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsdoc": "^60.5.0",
     "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-promise": "^6.6.0",
+    "eslint-plugin-promise": "^7.2.1",
     "fast-glob": "^3.3.3",
     "fast-memoize": "^2.5.2",
     "find-up": "5.0.0",
