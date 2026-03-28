@@ -54,8 +54,8 @@
   },
   "overrides": {
     "@yarnpkg/parsers": "3.0.3",
-    "verdaccio": {
-      "ajv": ">=8.18.0"
+    "@verdaccio/local-storage-legacy": {
+      "@verdaccio/core": ">=8.0.0-next-8.33"
     },
     "brace-expansion": ">=5.0.5",
     "diff@4": ">=4.0.4",
