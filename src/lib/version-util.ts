@@ -1,5 +1,5 @@
+import hostedGitInfo from 'hosted-git-info'
 import { escapeRegExp, propertyOf } from 'lodash-es'
-import parseGitHubUrl from 'parse-github-url'
 import semver from 'semver'
 import semverutils, { type SemVer, parse, parseRange } from 'semver-utils'
 import util from 'util'
@@ -406,17 +406,13 @@ export const upgradeNpmAlias = (declaration: string, upgraded: string) => {
  */
 export const isGitHubUrl = (declaration: string | null) => {
   if (!declaration) return false
-  let parsed = null
-  try {
-    parsed = parseGitHubUrl(declaration)
-  } catch {
-    // Strings like `npm:postman-request@2.88.1-postman.33` can throw errors instead of simply returning null
-    // In node 18.17+ due to url.parse regression: https://github.com/nodejs/node/issues/49330
-    // So if this throws, we can assume it's not a valid GitHub URL.
+  const info = hostedGitInfo.fromUrl(declaration)
+  // Check if info is not null/undefined, is a github URL, AND has a committish
+  if (!info || info.type !== 'github' || !info.committish) {
+    return false
   }
-  if (!parsed || !parsed.branch) return false
 
-  const version = decodeURIComponent(parsed.branch).replace(/^semver:/, '')
+  const version = decodeURIComponent(info.committish).replace(/^semver:/, '')
   return !!semver.validRange(version)
 }
 
@@ -425,10 +421,10 @@ export const isGitHubUrl = (declaration: string | null) => {
  */
 export const getGitHubUrlTag = (declaration: string | null) => {
   if (!declaration) return null
-  const parsed = parseGitHubUrl(declaration)
-  if (!parsed || !parsed.branch) return null
-  const version = decodeURIComponent(parsed.branch).replace(/^semver:/, '')
-  return parsed && parsed.branch && semver.validRange(version) ? version : null
+  const info = hostedGitInfo.fromUrl(declaration)
+  if (!info || info.type !== 'github' || !info.committish) return null
+  const version = decodeURIComponent(info.committish).replace(/^semver:/, '')
+  return semver.validRange(version) ? version : null
 }
 
 /**
@@ -538,10 +534,24 @@ const revertPseudoVersion = (current: string, latest: string) => {
  * Replaces the version number embedded in a GitHub URL.
  */
 export const upgradeGitHubUrl = (declaration: string, upgraded: string) => {
-  // convert upgraded to a proper semver version if it is a pseudo version; otherwise, revertPseudoVersion will return an empty string
   const upgradedNormalized = fixPseudoVersion(upgraded)
-  const parsedUrl = parseGitHubUrl(declaration)
-  if (!parsedUrl) return declaration
-  const tag = decodeURIComponent(parsedUrl.branch).replace(/^semver:/, '')
-  return declaration.replace(tag, upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgradedNormalized)))
+  const info = hostedGitInfo.fromUrl(declaration)
+  // If it's not a valid GitHub URL or has no tag, return original
+  if (!info || info.type !== 'github' || !info.committish) {
+    return declaration
+  }
+
+  const committish = decodeURIComponent(info.committish)
+  const tag = committish.replace(/^semver:/, '')
+  const newTag = upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgradedNormalized))
+
+  const newCommittish = committish.replace(tag, newTag)
+
+  /**
+   * Replace the tag within the committish (fragment) first, then replace the
+   * original committish in the full declaration. This ensures we only upgrade
+   * the version string and avoid accidental matches if the repository name
+   * or organization happens to share the same name as the version.
+   */
+  return declaration.replace(committish, newCommittish)
 }
