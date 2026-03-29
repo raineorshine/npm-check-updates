@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => ({
       entry: ['src/index.ts', 'src/bin/cli.ts'],
       formats: ['cjs'],
     },
-    target: 'node18',
+    target: 'node20',
     outDir: 'build',
     sourcemap: true,
     minify: mode === 'production' && 'esbuild',

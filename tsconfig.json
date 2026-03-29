@@ -2,26 +2,26 @@
   "include": ["src", "test", "vite.config.mts"],
   "exclude": ["test/deep", "test/doctor"],
   "compilerOptions": {
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
+    "target": "es2022",
+    "lib": ["es2022", "dom"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node", "mocha", "bun"],
+    "outDir": "./build",
     "declaration": true,
+    "sourceMap": true,
+    "allowJs": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "lib": ["es2022"],
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
     "noImplicitAny": true,
+    "noFallthroughCasesInSwitch": true,
     "paths": {
       "libnpmconfig": ["./src/types/libnpmconfig"],
       "prompts-ncu": ["./src/types/prompts-ncu"]
-    },
-    "resolveJsonModule": true,
-    "outDir": "./build",
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "strict": true,
-    "target": "es2021"
+    }
   }
 }

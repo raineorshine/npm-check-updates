@@ -95,12 +95,13 @@ export default [
 
   // --- 6. TYPESCRIPT OVERRIDES ---
   {
-    files: ['**/*.ts'],
+    files: ['**/*.ts', '**/*.mts', '**/*.cts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
         ecmaVersion: 'latest',
         project: './tsconfig.json',
+        warnOnUnsupportedTypeScriptVersion: false,
       },
       globals: {
         ...globals.node,
