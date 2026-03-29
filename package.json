@@ -178,7 +178,7 @@
     "source-map-support": "^0.5.21",
     "spawn-please": "^3.0.0",
     "strip-ansi": "^7.2.0",
-    "ts-node": "^10.9.2",
+    "tsx": "4.21.0",
     "typescript": "^6.0.2",
     "typescript-json-schema": "^0.67.1",
     "untildify": "^4.0.0",
@@ -214,13 +214,16 @@
     "extension": [
       "test.ts"
     ],
+    "node-option": [
+      "import=tsx",
+      "trace-deprecation",
+      "trace-warnings"
+    ],
     "require": [
-      "source-map-support/register",
-      "ts-node/register"
+      "source-map-support/register"
     ],
     "timeout": 60000,
-    "trace-deprecation": true,
-    "trace-warnings": true,
-    "use_strict": true
+    "use_strict": true,
+    "recursive": true
   }
 }

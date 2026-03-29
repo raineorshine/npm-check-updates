@@ -73,7 +73,7 @@ export interface PnpmWorkspaceMinimumReleaseAge {
 }
 
 /** Reads minimumReleaseAge settings from pnpm-workspace.yaml if present. */
-export const getPnpmWorkspaceMinimumReleaseAge = memoize(async (): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
+const getPnpmWorkspaceMinimumReleaseAge = memoize(async (): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
   const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
   if (!pnpmWorkspacePath) return null
 
@@ -158,3 +158,7 @@ async function spawnPnpm(
 export { defaultPrefix, getPeerDependencies, getEngines, packageAuthorChanged } from './npm'
 
 export default spawnPnpm
+
+export const pnpmApi = {
+  getPnpmWorkspaceMinimumReleaseAge,
+}

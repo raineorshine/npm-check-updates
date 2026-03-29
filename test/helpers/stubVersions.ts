@@ -1,5 +1,5 @@
 import sinon from 'sinon'
-import * as npmPackageManager from '../../src/package-managers/npm'
+import { npmApi } from '../../src/package-managers/npm'
 import { type MockedVersions } from '../../src/types/MockedVersions'
 
 /** Stubs the npmView function from package-managers/npm. Returns the stub object. Call stub.restore() after assertions to restore the original function. Set spawn:true to stub ncu spawned as a child process. */
@@ -17,8 +17,8 @@ const stubVersions = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?:
   // stub module
   else {
     return sinon
-      .stub(npmPackageManager, 'fetchUpgradedPackumentMemo')
-      .callsFake(npmPackageManager.mockFetchUpgradedPackument(mockReturnedVersions))
+      .stub(npmApi, 'fetchUpgradedPackumentMemo')
+      .callsFake(npmApi.mockFetchUpgradedPackument(mockReturnedVersions))
   }
 }
 

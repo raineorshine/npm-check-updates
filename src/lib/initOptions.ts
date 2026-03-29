@@ -4,9 +4,9 @@ import picomatch from 'picomatch'
 import cliOptions from '../cli-options'
 import { print } from '../lib/logging'
 import packageManagers from '../package-managers'
-import { findNpmConfig } from '../package-managers/npm'
-import { getPnpmWorkspaceMinimumReleaseAge } from '../package-managers/pnpm'
-import { getYarnMinimalAgeGate } from '../package-managers/yarn'
+import { npmApi } from '../package-managers/npm'
+import { pnpmApi } from '../package-managers/pnpm'
+import { yarnApi } from '../package-managers/yarn'
 import { type FilterPattern } from '../types/FilterPattern'
 import { type Options } from '../types/Options'
 import { type RunOptions } from '../types/RunOptions'
@@ -215,7 +215,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     }
   } else {
     // Automatically apply npm's min-release-age config as cooldown if cooldown is not explicitly set.
-    const npmConfigCooldown = findNpmConfig()
+    const npmConfigCooldown = npmApi.findNpmConfig()
     const minReleaseAge = npmConfigCooldown?.minReleaseAge
     if (minReleaseAge != null) {
       const days =
@@ -230,7 +230,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       }
     } else if (packageManager === 'pnpm') {
       // Automatically apply pnpm's minimumReleaseAge from pnpm-workspace.yaml as cooldown if cooldown is not explicitly set.
-      const pnpmWorkspaceConfig = await getPnpmWorkspaceMinimumReleaseAge()
+      const pnpmWorkspaceConfig = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
       if (pnpmWorkspaceConfig != null) {
         const { minimumReleaseAge, minimumReleaseAgeExclude } = pnpmWorkspaceConfig
         // pnpm's minimumReleaseAge is in minutes; convert to days
@@ -255,7 +255,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       }
     } else if (packageManager === 'yarn') {
       // Automatically apply yarn's npmMinimalAgeGate from .yarnrc.yml as cooldown if cooldown is not explicitly set.
-      const yarnAgeGateConfig = await getYarnMinimalAgeGate(options)
+      const yarnAgeGateConfig = await yarnApi.getYarnMinimalAgeGate(options)
       if (yarnAgeGateConfig != null) {
         const { npmMinimalAgeGate, npmPreapprovedPackages } = yarnAgeGateConfig
         // yarn's npmMinimalAgeGate is in seconds; convert to days

@@ -292,12 +292,34 @@ export const normalizeNpmConfig = (
   return config
 }
 
+interface NpmApi {
+  fetchUpgradedPackumentMemo: (
+    packageName: string,
+    fields: (keyof Packument)[],
+    currentVersion: Version,
+    options: Options,
+    retried?: number,
+    npmConfigLocal?: NpmConfig,
+    npmConfigWorkspaceProject?: NpmConfig,
+  ) => Promise<Partial<Packument> | undefined>
+  findNpmConfig: (configPath?: string | undefined) => NpmConfig | null
+  mockFetchUpgradedPackument: (mockReturnedVersions: MockedVersions) => typeof fetchUpgradedPackument
+}
+
+/**
+ * ES Modules cannot be stubbed
+ * To allow stubbing of npm functions in tests, we export the functions that
+ * need to be stubbed as properties of an object (npmApi) that can be
+ * imported and stubbed in tests without affecting the rest of the module.
+ */
+export const npmApi = {} as NpmApi
+
 /**
  * Finds and parses the npm config at the given path.
  * If the path does not exist, returns null.
  * If no path is provided, finds and merges the global and user npm configs using libnpmconfig and sets cache: false.
  */
-export const findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
+npmApi.findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
   let config
 
   if (configPath) {
@@ -327,7 +349,7 @@ export const findNpmConfig = memoize((configPath?: string): NpmConfig | null => 
 
 // get the base config that is used for all npm queries
 // this may be partially overwritten by .npmrc config files when using --deep
-const npmConfig = findNpmConfig()
+const npmConfig = npmApi.findNpmConfig()
 
 /**
  * Parse JSON and throw an informative error on failure.
@@ -391,7 +413,7 @@ export async function packageAuthorChanged(
 const isPackument = (o: any): o is Partial<Packument> => !!(o && (o.name || o.engines || o.version || o.versions))
 
 /** Creates a function with the same signature as fetchUpgradedPackument that always returns the given versions. */
-export const mockFetchUpgradedPackument =
+npmApi.mockFetchUpgradedPackument =
   (mockReturnedVersions: MockedVersions): typeof fetchUpgradedPackument =>
   (name: string, fields: (keyof Packument)[], currentVersion: Version, options: Options) => {
     // a partial Packument
@@ -457,9 +479,9 @@ const mergeNpmConfigs = memoize(
   ) => {
     // merge project npm config with base config
     const npmConfigProjectPath = options.packageFile ? path.join(options.packageFile, '../.npmrc') : null
-    const npmConfigProject = options.packageFile ? findNpmConfig(npmConfigProjectPath || undefined) : null
+    const npmConfigProject = options.packageFile ? npmApi.findNpmConfig(npmConfigProjectPath || undefined) : null
     const npmConfigCWDPath = options.cwd ? path.join(options.cwd, '.npmrc') : null
-    const npmConfigCWD = options.cwd ? findNpmConfig(npmConfigCWDPath!) : null
+    const npmConfigCWD = options.cwd ? npmApi.findNpmConfig(npmConfigCWDPath!) : null
 
     if (npmConfigWorkspaceProject && Object.keys(npmConfigWorkspaceProject).length > 0) {
       print(options, `\nnpm config (workspace project):`, 'verbose')
@@ -544,7 +566,7 @@ async function fetchUpgradedPackument(
   // See: /test/helpers/stubVersions
   if (process.env.STUB_VERSIONS) {
     const mockReturnedVersions = JSON.parse(process.env.STUB_VERSIONS)
-    return mockFetchUpgradedPackument(mockReturnedVersions)(packageName, fields, currentVersion, options)
+    return npmApi.mockFetchUpgradedPackument(mockReturnedVersions)(packageName, fields, currentVersion, options)
   }
 
   if (isExactVersion(currentVersion)) {
@@ -596,7 +618,7 @@ async function fetchUpgradedPackument(
  * Memoize fetchUpgradedPackument for --deep and --workspaces performance.
  * Note: Must be exported to allow stubbing in tests.
  */
-export const fetchUpgradedPackumentMemo = memoize(fetchUpgradedPackument, {
+npmApi.fetchUpgradedPackumentMemo = memoize(fetchUpgradedPackument, {
   /**
    * Generates a unique cache key based on the arguments.
    * In modern 'memoize', this replaces 'serializer' and receives
@@ -709,7 +731,7 @@ export const greatest: GetVersion = async (
     fields.push('time')
   }
 
-  const packument = await fetchUpgradedPackumentMemo(
+  const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
     fields,
     currentVersion,
@@ -835,7 +857,7 @@ export const distTag: GetVersion = async (
     fields.push('time')
   }
 
-  const packument = await fetchUpgradedPackumentMemo(
+  const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
     fields,
     currentVersion,
@@ -913,7 +935,7 @@ export const newest: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const result = await fetchUpgradedPackumentMemo(
+  const result = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
     ['time', 'versions'],
     currentVersion,
@@ -977,7 +999,7 @@ export const minor: GetVersion = async (
     fields.push('time')
   }
 
-  const packument = await fetchUpgradedPackumentMemo(
+  const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
     fields,
     currentVersion,
@@ -1021,7 +1043,7 @@ export const patch: GetVersion = async (
     fields.push('time')
   }
 
-  const packument = await fetchUpgradedPackumentMemo(
+  const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
     fields,
     currentVersion,
@@ -1065,7 +1087,7 @@ export const semver: GetVersion = async (
     fields.push('time')
   }
 
-  const packument = await fetchUpgradedPackumentMemo(
+  const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
     fields,
     currentVersion,

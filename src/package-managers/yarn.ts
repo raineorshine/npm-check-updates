@@ -165,7 +165,7 @@ const npmConfigFromYarn = memoize(
 )
 
 /** Reads npmMinimalAgeGate settings from .yarnrc.yml if present. Checks local config first, then user config. */
-export const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMinimalAgeGate | null> => {
+const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMinimalAgeGate | null> => {
   const yarnrcLocalPath = await getPathToLookForYarnrc(options)
   const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
 
@@ -459,3 +459,7 @@ export const packageAuthorChanged = async (
   npm.packageAuthorChanged(packageName, currentVersion, upgradedVersion, options, await npmConfigFromYarn(options))
 
 export default spawnYarn
+
+export const yarnApi = {
+  getYarnMinimalAgeGate,
+}
