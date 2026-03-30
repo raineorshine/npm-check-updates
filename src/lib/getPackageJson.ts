@@ -1,7 +1,10 @@
 import fs from 'fs/promises'
+import { createRequire } from 'node:module'
 import path from 'path'
 import { type PackageFile } from '../types/PackageFile'
 import exists from './exists'
+
+const require = createRequire(import.meta.url)
 
 /** Gets the package.json contents of an installed package. */
 async function getPackageJson(

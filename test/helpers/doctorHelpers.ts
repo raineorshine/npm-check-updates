@@ -16,6 +16,24 @@ const ncu = async (
   return stdout
 }
 
+/**
+ * Windows terminal environments (like Git-Bash) often render different column padding
+ * than Linux, resulting in multiple spaces between the name and version.
+ * We use Regex with \s+ to ensure the test passes regardless of whitespace count.
+ *
+ * Converts a string into a RegExp that handles version arrows and spacing.
+ * Escapes dots for literal matching and replaces spaces with \s+.
+ */
+export function createNcuRegExp(input: string): RegExp {
+  // 1. Escape special regex characters (like dots in 1.0.0)
+  // 2. Replace spaces with \s+ for flexible matching
+  const pattern = input
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Standard escape for regex
+    .replace(/ /g, '\\s+') // Replace literal space with \s+
+
+  return new RegExp(pattern, 'i')
+}
+
 /** Assertions for npm or yarn when tests pass. */
 export const testPass = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('upgrade dependencies when tests pass', async function () {
@@ -151,16 +169,20 @@ export const testFail = ({ packageManager }: { packageManager: PackageManagerNam
       }
     }
 
+    const testVersion = createNcuRegExp('ncu-test-return-version ~1.0.0 →')
+    const testV2 = createNcuRegExp('ncu-test-v2 ~1.0.0 →')
+    const emitter = createNcuRegExp('emitter20 1.0.0 →')
+
     // stdout should include successful upgrades
-    stdout.should.containIgnoreCase('ncu-test-v2 ~1.0.0 →')
-    stdout.should.not.include('ncu-test-return-version ~1.0.0 →')
-    stdout.should.containIgnoreCase('emitter20 1.0.0 →')
+    stdout.should.match(testV2)
+    stdout.should.not.match(testVersion)
+    stdout.should.match(emitter)
 
     // stderr should include first failing upgrade
     stderr.should.containIgnoreCase('Breaks with v2.x')
-    stderr.should.not.include('ncu-test-v2 ~1.0.0 →')
-    stderr.should.containIgnoreCase('ncu-test-return-version ~1.0.0 →')
-    stderr.should.not.include('emitter20 1.0.0 →')
+    stderr.should.not.match(testV2)
+    stderr.should.match(testVersion)
+    stderr.should.not.match(emitter)
 
     // package file should only include successful upgrades
     pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')

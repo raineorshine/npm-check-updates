@@ -5,7 +5,7 @@ import spawn from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
 import chaiSetup from './helpers/chaiSetup'
-import { testFail, testPass } from './helpers/doctorHelpers'
+import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
@@ -289,6 +289,7 @@ describe('doctor', function () {
       await fs.writeFile(
         pkgPath,
         JSON.stringify({
+          type: 'module',
           scripts: {
             prepare: 'node prepare.js',
             test: 'echo "No tests"',
@@ -306,15 +307,16 @@ describe('doctor', function () {
       // This is an arbitrary fail condition used to test that doctor mode still works when the npm prepare script fails.
       await fs.writeFile(
         path.join(tempDir, 'prepare.js'),
-        `const ncuTestPkg = require('./node_modules/ncu-test-v2/package.json')
-
+        `import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const ncuTestPkg = require('./node_modules/ncu-test-v2/package.json');
 if (ncuTestPkg.version === '1.0.0') {
   console.log('done')
-  process.exit(0)
+  process.exitCode = 0;
 }
 else {
   console.error('failed')
-  process.exit(1)
+  process.exitCode = 1;
 }`,
         'utf-8',
       )
@@ -345,14 +347,17 @@ else {
         await removeDir(tempDir)
       }
 
+      const testTag = createNcuRegExp('ncu-test-tag 1.0.0 →')
+      const testV2 = createNcuRegExp('ncu-test-v2 1.0.0 →')
+
       // stdout should include successful upgrades
-      stdout.should.containIgnoreCase('ncu-test-tag 1.0.0 →')
-      stdout.should.not.containIgnoreCase('ncu-test-v2 1.0.0 →')
+      stdout.should.match(testTag)
+      stdout.should.not.match(testV2)
 
       // stderr should include failed prepare script
       stderr.should.containIgnoreCase('failed')
-      stderr.should.containIgnoreCase('ncu-test-v2 1.0.0 →')
-      stderr.should.not.containIgnoreCase('ncu-test-tag 1.0.0 →')
+      stderr.should.match(testV2)
+      stderr.should.not.match(testTag)
 
       // package file should only include successful upgrades
       pkgUpgraded.dependencies.should.deep.equal({
