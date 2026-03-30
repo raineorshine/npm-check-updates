@@ -2,10 +2,11 @@
 import { Help, Option, program } from 'commander'
 import createCloneDeep from 'rfdc'
 import semver from 'semver'
+import updateNotifier from 'update-notifier'
 import pkg from '../../package.json'
 import cliOptions, { renderExtendedHelp } from '../cli-options'
 import ncu from '../index'
-import { chalkInit } from '../lib/chalk'
+import { chalkInit, getChalk } from '../lib/chalk'
 // async global contexts are only available in esm modules -> function
 import getNcuRc from '../lib/getNcuRc'
 import { pickBy } from '../lib/pick'
@@ -18,9 +19,6 @@ const uncode = (s: string) => s.replace(/`/g, '')
 const cloneDeep = createCloneDeep()
 
 ;(async () => {
-  // importing update-notifier dynamically as esm modules are only allowed to be dynamically imported inside of cjs modules
-  const { default: updateNotifier } = await import('update-notifier')
-
   // check if a new version of ncu is available and print an update notification
   //
   // For testing from specific versions, use:
@@ -35,7 +33,7 @@ const cloneDeep = createCloneDeep()
 
   const notifier = updateNotifier({ pkg })
   if (notifier.update && notifier.update.latest !== pkg.version) {
-    const { default: chalk } = await import('chalk')
+    const chalk = getChalk(true)
 
     // generate release urls for all the major versions from the current version up to the latest
     const currentMajor = semver.parse(notifier.update.current)?.major

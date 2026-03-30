@@ -8,6 +8,7 @@ import { type Options } from '../types/Options'
 import { supportedVersionTargets } from '../types/Target'
 import { type VersionResult } from '../types/VersionResult'
 import { type VersionSpec } from '../types/VersionSpec'
+import { getChalk } from './chalk'
 import getPackageManager from './getPackageManager'
 import keyValueBy from './keyValueBy'
 import programError from './programError'
@@ -21,8 +22,7 @@ import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-uti
  * @returns Promised {packageName: version} collection
  */
 async function queryVersions(packageMap: Index<VersionSpec>, options: Options = {}): Promise<Index<VersionResult>> {
-  const { default: chalkDefault, Chalk } = await import('chalk')
-  const chalk = options.color ? new Chalk({ level: 1 }) : chalkDefault
+  const chalk = getChalk(options.color)
   const packageList = Object.keys(packageMap)
   const globalPackageManager = getPackageManager(options, options.packageManager)
 

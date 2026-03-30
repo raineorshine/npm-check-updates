@@ -12,6 +12,7 @@ import { type Options } from '../types/Options'
 import { type RunOptions } from '../types/RunOptions'
 import { type Target } from '../types/Target'
 import cacher from './cache'
+import { getChalk } from './chalk'
 import determinePackageManager from './determinePackageManager'
 import exists from './exists'
 import keyValueBy from './keyValueBy'
@@ -48,8 +49,7 @@ function isValidUrl(url: string): boolean {
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
 async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Promise<Options> {
-  const { default: chalkDefault, Chalk } = await import('chalk')
-  const chalk = runOptions.color ? new Chalk({ level: 1 }) : chalkDefault
+  const chalk = getChalk(runOptions.color)
 
   // if not executed on the command-line (i.e. executed as a node module), set the defaults
   if (!cli) {
