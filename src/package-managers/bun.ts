@@ -1,3 +1,4 @@
+import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import path from 'path'
 import spawn from 'spawn-please'
 import keyValueBy from '../lib/keyValueBy'
@@ -32,8 +33,6 @@ export const defaultPrefix = async (options: Options): Promise<string | undefine
  * (Bun) Fetches the list of all installed packages.
  */
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
-  const { default: stripAnsi } = await import('strip-ansi')
-
   // bun pm ls
   const { stdout } = await spawnBun(
     ['pm', 'ls'],

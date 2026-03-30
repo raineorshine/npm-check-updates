@@ -175,7 +175,6 @@
     "sinon": "^21.0.3",
     "source-map-support": "^0.5.21",
     "spawn-please": "^3.0.0",
-    "strip-ansi": "^7.2.0",
     "tsx": "4.21.0",
     "typescript": "^6.0.2",
     "typescript-json-schema": "^0.67.1",

@@ -1,4 +1,5 @@
 import fs from 'fs/promises'
+import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import path from 'path'
 import spawn from 'spawn-please'
 import { type PackageManagerName } from '../../src/types/PackageManagerName'
@@ -37,8 +38,6 @@ export function createNcuRegExp(input: string): RegExp {
 /** Assertions for npm or yarn when tests pass. */
 export const testPass = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('upgrade dependencies when tests pass', async function () {
-    // use dynamic import for ESM module
-    const { default: stripAnsi } = await import('strip-ansi')
     const cwd = path.join(doctorTests, 'pass')
     const pkgPath = path.join(cwd, 'package.json')
     const nodeModulesPath = path.join(cwd, 'node_modules')

@@ -1,4 +1,5 @@
 import fs from 'fs/promises'
+import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
 import cliOptions, { renderExtendedHelp } from '../cli-options'
 import { chalkInit } from '../lib/chalk'
@@ -12,7 +13,6 @@ const codeHtml = (code: string) => code.replace(/`(.+?)`/g, '<code>$1</code>')
 
 /** Replaces the "Options" and "Advanced Options" sections of the README with direct output from "ncu --help". */
 const injectReadme = async () => {
-  const { default: stripAnsi } = await import('strip-ansi')
   let readme = await fs.readFile('README.md', 'utf8')
   const optionRows = cliOptions
     .map(option => {

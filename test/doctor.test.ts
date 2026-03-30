@@ -1,4 +1,5 @@
 import fs from 'fs/promises'
+import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
@@ -42,7 +43,6 @@ describe('doctor', function () {
   describe('npm', () => {
     it('print instructions when -u is not specified', async () => {
       await chalkInit()
-      const { default: stripAnsi } = await import('strip-ansi')
       const cwd = path.join(doctorTests, 'nopackagefile')
       const output = await ncu(['--doctor'], {}, { cwd })
       return stripAnsi(output).should.equal(
@@ -77,8 +77,6 @@ describe('doctor', function () {
     testFail({ packageManager: 'npm' })
 
     it('pass through options', async function () {
-      // use dynamic import for ESM module
-      const { default: stripAnsi } = await import('strip-ansi')
       const cwd = path.join(doctorTests, 'options')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -131,8 +129,6 @@ describe('doctor', function () {
     })
 
     it('custom install script with --doctorInstall', async function () {
-      // use dynamic import for ESM module
-      const { default: stripAnsi } = await import('strip-ansi')
       const cwd = path.join(doctorTests, 'custominstall')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -184,8 +180,6 @@ describe('doctor', function () {
     })
 
     it('custom test script with --doctorTest', async function () {
-      // use dynamic import for ESM module
-      const { default: stripAnsi } = await import('strip-ansi')
       const cwd = path.join(doctorTests, 'customtest')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -237,8 +231,6 @@ describe('doctor', function () {
     })
 
     it('custom test script with --doctorTest command that includes spaced words wrapped in quotes', async function () {
-      // use dynamic import for ESM module
-      const { default: stripAnsi } = await import('strip-ansi')
       const cwd = path.join(doctorTests, 'customtest2')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
