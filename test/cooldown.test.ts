@@ -3,6 +3,7 @@ import Sinon from 'sinon'
 import ncu from '../src/'
 import * as npmModule from '../src/package-managers/npm'
 import * as pnpmModule from '../src/package-managers/pnpm'
+import * as yarnModule from '../src/package-managers/yarn'
 import type { PackageFile } from '../src/types/PackageFile'
 import type { Packument } from '../src/types/Packument'
 import chaiSetup from './helpers/chaiSetup'
@@ -1084,6 +1085,192 @@ describe('cooldown', () => {
       stub.restore()
       findNpmConfigStub.restore()
       pnpmWorkspaceStub.restore()
+    })
+  })
+
+  describe('yarn npmMinimalAgeGate', () => {
+    it('automatically applies npmMinimalAgeGate from .yarnrc.yml as cooldown when cooldown is not set', async () => {
+      // Given: .yarnrc.yml has npmMinimalAgeGate=86400 (86400 seconds = 1 day),
+      // test-package@1.0.0 installed, latest version 1.1.0 released 12 hours ago (within cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      // Stub getYarnMinimalAgeGate to return a config with npmMinimalAgeGate: 86400 seconds (1 day)
+      const yarnAgeGateStub = Sinon.stub(yarnModule, 'getYarnMinimalAgeGate').resolves({
+        npmMinimalAgeGate: 86400,
+        npmPreapprovedPackages: [],
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData, packageManager: 'yarn' })
+
+      // Then: package upgrade is skipped because latest version (1.1.0) is within the 1-day cooldown
+      expect(result).to.not.have.property('test-package')
+
+      stub.restore()
+      yarnAgeGateStub.restore()
+    })
+
+    it('upgrades packages older than npmMinimalAgeGate', async () => {
+      // Given: .yarnrc.yml has npmMinimalAgeGate=86400 (1 day),
+      // test-package@1.0.0 installed, latest version 1.1.0 released 2 days ago (outside cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 2 * DAY).toISOString(), // 2 days ago
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      const yarnAgeGateStub = Sinon.stub(yarnModule, 'getYarnMinimalAgeGate').resolves({
+        npmMinimalAgeGate: 86400,
+        npmPreapprovedPackages: [],
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData, packageManager: 'yarn' })
+
+      // Then: package is upgraded because 2 days > 1 day cooldown
+      expect(result).to.have.property('test-package', '1.1.0')
+
+      stub.restore()
+      yarnAgeGateStub.restore()
+    })
+
+    it('excludes packages listed in npmPreapprovedPackages from cooldown', async () => {
+      // Given: .yarnrc.yml has npmMinimalAgeGate=604800 (7 days) with @myorg/pkg pre-approved,
+      // test-package released 3 days ago (within cooldown), @myorg/pkg released 3 days ago (pre-approved)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+          '@myorg/pkg': '1.0.0',
+        },
+      }
+      const stub = stubVersions({
+        'test-package': createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+        '@myorg/pkg': createMockVersion({
+          name: '@myorg/pkg',
+          versions: { '2.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '2.0.0' },
+        }),
+      })
+
+      // Stub getYarnMinimalAgeGate to return a 7-day cooldown with @myorg/pkg pre-approved
+      const yarnAgeGateStub = Sinon.stub(yarnModule, 'getYarnMinimalAgeGate').resolves({
+        npmMinimalAgeGate: 604800,
+        npmPreapprovedPackages: ['@myorg/pkg'],
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData, packageManager: 'yarn' })
+
+      // Then: test-package is skipped (within 7-day cooldown), @myorg/pkg is upgraded (pre-approved)
+      expect(result).to.not.have.property('test-package')
+      expect(result).to.have.property('@myorg/pkg', '2.0.0')
+
+      stub.restore()
+      yarnAgeGateStub.restore()
+    })
+
+    it('does not apply npmMinimalAgeGate when cooldown is explicitly set', async () => {
+      // Given: .yarnrc.yml has npmMinimalAgeGate=604800 (7 days), but cooldown is explicitly set to 0
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 3 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      const yarnAgeGateStub = Sinon.stub(yarnModule, 'getYarnMinimalAgeGate').resolves({
+        npmMinimalAgeGate: 604800,
+        npmPreapprovedPackages: [],
+      })
+
+      // When: ncu is run with explicit cooldown=0 (overrides npmMinimalAgeGate)
+      const result = await ncu({ packageData, cooldown: 0 })
+
+      // Then: package is upgraded since explicit cooldown=0 overrides npmMinimalAgeGate
+      expect(result).to.have.property('test-package', '1.1.0')
+      expect(yarnAgeGateStub.called).to.equal(false)
+
+      stub.restore()
+      yarnAgeGateStub.restore()
+    })
+
+    it('does not apply npmMinimalAgeGate when npm min-release-age is set', async () => {
+      // Given: both npm config has min-release-age=2 and .yarnrc.yml has npmMinimalAgeGate=604800 (7 days)
+      // test-package latest released 3 days ago (within 7-day yarn cooldown but outside 2-day npm cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 3 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      // Stub npm config with min-release-age=2
+      const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns({ minReleaseAge: '2' })
+      const yarnAgeGateStub = Sinon.stub(yarnModule, 'getYarnMinimalAgeGate').resolves({
+        npmMinimalAgeGate: 604800,
+        npmPreapprovedPackages: [],
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData, packageManager: 'yarn' })
+
+      // Then: package is upgraded because npm's 2-day cooldown takes precedence and 3 days > 2 days
+      expect(result).to.have.property('test-package', '1.1.0')
+      expect(yarnAgeGateStub.called).to.equal(false)
+
+      stub.restore()
+      findNpmConfigStub.restore()
+      yarnAgeGateStub.restore()
     })
   })
 })
