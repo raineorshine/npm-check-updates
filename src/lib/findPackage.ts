@@ -1,4 +1,4 @@
-import findUp from 'find-up'
+import { findUp } from 'find-up'
 import fs from 'fs/promises'
 import { text } from 'node:stream/consumers'
 import path from 'path'

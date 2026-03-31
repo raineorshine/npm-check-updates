@@ -1,4 +1,4 @@
-import findUp from 'find-up'
+import { findUp } from 'find-up'
 import fs from 'fs/promises'
 import ini from 'ini'
 import memoize from 'memoize'

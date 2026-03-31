@@ -63,8 +63,6 @@
     "url": "https://github.com/raineorshine/npm-check-updates/issues"
   },
   "overrides": {
-    "@yarnpkg/parsers": "3.0.3",
-    "@verdaccio/core": ">=8.0.0-next-8.33",
     "@typescript-eslint/parser": {
       "typescript": "$typescript"
     },
@@ -90,6 +88,17 @@
       "eslint-plugin-n": "$eslint-plugin-n",
       "eslint-plugin-promise": "$eslint-plugin-promise"
     },
+    "@yarnpkg/parsers": "3.0.3",
+    "@verdaccio/core": ">=8.0.0-next-8.33",
+    "ajv-draft-04": {
+      "ajv": ">=8.18.0"
+    },
+    "chai-as-promised": {
+      "chai": "$chai"
+    },
+    "chai-string": {
+      "chai": "$chai"
+    },
     "diff@4": ">=4.0.4",
     "diff@6": ">=8.0.3",
     "diff@7": ">=8.0.3",
@@ -105,8 +114,8 @@
     "@streamparser/json": "^0.0.22",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/bun": "^1.3.11",
-    "@types/chai": "^4.3.19",
-    "@types/chai-as-promised": "7.1.8",
+    "@types/chai": "5.2.3",
+    "@types/chai-as-promised": "8.0.2",
     "@types/chai-string": "^1.4.5",
     "@types/cli-table": "^0.3.4",
     "@types/hosted-git-info": "^3.0.5",
@@ -126,9 +135,9 @@
     "@types/update-notifier": "^6.0.8",
     "@typescript-eslint/eslint-plugin": "8.57.2",
     "@typescript-eslint/parser": "8.57.2",
-    "camelcase": "^6.3.0",
-    "chai": "^4.3.10",
-    "chai-as-promised": "^7.1.2",
+    "camelcase": "9.0.0",
+    "chai": "6.2.2",
+    "chai-as-promised": "8.0.2",
     "chai-string": "^1.6.0",
     "chalk": "^5.6.2",
     "cli-table3": "^0.6.5",
@@ -145,7 +154,7 @@
     "eslint-plugin-n": "17.24.0",
     "eslint-plugin-promise": "7.2.1",
     "fast-glob": "^3.3.3",
-    "find-up": "5.0.0",
+    "find-up": "8.0.0",
     "fp-and-or": "^1.0.2",
     "globals": "17.4.0",
     "hosted-git-info": "^9.0.2",
@@ -160,7 +169,7 @@
     "mocha": "^11.7.5",
     "npm-registry-fetch": "^19.1.1",
     "npm-run-all": "^4.1.5",
-    "p-map": "^4.0.0",
+    "p-map": "7.0.4",
     "picomatch": "^4.0.4",
     "prettier": "^3.8.1",
     "progress": "^2.0.3",
@@ -178,7 +187,7 @@
     "tsx": "4.21.0",
     "typescript": "^6.0.2",
     "typescript-json-schema": "^0.67.1",
-    "untildify": "^4.0.0",
+    "untildify": "6.0.0",
     "update-notifier": "^7.3.1",
     "verdaccio": "6.3.2",
     "vite": "^7.1.7",

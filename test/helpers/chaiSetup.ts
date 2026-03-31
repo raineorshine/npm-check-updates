@@ -1,15 +1,18 @@
-import chai from 'chai'
+import { config, should as initShould, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 
 /** Global chai setup. */
 const chaiSetup = () => {
-  const should = chai.should()
-  chai.use(chaiAsPromised)
-  chai.use(chaiString)
+  // In Chai 5+, should() is an imported function that initializes the prototype
+  const should = initShould()
+
+  // Use the named 'use' function instead of 'chai.use'
+  use(chaiAsPromised)
+  use(chaiString)
 
   // do not truncate strings in error messages
-  chai.config.truncateThreshold = 0
+  config.truncateThreshold = 0
 
   process.env.NCU_TESTS = 'true'
 
