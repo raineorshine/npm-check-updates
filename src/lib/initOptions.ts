@@ -243,7 +243,11 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
           )
         } else {
           options.cooldown = days
-          print(options, `Using pnpm workspace minimumReleaseAge: ${minimumReleaseAge} minutes (${days} days)`, 'verbose')
+          print(
+            options,
+            `Using pnpm workspace minimumReleaseAge: ${minimumReleaseAge} minutes (${days} days)`,
+            'verbose',
+          )
         }
       }
     }
