@@ -937,7 +937,6 @@ describe('cooldown', () => {
     })
   })
 
-
   describe('pnpm workspace minimumReleaseAge', () => {
     it('automatically applies minimumReleaseAge from pnpm-workspace.yaml as cooldown when cooldown is not set', async () => {
       // Given: pnpm-workspace.yaml has minimumReleaseAge=1440 (1440 minutes = 1 day),
