@@ -964,7 +964,7 @@ describe('cooldown', () => {
       })
 
       // When: ncu is run without explicit cooldown option
-      const result = await ncu({ packageData })
+      const result = await ncu({ packageData, packageManager: 'pnpm' })
 
       // Then: package upgrade is skipped because latest version (1.1.0) is within the 1-day cooldown
       expect(result).to.not.have.property('test-package')
@@ -1002,7 +1002,7 @@ describe('cooldown', () => {
       })
 
       // When: ncu is run without explicit cooldown option
-      const result = await ncu({ packageData })
+      const result = await ncu({ packageData, packageManager: 'pnpm' })
 
       // Then: test-package is skipped (within 7-day cooldown), @myorg/pkg is upgraded (excluded from cooldown)
       expect(result).to.not.have.property('test-package')
