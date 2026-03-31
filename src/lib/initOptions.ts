@@ -187,6 +187,8 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     programError(options, `--registry must be a valid URL. Invalid value: "${options.registry}"`)
   }
 
+  const packageManager = await determinePackageManager(options)
+
   if (options.cooldown != null) {
     // Normalize string formats ("7d", "12h", "30m") to a fractional number of days.
     if (typeof options.cooldown === 'string') {
@@ -225,37 +227,39 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
         options.cooldown = days
         print(options, `Using npm config min-release-age: ${days} days`, 'verbose')
       }
+    } else {
+      // Automatically apply pnpm's minimumReleaseAge from pnpm-workspace.yaml as cooldown if cooldown is not explicitly set.
+      if (packageManager === 'pnpm') {
+        const pnpmWorkspaceConfig = await getPnpmWorkspaceMinimumReleaseAge()
+        if (pnpmWorkspaceConfig != null) {
+          const { minimumReleaseAge, minimumReleaseAgeExclude } = pnpmWorkspaceConfig
+          // pnpm's minimumReleaseAge is in minutes; convert to days
+          const MINUTES_PER_DAY = 24 * 60
+          const days = minimumReleaseAge / MINUTES_PER_DAY
+          if (minimumReleaseAgeExclude.length > 0) {
+            const matchers = minimumReleaseAgeExclude.map(pattern => picomatch(pattern))
+            options.cooldown = (packageName: string) => (matchers.some(m => m(packageName)) ? null : days)
+            print(
+              options,
+              `Using pnpm workspace minimumReleaseAge: ${minimumReleaseAge} minutes (${days} days) with ${minimumReleaseAgeExclude.length} excluded pattern(s)`,
+              'verbose',
+            )
+          } else {
+            options.cooldown = days
+            print(
+              options,
+              `Using pnpm workspace minimumReleaseAge: ${minimumReleaseAge} minutes (${days} days)`,
+              'verbose',
+            )
+          }
+        }
+      }
     }
   }
 
   const target: Target = options.target || 'latest'
 
   const autoPre = target === 'newest' || target === 'greatest'
-
-  const packageManager = await determinePackageManager(options)
-
-  // Automatically apply pnpm's minimumReleaseAge from pnpm-workspace.yaml as cooldown if cooldown is not explicitly set and package manager is pnpm.
-  if (options.cooldown == null && packageManager === 'pnpm') {
-    const pnpmWorkspaceConfig = await getPnpmWorkspaceMinimumReleaseAge()
-    if (pnpmWorkspaceConfig != null) {
-      const { minimumReleaseAge, minimumReleaseAgeExclude } = pnpmWorkspaceConfig
-      // pnpm's minimumReleaseAge is in minutes; convert to days
-      const MINUTES_PER_DAY = 24 * 60
-      const days = minimumReleaseAge / MINUTES_PER_DAY
-      if (minimumReleaseAgeExclude.length > 0) {
-        const matchers = minimumReleaseAgeExclude.map(pattern => picomatch(pattern))
-        options.cooldown = (packageName: string) => (matchers.some(m => m(packageName)) ? null : days)
-        print(
-          options,
-          `Using pnpm workspace minimumReleaseAge: ${minimumReleaseAge} minutes (${days} days) with ${minimumReleaseAgeExclude.length} excluded pattern(s)`,
-          'verbose',
-        )
-      } else {
-        options.cooldown = days
-        print(options, `Using pnpm workspace minimumReleaseAge: ${minimumReleaseAge} minutes (${days} days)`, 'verbose')
-      }
-    }
-  }
 
   const resolvedOptions: Options = {
     ...options,
