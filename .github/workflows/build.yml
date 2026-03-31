@@ -37,4 +37,10 @@ jobs:
         run: npm run build
 
       - name: Check for uncommitted changes
-        run: git diff --exit-code
+        run: |
+          changed=$(git diff --name-only)
+          if [ -n "$changed" ]; then
+            files=$(echo "$changed" | tr '\n' ' ' | sed 's/ $//')
+            echo "Uncommitted changes detected in $files. Did you forget to run \`npm run build\`?"
+            exit 1
+          fi
