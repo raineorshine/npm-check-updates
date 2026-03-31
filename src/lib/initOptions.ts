@@ -185,24 +185,6 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     programError(options, `--registry must be a valid URL. Invalid value: "${options.registry}"`)
   }
 
-  // Automatically apply npm's min-release-age config as cooldown if cooldown is not explicitly set.
-  if (options.cooldown == null) {
-    const npmConfigCooldown = findNpmConfig()
-    const minReleaseAge = npmConfigCooldown?.minReleaseAge
-    if (minReleaseAge != null) {
-      const days =
-        typeof minReleaseAge === 'string'
-          ? (parseCooldown(minReleaseAge) ?? parseInt(minReleaseAge, 10))
-          : typeof minReleaseAge === 'number'
-            ? minReleaseAge
-            : null
-      if (days != null && !isNaN(days)) {
-        options.cooldown = days
-        print(options, `Using npm config min-release-age: ${days} days`, 'verbose')
-      }
-    }
-  }
-
   if (options.cooldown != null) {
     // Normalize string formats ("7d", "12h", "30m") to a fractional number of days.
     if (typeof options.cooldown === 'string') {
@@ -225,6 +207,22 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
         options,
         'Cooldown must be a non-negative number (days), a string like "7d", "12h", or "30m", or a predicate function.',
       )
+    }
+  } else {
+    // Automatically apply npm's min-release-age config as cooldown if cooldown is not explicitly set.
+    const npmConfigCooldown = findNpmConfig()
+    const minReleaseAge = npmConfigCooldown?.minReleaseAge
+    if (minReleaseAge != null) {
+      const days =
+        typeof minReleaseAge === 'string'
+          ? (parseCooldown(minReleaseAge) ?? parseInt(minReleaseAge, 10))
+          : typeof minReleaseAge === 'number'
+            ? minReleaseAge
+            : null
+      if (days != null && !isNaN(days)) {
+        options.cooldown = days
+        print(options, `Using npm config min-release-age: ${days} days`, 'verbose')
+      }
     }
   }
 
