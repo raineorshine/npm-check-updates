@@ -2,9 +2,10 @@ import path from 'path'
 import getAllPackages from '../src/lib/getAllPackages'
 import { type Options } from '../src/types/Options'
 import { type PackageInfo } from '../src/types/PackageInfo'
-import chaiSetup from './helpers/chaiSetup'
+import chaiSetup, { getDirname } from './helpers/chaiSetup'
 
 chaiSetup()
+const __dirname = getDirname(import.meta.url)
 
 /** forces path to a posix version (windows-style) */
 function asPosixPath(filepath: string): string {

@@ -333,14 +333,12 @@ export async function run(
   const options = await initOptions(runOptions, { cli })
 
   // ensure that the process exits with an error code if there was an unhandled rejection
-  if (process.listenerCount('exit') === 0) {
-    const bugsUrl = pkg.bugs.url
-    process.on('exit', () => {
-      if (unhandledRejectionError) {
-        programError(options, `Unhandled Rejection! This is a bug and should be reported: ${bugsUrl}`)
-      }
-    })
-  }
+  const bugsUrl = pkg.bugs.url
+  process.on('exit', () => {
+    if (unhandledRejectionError) {
+      programError(options, `Unhandled Rejection! This is a bug and should be reported: ${bugsUrl}`)
+    }
+  })
 
   // chalk may already have been initialized in cli.ts, but when imported as a module
   // chalkInit is idempotent

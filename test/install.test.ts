@@ -7,11 +7,12 @@ import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import exists from '../src/lib/exists'
-import chaiSetup from './helpers/chaiSetup'
+import chaiSetup, { getDirname } from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
+const __dirname = getDirname(import.meta.url)
 
 const bin = path.join(__dirname, '../build/cli.js')
 

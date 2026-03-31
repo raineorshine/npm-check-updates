@@ -1,7 +1,8 @@
 import * as npm from '../../../src/package-managers/npm'
-import chaiSetup from '../../helpers/chaiSetup'
+import chaiSetup, { getDirname } from '../../helpers/chaiSetup'
 
 chaiSetup()
+const __dirname = getDirname(import.meta.url)
 
 describe('npm', function () {
   it('list', async () => {

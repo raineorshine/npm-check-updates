@@ -1,9 +1,10 @@
 import * as bun from '../../src/package-managers/bun'
-import chaiSetup from '../helpers/chaiSetup'
+import chaiSetup, { getDirname } from '../helpers/chaiSetup'
 import { testFail, testPass } from '../helpers/doctorHelpers'
 import stubVersions from '../helpers/stubVersions'
 
 chaiSetup()
+const __dirname = getDirname(import.meta.url)
 
 const mockNpmVersions = {
   emitter20: '2.0.0',

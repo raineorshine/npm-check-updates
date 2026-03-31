@@ -2,11 +2,12 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import chaiSetup from './helpers/chaiSetup'
+import chaiSetup, { getDirname } from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 const should = chaiSetup()
+const __dirname = getDirname(import.meta.url)
 
 const bin = path.join(__dirname, '../build/cli.js')
 

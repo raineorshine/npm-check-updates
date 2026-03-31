@@ -1,9 +1,10 @@
 import path from 'path'
 import * as yarn from '../../../src/package-managers/yarn'
 import { getPathToLookForYarnrc } from '../../../src/package-managers/yarn'
-import chaiSetup from '../../helpers/chaiSetup'
+import chaiSetup, { getDirname } from '../../helpers/chaiSetup'
 
 const should = chaiSetup()
+const __dirname = getDirname(import.meta.url)
 
 const isWindows = process.platform === 'win32'
 

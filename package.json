@@ -223,14 +223,13 @@
     ],
     "node-option": [
       "import=tsx",
+      "enable-source-maps",
       "trace-deprecation",
-      "trace-warnings"
-    ],
-    "require": [
-      "source-map-support/register"
+      "trace-warnings",
+      "no-warnings=TimeoutNaNWarning"
     ],
     "timeout": 60000,
-    "use_strict": true,
-    "recursive": true
+    "recursive": true,
+    "exit": true
   }
 }
