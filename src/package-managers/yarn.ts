@@ -37,6 +37,16 @@ export interface NpmScope {
 
 interface YarnConfig {
   npmScopes?: Index<NpmScope>
+  npmMinimalAgeGate?: number
+  npmPreapprovedPackages?: string[]
+}
+
+/** Shape of the yarn .yarnrc.yml npmMinimalAgeGate settings. */
+export interface YarnMinimalAgeGate {
+  /** Minimum release age in seconds (yarn's native unit). */
+  npmMinimalAgeGate: number
+  /** List of package names excluded from the age gate check. */
+  npmPreapprovedPackages: string[]
 }
 
 /** Safely interpolates a string as a template string. */
@@ -137,6 +147,43 @@ const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> =
   }
 
   return npmConfig
+})
+
+/** Reads npmMinimalAgeGate settings from .yarnrc.yml if present. Checks local config first, then user config. */
+export const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMinimalAgeGate | null> => {
+  const yarnrcLocalPath = await getPathToLookForYarnrc(options)
+  const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
+
+  for (const yarnrcPath of [yarnrcLocalPath, yarnrcUserPath]) {
+    if (!yarnrcPath) continue
+    if (!(await exists(yarnrcPath))) continue
+
+    let content: string
+    try {
+      content = await fs.readFile(yarnrcPath, 'utf-8')
+    } catch {
+      continue
+    }
+
+    let parsed: YarnConfig
+    try {
+      parsed = (yaml.load(content) as YarnConfig) ?? {}
+    } catch {
+      continue
+    }
+
+    const { npmMinimalAgeGate } = parsed
+    if (typeof npmMinimalAgeGate !== 'number' || isNaN(npmMinimalAgeGate) || npmMinimalAgeGate <= 0) continue
+
+    const rawPreapproved = parsed.npmPreapprovedPackages
+    const npmPreapprovedPackages: string[] = Array.isArray(rawPreapproved)
+      ? rawPreapproved.filter((x): x is string => typeof x === 'string')
+      : []
+
+    return { npmMinimalAgeGate, npmPreapprovedPackages }
+  }
+
+  return null
 })
 
 /**
