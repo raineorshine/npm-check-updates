@@ -32,6 +32,10 @@
       "types": "./build/index.d.ts",
       "import": "./build/index.js"
     },
+    "./cli": {
+      "types": "./build/cli.d.ts",
+      "import": "./build/cli.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -178,7 +182,6 @@
     "rc-config-loader": "^4.1.4",
     "rfdc": "^1.4.1",
     "rimraf": "^6.1.3",
-    "rollup-plugin-node-externals": "^8.1.2",
     "semver": "^7.7.4",
     "semver-utils": "^1.1.4",
     "should": "^13.2.3",
@@ -191,9 +194,9 @@
     "untildify": "6.0.0",
     "update-notifier": "^7.3.1",
     "verdaccio": "6.3.2",
-    "vite": "^7.1.7",
+    "vite": "8.0.3",
     "vite-bundle-analyzer": "^1.3.6",
-    "vite-node": "^5.3.0",
+    "vite-node": "6.0.0",
     "vite-plugin-dts": "^4.5.4",
     "yaml": "^2.8.3",
     "yarn": "^1.22.22",
