@@ -5,6 +5,7 @@ import cliOptions from '../cli-options'
 import { print } from '../lib/logging'
 import packageManagers from '../package-managers'
 import { findNpmConfig } from '../package-managers/npm'
+import { getPnpmWorkspaceMinimumReleaseAge } from '../package-managers/pnpm'
 import { getYarnMinimalAgeGate } from '../package-managers/yarn'
 import { FilterPattern } from '../types/FilterPattern'
 import { Options } from '../types/Options'
@@ -226,6 +227,31 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       if (days != null && !isNaN(days)) {
         options.cooldown = days
         print(options, `Using npm config min-release-age: ${days} days`, 'verbose')
+      }
+    } else if (packageManager === 'pnpm') {
+      // Automatically apply pnpm's minimumReleaseAge from pnpm-workspace.yaml as cooldown if cooldown is not explicitly set.
+      const pnpmWorkspaceConfig = await getPnpmWorkspaceMinimumReleaseAge()
+      if (pnpmWorkspaceConfig != null) {
+        const { minimumReleaseAge, minimumReleaseAgeExclude } = pnpmWorkspaceConfig
+        // pnpm's minimumReleaseAge is in minutes; convert to days
+        const MINUTES_PER_DAY = 24 * 60
+        const days = minimumReleaseAge / MINUTES_PER_DAY
+        if (minimumReleaseAgeExclude.length > 0) {
+          const matchers = minimumReleaseAgeExclude.map(pattern => picomatch(pattern))
+          options.cooldown = (packageName: string) => (matchers.some(m => m(packageName)) ? null : days)
+          print(
+            options,
+            `Using pnpm workspace minimumReleaseAge: ${minimumReleaseAge} minutes (${days} days) with ${minimumReleaseAgeExclude.length} excluded pattern(s)`,
+            'verbose',
+          )
+        } else {
+          options.cooldown = days
+          print(
+            options,
+            `Using pnpm workspace minimumReleaseAge: ${minimumReleaseAge} minutes (${days} days)`,
+            'verbose',
+          )
+        }
       }
     } else if (packageManager === 'yarn') {
       // Automatically apply yarn's npmMinimalAgeGate from .yarnrc.yml as cooldown if cooldown is not explicitly set.
