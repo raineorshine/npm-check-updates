@@ -566,6 +566,9 @@ As a comparison: without using the \`--peer\` option, ncu will suggest the lates
 
 /** Extended help for the --cooldown option. */
 const extendedHelpCooldown: ExtendedHelp = ({ markdown }) => {
+  /** If markdown, surround inline code with backticks. */
+  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+
   return `The cooldown option helps protect against supply chain attacks by requiring package versions to be published at least the given amount of time before considering them for upgrade.
 
 The value can be a plain number (days) or a string with a unit suffix:
@@ -576,6 +579,12 @@ The value can be a plain number (days) or a string with a unit suffix:
     --cooldown 30m     30 minutes
 
 Note that previous stable versions will ${chalk.bold('not')} be suggested. The package will be completely ignored if its latest published version is within the cooldown period. This is due to a limitation of the npm registry, which does not provide a way to query previous stable versions.
+
+**Cooldown is automatically applied from the respective package manager config:**
+
+- **npm** - ${codeInline('min-release-age')}
+- **yarn** - ${codeInline('npmMinimalAgeGate')} (excluding ${codeInline('npmPreapprovedPackages')})
+- **pnpm** - ${codeInline('minimumReleaseAge')} (excluding ${codeInline('minimumReleaseAgeExclude')})
 
 ${chalk.bold('Example')}:
 
