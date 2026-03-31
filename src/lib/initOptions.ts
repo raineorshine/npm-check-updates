@@ -3,6 +3,7 @@ import propertyOf from 'lodash/propertyOf'
 import cliOptions from '../cli-options'
 import { print } from '../lib/logging'
 import packageManagers from '../package-managers'
+import { findNpmConfig } from '../package-managers/npm'
 import { FilterPattern } from '../types/FilterPattern'
 import { Options } from '../types/Options'
 import { RunOptions } from '../types/RunOptions'
@@ -206,6 +207,22 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
         options,
         'Cooldown must be a non-negative number (days), a string like "7d", "12h", or "30m", or a predicate function.',
       )
+    }
+  } else {
+    // Automatically apply npm's min-release-age config as cooldown if cooldown is not explicitly set.
+    const npmConfigCooldown = findNpmConfig()
+    const minReleaseAge = npmConfigCooldown?.minReleaseAge
+    if (minReleaseAge != null) {
+      const days =
+        typeof minReleaseAge === 'string'
+          ? (parseCooldown(minReleaseAge) ?? parseInt(minReleaseAge, 10))
+          : typeof minReleaseAge === 'number'
+            ? minReleaseAge
+            : null
+      if (days != null && !isNaN(days)) {
+        options.cooldown = days
+        print(options, `Using npm config min-release-age: ${days} days`, 'verbose')
+      }
     }
   }
 

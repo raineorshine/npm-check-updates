@@ -1,6 +1,7 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import ncu from '../src/'
+import * as npmModule from '../src/package-managers/npm'
 import type { PackageFile } from '../src/types/PackageFile'
 import type { Packument } from '../src/types/Packument'
 import chaiSetup from './helpers/chaiSetup'
@@ -863,6 +864,74 @@ describe('cooldown', () => {
       expect(result).to.not.have.property('test-package-2')
 
       stub.restore()
+    })
+  })
+
+  describe('npm config min-release-age', () => {
+    it('automatically applies min-release-age from npm config as cooldown when cooldown is not set', async () => {
+      // Given: npm config has min-release-age=7, test-package@1.0.0 installed
+      // latest version 1.1.0 released 3 days ago (within cooldown), 1.2.0 released 10 days ago (outside cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.2.0': new Date(NOW - 10 * DAY).toISOString(),
+            '1.1.0': new Date(NOW - 3 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      // Stub findNpmConfig to return a config with minReleaseAge: '7'
+      const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns({ minReleaseAge: '7' })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData })
+
+      // Then: package upgrade is skipped because latest version (1.1.0) is within the 7-day min-release-age
+      expect(result).to.not.have.property('test-package')
+
+      stub.restore()
+      findNpmConfigStub.restore()
+    })
+
+    it('does not apply min-release-age when cooldown is explicitly set', async () => {
+      // Given: npm config has min-release-age=7, but cooldown is explicitly set to 0
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 3 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      // Stub findNpmConfig to return a config with minReleaseAge: '7'
+      const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns({ minReleaseAge: '7' })
+
+      // When: ncu is run with explicit cooldown=0 (overrides min-release-age)
+      const result = await ncu({ packageData, cooldown: 0 })
+
+      // Then: package is upgraded since explicit cooldown=0 overrides min-release-age
+      expect(result).to.have.property('test-package', '1.1.0')
+
+      stub.restore()
+      findNpmConfigStub.restore()
     })
   })
 })
