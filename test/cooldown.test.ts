@@ -1076,7 +1076,7 @@ describe('cooldown', () => {
 
       // Then: package is upgraded since explicit cooldown=0 overrides npmMinimalAgeGate
       expect(result).to.have.property('test-package', '1.1.0')
-      expect(yarnAgeGateStub.called).to.be.false
+      expect(yarnAgeGateStub.called).to.equal(false)
 
       stub.restore()
       yarnAgeGateStub.restore()
@@ -1114,7 +1114,7 @@ describe('cooldown', () => {
 
       // Then: package is upgraded because npm's 2-day cooldown takes precedence and 3 days > 2 days
       expect(result).to.have.property('test-package', '1.1.0')
-      expect(yarnAgeGateStub.called).to.be.false
+      expect(yarnAgeGateStub.called).to.equal(false)
 
       stub.restore()
       findNpmConfigStub.restore()
