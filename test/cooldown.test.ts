@@ -2,6 +2,7 @@ import { expect } from 'chai'
 import Sinon from 'sinon'
 import ncu from '../src/'
 import * as npmModule from '../src/package-managers/npm'
+import * as pnpmModule from '../src/package-managers/pnpm'
 import type { PackageFile } from '../src/types/PackageFile'
 import type { Packument } from '../src/types/Packument'
 import chaiSetup from './helpers/chaiSetup'
@@ -932,6 +933,157 @@ describe('cooldown', () => {
 
       stub.restore()
       findNpmConfigStub.restore()
+    })
+  })
+
+  describe('pnpm workspace minimumReleaseAge', () => {
+    it('automatically applies minimumReleaseAge from pnpm-workspace.yaml as cooldown when cooldown is not set', async () => {
+      // Given: pnpm-workspace.yaml has minimumReleaseAge=1440 (1440 minutes = 1 day),
+      // test-package@1.0.0 installed, latest version 1.1.0 released 12 hours ago (within cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with minimumReleaseAge: 1440 minutes
+      const pnpmWorkspaceStub = Sinon.stub(pnpmModule, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
+        minimumReleaseAge: 1440,
+        minimumReleaseAgeExclude: [],
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData })
+
+      // Then: package upgrade is skipped because latest version (1.1.0) is within the 1-day cooldown
+      expect(result).to.not.have.property('test-package')
+
+      stub.restore()
+      pnpmWorkspaceStub.restore()
+    })
+
+    it('excludes packages matching minimumReleaseAgeExclude patterns from cooldown', async () => {
+      // Given: pnpm-workspace.yaml has minimumReleaseAge=10080 (7 days) with @myorg/* excluded,
+      // test-package released 3 days ago (within cooldown), @myorg/pkg released 3 days ago (excluded from cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+          '@myorg/pkg': '1.0.0',
+        },
+      }
+      const stub = stubVersions({
+        'test-package': createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+        '@myorg/pkg': createMockVersion({
+          name: '@myorg/pkg',
+          versions: { '2.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '2.0.0' },
+        }),
+      })
+
+      // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with 7 days cooldown and @myorg/* excluded
+      const pnpmWorkspaceStub = Sinon.stub(pnpmModule, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
+        minimumReleaseAge: 10080, // 7 days in minutes
+        minimumReleaseAgeExclude: ['@myorg/*'],
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData })
+
+      // Then: test-package is skipped (within 7-day cooldown), @myorg/pkg is upgraded (excluded from cooldown)
+      expect(result).to.not.have.property('test-package')
+      expect(result).to.have.property('@myorg/pkg', '2.0.0')
+
+      stub.restore()
+      pnpmWorkspaceStub.restore()
+    })
+
+    it('does not apply pnpm minimumReleaseAge when cooldown is explicitly set', async () => {
+      // Given: pnpm-workspace.yaml has minimumReleaseAge=10080 (7 days), but cooldown is explicitly set to 0
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 3 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      // Stub getPnpmWorkspaceMinimumReleaseAge to return a 7-day config
+      const pnpmWorkspaceStub = Sinon.stub(pnpmModule, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
+        minimumReleaseAge: 10080,
+        minimumReleaseAgeExclude: [],
+      })
+
+      // When: ncu is run with explicit cooldown=0 (overrides pnpm minimumReleaseAge)
+      const result = await ncu({ packageData, cooldown: 0 })
+
+      // Then: package is upgraded since explicit cooldown=0 overrides pnpm minimumReleaseAge
+      expect(result).to.have.property('test-package', '1.1.0')
+
+      stub.restore()
+      pnpmWorkspaceStub.restore()
+    })
+
+    it('does not apply pnpm minimumReleaseAge when npm min-release-age is set', async () => {
+      // Given: both npm config has min-release-age=2 and pnpm-workspace.yaml has minimumReleaseAge=10080 (7 days)
+      // test-package latest released 3 days ago (within 7-day pnpm cooldown but outside 2-day npm cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 3 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      // Stub npm config with min-release-age=2
+      const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns({ minReleaseAge: '2' })
+      // Stub pnpm workspace with 7-day cooldown
+      const pnpmWorkspaceStub = Sinon.stub(pnpmModule, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
+        minimumReleaseAge: 10080,
+        minimumReleaseAgeExclude: [],
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData })
+
+      // Then: package is upgraded because npm's 2-day cooldown takes precedence and 3 days > 2 days
+      expect(result).to.have.property('test-package', '1.1.0')
+
+      stub.restore()
+      findNpmConfigStub.restore()
+      pnpmWorkspaceStub.restore()
     })
   })
 })
