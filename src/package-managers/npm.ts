@@ -341,6 +341,7 @@ export function parseJson<R>(result: string, data: { command?: string; packageNa
       `Expected JSON from "${data.command}".${
         data.packageName ? ` There could be problems with the ${data.packageName} package.` : ''
       } ${result ? 'Instead received: ' + result : 'Received empty response.'}`,
+      { cause: err },
     )
   }
   return json as R

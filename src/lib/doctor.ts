@@ -261,6 +261,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
           `Error: Doctor mode was about to test individual upgrades, but ${chalk.cyan(
             installCommand,
           )} failed after rolling back to your existing package and lock files. This is unexpected since the initial install before any upgrades succeeded. Either npm failed to revert a partial install, or failed anomalously on the second run. Please check your internet connection and retry. If doctor mode fails consistently, report a bug with your complete list of dependency versions at https://github.com/raineorshine/npm-check-updates/issues.`,
+          { cause: e },
         )
       }
     }
