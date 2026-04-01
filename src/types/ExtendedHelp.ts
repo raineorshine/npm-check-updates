@@ -8,6 +8,8 @@ type ExtendedHelp =
       codeInline: (code: string) => string
       /** Isomorphically formats code as a block. Renders ```\ncode\n``` in markdown and indented text in the CLI. */
       codeBlock: (code: string) => string
+      /** Isomorphically renders a table. Renders an HTML table in markdown and a CLI table in the CLI. */
+      table: (options: { rows: string[][]; colAligns?: ('left' | 'right')[] }) => string
     }) => string)
 
 export default ExtendedHelp

@@ -3,7 +3,7 @@ import { defaultCacheFile } from './lib/cache'
 import chalk from './lib/chalk'
 import parseCooldown from './lib/parseCooldown'
 import { sortBy } from './lib/sortBy'
-import table from './lib/table'
+import tableLib from './lib/table'
 import CLIOption from './types/CLIOption'
 import ExtendedHelp from './types/ExtendedHelp'
 import { Index } from './types/IndexType'
@@ -65,12 +65,15 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown: 
   const codeBlock = (code: string) =>
     `${markdown ? '```js\n' : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
 
+  /** Isomorphically renders a table. Renders an HTML table in markdown and a CLI table in the CLI. */
+  const table = (options: { rows: string[][]; colAligns?: ('left' | 'right')[] }) => tableLib({ ...options, markdown })
+
   if (option.help) {
     const helpText =
       typeof option.help === 'function'
         ? markdown
-          ? option.help({ markdown, codeInline, codeBlock })
-          : uncode(option.help({ markdown, codeInline, codeBlock }))
+          ? option.help({ markdown, codeInline, codeBlock, table })
+          : uncode(option.help({ markdown, codeInline, codeBlock, table }))
         : option.help
     output += `\n${helpText.trim()}\n\n`
   } else if (option.description) {
@@ -83,7 +86,7 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown: 
 
 /** Extended help for the --doctor option. */
 const extendedHelpDoctor: ExtendedHelp = ({
-  markdown,
+  table,
 }) => `Iteratively installs upgrades and runs your project's tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
 
 ${chalk.yellow('Requires `-u` to execute')} (modifies your package file, lock file, and node_modules)
@@ -101,7 +104,6 @@ To be more precise:
 Additional options:
 
 ${table({
-  markdown,
   rows: [
     [chalk.cyan('--doctorInstall'), 'specify a custom install script (default: `npm install` or `yarn`)'],
     [chalk.cyan('--doctorTest'), 'specify a custom test script (default: `npm test`)'],
@@ -181,12 +183,11 @@ For the SemVer type definition, see: https://git.coolaj86.com/coolaj86/semver-ut
 }
 
 /** Extended help for the --format option. */
-const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
+const extendedHelpFormat: ExtendedHelp = ({ markdown, table }) => {
   const header =
     'Modify the output formatting or show additional information. Specify one or more comma-delimited values.'
   const tableString = table({
     colAligns: ['right', 'left'],
-    markdown,
     rows: [
       ['dep', `Prints the dependency type (dev, peer, optional) of each package.`],
       ['group', `Groups packages by major, minor, patch, and major version zero updates.`],
@@ -205,11 +206,10 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
 }
 
 /** Extended help for the --install option. */
-const extendedHelpInstall: ExtendedHelp = ({ markdown }) => {
+const extendedHelpInstall: ExtendedHelp = ({ markdown, table }) => {
   const header = 'Control the auto-install behavior.'
   const tableString = table({
     colAligns: ['right', 'left'],
-    markdown,
     rows: [
       ['always', `Runs your package manager's install command automatically after upgrading.`],
       ['never', `Does not install and does not prompt.`],
@@ -388,11 +388,10 @@ ${chalk.green('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec,
 }
 
 /** Extended help for the --target option. */
-const extendedHelpTarget: ExtendedHelp = ({ markdown, codeBlock }) => {
+const extendedHelpTarget: ExtendedHelp = ({ markdown, codeBlock, table }) => {
   const header = 'Determines the version to upgrade to. (default: "latest")'
   const tableString = table({
     colAligns: ['right', 'left'],
-    markdown,
     rows: [
       [
         'greatest',
@@ -443,11 +442,10 @@ ${chalk.green('target')}: (name, semver) ${chalk.cyan('=>')} {
 }
 
 /** Extended help for the --packageManager option. */
-const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
+const extendedHelpPackageManager: ExtendedHelp = ({ markdown, table }) => {
   const header = 'Specifies the package manager to use when looking up versions.'
   const tableString = table({
     colAligns: ['right', 'left'],
-    markdown,
     rows: [
       ['npm', `System-installed npm. Default.`],
       ['yarn', `System-installed yarn. Automatically used if yarn.lock is present.`],
@@ -461,11 +459,10 @@ const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
 }
 
 /** Extended help for the --registryType option. */
-const extendedHelpRegistryType: ExtendedHelp = ({ markdown, codeInline }) => {
+const extendedHelpRegistryType: ExtendedHelp = ({ markdown, codeInline, table }) => {
   const header = `Specify whether ${codeInline('--registry')} refers to a full npm registry or a simple JSON file.`
   const tableString = table({
     colAligns: ['right', 'left'],
-    markdown,
     rows: [
       ['npm', `Default npm registry`],
       [

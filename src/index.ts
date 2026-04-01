@@ -16,6 +16,7 @@ import programError from './lib/programError'
 import runGlobal from './lib/runGlobal'
 import runLocal from './lib/runLocal'
 import spawnCommand from './lib/spawnCommand'
+import table from './lib/table'
 import { Index } from './types/IndexType'
 import { Options } from './types/Options'
 import { PackageFile } from './types/PackageFile'
@@ -385,6 +386,7 @@ export async function run(
               markdown: false,
               codeInline: (code: string) => chalk.cyan(code),
               codeBlock: (code: string) => chalk.cyan(code),
+              table: ({ rows, colAligns }) => table({ rows, colAligns, markdown: false }),
             })
           : cliOptionsMap.doctor.help
       print(options, `Usage: ncu --doctor\n\n${help}`, 'warn')
