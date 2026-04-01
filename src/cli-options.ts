@@ -18,10 +18,6 @@ const padLeft = (s: string, n: number) =>
     .map(line => `${''.padStart(n, ' ')}${line}`)
     .join('\n')
 
-/** Formats a code block for CLI or markdown. */
-const codeBlock = (code: string, { markdown }: { markdown?: boolean } = {}) =>
-  `${markdown ? '```js\n' : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
-
 /** Removes inline code ticks. */
 const uncode = (s: string) => s.replace(/`/g, '')
 
@@ -42,7 +38,7 @@ const parseNumberOption =
   }
 
 /** Renders the extended help for an option with usage information. */
-export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?: boolean } = {}) => {
+export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown: boolean }) => {
   let output = ''
   if (option.cli !== false) {
     // add -u to doctor option
@@ -61,12 +57,20 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?:
   if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
     output += `\nDefault: ${option.default}\n`
   }
+
+  /** Isomorphically formats code as inline code. Renders `code` in markdown and plain text in the CLI. */
+  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+
+  /** Isomorphically formats code as a block. Renders ```\ncode\n``` in markdown and indented text in the CLI. */
+  const codeBlock = (code: string) =>
+    `${markdown ? '```js\n' : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
+
   if (option.help) {
     const helpText =
       typeof option.help === 'function'
         ? markdown
-          ? option.help({ markdown })
-          : uncode(option.help({ markdown }))
+          ? option.help({ markdown, codeInline, codeBlock })
+          : uncode(option.help({ markdown, codeInline, codeBlock }))
         : option.help
     output += `\n${helpText.trim()}\n\n`
   } else if (option.description) {
@@ -135,10 +139,7 @@ Example:
 `
 
 /** Extended help for the filterResults option. */
-const extendedHelpFilterResults: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpFilterResults: ExtendedHelp = ({ codeInline, codeBlock }) => {
   return `Filters results based on a user provided predicate function after fetching new versions.
 
 ${codeInline('filterResults')} runs _after_ new versions are fetched, in contrast to ${codeInline(
@@ -172,7 +173,6 @@ ${chalk.green('filterResults')}: (packageName, { current, currentVersionSemver, 
   }
   ${chalk.red('return')} ${chalk.cyan('true')}
 }`,
-  { markdown },
 )}
 
 For the SemVer type definition, see: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring
@@ -225,10 +225,7 @@ const extendedHelpInstall: ExtendedHelp = ({ markdown }) => {
 }
 
 /** Extended help for the --filter option. */
-const extendedHelpFilterFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpFilterFunction: ExtendedHelp = ({ codeInline, codeBlock }) => {
   return `Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Only included packages will be checked with ${codeInline(
     '--peer',
   )}.
@@ -254,17 +251,13 @@ ${chalk.green('filter')}: (name, semver) ${chalk.cyan('=>')} {
   }
   ${chalk.red('return')} ${chalk.cyan('true')}
 }`,
-  { markdown },
 )}
 
 `
 }
 
 /** Extended help for the --filterVersion option. */
-const extendedHelpFilterVersionFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpFilterVersionFunction: ExtendedHelp = ({ codeInline, codeBlock }) => {
   return `Include only versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
 
 ${codeInline('--filterVersion')} runs _before_ new versions are fetched, in contrast to ${codeInline(
@@ -290,17 +283,13 @@ ${chalk.green('filterVersion')}: (name, semver) ${chalk.cyan('=>')} {
   }
   ${chalk.red('return')} ${chalk.cyan('true')}
 }`,
-  { markdown },
 )}
 
 `
 }
 
 /** Extended help for the --reject option. */
-const extendedHelpRejectFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpRejectFunction: ExtendedHelp = ({ codeInline, codeBlock }) => {
   return `The inverse of ${codeInline(
     '--filter',
   )}. Exclude package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. This will also exclude them from the ${codeInline(
@@ -328,17 +317,13 @@ ${chalk.green('reject')}: (name, semver) ${chalk.cyan('=>')} {
   }
   ${chalk.red('return')} ${chalk.cyan('false')}
 }`,
-  { markdown },
 )}
 
 `
 }
 
 /** Extended help for the --rejectVersion option. */
-const extendedHelpRejectVersionFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpRejectVersionFunction: ExtendedHelp = ({ codeInline, codeBlock }) => {
   return `The inverse of ${codeInline(
     '--filterVersion',
   )}. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
@@ -366,14 +351,13 @@ ${chalk.green('rejectVersion')}: (name, semver) ${chalk.cyan('=>')} {
   }
   ${chalk.red('return')} ${chalk.cyan('false')}
 }`,
-  { markdown },
 )}
 
 `
 }
 
 /** Extended help for the --group option. */
-const extendedHelpGroupFunction: ExtendedHelp = ({ markdown }) => {
+const extendedHelpGroupFunction: ExtendedHelp = ({ codeBlock }) => {
   return `Customize how packages are divided into groups when using \`--format group\`.
 
 Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
@@ -398,14 +382,13 @@ ${chalk.green('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec,
   }
   ${chalk.red('return')} defaultGroup
 }`,
-  { markdown },
 )}
 
 `
 }
 
 /** Extended help for the --target option. */
-const extendedHelpTarget: ExtendedHelp = ({ markdown }) => {
+const extendedHelpTarget: ExtendedHelp = ({ markdown, codeBlock }) => {
   const header = 'Determines the version to upgrade to. (default: "latest")'
   const tableString = table({
     colAligns: ['right', 'left'],
@@ -455,7 +438,6 @@ ${chalk.green('target')}: (name, semver) ${chalk.cyan('=>')} {
   )} ${chalk.yellow("'minor'")}
   ${chalk.red('return')} ${chalk.yellow("'latest'")}
 }`,
-  { markdown },
 )}
 `
 }
@@ -479,10 +461,7 @@ const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
 }
 
 /** Extended help for the --registryType option. */
-const extendedHelpRegistryType: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpRegistryType: ExtendedHelp = ({ markdown, codeInline }) => {
   const header = `Specify whether ${codeInline('--registry')} refers to a full npm registry or a simple JSON file.`
   const tableString = table({
     colAligns: ['right', 'left'],
@@ -524,9 +503,7 @@ registry.json:
 }
 
 /** Extended help for the --peer option. */
-const extendedHelpPeer: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+const extendedHelpPeer: ExtendedHelp = ({ codeInline }) => {
   return `Check peer dependencies of installed packages and filter updates to compatible versions.
 
 ${chalk.bold('Example')}:
@@ -565,10 +542,7 @@ As a comparison: without using the \`--peer\` option, ncu will suggest the lates
 }
 
 /** Extended help for the --cooldown option. */
-const extendedHelpCooldown: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpCooldown: ExtendedHelp = ({ codeInline, codeBlock }) => {
   return `The cooldown option helps protect against supply chain attacks by requiring package versions to be published at least the given amount of time before considering them for upgrade.
 
 The value can be a plain number (days) or a string with a unit suffix:
@@ -602,7 +576,7 @@ Let's examine how cooldown works with a package that has these versions availabl
 
 ${chalk.bold('With default target (latest)')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5`, { markdown })}
+${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5`)}
 
 No update will be suggested because:
 
@@ -612,7 +586,7 @@ No update will be suggested because:
 
 ${chalk.bold('With `@beta`/`@tag` target')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 3 --target @beta`, { markdown })}
+${codeBlock(`${chalk.cyan('$')} ncu --cooldown 3 --target @beta`)}
 
 No update will be suggested because:
 
@@ -622,7 +596,7 @@ No update will be suggested because:
 
 ${chalk.bold('With other targets')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5 --target greatest|newest|minor|patch|semver`, { markdown })}
+${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5 --target greatest|newest|minor|patch|semver`)}
 
 Each target will select the best version that is at least 5 days old:
 
@@ -645,7 +619,6 @@ ${codeBlock(
   @returns               Cooldown days restriction for given package.
 */`)}
 ${chalk.green('cooldown')}: packageName ${chalk.cyan('=>')} (packageName.startsWith(${chalk.yellow("'@my-company'")}) ? ${chalk.cyan('0')} : ${chalk.cyan('3')})`,
-  { markdown },
 )}
 `
 }

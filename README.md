@@ -872,7 +872,9 @@ Determines the version to upgrade to. (default: "latest")
 
 e.g.
 
-    ncu --target semver
+```js
+ncu --target semver
+```
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 

@@ -380,7 +380,13 @@ export async function run(
     // print help otherwise
     else {
       const help =
-        typeof cliOptionsMap.doctor.help === 'function' ? cliOptionsMap.doctor.help({}) : cliOptionsMap.doctor.help
+        typeof cliOptionsMap.doctor.help === 'function'
+          ? cliOptionsMap.doctor.help({
+              markdown: false,
+              codeInline: (code: string) => chalk.cyan(code),
+              codeBlock: (code: string) => chalk.cyan(code),
+            })
+          : cliOptionsMap.doctor.help
       print(options, `Usage: ncu --doctor\n\n${help}`, 'warn')
     }
   }
