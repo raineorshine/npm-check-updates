@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import spawn from 'spawn-please'
-import { PackageManagerName } from '../../src/types/PackageManagerName'
+import { type PackageManagerName } from '../../src/types/PackageManagerName'
 
 const bin = path.join(__dirname, '../../build/cli.js')
 const doctorTests = path.join(__dirname, '../test-data/doctor')

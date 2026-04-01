@@ -1,6 +1,6 @@
 import path from 'path'
 import ncu from '../src/'
-import { Packument } from '../src/types/Packument'
+import { type Packument } from '../src/types/Packument'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 

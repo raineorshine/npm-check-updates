@@ -1,7 +1,7 @@
 import path from 'path'
 import getAllPackages from '../src/lib/getAllPackages'
-import { Options } from '../src/types/Options'
-import { PackageInfo } from '../src/types/PackageInfo'
+import { type Options } from '../src/types/Options'
+import { type PackageInfo } from '../src/types/PackageInfo'
 import chaiSetup from './helpers/chaiSetup'
 
 chaiSetup()

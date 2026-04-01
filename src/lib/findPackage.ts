@@ -3,7 +3,7 @@ import fs from 'fs/promises'
 import { text } from 'node:stream/consumers'
 import path from 'path'
 import { print } from '../lib/logging'
-import { Options } from '../types/Options'
+import { type Options } from '../types/Options'
 import chalk from './chalk'
 import programError from './programError'
 

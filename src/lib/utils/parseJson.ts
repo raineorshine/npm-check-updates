@@ -1,4 +1,4 @@
-import { ParseError, ParseErrorCode, parse, stripComments } from 'jsonc-parser'
+import { type ParseError, ParseErrorCode, parse, stripComments } from 'jsonc-parser'
 
 const stdoutColumns = process.stdout.columns || 80
 

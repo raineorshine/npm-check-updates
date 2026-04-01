@@ -1,5 +1,5 @@
-import { Index } from './IndexType'
-import { Version } from './Version'
+import { type Index } from './IndexType'
+import { type Version } from './Version'
 
 export interface CacheData {
   timestamp?: number

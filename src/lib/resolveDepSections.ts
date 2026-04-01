@@ -1,6 +1,6 @@
 import { cliOptionsMap } from '../cli-options'
-import { Index } from '../types/IndexType'
-import { PackageFile } from '../types/PackageFile'
+import { type Index } from '../types/IndexType'
+import { type PackageFile } from '../types/PackageFile'
 
 // dependency section aliases that will be resolved to the full name
 const depAliases: Index<keyof PackageFile> = {

@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { PackageFile } from '../types/PackageFile'
+import { type PackageFile } from '../types/PackageFile'
 import exists from './exists'
 
 /** Gets the package.json contents of an installed package. */

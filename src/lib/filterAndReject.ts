@@ -2,9 +2,9 @@ import { and, or } from 'fp-and-or'
 import { identity } from 'lodash-es'
 import picomatch from 'picomatch'
 import { parseRange } from 'semver-utils'
-import { FilterPattern } from '../types/FilterPattern'
-import { Maybe } from '../types/Maybe'
-import { VersionSpec } from '../types/VersionSpec'
+import { type FilterPattern } from '../types/FilterPattern'
+import { type Maybe } from '../types/Maybe'
+import { type VersionSpec } from '../types/VersionSpec'
 
 /**
  * Creates a filter function from a given filter string.

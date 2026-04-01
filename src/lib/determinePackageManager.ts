@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
-import { PackageManagerName } from '../types/PackageManagerName'
+import { type Index } from '../types/IndexType'
+import { type Options } from '../types/Options'
+import { type PackageManagerName } from '../types/PackageManagerName'
 import findLockfile from './findLockfile'
 
 // map lockfiles to package managers

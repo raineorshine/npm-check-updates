@@ -4,9 +4,9 @@ import chalk from './lib/chalk'
 import parseCooldown from './lib/parseCooldown'
 import { sortBy } from './lib/sortBy'
 import table from './lib/table'
-import CLIOption from './types/CLIOption'
-import ExtendedHelp from './types/ExtendedHelp'
-import { Index } from './types/IndexType'
+import type CLIOption from './types/CLIOption'
+import type ExtendedHelp from './types/ExtendedHelp'
+import { type Index } from './types/IndexType'
 
 /** Valid strings for the --target option. Indicates the desired version to upgrade to. */
 const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch', 'semver']

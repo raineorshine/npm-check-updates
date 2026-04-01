@@ -1,10 +1,10 @@
 import fs from 'fs/promises'
 import memoize from 'memoize'
 import programError from '../lib/programError'
-import { GetVersion } from '../types/GetVersion'
-import { Options } from '../types/Options'
-import { StaticRegistry } from '../types/StaticRegistry'
-import { Version } from '../types/Version'
+import { type GetVersion } from '../types/GetVersion'
+import { type Options } from '../types/Options'
+import { type StaticRegistry } from '../types/StaticRegistry'
+import { type Version } from '../types/Version'
 
 /** Returns true if a string is a url. */
 const isUrl = (s: string) => (s && s.startsWith('http://')) || s.startsWith('https://')

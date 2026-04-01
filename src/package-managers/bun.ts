@@ -1,10 +1,10 @@
 import path from 'path'
 import spawn from 'spawn-please'
 import keyValueBy from '../lib/keyValueBy'
-import { Index } from '../types/IndexType'
-import { NpmOptions } from '../types/NpmOptions'
-import { Options } from '../types/Options'
-import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
+import { type Index } from '../types/IndexType'
+import { type NpmOptions } from '../types/NpmOptions'
+import { type Options } from '../types/Options'
+import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 
 /** Spawn bun. */
 async function spawnBun(

@@ -2,7 +2,7 @@ import fs from 'fs/promises'
 import spawn from 'spawn-please'
 import cliOptions, { renderExtendedHelp } from '../cli-options'
 import { chalkInit } from '../lib/chalk'
-import CLIOption from '../types/CLIOption'
+import type CLIOption from '../types/CLIOption'
 
 const INJECT_HEADER =
   '<!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->'
@@ -83,12 +83,12 @@ const renderOption = (option: CLIOption<unknown>) => {
 /** Generate /src/types/RunOptions from cli-options so there is a single source of truth. */
 const generateRunOptions = (options: CLIOption<unknown>[]) => {
   const header = `/** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build" or "npm run build:options" to build. */
-import { CooldownFunction } from './CooldownFunction'
-import { FilterFunction } from './FilterFunction'
-import { FilterResultsFunction } from './FilterResultsFunction'
-import { GroupFunction } from './GroupFunction'
-import { PackageFile } from './PackageFile'
-import { TargetFunction } from './TargetFunction'
+import type { CooldownFunction } from './CooldownFunction'
+import type { FilterFunction } from './FilterFunction'
+import type { FilterResultsFunction } from './FilterResultsFunction'
+import type { GroupFunction } from './GroupFunction'
+import type { PackageFile } from './PackageFile'
+import type { TargetFunction } from './TargetFunction'
 
 /** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
 export interface RunOptions {

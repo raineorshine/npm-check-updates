@@ -1,5 +1,5 @@
 import { print } from '../lib/logging'
-import { Options } from '../types/Options'
+import { type Options } from '../types/Options'
 import chalk from './chalk'
 
 /** Print an error. Exit the process if in CLI mode. */

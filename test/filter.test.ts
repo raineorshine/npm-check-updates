@@ -2,7 +2,7 @@ import fs from 'fs/promises'
 import path from 'path'
 import spawn from 'spawn-please'
 import ncu from '../src'
-import { Index } from '../src/types/IndexType'
+import { type Index } from '../src/types/IndexType'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 

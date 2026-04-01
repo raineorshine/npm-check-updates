@@ -5,12 +5,12 @@ import parseGitHubUrl from 'parse-github-url'
 import { valid } from 'semver'
 import { print } from '../lib/logging'
 import * as versionUtil from '../lib/version-util'
-import { GetVersion } from '../types/GetVersion'
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
-import { VersionLevel } from '../types/VersionLevel'
-import { VersionResult } from '../types/VersionResult'
-import { VersionSpec } from '../types/VersionSpec'
+import { type GetVersion } from '../types/GetVersion'
+import { type Index } from '../types/IndexType'
+import { type Options } from '../types/Options'
+import { type VersionLevel } from '../types/VersionLevel'
+import { type VersionResult } from '../types/VersionResult'
+import { type VersionSpec } from '../types/VersionSpec'
 
 const execFile = promisify(childProcess.execFile)
 

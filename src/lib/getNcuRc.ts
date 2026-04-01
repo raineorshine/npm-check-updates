@@ -2,8 +2,8 @@ import os from 'os'
 import path from 'path'
 import { rcFile } from 'rc-config-loader'
 import { cliOptionsMap } from '../cli-options'
-import { Options } from '../types/Options'
-import { RcOptions } from '../types/RcOptions'
+import { type Options } from '../types/Options'
+import { type RcOptions } from '../types/RcOptions'
 import programError from './programError'
 
 /** Loads the .ncurc config file. */

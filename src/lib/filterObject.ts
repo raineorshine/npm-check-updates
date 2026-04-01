@@ -1,4 +1,4 @@
-import { Index } from '../types/IndexType'
+import { type Index } from '../types/IndexType'
 import keyValueBy from './keyValueBy'
 
 /** Filters an object by a predicate. Does not catch exceptions thrown by the predicate. */
