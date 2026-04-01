@@ -39,9 +39,9 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "rimraf build && tsc --noEmit && npm run build:options && vite build",
+    "build": "rimraf build && npm run build:options && vite build",
     "build:options": "vite-node src/scripts/build-options.ts",
-    "build:analyze": "rimraf build && tsc --noEmit && npm run build:options && ANALYZER=true vite build",
+    "build:analyze": "rimraf build && npm run build:options && ANALYZER=true vite build",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
     "lint:types": "tsc --noEmit",
