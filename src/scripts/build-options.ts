@@ -1,8 +1,9 @@
 import fs from 'fs/promises'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
-import spawn from 'spawn-please'
+import prettier from 'prettier'
+import { createGenerator } from 'ts-json-schema-generator'
 import cliOptions, { renderExtendedHelp } from '../cli-options'
-import { chalkInit } from '../lib/chalk'
+import { chalkInit, getChalk } from '../lib/chalk'
 import type CLIOption from '../types/CLIOption'
 
 const INJECT_HEADER =
@@ -104,16 +105,33 @@ export interface RunOptions {
 }
 
 /** Generates a JSON schema for the ncurc file. */
-const generateRunOptionsJsonSchema = async (): Promise<string> => {
-  // programmatic usage of typescript-json-schema does not work, at least not straightforwardly.
-  // Use the CLI which works out-of-the-box.
-  const { stdout } = await spawn('typescript-json-schema', ['tsconfig.json', 'RunOptions'])
-  return stdout
+const generateRunOptionsJsonSchema = (): string => {
+  const config = {
+    path: 'src/types/RunOptions.ts',
+    tsconfig: 'tsconfig.json',
+    type: 'RunOptions',
+  }
+
+  const schema = createGenerator(config).createSchema(config.type)
+  return JSON.stringify(schema, null, 2)
 }
 
 ;(async () => {
-  await fs.writeFile('README.md', await injectReadme())
+  const chalk = getChalk(true)
+  const logPrefix = chalk.cyan('[build:options]')
+  console.log(logPrefix, chalk.green('Generating RunOptions type definition and JSON schema...'))
+
   await fs.writeFile('src/types/RunOptions.ts', generateRunOptions(cliOptions))
-  await fs.writeFile('src/types/RunOptions.json', await generateRunOptionsJsonSchema())
-  await spawn('prettier', ['-w', 'src/types/RunOptions.json'])
+
+  const runOptionsJson = generateRunOptionsJsonSchema()
+  const prettierConfig = await prettier.resolveConfig(process.cwd())
+  const formattedJson = await prettier.format(runOptionsJson, {
+    ...prettierConfig,
+    parser: 'json',
+  })
+
+  console.log(logPrefix, chalk.green('Updating README.md with CLI options...'))
+  const readmePromise = injectReadme().then(readme => fs.writeFile('README.md', readme))
+
+  await Promise.all([readmePromise, fs.writeFile('src/types/RunOptions.json', formattedJson)])
 })()
