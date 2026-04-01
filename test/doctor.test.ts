@@ -4,6 +4,7 @@ import path from 'path'
 import spawn from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
+import formatters, { Formatters } from '../src/lib/formatters'
 import chaiSetup from './helpers/chaiSetup'
 import { testFail, testPass } from './helpers/doctorHelpers'
 import removeDir from './helpers/removeDir'
@@ -47,7 +48,7 @@ describe('doctor', function () {
       const output = await ncu(['--doctor'], {}, { cwd })
       return stripAnsi(output).should.equal(
         `Usage: ncu --doctor\n\n${stripAnsi(
-          (cliOptionsMap.doctor.help as (options: { markdown: boolean }) => string)({ markdown: false }),
+          (cliOptionsMap.doctor.help as (formatters: Formatters) => string)(formatters(false)),
         )}\n`,
       )
     })

@@ -382,10 +382,7 @@ export async function run(
     else {
       const help =
         typeof cliOptionsMap.doctor.help === 'function'
-          ? cliOptionsMap.doctor.help({
-              markdown: false,
-              ...formatters(false),
-            })
+          ? cliOptionsMap.doctor.help(formatters(false))
           : cliOptionsMap.doctor.help
       print(options, `Usage: ncu --doctor\n\n${help}`, 'warn')
     }
