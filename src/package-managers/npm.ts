@@ -1,8 +1,8 @@
 import { JSONParser } from '@streamparser/json'
 import camelCase from 'camelcase'
-import memoize from 'fast-memoize'
 import fs from 'fs'
 import ini from 'ini'
+import memoize from 'memoize'
 import npmRegistryFetch from 'npm-registry-fetch'
 import path from 'path'
 import nodeSemver from 'semver'
@@ -292,7 +292,11 @@ export const normalizeNpmConfig = (
   return config
 }
 
-/** Finds and parses the npm config at the given path. If the path does not exist, returns null. If no path is provided, finds and merges the global and user npm configs using libnpmconfig and sets cache: false. */
+/**
+ * Finds and parses the npm config at the given path.
+ * If the path does not exist, returns null.
+ * If no path is provided, finds and merges the global and user npm configs using libnpmconfig and sets cache: false.
+ */
 export const findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
   let config
 
@@ -435,7 +439,9 @@ export const mockFetchUpgradedPackument =
   }
 
 /** Merges the workspace, global, user, local, project, and cwd npm configs (in that order). */
-// Note that this is memoized on configs and options, but not on package name. This avoids duplicate messages when log level is verbose. findNpmConfig is memoized on config path, so it is not expensive to call multiple times.
+// Note that this is memoized on configs and options, but not on package name.
+// This avoids duplicate messages when log level is verbose.
+// findNpmConfig is memoized on config path, so it is not expensive to call multiple times.
 const mergeNpmConfigs = memoize(
   (
     {
@@ -507,6 +513,15 @@ const mergeNpmConfigs = memoize(
 
     return npmConfigMerged
   },
+  {
+    /**
+     * Because this function depends on both the first object AND the options object,
+     * we must provide a cacheKey. Modern memoize provides both args in an array.
+     */
+    cacheKey: ([configs, options]) => {
+      return JSON.stringify([configs, options.packageFile, options.cwd, options.registry, options.timeout])
+    },
+  },
 )
 
 /**
@@ -577,33 +592,32 @@ async function fetchUpgradedPackument(
   return result
 }
 
-/** Memoize fetchUpgradedPackument for --deep and --workspaces performance. */
-// must be exported to stub
+/**
+ * Memoize fetchUpgradedPackument for --deep and --workspaces performance.
+ * Note: Must be exported to allow stubbing in tests.
+ */
 export const fetchUpgradedPackumentMemo = memoize(fetchUpgradedPackument, {
-  // serializer args are incorrectly typed as any[] instead of being generic, so we need to cast it
-  serializer: (([
-    packageName,
-    fields,
-    currentVersion,
-    options,
-    retried,
-    npmConfigLocal,
-    npmConfigWorkspaceProject,
-  ]: Parameters<typeof fetchUpgradedPackument>) => {
-    // packageFile varies by cwd in workspaces/deep mode, so we do not want to memoize on that
+  /**
+   * Generates a unique cache key based on the arguments.
+   * In modern 'memoize', this replaces 'serializer' and receives
+   * the arguments as a single array.
+   */
+  cacheKey: ([packageName, fields, currentVersion, options, retried, npmConfigLocal, npmConfigWorkspaceProject]) => {
+    // packageFile varies by cwd in workspaces/deep mode,
+    // so we do not want to memoize based on that specific property.
     const { packageFile: _, ...optionsWithoutPackageFile } = options
     return JSON.stringify([
       packageName,
       fields,
-      // currentVersion does not change the behavior of fetchUpgradedPackument unless it is an invalid/inexact version which causes it to short circuit
+      // currentVersion only affects behavior if it's invalid/inexact (short-circuit logic)
       isExactVersion(currentVersion),
       optionsWithoutPackageFile,
-      // make sure retries do not get memoized
+      // Ensure retries are unique keys so they don't return a stale cached failure
       retried,
       npmConfigLocal,
       npmConfigWorkspaceProject,
     ])
-  }) as (args: any[]) => string,
+  },
 })
 
 /**

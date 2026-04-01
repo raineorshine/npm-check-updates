@@ -1,5 +1,4 @@
-import escapeRegExp from 'lodash/escapeRegExp'
-import propertyOf from 'lodash/propertyOf'
+import { escapeRegExp, propertyOf } from 'lodash-es'
 import parseGitHubUrl from 'parse-github-url'
 import semver from 'semver'
 import semverutils, { SemVer, parse, parseRange } from 'semver-utils'

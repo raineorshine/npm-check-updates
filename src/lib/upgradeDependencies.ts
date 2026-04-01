@@ -1,4 +1,4 @@
-import flow from 'lodash/flow'
+import { flow } from 'lodash-es'
 import { parseRange } from 'semver-utils'
 import { Index } from '../types/IndexType'
 import { Options } from '../types/Options'

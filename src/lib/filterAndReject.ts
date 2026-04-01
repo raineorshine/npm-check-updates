@@ -1,5 +1,5 @@
 import { and, or } from 'fp-and-or'
-import identity from 'lodash/identity'
+import { identity } from 'lodash-es'
 import picomatch from 'picomatch'
 import { parseRange } from 'semver-utils'
 import { FilterPattern } from '../types/FilterPattern'

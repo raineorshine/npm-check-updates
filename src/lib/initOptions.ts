@@ -1,5 +1,5 @@
 import { dequal } from 'dequal'
-import propertyOf from 'lodash/propertyOf'
+import { propertyOf } from 'lodash-es'
 import picomatch from 'picomatch'
 import cliOptions from '../cli-options'
 import { print } from '../lib/logging'

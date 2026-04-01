@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "20.0.0",
+  "version": "21.0.0-alpha.0",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -17,11 +17,23 @@
     "versions"
   ],
   "engines": {
-    "node": ">=20.0.0",
-    "npm": ">=8.12.1"
+    "node": "^20.19.0 || ^22.12.0 || >=24.0.0",
+    "npm": ">=10.0.0"
   },
+  "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "bin": {
+    "npm-check-updates": "build/cli.js",
+    "ncu": "build/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "import": "./build/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "build": "rimraf build && tsc --noEmit && npm run build:options && vite build",
     "build:options": "vite-node src/scripts/build-options.ts",
@@ -42,10 +54,6 @@
     "typecheck": "tsc --noEmit",
     "ncu": "node build/cli.js"
   },
-  "bin": {
-    "npm-check-updates": "build/cli.js",
-    "ncu": "build/cli.js"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/raineorshine/npm-check-updates.git"
@@ -56,34 +64,40 @@
   },
   "overrides": {
     "@yarnpkg/parsers": "3.0.3",
-    "@verdaccio/local-storage-legacy": {
-      "@verdaccio/core": ">=8.0.0-next-8.33"
+    "@verdaccio/core": ">=8.0.0-next-8.33",
+    "@typescript-eslint/parser": {
+      "typescript": "$typescript"
     },
-    "brace-expansion": ">=5.0.5",
+    "@typescript-eslint/eslint-plugin": {
+      "typescript": "$typescript"
+    },
+    "@microsoft/api-extractor": {
+      "typescript": "$typescript"
+    },
+    "eslint-plugin-import": {
+      "eslint": "$eslint"
+    },
+    "eslint-plugin-promise": {
+      "eslint": "$eslint"
+    },
+    "eslint-config-standard": {
+      "eslint": "$eslint",
+      "eslint-plugin-n": "$eslint-plugin-n",
+      "eslint-plugin-promise": "$eslint-plugin-promise"
+    },
+    "eslint-config-raine": {
+      "eslint": "$eslint",
+      "eslint-plugin-n": "$eslint-plugin-n",
+      "eslint-plugin-promise": "$eslint-plugin-promise"
+    },
     "diff@4": ">=4.0.4",
     "diff@6": ">=8.0.3",
     "diff@7": ">=8.0.3",
     "diff@8": ">=8.0.3",
-    "eslint": "$eslint",
-    "@eslint/js": "$@eslint/js",
-    "eslint-plugin-n": "$eslint-plugin-n",
-    "eslint-plugin-promise": "$eslint-plugin-promise",
-    "flatted": ">=3.4.2",
-    "glob@10": ">=10.5.0",
-    "glob@11": ">=11.1.0",
     "handlebars": ">=4.7.9",
     "ip": "2.0.1",
-    "jsonparse": "github:ARitz-Cracker/jsonparse#patch-1",
-    "lodash": "$lodash",
-    "minimatch@3": ">=3.1.3",
-    "minimatch@7": ">=7.4.8",
-    "minimatch@9": ">=9.0.7",
-    "minimatch@10": ">=10.2.3",
-    "picomatch@2": ">=2.3.2",
-    "qs": ">=6.14.2",
-    "rollup": ">=4.59.0",
-    "serialize-javascript": ">=7.0.3",
-    "smol-toml": ">=1.6.1"
+    "lodash": ">=4.17.23",
+    "serialize-javascript": ">=7.0.3"
   },
   "devDependencies": {
     "@eslint/compat": "2.0.3",
@@ -99,7 +113,7 @@
     "@types/ini": "^4.1.1",
     "@types/js-yaml": "^4.0.9",
     "@types/jsonlines": "^0.1.5",
-    "@types/lodash": "^4.17.24",
+    "@types/lodash-es": "4.17.12",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.5.0",
     "@types/npm-registry-fetch": "^8.0.9",
@@ -128,11 +142,10 @@
     "eslint-config-standard": "17.1.0",
     "eslint-import-resolver-typescript": "4.4.4",
     "eslint-plugin-import-x": "4.16.2",
-    "eslint-plugin-jsdoc": "61.7.1",
+    "eslint-plugin-jsdoc": "62.8.1",
     "eslint-plugin-n": "17.24.0",
     "eslint-plugin-promise": "7.2.1",
     "fast-glob": "^3.3.3",
-    "fast-memoize": "^2.5.2",
     "find-up": "5.0.0",
     "fp-and-or": "^1.0.2",
     "globals": "17.4.0",
@@ -142,8 +155,9 @@
     "jsonc-parser": "^3.3.1",
     "jsonlines": "^0.1.1",
     "lockfile-lint": "^5.0.0",
-    "lodash": "^4.17.23",
+    "lodash-es": "4.17.23",
     "markdownlint-cli": "^0.48.0",
+    "memoize": "11.0.0",
     "mocha": "^11.7.5",
     "npm-registry-fetch": "^19.1.1",
     "npm-run-all": "^4.1.5",
