@@ -386,6 +386,7 @@ export async function run(
               markdown: false,
               codeInline: (code: string) => chalk.cyan(code),
               codeBlock: (code: string) => chalk.cyan(code),
+              padLeft: (s: string, n: number) => ' '.repeat(n) + s,
               table: ({ rows, colAligns }) => table({ rows, colAligns, markdown: false }),
             })
           : cliOptionsMap.doctor.help

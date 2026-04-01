@@ -68,12 +68,15 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown: 
   /** Isomorphically renders a table. Renders an HTML table in markdown and a CLI table in the CLI. */
   const table = (options: { rows: string[][]; colAligns?: ('left' | 'right')[] }) => tableLib({ ...options, markdown })
 
+  /** Isomorphically pads. No-op in markdown, indents in CLI. */
+  const boundPadLeft = (s: string, n: number) => padLeft(s, markdown ? 0 : n)
+
   if (option.help) {
     const helpText =
       typeof option.help === 'function'
         ? markdown
-          ? option.help({ markdown, codeInline, codeBlock, table })
-          : uncode(option.help({ markdown, codeInline, codeBlock, table }))
+          ? option.help({ markdown, codeInline, codeBlock, table, padLeft: boundPadLeft })
+          : uncode(option.help({ markdown, codeInline, codeBlock, table, padLeft: boundPadLeft }))
         : option.help
     output += `\n${helpText.trim()}\n\n`
   } else if (option.description) {
@@ -183,7 +186,7 @@ For the SemVer type definition, see: https://git.coolaj86.com/coolaj86/semver-ut
 }
 
 /** Extended help for the --format option. */
-const extendedHelpFormat: ExtendedHelp = ({ markdown, table }) => {
+const extendedHelpFormat: ExtendedHelp = ({ padLeft, table }) => {
   const header =
     'Modify the output formatting or show additional information. Specify one or more comma-delimited values.'
   const tableString = table({
@@ -201,12 +204,12 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown, table }) => {
     ],
   })
 
-  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+  return `${header}\n\n${padLeft(tableString, 4)}
 `
 }
 
 /** Extended help for the --install option. */
-const extendedHelpInstall: ExtendedHelp = ({ markdown, table }) => {
+const extendedHelpInstall: ExtendedHelp = ({ padLeft, table }) => {
   const header = 'Control the auto-install behavior.'
   const tableString = table({
     colAligns: ['right', 'left'],
@@ -220,7 +223,7 @@ const extendedHelpInstall: ExtendedHelp = ({ markdown, table }) => {
     ],
   })
 
-  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+  return `${header}\n\n${padLeft(tableString, 4)}
 `
 }
 
@@ -388,7 +391,7 @@ ${chalk.green('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec,
 }
 
 /** Extended help for the --target option. */
-const extendedHelpTarget: ExtendedHelp = ({ markdown, codeBlock, table }) => {
+const extendedHelpTarget: ExtendedHelp = ({ padLeft, codeBlock, table }) => {
   const header = 'Determines the version to upgrade to. (default: "latest")'
   const tableString = table({
     colAligns: ['right', 'left'],
@@ -414,7 +417,7 @@ const extendedHelpTarget: ExtendedHelp = ({ markdown, codeBlock, table }) => {
 
   return `${header}
 
-${padLeft(tableString, markdown ? 0 : 4)}
+${padLeft(tableString, 4)}
 
 e.g.
 
@@ -442,7 +445,7 @@ ${chalk.green('target')}: (name, semver) ${chalk.cyan('=>')} {
 }
 
 /** Extended help for the --packageManager option. */
-const extendedHelpPackageManager: ExtendedHelp = ({ markdown, table }) => {
+const extendedHelpPackageManager: ExtendedHelp = ({ padLeft, table }) => {
   const header = 'Specifies the package manager to use when looking up versions.'
   const tableString = table({
     colAligns: ['right', 'left'],
@@ -454,12 +457,12 @@ const extendedHelpPackageManager: ExtendedHelp = ({ markdown, table }) => {
     ],
   })
 
-  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+  return `${header}\n\n${padLeft(tableString, 4)}
 `
 }
 
 /** Extended help for the --registryType option. */
-const extendedHelpRegistryType: ExtendedHelp = ({ markdown, codeInline, table }) => {
+const extendedHelpRegistryType: ExtendedHelp = ({ padLeft, codeInline, table }) => {
   const header = `Specify whether ${codeInline('--registry')} refers to a full npm registry or a simple JSON file.`
   const tableString = table({
     colAligns: ['right', 'left'],
@@ -495,7 +498,7 @@ registry.json:
     ],
   })
 
-  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+  return `${header}\n\n${padLeft(tableString, 4)}
 `
 }
 

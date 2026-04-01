@@ -10,6 +10,8 @@ type ExtendedHelp =
       codeBlock: (code: string) => string
       /** Isomorphically renders a table. Renders an HTML table in markdown and a CLI table in the CLI. */
       table: (options: { rows: string[][]; colAligns?: ('left' | 'right')[] }) => string
+      /** Isomorphically pads. No-op in markdown, indents in CLI. */
+      padLeft: (s: string, n: number) => string
     }) => string)
 
 export default ExtendedHelp
