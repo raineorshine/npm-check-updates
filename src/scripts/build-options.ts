@@ -1,4 +1,6 @@
 import fs from 'fs/promises'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import prettier from 'prettier'
 import { createGenerator } from 'ts-json-schema-generator'
@@ -116,22 +118,38 @@ const generateRunOptionsJsonSchema = (): string => {
   return JSON.stringify(schema, null, 2)
 }
 
-;(async () => {
+/** generate and save README.md, RunOptions.ts, RunOptions.json */
+export async function buildOptions(): Promise<void> {
   const chalk = getChalk(true)
-  const logPrefix = chalk.cyan('[build:options]')
+  const logPrefix = chalk.cyan('[build-options]')
   console.log(logPrefix, chalk.green('Generating RunOptions type definition and JSON schema...'))
 
+  // Generate TypeScript
   await fs.writeFile('src/types/RunOptions.ts', generateRunOptions(cliOptions))
 
-  const runOptionsJson = generateRunOptionsJsonSchema()
+  // Generate JSON Schema
+  const schema = generateRunOptionsJsonSchema()
   const prettierConfig = await prettier.resolveConfig(process.cwd())
-  const formattedJson = await prettier.format(runOptionsJson, {
+  const formattedSchema = await prettier.format(schema, {
     ...prettierConfig,
     parser: 'json',
   })
+  await fs.writeFile('src/types/RunOptions.json', formattedSchema)
 
-  console.log(logPrefix, chalk.green('Updating README.md with CLI options...'))
+  // Update README (parallel with last write for speed)
+  console.log(logPrefix, chalk.green('Updating README.md...'))
   const readmePromise = injectReadme().then(readme => fs.writeFile('README.md', readme))
 
-  await Promise.all([readmePromise, fs.writeFile('src/types/RunOptions.json', formattedJson)])
-})()
+  await Promise.all([readmePromise, fs.writeFile('src/types/RunOptions.json', formattedSchema)])
+
+  console.log(logPrefix, chalk.green('Done!\n'))
+}
+
+const isDirectRun = import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
+
+if (isDirectRun) {
+  buildOptions().catch(err => {
+    console.error(err?.stack || err)
+    process.exit(1)
+  })
+}

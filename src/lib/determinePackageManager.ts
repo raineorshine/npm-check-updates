@@ -42,6 +42,7 @@ const getRunningPackageManager = (): PackageManagerName => {
     return 'pnpm'
   if (
     userAgent.startsWith('bun/') ||
+    // @ts-expect-error - it is bun
     typeof Bun !== 'undefined' ||
     process.versions.bun ||
     __dirname.includes('/.bun/') ||
