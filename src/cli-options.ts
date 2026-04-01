@@ -1,22 +1,15 @@
 import path from 'path'
 import { defaultCacheFile } from './lib/cache'
 import chalk from './lib/chalk'
+import formatters from './lib/formatters'
 import parseCooldown from './lib/parseCooldown'
 import { sortBy } from './lib/sortBy'
-import tableLib from './lib/table'
 import CLIOption from './types/CLIOption'
 import ExtendedHelp from './types/ExtendedHelp'
 import { Index } from './types/IndexType'
 
 /** Valid strings for the --target option. Indicates the desired version to upgrade to. */
 const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch', 'semver']
-
-/** Pads the left side of each line in a string. */
-const padLeft = (s: string, n: number) =>
-  s
-    .split('\n')
-    .map(line => `${''.padStart(n, ' ')}${line}`)
-    .join('\n')
 
 /** Removes inline code ticks. */
 const uncode = (s: string) => s.replace(/`/g, '')
@@ -58,25 +51,12 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown: 
     output += `\nDefault: ${option.default}\n`
   }
 
-  /** Isomorphically formats code as inline code. Renders `code` in markdown and plain text in the CLI. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
-  /** Isomorphically formats code as a block. Renders ```\ncode\n``` in markdown and indented text in the CLI. */
-  const codeBlock = (code: string) =>
-    `${markdown ? '```js\n' : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
-
-  /** Isomorphically renders a table. Renders an HTML table in markdown and a CLI table in the CLI. */
-  const table = (options: { rows: string[][]; colAligns?: ('left' | 'right')[] }) => tableLib({ ...options, markdown })
-
-  /** Isomorphically pads. No-op in markdown, indents in CLI. */
-  const boundPadLeft = (s: string, n: number) => padLeft(s, markdown ? 0 : n)
-
   if (option.help) {
     const helpText =
       typeof option.help === 'function'
         ? markdown
-          ? option.help({ markdown, codeInline, codeBlock, table, padLeft: boundPadLeft })
-          : uncode(option.help({ markdown, codeInline, codeBlock, table, padLeft: boundPadLeft }))
+          ? option.help({ markdown, ...formatters(markdown) })
+          : uncode(option.help({ markdown, ...formatters(markdown) }))
         : option.help
     output += `\n${helpText.trim()}\n\n`
   } else if (option.description) {

@@ -7,6 +7,7 @@ import chalk, { chalkInit } from './lib/chalk'
 import determinePackageManager from './lib/determinePackageManager'
 import doctor from './lib/doctor'
 import findPackage from './lib/findPackage'
+import formatters from './lib/formatters'
 import getAllPackages from './lib/getAllPackages'
 import getNcuRc from './lib/getNcuRc'
 import initOptions from './lib/initOptions'
@@ -16,7 +17,6 @@ import programError from './lib/programError'
 import runGlobal from './lib/runGlobal'
 import runLocal from './lib/runLocal'
 import spawnCommand from './lib/spawnCommand'
-import table from './lib/table'
 import { Index } from './types/IndexType'
 import { Options } from './types/Options'
 import { PackageFile } from './types/PackageFile'
@@ -384,10 +384,7 @@ export async function run(
         typeof cliOptionsMap.doctor.help === 'function'
           ? cliOptionsMap.doctor.help({
               markdown: false,
-              codeInline: (code: string) => chalk.cyan(code),
-              codeBlock: (code: string) => chalk.cyan(code),
-              padLeft: (s: string, n: number) => ' '.repeat(n) + s,
-              table: ({ rows, colAligns }) => table({ rows, colAligns, markdown: false }),
+              ...formatters(false),
             })
           : cliOptionsMap.doctor.help
       print(options, `Usage: ncu --doctor\n\n${help}`, 'warn')
