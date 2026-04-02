@@ -105,7 +105,8 @@
     "diff@8": ">=8.0.3",
     "handlebars": ">=4.7.9",
     "ip": "2.0.1",
-    "lodash": ">=4.17.23",
+    "lodash": ">=4.18.1",
+    "lodash-es": "$lodash-es",
     "serialize-javascript": ">=7.0.3"
   },
   "devDependencies": {
@@ -163,7 +164,7 @@
     "jsonc-parser": "^3.3.1",
     "jsonlines": "^0.1.1",
     "lockfile-lint": "^5.0.0",
-    "lodash-es": "4.17.23",
+    "lodash-es": "4.18.1",
     "markdownlint-cli": "^0.48.0",
     "memoize": "11.0.0",
     "mocha": "^11.7.5",
