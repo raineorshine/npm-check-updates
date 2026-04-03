@@ -1,9 +1,9 @@
 /** Fetches package metadata from GitHub tags. */
 import childProcess from 'node:child_process'
 import { promisify } from 'node:util'
+import parseGitHubUrl from 'parse-github-url'
 import { valid } from 'semver'
 import { print } from '../lib/logging'
-import parseGitHubUrl from '../lib/parseGitHubUrl'
 import * as versionUtil from '../lib/version-util'
 import { GetVersion } from '../types/GetVersion'
 import { Index } from '../types/IndexType'
