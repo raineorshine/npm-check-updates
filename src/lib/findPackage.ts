@@ -22,6 +22,7 @@ async function findPackage(options: Options): Promise<{
   pkgPath: string | null
 }> {
   let pkgData
+  // eslint-disable-next-line no-useless-assignment
   let pkgFile = null
   const pkgPath = options.packageFile || 'package.json'
 

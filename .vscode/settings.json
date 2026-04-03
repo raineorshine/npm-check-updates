@@ -1,4 +1,16 @@
 {
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+
+  // Enable ESLint and tell it to use Flat Config (automatic in v10, but good to be explicit)
+  "eslint.enable": true,
+  "eslint.useFlatConfig": true,
+
+  // Run linting on every save
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // Ensure VS Code understands which files to validate
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact", "markdown"]
 }

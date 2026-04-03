@@ -1,3 +1,4 @@
+import escapeRegExp from 'lodash/escapeRegExp'
 import propertyOf from 'lodash/propertyOf'
 import semver from 'semver'
 import semverutils, { SemVer, parse, parseRange } from 'semver-utils'
@@ -28,7 +29,7 @@ const VERSION_PART_DELIM: SemVer = {
 export const DEFAULT_WILDCARD = '^'
 export const WILDCARDS = ['^', '~', '.*', '.x']
 const WILDCARDS_PURE = ['^', '~', '^*', '*', 'x', 'x.x', 'x.x.x']
-const WILDCARD_PURE_REGEX = new RegExp(`^(${WILDCARDS_PURE.join('|').replace(/\^/g, '\\^').replace(/\*/g, '\\*')})$`)
+const WILDCARD_PURE_REGEX = new RegExp(`^(${WILDCARDS_PURE.map(escapeRegExp).join('|')})$`)
 
 /** Matches an npm alias version declaration. */
 const NPM_ALIAS_REGEX = /^npm:(.*)@(.*)/

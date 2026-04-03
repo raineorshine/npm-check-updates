@@ -3,6 +3,7 @@ import findUp from 'find-up'
 import fs from 'fs/promises'
 import ini from 'ini'
 import path from 'path'
+import { parse as parseYaml } from 'yaml'
 import keyValueBy from '../lib/keyValueBy'
 import { print } from '../lib/logging'
 import spawnCommand from '../lib/spawnCommand'
@@ -49,6 +50,44 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
   print(options, config, 'verbose')
 
   return config
+})
+
+/** Shape of the pnpm-workspace.yaml minimumReleaseAge settings. */
+export interface PnpmWorkspaceMinimumReleaseAge {
+  /** Minimum release age in minutes (pnpm's native unit). */
+  minimumReleaseAge: number
+  /** List of package name glob patterns excluded from the minimum release age constraint. */
+  minimumReleaseAgeExclude: string[]
+}
+
+/** Reads minimumReleaseAge settings from pnpm-workspace.yaml if present. */
+export const getPnpmWorkspaceMinimumReleaseAge = memoize(async (): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
+  const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
+  if (!pnpmWorkspacePath) return null
+
+  let content: string
+  try {
+    content = await fs.readFile(pnpmWorkspacePath, 'utf-8')
+  } catch {
+    return null
+  }
+
+  let parsed: Record<string, unknown>
+  try {
+    parsed = parseYaml(content) ?? {}
+  } catch {
+    return null
+  }
+
+  const minimumReleaseAge = parsed.minimumReleaseAge
+  if (typeof minimumReleaseAge !== 'number' || isNaN(minimumReleaseAge) || minimumReleaseAge < 0) return null
+
+  const rawExclude = parsed.minimumReleaseAgeExclude
+  const minimumReleaseAgeExclude: string[] = Array.isArray(rawExclude)
+    ? rawExclude.filter((x): x is string => typeof x === 'string')
+    : []
+
+  return { minimumReleaseAge, minimumReleaseAgeExclude }
 })
 
 /** Fetches the list of all installed packages. */

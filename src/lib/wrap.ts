@@ -37,7 +37,6 @@ const wrap = (s: string, maxLineLength = 92) => {
       linesOut.push(line.trimEnd())
       i += line.length
     }
-    i = 0
   })
   return linesOut.join('\n').trim()
 }
