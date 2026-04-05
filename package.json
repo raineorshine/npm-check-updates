@@ -51,7 +51,7 @@
     "prettier:fix": "prettier . --write",
     "test": "tsc --noEmit && npm run test:unit && npm run test:e2e",
     "test:bun": "mocha test/bun",
-    "test:unit": "mocha test test/package-managers/*",
+    "test:unit": "mocha test test/package-managers/* --ignore 'test/bun/*'",
     "test:e2e": "./test/e2e.sh",
     "typecheck": "tsc --noEmit",
     "ncu": "node build/cli.js"
