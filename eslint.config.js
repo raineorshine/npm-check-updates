@@ -101,6 +101,7 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         project: './tsconfig.json',
+        tsconfigRootDir: import.meta.dirname,
         warnOnUnsupportedTypeScriptVersion: false,
       },
       globals: {
