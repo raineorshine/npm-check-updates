@@ -129,7 +129,8 @@ export async function buildOptions(): Promise<void> {
 
   // Generate JSON Schema
   const schema = generateRunOptionsJsonSchema()
-  const prettierConfig = await prettier.resolveConfig(process.cwd())
+  const configPath = path.join(process.cwd(), 'package.json')
+  const prettierConfig = await prettier.resolveConfig(configPath)
   const formattedSchema = await prettier.format(schema, {
     ...prettierConfig,
     parser: 'json',

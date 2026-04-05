@@ -497,12 +497,7 @@
                   "$ref": "#/definitions/SemVer"
                 }
               },
-              "required": [
-                "currentVersion",
-                "currentVersionSemver",
-                "upgradedVersion",
-                "upgradedVersionSemver"
-              ],
+              "required": ["currentVersion", "currentVersionSemver", "upgradedVersion", "upgradedVersionSemver"],
               "additionalProperties": false
             }
           },
@@ -555,13 +550,7 @@
               ]
             }
           },
-          "required": [
-            "packageName",
-            "defaultGroup",
-            "currentVersionSpec",
-            "upgradedVersionSpec",
-            "upgradedVersion"
-          ],
+          "required": ["packageName", "defaultGroup", "currentVersionSpec", "upgradedVersionSpec", "upgradedVersion"],
           "additionalProperties": false
         }
       },
