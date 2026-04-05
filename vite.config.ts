@@ -62,18 +62,26 @@ export default defineConfig(({ mode }) => ({
         index: 'src/index.ts',
         cli: 'src/bin/cli.ts',
       },
-      formats: ['es', 'cjs'],
-      fileName: (format, entryName) => `${entryName}.${format === 'es' ? 'js' : 'cjs'}`,
     },
     target: 'node20',
     outDir: 'build',
     sourcemap: true,
     minify: mode === 'production' && 'esbuild',
     rollupOptions: {
-      output: {
-        exports: 'named',
-        chunkFileNames: 'chunks/[name]-[format].js',
-      },
+      output: [
+        {
+          format: 'es',
+          entryFileNames: '[name].js',
+          chunkFileNames: 'chunks/[name]-[hash].js',
+          exports: 'named',
+        },
+        {
+          format: 'cjs',
+          entryFileNames: '[name].cjs',
+          chunkFileNames: 'chunks/[name]-[hash].cjs', // The fix for p-map
+          exports: 'named',
+        },
+      ],
     },
   },
 }))
