@@ -110,6 +110,7 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.5.0",
     "@types/npm-registry-fetch": "^8.0.9",
+    "@types/parse-github-url": "1.0.3",
     "@types/picomatch": "^4.0.2",
     "@types/progress": "^2.0.7",
     "@types/prompts": "^2.4.9",

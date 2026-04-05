@@ -1,7 +1,7 @@
 /** Fetches package metadata from GitHub tags. */
-import hostedGitInfo from 'hosted-git-info'
 import childProcess from 'node:child_process'
 import { promisify } from 'node:util'
+import parseGitHubUrl from 'parse-github-url'
 import { valid } from 'semver'
 import { print } from '../lib/logging'
 import * as versionUtil from '../lib/version-util'
@@ -36,21 +36,22 @@ async function getSortedVersions(
   declaration: VersionSpec,
   options?: Options,
 ): Promise<string[] | undefined> {
-  const info = hostedGitInfo.fromUrl(declaration)
-  if (!info) {
-    print(options ?? {}, `Invalid git url for ${name}: ${declaration}`, 'verbose')
-    return
-  }
-
+  // if present, github: is parsed as the protocol. This is not valid when passed into remote-git-tags.
+  declaration = declaration.replace(/^github:/, '')
+  const { auth, protocol, host, path } = parseGitHubUrl(declaration)!
   let tags: Index<string>
+
   try {
-    // try ssh first, then https
-    try {
-      const sshUrl = info.sshurl().split('#')[0]
-      tags = await getGitTags(sshUrl)
-    } catch {
-      const httpsUrl = info.https({ noGitPlus: true }).split('#')[0]
-      tags = await getGitTags(httpsUrl)
+    if (protocol !== null) {
+      tags = await getGitTags(
+        `${protocol ? protocol.replace('git+', '') : 'https:'}//${auth ? auth + '@' : ''}${host}/${path?.replace(/^:/, '')}`,
+      )
+    } else {
+      try {
+        tags = await getGitTags(`ssh://git@${host}/${path?.replace(/^:/, '')}`)
+      } catch {
+        tags = await getGitTags(`https://${auth ? auth + '@' : ''}${host}/${path}`)
+      }
     }
   } catch (e) {
     // catch a variety of errors that occur on invalid or private repos
@@ -89,8 +90,7 @@ export const greatest: GetVersion = async (name: string, declaration: VersionSpe
 export const greatestLevel =
   (level: VersionLevel) =>
   async (name: string, declaration: VersionSpec, options: Options = {}): Promise<VersionResult> => {
-    const info = hostedGitInfo.fromUrl(declaration)
-    const version = decodeURIComponent(info?.committish || '').replace(/^semver:/, '')
+    const version = decodeURIComponent(parseGitHubUrl(declaration)!.branch).replace(/^semver:/, '')
     const versions = await getSortedVersions(name, declaration, options)
     if (!versions) return { version: null }
 
