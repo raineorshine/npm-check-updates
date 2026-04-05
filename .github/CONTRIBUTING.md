@@ -15,9 +15,31 @@ When filing an issue, please include:
 - the relevant package names and their specified versions from your package file
 - ...or the output from `npm -g ls --depth=0` if using global mode
 
+## Development
+
+This project is now **pure ESM** with support for both ESM and CJS via Vite. It requires Node.js `^20.19.0 || ^22.12.0 || >=24.0.0`.
+
+### Running Tests
+
+Since the project is now ESM, tests must be run with `tsx` for TypeScript support:
+
+```sh
+npm test
+# or manually:
+mocha --node-option import=tsx 'test/**/*.test.ts'
+```
+
 ## Executable Stack Trace
 
-The Vite Build uses SSR to bundle all dependencies for efficiency. There currently is no source map for `./build/cli.js`. To execute npm-check-updates with an accurate stack trace run the following
+The Vite Build bundles all dependencies for efficiency. Source maps are now generated for all build outputs:
+
+- `build/cli.cjs.map` - CommonJS CLI source map
+- `build/cli.js.map` - ESM CLI source map
+- `build/index.cjs.map` - CommonJS index source map
+- `build/index.js.map` - ESM index source map
+- `build/chunks/*.map` - Chunk source maps
+
+To execute npm-check-updates with an accurate stack trace using the original TypeScript source code, run:
 
 ```sh
 git clone https://github.com/raineorshine/npm-check-updates /MY_PROJECTS

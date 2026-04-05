@@ -2,6 +2,68 @@
 
 This file only documents **major version** releases. For smaller releases, you're stuck reading the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
 
+## [21.0.0] - 2026-04-05
+
+### Breaking Changes
+
+This is a **major breaking change** with significant architectural updates:
+
+#### Module System & Architecture
+
+- **Pure ESM:** Converted to pure ESM with dual-build support (ESM/CJS) via Vite 8
+- **Node.js Requirements:** Now requires `^20.19.0 || ^22.12.0 || >=24.0.0` (strictly required by Vite 8 for native `require(esm)` support and Rolldown engine)
+- **npm Requirements:** Minimum version increased to `>=10.0.0`
+
+#### Dependency Updates (Pure ESM versions)
+
+| Package            | Old Version | New Version |
+| :----------------- | :---------- | :---------- |
+| `camelcase`        | `^6.3.0`    | `^9.0.0`    |
+| `chai`             | `^4.3.10`   | `^6.2.2`    |
+| `chai-as-promised` | `^7.1.2`    | `^8.0.2`    |
+| `find-up`          | `5.0.0`     | `8.0.0`     |
+| `p-map`            | `^4.0.0`    | `^7.0.4`    |
+| `untildify`        | `^4.0.0`    | `^6.0.0`    |
+
+#### Tooling & Build Changes
+
+- **Vite 8 Upgrade:** Migrated to Vite 8 with new Rust-based **Rolldown** bundler (10-30x faster builds)
+- **TypeScript 6.0:** Adopted latest type-system features and performance improvements
+- **Build Configuration:** Moved build options directly into `vite build`
+- **Test Runner:** Replaced `vite-node` with `tsx` for TypeScript support in ESM context
+- **Strip ANSI:** Replaced `strip-ansi` with Node.js built-in `node:util/stripVTControlCharacters`
+- **JSON Schema Generation:** Switched to `ts-json-schema-generator` with in-process Prettier formatting
+- **Pre-push Hooks:** Added `typecheck` to pre-push hooks and linting action
+
+### Testing
+
+Tests now use `tsx` for module loading. When running tests manually:
+
+```sh
+mocha --node-option import=tsx 'test/**/*.test.ts'
+```
+
+Or use the npm script:
+
+```sh
+npm test
+```
+
+### Migration Guide
+
+If you are upgrading to v21 from earlier versions:
+
+1. Ensure you meet the new Node.js requirement: `^20.19.0 || ^22.12.0 || >=24.0.0`
+2. Update npm to at least `10.0.0`
+3. The package is now pure ESM, so ensure your project supports ESM imports
+4. Update dependent imports and code that relied on CJS behavior
+
+### Related Issues & PRs
+
+<https://github.com/raineorshine/npm-check-updates/pull/1649>
+
+---
+
 ## [18.0.0] - 2025-04-21
 
 ### Breaking

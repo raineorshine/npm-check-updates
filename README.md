@@ -10,12 +10,20 @@
 - sensible defaults, but highly customizable
 - compatible with npm, yarn, pnpm, deno, and bun
 - CLI and module usage
+- **Pure ESM** architecture with dual-build support (ESM/CJS)
 
 <img width="500" alt="example output" src="https://github.com/user-attachments/assets/4808618b-ac20-4fc0-92e0-a777de70a2b6">
 
 $${\color{red}Red}$$ major upgrade (and all [major version zero](https://semver.org/#spec-item-4))<br/>
 $${\color{cyan}Cyan}$$ minor upgrade<br/>
 $${\color{green}Green}$$ patch upgrade<br/>
+
+## Requirements
+
+- **Node.js:** `^20.19.0 || ^22.12.0 || >=24.0.0`
+- **npm:** `>=10.0.0`
+
+> npm-check-updates v21+ requires modern Node.js and npm versions to support native ESM and Vite 8's Rolldown bundler.
 
 ## Installation
 
