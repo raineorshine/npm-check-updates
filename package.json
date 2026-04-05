@@ -71,7 +71,6 @@
       "eslint-plugin-n": "$eslint-plugin-n",
       "eslint-plugin-promise": "$eslint-plugin-promise"
     },
-    "@yarnpkg/parsers": "3.0.3",
     "@verdaccio/core": ">=8.0.0-next-8.33",
     "ajv-draft-04": {
       "ajv": ">=8.18.0"
@@ -82,14 +81,10 @@
     "chai-string": {
       "chai": "$chai"
     },
-    "diff@4": ">=4.0.4",
-    "diff@6": ">=8.0.3",
     "diff@7": ">=8.0.3",
     "diff@8": ">=8.0.3",
     "handlebars": ">=4.7.9",
-    "ip": "2.0.1",
     "lodash": ">=4.18.1",
-    "lodash-es": "$lodash-es",
     "serialize-javascript": ">=7.0.3"
   },
   "devDependencies": {
