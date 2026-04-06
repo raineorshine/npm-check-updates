@@ -146,7 +146,7 @@
     "npm-registry-fetch": "^19.1.1",
     "npm-run-all": "^4.1.5",
     "p-map": "^4.0.0",
-    "parse-github-url": "^1.0.3",
+    "parse-github-url": "^1.0.4",
     "picomatch": "^4.0.4",
     "prettier": "^3.8.1",
     "progress": "^2.0.3",
