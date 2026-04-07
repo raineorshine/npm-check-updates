@@ -16,7 +16,9 @@ type PnpmWorkspaces =
   | string[]
   | {
       packages?: string[]
-      workspaces?: string[] | { packages?: string[]; catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
+      workspaces?:
+        | string[]
+        | { packages?: string[]; catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
       catalog?: Index<VersionSpec>
       catalogs?: Index<Index<VersionSpec>>
     }
