@@ -12,6 +12,7 @@ registry_port=4873
 registry_local="http://localhost:$registry_port"
 registry_log=$temp_dir/verdaccio.log
 verdaccio_config=$temp_dir/verdaccio-config.yaml
+verdaccio_pid=""
 
 # cleanup on exit
 cleanup() {
@@ -19,10 +20,9 @@ cleanup() {
   exit_status=$?
 
   # shut down verdaccio
-  verdaccio_pid=$(lsof -t -i :$registry_port)
   if [ -n "$verdaccio_pid" ]; then
     echo Shutting down verdaccio
-    kill -9 $verdaccio_pid
+    kill -9 $verdaccio_pid 2>/dev/null
     wait $verdaccio_pid 2>/dev/null
   fi
 
@@ -65,6 +65,7 @@ uplinks:
 # start verdaccio and wait for it to boot
 echo Starting local registry
 nohup verdaccio -l $registry_port -c $verdaccio_config &>$registry_log &
+verdaccio_pid=$!
 grep -q 'http address' <(tail -f $registry_log)
 
 # set dummy authToken which is required to publish
