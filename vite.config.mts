@@ -27,5 +27,10 @@ export default defineConfig(({ mode }) => ({
     outDir: 'build',
     sourcemap: true,
     minify: mode === 'production' && 'esbuild',
+    rollupOptions: {
+      output: {
+        exports: 'named',
+      },
+    },
   },
 }))
