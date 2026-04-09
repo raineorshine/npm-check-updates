@@ -73,10 +73,11 @@ If you import `npm-check-updates` in your scripts:
 
 - **ESM:** Change `import ncu from ...` to `import * as ncu from 'npm-check-updates'`.
 - **CommonJS:** Ensure you are destructuring the named exports or using the full object:
-  ```js
-  const ncu = require('npm-check-updates')
-  // Use ncu.run(...)
-  ```
+
+```js
+const ncu = require('npm-check-updates')
+// Use ncu.run(...)
+```
 
 ---
 

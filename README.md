@@ -12,7 +12,7 @@
 - CLI and module usage
 - **Pure ESM** architecture with dual-build support (ESM/CJS)
 
-> ### ⚠️ v21.0.0 Breaking Changes (ESM Migration)
+> ## ⚠️ v21.0.0 Breaking Changes (ESM Migration)
 >
 > `npm-check-updates` is now a dual ESM/CJS module. If you use a `.ncurc.js` config or programmatic imports,
 > please see the [ESM Migration Guide in the CHANGELOG](CHANGELOG.md#migration-guide) for required updates.
@@ -955,7 +955,7 @@ module.exports = defineConfig({
 
 Alternatively, if you prefer not to use the helper, you can use JSDoc for IntelliSense:
 
-#### ESM
+#### ESM (JSDoc)
 
 ```js
 /** @type {import('npm-check-updates').RcOptions} */
@@ -965,7 +965,7 @@ export default {
 }
 ```
 
-#### CommonJS
+#### CommonJS (JSDoc)
 
 ```js
 /** @type {import('npm-check-updates').RcOptions} */
