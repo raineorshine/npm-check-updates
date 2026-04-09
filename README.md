@@ -12,6 +12,11 @@
 - CLI and module usage
 - **Pure ESM** architecture with dual-build support (ESM/CJS)
 
+> ### ⚠️ v21.0.0 Breaking Changes (ESM Migration)
+>
+> `npm-check-updates` is now a dual ESM/CJS module. If you use a `.ncurc.js` config or programmatic imports,
+> please see the [ESM Migration Guide in the CHANGELOG](CHANGELOG.md#migration-guide) for required updates.
+
 <img width="500" alt="example output" src="https://github.com/user-attachments/assets/4808618b-ac20-4fc0-92e0-a777de70a2b6">
 
 $${\color{red}Red}$$ major upgrade (and all [major version zero](https://semver.org/#spec-item-4))<br/>
@@ -920,19 +925,24 @@ You can also specify a custom config file name or path using the `--configFileNa
 
 ### Config Functions
 
-Some options offer more advanced configuration using a function definition. These include [filter](https://github.com/raineorshine/npm-check-updates#filter), [filterVersion](https://github.com/raineorshine/npm-check-updates#filterversion), [filterResults](https://github.com/raineorshine/npm-check-updates#filterresults), [reject](https://github.com/raineorshine/npm-check-updates#reject), [rejectVersion](https://github.com/raineorshine/npm-check-updates#rejectversion), and [groupFunction](https://github.com/raineorshine/npm-check-updates#groupfunction). To define an options function, convert the config file to a JS file by adding the `.js` extension and setting module.exports:
+Some options offer more advanced configuration using a function definition. These include [filter](https://github.com/raineorshine/npm-check-updates#filter), [filterVersion](https://github.com/raineorshine/npm-check-updates#filterversion), [filterResults](https://github.com/raineorshine/npm-check-updates#filterresults), [reject](https://github.com/raineorshine/npm-check-updates#reject), [rejectVersion](https://github.com/raineorshine/npm-check-updates#rejectversion), and [groupFunction](https://github.com/raineorshine/npm-check-updates#groupfunction). To define these, use a JavaScript-based configuration file.
 
-For example, `.ncurc.js`:
+#### ESM (Recommended)
+
+Rename your config to `.ncurc.js` (if using `"type": "module"`) or `.ncurc.mjs`.
 
 ```js
-/** @type {import('npm-check-updates').RcOptions } */
-module.exports = {
+import { defineConfig } from 'npm-check-updates'
+
+export default defineConfig({
   upgrade: true,
   filter: name => name.startsWith('@myorg/'),
-}
+})
 ```
 
-Alternatively, you can use the defineConfig helper which should provide intellisense without the need for jsdoc annotations:
+#### CommonJS
+
+Use the `.ncurc.cjs` extension or a standard `.ncurc.js` file (if useing `"type": "commonjs"`).
 
 ```js
 const { defineConfig } = require('npm-check-updates')
@@ -941,6 +951,28 @@ module.exports = defineConfig({
   upgrade: true,
   filter: name => name.startsWith('@myorg/'),
 })
+```
+
+Alternatively, if you prefer not to use the helper, you can use JSDoc for IntelliSense:
+
+#### ESM
+
+```js
+/** @type {import('npm-check-updates').RcOptions} */
+export default {
+  upgrade: true,
+  filter: name => name.startsWith('@myorg/'),
+}
+```
+
+#### CommonJS
+
+```js
+/** @type {import('npm-check-updates').RcOptions} */
+module.exports = {
+  upgrade: true,
+  filter: name => name.startsWith('@myorg/'),
+}
 ```
 
 ### JSON Schema
@@ -968,10 +1000,14 @@ e.g. for VS Code:
 
 ## Module/Programmatic Usage
 
-npm-check-updates can be imported as a module:
+`npm-check-updates` can be imported as a module in both ESM and CommonJS environments.
+
+### ESM (Recommended)
+
+Use this for modern projects using `"type": "module"` in `package.json` or `.mjs` files.
 
 ```js
-import ncu from 'npm-check-updates'
+import * as ncu from 'npm-check-updates'
 
 const upgraded = await ncu.run({
   // Pass any cli option
@@ -983,6 +1019,24 @@ const upgraded = await ncu.run({
 })
 
 console.log(upgraded) // { "mypackage": "^2.0.0", ... }
+```
+
+### CommonJS
+
+Use this for legacy projects using `"type": "commonjs"` or scripts using the `.cjs` extension.
+
+```js
+const ncu = require('npm-check-updates')
+
+// Since ncu.run() is an async function
+ncu
+  .run({
+    packageFile: './package.json',
+    upgrade: true,
+  })
+  .then(upgraded => {
+    console.log(upgraded)
+  })
 ```
 
 ## Contributing
