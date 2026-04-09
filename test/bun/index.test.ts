@@ -1,11 +1,13 @@
 import { spawnSync } from 'node:child_process'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import * as bun from '../../src/package-managers/bun.js'
-import chaiSetup, { getDirname } from '../helpers/chaiSetup'
+import chaiSetup from '../helpers/chaiSetup'
 import { testFail, testPass } from '../helpers/doctorHelpers'
 import stubVersions from '../helpers/stubVersions'
 
 chaiSetup()
-const __dirname = getDirname(import.meta.url)
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const mockNpmVersions = {
   emitter20: '2.0.0',

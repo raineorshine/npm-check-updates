@@ -1,8 +1,6 @@
 import { config, should as initShould, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
-import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 /** Global chai setup. */
 const chaiSetup = () => {
@@ -20,11 +18,5 @@ const chaiSetup = () => {
 
   return should
 }
-
-/**
- * A helper to simulate __dirname in ESM.
- * Must be called as: getDirname(import.meta.url)
- */
-export const getDirname = (importMetaUrl: string) => dirname(fileURLToPath(importMetaUrl))
 
 export default chaiSetup

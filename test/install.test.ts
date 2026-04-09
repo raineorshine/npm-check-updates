@@ -2,17 +2,19 @@
 // eslint doesn't like .to.be.false syntax
 import { expect } from 'chai'
 import fs from 'fs/promises'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import exists from '../src/lib/exists'
-import chaiSetup, { getDirname } from './helpers/chaiSetup'
+import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
-const __dirname = getDirname(import.meta.url)
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 

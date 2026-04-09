@@ -1,16 +1,18 @@
 import fs from 'fs/promises'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import { type Index } from '../src/types/IndexType'
 import { type Version } from '../src/types/Version'
-import chaiSetup, { getDirname } from './helpers/chaiSetup'
+import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
-const __dirname = getDirname(import.meta.url)
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 

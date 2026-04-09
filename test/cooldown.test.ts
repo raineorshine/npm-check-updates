@@ -897,10 +897,8 @@ describe('cooldown', () => {
       // When: ncu is run without explicit cooldown option
       const result = await ncu({ packageData })
 
-      console.log({ result })
-
       // Then: package upgrade is skipped because latest version (1.1.0) is within the 7-day min-release-age
-      expect({ result }).to.not.have.property('test-package')
+      expect(result).to.not.have.property('test-package')
 
       stub.restore()
       findNpmConfigStub.restore()

@@ -1,11 +1,12 @@
 import fs from 'fs/promises'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import path from 'path'
 import spawn from 'spawn-please'
 import { type PackageManagerName } from '../../src/types/PackageManagerName'
-import { getDirname } from './chaiSetup'
 
-const __dirname = getDirname(import.meta.url)
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../../build/cli.js')
 const doctorTests = path.join(__dirname, '../test-data/doctor')
