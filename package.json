@@ -111,7 +111,7 @@
     "@types/update-notifier": "^6.0.8",
     "@typescript-eslint/eslint-plugin": "8.57.2",
     "@typescript-eslint/parser": "8.57.2",
-    "camelcase": "^6.3.0",
+    "camelcase": "^9.0.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.2",
     "chai-string": "^1.6.0",
