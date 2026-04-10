@@ -155,6 +155,20 @@ const decorateTagPackumentWithTimeAndName = (
   }
 }
 
+/** Prints a verbose message when a package version is skipped due to the cooldown period. */
+const printCooldownSkip = (
+  options: Options,
+  packageName: string,
+  currentVersion: Version,
+  skippedVersion: string,
+) => {
+  print(
+    options,
+    `${packageName}@${currentVersion} not updated to ${skippedVersion} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
+    'verbose',
+  )
+}
+
 /** Normalizes the keys of an npm config for pacote. */
 export const normalizeNpmConfig = (
   npmConfig: NpmConfig,
@@ -730,11 +744,7 @@ export const greatest: GetVersion = async (
         .at(-1) || null
 
     if (versionWithoutCooldown && versionWithoutCooldown !== version) {
-      print(
-        options,
-        `${packageName}@${currentVersion} not updated to ${versionWithoutCooldown} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
-        'verbose',
-      )
+      printCooldownSkip(options, packageName, currentVersion, versionWithoutCooldown)
     }
   }
 
@@ -878,11 +888,7 @@ export const distTag: GetVersion = async (
   // if version from dist-tag does not meet cooldown requirement skip finding other versions
   if (options.cooldown) {
     if (tagPackument?.version) {
-      print(
-        options,
-        `${packageName}@${currentVersion} not updated to ${tagPackument.version} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
-        'verbose',
-      )
+      printCooldownSkip(options, packageName, currentVersion, tagPackument.version)
     }
     return {}
   }
@@ -968,11 +974,7 @@ export const newest: GetVersion = async (
     const versionWithCooldown = versionsSatisfyingCooldownPeriod.at(-1)
 
     if (versionWithoutCooldown && versionWithoutCooldown !== versionWithCooldown) {
-      print(
-        options,
-        `${packageName}@${currentVersion} not updated to ${versionWithoutCooldown} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
-        'verbose',
-      )
+      printCooldownSkip(options, packageName, currentVersion, versionWithoutCooldown)
     }
 
     return { version: versionWithCooldown }
@@ -1037,11 +1039,7 @@ export const minor: GetVersion = async (
     )
 
     if (versionWithoutCooldown && versionWithoutCooldown !== version) {
-      print(
-        options,
-        `${packageName}@${currentVersion} not updated to ${versionWithoutCooldown} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
-        'verbose',
-      )
+      printCooldownSkip(options, packageName, currentVersion, versionWithoutCooldown)
     }
   }
 
@@ -1104,11 +1102,7 @@ export const patch: GetVersion = async (
     )
 
     if (versionWithoutCooldown && versionWithoutCooldown !== version) {
-      print(
-        options,
-        `${packageName}@${currentVersion} not updated to ${versionWithoutCooldown} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
-        'verbose',
-      )
+      printCooldownSkip(options, packageName, currentVersion, versionWithoutCooldown)
     }
   }
 
@@ -1170,11 +1164,7 @@ export const semver: GetVersion = async (
     const versionWithoutCooldown = nodeSemver.maxSatisfying(versionsFilteredWithoutCooldown, currentVersion)
 
     if (versionWithoutCooldown && versionWithoutCooldown !== version) {
-      print(
-        options,
-        `${packageName}@${currentVersion} not updated to ${versionWithoutCooldown} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
-        'verbose',
-      )
+      printCooldownSkip(options, packageName, currentVersion, versionWithoutCooldown)
     }
   }
 
