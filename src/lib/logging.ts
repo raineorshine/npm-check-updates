@@ -41,6 +41,7 @@ const isFetchable = (spec: VersionSpec) =>
   !spec.startsWith('file:') &&
   !spec.startsWith('link:') &&
   !spec.startsWith('workspace:') &&
+  !spec.startsWith('catalog:') &&
   // short github urls that are ignored, e.g. raineorshine/foo
   !/^[^/:@]+\/\w+/.test(spec)
 

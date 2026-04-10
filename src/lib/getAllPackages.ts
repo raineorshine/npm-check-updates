@@ -14,7 +14,14 @@ import programError from './programError'
 
 type PnpmWorkspaces =
   | string[]
-  | { packages: string[]; catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
+  | {
+      packages?: string[]
+      workspaces?:
+        | string[]
+        | { packages?: string[]; catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
+      catalog?: Index<VersionSpec>
+      catalogs?: Index<Index<VersionSpec>>
+    }
 
 type YarnConfig = { catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
 
@@ -54,12 +61,21 @@ const readCatalogDependencies = async (options: Options, pkgPath: string): Promi
   if (options.packageManager === 'pnpm') {
     const pnpmWorkspaces = await readPnpmWorkspaces(pkgPath)
     if (pnpmWorkspaces && !Array.isArray(pnpmWorkspaces)) {
-      // Handle both singular 'catalog' and plural 'catalogs'
+      // Handle both singular 'catalog' and plural 'catalogs' (top-level format)
       if (pnpmWorkspaces.catalog) {
         Object.assign(catalogDependencies, pnpmWorkspaces.catalog)
       }
       if (pnpmWorkspaces.catalogs) {
         Object.assign(catalogDependencies, ...Object.values(pnpmWorkspaces.catalogs))
+      }
+      // Handle nested workspaces.catalog and workspaces.catalogs format
+      if (pnpmWorkspaces.workspaces && !Array.isArray(pnpmWorkspaces.workspaces)) {
+        if (pnpmWorkspaces.workspaces.catalog) {
+          Object.assign(catalogDependencies, pnpmWorkspaces.workspaces.catalog)
+        }
+        if (pnpmWorkspaces.workspaces.catalogs) {
+          Object.assign(catalogDependencies, ...Object.values(pnpmWorkspaces.workspaces.catalogs))
+        }
       }
     }
   }
