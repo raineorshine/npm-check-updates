@@ -419,6 +419,12 @@ The value can be a plain number (days) or a string with a unit suffix:
 
 Note that previous stable versions will not be suggested. The package will be completely ignored if its latest published version is within the cooldown period. This is due to a limitation of the npm registry, which does not provide a way to query previous stable versions.
 
+**Cooldown is automatically applied from the respective package manager config:**
+
+- **npm** - `min-release-age`
+- **yarn** - `npmMinimalAgeGate` (excluding `npmPreapprovedPackages`)
+- **pnpm** - `minimumReleaseAge` (excluding `minimumReleaseAgeExclude`)
+
 Example:
 
 Let's examine how cooldown works with a package that has these versions available:
@@ -866,7 +872,9 @@ Determines the version to upgrade to. (default: "latest")
 
 e.g.
 
-    ncu --target semver
+```js
+ncu --target semver
+```
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 

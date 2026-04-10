@@ -1,26 +1,15 @@
 import path from 'path'
 import { defaultCacheFile } from './lib/cache'
 import chalk from './lib/chalk'
+import formatters from './lib/formatters'
 import parseCooldown from './lib/parseCooldown'
 import { sortBy } from './lib/sortBy'
-import table from './lib/table'
 import CLIOption from './types/CLIOption'
 import ExtendedHelp from './types/ExtendedHelp'
 import { Index } from './types/IndexType'
 
 /** Valid strings for the --target option. Indicates the desired version to upgrade to. */
 const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch', 'semver']
-
-/** Pads the left side of each line in a string. */
-const padLeft = (s: string, n: number) =>
-  s
-    .split('\n')
-    .map(line => `${''.padStart(n, ' ')}${line}`)
-    .join('\n')
-
-/** Formats a code block for CLI or markdown. */
-const codeBlock = (code: string, { markdown }: { markdown?: boolean } = {}) =>
-  `${markdown ? '```js\n' : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
 
 /** Removes inline code ticks. */
 const uncode = (s: string) => s.replace(/`/g, '')
@@ -42,7 +31,7 @@ const parseNumberOption =
   }
 
 /** Renders the extended help for an option with usage information. */
-export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?: boolean } = {}) => {
+export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown: boolean }) => {
   let output = ''
   if (option.cli !== false) {
     // add -u to doctor option
@@ -61,17 +50,17 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?:
   if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
     output += `\nDefault: ${option.default}\n`
   }
+
   if (option.help) {
     const helpText =
       typeof option.help === 'function'
         ? markdown
-          ? option.help({ markdown })
-          : uncode(option.help({ markdown }))
+          ? option.help(formatters(markdown))
+          : uncode(option.help(formatters(markdown)))
         : option.help
     output += `\n${helpText.trim()}\n\n`
   } else if (option.description) {
-    const description = markdown ? option.description : uncode(option.description)
-    output += `\n${description.replace(/`/g, '')}\n`
+    output += `\n${uncode(option.description)}\n`
   }
 
   return output.trim()
@@ -79,7 +68,7 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?:
 
 /** Extended help for the --doctor option. */
 const extendedHelpDoctor: ExtendedHelp = ({
-  markdown,
+  table,
 }) => `Iteratively installs upgrades and runs your project's tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
 
 ${chalk.yellow('Requires `-u` to execute')} (modifies your package file, lock file, and node_modules)
@@ -97,7 +86,6 @@ To be more precise:
 Additional options:
 
 ${table({
-  markdown,
   rows: [
     [chalk.cyan('--doctorInstall'), 'specify a custom install script (default: `npm install` or `yarn`)'],
     [chalk.cyan('--doctorTest'), 'specify a custom test script (default: `npm test`)'],
@@ -135,10 +123,7 @@ Example:
 `
 
 /** Extended help for the filterResults option. */
-const extendedHelpFilterResults: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpFilterResults: ExtendedHelp = ({ codeInline, codeBlock }) => {
   return `Filters results based on a user provided predicate function after fetching new versions.
 
 ${codeInline('filterResults')} runs _after_ new versions are fetched, in contrast to ${codeInline(
@@ -172,7 +157,6 @@ ${chalk.green('filterResults')}: (packageName, { current, currentVersionSemver, 
   }
   ${chalk.red('return')} ${chalk.cyan('true')}
 }`,
-  { markdown },
 )}
 
 For the SemVer type definition, see: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring
@@ -181,12 +165,11 @@ For the SemVer type definition, see: https://git.coolaj86.com/coolaj86/semver-ut
 }
 
 /** Extended help for the --format option. */
-const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
+const extendedHelpFormat: ExtendedHelp = ({ padLeft, table }) => {
   const header =
     'Modify the output formatting or show additional information. Specify one or more comma-delimited values.'
   const tableString = table({
     colAligns: ['right', 'left'],
-    markdown,
     rows: [
       ['dep', `Prints the dependency type (dev, peer, optional) of each package.`],
       ['group', `Groups packages by major, minor, patch, and major version zero updates.`],
@@ -200,16 +183,15 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
     ],
   })
 
-  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+  return `${header}\n\n${padLeft(tableString, 4)}
 `
 }
 
 /** Extended help for the --install option. */
-const extendedHelpInstall: ExtendedHelp = ({ markdown }) => {
+const extendedHelpInstall: ExtendedHelp = ({ padLeft, table }) => {
   const header = 'Control the auto-install behavior.'
   const tableString = table({
     colAligns: ['right', 'left'],
-    markdown,
     rows: [
       ['always', `Runs your package manager's install command automatically after upgrading.`],
       ['never', `Does not install and does not prompt.`],
@@ -220,15 +202,12 @@ const extendedHelpInstall: ExtendedHelp = ({ markdown }) => {
     ],
   })
 
-  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+  return `${header}\n\n${padLeft(tableString, 4)}
 `
 }
 
 /** Extended help for the --filter option. */
-const extendedHelpFilterFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpFilterFunction: ExtendedHelp = ({ codeInline, codeBlock }) => {
   return `Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Only included packages will be checked with ${codeInline(
     '--peer',
   )}.
@@ -254,17 +233,13 @@ ${chalk.green('filter')}: (name, semver) ${chalk.cyan('=>')} {
   }
   ${chalk.red('return')} ${chalk.cyan('true')}
 }`,
-  { markdown },
 )}
 
 `
 }
 
 /** Extended help for the --filterVersion option. */
-const extendedHelpFilterVersionFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpFilterVersionFunction: ExtendedHelp = ({ codeInline, codeBlock }) => {
   return `Include only versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
 
 ${codeInline('--filterVersion')} runs _before_ new versions are fetched, in contrast to ${codeInline(
@@ -290,17 +265,13 @@ ${chalk.green('filterVersion')}: (name, semver) ${chalk.cyan('=>')} {
   }
   ${chalk.red('return')} ${chalk.cyan('true')}
 }`,
-  { markdown },
 )}
 
 `
 }
 
 /** Extended help for the --reject option. */
-const extendedHelpRejectFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpRejectFunction: ExtendedHelp = ({ codeInline, codeBlock }) => {
   return `The inverse of ${codeInline(
     '--filter',
   )}. Exclude package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. This will also exclude them from the ${codeInline(
@@ -328,17 +299,13 @@ ${chalk.green('reject')}: (name, semver) ${chalk.cyan('=>')} {
   }
   ${chalk.red('return')} ${chalk.cyan('false')}
 }`,
-  { markdown },
 )}
 
 `
 }
 
 /** Extended help for the --rejectVersion option. */
-const extendedHelpRejectVersionFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpRejectVersionFunction: ExtendedHelp = ({ codeInline, codeBlock }) => {
   return `The inverse of ${codeInline(
     '--filterVersion',
   )}. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
@@ -366,14 +333,13 @@ ${chalk.green('rejectVersion')}: (name, semver) ${chalk.cyan('=>')} {
   }
   ${chalk.red('return')} ${chalk.cyan('false')}
 }`,
-  { markdown },
 )}
 
 `
 }
 
 /** Extended help for the --group option. */
-const extendedHelpGroupFunction: ExtendedHelp = ({ markdown }) => {
+const extendedHelpGroupFunction: ExtendedHelp = ({ codeBlock }) => {
   return `Customize how packages are divided into groups when using \`--format group\`.
 
 Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
@@ -398,18 +364,16 @@ ${chalk.green('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec,
   }
   ${chalk.red('return')} defaultGroup
 }`,
-  { markdown },
 )}
 
 `
 }
 
 /** Extended help for the --target option. */
-const extendedHelpTarget: ExtendedHelp = ({ markdown }) => {
+const extendedHelpTarget: ExtendedHelp = ({ padLeft, codeBlock, table }) => {
   const header = 'Determines the version to upgrade to. (default: "latest")'
   const tableString = table({
     colAligns: ['right', 'left'],
-    markdown,
     rows: [
       [
         'greatest',
@@ -432,7 +396,7 @@ const extendedHelpTarget: ExtendedHelp = ({ markdown }) => {
 
   return `${header}
 
-${padLeft(tableString, markdown ? 0 : 4)}
+${padLeft(tableString, 4)}
 
 e.g.
 
@@ -455,17 +419,15 @@ ${chalk.green('target')}: (name, semver) ${chalk.cyan('=>')} {
   )} ${chalk.yellow("'minor'")}
   ${chalk.red('return')} ${chalk.yellow("'latest'")}
 }`,
-  { markdown },
 )}
 `
 }
 
 /** Extended help for the --packageManager option. */
-const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
+const extendedHelpPackageManager: ExtendedHelp = ({ padLeft, table }) => {
   const header = 'Specifies the package manager to use when looking up versions.'
   const tableString = table({
     colAligns: ['right', 'left'],
-    markdown,
     rows: [
       ['npm', `System-installed npm. Default.`],
       ['yarn', `System-installed yarn. Automatically used if yarn.lock is present.`],
@@ -474,19 +436,15 @@ const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
     ],
   })
 
-  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+  return `${header}\n\n${padLeft(tableString, 4)}
 `
 }
 
 /** Extended help for the --registryType option. */
-const extendedHelpRegistryType: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpRegistryType: ExtendedHelp = ({ padLeft, codeInline, table }) => {
   const header = `Specify whether ${codeInline('--registry')} refers to a full npm registry or a simple JSON file.`
   const tableString = table({
     colAligns: ['right', 'left'],
-    markdown,
     rows: [
       ['npm', `Default npm registry`],
       [
@@ -519,14 +477,12 @@ registry.json:
     ],
   })
 
-  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+  return `${header}\n\n${padLeft(tableString, 4)}
 `
 }
 
 /** Extended help for the --peer option. */
-const extendedHelpPeer: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+const extendedHelpPeer: ExtendedHelp = ({ codeInline }) => {
   return `Check peer dependencies of installed packages and filter updates to compatible versions.
 
 ${chalk.bold('Example')}:
@@ -565,7 +521,7 @@ As a comparison: without using the \`--peer\` option, ncu will suggest the lates
 }
 
 /** Extended help for the --cooldown option. */
-const extendedHelpCooldown: ExtendedHelp = ({ markdown }) => {
+const extendedHelpCooldown: ExtendedHelp = ({ codeInline, codeBlock }) => {
   return `The cooldown option helps protect against supply chain attacks by requiring package versions to be published at least the given amount of time before considering them for upgrade.
 
 The value can be a plain number (days) or a string with a unit suffix:
@@ -576,6 +532,12 @@ The value can be a plain number (days) or a string with a unit suffix:
     --cooldown 30m     30 minutes
 
 Note that previous stable versions will ${chalk.bold('not')} be suggested. The package will be completely ignored if its latest published version is within the cooldown period. This is due to a limitation of the npm registry, which does not provide a way to query previous stable versions.
+
+**Cooldown is automatically applied from the respective package manager config:**
+
+- **npm** - ${codeInline('min-release-age')}
+- **yarn** - ${codeInline('npmMinimalAgeGate')} (excluding ${codeInline('npmPreapprovedPackages')})
+- **pnpm** - ${codeInline('minimumReleaseAge')} (excluding ${codeInline('minimumReleaseAgeExclude')})
 
 ${chalk.bold('Example')}:
 
@@ -593,7 +555,7 @@ Let's examine how cooldown works with a package that has these versions availabl
 
 ${chalk.bold('With default target (latest)')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5`, { markdown })}
+${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5`)}
 
 No update will be suggested because:
 
@@ -603,7 +565,7 @@ No update will be suggested because:
 
 ${chalk.bold('With `@beta`/`@tag` target')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 3 --target @beta`, { markdown })}
+${codeBlock(`${chalk.cyan('$')} ncu --cooldown 3 --target @beta`)}
 
 No update will be suggested because:
 
@@ -613,7 +575,7 @@ No update will be suggested because:
 
 ${chalk.bold('With other targets')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5 --target greatest|newest|minor|patch|semver`, { markdown })}
+${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5 --target greatest|newest|minor|patch|semver`)}
 
 Each target will select the best version that is at least 5 days old:
 
@@ -636,7 +598,6 @@ ${codeBlock(
   @returns               Cooldown days restriction for given package.
 */`)}
 ${chalk.green('cooldown')}: packageName ${chalk.cyan('=>')} (packageName.startsWith(${chalk.yellow("'@my-company'")}) ? ${chalk.cyan('0')} : ${chalk.cyan('3')})`,
-  { markdown },
 )}
 `
 }

@@ -7,6 +7,7 @@ import chalk, { chalkInit } from './lib/chalk'
 import determinePackageManager from './lib/determinePackageManager'
 import doctor from './lib/doctor'
 import findPackage from './lib/findPackage'
+import formatters from './lib/formatters'
 import getAllPackages from './lib/getAllPackages'
 import getNcuRc from './lib/getNcuRc'
 import initOptions from './lib/initOptions'
@@ -380,7 +381,9 @@ export async function run(
     // print help otherwise
     else {
       const help =
-        typeof cliOptionsMap.doctor.help === 'function' ? cliOptionsMap.doctor.help({}) : cliOptionsMap.doctor.help
+        typeof cliOptionsMap.doctor.help === 'function'
+          ? cliOptionsMap.doctor.help(formatters(false))
+          : cliOptionsMap.doctor.help
       print(options, `Usage: ncu --doctor\n\n${help}`, 'warn')
     }
   }

@@ -90,16 +90,19 @@ ${chalk.dim.underline(
             (query === `no-${option.long}` && option.type === 'boolean'),
         )
         if (option) {
-          console.info(renderExtendedHelp(option) + '\n')
+          console.info(renderExtendedHelp(option, { markdown: false }) + '\n')
         } else if (query === 'version' || query === 'v' || query === 'V') {
           console.info(
-            renderExtendedHelp({
-              long: 'version',
-              short: 'v',
-              description: optionVersionDescription,
-              // do not pass boolean or it will print --no-version
-              type: 'string',
-            }) + '\n',
+            renderExtendedHelp(
+              {
+                long: 'version',
+                short: 'v',
+                description: optionVersionDescription,
+                // do not pass boolean or it will print --no-version
+                type: 'string',
+              },
+              { markdown: false },
+            ) + '\n',
           )
         } else {
           console.info(`Unknown option: ${arg}`)
