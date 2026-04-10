@@ -1296,7 +1296,11 @@ describe('cooldown', () => {
       const verboseCooldownCalls = printSpy.args.filter(
         args => args[2] === 'verbose' && String(args[1]).includes('cooldown'),
       )
-      expect(verboseCooldownCalls.some(args => String(args[1]).includes('test-package') && String(args[1]).includes('1.1.0'))).to.equal(true)
+      expect(
+        verboseCooldownCalls.some(
+          args => String(args[1]).includes('test-package') && String(args[1]).includes('1.1.0'),
+        ),
+      ).to.equal(true)
 
       printSpy.restore()
       stub.restore()
@@ -1325,7 +1329,11 @@ describe('cooldown', () => {
       const verboseCooldownCalls = printSpy.args.filter(
         args => args[2] === 'verbose' && String(args[1]).includes('cooldown'),
       )
-      expect(verboseCooldownCalls.some(args => String(args[1]).includes('test-package') && String(args[1]).includes('1.1.0'))).to.equal(true)
+      expect(
+        verboseCooldownCalls.some(
+          args => String(args[1]).includes('test-package') && String(args[1]).includes('1.1.0'),
+        ),
+      ).to.equal(true)
 
       printSpy.restore()
       stub.restore()

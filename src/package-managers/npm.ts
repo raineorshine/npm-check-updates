@@ -156,12 +156,7 @@ const decorateTagPackumentWithTimeAndName = (
 }
 
 /** Prints a verbose message when a package version is skipped due to the cooldown period. */
-const printCooldownSkip = (
-  options: Options,
-  packageName: string,
-  currentVersion: Version,
-  skippedVersion: string,
-) => {
+const printCooldownSkip = (options: Options, packageName: string, currentVersion: Version, skippedVersion: string) => {
   print(
     options,
     `${packageName}@${currentVersion} not updated to ${skippedVersion} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
