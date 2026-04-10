@@ -1,6 +1,7 @@
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import ncu from '../src/'
+import * as loggingModule from '../src/lib/logging'
 import * as npmModule from '../src/package-managers/npm'
 import * as pnpmModule from '../src/package-managers/pnpm'
 import * as yarnModule from '../src/package-managers/yarn'
@@ -1271,6 +1272,116 @@ describe('cooldown', () => {
       stub.restore()
       findNpmConfigStub.restore()
       yarnAgeGateStub.restore()
+    })
+  })
+
+  describe('verbose cooldown output', () => {
+    it('logs a verbose message when a package is skipped due to cooldown (latest target)', async () => {
+      // Given: cooldown set to 10 days, latest version released 5 days ago (inside cooldown)
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 5 * DAY).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      const printSpy = Sinon.spy(loggingModule, 'print')
+
+      await ncu({ packageData, cooldown: 10, target: 'latest' })
+
+      const verboseCooldownCalls = printSpy.args.filter(
+        args => args[2] === 'verbose' && String(args[1]).includes('cooldown'),
+      )
+      expect(verboseCooldownCalls.some(args => String(args[1]).includes('test-package') && String(args[1]).includes('1.1.0'))).to.equal(true)
+
+      printSpy.restore()
+      stub.restore()
+    })
+
+    it('logs a verbose message when a package is skipped due to cooldown (greatest target)', async () => {
+      // Given: cooldown set to 10 days, latest version released 5 days ago (inside cooldown)
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.0.0': new Date(NOW - 30 * DAY).toISOString(),
+            '1.1.0': new Date(NOW - 5 * DAY).toISOString(),
+          },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      const printSpy = Sinon.spy(loggingModule, 'print')
+
+      await ncu({ packageData, cooldown: 10, target: 'greatest' })
+
+      const verboseCooldownCalls = printSpy.args.filter(
+        args => args[2] === 'verbose' && String(args[1]).includes('cooldown'),
+      )
+      expect(verboseCooldownCalls.some(args => String(args[1]).includes('test-package') && String(args[1]).includes('1.1.0'))).to.equal(true)
+
+      printSpy.restore()
+      stub.restore()
+    })
+
+    it('includes the cooldown value in the verbose message', async () => {
+      // Given: cooldown set to "4d", latest version released 2 days ago
+      const packageData: PackageFile = {
+        dependencies: { 'aws-cdk': '2.1116.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'aws-cdk',
+          versions: { '2.1118.0': new Date(NOW - 2 * DAY).toISOString() },
+          distTags: { latest: '2.1118.0' },
+        }),
+      )
+
+      const printSpy = Sinon.spy(loggingModule, 'print')
+
+      await ncu({ packageData, cooldown: '4d', target: 'latest' })
+
+      expect(
+        printSpy.args.some(
+          args => args[2] === 'verbose' && args[1] === 'aws-cdk@2.1116.0 not updated to 2.1118.0 due to cooldown 4d',
+        ),
+      ).to.equal(true)
+
+      printSpy.restore()
+      stub.restore()
+    })
+
+    it('does not log a verbose message when cooldown is not blocking any upgrade', async () => {
+      // Given: cooldown set to 10 days, version released 15 days ago (outside cooldown)
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 15 * DAY).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      const printSpy = Sinon.spy(loggingModule, 'print')
+
+      await ncu({ packageData, cooldown: 10, target: 'latest' })
+
+      const verboseCooldownCalls = printSpy.args.filter(
+        args => args[2] === 'verbose' && String(args[1]).includes('cooldown'),
+      )
+      expect(verboseCooldownCalls.length).to.equal(0)
+
+      printSpy.restore()
+      stub.restore()
     })
   })
 })

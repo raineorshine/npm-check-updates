@@ -29,7 +29,7 @@ import type { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import type { Version } from '../types/Version'
 import type { VersionResult } from '../types/VersionResult'
 import type { VersionSpec } from '../types/VersionSpec'
-import { filterPredicate, satisfiesCooldownPeriod, satisfiesNodeEngine } from './filters'
+import { filterPredicate, formatCooldown, satisfiesCooldownPeriod, satisfiesNodeEngine } from './filters'
 
 const EXPLICIT_RANGE_OPS = new Set(['-', '||', '&&', '<', '<=', '>', '>='])
 
@@ -708,16 +708,37 @@ export const greatest: GetVersion = async (
   // known type based on 'versions'
   const versions = packument?.versions
 
-  return {
-    version:
+  const filteredVersionsSorted = Object.values(versions || {})
+    .filter(tagPackument =>
+      filterPredicate(options)(decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)),
+    )
+    .map(o => o.version)
+    .sort(versionUtil.compareVersions)
+
+  const version = filteredVersionsSorted.at(-1) || null
+
+  if (options.cooldown) {
+    const versionWithoutCooldown =
       Object.values(versions || {})
         .filter(tagPackument =>
-          filterPredicate(options)(decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)),
+          filterPredicate({ ...options, cooldown: undefined })(
+            decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>),
+          ),
         )
         .map(o => o.version)
         .sort(versionUtil.compareVersions)
-        .at(-1) || null,
+        .at(-1) || null
+
+    if (versionWithoutCooldown && versionWithoutCooldown !== version) {
+      print(
+        options,
+        `${packageName}@${currentVersion} not updated to ${versionWithoutCooldown} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
+        'verbose',
+      )
+    }
   }
+
+  return { version }
 }
 
 /**
@@ -856,6 +877,13 @@ export const distTag: GetVersion = async (
 
   // if version from dist-tag does not meet cooldown requirement skip finding other versions
   if (options.cooldown) {
+    if (tagPackument?.version) {
+      print(
+        options,
+        `${packageName}@${currentVersion} not updated to ${tagPackument.version} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
+        'verbose',
+      )
+    }
     return {}
   }
 
@@ -936,7 +964,18 @@ export const newest: GetVersion = async (
       ),
     )
 
-    return { version: versionsSatisfyingCooldownPeriod.at(-1) }
+    const versionWithoutCooldown = versionsSortedByTime.at(-1)
+    const versionWithCooldown = versionsSatisfyingCooldownPeriod.at(-1)
+
+    if (versionWithoutCooldown && versionWithoutCooldown !== versionWithCooldown) {
+      print(
+        options,
+        `${packageName}@${currentVersion} not updated to ${versionWithoutCooldown} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
+        'verbose',
+      )
+    }
+
+    return { version: versionWithCooldown }
   }
 
   return { version: versionsSortedByTime.at(-1) }
@@ -983,6 +1022,29 @@ export const minor: GetVersion = async (
     currentVersion,
     'minor',
   )
+
+  if (options.cooldown) {
+    const versionWithoutCooldown = versionUtil.findGreatestByLevel(
+      Object.values(versions || {})
+        .filter(tagPackument =>
+          filterPredicate({ ...options, cooldown: undefined })(
+            decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>),
+          ),
+        )
+        .map(o => o.version),
+      currentVersion,
+      'minor',
+    )
+
+    if (versionWithoutCooldown && versionWithoutCooldown !== version) {
+      print(
+        options,
+        `${packageName}@${currentVersion} not updated to ${versionWithoutCooldown} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
+        'verbose',
+      )
+    }
+  }
+
   return { version }
 }
 
@@ -1027,6 +1089,29 @@ export const patch: GetVersion = async (
     currentVersion,
     'patch',
   )
+
+  if (options.cooldown) {
+    const versionWithoutCooldown = versionUtil.findGreatestByLevel(
+      Object.values(versions || {})
+        .filter(tagPackument =>
+          filterPredicate({ ...options, cooldown: undefined })(
+            decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>),
+          ),
+        )
+        .map(o => o.version),
+      currentVersion,
+      'patch',
+    )
+
+    if (versionWithoutCooldown && versionWithoutCooldown !== version) {
+      print(
+        options,
+        `${packageName}@${currentVersion} not updated to ${versionWithoutCooldown} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
+        'verbose',
+      )
+    }
+  }
+
   return { version }
 }
 
@@ -1073,6 +1158,26 @@ export const semver: GetVersion = async (
   // TODO: Upgrading within a prerelease does not seem to work.
   // { includePrerelease: true } does not help.
   const version = nodeSemver.maxSatisfying(versionsFiltered, currentVersion)
+
+  if (options.cooldown) {
+    const versionsFilteredWithoutCooldown = Object.values(versions || {})
+      .filter(tagPackument =>
+        filterPredicate({ ...options, cooldown: undefined })(
+          decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>),
+        ),
+      )
+      .map(o => o.version)
+    const versionWithoutCooldown = nodeSemver.maxSatisfying(versionsFilteredWithoutCooldown, currentVersion)
+
+    if (versionWithoutCooldown && versionWithoutCooldown !== version) {
+      print(
+        options,
+        `${packageName}@${currentVersion} not updated to ${versionWithoutCooldown} due to cooldown ${formatCooldown(options.cooldown as number | string | CooldownFunction, packageName)}`,
+        'verbose',
+      )
+    }
+  }
+
   return { version }
 }
 

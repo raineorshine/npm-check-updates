@@ -9,6 +9,25 @@ import type { Packument } from '../types/Packument'
 import type { Version } from '../types/Version'
 
 /**
+ * Formats a cooldown value as a human-readable string (e.g. "4d", "12h", "30m").
+ *
+ * @param cooldownDaysOrPredicateFn - The cooldown value to format.
+ * @param packageName - The package name, used when cooldown is a function.
+ * @returns A human-readable string representation of the cooldown.
+ */
+export function formatCooldown(
+  cooldownDaysOrPredicateFn: number | string | CooldownFunction,
+  packageName?: string,
+): string {
+  if (typeof cooldownDaysOrPredicateFn === 'string') return cooldownDaysOrPredicateFn
+  if (typeof cooldownDaysOrPredicateFn === 'function') {
+    const result = cooldownDaysOrPredicateFn(packageName ?? '') ?? 0
+    return typeof result === 'string' ? result : `${result}d`
+  }
+  return `${cooldownDaysOrPredicateFn}d`
+}
+
+/**
  * @param versionResult  Available version
  * @param options     Options
  * @returns         True if deprecated versions are allowed or the version is not deprecated
