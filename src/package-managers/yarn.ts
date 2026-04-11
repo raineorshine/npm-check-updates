@@ -2,9 +2,11 @@ import fs from 'fs/promises'
 import yaml from 'js-yaml'
 import jsonlines from 'jsonlines'
 import { curry } from 'lodash-es'
+import ManyKeysMap from 'many-keys-map'
 import memoize from 'memoize'
 import os from 'os'
 import path from 'path'
+import { getCacheableOptions } from '../lib/cache'
 import exists from '../lib/exists'
 import findLockfile from '../lib/findLockfile'
 import { keyValueBy } from '../lib/keyValueBy'
@@ -157,49 +159,60 @@ const npmConfigFromYarn = memoize(
   },
   {
     /**
-     * We cache based on the project path (cwd) and the specific packageFile.
+     * We memoize based on all relevant options.
      * This avoids re-parsing YAML files for every package in a workspace.
      */
-    cacheKey: ([options]) => JSON.stringify([options.cwd, options.packageFile]),
+    cacheKey: ([options]) => getCacheableOptions({ options }),
+    cache: new ManyKeysMap(),
   },
 )
 
 /** Reads npmMinimalAgeGate settings from .yarnrc.yml if present. Checks local config first, then user config. */
-const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMinimalAgeGate | null> => {
-  const yarnrcLocalPath = await getPathToLookForYarnrc(options)
-  const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
+const getYarnMinimalAgeGate = memoize(
+  async (options: Options): Promise<YarnMinimalAgeGate | null> => {
+    const yarnrcLocalPath = await getPathToLookForYarnrc(options)
+    const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
 
-  for (const yarnrcPath of [yarnrcLocalPath, yarnrcUserPath]) {
-    if (!yarnrcPath) continue
-    if (!(await exists(yarnrcPath))) continue
+    for (const yarnrcPath of [yarnrcLocalPath, yarnrcUserPath]) {
+      if (!yarnrcPath) continue
+      if (!(await exists(yarnrcPath))) continue
 
-    let content: string
-    try {
-      content = await fs.readFile(yarnrcPath, 'utf-8')
-    } catch {
-      continue
+      let content: string
+      try {
+        content = await fs.readFile(yarnrcPath, 'utf-8')
+      } catch {
+        continue
+      }
+
+      let parsed: YarnConfig
+      try {
+        parsed = (yaml.load(content) as YarnConfig) ?? {}
+      } catch {
+        continue
+      }
+
+      const { npmMinimalAgeGate } = parsed
+      if (typeof npmMinimalAgeGate !== 'number' || isNaN(npmMinimalAgeGate) || npmMinimalAgeGate <= 0) continue
+
+      const rawPreapproved = parsed.npmPreapprovedPackages
+      const npmPreapprovedPackages: string[] = Array.isArray(rawPreapproved)
+        ? rawPreapproved.filter((x): x is string => typeof x === 'string')
+        : []
+
+      return { npmMinimalAgeGate, npmPreapprovedPackages }
     }
 
-    let parsed: YarnConfig
-    try {
-      parsed = (yaml.load(content) as YarnConfig) ?? {}
-    } catch {
-      continue
-    }
-
-    const { npmMinimalAgeGate } = parsed
-    if (typeof npmMinimalAgeGate !== 'number' || isNaN(npmMinimalAgeGate) || npmMinimalAgeGate <= 0) continue
-
-    const rawPreapproved = parsed.npmPreapprovedPackages
-    const npmPreapprovedPackages: string[] = Array.isArray(rawPreapproved)
-      ? rawPreapproved.filter((x): x is string => typeof x === 'string')
-      : []
-
-    return { npmMinimalAgeGate, npmPreapprovedPackages }
-  }
-
-  return null
-})
+    return null
+  },
+  {
+    /**
+     * We memoize based on all relevant options.
+     * This avoids re-reading .yarnrc.yml for every package in a workspace.
+     */
+    cacheKey: ([options]) => getCacheableOptions({ options }),
+    cache: new ManyKeysMap(),
+  },
+)
 
 /**
  * Parse JSON lines and throw an informative error on failure.
@@ -344,7 +357,7 @@ export async function defaultPrefix(options: Options): Promise<string | null> {
 export const list = async (options: Options = {}, spawnOptions?: SpawnOptions): Promise<Index<string | undefined>> => {
   const jsonLines: string = await spawnYarn(
     'list',
-    options as Index<string>,
+    options as NpmOptions,
     {},
     {
       ...(options.cwd ? { cwd: options.cwd } : {}),

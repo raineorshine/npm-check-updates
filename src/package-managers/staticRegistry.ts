@@ -11,9 +11,6 @@ const isUrl = (s: string) => (s && s.startsWith('http://')) || s.startsWith('htt
 
 /**
  * Returns a registry object given a valid file path or url.
- *
- * Note: Uses a selective cacheKey to ensure we only re-fetch if the
- * registry path/URL itself changes.
  */
 const readStaticRegistry = async (options: Options): Promise<StaticRegistry> => {
   const path = options.registry!
@@ -38,7 +35,8 @@ const readStaticRegistry = async (options: Options): Promise<StaticRegistry> => 
 
 /**
  * Memoized version of readStaticRegistry.
- * Standardizes on options.registry as the unique identifier.
+ * Uses a selective cacheKey to ensure we only re-fetch if the
+ * registry path/URL itself changes.
  */
 const registryMemoized = memoize(readStaticRegistry, {
   cacheKey: ([options]) => options.registry,

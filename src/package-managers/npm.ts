@@ -2,6 +2,7 @@ import { JSONParser } from '@streamparser/json'
 import camelCase from 'camelcase'
 import fs from 'fs'
 import ini from 'ini'
+import ManyKeysMap from 'many-keys-map'
 import memoize from 'memoize'
 import npmRegistryFetch from 'npm-registry-fetch'
 import path from 'path'
@@ -9,6 +10,7 @@ import nodeSemver from 'semver'
 import { parseRange } from 'semver-utils'
 import untildify from 'untildify'
 import pkg from '../../package.json'
+import { getCacheableOptions } from '../lib/cache'
 import filterObject from '../lib/filterObject'
 import { keyValueBy } from '../lib/keyValueBy'
 import libnpmconfig from '../lib/libnpmconfig'
@@ -539,10 +541,12 @@ const mergeNpmConfigs = memoize(
     /**
      * Because this function depends on both the first object AND the options object,
      * we must provide a cacheKey. Modern memoize provides both args in an array.
+     *
+     * packageFile is kept in the cache key because it is used to find project-specific
+     * .npmrc files. Stripping it would cause incorrect cache hits across different projects.
      */
-    cacheKey: ([configs, options]) => {
-      return JSON.stringify([configs, options.packageFile, options.cwd, options.registry, options.timeout])
-    },
+    cacheKey: ([configs, options]) => [configs, ...getCacheableOptions({ options })],
+    cache: new ManyKeysMap(),
   },
 )
 
@@ -624,22 +628,20 @@ npmApi.fetchUpgradedPackumentMemo = memoize(fetchUpgradedPackument, {
    * In modern 'memoize', this replaces 'serializer' and receives
    * the arguments as a single array.
    */
-  cacheKey: ([packageName, fields, currentVersion, options, retried, npmConfigLocal, npmConfigWorkspaceProject]) => {
+  cacheKey: ([packageName, fields, currentVersion, options, retried, npmConfigLocal, npmConfigWorkspaceProject]) => [
+    packageName,
+    fields,
+    // currentVersion only affects behavior if it's invalid/inexact (short-circuit logic)
+    isExactVersion(currentVersion),
     // packageFile varies by cwd in workspaces/deep mode,
     // so we do not want to memoize based on that specific property.
-    const { packageFile: _, ...optionsWithoutPackageFile } = options
-    return JSON.stringify([
-      packageName,
-      fields,
-      // currentVersion only affects behavior if it's invalid/inexact (short-circuit logic)
-      isExactVersion(currentVersion),
-      optionsWithoutPackageFile,
-      // Ensure retries are unique keys so they don't return a stale cached failure
-      retried,
-      npmConfigLocal,
-      npmConfigWorkspaceProject,
-    ])
-  },
+    ...getCacheableOptions({ options, exclude: ['packageFile'] }),
+    // Ensure retries are unique keys so they don't return a stale cached failure
+    retried,
+    npmConfigLocal,
+    npmConfigWorkspaceProject,
+  ],
+  cache: new ManyKeysMap(),
 })
 
 /**
@@ -892,7 +894,11 @@ export const distTag: GetVersion = async (
 
   // if version from dist-tag does not meet cooldown requirement skip finding other versions
   if (options.cooldown) {
-    if (version && tagPackument && !satisfiesCooldownPeriod(tagPackumentWithTime, options.cooldown as number | CooldownFunction)) {
+    if (
+      version &&
+      tagPackument &&
+      !satisfiesCooldownPeriod(tagPackumentWithTime, options.cooldown as number | CooldownFunction)
+    ) {
       const publishTime = packument?.time?.[version]
       print(
         options,

@@ -1,9 +1,11 @@
 import { findUp } from 'find-up'
 import fs from 'fs/promises'
 import ini from 'ini'
+import ManyKeysMap from 'many-keys-map'
 import memoize from 'memoize'
 import path from 'path'
 import { parse as parseYaml } from 'yaml'
+import { getCacheableOptions } from '../lib/cache'
 import keyValueBy from '../lib/keyValueBy'
 import { print } from '../lib/logging'
 import spawnCommand from '../lib/spawnCommand'
@@ -57,10 +59,12 @@ const npmConfigFromPnpmWorkspace = memoize(
   },
   {
     /**
-     * We memoize based on the cwd and packageFile in options.
-     * If the workspace root hasn't changed, we return the cached config.
+     * We memoize based on all relevant options.
+     * This avoids re-parsing the pnpm-workspace.yaml and .npmrc files for every package in a workspace.
+     * We exclude packageFile because the workspace config is typically at the root and shared.
      */
-    cacheKey: ([options]) => JSON.stringify([options.cwd, options.packageFile]),
+    cacheKey: ([options]) => getCacheableOptions({ options, exclude: ['packageFile'] }),
+    cache: new ManyKeysMap(),
   },
 )
 
