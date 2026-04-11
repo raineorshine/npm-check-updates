@@ -81,7 +81,7 @@
     "chai-string": {
       "chai": "$chai"
     },
-    "diff@7": ">=8.0.3",
+    "diff": ">=8.0.3",
     "lodash": ">=4.18.1",
     "serialize-javascript": ">=7.0.3"
   },
