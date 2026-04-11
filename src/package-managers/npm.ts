@@ -892,6 +892,14 @@ export const distTag: GetVersion = async (
 
   // if version from dist-tag does not meet cooldown requirement skip finding other versions
   if (options.cooldown) {
+    if (version && tagPackument && !satisfiesCooldownPeriod(tagPackumentWithTime, options.cooldown as number | CooldownFunction)) {
+      const publishTime = packument?.time?.[version]
+      print(
+        options,
+        `Skipping ${packageName}@${version} due to cooldown${publishTime ? ` (published ${publishTime})` : ''}.`,
+        'verbose',
+      )
+    }
     return {}
   }
 

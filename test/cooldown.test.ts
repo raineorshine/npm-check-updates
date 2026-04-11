@@ -362,6 +362,41 @@ describe('cooldown', () => {
 
       stub.restore()
     })
+
+    it('logs a verbose message when a package is skipped due to cooldown', async () => {
+      // Given: cooldown set to 10, test-package@1.0.0 installed, latest version 1.1.0 released 5 days ago (within 10-day cooldown)
+      const cooldown = 10
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 5 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      const logSpy = Sinon.spy(console, 'log')
+
+      // When ncu is run with verbose logging and cooldown
+      // Note: jsonUpgraded is set to false to disable json mode, which would otherwise suppress verbose output
+      await ncu({ packageData, cooldown, target: 'latest', loglevel: 'verbose', jsonUpgraded: false })
+
+      // Then: a verbose message mentioning cooldown is logged
+      const cooldownMessages = logSpy.args.flat().filter(arg => typeof arg === 'string' && arg.includes('cooldown'))
+      expect(cooldownMessages).to.have.length.greaterThan(0)
+      expect(cooldownMessages[0]).to.include('test-package@1.1.0')
+
+      logSpy.restore()
+      stub.restore()
+    })
   })
 
   describe('when @TAG target', () => {
