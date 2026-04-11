@@ -12,6 +12,7 @@ registry_port=4873
 registry_local="http://localhost:$registry_port"
 registry_log=$temp_dir/verdaccio.log
 verdaccio_config=$temp_dir/verdaccio-config.yaml
+verdaccio_pid=""
 
 # cleanup on exit
 cleanup() {
@@ -19,21 +20,10 @@ cleanup() {
   exit_status=$?
 
   # shut down verdaccio
-  if command -v lsof >/dev/null 2>&1; then
-    verdaccio_pid=$(lsof -t -i :$registry_port)
-  elif command -v netstat >/dev/null 2>&1; then
-    # Basic Windows/Git Bash fallback to find the PID on that port
-    verdaccio_pid=$(netstat -ano | grep :$registry_port | awk '{print $5}' | head -n 1)
-  fi
-
   if [ -n "$verdaccio_pid" ]; then
-    echo "Shutting down verdaccio (PID: $verdaccio_pid)"
-    # Use taskkill if on Windows/Git Bash, otherwise kill
-    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
-      taskkill //F //PID $verdaccio_pid
-    else
-      kill -9 $verdaccio_pid
-    fi
+    echo Shutting down verdaccio
+    kill -9 $verdaccio_pid 2>/dev/null
+    wait $verdaccio_pid 2>/dev/null
   fi
 
   # delete authToken
@@ -75,6 +65,7 @@ uplinks:
 # start verdaccio and wait for it to boot
 echo Starting local registry
 nohup verdaccio -l $registry_port -c $verdaccio_config &>$registry_log &
+verdaccio_pid=$!
 grep -q 'http address' <(tail -f $registry_log)
 
 # set dummy authToken which is required to publish
