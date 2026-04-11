@@ -1,4 +1,4 @@
-import { RunOptions } from './RunOptions'
+import { type RunOptions } from './RunOptions'
 
 /** Options that would make no sense in a .ncurc file */
 type Nonsensical = 'configFileName' | 'configFilePath' | 'cwd' | 'packageData' | 'stdin'

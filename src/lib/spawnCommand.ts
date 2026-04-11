@@ -1,6 +1,6 @@
-import { SpawnOptions } from 'child_process'
+import { type SpawnOptions } from 'child_process'
 import spawn from 'spawn-please'
-import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
+import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 
 /**
  * Spawn a command. On Windows, prefer `<command>.cmd` but fall back to `<command>` when the

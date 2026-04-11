@@ -1,20 +1,22 @@
-import memoize from 'fast-memoize'
-import findUp from 'find-up'
+import { findUp } from 'find-up'
 import fs from 'fs/promises'
 import ini from 'ini'
+import ManyKeysMap from 'many-keys-map'
+import memoize from 'memoize'
 import path from 'path'
 import { parse as parseYaml } from 'yaml'
+import { getCacheableOptions } from '../lib/cache'
 import keyValueBy from '../lib/keyValueBy'
 import { print } from '../lib/logging'
 import spawnCommand from '../lib/spawnCommand'
-import { GetVersion } from '../types/GetVersion'
-import { Index } from '../types/IndexType'
-import { NpmConfig } from '../types/NpmConfig'
-import { NpmOptions } from '../types/NpmOptions'
-import { Options } from '../types/Options'
-import { SpawnOptions } from '../types/SpawnOptions'
-import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
-import { Version } from '../types/Version'
+import { type GetVersion } from '../types/GetVersion'
+import { type Index } from '../types/IndexType'
+import { type NpmConfig } from '../types/NpmConfig'
+import { type NpmOptions } from '../types/NpmOptions'
+import { type Options } from '../types/Options'
+import { type SpawnOptions } from '../types/SpawnOptions'
+import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
+import { type Version } from '../types/Version'
 import * as npm from './npm'
 
 // return type of pnpm ls --json
@@ -29,28 +31,42 @@ type PnpmList = {
 }[]
 
 /** Reads the npmrc config file from the pnpm-workspace.yaml directory. */
-const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<NpmConfig> => {
-  const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
-  if (!pnpmWorkspacePath) return {}
+const npmConfigFromPnpmWorkspace = memoize(
+  async (options: Options): Promise<NpmConfig> => {
+    // Ensure findUp and path are using ESM-compatible imports
+    const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
+    if (!pnpmWorkspacePath) return {}
 
-  const pnpmWorkspaceDir = path.dirname(pnpmWorkspacePath)
-  const pnpmWorkspaceConfigPath = path.join(pnpmWorkspaceDir, '.npmrc')
+    const pnpmWorkspaceDir = path.dirname(pnpmWorkspacePath)
+    const pnpmWorkspaceConfigPath = path.join(pnpmWorkspaceDir, '.npmrc')
 
-  let pnpmWorkspaceConfig
-  try {
-    pnpmWorkspaceConfig = await fs.readFile(pnpmWorkspaceConfigPath, 'utf-8')
-  } catch (e) {
-    return {}
-  }
+    let pnpmWorkspaceConfig
+    try {
+      // node:fs/promises is preferred in ESM for async reads
+      pnpmWorkspaceConfig = await fs.readFile(pnpmWorkspaceConfigPath, 'utf-8')
+    } catch (e) {
+      return {}
+    }
 
-  print(options, `\nUsing pnpm workspace config at ${pnpmWorkspaceConfigPath}:`, 'verbose')
+    print(options, `\nUsing pnpm workspace config at ${pnpmWorkspaceConfigPath}:`, 'verbose')
 
-  const config = npm.normalizeNpmConfig(ini.parse(pnpmWorkspaceConfig), pnpmWorkspaceDir)
+    // Standardizing on the internal 'npm' utility for normalization
+    const config = npm.normalizeNpmConfig(ini.parse(pnpmWorkspaceConfig), pnpmWorkspaceDir)
 
-  print(options, config, 'verbose')
+    print(options, config, 'verbose')
 
-  return config
-})
+    return config
+  },
+  {
+    /**
+     * We memoize based on all relevant options.
+     * This avoids re-parsing the pnpm-workspace.yaml and .npmrc files for every package in a workspace.
+     * We exclude packageFile because the workspace config is typically at the root and shared.
+     */
+    cacheKey: ([options]) => getCacheableOptions({ options, exclude: ['packageFile'] }),
+    cache: new ManyKeysMap(),
+  },
+)
 
 /** Shape of the pnpm-workspace.yaml minimumReleaseAge settings. */
 export interface PnpmWorkspaceMinimumReleaseAge {
@@ -61,7 +77,7 @@ export interface PnpmWorkspaceMinimumReleaseAge {
 }
 
 /** Reads minimumReleaseAge settings from pnpm-workspace.yaml if present. */
-export const getPnpmWorkspaceMinimumReleaseAge = memoize(async (): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
+const getPnpmWorkspaceMinimumReleaseAge = memoize(async (): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
   const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
   if (!pnpmWorkspacePath) return null
 
@@ -146,3 +162,7 @@ async function spawnPnpm(
 export { defaultPrefix, getPeerDependencies, getEngines, packageAuthorChanged } from './npm'
 
 export default spawnPnpm
+
+export const pnpmApi = {
+  getPnpmWorkspaceMinimumReleaseAge,
+}

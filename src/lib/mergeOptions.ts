@@ -1,4 +1,4 @@
-import { Options } from '../types/Options'
+import { type Options } from '../types/Options'
 
 type OptionKey = keyof Options
 

@@ -1,5 +1,7 @@
 {
+  "name": "ncu-test-bun",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
     "ncu-test-v2": "^1.0.0"
   }

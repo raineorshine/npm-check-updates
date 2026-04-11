@@ -1,10 +1,10 @@
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { CacheData, Cacher } from '../types/Cacher'
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
-import { Version } from '../types/Version'
+import { type CacheData, type Cacher } from '../types/Cacher'
+import { type Index } from '../types/IndexType'
+import { type Options } from '../types/Options'
+import { type Version } from '../types/Version'
 import { print } from './logging'
 
 export const CACHE_DELIMITER = '___'
@@ -127,4 +127,33 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
       cacheHits.clear()
     },
   } satisfies Cacher
+}
+
+/**
+ * Prepares an Options object for use in a cache key.
+ * It excludes properties that are either too large, non-serializable,
+ * or properties that should not affect cache invalidation for a given function.
+ *
+ * This returns a flattened array of key-value pairs. Since arrays are compared
+ * by reference in a standard Map, memoize must be configured with ManyKeysMap
+ * to correctly handle these keys.
+ *
+ * @param options - The original Options object.
+ * @param exclude - An array of additional keys to explicitly exclude from the cache key.
+ * @returns A flattened array of key-value pairs.
+ */
+export function getCacheableOptions({
+  options,
+  exclude = [],
+}: {
+  options: Options
+  exclude?: (keyof Options)[]
+}): any[] {
+  const defaultExcludeKeys: (keyof Options)[] = ['packageData', 'cacher']
+  const allExcludeKeys = new Set([...defaultExcludeKeys, ...exclude])
+
+  // Ensure consistent iteration order by sorting keys
+  const sortedKeys = Object.keys(options).sort() as (keyof Options)[]
+
+  return sortedKeys.filter(key => !allExcludeKeys.has(key)).flatMap(key => [key, options[key]])
 }

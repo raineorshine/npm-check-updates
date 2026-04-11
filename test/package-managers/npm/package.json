@@ -1,4 +1,6 @@
 {
+  "name": "ncu-test-npm",
+  "type": "module",
   "license": "MIT",
   "dependencies": {
     "express": "^1.0.0"

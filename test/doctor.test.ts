@@ -1,15 +1,19 @@
 import fs from 'fs/promises'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
 import chaiSetup from './helpers/chaiSetup'
-import { testFail, testPass } from './helpers/doctorHelpers'
+import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 const doctorTests = path.join(__dirname, 'test-data/doctor')
@@ -42,7 +46,6 @@ describe('doctor', function () {
   describe('npm', () => {
     it('print instructions when -u is not specified', async () => {
       await chalkInit()
-      const { default: stripAnsi } = await import('strip-ansi')
       const cwd = path.join(doctorTests, 'nopackagefile')
       const output = await ncu(['--doctor'], {}, { cwd })
       return stripAnsi(output).should.equal(
@@ -77,8 +80,6 @@ describe('doctor', function () {
     testFail({ packageManager: 'npm' })
 
     it('pass through options', async function () {
-      // use dynamic import for ESM module
-      const { default: stripAnsi } = await import('strip-ansi')
       const cwd = path.join(doctorTests, 'options')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -131,8 +132,6 @@ describe('doctor', function () {
     })
 
     it('custom install script with --doctorInstall', async function () {
-      // use dynamic import for ESM module
-      const { default: stripAnsi } = await import('strip-ansi')
       const cwd = path.join(doctorTests, 'custominstall')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -184,8 +183,6 @@ describe('doctor', function () {
     })
 
     it('custom test script with --doctorTest', async function () {
-      // use dynamic import for ESM module
-      const { default: stripAnsi } = await import('strip-ansi')
       const cwd = path.join(doctorTests, 'customtest')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -237,8 +234,6 @@ describe('doctor', function () {
     })
 
     it('custom test script with --doctorTest command that includes spaced words wrapped in quotes', async function () {
-      // use dynamic import for ESM module
-      const { default: stripAnsi } = await import('strip-ansi')
       const cwd = path.join(doctorTests, 'customtest2')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -289,6 +284,7 @@ describe('doctor', function () {
       await fs.writeFile(
         pkgPath,
         JSON.stringify({
+          type: 'module',
           scripts: {
             prepare: 'node prepare.js',
             test: 'echo "No tests"',
@@ -306,15 +302,16 @@ describe('doctor', function () {
       // This is an arbitrary fail condition used to test that doctor mode still works when the npm prepare script fails.
       await fs.writeFile(
         path.join(tempDir, 'prepare.js'),
-        `const ncuTestPkg = require('./node_modules/ncu-test-v2/package.json')
-
+        `import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const ncuTestPkg = require('./node_modules/ncu-test-v2/package.json');
 if (ncuTestPkg.version === '1.0.0') {
   console.log('done')
-  process.exit(0)
+  process.exitCode = 0;
 }
 else {
   console.error('failed')
-  process.exit(1)
+  process.exitCode = 1;
 }`,
         'utf-8',
       )
@@ -345,14 +342,17 @@ else {
         await removeDir(tempDir)
       }
 
+      const testTag = createNcuRegExp('ncu-test-tag 1.0.0 →')
+      const testV2 = createNcuRegExp('ncu-test-v2 1.0.0 →')
+
       // stdout should include successful upgrades
-      stdout.should.containIgnoreCase('ncu-test-tag 1.0.0 →')
-      stdout.should.not.containIgnoreCase('ncu-test-v2 1.0.0 →')
+      stdout.should.match(testTag)
+      stdout.should.not.match(testV2)
 
       // stderr should include failed prepare script
       stderr.should.containIgnoreCase('failed')
-      stderr.should.containIgnoreCase('ncu-test-v2 1.0.0 →')
-      stderr.should.not.containIgnoreCase('ncu-test-tag 1.0.0 →')
+      stderr.should.match(testV2)
+      stderr.should.not.match(testTag)
 
       // package file should only include successful upgrades
       pkgUpgraded.dependencies.should.deep.equal({

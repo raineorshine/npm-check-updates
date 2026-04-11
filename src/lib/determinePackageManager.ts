@@ -1,8 +1,12 @@
 import fs from 'fs/promises'
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
-import { PackageManagerName } from '../types/PackageManagerName'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { type Index } from '../types/IndexType'
+import { type Options } from '../types/Options'
+import { type PackageManagerName } from '../types/PackageManagerName'
 import findLockfile from './findLockfile'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // map lockfiles to package managers
 const packageManagerLockfileMap: Index<PackageManagerName> = {
@@ -38,6 +42,7 @@ const getRunningPackageManager = (): PackageManagerName => {
     return 'pnpm'
   if (
     userAgent.startsWith('bun/') ||
+    // @ts-expect-error - it is bun
     typeof Bun !== 'undefined' ||
     process.versions.bun ||
     __dirname.includes('/.bun/') ||

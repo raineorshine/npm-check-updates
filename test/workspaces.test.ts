@@ -2,14 +2,16 @@
 // eslint doesn't like .should.be.empty syntax
 import fs from 'fs/promises'
 import os from 'os'
-import path from 'path'
+import path, { dirname } from 'path'
 import spawn from 'spawn-please'
+import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 

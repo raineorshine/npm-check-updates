@@ -1,4 +1,5 @@
-const returnVersion = require('ncu-test-return-version')
+import returnVersion from 'ncu-test-return-version'
+
 const v = returnVersion()
 
 // pass on < 2

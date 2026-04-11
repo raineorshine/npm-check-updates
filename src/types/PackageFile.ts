@@ -1,6 +1,6 @@
-import { Index } from './IndexType'
-import { PackageFileRepository } from './PackageFileRepository'
-import { VersionSpec } from './VersionSpec'
+import { type Index } from './IndexType'
+import { type PackageFileRepository } from './PackageFileRepository'
+import { type VersionSpec } from './VersionSpec'
 
 type NestedVersionSpecs = {
   [name: string]: VersionSpec | NestedVersionSpecs

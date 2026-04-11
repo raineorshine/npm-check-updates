@@ -1,518 +1,714 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/RunOptions",
   "definitions": {
-    "Index<string>": {
-      "description": "A very generic object.",
-      "type": "object"
-    },
-    "NestedVersionSpecs": {
-      "additionalProperties": {
-        "anyOf": [
-          {
-            "$ref": "#/definitions/NestedVersionSpecs"
-          },
-          {
-            "type": "string"
-          }
-        ]
-      },
-      "type": "object"
-    },
-    "PackageFile": {
-      "description": "The relevant bits of a parsed package.json file.",
+    "RunOptions": {
+      "type": "object",
       "properties": {
-        "dependencies": {
-          "$ref": "#/definitions/Index%3Cstring%3E",
-          "description": "A very generic object."
+        "cache": {
+          "type": "boolean",
+          "description": "Cache versions to a local cache file. Default `--cacheFile` is ~/.ncu-cache.json and default `--cacheExpiration` is 10 minutes."
         },
-        "devDependencies": {
-          "$ref": "#/definitions/Index%3Cstring%3E",
-          "description": "A very generic object."
+        "cacheClear": {
+          "type": "boolean",
+          "description": "Clear the default cache, or the cache file specified by `--cacheFile`."
         },
-        "engines": {
-          "$ref": "#/definitions/Index%3Cstring%3E",
-          "description": "A very generic object."
+        "cacheExpiration": {
+          "type": "number",
+          "description": "Cache expiration in minutes. Only works with `--cache`.",
+          "default": 10
         },
-        "homepage": {
-          "type": "string"
+        "cacheFile": {
+          "type": "string",
+          "description": "Filepath for the cache file. Only works with `--cache`.",
+          "default": "~/.ncu-cache.json"
         },
-        "imports": {
-          "$ref": "#/definitions/Index%3Cstring%3E",
-          "description": "A very generic object."
+        "color": {
+          "type": "boolean",
+          "description": "Force color in terminal."
         },
-        "name": {
-          "type": "string"
+        "concurrency": {
+          "type": "number",
+          "description": "Max number of concurrent HTTP requests to registry.",
+          "default": 8
         },
-        "optionalDependencies": {
-          "$ref": "#/definitions/Index%3Cstring%3E",
-          "description": "A very generic object."
+        "configFileName": {
+          "type": "string",
+          "description": "Config file name. (default: .ncurc.{json,yml,js,cjs})"
         },
-        "overrides": {
-          "$ref": "#/definitions/NestedVersionSpecs"
+        "configFilePath": {
+          "type": "string",
+          "description": "Directory of .ncurc config file. (default: directory of `packageFile`)"
         },
-        "packageManager": {
-          "type": "string"
-        },
-        "peerDependencies": {
-          "$ref": "#/definitions/Index%3Cstring%3E",
-          "description": "A very generic object."
-        },
-        "repository": {
+        "cooldown": {
           "anyOf": [
             {
-              "$ref": "#/definitions/PackageFileRepository"
+              "type": "number"
             },
             {
               "type": "string"
+            },
+            {
+              "$ref": "#/definitions/CooldownFunction"
             }
-          ]
+          ],
+          "description": "Sets a minimum age for package versions to be considered for upgrade. Accepts a number (days) or a string with a unit: \"7d\" (days), \"12h\" (hours), \"30m\" (minutes). Reduces the risk of installing newly published, potentially compromised packages. Run \"ncu --help --cooldown\" for details."
         },
-        "scripts": {
-          "$ref": "#/definitions/Index%3Cstring%3E",
-          "description": "A very generic object."
+        "cwd": {
+          "type": "string",
+          "description": "Working directory in which npm will be executed."
+        },
+        "deep": {
+          "type": "boolean",
+          "description": "Run recursively in current working directory. Alias of (`--packageFile '**\\/package.json'`)."
+        },
+        "dep": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited).",
+          "default": ["prod", "dev", "optional", "packageManager"]
+        },
+        "deprecated": {
+          "type": "boolean",
+          "description": "Include deprecated packages. Use `--no-deprecated` to exclude deprecated packages (20–25% slower).",
+          "default": true
+        },
+        "doctor": {
+          "type": "boolean",
+          "description": "Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires `-u` to execute. Run \"ncu --help --doctor\" for details."
+        },
+        "doctorInstall": {
+          "type": "string",
+          "description": "Specifies the install script to use in doctor mode. (default: `npm install` or the equivalent for your package manager)"
+        },
+        "doctorTest": {
+          "type": "string",
+          "description": "Specifies the test script to use in doctor mode. (default: `npm test`)"
+        },
+        "enginesNode": {
+          "type": "boolean",
+          "description": "Include only packages that satisfy engines.node as specified in the package file."
+        },
+        "errorLevel": {
+          "type": "number",
+          "description": "Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration).",
+          "default": 1
+        },
+        "filter": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "format": "regex"
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string",
+                    "format": "regex"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "#/definitions/FilterFunction"
+            }
+          ],
+          "description": "Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --filter\" for details."
+        },
+        "filterResults": {
+          "$ref": "#/definitions/FilterResultsFunction",
+          "description": "Filters results based on a user provided predicate function after fetching new versions. Run \"ncu --help --filterResults\" for details."
+        },
+        "filterVersion": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "format": "regex"
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string",
+                    "format": "regex"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "#/definitions/FilterFunction"
+            }
+          ],
+          "description": "Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --filterVersion\" for details."
+        },
+        "format": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion. Run \"ncu --help --format\" for details."
+        },
+        "global": {
+          "type": "boolean",
+          "description": "Check global packages instead of in the current project."
+        },
+        "groupFunction": {
+          "$ref": "#/definitions/GroupFunction",
+          "description": "Customize how packages are divided into groups when using `--format group`. Run \"ncu --help --groupFunction\" for details."
+        },
+        "install": {
+          "type": "string",
+          "enum": ["always", "never", "prompt"],
+          "description": "Control the auto-install behavior: always, never, prompt. Run \"ncu --help --install\" for details.",
+          "default": "prompt"
+        },
+        "interactive": {
+          "type": "boolean",
+          "description": "Enable interactive prompts for each dependency; implies `-u` unless one of the json options are set."
+        },
+        "jsonAll": {
+          "type": "boolean",
+          "description": "Output new package file instead of human-readable message."
+        },
+        "jsonDeps": {
+          "type": "boolean",
+          "description": "Like `jsonAll` but only lists `dependencies`, `devDependencies`, `optionalDependencies`, etc of the new package data."
+        },
+        "jsonUpgraded": {
+          "type": "boolean",
+          "description": "Output upgraded dependencies in json."
+        },
+        "loglevel": {
+          "type": "string",
+          "description": "Amount to log: silent, error, minimal, warn, info, verbose, silly.",
+          "default": "warn"
+        },
+        "mergeConfig": {
+          "type": "boolean",
+          "description": "Merges nested configs with the root config file for `--deep` or `--packageFile` options. (default: false)"
+        },
+        "minimal": {
+          "type": "boolean",
+          "description": "Do not upgrade newer versions that are already satisfied by the version range according to semver."
+        },
+        "packageData": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/PackageFile"
+            }
+          ],
+          "description": "Package file data (you can also use stdin)."
+        },
+        "packageFile": {
+          "type": "string",
+          "description": "Package file(s) location. (default: ./package.json)"
+        },
+        "packageManager": {
+          "type": "string",
+          "enum": ["npm", "yarn", "pnpm", "deno", "bun", "staticRegistry"],
+          "description": "npm, yarn, pnpm, deno, bun, staticRegistry (default: npm). Run \"ncu --help --packageManager\" for details."
+        },
+        "peer": {
+          "type": "boolean",
+          "description": "Check peer dependencies of installed packages and filter updates to compatible versions. Run \"ncu --help --peer\" for details."
+        },
+        "pre": {
+          "type": "boolean",
+          "description": "Include prerelease versions, e.g. -alpha.0, -beta.5, -rc.2. Automatically set to 1 when `--target` is newest or greatest, or when the current version is a prerelease. (default: 0)"
+        },
+        "prefix": {
+          "type": "string",
+          "description": "Current working directory of npm."
+        },
+        "registry": {
+          "type": "string",
+          "description": "Specify the registry to use when looking up package versions."
+        },
+        "registryType": {
+          "type": "string",
+          "enum": ["npm", "json"],
+          "description": "Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: npm) Run \"ncu --help --registryType\" for details."
+        },
+        "reject": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "format": "regex"
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string",
+                    "format": "regex"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "#/definitions/FilterFunction"
+            }
+          ],
+          "description": "Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --reject\" for details."
+        },
+        "rejectVersion": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "format": "regex"
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string",
+                    "format": "regex"
+                  }
+                ]
+              }
+            },
+            {
+              "$ref": "#/definitions/FilterFunction"
+            }
+          ],
+          "description": "Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --rejectVersion\" for details."
+        },
+        "removeRange": {
+          "type": "boolean",
+          "description": "Remove version ranges from the final package version."
+        },
+        "retry": {
+          "type": "number",
+          "description": "Number of times to retry failed requests for package info.",
+          "default": 3
+        },
+        "root": {
+          "type": "boolean",
+          "description": "Runs updates on the root project in addition to specified workspaces. Only allowed with `--workspace` or `--workspaces`.",
+          "default": true
+        },
+        "silent": {
+          "type": "boolean",
+          "description": "Don't output anything. Alias for `--loglevel` silent."
+        },
+        "stdin": {
+          "type": "string",
+          "description": "Read package.json from stdin."
+        },
+        "target": {
+          "anyOf": [
+            {
+              "type": "string",
+              "const": "latest"
+            },
+            {
+              "type": "string",
+              "const": "newest"
+            },
+            {
+              "type": "string",
+              "const": "greatest"
+            },
+            {
+              "type": "string",
+              "const": "minor"
+            },
+            {
+              "type": "string",
+              "const": "patch"
+            },
+            {
+              "type": "string",
+              "const": "semver"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/TargetFunction"
+            }
+          ],
+          "description": "Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, `@[tag]`, or [function]. (default: latest) Run \"ncu --help --target\" for details."
+        },
+        "timeout": {
+          "type": "number",
+          "description": "Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch)"
+        },
+        "upgrade": {
+          "type": "boolean",
+          "description": "Overwrite package file with upgraded versions instead of just outputting to console."
+        },
+        "verbose": {
+          "type": "boolean",
+          "description": "Log additional information for debugging. Alias for `--loglevel` verbose."
+        },
+        "workspace": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Run on one or more specified workspaces. Add `--no-root` to exclude the root project."
+        },
+        "workspaces": {
+          "type": "boolean",
+          "description": "Run on all workspaces. Add `--no-root` to exclude the root project."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Options that can be given on the CLI or passed to the ncu module to control all behavior."
+    },
+    "CooldownFunction": {
+      "$comment": "(packageName: string) => number | string | null",
+      "type": "object",
+      "properties": {
+        "namedArgs": {
+          "type": "object",
+          "properties": {
+            "packageName": {
+              "type": "string"
+            }
+          },
+          "required": ["packageName"],
+          "additionalProperties": false
+        }
+      },
+      "description": "A function that can be provided to the --cooldown option for custom cooldown predicate."
+    },
+    "FilterFunction": {
+      "$comment": "(packageName: string, versionRange: SemVer[]) => boolean",
+      "type": "object",
+      "properties": {
+        "namedArgs": {
+          "type": "object",
+          "properties": {
+            "packageName": {
+              "type": "string"
+            },
+            "versionRange": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SemVer"
+              }
+            }
+          },
+          "required": ["packageName", "versionRange"],
+          "additionalProperties": false
+        }
+      },
+      "description": "Supported function for the --filter and --reject options."
+    },
+    "SemVer": {
+      "type": "object",
+      "properties": {
+        "semver": {
+          "type": "string"
         },
         "version": {
           "type": "string"
         },
+        "major": {
+          "type": "string"
+        },
+        "minor": {
+          "type": "string"
+        },
+        "patch": {
+          "type": "string"
+        },
+        "release": {
+          "type": "string"
+        },
+        "build": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "FilterResultsFunction": {
+      "$comment": "(\n  packageName: string,\n  versioningMetadata: {\n    currentVersion: VersionSpec\n    currentVersionSemver: SemVer[]\n    upgradedVersion: Version\n    upgradedVersionSemver: SemVer\n  }) => boolean",
+      "type": "object",
+      "properties": {
+        "namedArgs": {
+          "type": "object",
+          "properties": {
+            "packageName": {
+              "type": "string"
+            },
+            "versioningMetadata": {
+              "type": "object",
+              "properties": {
+                "currentVersion": {
+                  "$ref": "#/definitions/VersionSpec"
+                },
+                "currentVersionSemver": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SemVer"
+                  }
+                },
+                "upgradedVersion": {
+                  "$ref": "#/definitions/Version"
+                },
+                "upgradedVersionSemver": {
+                  "$ref": "#/definitions/SemVer"
+                }
+              },
+              "required": ["currentVersion", "currentVersionSemver", "upgradedVersion", "upgradedVersionSemver"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["packageName", "versioningMetadata"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "VersionSpec": {
+      "type": "string",
+      "description": "A version specification or range supported as a value in package.json dependencies. Includes SemVer, git urls, npm urls, etc."
+    },
+    "Version": {
+      "type": "string",
+      "description": "An exact version number or value. Includes SemVer and some nonstandard variants for convenience."
+    },
+    "GroupFunction": {
+      "$comment": "(\n  packageName: string,\n  defaultGroup: UpgradeGroup,\n  currentVersionSpec: SemVer[],\n  upgradedVersionSpec: SemVer[],\n  upgradedVersion: SemVer | null) => UpgradeGroup | string",
+      "type": "object",
+      "properties": {
+        "namedArgs": {
+          "type": "object",
+          "properties": {
+            "packageName": {
+              "type": "string"
+            },
+            "defaultGroup": {
+              "$ref": "#/definitions/UpgradeGroup"
+            },
+            "currentVersionSpec": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SemVer"
+              }
+            },
+            "upgradedVersionSpec": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SemVer"
+              }
+            },
+            "upgradedVersion": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/SemVer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": ["packageName", "defaultGroup", "currentVersionSpec", "upgradedVersionSpec", "upgradedVersion"],
+          "additionalProperties": false
+        }
+      },
+      "description": "Customize how packages are divided into groups when using `--format group`. Run \"ncu --help --groupFunction\" for details."
+    },
+    "UpgradeGroup": {
+      "type": "string",
+      "enum": ["major", "minor", "patch", "majorVersionZero", "none"]
+    },
+    "PackageFile": {
+      "type": "object",
+      "properties": {
+        "dependencies": {
+          "$ref": "#/definitions/Index%3CVersionSpec%3E"
+        },
+        "devDependencies": {
+          "$ref": "#/definitions/Index%3CVersionSpec%3E"
+        },
+        "imports": {
+          "$ref": "#/definitions/Index%3CVersionSpec%3E"
+        },
+        "engines": {
+          "$ref": "#/definitions/Index%3CVersionSpec%3E"
+        },
+        "homepage": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "packageManager": {
+          "type": "string"
+        },
+        "optionalDependencies": {
+          "$ref": "#/definitions/Index%3CVersionSpec%3E"
+        },
+        "overrides": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/VersionSpec"
+              },
+              {
+                "$ref": "#/definitions/alias-698261804-158-240-698261804-0-859"
+              }
+            ]
+          }
+        },
+        "peerDependencies": {
+          "$ref": "#/definitions/Index%3CVersionSpec%3E"
+        },
+        "repository": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/PackageFileRepository"
+            }
+          ]
+        },
+        "scripts": {
+          "$ref": "#/definitions/Index%3Cstring%3E"
+        },
         "workspaces": {
           "anyOf": [
             {
+              "type": "array",
               "items": {
                 "type": "string"
-              },
-              "type": "array"
+              }
             },
             {
+              "type": "object",
               "properties": {
                 "packages": {
+                  "type": "array",
                   "items": {
                     "type": "string"
-                  },
-                  "type": "array"
+                  }
                 }
               },
-              "type": "object"
+              "required": ["packages"],
+              "additionalProperties": false
             }
           ]
+        },
+        "version": {
+          "type": "string"
         }
       },
-      "type": "object"
+      "additionalProperties": false,
+      "description": "The relevant bits of a parsed package.json file."
+    },
+    "Index<VersionSpec>": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/VersionSpec"
+      },
+      "description": "A very generic object."
+    },
+    "alias-698261804-158-240-698261804-0-859": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/VersionSpec"
+          },
+          {
+            "$ref": "#/definitions/alias-698261804-158-240-698261804-0-859"
+          }
+        ]
+      }
     },
     "PackageFileRepository": {
-      "description": "Represents the repository field in package.json.",
+      "type": "object",
       "properties": {
-        "directory": {
-          "type": "string"
-        },
         "url": {
           "type": "string"
+        },
+        "directory": {
+          "type": "string"
         }
       },
-      "type": "object"
+      "required": ["url"],
+      "additionalProperties": false,
+      "description": "Represents the repository field in package.json."
     },
-    "RegExp": {
+    "Index<string>": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "A very generic object."
+    },
+    "TargetFunction": {
+      "$comment": "(packageName: string, versionRange: SemVer[]) => string",
+      "type": "object",
       "properties": {
-        "dotAll": {
-          "type": "boolean"
-        },
-        "flags": {
-          "type": "string"
-        },
-        "global": {
-          "type": "boolean"
-        },
-        "hasIndices": {
-          "type": "boolean"
-        },
-        "ignoreCase": {
-          "type": "boolean"
-        },
-        "lastIndex": {
-          "type": "number"
-        },
-        "multiline": {
-          "type": "boolean"
-        },
-        "source": {
-          "type": "string"
-        },
-        "sticky": {
-          "type": "boolean"
-        },
-        "unicode": {
-          "type": "boolean"
+        "namedArgs": {
+          "type": "object",
+          "properties": {
+            "packageName": {
+              "type": "string"
+            },
+            "versionRange": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SemVer"
+              }
+            }
+          },
+          "required": ["packageName", "versionRange"],
+          "additionalProperties": false
         }
       },
-      "type": "object"
+      "description": "A function that can be provided to the --target option for custom filtering."
     }
-  },
-  "description": "Options that can be given on the CLI or passed to the ncu module to control all behavior.",
-  "properties": {
-    "cache": {
-      "description": "Cache versions to a local cache file. Default `--cacheFile` is ~/.ncu-cache.json and default `--cacheExpiration` is 10 minutes.",
-      "type": "boolean"
-    },
-    "cacheClear": {
-      "description": "Clear the default cache, or the cache file specified by `--cacheFile`.",
-      "type": "boolean"
-    },
-    "cacheExpiration": {
-      "default": 10,
-      "description": "Cache expiration in minutes. Only works with `--cache`.",
-      "type": "number"
-    },
-    "cacheFile": {
-      "default": "~/.ncu-cache.json",
-      "description": "Filepath for the cache file. Only works with `--cache`.",
-      "type": "string"
-    },
-    "color": {
-      "description": "Force color in terminal.",
-      "type": "boolean"
-    },
-    "concurrency": {
-      "default": 8,
-      "description": "Max number of concurrent HTTP requests to registry.",
-      "type": "number"
-    },
-    "configFileName": {
-      "description": "Config file name. (default: .ncurc.{json,yml,js,cjs})",
-      "type": "string"
-    },
-    "configFilePath": {
-      "description": "Directory of .ncurc config file. (default: directory of `packageFile`)",
-      "type": "string"
-    },
-    "cooldown": {
-      "anyOf": [
-        {
-          "description": "A function that can be provided to the --cooldown option for custom cooldown predicate.",
-          "type": "object"
-        },
-        {
-          "type": ["string", "number"]
-        }
-      ],
-      "description": "Sets a minimum age for package versions to be considered for upgrade. Accepts a number (days) or a string with a unit: \"7d\" (days), \"12h\" (hours), \"30m\" (minutes). Reduces the risk of installing newly published, potentially compromised packages. Run \"ncu --help --cooldown\" for details."
-    },
-    "cwd": {
-      "description": "Working directory in which npm will be executed.",
-      "type": "string"
-    },
-    "deep": {
-      "description": "Run recursively in current working directory. Alias of (`--packageFile '**\\/package.json'`).",
-      "type": "boolean"
-    },
-    "dep": {
-      "anyOf": [
-        {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        {
-          "type": "string"
-        }
-      ],
-      "default": ["prod", "dev", "optional", "packageManager"],
-      "description": "Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited)."
-    },
-    "deprecated": {
-      "default": true,
-      "description": "Include deprecated packages. Use `--no-deprecated` to exclude deprecated packages (20–25% slower).",
-      "type": "boolean"
-    },
-    "doctor": {
-      "description": "Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires `-u` to execute. Run \"ncu --help --doctor\" for details.",
-      "type": "boolean"
-    },
-    "doctorInstall": {
-      "description": "Specifies the install script to use in doctor mode. (default: `npm install` or the equivalent for your package manager)",
-      "type": "string"
-    },
-    "doctorTest": {
-      "description": "Specifies the test script to use in doctor mode. (default: `npm test`)",
-      "type": "string"
-    },
-    "enginesNode": {
-      "description": "Include only packages that satisfy engines.node as specified in the package file.",
-      "type": "boolean"
-    },
-    "errorLevel": {
-      "default": 1,
-      "description": "Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration).",
-      "type": "number"
-    },
-    "filter": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/RegExp"
-        },
-        {
-          "description": "Supported function for the --filter and --reject options.",
-          "type": "object"
-        },
-        {
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/RegExp"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        {
-          "type": "string"
-        }
-      ],
-      "description": "Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --filter\" for details."
-    },
-    "filterResults": {
-      "description": "Filters results based on a user provided predicate function after fetching new versions. Run \"ncu --help --filterResults\" for details.",
-      "type": "object"
-    },
-    "filterVersion": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/RegExp"
-        },
-        {
-          "description": "Supported function for the --filter and --reject options.",
-          "type": "object"
-        },
-        {
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/RegExp"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        {
-          "type": "string"
-        }
-      ],
-      "description": "Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --filterVersion\" for details."
-    },
-    "format": {
-      "description": "Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion. Run \"ncu --help --format\" for details.",
-      "items": {
-        "type": "string"
-      },
-      "type": "array"
-    },
-    "global": {
-      "description": "Check global packages instead of in the current project.",
-      "type": "boolean"
-    },
-    "groupFunction": {
-      "description": "Customize how packages are divided into groups when using `--format group`. Run \"ncu --help --groupFunction\" for details.",
-      "type": "object"
-    },
-    "install": {
-      "default": "prompt",
-      "description": "Control the auto-install behavior: always, never, prompt. Run \"ncu --help --install\" for details.",
-      "enum": ["always", "never", "prompt"],
-      "type": "string"
-    },
-    "interactive": {
-      "description": "Enable interactive prompts for each dependency; implies `-u` unless one of the json options are set.",
-      "type": "boolean"
-    },
-    "jsonAll": {
-      "description": "Output new package file instead of human-readable message.",
-      "type": "boolean"
-    },
-    "jsonDeps": {
-      "description": "Like `jsonAll` but only lists `dependencies`, `devDependencies`, `optionalDependencies`, etc of the new package data.",
-      "type": "boolean"
-    },
-    "jsonUpgraded": {
-      "description": "Output upgraded dependencies in json.",
-      "type": "boolean"
-    },
-    "loglevel": {
-      "default": "warn",
-      "description": "Amount to log: silent, error, minimal, warn, info, verbose, silly.",
-      "type": "string"
-    },
-    "mergeConfig": {
-      "description": "Merges nested configs with the root config file for `--deep` or `--packageFile` options. (default: false)",
-      "type": "boolean"
-    },
-    "minimal": {
-      "description": "Do not upgrade newer versions that are already satisfied by the version range according to semver.",
-      "type": "boolean"
-    },
-    "packageData": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/PackageFile"
-        },
-        {
-          "type": "string"
-        }
-      ],
-      "description": "Package file data (you can also use stdin)."
-    },
-    "packageFile": {
-      "description": "Package file(s) location. (default: ./package.json)",
-      "type": "string"
-    },
-    "packageManager": {
-      "description": "npm, yarn, pnpm, deno, bun, staticRegistry (default: npm). Run \"ncu --help --packageManager\" for details.",
-      "enum": ["bun", "deno", "npm", "pnpm", "staticRegistry", "yarn"],
-      "type": "string"
-    },
-    "peer": {
-      "description": "Check peer dependencies of installed packages and filter updates to compatible versions. Run \"ncu --help --peer\" for details.",
-      "type": "boolean"
-    },
-    "pre": {
-      "description": "Include prerelease versions, e.g. -alpha.0, -beta.5, -rc.2. Automatically set to 1 when `--target` is newest or greatest, or when the current version is a prerelease. (default: 0)",
-      "type": "boolean"
-    },
-    "prefix": {
-      "description": "Current working directory of npm.",
-      "type": "string"
-    },
-    "registry": {
-      "description": "Specify the registry to use when looking up package versions.",
-      "type": "string"
-    },
-    "registryType": {
-      "description": "Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: npm) Run \"ncu --help --registryType\" for details.",
-      "enum": ["json", "npm"],
-      "type": "string"
-    },
-    "reject": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/RegExp"
-        },
-        {
-          "description": "Supported function for the --filter and --reject options.",
-          "type": "object"
-        },
-        {
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/RegExp"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        {
-          "type": "string"
-        }
-      ],
-      "description": "Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --reject\" for details."
-    },
-    "rejectVersion": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/RegExp"
-        },
-        {
-          "description": "Supported function for the --filter and --reject options.",
-          "type": "object"
-        },
-        {
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/RegExp"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        {
-          "type": "string"
-        }
-      ],
-      "description": "Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --rejectVersion\" for details."
-    },
-    "removeRange": {
-      "description": "Remove version ranges from the final package version.",
-      "type": "boolean"
-    },
-    "retry": {
-      "default": 3,
-      "description": "Number of times to retry failed requests for package info.",
-      "type": "number"
-    },
-    "root": {
-      "default": true,
-      "description": "Runs updates on the root project in addition to specified workspaces. Only allowed with `--workspace` or `--workspaces`.",
-      "type": "boolean"
-    },
-    "silent": {
-      "description": "Don't output anything. Alias for `--loglevel` silent.",
-      "type": "boolean"
-    },
-    "stdin": {
-      "description": "Read package.json from stdin.",
-      "type": "string"
-    },
-    "target": {
-      "anyOf": [
-        {
-          "pattern": "^@.*$",
-          "type": "string"
-        },
-        {
-          "description": "A function that can be provided to the --target option for custom filtering.",
-          "type": "object"
-        },
-        {
-          "enum": ["greatest", "latest", "minor", "newest", "patch", "semver"],
-          "type": "string"
-        }
-      ],
-      "description": "Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, `@[tag]`, or [function]. (default: latest) Run \"ncu --help --target\" for details."
-    },
-    "timeout": {
-      "description": "Global timeout in milliseconds. (default: no global timeout and 30 seconds per npm-registry-fetch)",
-      "type": "number"
-    },
-    "upgrade": {
-      "description": "Overwrite package file with upgraded versions instead of just outputting to console.",
-      "type": "boolean"
-    },
-    "verbose": {
-      "description": "Log additional information for debugging. Alias for `--loglevel` verbose.",
-      "type": "boolean"
-    },
-    "workspace": {
-      "description": "Run on one or more specified workspaces. Add `--no-root` to exclude the root project.",
-      "items": {
-        "type": "string"
-      },
-      "type": "array"
-    },
-    "workspaces": {
-      "description": "Run on all workspaces. Add `--no-root` to exclude the root project.",
-      "type": "boolean"
-    }
-  },
-  "type": "object"
+  }
 }

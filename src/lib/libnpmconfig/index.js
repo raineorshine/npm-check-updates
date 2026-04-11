@@ -5,7 +5,7 @@ This is a copy of the deprecated libnpmconfig library. It has been brought into 
 https://github.com/npm/libnpmconfig
 
 */
-import findUp from 'find-up'
+import { findUpSync } from 'find-up'
 import ini from 'ini'
 import fs from 'node:fs'
 import os from 'node:os'
@@ -50,7 +50,7 @@ function getNpmConfig(_opts, _builtin) {
   const user = userConfPath && maybeReadIni(userConfPath)
   const globalConfPath = builtin.globalconfig || cli.globalconfig || env.globalconfig
   const global = globalConfPath && maybeReadIni(globalConfPath)
-  const projConfPath = findUp.sync(builtin.configNames, { cwd: builtin.cwd })
+  const projConfPath = findUpSync(builtin.configNames, { cwd: builtin.cwd })
   let proj = {}
   if (projConfPath && projConfPath !== userConfPath) {
     proj = maybeReadIni(projConfPath)

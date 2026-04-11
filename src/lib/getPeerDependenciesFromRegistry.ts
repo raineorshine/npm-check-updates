@@ -1,8 +1,8 @@
 import pMap from 'p-map'
 import ProgressBar from 'progress'
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
-import { Version } from '../types/Version'
+import { type Index } from '../types/IndexType'
+import { type Options } from '../types/Options'
+import { type Version } from '../types/Version'
 import getPackageManager from './getPackageManager'
 
 type CircularData =

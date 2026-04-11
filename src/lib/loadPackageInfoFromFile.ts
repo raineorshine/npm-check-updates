@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
-import { Options } from '../types/Options'
-import { PackageFile } from '../types/PackageFile'
-import { PackageInfo } from '../types/PackageInfo'
+import { type Options } from '../types/Options'
+import { type PackageFile } from '../types/PackageFile'
+import { type PackageInfo } from '../types/PackageInfo'
 import programError from './programError'
 
 /** Load and parse a package file. */

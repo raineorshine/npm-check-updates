@@ -1,8 +1,12 @@
 import fs from 'fs/promises'
-import spawn from 'spawn-please'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { stripVTControlCharacters as stripAnsi } from 'node:util'
+import prettier from 'prettier'
+import { createGenerator } from 'ts-json-schema-generator'
 import cliOptions, { renderExtendedHelp } from '../cli-options'
-import { chalkInit } from '../lib/chalk'
-import CLIOption from '../types/CLIOption'
+import { chalkInit, getChalk } from '../lib/chalk'
+import type CLIOption from '../types/CLIOption'
 
 const INJECT_HEADER =
   '<!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->'
@@ -12,7 +16,6 @@ const codeHtml = (code: string) => code.replace(/`(.+?)`/g, '<code>$1</code>')
 
 /** Replaces the "Options" and "Advanced Options" sections of the README with direct output from "ncu --help". */
 const injectReadme = async () => {
-  const { default: stripAnsi } = await import('strip-ansi')
   let readme = await fs.readFile('README.md', 'utf8')
   const optionRows = cliOptions
     .map(option => {
@@ -83,12 +86,12 @@ const renderOption = (option: CLIOption<unknown>) => {
 /** Generate /src/types/RunOptions from cli-options so there is a single source of truth. */
 const generateRunOptions = (options: CLIOption<unknown>[]) => {
   const header = `/** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build" or "npm run build:options" to build. */
-import { CooldownFunction } from './CooldownFunction'
-import { FilterFunction } from './FilterFunction'
-import { FilterResultsFunction } from './FilterResultsFunction'
-import { GroupFunction } from './GroupFunction'
-import { PackageFile } from './PackageFile'
-import { TargetFunction } from './TargetFunction'
+import type { CooldownFunction } from './CooldownFunction'
+import type { FilterFunction } from './FilterFunction'
+import type { FilterResultsFunction } from './FilterResultsFunction'
+import type { GroupFunction } from './GroupFunction'
+import type { PackageFile } from './PackageFile'
+import type { TargetFunction } from './TargetFunction'
 
 /** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
 export interface RunOptions {
@@ -104,16 +107,50 @@ export interface RunOptions {
 }
 
 /** Generates a JSON schema for the ncurc file. */
-const generateRunOptionsJsonSchema = async (): Promise<string> => {
-  // programmatic usage of typescript-json-schema does not work, at least not straightforwardly.
-  // Use the CLI which works out-of-the-box.
-  const { stdout } = await spawn('typescript-json-schema', ['tsconfig.json', 'RunOptions'])
-  return stdout
+const generateRunOptionsJsonSchema = (): string => {
+  const config = {
+    path: 'src/types/RunOptions.ts',
+    tsconfig: 'tsconfig.json',
+    type: 'RunOptions',
+  }
+
+  const schema = createGenerator(config).createSchema(config.type)
+  return JSON.stringify(schema, null, 2)
 }
 
-;(async () => {
-  await fs.writeFile('README.md', await injectReadme())
+/** generate and save README.md, RunOptions.ts, RunOptions.json */
+export async function buildOptions(): Promise<void> {
+  const chalk = getChalk(true)
+  const logPrefix = chalk.cyan('[build-options]')
+  console.log(logPrefix, chalk.green('Generating RunOptions type definition and JSON schema...'))
+
+  // Generate TypeScript
   await fs.writeFile('src/types/RunOptions.ts', generateRunOptions(cliOptions))
-  await fs.writeFile('src/types/RunOptions.json', await generateRunOptionsJsonSchema())
-  await spawn('prettier', ['-w', 'src/types/RunOptions.json'])
-})()
+
+  // Generate JSON Schema
+  const schema = generateRunOptionsJsonSchema()
+  const configPath = path.join(process.cwd(), 'package.json')
+  const prettierConfig = await prettier.resolveConfig(configPath)
+  const formattedSchema = await prettier.format(schema, {
+    ...prettierConfig,
+    parser: 'json',
+  })
+  await fs.writeFile('src/types/RunOptions.json', formattedSchema)
+
+  // Update README (parallel with last write for speed)
+  console.log(logPrefix, chalk.green('Updating README.md...'))
+  const readmePromise = injectReadme().then(readme => fs.writeFile('README.md', readme))
+
+  await Promise.all([readmePromise, fs.writeFile('src/types/RunOptions.json', formattedSchema)])
+
+  console.log(logPrefix, chalk.green('Done!\n'))
+}
+
+const isDirectRun = import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
+
+if (isDirectRun) {
+  buildOptions().catch(err => {
+    console.error(err?.stack || err)
+    process.exit(1)
+  })
+}

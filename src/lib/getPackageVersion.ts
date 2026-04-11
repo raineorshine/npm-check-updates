@@ -1,4 +1,4 @@
-import { PackageFile } from '../types/PackageFile'
+import { type PackageFile } from '../types/PackageFile'
 import getPackageJson from './getPackageJson'
 
 /**

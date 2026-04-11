@@ -1,12 +1,14 @@
 import fs from 'node:fs/promises'
 import os from 'node:os'
-import path from 'node:path'
+import path, { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
 import parseJson from '../../../src/lib/utils/parseJson'
 import chaiSetup from '../../helpers/chaiSetup'
 import removeDir from '../../helpers/removeDir'
 
 chaiSetup()
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../../../build/cli.js')
 

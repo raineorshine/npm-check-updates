@@ -1,5 +1,5 @@
-import { Index } from '../types/IndexType'
-import { PackageManager } from '../types/PackageManager'
+import { type Index } from '../types/IndexType'
+import { type PackageManager } from '../types/PackageManager'
 import * as bun from './bun'
 import * as gitTags from './gitTags'
 import * as npm from './npm'

@@ -1,6 +1,6 @@
 import { print, printJson, printSorted, printUpgrades } from '../lib/logging'
-import { Index } from '../types/IndexType'
-import { Options } from '../types/Options'
+import { type Index } from '../types/IndexType'
+import { type Options } from '../types/Options'
 import chalk from './chalk'
 import getInstalledPackages from './getInstalledPackages'
 import { keyValueBy } from './keyValueBy'
