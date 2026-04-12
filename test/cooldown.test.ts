@@ -265,6 +265,9 @@ describe('cooldown', () => {
       }),
     )
 
+    // Stub findNpmConfig to return null so user's .npmrc min-release-age does not interfere
+    const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns(null)
+
     // When: running ncu without cooldown
     const result = await ncu({ packageData })
 
@@ -272,6 +275,7 @@ describe('cooldown', () => {
     expect(result).to.have.property('test-package', '1.2.0')
 
     stub.restore()
+    findNpmConfigStub.restore()
   })
 
   it('upgrades package when cooldown is set to 0 (no cooldown)', async () => {
@@ -993,6 +997,9 @@ describe('cooldown', () => {
         }),
       )
 
+      // Stub findNpmConfig to return null so user's .npmrc min-release-age does not interfere
+      const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns(null)
+
       // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with minimumReleaseAge: 1440 minutes
       const pnpmWorkspaceStub = Sinon.stub(pnpmModule, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
         minimumReleaseAge: 1440,
@@ -1006,6 +1013,7 @@ describe('cooldown', () => {
       expect(result).to.not.have.property('test-package')
 
       stub.restore()
+      findNpmConfigStub.restore()
       pnpmWorkspaceStub.restore()
     })
 
@@ -1031,6 +1039,9 @@ describe('cooldown', () => {
         }),
       })
 
+      // Stub findNpmConfig to return null so user's .npmrc min-release-age does not interfere
+      const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns(null)
+
       // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with 7 days cooldown and @myorg/* excluded
       const pnpmWorkspaceStub = Sinon.stub(pnpmModule, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
         minimumReleaseAge: 10080, // 7 days in minutes
@@ -1045,6 +1056,7 @@ describe('cooldown', () => {
       expect(result).to.have.property('@myorg/pkg', '2.0.0')
 
       stub.restore()
+      findNpmConfigStub.restore()
       pnpmWorkspaceStub.restore()
     })
 
@@ -1144,6 +1156,9 @@ describe('cooldown', () => {
         }),
       )
 
+      // Stub findNpmConfig to return null so user's .npmrc min-release-age does not interfere
+      const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns(null)
+
       // Stub getYarnMinimalAgeGate to return a config with npmMinimalAgeGate: 86400 seconds (1 day)
       const yarnAgeGateStub = Sinon.stub(yarnModule, 'getYarnMinimalAgeGate').resolves({
         npmMinimalAgeGate: 86400,
@@ -1157,6 +1172,7 @@ describe('cooldown', () => {
       expect(result).to.not.have.property('test-package')
 
       stub.restore()
+      findNpmConfigStub.restore()
       yarnAgeGateStub.restore()
     })
 
@@ -1180,6 +1196,9 @@ describe('cooldown', () => {
         }),
       )
 
+      // Stub findNpmConfig to return null so user's .npmrc min-release-age does not interfere
+      const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns(null)
+
       const yarnAgeGateStub = Sinon.stub(yarnModule, 'getYarnMinimalAgeGate').resolves({
         npmMinimalAgeGate: 86400,
         npmPreapprovedPackages: [],
@@ -1192,6 +1211,7 @@ describe('cooldown', () => {
       expect(result).to.have.property('test-package', '1.1.0')
 
       stub.restore()
+      findNpmConfigStub.restore()
       yarnAgeGateStub.restore()
     })
 
@@ -1217,6 +1237,9 @@ describe('cooldown', () => {
         }),
       })
 
+      // Stub findNpmConfig to return null so user's .npmrc min-release-age does not interfere
+      const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns(null)
+
       // Stub getYarnMinimalAgeGate to return a 7-day cooldown with @myorg/pkg pre-approved
       const yarnAgeGateStub = Sinon.stub(yarnModule, 'getYarnMinimalAgeGate').resolves({
         npmMinimalAgeGate: 604800,
@@ -1231,6 +1254,7 @@ describe('cooldown', () => {
       expect(result).to.have.property('@myorg/pkg', '2.0.0')
 
       stub.restore()
+      findNpmConfigStub.restore()
       yarnAgeGateStub.restore()
     })
 

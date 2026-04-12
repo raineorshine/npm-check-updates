@@ -226,7 +226,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
             : null
       if (days != null && !isNaN(days)) {
         options.cooldown = days
-        print(options, `Using npm config min-release-age: ${days} days`, 'verbose')
+        print(options, `Using min-release-age from .npmrc: ${days} day${days !== 1 ? 's' : ''}`)
       }
     } else if (packageManager === 'pnpm') {
       // Automatically apply pnpm's minimumReleaseAge from pnpm-workspace.yaml as cooldown if cooldown is not explicitly set.
@@ -241,16 +241,11 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
           options.cooldown = (packageName: string) => (matchers.some(m => m(packageName)) ? null : days)
           print(
             options,
-            `Using pnpm workspace minimumReleaseAge: ${minimumReleaseAge} minutes (${days} days) with ${minimumReleaseAgeExclude.length} excluded pattern(s)`,
-            'verbose',
+            `Using minimumReleaseAge from pnpm-workspace.yaml: ${days} day${days !== 1 ? 's' : ''} (${minimumReleaseAgeExclude.length} excluded pattern${minimumReleaseAgeExclude.length !== 1 ? 's' : ''})`,
           )
         } else {
           options.cooldown = days
-          print(
-            options,
-            `Using pnpm workspace minimumReleaseAge: ${minimumReleaseAge} minutes (${days} days)`,
-            'verbose',
-          )
+          print(options, `Using minimumReleaseAge from pnpm-workspace.yaml: ${days} day${days !== 1 ? 's' : ''}`)
         }
       }
     } else if (packageManager === 'yarn') {
@@ -267,12 +262,11 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
           options.cooldown = (packageName: string) => (matchers.some(m => m(packageName)) ? null : days)
           print(
             options,
-            `Using yarn config npmMinimalAgeGate: ${npmMinimalAgeGate} seconds (${days} days) with ${npmPreapprovedPackages.length} pre-approved package(s)`,
-            'verbose',
+            `Using npmMinimalAgeGate from .yarnrc.yml: ${days} day${days !== 1 ? 's' : ''} (${npmPreapprovedPackages.length} pre-approved package${npmPreapprovedPackages.length !== 1 ? 's' : ''})`,
           )
         } else {
           options.cooldown = days
-          print(options, `Using yarn config npmMinimalAgeGate: ${npmMinimalAgeGate} seconds (${days} days)`, 'verbose')
+          print(options, `Using npmMinimalAgeGate from .yarnrc.yml: ${days} day${days !== 1 ? 's' : ''}`)
         }
       }
     }
