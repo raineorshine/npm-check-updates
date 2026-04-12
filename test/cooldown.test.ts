@@ -265,7 +265,6 @@ describe('cooldown', () => {
       }),
     )
 
-    // Stub findNpmConfig to return null so user's .npmrc min-release-age does not interfere
     const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns(null)
 
     // When: running ncu without cooldown
@@ -997,7 +996,7 @@ describe('cooldown', () => {
         }),
       )
 
-      // Stub findNpmConfig to return null so user's .npmrc min-release-age does not interfere
+      // Prevent user's .npmrc min-release-age from taking precedence over pnpm/yarn config in tests
       const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns(null)
 
       // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with minimumReleaseAge: 1440 minutes
@@ -1039,7 +1038,6 @@ describe('cooldown', () => {
         }),
       })
 
-      // Stub findNpmConfig to return null so user's .npmrc min-release-age does not interfere
       const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns(null)
 
       // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with 7 days cooldown and @myorg/* excluded
@@ -1156,7 +1154,6 @@ describe('cooldown', () => {
         }),
       )
 
-      // Stub findNpmConfig to return null so user's .npmrc min-release-age does not interfere
       const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns(null)
 
       // Stub getYarnMinimalAgeGate to return a config with npmMinimalAgeGate: 86400 seconds (1 day)
@@ -1196,7 +1193,6 @@ describe('cooldown', () => {
         }),
       )
 
-      // Stub findNpmConfig to return null so user's .npmrc min-release-age does not interfere
       const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns(null)
 
       const yarnAgeGateStub = Sinon.stub(yarnModule, 'getYarnMinimalAgeGate').resolves({
@@ -1237,7 +1233,6 @@ describe('cooldown', () => {
         }),
       })
 
-      // Stub findNpmConfig to return null so user's .npmrc min-release-age does not interfere
       const findNpmConfigStub = Sinon.stub(npmModule, 'findNpmConfig').returns(null)
 
       // Stub getYarnMinimalAgeGate to return a 7-day cooldown with @myorg/pkg pre-approved
