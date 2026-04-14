@@ -51,6 +51,9 @@ jobs:
       - name: Unit Tests
         run: npm run test:unit
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
       - name: Bun Tests
         run: npm run test:bun
 

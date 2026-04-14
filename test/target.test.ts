@@ -1,8 +1,8 @@
 import ncu from '../src/'
-import { FilterFunction } from '../src/types/FilterFunction'
-import { Index } from '../src/types/IndexType'
-import { TargetFunction } from '../src/types/TargetFunction'
-import { Version } from '../src/types/Version'
+import { type FilterFunction } from '../src/types/FilterFunction'
+import { type Index } from '../src/types/IndexType'
+import { type TargetFunction } from '../src/types/TargetFunction'
+import { type Version } from '../src/types/Version'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 

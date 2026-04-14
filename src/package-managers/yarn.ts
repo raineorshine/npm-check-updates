@@ -2,7 +2,7 @@ import memoize from 'fast-memoize'
 import fs from 'fs/promises'
 import yaml from 'js-yaml'
 import jsonlines from 'jsonlines'
-import curry from 'lodash/curry'
+import { curry } from 'lodash-es'
 import os from 'os'
 import path from 'path'
 import exists from '../lib/exists'
@@ -10,15 +10,15 @@ import findLockfile from '../lib/findLockfile'
 import { keyValueBy } from '../lib/keyValueBy'
 import { print } from '../lib/logging'
 import spawnCommand from '../lib/spawnCommand'
-import { GetVersion } from '../types/GetVersion'
-import { Index } from '../types/IndexType'
-import { NpmConfig } from '../types/NpmConfig'
-import { NpmOptions } from '../types/NpmOptions'
-import { Options } from '../types/Options'
-import { SpawnOptions } from '../types/SpawnOptions'
-import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
-import { Version } from '../types/Version'
-import { VersionSpec } from '../types/VersionSpec'
+import { type GetVersion } from '../types/GetVersion'
+import { type Index } from '../types/IndexType'
+import { type NpmConfig } from '../types/NpmConfig'
+import { type NpmOptions } from '../types/NpmOptions'
+import { type Options } from '../types/Options'
+import { type SpawnOptions } from '../types/SpawnOptions'
+import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
+import { type Version } from '../types/Version'
+import { type VersionSpec } from '../types/VersionSpec'
 import * as npm from './npm'
 
 interface ParsedDep {
@@ -150,7 +150,7 @@ const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> =
 })
 
 /** Reads npmMinimalAgeGate settings from .yarnrc.yml if present. Checks local config first, then user config. */
-export const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMinimalAgeGate | null> => {
+const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMinimalAgeGate | null> => {
   const yarnrcLocalPath = await getPathToLookForYarnrc(options)
   const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
 
@@ -329,7 +329,7 @@ export async function defaultPrefix(options: Options): Promise<string | null> {
 export const list = async (options: Options = {}, spawnOptions?: SpawnOptions): Promise<Index<string | undefined>> => {
   const jsonLines: string = await spawnYarn(
     'list',
-    options as Index<string>,
+    options as NpmOptions,
     {},
     {
       ...(options.cwd ? { cwd: options.cwd } : {}),
@@ -444,3 +444,7 @@ export const packageAuthorChanged = async (
   npm.packageAuthorChanged(packageName, currentVersion, upgradedVersion, options, await npmConfigFromYarn(options))
 
 export default spawnYarn
+
+export const yarnApi = {
+  getYarnMinimalAgeGate,
+}

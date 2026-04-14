@@ -1,5 +1,5 @@
-import { Index } from './IndexType'
-import { Version } from './Version'
+import { type Index } from './IndexType'
+import { type Version } from './Version'
 
 /** A packument result object from npm-registry-fetch. */
 export interface Packument {

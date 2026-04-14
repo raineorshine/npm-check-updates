@@ -2,6 +2,152 @@
 
 This file only documents **major version** releases. For smaller releases, you're stuck reading the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
 
+## [21.0.0] - 2026-04-14
+
+### ⚠️ Breaking Changes
+
+This is a **major breaking change** with significant architectural updates.
+
+#### ESM Migration & Module System
+
+- **Pure ESM:** Converted to pure ESM with dual-build support (ESM/CJS) via Vite 8.
+- **Import Syntax:** Programmatic usage now requires named imports or namespace imports.
+  - **Old:** `import ncu from 'npm-check-updates'`
+  - **New:** `import * as ncu from 'npm-check-updates'` or `import { run } from 'npm-check-updates'`
+- **Node.js Requirements:** Now requires `^20.19.0 || ^22.12.0 || >=24.0.0`. This is required for native `require(esm)` support and the Rolldown engine.
+- **npm Requirements:** Minimum version increased to `>=10.0.0`.
+
+#### Configuration Files (`.ncurc.js`)
+
+- Files named `.ncurc.js` that use `module.exports` will now fail in projects that are not `"type": "module"`.
+- **Fix:** Rename these files to `.ncurc.cjs` or convert them to use `export default`.
+
+#### Dependency Updates (Pure ESM versions)
+
+| Package            | Old Version | New Version |
+| :----------------- | :---------- | :---------- |
+| `camelcase`        | `^6.3.0`    | `^9.0.0`    |
+| `chai`             | `^4.3.10`   | `^6.2.2`    |
+| `chai-as-promised` | `^7.1.2`    | `^8.0.2`    |
+| `find-up`          | `5.0.0`     | `8.0.0`     |
+| `p-map`            | `^4.0.0`    | `^7.0.4`    |
+| `untildify`        | `^4.0.0`    | `^6.0.0`    |
+
+#### Tooling & Build Changes
+
+- **Vite 8 Upgrade:** Migrated to Vite 8 with the new Rust-based **Rolldown** bundler (10-30x faster builds).
+- **TypeScript 6.0:** Adopted latest type-system features and performance improvements.
+- **Strip ANSI:** Replaced `strip-ansi` with Node.js built-in `util.stripVTControlCharacters`.
+- **Test Runner:** Replaced `vite-node` with `tsx` for TypeScript support in ESM context.
+
+---
+
+### Migration Guide
+
+If you are upgrading to v21 from earlier versions:
+
+#### 1. Environment Check
+
+- Ensure you meet the new Node.js requirement: `^20.19.0 || ^22.12.0 || >=24.0.0`.
+- Update npm to at least `10.0.0`.
+
+#### 2. Update Configuration Files
+
+If you have a `.ncurc.js` file:
+
+- **Option A:** Rename it to `.ncurc.cjs`.
+- **Option B:** Convert it to ESM:
+
+  ```js
+  import { defineConfig } from 'npm-check-updates'
+
+  export default defineConfig({
+    upgrade: true,
+    filter: name => name.startsWith('@myorg/'),
+  })
+  ```
+
+#### 3. Update Programmatic Usage
+
+If you import `npm-check-updates` in your scripts:
+
+- **ESM:** Change `import ncu from ...` to `import * as ncu from 'npm-check-updates'`.
+- **CommonJS:** Ensure you are destructuring the named exports or using the full object:
+
+```js
+const ncu = require('npm-check-updates')
+// Use ncu.run(...)
+```
+
+---
+
+### Testing
+
+Tests now use `tsx` for module loading. When running tests manually:
+
+```sh
+mocha --node-option import=tsx 'test/**/*.test.ts'
+```
+
+Or use the npm script:
+
+```sh
+npm test
+```
+
+### Related Issues & PRs
+
+[PR 1649](https://github.com/raineorshine/npm-check-updates/pull/1649)
+
+---
+
+## [20.0.0] - 2026-03-31
+
+### Auto Cooldown
+
+The cooldown option is now automatically applied from the respective package manager's config:
+
+- **npm** - `min-release-age` (#1632)
+- **yarn** - `npmMinimalAgeGate` (excluding `npmPreapprovedPackages`) (#1643)
+- **pnpm** - `minimumReleaseAge` (excluding `minimumReleaseAgeExclude`) (#1639)
+
+Why is this a breaking change?
+
+- If you use any of the above configs, npm-check-updates will automatically exclude releases that do not exceed the specified minimum age as described in https://github.com/raineorshine/npm-check-updates#cooldown.
+- Otherwise, you don't need to do anything.
+
+### Other changes
+
+- Bump strip-ansi from 7.1.2 to 7.2.0 by @dependabot[bot] in https://github.com/raineorshine/npm-check-updates/pull/1620
+- Bump lodash and @types/lodash by @dependabot[bot] in https://github.com/raineorshine/npm-check-updates/pull/1615
+- Bump @typescript-eslint/eslint-plugin from 8.44.1 to 8.57.2 by @dependabot[bot] in https://github.com/raineorshine/npm-check-updates/pull/1619
+- Bump hosted-git-info from 9.0.0 to 9.0.2 by @dependabot[bot] in https://github.com/raineorshine/npm-check-updates/pull/1622
+- Bump glob and markdownlint-cli by @dependabot[bot] in https://github.com/raineorshine/npm-check-updates/pull/1625
+- update dependencies; fix vulnerabilities by @onemen in https://github.com/raineorshine/npm-check-updates/pull/1630
+- Potential fix for code scanning alert no. 13: Incomplete string escaping or encoding by @raineorshine in https://github.com/raineorshine/npm-check-updates/pull/1640
+
+## #New Contributors
+
+- @onemen made their first contribution in https://github.com/raineorshine/npm-check-updates/pull/1630
+- @Copilot made their first contribution in https://github.com/raineorshine/npm-check-updates/pull/1632
+
+**Full Changelog**: https://github.com/raineorshine/npm-check-updates/compare/v19.6.6...v20.0.0
+
+---
+
+## [19.0.0] - 2025-09-28
+
+### Breaking
+
+- node `>= 20` required
+- `--workspaces` (plural) short option `-ws` changed to `-w`
+  - Better compatibility with commander [v13](https://github.com/tj/commander.js/releases/tag/v13.0.0)
+  - Short option should always be a single character for consistency
+  - **Replaces the short option for `--workspace` (singular)**
+  - **`--workspace` (singular) no longer has a short option.**
+
+---
+
 ## [18.0.0] - 2025-04-21
 
 ### Breaking

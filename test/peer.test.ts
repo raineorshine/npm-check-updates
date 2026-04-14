@@ -1,10 +1,12 @@
-import path from 'path'
+import path, { dirname } from 'path'
+import { fileURLToPath } from 'url'
 import ncu from '../src/'
-import { Packument } from '../src/types/Packument'
+import { type Packument } from '../src/types/Packument'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 describe('peer dependencies', function () {
   it('peer dependencies are ignored by default', async () => {

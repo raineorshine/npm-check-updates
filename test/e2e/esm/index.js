@@ -1,6 +1,6 @@
 /** NOTE: This script is copied into a temp directory by the e2e test and dependencies are installed from the local verdaccio registry. */
 import assert from 'assert'
-import ncu from 'npm-check-updates'
+import * as ncu from 'npm-check-updates'
 
 const registry = process.env.REGISTRY || 'http://localhost:4873'
 

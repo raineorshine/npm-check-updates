@@ -1,4 +1,4 @@
-import { Index } from './IndexType'
+import { type Index } from './IndexType'
 
 export interface DependencyGroup {
   heading: string

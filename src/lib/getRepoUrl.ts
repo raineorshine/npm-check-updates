@@ -1,7 +1,7 @@
 import hostedGitInfo from 'hosted-git-info'
 import { URL } from 'url'
-import { PackageFile } from '../types/PackageFile'
-import { PackageFileRepository } from '../types/PackageFileRepository'
+import { type PackageFile } from '../types/PackageFile'
+import { type PackageFileRepository } from '../types/PackageFileRepository'
 import getPackageJson from './getPackageJson'
 
 /** Gets the repo url of an installed package. */

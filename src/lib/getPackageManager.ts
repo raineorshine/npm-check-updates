@@ -1,7 +1,7 @@
 import packageManagers from '../package-managers'
-import { Maybe } from '../types/Maybe'
-import { Options } from '../types/Options'
-import { PackageManager } from '../types/PackageManager'
+import { type Maybe } from '../types/Maybe'
+import { type Options } from '../types/Options'
+import { type PackageManager } from '../types/PackageManager'
 import programError from './programError'
 
 /**

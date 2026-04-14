@@ -2,6 +2,9 @@
 // eslint doesn't like .to.be.false syntax
 import { expect } from 'chai'
 import fs from 'fs/promises'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
@@ -11,13 +14,13 @@ import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 
 describe('install', () => {
   describe('non-interactive', () => {
     it('print install hint without --install', async () => {
-      const { default: stripAnsi } = await import('strip-ansi')
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -42,7 +45,6 @@ describe('install', () => {
     })
 
     it('install packages and do not print install hint with --install always', async () => {
-      const { default: stripAnsi } = await import('strip-ansi')
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',
@@ -66,7 +68,6 @@ describe('install', () => {
     })
 
     it('do not print install hint with --install never', async () => {
-      const { default: stripAnsi } = await import('strip-ansi')
       const pkgData = {
         dependencies: {
           'ncu-test-v2': '1.0.0',

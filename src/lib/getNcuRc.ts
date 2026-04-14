@@ -2,8 +2,9 @@ import os from 'os'
 import path from 'path'
 import { rcFile } from 'rc-config-loader'
 import { cliOptionsMap } from '../cli-options'
-import { Options } from '../types/Options'
-import { RcOptions } from '../types/RcOptions'
+import { type Options } from '../types/Options'
+import { type RcOptions } from '../types/RcOptions'
+import { getChalk } from './chalk'
 import programError from './programError'
 
 /** Loads the .ncurc config file. */
@@ -21,8 +22,7 @@ async function getNcuRc({
   packageFile?: string
   options: Options
 }) {
-  const { default: chalkDefault, Chalk } = await import('chalk')
-  const chalk = options?.color ? new Chalk({ level: 1 }) : chalkDefault
+  const chalk = getChalk(options?.color)
 
   const rawResult = rcFile<RcOptions>('ncurc', {
     configFileName: configFileName || '.ncurc',

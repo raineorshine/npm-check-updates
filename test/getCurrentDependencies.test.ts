@@ -1,6 +1,6 @@
-import { SemVer } from 'semver-utils'
+import { type SemVer } from 'semver-utils'
 import getCurrentDependencies from '../src/lib/getCurrentDependencies'
-import { PackageFile } from '../src/types/PackageFile'
+import { type PackageFile } from '../src/types/PackageFile'
 import chaiSetup from './helpers/chaiSetup'
 
 chaiSetup()

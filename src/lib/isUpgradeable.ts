@@ -1,7 +1,7 @@
 import * as semver from 'semver'
 import semverutils from 'semver-utils'
-import { Version } from '../types/Version'
-import { VersionSpec } from '../types/VersionSpec'
+import { type Version } from '../types/Version'
+import { type VersionSpec } from '../types/VersionSpec'
 import { fixPseudoVersion, isComparable, isWildCard, stringify } from './version-util'
 
 /**

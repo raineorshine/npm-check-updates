@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
-import { Options } from '../types/Options'
+import { type Options } from '../types/Options'
 
 const lockFileNames = [
   'package-lock.json',

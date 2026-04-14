@@ -1,17 +1,18 @@
 import { dequal } from 'dequal'
-import propertyOf from 'lodash/propertyOf'
+import { propertyOf } from 'lodash-es'
 import picomatch from 'picomatch'
 import cliOptions from '../cli-options'
 import { print } from '../lib/logging'
 import packageManagers from '../package-managers'
-import { findNpmConfig } from '../package-managers/npm'
-import { getPnpmWorkspaceMinimumReleaseAge } from '../package-managers/pnpm'
-import { getYarnMinimalAgeGate } from '../package-managers/yarn'
-import { FilterPattern } from '../types/FilterPattern'
-import { Options } from '../types/Options'
-import { RunOptions } from '../types/RunOptions'
-import { Target } from '../types/Target'
+import { npmApi } from '../package-managers/npm'
+import { pnpmApi } from '../package-managers/pnpm'
+import { yarnApi } from '../package-managers/yarn'
+import { type FilterPattern } from '../types/FilterPattern'
+import { type Options } from '../types/Options'
+import { type RunOptions } from '../types/RunOptions'
+import { type Target } from '../types/Target'
 import cacher from './cache'
+import { getChalk } from './chalk'
 import determinePackageManager from './determinePackageManager'
 import exists from './exists'
 import keyValueBy from './keyValueBy'
@@ -48,8 +49,7 @@ function isValidUrl(url: string): boolean {
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
 async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Promise<Options> {
-  const { default: chalkDefault, Chalk } = await import('chalk')
-  const chalk = runOptions.color ? new Chalk({ level: 1 }) : chalkDefault
+  const chalk = getChalk(runOptions.color)
 
   // if not executed on the command-line (i.e. executed as a node module), set the defaults
   if (!cli) {
@@ -215,7 +215,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     }
   } else {
     // Automatically apply npm's min-release-age config as cooldown if cooldown is not explicitly set.
-    const npmConfigCooldown = findNpmConfig()
+    const npmConfigCooldown = npmApi.findNpmConfig()
     const minReleaseAge = npmConfigCooldown?.minReleaseAge
     if (minReleaseAge != null) {
       const days =
@@ -226,11 +226,11 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
             : null
       if (days != null && !isNaN(days)) {
         options.cooldown = days
-        print(options, `Using npm config min-release-age: ${days} days`, 'verbose')
+        print(options, `Using min-release-age from .npmrc: ${days} day${days !== 1 ? 's' : ''}`)
       }
     } else if (packageManager === 'pnpm') {
       // Automatically apply pnpm's minimumReleaseAge from pnpm-workspace.yaml as cooldown if cooldown is not explicitly set.
-      const pnpmWorkspaceConfig = await getPnpmWorkspaceMinimumReleaseAge()
+      const pnpmWorkspaceConfig = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
       if (pnpmWorkspaceConfig != null) {
         const { minimumReleaseAge, minimumReleaseAgeExclude } = pnpmWorkspaceConfig
         // pnpm's minimumReleaseAge is in minutes; convert to days
@@ -241,21 +241,16 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
           options.cooldown = (packageName: string) => (matchers.some(m => m(packageName)) ? null : days)
           print(
             options,
-            `Using pnpm workspace minimumReleaseAge: ${minimumReleaseAge} minutes (${days} days) with ${minimumReleaseAgeExclude.length} excluded pattern(s)`,
-            'verbose',
+            `Using minimumReleaseAge from pnpm-workspace.yaml: ${days} day${days !== 1 ? 's' : ''} (${minimumReleaseAgeExclude.length} excluded pattern${minimumReleaseAgeExclude.length !== 1 ? 's' : ''})`,
           )
         } else {
           options.cooldown = days
-          print(
-            options,
-            `Using pnpm workspace minimumReleaseAge: ${minimumReleaseAge} minutes (${days} days)`,
-            'verbose',
-          )
+          print(options, `Using minimumReleaseAge from pnpm-workspace.yaml: ${days} day${days !== 1 ? 's' : ''}`)
         }
       }
     } else if (packageManager === 'yarn') {
       // Automatically apply yarn's npmMinimalAgeGate from .yarnrc.yml as cooldown if cooldown is not explicitly set.
-      const yarnAgeGateConfig = await getYarnMinimalAgeGate(options)
+      const yarnAgeGateConfig = await yarnApi.getYarnMinimalAgeGate(options)
       if (yarnAgeGateConfig != null) {
         const { npmMinimalAgeGate, npmPreapprovedPackages } = yarnAgeGateConfig
         // yarn's npmMinimalAgeGate is in seconds; convert to days
@@ -267,12 +262,11 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
           options.cooldown = (packageName: string) => (matchers.some(m => m(packageName)) ? null : days)
           print(
             options,
-            `Using yarn config npmMinimalAgeGate: ${npmMinimalAgeGate} seconds (${days} days) with ${npmPreapprovedPackages.length} pre-approved package(s)`,
-            'verbose',
+            `Using npmMinimalAgeGate from .yarnrc.yml: ${days} day${days !== 1 ? 's' : ''} (${npmPreapprovedPackages.length} pre-approved package${npmPreapprovedPackages.length !== 1 ? 's' : ''})`,
           )
         } else {
           options.cooldown = days
-          print(options, `Using yarn config npmMinimalAgeGate: ${npmMinimalAgeGate} seconds (${days} days)`, 'verbose')
+          print(options, `Using npmMinimalAgeGate from .yarnrc.yml: ${days} day${days !== 1 ? 's' : ''}`)
         }
       }
     }
