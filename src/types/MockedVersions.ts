@@ -1,7 +1,7 @@
-import { Index } from './IndexType'
-import { Options } from './Options'
-import { Packument } from './Packument'
-import { Version } from './Version'
+import { type Index } from './IndexType'
+import { type Options } from './Options'
+import { type Packument } from './Packument'
+import { type Version } from './Version'
 
 /** Parameter type for stubVersions. */
 export type MockedVersions =

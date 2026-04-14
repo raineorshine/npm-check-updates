@@ -1,5 +1,6 @@
 {
   "license": "MIT",
+  "type": "module",
   "dependencies": {
     "ncu-test-v2": "~1.0.0",
     "ncu-test-return-version": "~1.0.0"

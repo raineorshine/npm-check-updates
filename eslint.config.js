@@ -95,12 +95,14 @@ export default [
 
   // --- 6. TYPESCRIPT OVERRIDES ---
   {
-    files: ['**/*.ts'],
+    files: ['**/*.ts', '**/*.mts', '**/*.cts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
         ecmaVersion: 'latest',
         project: './tsconfig.json',
+        tsconfigRootDir: import.meta.dirname,
+        warnOnUnsupportedTypeScriptVersion: false,
       },
       globals: {
         ...globals.node,
@@ -117,6 +119,14 @@ export default [
 
       ...tsPlugin.configs['eslint-recommended'].rules,
       ...tsPlugin.configs.recommended.rules,
+
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          prefer: 'type-imports',
+          fixStyle: 'inline-type-imports',
+        },
+      ],
 
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',

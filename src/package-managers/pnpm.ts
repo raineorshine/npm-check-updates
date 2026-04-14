@@ -1,5 +1,5 @@
 import memoize from 'fast-memoize'
-import findUp from 'find-up'
+import { findUp } from 'find-up'
 import fs from 'fs/promises'
 import ini from 'ini'
 import path from 'path'
@@ -7,14 +7,14 @@ import { parse as parseYaml } from 'yaml'
 import keyValueBy from '../lib/keyValueBy'
 import { print } from '../lib/logging'
 import spawnCommand from '../lib/spawnCommand'
-import { GetVersion } from '../types/GetVersion'
-import { Index } from '../types/IndexType'
-import { NpmConfig } from '../types/NpmConfig'
-import { NpmOptions } from '../types/NpmOptions'
-import { Options } from '../types/Options'
-import { SpawnOptions } from '../types/SpawnOptions'
-import { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
-import { Version } from '../types/Version'
+import { type GetVersion } from '../types/GetVersion'
+import { type Index } from '../types/IndexType'
+import { type NpmConfig } from '../types/NpmConfig'
+import { type NpmOptions } from '../types/NpmOptions'
+import { type Options } from '../types/Options'
+import { type SpawnOptions } from '../types/SpawnOptions'
+import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
+import { type Version } from '../types/Version'
 import * as npm from './npm'
 
 // return type of pnpm ls --json
@@ -61,7 +61,7 @@ export interface PnpmWorkspaceMinimumReleaseAge {
 }
 
 /** Reads minimumReleaseAge settings from pnpm-workspace.yaml if present. */
-export const getPnpmWorkspaceMinimumReleaseAge = memoize(async (): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
+const getPnpmWorkspaceMinimumReleaseAge = memoize(async (): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
   const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
   if (!pnpmWorkspacePath) return null
 
@@ -146,3 +146,7 @@ async function spawnPnpm(
 export { defaultPrefix, getPeerDependencies, getEngines, packageAuthorChanged } from './npm'
 
 export default spawnPnpm
+
+export const pnpmApi = {
+  getPnpmWorkspaceMinimumReleaseAge,
+}

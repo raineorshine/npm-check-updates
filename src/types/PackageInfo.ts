@@ -1,4 +1,4 @@
-import { PackageFile } from './PackageFile'
+import { type PackageFile } from './PackageFile'
 
 /** Describes package data plus it's filepath */
 export interface PackageInfo {

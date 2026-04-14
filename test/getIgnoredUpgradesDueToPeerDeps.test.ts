@@ -1,5 +1,5 @@
 import getIgnoredUpgradesDueToPeerDeps from '../src/lib/getIgnoredUpgradesDueToPeerDeps'
-import { Packument } from '../src/types/Packument'
+import { type Packument } from '../src/types/Packument'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 

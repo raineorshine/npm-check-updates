@@ -1,6 +1,6 @@
 import ncu from '../src/'
-import { Index } from '../src/types/IndexType'
-import { VersionSpec } from '../src/types/VersionSpec'
+import { type Index } from '../src/types/IndexType'
+import { type VersionSpec } from '../src/types/VersionSpec'
 import chaiSetup from './helpers/chaiSetup'
 
 chaiSetup()

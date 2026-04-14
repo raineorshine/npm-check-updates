@@ -1,12 +1,14 @@
 import fs from 'fs/promises'
-import path from 'path'
+import path, { dirname } from 'path'
 import spawn from 'spawn-please'
+import { fileURLToPath } from 'url'
 import ncu from '../src'
-import { Index } from '../src/types/IndexType'
+import { type Index } from '../src/types/IndexType'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 

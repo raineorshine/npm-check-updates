@@ -2,6 +2,105 @@
 
 This file only documents **major version** releases. For smaller releases, you're stuck reading the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
 
+## [21.0.0] - 2026-04-09
+
+### ⚠️ Breaking Changes
+
+This is a **major breaking change** with significant architectural updates.
+
+#### ESM Migration & Module System
+
+- **Pure ESM:** Converted to pure ESM with dual-build support (ESM/CJS) via Vite 8.
+- **Import Syntax:** Programmatic usage now requires named imports or namespace imports.
+  - **Old:** `import ncu from 'npm-check-updates'`
+  - **New:** `import * as ncu from 'npm-check-updates'` or `import { run } from 'npm-check-updates'`
+- **Node.js Requirements:** Now requires `^20.19.0 || ^22.12.0 || >=24.0.0`. This is required for native `require(esm)` support and the Rolldown engine.
+- **npm Requirements:** Minimum version increased to `>=10.0.0`.
+
+#### Configuration Files (`.ncurc.js`)
+
+- Files named `.ncurc.js` that use `module.exports` will now fail in projects that are not `"type": "module"`.
+- **Fix:** Rename these files to `.ncurc.cjs` or convert them to use `export default`.
+
+#### Dependency Updates (Pure ESM versions)
+
+| Package            | Old Version | New Version |
+| :----------------- | :---------- | :---------- |
+| `camelcase`        | `^6.3.0`    | `^9.0.0`    |
+| `chai`             | `^4.3.10`   | `^6.2.2`    |
+| `chai-as-promised` | `^7.1.2`    | `^8.0.2`    |
+| `find-up`          | `5.0.0`     | `8.0.0`     |
+| `p-map`            | `^4.0.0`    | `^7.0.4`    |
+| `untildify`        | `^4.0.0`    | `^6.0.0`    |
+
+#### Tooling & Build Changes
+
+- **Vite 8 Upgrade:** Migrated to Vite 8 with the new Rust-based **Rolldown** bundler (10-30x faster builds).
+- **TypeScript 6.0:** Adopted latest type-system features and performance improvements.
+- **Strip ANSI:** Replaced `strip-ansi` with Node.js built-in `util.stripVTControlCharacters`.
+- **Test Runner:** Replaced `vite-node` with `tsx` for TypeScript support in ESM context.
+
+---
+
+### Migration Guide
+
+If you are upgrading to v21 from earlier versions:
+
+#### 1. Environment Check
+
+- Ensure you meet the new Node.js requirement: `^20.19.0 || ^22.12.0 || >=24.0.0`.
+- Update npm to at least `10.0.0`.
+
+#### 2. Update Configuration Files
+
+If you have a `.ncurc.js` file:
+
+- **Option A:** Rename it to `.ncurc.cjs`.
+- **Option B:** Convert it to ESM:
+
+  ```js
+  import { defineConfig } from 'npm-check-updates'
+
+  export default defineConfig({
+    upgrade: true,
+    filter: name => name.startsWith('@myorg/'),
+  })
+  ```
+
+#### 3. Update Programmatic Usage
+
+If you import `npm-check-updates` in your scripts:
+
+- **ESM:** Change `import ncu from ...` to `import * as ncu from 'npm-check-updates'`.
+- **CommonJS:** Ensure you are destructuring the named exports or using the full object:
+
+```js
+const ncu = require('npm-check-updates')
+// Use ncu.run(...)
+```
+
+---
+
+### Testing
+
+Tests now use `tsx` for module loading. When running tests manually:
+
+```sh
+mocha --node-option import=tsx 'test/**/*.test.ts'
+```
+
+Or use the npm script:
+
+```sh
+npm test
+```
+
+### Related Issues & PRs
+
+[PR 1649](https://github.com/raineorshine/npm-check-updates/pull/1649)
+
+---
+
 ## [18.0.0] - 2025-04-21
 
 ### Breaking

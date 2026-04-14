@@ -1,4 +1,4 @@
-import { Index } from '../types/IndexType'
+import { type Index } from '../types/IndexType'
 import { sortBy } from './sortBy'
 import { WILDCARDS } from './version-util'
 

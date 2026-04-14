@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
-import { Index } from '../types/IndexType'
-import { VersionSpec } from '../types/VersionSpec'
+import { type Index } from '../types/IndexType'
+import { type VersionSpec } from '../types/VersionSpec'
 
 /**
  * @returns String safe for use in `new RegExp()`

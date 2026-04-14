@@ -1,13 +1,17 @@
 import fs from 'fs/promises'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import { GroupFunction } from '../src/types/GroupFunction'
+import { type GroupFunction } from '../src/types/GroupFunction'
 import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 
@@ -28,8 +32,6 @@ async function groupTestScaffold(
     { spawn: true },
   )
 
-  // use dynamic import for ESM module
-  const { default: stripAnsi } = await import('strip-ansi')
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
   const pkgFile = path.join(tempDir, 'package.json')
   await fs.writeFile(

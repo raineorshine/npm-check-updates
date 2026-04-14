@@ -1,14 +1,18 @@
 import fs from 'fs/promises'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
 import spawn from 'spawn-please'
-import { Index } from '../src/types/IndexType'
-import { Version } from '../src/types/Version'
+import { type Index } from '../src/types/IndexType'
+import { type Version } from '../src/types/Version'
 import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 
@@ -222,7 +226,6 @@ describe('bin', async function () {
 
   it('ignore file: and link: protocols', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const { default: stripAnsi } = await import('strip-ansi')
     const dependencies = {
       editor: 'file:../editor',
       event: 'link:../link',
@@ -278,8 +281,6 @@ describe('bin', async function () {
 
   describe('embedded versions', () => {
     it('strip url from GitHub url in "to" output', async () => {
-      // use dynamic import for ESM module
-      const { default: stripAnsi } = await import('strip-ansi')
       const dependencies = {
         'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2.git#v1.0.0',
       }
@@ -291,8 +292,6 @@ describe('bin', async function () {
 
     it('strip prefix from npm alias in "to" output', async () => {
       const stub = stubVersions('99.9.9', { spawn: true })
-      // use dynamic import for ESM module
-      const { default: stripAnsi } = await import('strip-ansi')
       const dependencies = {
         request: 'npm:ncu-test-v2@1.0.0',
       }
