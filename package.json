@@ -72,12 +72,6 @@
       "eslint-plugin-promise": "$eslint-plugin-promise"
     },
     "@verdaccio/core": ">=8.0.0-next-8.33",
-    "ajv-draft-04": {
-      "ajv": ">=8.18.0"
-    },
-    "chai-as-promised": {
-      "chai": "$chai"
-    },
     "chai-string": {
       "chai": "$chai"
     },
