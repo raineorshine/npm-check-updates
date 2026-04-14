@@ -2,7 +2,7 @@
 
 This file only documents **major version** releases. For smaller releases, you're stuck reading the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
 
-## [21.0.0] - 2026-04-09
+## [21.0.0] - 2026-04-14
 
 ### ⚠️ Breaking Changes
 
@@ -98,6 +98,53 @@ npm test
 ### Related Issues & PRs
 
 [PR 1649](https://github.com/raineorshine/npm-check-updates/pull/1649)
+
+---
+
+## [20.0.0] - 2026-03-31
+
+### Auto Cooldown
+
+The cooldown option is now automatically applied from the respective package manager's config:
+
+- **npm** - `min-release-age` (#1632)
+- **yarn** - `npmMinimalAgeGate` (excluding `npmPreapprovedPackages`) (#1643)
+- **pnpm** - `minimumReleaseAge` (excluding `minimumReleaseAgeExclude`) (#1639)
+
+Why is this a breaking change?
+
+- If you use any of the above configs, npm-check-updates will automatically exclude releases that do not exceed the specified minimum age as described in https://github.com/raineorshine/npm-check-updates#cooldown.
+- Otherwise, you don't need to do anything.
+
+### Other changes
+
+- Bump strip-ansi from 7.1.2 to 7.2.0 by @dependabot[bot] in https://github.com/raineorshine/npm-check-updates/pull/1620
+- Bump lodash and @types/lodash by @dependabot[bot] in https://github.com/raineorshine/npm-check-updates/pull/1615
+- Bump @typescript-eslint/eslint-plugin from 8.44.1 to 8.57.2 by @dependabot[bot] in https://github.com/raineorshine/npm-check-updates/pull/1619
+- Bump hosted-git-info from 9.0.0 to 9.0.2 by @dependabot[bot] in https://github.com/raineorshine/npm-check-updates/pull/1622
+- Bump glob and markdownlint-cli by @dependabot[bot] in https://github.com/raineorshine/npm-check-updates/pull/1625
+- update dependencies; fix vulnerabilities by @onemen in https://github.com/raineorshine/npm-check-updates/pull/1630
+- Potential fix for code scanning alert no. 13: Incomplete string escaping or encoding by @raineorshine in https://github.com/raineorshine/npm-check-updates/pull/1640
+
+## #New Contributors
+
+- @onemen made their first contribution in https://github.com/raineorshine/npm-check-updates/pull/1630
+- @Copilot made their first contribution in https://github.com/raineorshine/npm-check-updates/pull/1632
+
+**Full Changelog**: https://github.com/raineorshine/npm-check-updates/compare/v19.6.6...v20.0.0
+
+---
+
+## [19.0.0] - 2025-09-28
+
+### Breaking
+
+- node `>= 20` required
+- `--workspaces` (plural) short option `-ws` changed to `-w`
+  - Better compatibility with commander [v13](https://github.com/tj/commander.js/releases/tag/v13.0.0)
+  - Short option should always be a single character for consistency
+  - **Replaces the short option for `--workspace` (singular)**
+  - **`--workspace` (singular) no longer has a short option.**
 
 ---
 
