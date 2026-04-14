@@ -1,5 +1,5 @@
+import memoize from 'fast-memoize'
 import fs from 'fs/promises'
-import memoize from 'memoize'
 import programError from '../lib/programError'
 import { type GetVersion } from '../types/GetVersion'
 import { type Options } from '../types/Options'
@@ -11,6 +11,9 @@ const isUrl = (s: string) => (s && s.startsWith('http://')) || s.startsWith('htt
 
 /**
  * Returns a registry object given a valid file path or url.
+ *
+ * @param path
+ * @returns a registry object
  */
 const readStaticRegistry = async (options: Options): Promise<StaticRegistry> => {
   const path = options.registry!
@@ -33,14 +36,7 @@ const readStaticRegistry = async (options: Options): Promise<StaticRegistry> => 
   return JSON.parse(content)
 }
 
-/**
- * Memoized version of readStaticRegistry.
- * Uses a selective cacheKey to ensure we only re-fetch if the
- * registry path/URL itself changes.
- */
-const registryMemoized = memoize(readStaticRegistry, {
-  cacheKey: ([options]) => options.registry,
-})
+const registryMemoized = memoize(readStaticRegistry)
 
 /**
  * Fetches the version in static registry.

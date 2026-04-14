@@ -1,12 +1,10 @@
+import memoize from 'fast-memoize'
 import fs from 'fs/promises'
 import yaml from 'js-yaml'
 import jsonlines from 'jsonlines'
 import { curry } from 'lodash-es'
-import ManyKeysMap from 'many-keys-map'
-import memoize from 'memoize'
 import os from 'os'
 import path from 'path'
-import { getCacheableOptions } from '../lib/cache'
 import exists from '../lib/exists'
 import findLockfile from '../lib/findLockfile'
 import { keyValueBy } from '../lib/keyValueBy'
@@ -107,112 +105,86 @@ export async function getPathToLookForYarnrc(
   return path.join(directoryPath, '.yarnrc.yml')
 }
 
-/**
- * If private registry auth is specified in npmScopes in .yarnrc.yml,
- * read them in and convert them to npm config variables.
- */
-const npmConfigFromYarn = memoize(
-  async (options: Options): Promise<NpmConfig> => {
-    const yarnrcLocalPath = await getPathToLookForYarnrc(options)
-    const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
+// If private registry auth is specified in npmScopes in .yarnrc.yml, read them in and convert them to npm config variables.
+// Define as a memoized function to efficiently call existsSync and readFileSync only once, and only if yarn is being used.
+// https://github.com/raineorshine/npm-check-updates/issues/1036
+const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> => {
+  const yarnrcLocalPath = await getPathToLookForYarnrc(options)
+  const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
+  const yarnrcLocalExists = typeof yarnrcLocalPath === 'string' && (await exists(yarnrcLocalPath))
+  const yarnrcUserExists = await exists(yarnrcUserPath)
+  const yarnrcLocal = yarnrcLocalExists ? await fs.readFile(yarnrcLocalPath, 'utf-8') : ''
+  const yarnrcUser = yarnrcUserExists ? await fs.readFile(yarnrcUserPath, 'utf-8') : ''
+  const yarnConfigLocal: YarnConfig = yaml.load(yarnrcLocal) as YarnConfig
+  const yarnConfigUser: YarnConfig = yaml.load(yarnrcUser) as YarnConfig
 
-    // Node 20+ tip: ensure 'exists' is a wrapper around fs.access or similar
-    const yarnrcLocalExists = typeof yarnrcLocalPath === 'string' && (await exists(yarnrcLocalPath))
-    const yarnrcUserExists = await exists(yarnrcUserPath)
+  let npmConfig: Index<string | boolean> = {
+    ...keyValueBy(yarnConfigUser?.npmScopes || {}, npmRegistryKeyValue),
+    ...keyValueBy(yarnConfigLocal?.npmScopes || {}, npmRegistryKeyValue),
+  }
 
-    const yarnrcLocal = yarnrcLocalExists ? await fs.readFile(yarnrcLocalPath, 'utf-8') : ''
-    const yarnrcUser = yarnrcUserExists ? await fs.readFile(yarnrcUserPath, 'utf-8') : ''
+  // npmAuthTokenKeyValue uses scoped npmRegistryServer, so must come after npmRegistryKeyValue
+  npmConfig = {
+    ...npmConfig,
+    ...keyValueBy(yarnConfigUser?.npmScopes || {}, npmAuthTokenKeyValue(npmConfig)),
+    ...keyValueBy(yarnConfigLocal?.npmScopes || {}, npmAuthTokenKeyValue(npmConfig)),
+  }
 
-    // Ensure 'js-yaml' (yaml) is imported using ESM patterns
-    const yarnConfigLocal = yaml.load(yarnrcLocal) as YarnConfig
-    const yarnConfigUser = yaml.load(yarnrcUser) as YarnConfig
+  // set auth token after npm registry, since auth token syntax uses registry
 
-    let npmConfig: Index<string | boolean> = {
-      ...keyValueBy(yarnConfigUser?.npmScopes || {}, npmRegistryKeyValue),
-      ...keyValueBy(yarnConfigLocal?.npmScopes || {}, npmRegistryKeyValue),
-    }
+  if (yarnrcLocalExists) {
+    print(options, `\nUsing local yarn config at ${yarnrcLocalPath}:`, 'verbose')
+    print(options, yarnConfigLocal, 'verbose')
+  }
+  if (yarnrcUserExists) {
+    print(options, `\nUsing user yarn config at ${yarnrcUserPath}:`, 'verbose')
+    print(options, yarnConfigLocal, 'verbose')
+  }
 
-    // npmAuthTokenKeyValue uses scoped npmRegistryServer, so must come after npmRegistryKeyValue
-    npmConfig = {
-      ...npmConfig,
-      ...keyValueBy(yarnConfigUser?.npmScopes || {}, npmAuthTokenKeyValue(npmConfig)),
-      ...keyValueBy(yarnConfigLocal?.npmScopes || {}, npmAuthTokenKeyValue(npmConfig)),
-    }
+  if (Object.keys(npmConfig)) {
+    print(options, '\nMerged yarn config in npm format:', 'verbose')
+    print(options, npmConfig, 'verbose')
+  }
 
-    if (yarnrcLocalExists) {
-      print(options, `\nUsing local yarn config at ${yarnrcLocalPath}:`, 'verbose')
-      print(options, yarnConfigLocal, 'verbose')
-    }
-
-    if (yarnrcUserExists) {
-      print(options, `\nUsing user yarn config at ${yarnrcUserPath}:`, 'verbose')
-      // Fixed: was printing yarnConfigLocal twice in the original snippet
-      print(options, yarnConfigUser, 'verbose')
-    }
-
-    if (Object.keys(npmConfig).length > 0) {
-      print(options, '\nMerged yarn config in npm format:', 'verbose')
-      print(options, npmConfig, 'verbose')
-    }
-
-    return npmConfig
-  },
-  {
-    /**
-     * We memoize based on all relevant options.
-     * This avoids re-parsing YAML files for every package in a workspace.
-     */
-    cacheKey: ([options]) => getCacheableOptions({ options }),
-    cache: new ManyKeysMap(),
-  },
-)
+  return npmConfig
+})
 
 /** Reads npmMinimalAgeGate settings from .yarnrc.yml if present. Checks local config first, then user config. */
-const getYarnMinimalAgeGate = memoize(
-  async (options: Options): Promise<YarnMinimalAgeGate | null> => {
-    const yarnrcLocalPath = await getPathToLookForYarnrc(options)
-    const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
+const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMinimalAgeGate | null> => {
+  const yarnrcLocalPath = await getPathToLookForYarnrc(options)
+  const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
 
-    for (const yarnrcPath of [yarnrcLocalPath, yarnrcUserPath]) {
-      if (!yarnrcPath) continue
-      if (!(await exists(yarnrcPath))) continue
+  for (const yarnrcPath of [yarnrcLocalPath, yarnrcUserPath]) {
+    if (!yarnrcPath) continue
+    if (!(await exists(yarnrcPath))) continue
 
-      let content: string
-      try {
-        content = await fs.readFile(yarnrcPath, 'utf-8')
-      } catch {
-        continue
-      }
-
-      let parsed: YarnConfig
-      try {
-        parsed = (yaml.load(content) as YarnConfig) ?? {}
-      } catch {
-        continue
-      }
-
-      const { npmMinimalAgeGate } = parsed
-      if (typeof npmMinimalAgeGate !== 'number' || isNaN(npmMinimalAgeGate) || npmMinimalAgeGate <= 0) continue
-
-      const rawPreapproved = parsed.npmPreapprovedPackages
-      const npmPreapprovedPackages: string[] = Array.isArray(rawPreapproved)
-        ? rawPreapproved.filter((x): x is string => typeof x === 'string')
-        : []
-
-      return { npmMinimalAgeGate, npmPreapprovedPackages }
+    let content: string
+    try {
+      content = await fs.readFile(yarnrcPath, 'utf-8')
+    } catch {
+      continue
     }
 
-    return null
-  },
-  {
-    /**
-     * We memoize based on all relevant options.
-     * This avoids re-reading .yarnrc.yml for every package in a workspace.
-     */
-    cacheKey: ([options]) => getCacheableOptions({ options }),
-    cache: new ManyKeysMap(),
-  },
-)
+    let parsed: YarnConfig
+    try {
+      parsed = (yaml.load(content) as YarnConfig) ?? {}
+    } catch {
+      continue
+    }
+
+    const { npmMinimalAgeGate } = parsed
+    if (typeof npmMinimalAgeGate !== 'number' || isNaN(npmMinimalAgeGate) || npmMinimalAgeGate <= 0) continue
+
+    const rawPreapproved = parsed.npmPreapprovedPackages
+    const npmPreapprovedPackages: string[] = Array.isArray(rawPreapproved)
+      ? rawPreapproved.filter((x): x is string => typeof x === 'string')
+      : []
+
+    return { npmMinimalAgeGate, npmPreapprovedPackages }
+  }
+
+  return null
+})
 
 /**
  * Parse JSON lines and throw an informative error on failure.

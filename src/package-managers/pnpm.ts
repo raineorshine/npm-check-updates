@@ -1,11 +1,9 @@
+import memoize from 'fast-memoize'
 import { findUp } from 'find-up'
 import fs from 'fs/promises'
 import ini from 'ini'
-import ManyKeysMap from 'many-keys-map'
-import memoize from 'memoize'
 import path from 'path'
 import { parse as parseYaml } from 'yaml'
-import { getCacheableOptions } from '../lib/cache'
 import keyValueBy from '../lib/keyValueBy'
 import { print } from '../lib/logging'
 import spawnCommand from '../lib/spawnCommand'
@@ -31,42 +29,28 @@ type PnpmList = {
 }[]
 
 /** Reads the npmrc config file from the pnpm-workspace.yaml directory. */
-const npmConfigFromPnpmWorkspace = memoize(
-  async (options: Options): Promise<NpmConfig> => {
-    // Ensure findUp and path are using ESM-compatible imports
-    const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
-    if (!pnpmWorkspacePath) return {}
+const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<NpmConfig> => {
+  const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
+  if (!pnpmWorkspacePath) return {}
 
-    const pnpmWorkspaceDir = path.dirname(pnpmWorkspacePath)
-    const pnpmWorkspaceConfigPath = path.join(pnpmWorkspaceDir, '.npmrc')
+  const pnpmWorkspaceDir = path.dirname(pnpmWorkspacePath)
+  const pnpmWorkspaceConfigPath = path.join(pnpmWorkspaceDir, '.npmrc')
 
-    let pnpmWorkspaceConfig
-    try {
-      // node:fs/promises is preferred in ESM for async reads
-      pnpmWorkspaceConfig = await fs.readFile(pnpmWorkspaceConfigPath, 'utf-8')
-    } catch (e) {
-      return {}
-    }
+  let pnpmWorkspaceConfig
+  try {
+    pnpmWorkspaceConfig = await fs.readFile(pnpmWorkspaceConfigPath, 'utf-8')
+  } catch (e) {
+    return {}
+  }
 
-    print(options, `\nUsing pnpm workspace config at ${pnpmWorkspaceConfigPath}:`, 'verbose')
+  print(options, `\nUsing pnpm workspace config at ${pnpmWorkspaceConfigPath}:`, 'verbose')
 
-    // Standardizing on the internal 'npm' utility for normalization
-    const config = npm.normalizeNpmConfig(ini.parse(pnpmWorkspaceConfig), pnpmWorkspaceDir)
+  const config = npm.normalizeNpmConfig(ini.parse(pnpmWorkspaceConfig), pnpmWorkspaceDir)
 
-    print(options, config, 'verbose')
+  print(options, config, 'verbose')
 
-    return config
-  },
-  {
-    /**
-     * We memoize based on all relevant options.
-     * This avoids re-parsing the pnpm-workspace.yaml and .npmrc files for every package in a workspace.
-     * We exclude packageFile because the workspace config is typically at the root and shared.
-     */
-    cacheKey: ([options]) => getCacheableOptions({ options, exclude: ['packageFile'] }),
-    cache: new ManyKeysMap(),
-  },
-)
+  return config
+})
 
 /** Shape of the pnpm-workspace.yaml minimumReleaseAge settings. */
 export interface PnpmWorkspaceMinimumReleaseAge {
