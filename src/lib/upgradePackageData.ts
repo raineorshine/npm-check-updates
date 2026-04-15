@@ -78,6 +78,27 @@ async function upgradePackageData(
         })
       }
 
+      // Handle nested workspaces.catalog and workspaces.catalogs format
+      const workspacesData = catalogData.workspaces
+      if (workspacesData && !Array.isArray(workspacesData)) {
+        if (workspacesData.catalogs) {
+          Object.entries(workspacesData.catalogs).forEach(([catalogName, catalog]) => {
+            Object.entries(upgraded).forEach(([dep, version]) => {
+              if (catalog[dep]) {
+                reconstructedUpdates.push({ path: ['workspaces', 'catalogs', catalogName, dep], newValue: version })
+              }
+            })
+          })
+        }
+        if (workspacesData.catalog) {
+          Object.entries(upgraded).forEach(([dep, version]) => {
+            if (workspacesData.catalog?.[dep]) {
+              reconstructedUpdates.push({ path: ['workspaces', 'catalog', dep], newValue: version })
+            }
+          })
+        }
+      }
+
       let updatedContent = yamlContent
       reconstructedUpdates.forEach(upgrade => {
         const updatedYaml = updateYamlCatalogDependencies({

@@ -681,6 +681,58 @@ catalogs:
         }
       })
 
+      it('update pnpm catalog dependencies nested under workspaces key in pnpm-workspace.yaml', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          const pkgDataRoot = JSON.stringify({
+            workspaces: ['packages/**'],
+          })
+
+          // Catalogs nested under a `workspaces` key (alternative pnpm-workspace.yaml format)
+          const pnpmWorkspaceData = `workspaces:
+  packages:
+    - 'packages/**'
+  catalog:
+    ncu-test-tag: '1.0.0'
+    ncu-test-v2: '1.0.0'
+  catalogs:
+    test:
+      ncu-test-tag: '1.0.0'
+`
+
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'pnpm-workspace.yaml'), pnpmWorkspaceData, 'utf-8')
+          await fs.writeFile(path.join(tempDir, 'pnpm-lock.yaml'), '', 'utf-8')
+
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              dependencies: {
+                'ncu-test-tag': 'catalog:',
+              },
+            }),
+            'utf-8',
+          )
+
+          await spawn('node', [bin, '-u', '--workspaces'], { rejectOnError: false }, { cwd: tempDir })
+
+          const updatedConfig = await fs.readFile(path.join(tempDir, 'pnpm-workspace.yaml'), 'utf-8')
+          updatedConfig.should.be.equal(`workspaces:
+  packages:
+    - 'packages/**'
+  catalog:
+    ncu-test-tag: '1.1.0'
+    ncu-test-v2: '2.0.0'
+  catalogs:
+    test:
+      ncu-test-tag: '1.1.0'
+`)
+        } finally {
+          await fs.rm(tempDir, { recursive: true, force: true })
+        }
+      })
+
       it('update pnpm catalog with --workspace flag (specific workspace)', async () => {
         const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
         try {
