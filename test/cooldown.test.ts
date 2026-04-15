@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+// eslint doesn't like .to.be.false syntax
 import { expect } from 'chai'
 import Sinon from 'sinon'
 import ncu from '../src/'
@@ -401,7 +403,7 @@ describe('cooldown', () => {
       stub.restore()
     })
 
-    it('prints "All dependencies match" instead of registry error when all packages are within cooldown', async () => {
+    it('prints "All dependencies not in cooldown" instead of registry error when all packages are within cooldown', async () => {
       // Given: cooldown set to 10, test-package@1.0.0 installed, latest version 1.1.0 released 5 days ago (within 10-day cooldown)
       const cooldown = 10
       const packageData: PackageFile = {
@@ -427,9 +429,9 @@ describe('cooldown', () => {
       // Note: loglevel must be set explicitly since the module default sets silent mode
       await ncu({ packageData, cooldown, target: 'latest', jsonUpgraded: false, loglevel: 'warn' })
 
-      // Then: the output should say "All dependencies match", not "No package versions were returned"
+      // Then: the output should say "All dependencies not in cooldown", not "No package versions were returned"
       const allMessages = logSpy.args.flat().filter(arg => typeof arg === 'string')
-      expect(allMessages.some(msg => msg.includes('All dependencies match'))).to.be.true
+      expect(allMessages.some(msg => msg.includes('All dependencies not in cooldown'))).to.be.true
       expect(allMessages.some(msg => msg.includes('No package versions were returned'))).to.be.false
 
       logSpy.restore()

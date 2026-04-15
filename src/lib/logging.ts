@@ -381,7 +381,10 @@ export async function printUpgrades(
     } else if (options.global) {
       print(options, `All global packages are up-to-date ${smiley}`)
     } else {
-      print(options, `All dependencies match the ${target} package versions ${smiley}`)
+      print(
+        options,
+        `All dependencies ${numCooldown ? 'not in cooldown ' : ''}match the ${target} package versions ${smiley}`,
+      )
     }
   } else if (numUpgraded === 0 && total > 0) {
     print(options, `No dependencies upgraded ${smiley}`)
