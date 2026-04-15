@@ -143,7 +143,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   options.cacher?.log()
 
   const versionResultObject = keyValueBy(versionResultList, (versionResult, i) =>
-    versionResult.version || versionResult.error
+    versionResult.version || versionResult.error || versionResult.cooldown
       ? {
           [packageList[i]]: versionResult,
         }

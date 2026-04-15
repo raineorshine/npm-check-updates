@@ -325,6 +325,7 @@ export async function printUpgrades(
     latest,
     upgraded,
     total,
+    numCooldown,
     ownersChangedDeps,
     pkgFile,
     time,
@@ -338,6 +339,8 @@ export async function printUpgrades(
     upgraded: Index<VersionSpec>
     // The total number of all possible upgrades. This is used to differentiate "no dependencies" from "no upgrades"
     total: number
+    // The number of packages skipped due to cooldown.
+    numCooldown?: number
     // Boolean flag per dependency which announces if package owner changed. Only used by --format ownerChanged
     ownersChangedDeps?: Index<boolean>
     // See: logging/getPackageRepo pkgFile param
@@ -362,8 +365,8 @@ export async function printUpgrades(
     } else if (
       latest &&
       Object.keys(latest).length === 0 &&
-      // if cooldown is set, an empty result means all versions are within the cooldown period, not a registry issue
-      !options.cooldown &&
+      // packages skipped due to cooldown should not trigger the registry error message
+      !numCooldown &&
       // some specs are ignored by ncu, like the file: protocol, so they should be ignored when detecting fetch issues
       Object.values(filterObject(current, (name, spec) => isFetchable(spec))).length > 0
     ) {

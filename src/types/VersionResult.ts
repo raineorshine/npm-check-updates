@@ -5,4 +5,6 @@ export interface VersionResult {
   version?: Version | null
   error?: string
   time?: string
+  /** True if the package was skipped due to cooldown. */
+  cooldown?: boolean
 }
