@@ -19,6 +19,7 @@ permissions:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.changed_files > 0
 
     steps:
       - name: Clone repository
