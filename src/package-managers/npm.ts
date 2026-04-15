@@ -890,7 +890,7 @@ export const distTag: GetVersion = async (
         'verbose',
       )
     }
-    return {}
+    return { cooldown: true }
   }
 
   // If we use a custom dist-tag, we do not want to get other 'pre' versions, just the ones from this dist-tag

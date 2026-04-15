@@ -224,6 +224,7 @@ export default async function runLocal(
   const latest = keyValueBy(latestResults, (key, result) => (result.version ? { [key]: result.version } : null))
   const errors = keyValueBy(latestResults, (key, result) => (result.error ? { [key]: result.error } : null))
   const time = keyValueBy(latestResults, (key, result) => (result.time ? { [key]: result.time } : null))
+  const numCooldown = Object.values(latestResults).filter(result => result.cooldown).length
 
   if (options.peer) {
     print(options, '\nupgradedPeerDependencies:', 'verbose')
@@ -268,6 +269,7 @@ export default async function runLocal(
         upgraded: chosenUpgraded,
         total: Object.keys(upgraded).length,
         latest: latestResults,
+        numCooldown,
         ownersChangedDeps,
         pkgFile: pkgFile || undefined,
         errors,
