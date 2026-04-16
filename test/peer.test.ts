@@ -191,4 +191,26 @@ describe('peer dependencies', function () {
     upgrades!.should.deep.equal({})
     stub.restore()
   })
+
+  // https://github.com/raineorshine/npm-check-updates/issues/1604
+  it('does not throw when pnpm catalog: references appear as dependency versions with --peer', async () => {
+    // In a pnpm workspace, packages can reference catalog entries like "catalog:"
+    // instead of a semver version. NCU should not crash when encountering these
+    // non-semver specs during peer dependency constraint checking.
+    const upgrades = await ncu({
+      peer: true,
+      packageData: {
+        dependencies: {
+          // ncu-test-peer@1.0.0 declares: peerDependencies: { 'ncu-test-return-version': '1.0.x' }
+          // Checking the peer constraint calls intersects(currentVersion, '1.0.x').
+          // If currentVersion is 'catalog:' (non-semver), intersects() throws without the fix.
+          'ncu-test-peer': '1.0.0',
+          'ncu-test-return-version': 'catalog:',
+        },
+      },
+    })
+    // Should complete without throwing; ncu-test-return-version at 'catalog:' is treated as
+    // compatible (non-semver) so peer constraint is not considered violated.
+    upgrades!.should.be.an('object')
+  })
 })
