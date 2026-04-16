@@ -19,7 +19,7 @@ This is a **major breaking change** with significant architectural updates.
 
 #### Configuration Files (`.ncurc.js`)
 
-- Files named `.ncurc.js` that use `module.exports` will now fail in projects that are not `"type": "module"`.
+- Files named `.ncurc.js` that use `module.exports` will now fail in projects that are `"type": "module"`.
 - **Fix:** Rename these files to `.ncurc.cjs` or convert them to use `export default`.
 
 #### Dependency Updates (Pure ESM versions)

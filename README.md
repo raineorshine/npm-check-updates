@@ -902,7 +902,7 @@ target: (name, semver) => {
 
 ## Config File
 
-Add a `.ncurc.{json,yml,js,cjs}` file to your project directory to specify configuration information.
+Add a `.ncurc.{json,yaml,yml,js,mjs,cjs}` file to your project directory to specify configuration information.
 
 For example, `.ncurc.json`:
 
