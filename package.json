@@ -71,7 +71,7 @@
       "eslint-plugin-n": "$eslint-plugin-n",
       "eslint-plugin-promise": "$eslint-plugin-promise"
     },
-    "@verdaccio/core": ">=8.0.0-next-8.38",
+    "@verdaccio/core": ">=8.0.0-next-8.33",
     "chai-string": {
       "chai": "$chai"
     },
@@ -161,7 +161,7 @@
     "typescript": "^6.0.2",
     "untildify": "^6.0.0",
     "update-notifier": "^7.3.1",
-    "verdaccio": "^6.5.0",
+    "verdaccio": "^6.4.0",
     "vite": "^8.0.8",
     "vite-bundle-analyzer": "^1.3.6",
     "vite-plugin-dts": "^4.5.4",
