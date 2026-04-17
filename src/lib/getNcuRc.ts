@@ -73,6 +73,9 @@ async function getNcuRc({
 
   const explorer = cosmiconfig('ncu', {
     searchPlaces: ['.ncurc.json', '.ncurc.yaml', '.ncurc.yml', '.ncurc.mjs', '.ncurc.cjs', '.ncurc.js'],
+    // Preserve historical ncu behavior from rc-config-loader: start from cwd and
+    // walk up parent directories so child packages can inherit a parent .ncurc.
+    searchStrategy: 'global',
   })
 
   // Determine the base directory for searching or resolving

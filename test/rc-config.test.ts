@@ -270,6 +270,29 @@ describe('rc-config', () => {
     }
   })
 
+  it('inherits parent .ncurc from nested cwd outside --deep', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const nestedDir = path.join(tempDir, 'packages', 'sub')
+    const parentConfigFile = path.join(tempDir, '.ncurc.json')
+    const nestedPkgFile = path.join(nestedDir, 'package.json')
+    await fs.mkdir(nestedDir, { recursive: true })
+    await fs.writeFile(parentConfigFile, JSON.stringify({ reject: 'ncu-test-tag' }), 'utf-8')
+    await fs.writeFile(
+      nestedPkgFile,
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      'utf-8',
+    )
+    try {
+      // --mergeConfig enables rc auto-detection in tests.
+      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--mergeConfig'], {}, { cwd: nestedDir })
+      const pkgData = JSON.parse(stdout)
+      pkgData.should.have.property('ncu-test-v2')
+      pkgData.should.not.have.property('ncu-test-tag')
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
   it('auto detect .ncurc.js with type: module', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const configFile = path.join(tempDir, '.ncurc.js')
