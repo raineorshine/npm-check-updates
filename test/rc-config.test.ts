@@ -203,6 +203,30 @@ describe('rc-config', () => {
     }
   })
 
+  it('auto detect ESM .ncurc.js in a type module package', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc.js')
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(configFile, 'export default { filter: "ncu-test-v2" }', 'utf-8')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({
+        type: 'module',
+        dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' },
+      }),
+      'utf-8',
+    )
+    try {
+      // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+      const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
+      const pkgData = JSON.parse(stdout)
+      pkgData.should.have.property('ncu-test-v2')
+      pkgData.should.not.have.property('ncu-test-tag')
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
   it('should not crash if because of $schema property', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const configFile = path.join(tempDir, '.ncurc.json')

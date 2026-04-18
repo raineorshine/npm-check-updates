@@ -942,7 +942,7 @@ export default defineConfig({
 
 #### CommonJS
 
-Use the `.ncurc.cjs` extension or a standard `.ncurc.js` file (if useing `"type": "commonjs"`).
+Use the `.ncurc.cjs` extension or a standard `.ncurc.js` file (if using `"type": "commonjs"`).
 
 ```js
 const { defineConfig } = require('npm-check-updates')
