@@ -1,3 +1,4 @@
+import { chmodSync } from 'fs'
 import { type Plugin, defineConfig } from 'vite'
 import { analyzer } from 'vite-bundle-analyzer'
 import dts from 'vite-plugin-dts'
@@ -13,6 +14,16 @@ function buildOptionsPlugin(): Plugin {
     name: 'build-options',
     async configResolved() {
       await buildOptions()
+    },
+  }
+}
+
+/** Makes the CLI entry point executable after build (cross-platform fs.chmodSync). */
+function chmodBinPlugin(): Plugin {
+  return {
+    name: 'chmod-bin',
+    closeBundle() {
+      chmodSync('build/cli.js', 0o755)
     },
   }
 }
@@ -50,6 +61,7 @@ export default defineConfig(({ mode }) => ({
       insertTypesEntry: true,
       outDir: 'build',
     }),
+    chmodBinPlugin(),
     ...(process.env.ANALYZER ? [analyzerOnce()] : []),
   ],
   ssr: {
