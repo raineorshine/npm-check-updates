@@ -34,7 +34,7 @@
         },
         "configFileName": {
           "type": "string",
-          "description": "Config file name. (default: .ncurc.{json,yml,js,cjs})"
+          "description": "Config file name. (default: .ncurc or .ncurc.{json,yaml,yml,js,mjs,cjs})"
         },
         "configFilePath": {
           "type": "string",

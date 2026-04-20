@@ -35,7 +35,7 @@ export interface RunOptions {
    */
   concurrency?: number
 
-  /** Config file name. (default: .ncurc.{json,yml,js,cjs}) */
+  /** Config file name. (default: .ncurc or .ncurc.{json,yaml,yml,js,mjs,cjs}) */
   configFileName?: string
 
   /** Directory of .ncurc config file. (default: directory of `packageFile`) */
