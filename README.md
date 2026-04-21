@@ -215,7 +215,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--configFileName &lt;s&gt;</td>
-    <td>Config file name. (default: .ncurc.{json,yml,js,cjs})</td>
+    <td>Config file name. (default: .ncurc or .ncurc.{json,yaml,yml,js,mjs,cjs})</td>
   </tr>
   <tr>
     <td>--configFilePath &lt;path&gt;</td>
@@ -902,9 +902,21 @@ target: (name, semver) => {
 
 ## Config File
 
-Add a `.ncurc.{json,yml,js,cjs}` file to your project directory to specify configuration information.
+Add a `.ncurc` or `.ncurc.{json,yaml,yml,js,mjs,cjs}` file to your project directory to specify configuration information.
 
-For example, `.ncurc.json`:
+`.ncurc` without an extension can be in **JSON or YAML** format. For example:
+
+**.ncurc:**
+
+```yaml
+upgrade: true
+filter: svelte
+reject:
+  - '@types/estree'
+  - ts-node
+```
+
+**.ncurc.json:**
 
 ```json
 {

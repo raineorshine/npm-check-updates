@@ -155,6 +155,96 @@ describe('rc-config', () => {
     }
   })
 
+  it('auto detect .ncurc and read it as .ncurc.json', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc')
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(configFile, JSON.stringify({ filter: 'ncu-test-v2' }), 'utf-8')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      'utf-8',
+    )
+    try {
+      // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const firstLine = stdout.split('\n')[0]
+      // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
+      // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
+      // Therefore, ignore any directories prepended to the config file path.
+      firstLine.should.contains('Using config file')
+      firstLine.should.contains(configFile)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('auto detect .ncurc and read it as .ncurc.yaml', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc')
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(configFile, 'filter: ncu-test-v2', 'utf-8')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      'utf-8',
+    )
+    try {
+      // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const firstLine = stdout.split('\n')[0]
+      // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
+      // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
+      // Therefore, ignore any directories prepended to the config file path.
+      firstLine.should.contains('Using config file')
+      firstLine.should.contains(configFile)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('auto detect .ncurc and throw on invalid ESM default export', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc')
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(configFile, 'export default { filter: "ncu-test-v2" }', 'utf-8')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      'utf-8',
+    )
+    try {
+      const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
+      const firstLine = stderr.split('\n')[0]
+      stderr.should.contains('Config file error')
+      stderr.should.contains('YAML Error')
+      firstLine.should.contains(configFile)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('auto detect .ncurc and throw on invalid CommonJS module.exports', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc')
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(configFile, "module.exports = {\n  format: 'group',\n}", 'utf-8')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      'utf-8',
+    )
+    try {
+      const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
+      const firstLine = stderr.split('\n')[0]
+      stderr.should.contains('Config file error')
+      stderr.should.contains('YAML Error')
+      firstLine.should.contains(configFile)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
   it('auto detect .ncurc.json', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const configFile = path.join(tempDir, '.ncurc.json')
@@ -172,6 +262,48 @@ describe('rc-config', () => {
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
+      firstLine.should.contains('Using config file')
+      firstLine.should.contains(configFile)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('auto detect .ncurc.yaml', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc.yaml')
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(configFile, 'filter: ncu-test-v2', 'utf-8')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      'utf-8',
+    )
+    try {
+      // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const firstLine = stdout.split('\n')[0]
+      firstLine.should.contains('Using config file')
+      firstLine.should.contains(configFile)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('auto detect .ncurc.yml', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc.yml')
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(configFile, 'filter: ncu-test-v2', 'utf-8')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      'utf-8',
+    )
+    try {
+      // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const firstLine = stdout.split('\n')[0]
       firstLine.should.contains('Using config file')
       firstLine.should.contains(configFile)
     } finally {
@@ -198,6 +330,130 @@ describe('rc-config', () => {
       // Therefore, ignore any directories prepended to the config file path.
       firstLine.should.contains('Using config file')
       firstLine.should.contains(configFile)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('auto detect .ncurc.mjs', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc.mjs')
+    const pkgFile = path.join(tempDir, 'package.json')
+    // ESM syntax
+    await fs.writeFile(configFile, 'export default { filter: "ncu-test-v2" }', 'utf-8')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      'utf-8',
+    )
+    try {
+      // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const firstLine = stdout.split('\n')[0]
+      // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
+      // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
+      // Therefore, ignore any directories prepended to the config file path.
+      firstLine.should.contains('Using config file')
+      firstLine.should.contains(configFile)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('inherits parent .ncurc from nested cwd outside --deep', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const nestedDir = path.join(tempDir, 'packages', 'sub')
+    const parentConfigFile = path.join(tempDir, '.ncurc.json')
+    const nestedPkgFile = path.join(nestedDir, 'package.json')
+    await fs.mkdir(nestedDir, { recursive: true })
+    await fs.writeFile(parentConfigFile, JSON.stringify({ reject: 'ncu-test-tag' }), 'utf-8')
+    await fs.writeFile(
+      nestedPkgFile,
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      'utf-8',
+    )
+    try {
+      // --mergeConfig enables rc auto-detection in tests.
+      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--mergeConfig'], {}, { cwd: nestedDir })
+      const pkgData = JSON.parse(stdout)
+      pkgData.should.have.property('ncu-test-v2')
+      pkgData.should.not.have.property('ncu-test-tag')
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('auto detect .ncurc.js with type: module', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc.js')
+    const pkgFile = path.join(tempDir, 'package.json')
+    // ESM syntax
+    await fs.writeFile(configFile, 'export default { filter: "ncu-test-v2" }', 'utf-8')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({ type: 'module', dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      'utf-8',
+    )
+    try {
+      // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const firstLine = stdout.split('\n')[0]
+      firstLine.should.contains('Using config file')
+      firstLine.should.contains(configFile)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('auto detect .ncurc.js with type: commonjs', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc.js')
+    const pkgFile = path.join(tempDir, 'package.json')
+    // CommonJS syntax
+    await fs.writeFile(configFile, 'module.exports = { filter: "ncu-test-v2" }', 'utf-8')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({ type: 'commonjs', dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
+      'utf-8',
+    )
+    try {
+      // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
+      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const firstLine = stdout.split('\n')[0]
+      firstLine.should.contains('Using config file')
+      firstLine.should.contains(configFile)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('error on CommonJS syntax in ESM project', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc.js')
+    const pkgFile = path.join(tempDir, 'package.json')
+    // CommonJS syntax in ESM project
+    await fs.writeFile(configFile, 'module.exports = { filter: "test" }', 'utf-8')
+    await fs.writeFile(pkgFile, JSON.stringify({ type: 'module', dependencies: { 'ncu-test-v2': '1.0.0' } }), 'utf-8')
+    try {
+      const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
+      stderr.should.contain('CommonJS syntax')
+      stderr.should.contain('.cjs')
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('error on ESM syntax in CommonJS project', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const configFile = path.join(tempDir, '.ncurc.js')
+    const pkgFile = path.join(tempDir, 'package.json')
+    // ESM syntax in CommonJS project (no type: module)
+    await fs.writeFile(configFile, 'export default { filter: "test" }', 'utf-8')
+    await fs.writeFile(pkgFile, JSON.stringify({ type: 'commonjs', dependencies: { 'ncu-test-v2': '1.0.0' } }), 'utf-8')
+    try {
+      const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
+      stderr.should.contain('ESM syntax')
+      stderr.should.contain('.mjs')
     } finally {
       await removeDir(tempDir)
     }

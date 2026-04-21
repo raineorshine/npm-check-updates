@@ -48,8 +48,10 @@ trap cleanup EXIT
 # create verdaccio config
 #   - store packages in temp directory so they are deleted on exit
 #   - allow anyone to publish to avoid npm login
+#   - increase body size to accommodate current package tarball size
 echo "
 storage: $temp_dir/storage
+max_body_size: 50mb
 packages:
   npm-check-updates:
     access: \$all
@@ -75,6 +77,24 @@ npm config set "//localhost:$registry_port/:_authToken=e2e_dummy"
 # publish to local registry
 echo Publishing to local registry
 npm publish --registry $registry_local
+
+# wait for published version to become visible in verdaccio.
+# verdaccio can accept npm publish before npm view/npx can resolve the package metadata.
+# without this retry loop, e2e can fail intermittently with "no such package available".
+package_version=$(node -p "require('./package.json').version")
+echo "Waiting for npm-check-updates@$package_version in local registry"
+publish_visible=false
+for i in {1..20}; do
+  if npm view "npm-check-updates@$package_version" version --registry $registry_local >/dev/null 2>&1; then
+    publish_visible=true
+    break
+  fi
+  sleep 1
+done
+
+if [ "$publish_visible" = false ]; then
+  echo "Warning: npm-check-updates@$package_version not visible in local registry after retry window"
+fi
 
 # Test: ncu -v
 echo ncu -v
