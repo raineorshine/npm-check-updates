@@ -11,7 +11,6 @@ on:
 
 env:
   FORCE_COLOR: 2
-  NODE_OPTIONS: ${{ matrix.os == 'windows-latest' && '--dns-result-order=ipv4first' || '' }}
 
 permissions:
   contents: read
@@ -52,6 +51,8 @@ jobs:
 
       - name: Unit Tests
         run: npm run test:unit
+        env:
+          NODE_OPTIONS: ${{ matrix.os == 'windows-latest' && '--dns-result-order=ipv4first' || null }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
