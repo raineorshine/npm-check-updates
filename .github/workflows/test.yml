@@ -11,6 +11,7 @@ on:
 
 env:
   FORCE_COLOR: 2
+  NODE_OPTIONS: ${{ matrix.os == 'windows-latest' && '--dns-result-order=ipv4first' || '' }}
 
 permissions:
   contents: read
