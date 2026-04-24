@@ -5,6 +5,39 @@ import dts from 'vite-plugin-dts'
 import { buildOptions } from './src/scripts/build-options.js'
 
 /**
+ * cosmiconfig bundles a TypeScript loader that dynamically imports the
+ * `typescript` package (~5MB). Even though we exclude `.ts` from
+ * `searchPlaces`, Vite's static analysis traces the `require('typescript')`
+ * inside `loadTsSync` and includes the entire package in the build.
+ *
+ * This plugin stubs out the `typescript` module to prevent it from being
+ * bundled. The stub is never invoked at runtime because `.ts` configs are
+ * not in our `searchPlaces`.
+ */
+function stubTypescript(): Plugin {
+  return {
+    name: 'stub-typescript',
+    enforce: 'pre',
+    resolveId(id) {
+      // Fast path: skip the string comparison for 99.9% of ids
+      if (id.length !== 10 || id[0] !== 't') return
+      if (id === 'typescript') return '\0stub:typescript'
+    },
+    load(id) {
+      if (id === '\0stub:typescript') {
+        return `
+export const version = '0.0.0-stub';
+export function createProgram() {
+  throw new Error('TypeScript loader is not available in this build');
+}
+export default { version, createProgram };
+`.trim()
+      }
+    },
+  }
+}
+
+/**
  * A Vite plugin that triggers the `buildOptions` logic at the start of the build process.
  * This ensures that any necessary configuration or pre-build steps
  * are executed before the actual bundling begins.
@@ -47,38 +80,9 @@ function analyzerOnce(): Plugin {
   }
 }
 
-/**
- * cosmiconfig bundles a TypeScript loader that dynamically imports the
- * `typescript` package (~5MB). Even though we exclude `.ts` from
- * `searchPlaces`, Vite's static analysis traces the `require('typescript')`
- * inside `loadTsSync` and includes the entire package in the build.
- *
- * This plugin stubs out the `typescript` module to prevent it from being
- * bundled. The stub is never invoked at runtime because `.ts` configs are
- * not in our `searchPlaces`.
- */
-const TYPESCRIPT_STUB = `
-export const version = '0.0.0-stub';
-export function createProgram() {
-  throw new Error('TypeScript loader is not available in this build');
-}
-export default { version, createProgram };
-`
-
 export default defineConfig(({ mode }) => ({
   plugins: [
-    {
-      name: 'stub-typescript',
-      enforce: 'pre',
-      resolveId(id) {
-        // Fast path: skip the string comparison for 99.9% of ids
-        if (id.length !== 10 || id[0] !== 't') return
-        if (id === 'typescript') return '\0stub:typescript'
-      },
-      load(id) {
-        if (id === '\0stub:typescript') return TYPESCRIPT_STUB
-      },
-    },
+    stubTypescript(),
     /**
      * buildOptionsPlugin() must run before dts() so the files exist
      * when TypeScript scans
