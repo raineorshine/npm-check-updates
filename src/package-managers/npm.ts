@@ -916,7 +916,22 @@ export const latest: GetVersion = async (
   options: Options = {},
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
-) => distTag(packageName, currentVersion, { ...options, distTag: 'latest' }, npmConfig, npmConfigProject)
+): Promise<VersionResult> => {
+  const latestResult = await distTag(
+    packageName,
+    currentVersion,
+    { ...options, distTag: 'latest' },
+    npmConfig,
+    npmConfigProject,
+  )
+
+  if (latestResult.cooldown) {
+    const fallback = await greatest(packageName, currentVersion, options, npmConfig, npmConfigProject)
+    if (fallback.version) return fallback
+  }
+
+  return latestResult
+}
 
 /**
  * Fetches the most recently published version, regardless of version number.

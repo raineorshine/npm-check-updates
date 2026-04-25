@@ -430,7 +430,7 @@ The value can be a plain number (days) or a string with a unit suffix:
     --cooldown 12h     12 hours
     --cooldown 30m     30 minutes
 
-Note that previous stable versions will not be suggested. The package will be completely ignored if its latest published version is within the cooldown period. This is due to a limitation of the npm registry, which does not provide a way to query previous stable versions.
+With the default `--target latest`, if the latest dist-tag version is within the cooldown window, ncu falls back to the greatest version that passes the cooldown threshold. To instead skip the package entirely (strict behaviour), use `--target "@latest"`.
 
 Example:
 
@@ -452,11 +452,22 @@ With default target (latest):
 $ ncu --cooldown 5
 ```
 
+Falls back to 1.2.0 because:
+
+- Latest version (1.3.0) is only 4 days old (within 5-day cooldown)
+- 1.2.0 is the greatest version that is at least 5 days old
+
+With `@latest` strict target:
+
+```js
+$ ncu --cooldown 5 --target @latest
+```
+
 No update will be suggested because:
 
-- Latest version (1.3.0) is only 4 days old.
+- Latest version (1.3.0) is only 4 days old
 - Cooldown requires versions to be at least 5 days old
-- Use `--cooldown 4` or lower to allow this update
+- `@latest` is strict: no fallback to older versions
 
 With `@beta`/`@tag` target:
 
@@ -482,10 +493,6 @@ Each target will select the best version that is at least 5 days old:
     newest   → 2.0.0-beta.1 (most recently published version outside cooldown)
     minor    → 1.2.0        (highest minor version outside cooldown)
     patch    → 1.1.1        (highest patch version outside cooldown)
-
-Note for latest/tag targets:
-
-> :warning: For packages that update frequently (e.g. daily releases), using a long cooldown period (7+ days) with the default `--target latest` or `--target @tag` may prevent all updates since new versions will be published before older ones meet the cooldown requirement. Please consider this when setting your cooldown period.
 
 You can also provide a custom function in your .ncurc.js file or when importing npm-check-updates as a module.
 
@@ -869,7 +876,7 @@ Determines the version to upgrade to. (default: "latest")
 
 <table>
   <tr><td>greatest</td><td>Upgrade to the highest version number published, regardless of release date or tag. Includes prereleases.</td></tr>
-  <tr><td>latest</td><td>Upgrade to whatever the package's "latest" git tag points to. Excludes prereleases unless --pre is specified.</td></tr>
+  <tr><td>latest</td><td>Upgrade to whatever the package's "latest" dist-tag points to. When used with --cooldown, falls back to the greatest version that passes the cooldown threshold if the latest is too recent. Use --target "@latest" for strict behaviour that skips the package instead. Excludes prereleases unless --pre is specified.</td></tr>
   <tr><td>minor</td><td>Upgrade to the highest minor version without bumping the major version.</td></tr>
   <tr><td>newest</td><td>Upgrade to the version with the most recent publish date, even if there are other version numbers that are higher. Includes prereleases.</td></tr>
   <tr><td>patch</td><td>Upgrade to the highest patch version without bumping the minor or major versions.</td></tr>
