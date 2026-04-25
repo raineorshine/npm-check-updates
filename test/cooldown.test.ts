@@ -85,7 +85,6 @@ describe('cooldown', () => {
       const result = await ncu({
         packageData,
         cooldown: '6d',
-        target: 'latest',
       })
 
       expect(result).to.have.property('test-package', '1.1.0')
@@ -109,7 +108,6 @@ describe('cooldown', () => {
       const result = await ncu({
         packageData,
         cooldown: '6d',
-        target: 'latest',
       })
 
       expect(result).to.not.have.property('test-package')
@@ -134,7 +132,6 @@ describe('cooldown', () => {
       const result = await ncu({
         packageData,
         cooldown: '12h',
-        target: 'latest',
       })
 
       expect(result).to.have.property('test-package', '1.1.0')
@@ -159,7 +156,6 @@ describe('cooldown', () => {
       const result = await ncu({
         packageData,
         cooldown: '12h',
-        target: 'latest',
       })
 
       expect(result).to.not.have.property('test-package')
@@ -184,7 +180,6 @@ describe('cooldown', () => {
       const result = await ncu({
         packageData,
         cooldown: '30m',
-        target: 'latest',
       })
 
       expect(result).to.have.property('test-package', '1.1.0')
@@ -209,7 +204,6 @@ describe('cooldown', () => {
       const result = await ncu({
         packageData,
         cooldown: '30m',
-        target: 'latest',
       })
 
       expect(result).to.not.have.property('test-package')
@@ -232,7 +226,6 @@ describe('cooldown', () => {
       const resultNumber = await ncu({
         packageData,
         cooldown: 6,
-        target: 'latest',
       })
       stub1.restore()
 
@@ -240,7 +233,6 @@ describe('cooldown', () => {
       const resultString = await ncu({
         packageData,
         cooldown: '6d',
-        target: 'latest',
       })
       stub2.restore()
 
@@ -338,8 +330,35 @@ describe('cooldown', () => {
       stub.restore()
     })
 
-    it('skips package upgrade completely when latest version is inside cooldown period', async () => {
-      // Given: cooldown set to 10, test-package@1.0.0 installed, latest version 1.1.0 released 5 days ago (within 10-day cooldown), older version 1.0.1 released 10 days ago
+    it('falls back to most recent passing version when latest dist-tag is within cooldown', async () => {
+      // Given: cooldown=10, latest (1.1.0) released 5 days ago (within cooldown),
+      // previous version (1.0.1) released 15 days ago (outside cooldown)
+      const cooldown = 10
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 5 * DAY).toISOString(),
+            '1.0.1': new Date(NOW - 15 * DAY).toISOString(),
+          },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      const result = await ncu({ packageData, cooldown, target: 'latest' })
+
+      expect(result).to.have.property('test-package', '1.0.1')
+
+      stub.restore()
+    })
+
+    it('skips package entirely when all versions are within cooldown (no fallback possible)', async () => {
+      // Given: cooldown set to 10, test-package@1.0.0 installed
+      // latest dist-tag (1.1.0) released 5 days ago (within 10-day cooldown)
+      // previous version (1.0.1) released 8 days ago — also within cooldown, so no fallback exists
       const cooldown = 10
       const packageData: PackageFile = {
         dependencies: {
@@ -351,7 +370,7 @@ describe('cooldown', () => {
           name: 'test-package',
           versions: {
             '1.1.0': new Date(NOW - 5 * DAY).toISOString(),
-            '1.0.1': new Date(NOW - 10 * DAY).toISOString(),
+            '1.0.1': new Date(NOW - 8 * DAY).toISOString(),
           },
           distTags: {
             latest: '1.1.0',
@@ -363,6 +382,32 @@ describe('cooldown', () => {
       const result = await ncu({ packageData, cooldown, target: 'latest' })
 
       // Then: package is not upgraded (latest version within cooldown, 1.0.1 is ignored as not latest)
+      expect(result).to.not.have.property('test-package')
+
+      stub.restore()
+    })
+
+    it('does not return a pre-release version as the fallback when latest is within cooldown', async () => {
+      // Given: cooldown=10, latest (1.1.0) released 5 days ago (within cooldown)
+      // The only older version outside cooldown is a pre-release (1.1.0-beta.1, 15 days ago)
+      // No stable version outside cooldown exists
+      const cooldown = 10
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 5 * DAY).toISOString(),
+            '1.1.0-beta.1': new Date(NOW - 15 * DAY).toISOString(),
+          },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      const result = await ncu({ packageData, cooldown, target: 'latest' })
+
       expect(result).to.not.have.property('test-package')
 
       stub.restore()
@@ -494,6 +539,57 @@ describe('cooldown', () => {
       const result = await ncu({ packageData, cooldown, target: '@next' })
 
       // Then: package is not upgraded (next version within cooldown, 1.1.0-rc.2 is ignored as not tagged as next)
+      expect(result).to.not.have.property('test-package')
+
+      stub.restore()
+    })
+  })
+
+  describe('when @latest strict target', () => {
+    it('upgrades package when @latest version was released outside cooldown period', async () => {
+      // Given: cooldown=10, latest (1.1.0) released 15 days ago (outside cooldown)
+      const cooldown = 10
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 15 * DAY).toISOString(),
+          },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      const result = await ncu({ packageData, cooldown, target: '@latest' })
+
+      expect(result).to.have.property('test-package', '1.1.0')
+
+      stub.restore()
+    })
+
+    it('skips the package entirely when @latest is within cooldown, with no fallback', async () => {
+      // Given: cooldown=10, latest (1.1.0) released 5 days ago (within cooldown),
+      // previous version (1.0.1) released 15 days ago (outside cooldown)
+      // Unlike --target latest, @latest is strict and does not fall back
+      const cooldown = 10
+      const packageData: PackageFile = {
+        dependencies: { 'test-package': '1.0.0' },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 5 * DAY).toISOString(),
+            '1.0.1': new Date(NOW - 15 * DAY).toISOString(),
+          },
+          distTags: { latest: '1.1.0' },
+        }),
+      )
+
+      const result = await ncu({ packageData, cooldown, target: '@latest' })
+
       expect(result).to.not.have.property('test-package')
 
       stub.restore()
@@ -739,7 +835,7 @@ describe('cooldown', () => {
   })
 
   describe('cooldown predicate function', () => {
-    it('should skip cooldown check when predicate returns null', async () => {
+    it('skips cooldown check when predicate returns null', async () => {
       // Given: cooldown set to 10, test-package@1.0.0 installed, latest version 1.1.0 released 5 days ago (within cooldown)
       const cooldown = 10
       const packageData: PackageFile = {
@@ -772,7 +868,7 @@ describe('cooldown', () => {
       stub.restore()
     })
 
-    it('should apply custom cooldown when predicate returns a number', async () => {
+    it('applies custom cooldown when predicate returns a number', async () => {
       // Given: default cooldown set to 10, test-package and test-package-2 - both installed in version 1.0.0, and both has the latest version 1.1.0 released 5 days ago (within cooldown)
       const cooldown = 10
       const packageData: PackageFile = {
@@ -816,7 +912,7 @@ describe('cooldown', () => {
       stub.restore()
     })
 
-    it('should upgrade when predicate returns a sub-day (fractional) value and version is outside that period', async () => {
+    it('upgrades when predicate returns a sub-day (fractional) value and version is outside that period', async () => {
       // Given: predicate returns 12/24 (= 12 hours), version released 13 hours ago — outside cooldown
       const HOUR = DAY / 24
       const packageData: PackageFile = {
@@ -843,7 +939,7 @@ describe('cooldown', () => {
       stub.restore()
     })
 
-    it('should skip upgrade when predicate returns a sub-day (fractional) value and version is inside that period', async () => {
+    it('skips upgrade when predicate returns a sub-day (fractional) value and version is inside that period', async () => {
       // Given: predicate returns 12/24 (= 12 hours), version released 11 hours ago — inside cooldown
       const HOUR = DAY / 24
       const packageData: PackageFile = {
@@ -870,7 +966,7 @@ describe('cooldown', () => {
       stub.restore()
     })
 
-    it('should accept a string ("3m") returned from the predicate for per-package unit suffixes', async () => {
+    it('accepts a string ("3m") returned from the predicate for per-package unit suffixes', async () => {
       // Given: predicate returns "3m" (3 minutes) for test-package and 10 (days) for test-package-2;
       //        test-package released 4 minutes ago (outside 3m cooldown),
       //        test-package-2 released 1 day ago (inside 10-day cooldown)
@@ -908,7 +1004,7 @@ describe('cooldown', () => {
       stub.restore()
     })
 
-    it('should upgrade when predicate returns 0, disabling cooldown for that package', async () => {
+    it('upgrades when predicate returns 0, disabling cooldown for that package', async () => {
       // Given: predicate returns 0 for test-package (no cooldown) and 10 for others; version released 1 day ago
       const packageData: PackageFile = {
         dependencies: {
@@ -945,9 +1041,10 @@ describe('cooldown', () => {
   })
 
   describe('npm config min-release-age', () => {
-    it('automatically applies min-release-age from npm config as cooldown when cooldown is not set', async () => {
+    it('applies min-release-age from npm config as cooldown when cooldown is not set', async () => {
       // Given: npm config has min-release-age=7, test-package@1.0.0 installed
-      // latest version 1.1.0 released 3 days ago (within cooldown), 1.2.0 released 10 days ago (outside cooldown)
+      // latest dist-tag (1.1.0) released 3 days ago (within 7-day cooldown)
+      // previous version 1.0.1 released 10 days ago (outside 7-day cooldown)
       const packageData: PackageFile = {
         dependencies: {
           'test-package': '1.0.0',
@@ -957,7 +1054,7 @@ describe('cooldown', () => {
         createMockVersion({
           name: 'test-package',
           versions: {
-            '1.2.0': new Date(NOW - 10 * DAY).toISOString(),
+            '1.0.1': new Date(NOW - 10 * DAY).toISOString(),
             '1.1.0': new Date(NOW - 3 * DAY).toISOString(),
           },
           distTags: {
@@ -973,13 +1070,13 @@ describe('cooldown', () => {
       const result = await ncu({ packageData })
 
       // Then: package upgrade is skipped because latest version (1.1.0) is within the 7-day min-release-age
-      expect(result).to.not.have.property('test-package')
+      expect(result).to.have.property('test-package', '1.0.1')
 
       stub.restore()
       findNpmConfigStub.restore()
     })
 
-    it('does not apply min-release-age when cooldown is explicitly set', async () => {
+    it('ignores min-release-age when cooldown is explicitly set', async () => {
       // Given: npm config has min-release-age=7, but cooldown is explicitly set to 0
       const packageData: PackageFile = {
         dependencies: {
@@ -1013,7 +1110,7 @@ describe('cooldown', () => {
   })
 
   describe('pnpm workspace minimumReleaseAge', () => {
-    it('automatically applies minimumReleaseAge from pnpm-workspace.yaml as cooldown when cooldown is not set', async () => {
+    it('applies minimumReleaseAge from pnpm-workspace.yaml as cooldown when cooldown is not set', async () => {
       // Given: pnpm-workspace.yaml has minimumReleaseAge=1440 (1440 minutes = 1 day),
       // test-package@1.0.0 installed, latest version 1.1.0 released 12 hours ago (within cooldown)
       const packageData: PackageFile = {
@@ -1171,7 +1268,7 @@ describe('cooldown', () => {
   })
 
   describe('yarn npmMinimalAgeGate', () => {
-    it('automatically applies npmMinimalAgeGate from .yarnrc.yml as cooldown when cooldown is not set', async () => {
+    it('applies npmMinimalAgeGate from .yarnrc.yml as cooldown when cooldown is not set', async () => {
       // Given: .yarnrc.yml has npmMinimalAgeGate=86400 (86400 seconds = 1 day),
       // test-package@1.0.0 installed, latest version 1.1.0 released 12 hours ago (within cooldown)
       const packageData: PackageFile = {
