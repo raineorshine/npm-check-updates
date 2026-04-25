@@ -1107,6 +1107,44 @@ describe('cooldown', () => {
       stub.restore()
       findNpmConfigStub.restore()
     })
+
+    it('does not log "Using min-release-age" message when jsonUpgraded is enabled', async () => {
+      // Given: npm config has min-release-age=7
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 10 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      // Stub findNpmConfig to return a config with minReleaseAge: '7'
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '7' })
+
+      const logSpy = Sinon.spy(console, 'log')
+
+      // When: ncu is run with jsonUpgraded enabled
+      await ncu({ packageData, jsonUpgraded: true })
+
+      // Then: the "Using min-release-age from .npmrc" message should NOT be logged to stdout
+      const minReleaseAgeMessages = logSpy.args
+        .flat()
+        .filter(arg => typeof arg === 'string' && arg.includes('min-release-age'))
+      expect(minReleaseAgeMessages).to.have.length(0)
+
+      logSpy.restore()
+      stub.restore()
+      findNpmConfigStub.restore()
+    })
   })
 
   describe('pnpm workspace minimumReleaseAge', () => {
