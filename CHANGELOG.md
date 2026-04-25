@@ -2,6 +2,29 @@
 
 This file only documents **major version** releases. For smaller releases, you're stuck reading the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
 
+## [22.0.0] - 2026-04-25
+
+## Breaking Changes
+
+`--cooldown` now falls back to the greatest non-prerelease version rather than skipping the upgrade entirely when the latest version falls within the cooldown window.
+
+- This _only_ affects `--cooldown` (or inferred cooldown from `min-release-age`/`minimumReleaseAge`/`npmMinimalAgeGate`).
+- This _only_ affects `--target latest` (which is the default).
+
+### ⚠️ WARNING
+
+In rare circumstances, it is now possible for `ncu --cooldown 10` to install a version **that was never published to latest**. This is because the npm registry does not store a history of versions published to the `latest` dist-tag. It is _impossible_ to fall back to an earlier `latest` version, because there is no record of it. However, we do have a list of all published versions, and it's _likely_ that a boring version like `1.0.1` was published to `latest` at some point. Versions like `1.0.1-pre.0`, `1.0.1-beta`, `1.0.1-build.58157394`, etc will be ignored, as you would expect.
+
+While npm-check-updates typically takes a conservative approach to version upgrades, following semver exactly and only upgrading to the `latest` version, falling back to the highest version outside the cooldown window is clearly the more intuitive behavior, and this outweighs the few cases where the results would be undesirable. The discussion in #1556 and the large amount of confusion since the initial release of `--cooldown` attest to this.
+
+### How to opt out of the new behavior
+
+You can opt out of the new behavior by using `--target "@latest"`. This forces a strict upgrade (or downgrade) to the `latest` tag only, without any fallback behavior.
+
+For granular control, use a custom ncurc function to set the [target](https://github.com/raineorshine/npm-check-updates#target) or disable [cooldown](https://github.com/raineorshine/npm-check-updates#cooldown) for a single package.
+
+**Full Changelog**: https://github.com/raineorshine/npm-check-updates/compare/v21.0.3...v22.0.0
+
 ## [21.0.0] - 2026-04-14
 
 ### ⚠️ Breaking Changes
