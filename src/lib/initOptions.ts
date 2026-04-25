@@ -89,9 +89,6 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     .filter(option => option.startsWith('json'))
     .some(propertyOf(options))
 
-  // set options.json so subsequent print calls can check it
-  options.json = json
-
   if (!json && loglevel !== 'silent' && options.rcConfigPath && !options.doctor) {
     print(options, `Using config file ${options.rcConfigPath}`)
   }
@@ -229,7 +226,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
             : null
       if (days != null && !isNaN(days)) {
         options.cooldown = days
-        print(options, `Using min-release-age from .npmrc: ${days} day${days !== 1 ? 's' : ''}`)
+        print({ ...options, json }, `Using min-release-age from .npmrc: ${days} day${days !== 1 ? 's' : ''}`)
       }
     } else if (packageManager === 'pnpm') {
       // Automatically apply pnpm's minimumReleaseAge from pnpm-workspace.yaml as cooldown if cooldown is not explicitly set.
@@ -243,12 +240,12 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
           const matchers = minimumReleaseAgeExclude.map(pattern => picomatch(pattern))
           options.cooldown = (packageName: string) => (matchers.some(m => m(packageName)) ? null : days)
           print(
-            options,
+            { ...options, json },
             `Using minimumReleaseAge from pnpm-workspace.yaml: ${days} day${days !== 1 ? 's' : ''} (${minimumReleaseAgeExclude.length} excluded pattern${minimumReleaseAgeExclude.length !== 1 ? 's' : ''})`,
           )
         } else {
           options.cooldown = days
-          print(options, `Using minimumReleaseAge from pnpm-workspace.yaml: ${days} day${days !== 1 ? 's' : ''}`)
+          print({ ...options, json }, `Using minimumReleaseAge from pnpm-workspace.yaml: ${days} day${days !== 1 ? 's' : ''}`)
         }
       }
     } else if (packageManager === 'yarn') {
@@ -264,12 +261,12 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
           // Returning null skips the cooldown check for pre-approved packages
           options.cooldown = (packageName: string) => (matchers.some(m => m(packageName)) ? null : days)
           print(
-            options,
+            { ...options, json },
             `Using npmMinimalAgeGate from .yarnrc.yml: ${days} day${days !== 1 ? 's' : ''} (${npmPreapprovedPackages.length} pre-approved package${npmPreapprovedPackages.length !== 1 ? 's' : ''})`,
           )
         } else {
           options.cooldown = days
-          print(options, `Using npmMinimalAgeGate from .yarnrc.yml: ${days} day${days !== 1 ? 's' : ''}`)
+          print({ ...options, json }, `Using npmMinimalAgeGate from .yarnrc.yml: ${days} day${days !== 1 ? 's' : ''}`)
         }
       }
     }
