@@ -89,6 +89,9 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     .filter(option => option.startsWith('json'))
     .some(propertyOf(options))
 
+  // set options.json so subsequent print calls can check it
+  options.json = json
+
   if (!json && loglevel !== 'silent' && options.rcConfigPath && !options.doctor) {
     print(options, `Using config file ${options.rcConfigPath}`)
   }
