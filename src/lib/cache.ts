@@ -87,15 +87,23 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
       if (!cacheData.packages) return
       const key = `${name}${CACHE_DELIMITER}${target}`
       const cached = cacheData.packages[key]
-      if (cached && !key.includes(cached)) {
+      if (cached) {
         cacheHits.add(name)
       }
-      return cached
+
+      if (cached?.version) {
+        return cached
+      }
+
+      // fallback to old format cached until cache cleared
+      return {
+        version: cached as unknown as string,
+      }
     },
-    set: (name: string, target: string, version: string) => {
+    set: (name: string, target: string, version: string, time?: string) => {
       if (!cacheData.packages) return
       const key = `${name}${CACHE_DELIMITER}${target}`
-      cacheData.packages[key] = version
+      cacheData.packages[key] = { version, ...(time ? { time } : null) }
     },
     getPeers: (name: string, version: Version) => {
       if (!cacheData.peers) return

@@ -49,12 +49,10 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       : [targetString, 'latest']
 
     const cached = options.cacher?.get(name, target)
-    if (cached) {
+    if (cached?.version) {
       bar?.tick()
 
-      return {
-        version: cached,
-      }
+      return cached
     }
 
     let versionResult: VersionResult
@@ -130,7 +128,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
     bar?.tick()
 
     if (versionResult.version) {
-      options.cacher?.set(name, target, versionResult.version)
+      options.cacher?.set(name, target, versionResult.version, versionResult.time)
     }
 
     return versionResult

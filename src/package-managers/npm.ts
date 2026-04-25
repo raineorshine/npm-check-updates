@@ -711,11 +711,7 @@ export const greatest: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const fields: (keyof Packument)[] = ['versions']
-
-  if (options.cooldown) {
-    fields.push('time')
-  }
+  const fields: (keyof Packument)[] = ['time', 'versions']
 
   const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
@@ -730,15 +726,18 @@ export const greatest: GetVersion = async (
   // known type based on 'versions'
   const versions = packument?.versions
 
+  const version =
+    Object.values(versions || {})
+      .filter(tagPackument =>
+        filterPredicate(options)(decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)),
+      )
+      .map(o => o.version)
+      .sort(versionUtil.compareVersions)
+      .at(-1) || null
+
   return {
-    version:
-      Object.values(versions || {})
-        .filter(tagPackument =>
-          filterPredicate(options)(decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)),
-        )
-        .map(o => o.version)
-        .sort(versionUtil.compareVersions)
-        .at(-1) || null,
+    version,
+    ...(packument?.time?.[version!] ? { time: packument.time[version!] } : null),
   }
 }
 
@@ -837,11 +836,7 @@ export const distTag: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ) => {
-  const fields: (keyof Packument)[] = ['dist-tags']
-
-  if (options.cooldown) {
-    fields.push('time')
-  }
+  const fields: (keyof Packument)[] = ['time', 'dist-tags']
 
   const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
@@ -1006,11 +1001,7 @@ export const minor: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const fields: (keyof Packument)[] = ['versions']
-
-  if (options.cooldown) {
-    fields.push('time')
-  }
+  const fields: (keyof Packument)[] = ['time', 'versions']
 
   const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
@@ -1032,7 +1023,11 @@ export const minor: GetVersion = async (
     currentVersion,
     'minor',
   )
-  return { version }
+
+  return {
+    version,
+    ...(packument?.time?.[version!] ? { time: packument.time[version!] } : null),
+  }
 }
 
 /**
@@ -1050,11 +1045,7 @@ export const patch: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const fields: (keyof Packument)[] = ['versions']
-
-  if (options.cooldown) {
-    fields.push('time')
-  }
+  const fields: (keyof Packument)[] = ['time', 'versions']
 
   const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
@@ -1076,7 +1067,10 @@ export const patch: GetVersion = async (
     currentVersion,
     'patch',
   )
-  return { version }
+  return {
+    version,
+    ...(packument?.time?.[version!] ? { time: packument.time[version!] } : null),
+  }
 }
 
 /**
@@ -1094,11 +1088,7 @@ export const semver: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const fields: (keyof Packument)[] = ['versions']
-
-  if (options.cooldown) {
-    fields.push('time')
-  }
+  const fields: (keyof Packument)[] = ['time', 'versions']
 
   const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
@@ -1122,7 +1112,10 @@ export const semver: GetVersion = async (
   // TODO: Upgrading within a prerelease does not seem to work.
   // { includePrerelease: true } does not help.
   const version = nodeSemver.maxSatisfying(versionsFiltered, currentVersion)
-  return { version }
+  return {
+    version,
+    ...(packument?.time?.[version!] ? { time: packument.time[version!] } : null),
+  }
 }
 
 export default spawnNpm
