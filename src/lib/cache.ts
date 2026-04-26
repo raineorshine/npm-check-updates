@@ -1,7 +1,7 @@
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { type CacheData, type Cacher } from '../types/Cacher'
+import { CURRENT_CACHE_SCHEMA, type CacheData, type Cacher } from '../types/Cacher'
 import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
 import { type Version } from '../types/Version'
@@ -17,6 +17,10 @@ export const CACHE_DELIMITER = '___'
  * @returns
  */
 function checkCacheExpiration(cacheData: CacheData, cacheExpiration = 10) {
+  if (cacheData.schema !== CURRENT_CACHE_SCHEMA) {
+    return true
+  }
+
   if (typeof cacheData.timestamp !== 'number') {
     return false
   }
@@ -72,6 +76,9 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
     // ignore file read/parse/remove errors
   }
 
+  if (typeof cacheData.schema !== 'number') {
+    cacheData.schema = CURRENT_CACHE_SCHEMA
+  }
   if (typeof cacheData.timestamp !== 'number') {
     cacheData.timestamp = Date.now()
   }
@@ -90,15 +97,7 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
       if (cached) {
         cacheHits.add(name)
       }
-
-      if (cached?.version) {
-        return cached
-      }
-
-      // fallback to old format cached until cache cleared
-      return {
-        version: cached as unknown as string,
-      }
+      return cached
     },
     set: (name: string, target: string, version: string, time?: string) => {
       if (!cacheData.packages) return

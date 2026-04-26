@@ -6,7 +6,10 @@ interface PackageInfo {
   time?: string
 }
 
+export const CURRENT_CACHE_SCHEMA = 1
+
 export interface CacheData {
+  schema?: number
   timestamp?: number
   packages?: Record<string, PackageInfo | undefined>
   peers?: Record<string, Index<string> | undefined>
