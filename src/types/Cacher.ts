@@ -1,7 +1,7 @@
 import { type Index } from './IndexType'
 import { type Version } from './Version'
 
-interface PackageInfo {
+export interface PackageInfo {
   version: string
   time?: string
 }
@@ -9,10 +9,10 @@ interface PackageInfo {
 export const CURRENT_CACHE_SCHEMA = 1
 
 export interface CacheData {
-  schema?: number
-  timestamp?: number
-  packages?: Record<string, PackageInfo | undefined>
-  peers?: Record<string, Index<string> | undefined>
+  schema: number
+  timestamp: number
+  packages: Record<string, PackageInfo>
+  peers: Record<string, Index<string>>
 }
 
 export type Cacher = {
