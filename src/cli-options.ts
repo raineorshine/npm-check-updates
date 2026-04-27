@@ -721,7 +721,7 @@ const cliOptions: CLIOption[] = [
     description:
       'Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited).',
     default: ['prod', 'dev', 'optional', 'packageManager'],
-    parse: value => (value && typeof value === 'string' ? value.split(',') : value),
+    parse: value => (typeof value === 'string' ? value.split(/,|\s/) : value),
     type: 'string | readonly string[]',
   },
   {
@@ -797,7 +797,7 @@ const cliOptions: CLIOption[] = [
     arg: 'value',
     description:
       'Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion.',
-    parse: value => (typeof value === 'string' ? value.split(',') : value),
+    parse: value => (typeof value === 'string' ? value.split(/,|\s/) : value),
     default: [],
     type: 'readonly string[]',
     choices: ['dep', 'group', 'homepage', 'ownerChanged', 'repo', 'diff', 'time', 'lines', 'installedVersion'],
