@@ -943,7 +943,7 @@ export const newest: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const result = await npmApi.fetchUpgradedPackumentMemo(
+  const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
     ['time', 'versions'],
     currentVersion,
@@ -957,7 +957,7 @@ export const newest: GetVersion = async (
   // result.versions is an object but is parsed as an array, so manually convert it to an object.
   // Otherwise keyValueBy will pass the predicate arguments in the wrong order.
   const versionsSatisfyingNodeEngine = keyValueBy(
-    result?.versions || {},
+    packument?.versions || {},
     (version: Version, packument: Packument['versions'][string]) =>
       satisfiesNodeEngine(packument, options.nodeEngineVersion) ? { [packument.version]: true } : null,
   )
@@ -965,7 +965,7 @@ export const newest: GetVersion = async (
   // filter out times that do not satisfy the node engine
   // filter out prereleases if pre:false (same as allowPreOrIsNotPre)
   const timesSatisfyingNodeEngine = filterObject(
-    (result?.time || {}) as Index<string>,
+    (packument?.time || {}) as Index<string>,
     version => versionsSatisfyingNodeEngine[version] && (options.pre !== false || !versionUtil.isPre(version)),
   )
 
@@ -975,15 +975,23 @@ export const newest: GetVersion = async (
   if (options.cooldown) {
     const versionsSatisfyingCooldownPeriod = versionsSortedByTime.filter(version =>
       satisfiesCooldownPeriod(
-        decorateTagPackumentWithTimeAndName((result as Packument).versions[version], result as Packument),
+        decorateTagPackumentWithTimeAndName((packument as Packument).versions[version], packument as Packument),
         options.cooldown as number | CooldownFunction,
       ),
     )
 
-    return { version: versionsSatisfyingCooldownPeriod.at(-1) }
+    const version = versionsSatisfyingCooldownPeriod.at(-1)
+    return {
+      version,
+      ...(packument?.time?.[version!] ? { time: packument.time[version!] } : null),
+    }
   }
 
-  return { version: versionsSortedByTime.at(-1) }
+  const newestVersion = versionsSortedByTime.at(-1)
+  return {
+    version: newestVersion,
+    ...(packument?.time?.[newestVersion!] ? { time: packument.time[newestVersion!] } : null),
+  }
 }
 
 /**
