@@ -711,7 +711,11 @@ export const greatest: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const fields: (keyof Packument)[] = ['time', 'versions']
+  const fields: (keyof Packument)[] = ['versions']
+
+  if (options.cooldown) {
+    fields.push('time')
+  }
 
   const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
@@ -836,7 +840,11 @@ export const distTag: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ) => {
-  const fields: (keyof Packument)[] = ['time', 'dist-tags']
+  const fields: (keyof Packument)[] = ['dist-tags']
+
+  if (options.cooldown) {
+    fields.push('time')
+  }
 
   const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
@@ -1009,7 +1017,11 @@ export const minor: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const fields: (keyof Packument)[] = ['time', 'versions']
+  const fields: (keyof Packument)[] = ['versions']
+
+  if (options.cooldown) {
+    fields.push('time')
+  }
 
   const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
@@ -1053,7 +1065,11 @@ export const patch: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const fields: (keyof Packument)[] = ['time', 'versions']
+  const fields: (keyof Packument)[] = ['versions']
+
+  if (options.cooldown) {
+    fields.push('time')
+  }
 
   const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,
@@ -1096,7 +1112,11 @@ export const semver: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const fields: (keyof Packument)[] = ['time', 'versions']
+  const fields: (keyof Packument)[] = ['versions']
+
+  if (options.cooldown) {
+    fields.push('time')
+  }
 
   const packument = await npmApi.fetchUpgradedPackumentMemo(
     packageName,

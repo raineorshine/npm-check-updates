@@ -78,7 +78,6 @@ describe('queryVersions', function () {
     result.should.deep.equal({
       request: {
         version: 'npm:ncu-test-v2@2.0.0',
-        time: '2020-04-27T21:48:11.660Z',
       },
     })
   })
@@ -197,7 +196,6 @@ describe('queryVersions', function () {
       upgrades.should.deep.equal({
         'ncu-test-v2': {
           version: '2.0.0',
-          time: '2020-04-27T21:48:11.660Z',
         },
       })
     })
