@@ -3,6 +3,7 @@
  */
 import Table from 'cli-table3'
 import fs from 'fs/promises'
+import { format as timeAgoFormat } from 'timeago.js'
 import { type IgnoredUpgradeDueToEnginesNode } from '../types/IgnoredUpgradeDueToEnginesNode'
 import { type IgnoredUpgradeDueToPeerDeps } from '../types/IgnoredUpgradeDueToPeerDeps'
 import { type Index } from '../types/IndexType'
@@ -202,7 +203,8 @@ export async function toDependencyTable({
           const diffUrl = format?.includes('diff')
             ? `${process.env.NCU_DIFF || 'https://npmdiff.dev'}/${encodeURIComponent(dep)}/${from.replace(/^\W+/, '')}/${to.replace(/^\W+/, '')}`
             : ''
-          const publishTime = format?.includes('time') && time?.[dep] ? time[dep] : ''
+          const timestamp = format?.includes('time') && time?.[dep] ? time[dep] : null
+          const publishTime = timestamp ? timeAgoFormat(timestamp, 'en_US') : ''
           return [
             dep,
             ...(format?.includes('dep') ? [depType ? chalk.gray(depType) : ''] : []),

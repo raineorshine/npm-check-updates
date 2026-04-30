@@ -3,6 +3,7 @@ import fs from 'fs/promises'
 import os from 'os'
 import path, { dirname } from 'path'
 import spawn from 'spawn-please'
+import { format as timeAgoFormat } from 'timeago.js'
 import { fileURLToPath } from 'url'
 import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
@@ -106,7 +107,7 @@ describe('format', () => {
     })
   })
 
-  // do not stubVersions here, because we need to test if if time is parsed correctly from npm-registry-fetch
+  // do not stubVersions here, because we need to test if time is parsed correctly from npm-registry-fetch
   it('--format time', async () => {
     const timestamp = '2020-04-27T21:48:11.660Z'
     const packageData = {
@@ -115,7 +116,8 @@ describe('format', () => {
       },
     }
     const { stdout } = await spawn('node', [bin, '--format', 'time', '--stdin'], { stdin: JSON.stringify(packageData) })
-    expect(stdout).contains(timestamp)
+    const expectedString = timeAgoFormat(timestamp, 'en_US')
+    expect(stdout).contains(expectedString)
   })
 
   it('--format repo', async () => {

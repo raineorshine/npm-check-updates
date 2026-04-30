@@ -1,7 +1,7 @@
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { type CacheData, type Cacher } from '../types/Cacher'
+import { CURRENT_CACHE_SCHEMA, type CacheData, type Cacher } from '../types/Cacher'
 import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
 import { type Version } from '../types/Version'
@@ -17,6 +17,10 @@ export const CACHE_DELIMITER = '___'
  * @returns
  */
 function checkCacheExpiration(cacheData: CacheData, cacheExpiration = 10) {
+  if (cacheData.schema !== CURRENT_CACHE_SCHEMA) {
+    return true
+  }
+
   if (typeof cacheData.timestamp !== 'number') {
     return false
   }
@@ -56,46 +60,43 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
   }
 
   const cacheFile = resolveCacheFile(options.cacheFile)
-  let cacheData: CacheData = {}
   const cacheHits = new Set<string>()
 
-  try {
-    cacheData = JSON.parse(await fs.promises.readFile(cacheFile, 'utf-8'))
+  let cacheData: CacheData = {
+    schema: CURRENT_CACHE_SCHEMA,
+    timestamp: Date.now(),
+    packages: {},
+    peers: {},
+  }
 
-    const expired = checkCacheExpiration(cacheData, options.cacheExpiration)
-    if (expired) {
+  try {
+    const raw = await fs.promises.readFile(cacheFile, 'utf-8')
+    const parsed = JSON.parse(raw)
+
+    // Validate schema before assigning
+    if (!checkCacheExpiration(parsed, options.cacheExpiration)) {
+      const { schema, timestamp, packages = {}, peers = {} } = parsed
+      cacheData = { schema, timestamp, packages, peers }
+    } else {
       // reset cache
-      fs.promises.rm(cacheFile, { force: true })
-      cacheData = {}
+      await fs.promises.rm(cacheFile, { force: true })
     }
   } catch (error) {
     // ignore file read/parse/remove errors
   }
 
-  if (typeof cacheData.timestamp !== 'number') {
-    cacheData.timestamp = Date.now()
-  }
-  if (!cacheData.packages) {
-    cacheData.packages = {}
-  }
-  if (!cacheData.peers) {
-    cacheData.peers = {}
-  }
-
   return {
     get: (name: string, target: string) => {
-      if (!cacheData.packages) return
       const key = `${name}${CACHE_DELIMITER}${target}`
       const cached = cacheData.packages[key]
-      if (cached && !key.includes(cached)) {
+      if (cached) {
         cacheHits.add(name)
       }
       return cached
     },
-    set: (name: string, target: string, version: string) => {
-      if (!cacheData.packages) return
+    set: (name: string, target: string, version: string, time?: string) => {
       const key = `${name}${CACHE_DELIMITER}${target}`
-      cacheData.packages[key] = version
+      cacheData.packages[key] = { version, time }
     },
     getPeers: (name: string, version: Version) => {
       if (!cacheData.peers) return

@@ -78,6 +78,7 @@ export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersi
 const chooseUpgrades = async (
   oldDependencies: Index<string>,
   newDependencies: Index<string>,
+  time: Index<string>,
   pkgFile: Maybe<string>,
   options: Options,
 ): Promise<Index<string>> => {
@@ -92,6 +93,7 @@ const chooseUpgrades = async (
     to: newDependencies,
     format: options.format,
     pkgFile: pkgFile || undefined,
+    time,
   })
 
   const formattedLines = keyValueBy(table.toString().split('\n'), line => {
@@ -255,7 +257,7 @@ export default async function runLocal(
     : undefined
 
   const chosenUpgraded = options.interactive
-    ? await chooseUpgrades(current, filteredUpgraded, pkgFile, options)
+    ? await chooseUpgrades(current, filteredUpgraded, time, pkgFile, options)
     : filteredUpgraded
 
   if (!options.json || options.deep) {
