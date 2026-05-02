@@ -186,6 +186,19 @@ describe('getAllPackages', () => {
     })
   })
 
+  describe('.pnpm-store', () => {
+    it('ignores .pnpm-store directory during --deep traversal', async () => {
+      const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
+        'test-data/deep-pnpm-store/',
+        { deep: true },
+      )
+
+      // should only find the root package.json, not the one inside .pnpm-store
+      pkgs.should.deep.equal(['package.json'])
+      workspacePackages.should.deep.equal([])
+    })
+  })
+
   describe('sub-package-names', () => {
     // TODO
     it.skip('--workspaces should return all packages not just ones that dir-names-match', async () => {

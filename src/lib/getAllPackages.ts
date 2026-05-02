@@ -26,7 +26,7 @@ type PnpmWorkspaces =
 type YarnConfig = { catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
 
 const globOptions: GlobOptions = {
-  ignore: ['**/node_modules/**'],
+  ignore: ['**/node_modules/**', '**/.pnpm-store/**'],
 }
 
 /** Reads, parses, and resolves workspaces from a pnpm-workspace file at the same path as the package file. */
