@@ -3,12 +3,14 @@
  */
 import Table from 'cli-table3'
 import fs from 'fs/promises'
+import nodeSemver from 'semver'
 import { format as timeAgoFormat } from 'timeago.js'
+import type { CooldownFunction } from '../types/CooldownFunction'
 import { type IgnoredUpgradeDueToEnginesNode } from '../types/IgnoredUpgradeDueToEnginesNode'
 import { type IgnoredUpgradeDueToPeerDeps } from '../types/IgnoredUpgradeDueToPeerDeps'
 import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
-import { type VersionResult } from '../types/VersionResult'
+import type { CooldownInfo, VersionResult } from '../types/VersionResult'
 import { type VersionSpec } from '../types/VersionSpec'
 import chalk from './chalk'
 import filterObject from './filterObject'
@@ -16,12 +18,14 @@ import getPackageJson from './getPackageJson'
 import getPackageVersion from './getPackageVersion'
 import getRepoUrl from './getRepoUrl'
 import {
+  WILDCARDS,
   colorizeDiff,
   getDependencyGroups,
   getGitHubUrlTag,
   isGitHubUrl,
   isNpmAlias,
   parseNpmAlias,
+  stripRange,
 } from './version-util'
 
 type LogLevel = 'silent' | 'error' | 'warn' | 'info' | 'verbose' | 'silly' | null
@@ -143,6 +147,38 @@ function getVersion(dep: string): string {
   return isGitHubUrl(dep) ? getGitHubUrlTag(dep)! : isNpmAlias(dep) ? parseNpmAlias(dep)![1] : dep
 }
 
+/** return prettify version from cooldown, `1-day` `20-hour` */
+function prettifyCooldown(input: string | number | undefined | CooldownFunction): string {
+  if (input === undefined || typeof input === 'function') {
+    return 'cooldown'
+  }
+
+  const str = String(input).trim().toLowerCase()
+
+  // Case 1: input contains a unit (5d, 30m, 15h)
+  const match = str.match(/^(\d+(?:\.\d+)?)(d|h|m)$/)
+  if (match) {
+    const value = Number(match[1])
+    const unit = match[2]
+
+    const unitMap: Record<string, string> = {
+      d: 'day',
+      h: 'hour',
+      m: 'minute',
+    }
+
+    return `${+value.toFixed(1)}-${unitMap[unit]} cooldown`
+  }
+
+  // Case 2: input is a plain number or numeric string → treat as days
+  const days = Number(str)
+  if (!isNaN(days)) {
+    return `${+days.toFixed(1)}-day cooldown`
+  }
+
+  return 'cooldown'
+}
+
 /**
  * Renders a color-coded table of upgrades.
  *
@@ -155,6 +191,7 @@ function getVersion(dep: string): string {
 export async function toDependencyTable({
   from: fromDeps,
   to: toDeps,
+  skippedByCooldown = [],
   format,
   ownersChangedDeps,
   pkgFile,
@@ -162,6 +199,7 @@ export async function toDependencyTable({
 }: {
   from: Index<VersionSpec>
   to: Index<VersionSpec>
+  skippedByCooldown?: CooldownInfo[]
   format?: readonly string[]
   ownersChangedDeps?: Index<boolean>
   /** See: logging/getPackageRepo pkgFile param. */
@@ -169,6 +207,9 @@ export async function toDependencyTable({
   time?: Index<string>
 }) {
   const pkg = format?.includes('dep') && pkgFile ? JSON.parse(await fs.readFile(pkgFile, 'utf-8')) : null
+  const availableUpdates = format?.includes('cooldown')
+    ? Object.fromEntries(skippedByCooldown.map(({ name, version }) => [name, version]))
+    : null
   const table = renderDependencyTable(
     await Promise.all(
       Object.keys(toDeps)
@@ -205,12 +246,27 @@ export async function toDependencyTable({
             : ''
           const timestamp = format?.includes('time') && time?.[dep] ? time[dep] : null
           const publishTime = timestamp ? timeAgoFormat(timestamp, 'en_US') : ''
+
+          const availableVersion = availableUpdates?.[dep]
+          let available = ''
+          if (availableVersion) {
+            const wildcard = WILDCARDS.includes(to[0]) ? to[0] : ''
+            const coerced = nodeSemver.coerce(availableVersion)
+            // Truncate long versions for single-line terminal display.
+            // e.g., 1.2.3-alpha.20260503T1728 -> 1.2.3-+
+            const shortended =
+              coerced && !availableVersion.endsWith(coerced.version) ? `${coerced.version}-+` : availableVersion
+            const skippedColorized = colorizeDiff(to, wildcard + getVersion(shortended))
+            available = `[cooldown] ${skippedColorized.replace(wildcard, '')}`
+          }
+
           return [
             dep,
             ...(format?.includes('dep') ? [depType ? chalk.gray(depType) : ''] : []),
             from,
             '→',
             toColorized,
+            available,
             ownerChanged,
             ...[homepageUrl, repoUrl, diffUrl, publishTime].filter(x => x),
           ]
@@ -221,11 +277,72 @@ export async function toDependencyTable({
 }
 
 /**
+ * Renders a color-coded table of skipped upgrades.
+ *
+ * @param args
+ * @param args.skippedByCooldown
+ * @param args.pkgFile
+ * @param args.options
+ */
+async function printSkippedByCooldownTable({
+  skippedByCooldown,
+  pkgFile,
+  options,
+}: {
+  skippedByCooldown: CooldownInfo[]
+  pkgFile: any
+  options: Options & { _rawcooldown?: Options['cooldown'] }
+}) {
+  const format = options.format
+  if (!format?.includes('cooldown') || format?.includes('lines')) {
+    return
+  }
+
+  const currentAfterFallback: Index<string> = {}
+  const skippedUpgrades: Index<string> = {}
+  const time: Index<string> = {}
+
+  for (const { name, version, currentVersion, fallbackVersion, time: versionTime } of skippedByCooldown) {
+    if (!isFetchable(currentVersion)) continue
+
+    const wildcard = WILDCARDS.includes(currentVersion[0]) ? currentVersion[0] : ''
+    const caf = wildcard + stripRange(fallbackVersion ?? currentVersion)
+    const target = wildcard + stripRange(version || '')
+
+    currentAfterFallback[name] = caf
+    skippedUpgrades[name] = colorizeDiff(caf, target)
+    time[name] = versionTime || ''
+  }
+
+  if (!Object.keys(currentAfterFallback).length) {
+    return false
+  }
+
+  const formatWithTime = !format.includes('time') ? [...format, 'time'] : format
+
+  const table = await toDependencyTable({
+    from: currentAfterFallback,
+    to: skippedUpgrades,
+    format: formatWithTime,
+    pkgFile: pkgFile || undefined,
+    time,
+  })
+
+  const cooldown = options._rawcooldown ?? options.cooldown
+  const heading = chalk.yellow(chalk.bold(`Skipped due to ${prettifyCooldown(cooldown)}`))
+
+  print(options, '\n' + heading)
+  print(options, table)
+  return true
+}
+
+/**
  * Renders one or more color-coded tables with all upgrades. Supports different formats from the --format option.
  *
  * @param args
  * @param args.current
  * @param args.upgraded
+ * @param args.skippedByCooldown
  * @param args.ownersChangedDeps
  * @param options
  */
@@ -233,12 +350,14 @@ export async function printUpgradesTable(
   {
     current,
     upgraded,
+    skippedByCooldown,
     ownersChangedDeps,
     pkgFile,
     time,
   }: {
     current: Index<VersionSpec>
     upgraded: Index<VersionSpec>
+    skippedByCooldown: CooldownInfo[]
     ownersChangedDeps?: Index<boolean>
     pkgFile?: string
     time?: Index<string>
@@ -256,6 +375,7 @@ export async function printUpgradesTable(
         await toDependencyTable({
           from: current,
           to: packages,
+          skippedByCooldown,
           format: options.format,
           ownersChangedDeps,
           pkgFile,
@@ -272,6 +392,7 @@ export async function printUpgradesTable(
         await toDependencyTable({
           from: current,
           to: upgraded,
+          skippedByCooldown,
           format: options.format,
           ownersChangedDeps,
           pkgFile,
@@ -317,6 +438,7 @@ function printErrors(options: Options, errors?: Index<string>) {
  * @param args.current -
  * @param args.latest -
  * @param args.upgraded -
+ * @param args.skippedByCooldown -
  * @param args.total -
  * @param args.ownersChangedDeps -
  */
@@ -326,6 +448,7 @@ export async function printUpgrades(
     current,
     latest,
     upgraded,
+    skippedByCooldown = [],
     total,
     numCooldown,
     ownersChangedDeps,
@@ -339,6 +462,8 @@ export async function printUpgrades(
     latest?: Index<VersionResult>
     // Upgraded package specifications
     upgraded: Index<VersionSpec>
+    // skipped by cooldown info
+    skippedByCooldown?: CooldownInfo[]
     // The total number of all possible upgrades. This is used to differentiate "no dependencies" from "no upgrades"
     total: number
     // The number of packages skipped due to cooldown.
@@ -353,14 +478,22 @@ export async function printUpgrades(
     errors?: Index<string>
   },
 ) {
+  const numUpgraded = Object.keys(upgraded).length
+
+  const printed = await printSkippedByCooldownTable({ skippedByCooldown, pkgFile, options })
+
   if (!options.format?.includes('group')) {
-    print(options, '')
+    if (printed && numUpgraded) {
+      // print 'Updates' heading after "Skipped due to cooldown" list
+      print(options, '\n' + chalk.blue(chalk.bold('Updates')))
+    } else {
+      print(options, '')
+    }
   }
 
   const smiley = chalk.green.bold(':)')
   const numErrors = Object.keys(errors || {}).length
   const target = typeof options.target === 'string' ? options.target : 'target'
-  const numUpgraded = Object.keys(upgraded).length
   if (numUpgraded === 0 && total === 0 && numErrors === 0) {
     if (Object.keys(current).length === 0) {
       print(options, 'No dependencies.')
@@ -397,6 +530,7 @@ export async function printUpgrades(
       {
         current,
         upgraded,
+        skippedByCooldown,
         ownersChangedDeps,
         pkgFile,
         time,

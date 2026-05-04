@@ -8,6 +8,7 @@ import { type Maybe } from '../types/Maybe'
 import { type Options } from '../types/Options'
 import { type PackageFile } from '../types/PackageFile'
 import { type Version } from '../types/Version'
+import { type CooldownInfo } from '../types/VersionResult.js'
 import { type VersionSpec } from '../types/VersionSpec'
 import chalk from './chalk'
 import getCurrentDependencies from './getCurrentDependencies'
@@ -78,6 +79,7 @@ export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersi
 const chooseUpgrades = async (
   oldDependencies: Index<string>,
   newDependencies: Index<string>,
+  skippedByCooldown: CooldownInfo[],
   time: Index<string>,
   pkgFile: Maybe<string>,
   options: Options,
@@ -91,6 +93,7 @@ const chooseUpgrades = async (
   const table = await toDependencyTable({
     from: oldDependencies,
     to: newDependencies,
+    skippedByCooldown,
     format: options.format,
     pkgFile: pkgFile || undefined,
     time,
@@ -226,7 +229,10 @@ export default async function runLocal(
   const latest = keyValueBy(latestResults, (key, result) => (result.version ? { [key]: result.version } : null))
   const errors = keyValueBy(latestResults, (key, result) => (result.error ? { [key]: result.error } : null))
   const time = keyValueBy(latestResults, (key, result) => (result.time ? { [key]: result.time } : null))
-  const numCooldown = Object.values(latestResults).filter(result => result.cooldown).length
+  const skippedByCooldown = Object.values(latestResults)
+    .map(r => r.cooldownInfo)
+    .filter(info => info !== undefined)
+  const numCooldown = skippedByCooldown.length
 
   if (options.peer) {
     print(options, '\nupgradedPeerDependencies:', 'verbose')
@@ -257,7 +263,7 @@ export default async function runLocal(
     : undefined
 
   const chosenUpgraded = options.interactive
-    ? await chooseUpgrades(current, filteredUpgraded, time, pkgFile, options)
+    ? await chooseUpgrades(current, filteredUpgraded, skippedByCooldown, time, pkgFile, options)
     : filteredUpgraded
 
   if (!options.json || options.deep) {
@@ -269,6 +275,7 @@ export default async function runLocal(
       {
         current,
         upgraded: chosenUpgraded,
+        skippedByCooldown,
         total: Object.keys(upgraded).length,
         latest: latestResults,
         numCooldown,

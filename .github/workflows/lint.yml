@@ -23,16 +23,16 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE }}
           cache: npm
 
       - name: Cache tsbuildinfo
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: node_modules/.cache
           key: tsbuildinfo-${{ runner.os }}-${{ hashFiles('**/tsconfig.json') }}

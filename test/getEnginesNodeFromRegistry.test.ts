@@ -1,12 +1,14 @@
 import { chalkInit } from '../src/lib/chalk'
 import getEnginesNodeFromRegistry from '../src/lib/getEnginesNodeFromRegistry'
 import chaiSetup from './helpers/chaiSetup'
+import { silenceProgressBar } from './helpers/silenceProgress.js'
 
 chaiSetup()
 
 describe('getEnginesNodeFromRegistry', function () {
   it('single package', async () => {
     await chalkInit()
+    silenceProgressBar()
     const data = await getEnginesNodeFromRegistry({ del: '2.0.0' }, {})
     data.should.deep.equal({
       del: '>=0.10.0',
@@ -15,12 +17,14 @@ describe('getEnginesNodeFromRegistry', function () {
 
   it('single package empty', async () => {
     await chalkInit()
+    silenceProgressBar()
     const data = await getEnginesNodeFromRegistry({ 'ncu-test-return-version': '1.0.0' }, {})
     data.should.deep.equal({ 'ncu-test-return-version': undefined })
   })
 
   it('multiple packages', async () => {
     await chalkInit()
+    silenceProgressBar()
     const data = await getEnginesNodeFromRegistry(
       {
         'ncu-test-return-version': '1.0.0',

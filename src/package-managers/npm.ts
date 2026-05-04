@@ -9,14 +9,11 @@ import nodeSemver from 'semver'
 import { parseRange } from 'semver-utils'
 import untildify from 'untildify'
 import pkg from '../../package.json'
-import filterObject from '../lib/filterObject'
 import { keyValueBy } from '../lib/keyValueBy'
 import libnpmconfig from '../lib/libnpmconfig'
 import { print, printSorted } from '../lib/logging'
-import { sortBy } from '../lib/sortBy'
 import spawnCommand from '../lib/spawnCommand'
 import * as versionUtil from '../lib/version-util'
-import type { CooldownFunction } from '../types/CooldownFunction'
 import type { GetVersion } from '../types/GetVersion'
 import type { Index } from '../types/IndexType'
 import type { MockedVersions } from '../types/MockedVersions'
@@ -27,9 +24,9 @@ import type { Packument } from '../types/Packument'
 import type { SpawnOptions } from '../types/SpawnOptions'
 import type { SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 import type { Version } from '../types/Version'
-import type { VersionResult } from '../types/VersionResult'
+import type { CooldownInfo, VersionResult } from '../types/VersionResult'
 import type { VersionSpec } from '../types/VersionSpec'
-import { filterPredicate, satisfiesCooldownPeriod, satisfiesNodeEngine } from './filters'
+import { filterPredicate, satisfiesCooldownPeriod } from './filters'
 
 const EXPLICIT_RANGE_OPS = new Set(['-', '||', '&&', '<', '<=', '>', '>='])
 
@@ -134,26 +131,160 @@ const fetchPartialPackument = async (
   }
 }
 
+interface GreatestWithFallbackResult {
+  targetVersion: string | null
+  fallbackVersion: string | null
+  targetBlockedByCooldown: boolean
+}
+
 /**
- * Decorates a tag-specific/version-specific packument object with the package name and `time` property from the full packument,
- * if the `time` information for the tag's version exists.
- *
- * @param tagPackument - A partial packument object representing a specific tag/version.
- * @param packument - The full packument object, potentially containing time metadata for versions.
- * @returns A new packument object that includes the `time` property if available for the tag's version and package name.
+ * A single-pass reducer that filters and resolves the target upgrade version and a cooldown fallback.
+ * It iterates through the available versions once, applying the provided filter and comparison logic
+ * to identify the best target version while simultaneously tracking the most recent version that
+ * falls outside the cooldown period. This avoids multiple loops for filtering, sorting, and
+ * detection of versions safe for upgrade.
  */
-const decorateTagPackumentWithTimeAndName = (
-  tagPackument: Partial<Packument> | undefined,
-  packument: Partial<Packument>,
-): Partial<Packument> => {
-  if (!tagPackument) return { name: packument.name }
-  const version = tagPackument.version
+const findTargetAndFallback = ({
+  packageName,
+  currentVersion,
+  options,
+  versions,
+  time,
+  filter = () => true,
+  compare = versionUtil.compareVersions,
+}: {
+  packageName: string
+  currentVersion: string
+  options: Options
+  versions: Partial<Packument>[]
+  time?: Packument['time']
+  filter?: (version: string) => boolean | null
+  compare?: (v1: string, v2: string) => number
+}): GreatestWithFallbackResult => {
+  const isValidVersion = filterPredicate(options)
+  const cur = nodeSemver.minVersion(currentVersion)?.version
+  if (!cur) {
+    return {
+      targetVersion: null,
+      fallbackVersion: null,
+      targetBlockedByCooldown: false,
+    }
+  }
+
+  const result = versions.reduce(
+    (acc, versionData) => {
+      const version = versionData.version
+      if (!version) return acc
+
+      // candidate must beat current fallback.
+      if (compare(version, acc.fallbackVersion) <= 0) return acc
+
+      const entry = { ...versionData, name: packageName } as Partial<Packument>
+      if (!isValidVersion(entry)) return acc
+
+      if (!filter?.(version)) return acc
+
+      const versionTime = time?.[version]
+      const isSatisfiesCooldown = options.cooldown
+        ? satisfiesCooldownPeriod(packageName, version, versionTime, options.cooldown)
+        : true
+
+      const isNewTarget = compare(version, acc.targetVersion) > 0
+      if (isNewTarget) {
+        acc.targetVersion = version
+        acc.targetBlockedByCooldown = !isSatisfiesCooldown
+      }
+
+      if (isSatisfiesCooldown) {
+        acc.fallbackVersion = version
+      }
+
+      return acc
+    },
+    {
+      targetVersion: cur,
+      fallbackVersion: cur,
+      targetBlockedByCooldown: false,
+    } as {
+      targetVersion: string
+      fallbackVersion: string
+      targetBlockedByCooldown: boolean
+    },
+  )
+
+  let targetVersion: string | null = result.targetVersion
+  let fallbackVersion: string | null = result.fallbackVersion
+
+  if (fallbackVersion === result.targetVersion) {
+    fallbackVersion = null
+  }
+
+  if (fallbackVersion && !nodeSemver.gt(fallbackVersion, cur)) {
+    fallbackVersion = null
+  }
+
+  if (!nodeSemver.gt(targetVersion, cur)) {
+    targetVersion = null
+  }
 
   return {
-    ...tagPackument,
-    name: packument.name,
-    ...(packument?.time?.[version!] ? { time: packument.time } : null),
+    ...result,
+    targetVersion,
+    fallbackVersion,
   }
+}
+
+/**
+ * Formats the raw version resolution data into a standardized VersionResult object.
+ * This function wraps the target version with its publish time and, if the target is
+ * currently in a cooldown period, adds the fallback version and cooldown metadata.
+ */
+const toVersionResult = ({
+  packageName,
+  currentVersion,
+  options,
+  time,
+  targetVersion,
+  fallbackVersion,
+  targetBlockedByCooldown,
+}: {
+  packageName: string
+  currentVersion: string
+  options: Options
+  time?: Packument['time']
+  targetVersion: string | null
+  fallbackVersion: string | null
+  targetBlockedByCooldown: boolean
+}): VersionResult => {
+  const targetMatch = {
+    version: targetVersion,
+    ...(targetVersion && time?.[targetVersion] ? { time: time[targetVersion] } : null),
+  }
+
+  // only check fallback if target is in cooldown period.
+  if (options.cooldown && targetVersion && targetBlockedByCooldown) {
+    const cooldownInfo: CooldownInfo = {
+      name: packageName,
+      currentVersion,
+      ...targetMatch,
+    }
+
+    if (fallbackVersion) {
+      const fallbackTime = time?.[fallbackVersion]
+      cooldownInfo.fallbackVersion = fallbackVersion
+      return {
+        version: fallbackVersion,
+        ...(fallbackTime ? { time: fallbackTime } : null),
+        cooldownInfo,
+      }
+    }
+
+    return {
+      cooldownInfo,
+    }
+  }
+
+  return targetMatch
 }
 
 /** Normalizes the keys of an npm config for pacote. */
@@ -711,6 +842,7 @@ export const greatest: GetVersion = async (
   options = {},
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
+  caller?: 'distTag' | 'latest',
 ): Promise<VersionResult> => {
   const fields: (keyof Packument)[] = ['versions']
 
@@ -728,22 +860,20 @@ export const greatest: GetVersion = async (
     npmConfigProject,
   )
 
-  // known type based on 'versions'
-  const versions = packument?.versions
+  const versions = Object.values(packument?.versions ?? {})
+  const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }
 
-  const version =
-    Object.values(versions || {})
-      .filter(tagPackument =>
-        filterPredicate(options)(decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)),
-      )
-      .map(o => o.version)
-      .sort(versionUtil.compareVersions)
-      .at(-1) || null
+  const versionResult = findTargetAndFallback(packageInfo)
 
-  return {
-    version,
-    ...(packument?.time?.[version!] ? { time: packument.time[version!] } : null),
+  if (caller) {
+    const version = versionResult.targetBlockedByCooldown ? versionResult.fallbackVersion : versionResult.targetVersion
+    return {
+      version,
+      ...(version && packument?.time?.[version] ? { time: packument.time[version] } : null),
+    }
   }
+
+  return toVersionResult({ ...packageInfo, ...versionResult })
 }
 
 /**
@@ -856,7 +986,12 @@ export const distTag: GetVersion = async (
     npmConfig,
     npmConfigProject,
   )
+
   const version = packument?.['dist-tags']?.[options.distTag || 'latest']
+  if (!version) {
+    // Skip packages that don't have the specified dist-tag to prevent resolution errors
+    return {}
+  }
 
   // if the packument does not contain versions, we need to add a minimal versions property with the upgraded version
   const tagPackument = packument?.versions
@@ -866,35 +1001,47 @@ export const distTag: GetVersion = async (
         version,
       }
 
-  const tagPackumentWithTime = decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)
+  const publishTime = packument?.time?.[version!]
+  const maybeTime = publishTime ? { time: publishTime } : null
+
+  const isSatisfiesCooldown =
+    tagPackument && satisfiesCooldownPeriod(packageName, tagPackument.version, publishTime, options.cooldown)
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
   // if latest exists and latest is a prerelease version and --pre is specified, return it
   // if latest exists and latest not satisfies min version of engines.node
   // if latest exists and cooldown is specified and latest is within cooldown period, return it
-  if (tagPackument && filterPredicate(options)(tagPackumentWithTime)) {
+  if (isSatisfiesCooldown && filterPredicate(options)(tagPackument)) {
     return {
       version: tagPackument.version,
-      ...(packument?.time?.[version!] ? { time: packument.time[version!] } : null),
+      ...maybeTime,
     }
   }
 
   // if version from dist-tag does not meet cooldown requirement skip finding other versions
   if (options.cooldown) {
-    if (
-      version &&
-      tagPackument &&
-      !satisfiesCooldownPeriod(tagPackumentWithTime, options.cooldown as number | CooldownFunction)
-    ) {
-      const publishTime = packument?.time?.[version]
+    if (version && tagPackument && !isSatisfiesCooldown) {
       print(
         options,
         `Skipping ${packageName}@${version} due to cooldown${publishTime ? ` (published ${publishTime})` : ''}.`,
         'verbose',
       )
     }
-    return { cooldown: true }
+
+    const current = nodeSemver.minVersion(currentVersion)?.version ?? '0.0.0'
+    if (nodeSemver.gt(tagPackument.version, current)) {
+      return {
+        cooldownInfo: {
+          name: packageName,
+          version: tagPackument.version,
+          currentVersion,
+          ...maybeTime,
+        },
+      }
+    }
+
+    return {}
   }
 
   // If we use a custom dist-tag, we do not want to get other 'pre' versions, just the ones from this dist-tag
@@ -903,7 +1050,7 @@ export const distTag: GetVersion = async (
   // if latest is a prerelease version and --pre is not specified
   // or latest is deprecated
   // find the next valid version
-  return greatest(packageName, currentVersion, options, npmConfig, npmConfigProject)
+  return greatest(packageName, currentVersion, options, npmConfig, npmConfigProject, 'distTag')
 }
 
 /**
@@ -929,9 +1076,15 @@ export const latest: GetVersion = async (
     npmConfigProject,
   )
 
-  if (latestResult.cooldown) {
-    const fallback = await greatest(packageName, currentVersion, options, npmConfig, npmConfigProject)
-    if (fallback.version) return fallback
+  if (latestResult.cooldownInfo) {
+    const fallback = await greatest(packageName, currentVersion, options, npmConfig, npmConfigProject, 'latest')
+    if (fallback.version) {
+      latestResult.cooldownInfo.fallbackVersion = fallback.version
+      return {
+        ...fallback,
+        ...latestResult,
+      }
+    }
   }
 
   return latestResult
@@ -962,45 +1115,19 @@ export const newest: GetVersion = async (
     npmConfigProject,
   )
 
-  // Generate a map of versions that satisfy the node engine.
-  // result.versions is an object but is parsed as an array, so manually convert it to an object.
-  // Otherwise keyValueBy will pass the predicate arguments in the wrong order.
-  const versionsSatisfyingNodeEngine = keyValueBy(
-    packument?.versions || {},
-    (version: Version, packument: Packument['versions'][string]) =>
-      satisfiesNodeEngine(packument, options.nodeEngineVersion) ? { [packument.version]: true } : null,
-  )
+  const versions = Object.values(packument?.versions ?? {})
+  const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }
 
-  // filter out times that do not satisfy the node engine
-  // filter out prereleases if pre:false (same as allowPreOrIsNotPre)
-  const timesSatisfyingNodeEngine = filterObject(
-    (packument?.time || {}) as Index<string>,
-    version => versionsSatisfyingNodeEngine[version] && (options.pre !== false || !versionUtil.isPre(version)),
-  )
+  const versionResult = findTargetAndFallback({
+    ...packageInfo,
+    compare: (v1, v2) => {
+      const t1 = packument?.time?.[v1] || ''
+      const t2 = packument?.time?.[v2] || ''
+      return t1 > t2 ? 1 : t1 < t2 ? -1 : 0
+    },
+  })
 
-  // sort by timestamp (entry[1]) and map versions
-  const versionsSortedByTime = sortBy(Object.entries(timesSatisfyingNodeEngine), v => v[1]).map(([version]) => version)
-
-  if (options.cooldown) {
-    const versionsSatisfyingCooldownPeriod = versionsSortedByTime.filter(version =>
-      satisfiesCooldownPeriod(
-        decorateTagPackumentWithTimeAndName((packument as Packument).versions[version], packument as Packument),
-        options.cooldown as number | CooldownFunction,
-      ),
-    )
-
-    const version = versionsSatisfyingCooldownPeriod.at(-1)
-    return {
-      version,
-      ...(packument?.time?.[version!] ? { time: packument.time[version!] } : null),
-    }
-  }
-
-  const newestVersion = versionsSortedByTime.at(-1)
-  return {
-    version: newestVersion,
-    ...(packument?.time?.[newestVersion!] ? { time: packument.time[newestVersion!] } : null),
-  }
+  return toVersionResult({ ...packageInfo, ...versionResult })
 }
 
 /**
@@ -1034,21 +1161,15 @@ export const minor: GetVersion = async (
     npmConfigProject,
   )
 
-  const versions = packument?.versions as Index<Packument>
-  const version = versionUtil.findGreatestByLevel(
-    Object.values(versions || {})
-      .filter(tagPackument =>
-        filterPredicate(options)(decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)),
-      )
-      .map(o => o.version),
-    currentVersion,
-    'minor',
-  )
+  const versions = Object.values(packument?.versions ?? {})
+  const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }
 
-  return {
-    version,
-    ...(packument?.time?.[version!] ? { time: packument.time[version!] } : null),
-  }
+  const versionResult = findTargetAndFallback({
+    ...packageInfo,
+    filter: versionUtil.filterByLevel(currentVersion, 'minor'),
+  })
+
+  return toVersionResult({ ...packageInfo, ...versionResult })
 }
 
 /**
@@ -1082,20 +1203,15 @@ export const patch: GetVersion = async (
     npmConfigProject,
   )
 
-  const versions = packument?.versions as Index<Packument>
-  const version = versionUtil.findGreatestByLevel(
-    Object.values(versions || {})
-      .filter(tagPackument =>
-        filterPredicate(options)(decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)),
-      )
-      .map(o => o.version),
-    currentVersion,
-    'patch',
-  )
-  return {
-    version,
-    ...(packument?.time?.[version!] ? { time: packument.time[version!] } : null),
-  }
+  const versions = Object.values(packument?.versions ?? {})
+  const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }
+
+  const versionResult = findTargetAndFallback({
+    ...packageInfo,
+    filter: versionUtil.filterByLevel(currentVersion, 'patch'),
+  })
+
+  return toVersionResult({ ...packageInfo, ...versionResult })
 }
 
 /**
@@ -1113,6 +1229,9 @@ export const semver: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
+  // ignore explicit version ranges
+  if (isExplicitRange(currentVersion)) return { version: null }
+
   const fields: (keyof Packument)[] = ['versions']
 
   if (options.cooldown) {
@@ -1129,22 +1248,17 @@ export const semver: GetVersion = async (
     npmConfigProject,
   )
 
-  const versions = packument?.versions as Index<Packument>
-  // ignore explicit version ranges
-  if (isExplicitRange(currentVersion)) return { version: null }
+  const versions = Object.values(packument?.versions ?? {})
+  const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }
 
-  const versionsFiltered = Object.values(versions || {})
-    .filter(tagPackument =>
-      filterPredicate(options)(decorateTagPackumentWithTimeAndName(tagPackument, packument as Partial<Packument>)),
-    )
-    .map(o => o.version)
-  // TODO: Upgrading within a prerelease does not seem to work.
-  // { includePrerelease: true } does not help.
-  const version = nodeSemver.maxSatisfying(versionsFiltered, currentVersion)
-  return {
-    version,
-    ...(packument?.time?.[version!] ? { time: packument.time[version!] } : null),
-  }
+  const versionResult = findTargetAndFallback({
+    ...packageInfo,
+    // TODO: Upgrading within a prerelease does not seem to work.
+    // { includePrerelease: true } does not help.
+    filter: versionUtil.filterBySatisfying(currentVersion),
+  })
+
+  return toVersionResult({ ...packageInfo, ...versionResult })
 }
 
 export default spawnNpm

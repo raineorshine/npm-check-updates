@@ -10,4 +10,5 @@ export type GetVersion = (
   options?: Options,
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
+  caller?: 'distTag' | 'latest',
 ) => Promise<VersionResult>

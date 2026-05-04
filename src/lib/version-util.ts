@@ -330,6 +330,24 @@ export function findGreatestByLevel(versions: string[], current: string, level: 
   return versionsSorted.at(-1) || null
 }
 
+/** Returns a filter function that can be used to filter versions by a level. */
+export function filterByLevel(current: string, level: VersionLevel): (v: string) => boolean | null {
+  const cur = semver.minVersion(current)
+  return (v: string) => {
+    const parsed = semver.parse(v)
+    return (
+      parsed &&
+      (level === 'major' || parsed.major === cur?.major) &&
+      (level === 'major' || level === 'minor' || parsed.minor === cur?.minor)
+    )
+  }
+}
+
+/** Returns a filter function that can be used to filter versions that satisfy a range. */
+export function filterBySatisfying(range: string): (v: string) => boolean {
+  return (v: string) => semver.satisfies(v, range)
+}
+
 /**
  * @param version
  * @returns True if the version is any kind of prerelease: alpha, beta, rc, pre
@@ -545,3 +563,6 @@ export const upgradeGitHubUrl = (declaration: string, upgraded: string) => {
   const tag = decodeURIComponent(parsedUrl.branch).replace(/^semver:/, '')
   return declaration.replace(tag, upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgradedNormalized)))
 }
+
+/** Strips semver range prefixes (^, ~, >=, <=, >, <) from a version string. */
+export const stripRange = (version: string): string => version.replace(/^[~^<>=]+/, '')
