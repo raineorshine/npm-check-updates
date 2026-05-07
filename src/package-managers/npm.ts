@@ -143,9 +143,10 @@ const fetchPartialPackument = async (
  * @returns A new packument object that includes the `time` property if available for the tag's version and package name.
  */
 const decorateTagPackumentWithTimeAndName = (
-  tagPackument: Partial<Packument>,
+  tagPackument: Partial<Packument> | undefined,
   packument: Partial<Packument>,
 ): Partial<Packument> => {
+  if (!tagPackument) return { name: packument.name }
   const version = tagPackument.version
 
   return {
