@@ -91,9 +91,9 @@ export default defineConfig(({ mode }) => ({
     dts({
       entryRoot: 'src',
       include: ['src'],
-      rollupTypes: true,
+      bundleTypes: true,
       insertTypesEntry: true,
-      outDir: 'build',
+      outDirs: 'build',
     }),
     chmodBinPlugin(),
     ...(process.env.ANALYZER ? [analyzerOnce()] : []),
