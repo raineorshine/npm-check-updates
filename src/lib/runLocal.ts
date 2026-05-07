@@ -228,7 +228,10 @@ export default async function runLocal(
   const [upgraded, latestResults, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)
   const latest = keyValueBy(latestResults, (key, result) => (result.version ? { [key]: result.version } : null))
   const errors = keyValueBy(latestResults, (key, result) => (result.error ? { [key]: result.error } : null))
-  const time = keyValueBy(latestResults, (key, result) => (result.time ? { [key]: result.time } : null))
+  const time = keyValueBy(latestResults, (key, result) => {
+    const time = result.time ?? result.cooldownInfo?.currentVersionTime
+    return time ? { [key]: time } : null
+  })
   const skippedByCooldown = Object.values(latestResults)
     .map(r => r.cooldownInfo)
     .filter(info => info !== undefined)

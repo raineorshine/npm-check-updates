@@ -2,8 +2,9 @@ import { type Version } from './Version'
 
 export interface CooldownInfo {
   name: string
-  version: string | null | undefined
   currentVersion: string
+  currentVersionTime?: string
+  version: string | null | undefined
   time?: string
   fallbackVersion?: string | null
 }

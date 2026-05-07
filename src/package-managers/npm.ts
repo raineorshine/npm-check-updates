@@ -263,9 +263,11 @@ const toVersionResult = ({
 
   // only check fallback if target is in cooldown period.
   if (options.cooldown && targetVersion && targetBlockedByCooldown) {
+    const current = nodeSemver.minVersion(currentVersion)?.version
     const cooldownInfo: CooldownInfo = {
       name: packageName,
       currentVersion,
+      ...(current ? { currentVersionTime: time?.[current] } : null),
       ...targetMatch,
     }
 
@@ -1034,8 +1036,9 @@ export const distTag: GetVersion = async (
       return {
         cooldownInfo: {
           name: packageName,
-          version: tagPackument.version,
           currentVersion,
+          currentVersionTime: packument?.time?.[current],
+          version: tagPackument.version,
           ...maybeTime,
         },
       }
