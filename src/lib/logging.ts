@@ -191,7 +191,7 @@ function prettifyCooldown(input: string | number | undefined | CooldownFunction)
 export async function toDependencyTable({
   from: fromDeps,
   to: toDeps,
-  skippedByCooldown = [],
+  skippedByCooldown,
   format,
   ownersChangedDeps,
   pkgFile,
@@ -199,7 +199,7 @@ export async function toDependencyTable({
 }: {
   from: Index<VersionSpec>
   to: Index<VersionSpec>
-  skippedByCooldown?: CooldownInfo[]
+  skippedByCooldown?: Index<CooldownInfo>
   format?: readonly string[]
   ownersChangedDeps?: Index<boolean>
   /** See: logging/getPackageRepo pkgFile param. */
@@ -207,9 +207,7 @@ export async function toDependencyTable({
   time?: Index<string>
 }) {
   const pkg = format?.includes('dep') && pkgFile ? JSON.parse(await fs.readFile(pkgFile, 'utf-8')) : null
-  const availableUpdates = format?.includes('cooldown')
-    ? Object.fromEntries(skippedByCooldown.map(({ name, version }) => [name, version]))
-    : null
+  const showCooldownCol = Object.keys(skippedByCooldown || {}).length > 0
   const table = renderDependencyTable(
     await Promise.all(
       Object.keys(toDeps)
@@ -247,17 +245,17 @@ export async function toDependencyTable({
           const timestamp = format?.includes('time') && time?.[dep] ? time[dep] : null
           const publishTime = timestamp ? timeAgoFormat(timestamp, 'en_US') : ''
 
-          const availableVersion = availableUpdates?.[dep]
-          let available = ''
-          if (availableVersion) {
+          const cooldownVersion = skippedByCooldown?.[dep]?.version
+          let cooldown = ''
+          if (cooldownVersion) {
             const wildcard = WILDCARDS.includes(to[0]) ? to[0] : ''
-            const coerced = nodeSemver.coerce(availableVersion)
+            const coerced = nodeSemver.coerce(cooldownVersion)
             // Truncate long versions for single-line terminal display.
             // e.g., 1.2.3-alpha.20260503T1728 -> 1.2.3-+
             const shortended =
-              coerced && !availableVersion.endsWith(coerced.version) ? `${coerced.version}-+` : availableVersion
+              coerced && !cooldownVersion.endsWith(coerced.version) ? `${coerced.version}-+` : cooldownVersion
             const skippedColorized = colorizeDiff(to, wildcard + getVersion(shortended))
-            available = `[cooldown] ${skippedColorized.replace(wildcard, '')}`
+            cooldown = `[cooldown] ${skippedColorized.replace(wildcard, '')}`
           }
 
           return [
@@ -266,7 +264,7 @@ export async function toDependencyTable({
             from,
             '→',
             toColorized,
-            available,
+            ...(showCooldownCol ? [cooldown] : []),
             ownerChanged,
             ...[homepageUrl, repoUrl, diffUrl, publishTime].filter(x => x),
           ]
@@ -289,12 +287,12 @@ async function printSkippedByCooldownTable({
   pkgFile,
   options,
 }: {
-  skippedByCooldown: CooldownInfo[]
+  skippedByCooldown?: Index<CooldownInfo>
   pkgFile: any
-  options: Options & { _rawcooldown?: Options['cooldown'] }
+  options: Options
 }) {
   const format = options.format
-  if (!format?.includes('cooldown') || format?.includes('lines')) {
+  if (!skippedByCooldown || !format?.includes('cooldown') || format?.includes('lines')) {
     return
   }
 
@@ -302,7 +300,8 @@ async function printSkippedByCooldownTable({
   const skippedUpgrades: Index<string> = {}
   const time: Index<string> = {}
 
-  for (const { name, version, currentVersion, fallbackVersion, time: versionTime } of skippedByCooldown) {
+  for (const params of Object.values(skippedByCooldown)) {
+    const { name, version, currentVersion, fallbackVersion, time: versionTime } = params
     if (!isFetchable(currentVersion)) continue
 
     const wildcard = WILDCARDS.includes(currentVersion[0]) ? currentVersion[0] : ''
@@ -328,7 +327,7 @@ async function printSkippedByCooldownTable({
     time,
   })
 
-  const cooldown = options._rawcooldown ?? options.cooldown
+  const cooldown = options.raw?.cooldown ?? options.cooldown
   const heading = chalk.yellow(chalk.bold(`Skipped due to ${prettifyCooldown(cooldown)}`))
 
   print(options, '\n' + heading)
@@ -357,7 +356,7 @@ export async function printUpgradesTable(
   }: {
     current: Index<VersionSpec>
     upgraded: Index<VersionSpec>
-    skippedByCooldown: CooldownInfo[]
+    skippedByCooldown?: Index<CooldownInfo>
     ownersChangedDeps?: Index<boolean>
     pkgFile?: string
     time?: Index<string>
@@ -448,7 +447,7 @@ export async function printUpgrades(
     current,
     latest,
     upgraded,
-    skippedByCooldown = [],
+    skippedByCooldown,
     total,
     numCooldown,
     ownersChangedDeps,
@@ -463,7 +462,7 @@ export async function printUpgrades(
     // Upgraded package specifications
     upgraded: Index<VersionSpec>
     // skipped by cooldown info
-    skippedByCooldown?: CooldownInfo[]
+    skippedByCooldown?: Index<CooldownInfo>
     // The total number of all possible upgrades. This is used to differentiate "no dependencies" from "no upgrades"
     total: number
     // The number of packages skipped due to cooldown.

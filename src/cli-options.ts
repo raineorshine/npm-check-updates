@@ -817,8 +817,18 @@ const cliOptions: CLIOption[] = [
     parse: value => (typeof value === 'string' ? value.split(/,|\s/) : value),
     default: [],
     type: 'readonly string[]',
-    // prettier-ignore
-    choices: ['dep', 'group', 'homepage', 'ownerChanged', 'repo', 'diff', 'time', 'lines', 'installedVersion', 'cooldown'],
+    choices: [
+      'dep',
+      'group',
+      'homepage',
+      'ownerChanged',
+      'repo',
+      'diff',
+      'time',
+      'lines',
+      'installedVersion',
+      'cooldown',
+    ],
     help: extendedHelpFormat,
   },
   {
@@ -1050,21 +1060,13 @@ const cliOptions: CLIOption[] = [
     help: extendedHelpCooldown,
     parse: value => {
       if (typeof value === 'number' || typeof value === 'function') {
-        return {
-          raw: value,
-          days: value,
-        }
+        return value
+      } else if (typeof value === 'string') {
+        const days = parseCooldown(value)
+        return days !== null ? days : parseInt(value, 10)
+      } else {
+        throw new Error('cooldown must be a number, string, or function')
       }
-
-      if (typeof value === 'string') {
-        const parsed = parseCooldown(value)
-        return {
-          raw: value,
-          days: parsed !== null ? parsed : parseInt(value, 10),
-        }
-      }
-
-      throw new Error('cooldown must be a number, string, or function')
     },
   },
 ]

@@ -2,7 +2,7 @@ import { chmodSync } from 'fs'
 import { type Plugin, defineConfig } from 'vite'
 import { analyzer } from 'vite-bundle-analyzer'
 import dts from 'vite-plugin-dts'
-import { buildOptions } from './src/scripts/build-options.js'
+import { buildOptions } from './src/scripts/build-options'
 
 /**
  * cosmiconfig bundles a TypeScript loader that dynamically imports the

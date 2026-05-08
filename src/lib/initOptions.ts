@@ -54,8 +54,12 @@ const formatDays = (d: number, r = Math.round(d * 10) / 10) => `${r} day${r !== 
 async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Promise<Options> {
   const chalk = getChalk(runOptions.color)
 
+  let raw: RunOptions | undefined
+
   // if not executed on the command-line (i.e. executed as a node module), set the defaults
   if (!cli) {
+    raw = { ...runOptions }
+
     // set cli defaults since they are not set by commander in this case
     const cliDefaults = cliOptions.reduce(
       (acc, curr) => ({
@@ -76,23 +80,13 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   }
 
   // convert packageData to string to convert RunOptions to Options
-  const options: Options & { _rawcooldown?: Options['cooldown'] } = {
+  const options: Options = {
     ...runOptions,
     ...(runOptions.packageData && typeof runOptions.packageData !== 'string'
       ? { packageData: JSON.stringify(runOptions.packageData, null, 2) as any }
       : null),
     cli,
-  }
-
-  // save cooldown raw input
-  if (options.cooldown != null) {
-    if (typeof options.cooldown === 'object' && 'raw' in options.cooldown) {
-      const { raw, days } = options.cooldown as unknown as { raw: string; days: number }
-      options._rawcooldown = raw
-      options.cooldown = days
-    } else {
-      options._rawcooldown = options.cooldown
-    }
+    ...(cli ? null : { raw }),
   }
 
   // consolidate loglevel

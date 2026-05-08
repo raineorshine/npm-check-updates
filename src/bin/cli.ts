@@ -4,12 +4,13 @@ import createCloneDeep from 'rfdc'
 import semver from 'semver'
 import updateNotifier from 'update-notifier'
 import pkg from '../../package.json'
-import cliOptions, { renderExtendedHelp } from '../cli-options'
+import cliOptions, { cliOptionsMap, renderExtendedHelp } from '../cli-options'
 import ncu from '../index'
 import { chalkInit, getChalk } from '../lib/chalk'
 // async global contexts are only available in esm modules -> function
 import getNcuRc from '../lib/getNcuRc'
 import { pickBy } from '../lib/pick'
+import { type RunOptions } from '../types/RunOptions'
 
 const optionVersionDescription = 'Output the version number of npm-check-updates.'
 
@@ -196,6 +197,33 @@ ${chalk.dim.underline(
   // insert config arguments into command line arguments so they can all be parsed by commander
   const combinedArguments = [...process.argv.slice(0, 2), ...rcArgs, ...programArgs]
 
+  // save raw values for all cli arguments
+  const raw: Partial<Record<keyof RunOptions, any>> = {}
+  const args = combinedArguments.slice(2)
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]
+
+    if (typeof arg !== 'string' || !arg.startsWith('-')) {
+      continue
+    }
+
+    const key = arg.replace(/^--?(no-)?/, '')
+    const option = cliOptionsMap[key]
+
+    if (option) {
+      const property = option.long as keyof RunOptions
+      if (option.arg) {
+        raw[property] = i + 1 < args.length ? args[i + 1] : true
+        i++
+      } else if (option.type === 'boolean') {
+        raw[property] = !arg.startsWith('--no-')
+      } else {
+        raw[property] = true
+      }
+    }
+  }
+
   // See defaultOptionValues comment above
   ;(program as any)._optionValues = defaultOptionValues
   program.parse(combinedArguments)
@@ -206,6 +234,7 @@ ${chalk.dim.underline(
     ...(rcResult && Object.keys(rcResult.config).length > 0 ? { rcConfigPath: rcResult.filePath } : null),
     ...pickBy(program.opts(), (value: unknown) => value !== undefined),
     args: program.args,
+    raw,
     ...(combinedProgramOpts.filter ? { filter: combinedProgramOpts.filter } : null),
     ...(combinedProgramOpts.reject ? { reject: combinedProgramOpts.reject } : null),
   }

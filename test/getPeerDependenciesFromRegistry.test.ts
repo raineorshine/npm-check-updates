@@ -1,7 +1,7 @@
 import { chalkInit } from '../src/lib/chalk'
 import getPeerDependenciesFromRegistry from '../src/lib/getPeerDependenciesFromRegistry'
 import chaiSetup from './helpers/chaiSetup'
-import { silenceProgressBar } from './helpers/silenceProgress.js'
+import { silenceProgressBar } from './helpers/silenceProgressBar'
 
 chaiSetup()
 

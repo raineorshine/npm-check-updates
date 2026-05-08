@@ -1,7 +1,7 @@
 import { chalkInit } from '../src/lib/chalk'
 import getEnginesNodeFromRegistry from '../src/lib/getEnginesNodeFromRegistry'
 import chaiSetup from './helpers/chaiSetup'
-import { silenceProgressBar } from './helpers/silenceProgress.js'
+import { silenceProgressBar } from './helpers/silenceProgressBar'
 
 chaiSetup()
 

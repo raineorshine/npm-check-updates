@@ -44,10 +44,10 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
     const time = result.time ?? result.cooldownInfo?.currentVersionTime
     return time ? { [key]: time } : null
   })
-  const skippedByCooldown = Object.values(latest)
-    .map(r => r.cooldownInfo)
-    .filter(info => info !== undefined)
-  const numCooldown = skippedByCooldown.length
+  const skippedByCooldown = keyValueBy(latest, (key, result) =>
+    result.cooldownInfo ? { [key]: result.cooldownInfo } : null,
+  )
+  const numCooldown = Object.values(skippedByCooldown).length
 
   const upgradedPackageNames = Object.keys(upgraded)
   await printUpgrades(options, {
