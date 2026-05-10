@@ -40,8 +40,8 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
 
-      - name: Enable corepack
-        run: corepack enable
+      - name: Enable yarn via corepack
+        run: corepack enable yarn
 
       - name: Install npm dependencies
         run: npm ci
