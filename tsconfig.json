@@ -2,9 +2,9 @@
   "include": ["src/**/*", "test/**/*", "vite.config.ts"],
   "exclude": ["test/deep", "test/doctor", "node_modules"],
   "compilerOptions": {
-    "target": "es2022",
-    "lib": ["es2022", "dom"],
-    "module": "esnext",
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
     "moduleResolution": "bundler",
     "types": ["node", "mocha"],
     "noEmit": true,

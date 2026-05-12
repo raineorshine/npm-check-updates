@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import * as bun from '../../src/package-managers/bun.js'
+import * as bun from '../../src/package-managers/bun'
 import chaiSetup from '../helpers/chaiSetup'
 import { testFail, testPass } from '../helpers/doctorHelpers'
 import stubVersions from '../helpers/stubVersions'

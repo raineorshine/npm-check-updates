@@ -197,6 +197,7 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
       ['repo', `Infers and displays links to the package's source code repository. Requires packages to be installed.`],
       ['diff', `Display link to compare the changes between package versions.`],
       ['time', 'Shows the publish time of each upgrade.'],
+      ['cooldown', 'Shows a list of packages that were skipped due to the --cooldown threshold.'],
     ],
   })
 
@@ -643,6 +644,22 @@ ${codeBlock(
 ${chalk.green('cooldown')}: packageName ${chalk.cyan('=>')} (packageName.startsWith(${chalk.yellow("'@my-company'")}) ? ${chalk.cyan('0')} : ${chalk.cyan('3')})`,
   { markdown },
 )}
+
+### Cooldown Formatting
+
+When using \`--format cooldown\` alongside the \`--cooldown\` option, \`ncu\` will show a list of packages that were skipped due to the \`--cooldown\` threshold.
+
+Example:
+
+${codeBlock(`ncu --format cooldown --cooldown 7`, { markdown })}
+
+Output:
+
+${codeBlock(
+  `Skipped due to 7-day cooldown
+ @typescript-eslint/parser  ^8.50.0  →  ^8.59.1      5 days ago
+ eslint                     ^10.0.1  →  ^10.3.0      1 day ago`,
+)}
 `
 }
 
@@ -796,11 +813,22 @@ const cliOptions: CLIOption[] = [
     long: 'format',
     arg: 'value',
     description:
-      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion.',
+      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown.',
     parse: value => (typeof value === 'string' ? value.split(/,|\s/) : value),
     default: [],
     type: 'readonly string[]',
-    choices: ['dep', 'group', 'homepage', 'ownerChanged', 'repo', 'diff', 'time', 'lines', 'installedVersion'],
+    choices: [
+      'dep',
+      'group',
+      'homepage',
+      'ownerChanged',
+      'repo',
+      'diff',
+      'time',
+      'lines',
+      'installedVersion',
+      'cooldown',
+    ],
     help: extendedHelpFormat,
   },
   {

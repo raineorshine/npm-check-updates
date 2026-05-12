@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // eslint doesn't like .to.be.false syntax
 import { expect } from 'chai'
+import { stripVTControlCharacters } from 'node:util'
 import Sinon from 'sinon'
 import ncu from '../src/'
 import { npmApi } from '../src/package-managers/npm'
@@ -9,6 +10,7 @@ import { yarnApi } from '../src/package-managers/yarn'
 import type { PackageFile } from '../src/types/PackageFile'
 import type { Packument } from '../src/types/Packument'
 import chaiSetup from './helpers/chaiSetup'
+import { silenceProgressBar } from './helpers/silenceProgressBar'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
@@ -39,6 +41,24 @@ const createMockVersion = ({ name, versions, distTags }: CreateMockParams): Part
     time: Object.fromEntries(Object.entries(versions).map(([version, date]) => [version, date])),
     'dist-tags': distTags,
   }
+}
+
+/**
+ * Processes log arguments by removing ANSI escape codes, collapsing all
+ * internal whitespace (multiple spaces/tabs) into a single space,
+ * and trimming leading/trailing newlines.
+ */
+const getNormalizedLogs = (logSpy: Sinon.SinonStub<any[], void>): string[] => {
+  return logSpy.args
+    .flat()
+    .filter((arg): arg is string => typeof arg === 'string')
+    .map(
+      l =>
+        stripVTControlCharacters(l)
+          .replace(/\s+/g, ' ') // Replace all whitespace sequences with a single space
+          .replace(/^\n+|\n+$/g, '') // Remove newlines at the start and end
+          .trim(), // Ensure no stray spaces remain at the edges
+    )
 }
 
 describe('cooldown', () => {
@@ -433,7 +453,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const logSpy = Sinon.spy(console, 'log')
+      const logSpy = Sinon.stub(console, 'log')
 
       // When ncu is run with verbose logging and cooldown
       // Note: jsonUpgraded is set to false to disable json mode, which would otherwise suppress verbose output
@@ -468,7 +488,8 @@ describe('cooldown', () => {
         }),
       )
 
-      const logSpy = Sinon.spy(console, 'log')
+      const logSpy = Sinon.stub(console, 'log')
+      silenceProgressBar()
 
       // When ncu is run with cooldown and jsonUpgraded disabled
       // Note: loglevel must be set explicitly since the module default sets silent mode
@@ -1130,7 +1151,7 @@ describe('cooldown', () => {
       // Stub findNpmConfig to return a config with minReleaseAge: '7'
       const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '7' })
 
-      const logSpy = Sinon.spy(console, 'log')
+      const logSpy = Sinon.stub(console, 'log')
 
       // When: ncu is run with jsonUpgraded enabled
       await ncu({ packageData, jsonUpgraded: true })
@@ -1497,6 +1518,124 @@ describe('cooldown', () => {
       stub.restore()
       findNpmConfigStub.restore()
       yarnAgeGateStub.restore()
+    })
+  })
+
+  describe('print: Skipped due to cooldown when `--format cooldown` included', () => {
+    const mockedVersion = createMockVersion({
+      name: 'test-package',
+      versions: {
+        '1.0.2': new Date(NOW - 5 * DAY).toISOString(),
+        '1.0.1': new Date(NOW - 8 * DAY).toISOString(),
+      },
+      distTags: {
+        latest: '1.0.2',
+      },
+    })
+    const packageData: PackageFile = {
+      dependencies: {
+        'test-package': '^1.0.0',
+      },
+    }
+
+    // When ncu is run with cooldown and jsonUpgraded disabled
+    // Note: loglevel must be set explicitly since the module default sets silent mode
+    const options = {
+      packageData,
+      jsonUpgraded: false,
+      loglevel: 'warn',
+      format: ['cooldown'],
+    }
+
+    const targets = ['latest', 'newest', 'greatest', 'minor', 'patch', 'semver', '@latest'] as const
+    targets.forEach(async target => {
+      it(`for "target: ${target}" when all versions are within cooldown (no fallback possible)`, async () => {
+        // Given: cooldown set to 10, test-package@1.0.0 installed
+        // latest dist-tag (1.0.2) released 5 days ago (within 10-day cooldown)
+        // previous version (1.0.1) released 8 days ago — also within cooldown, so no fallback exists
+        const cooldown = 10
+
+        const stub = stubVersions(mockedVersion)
+        const logSpy = Sinon.stub(console, 'log')
+        silenceProgressBar()
+
+        await ncu({ ...options, cooldown, target })
+
+        const allMessages = getNormalizedLogs(logSpy)
+
+        expect(allMessages[0]).to.equal(`Skipped due to ${cooldown}-day cooldown`)
+        expect(allMessages[1]).to.equal(`test-package ^1.0.0 → ^1.0.2 5 days ago`)
+        expect(allMessages.at(-1)?.includes('All dependencies not in cooldown')).to.be.true
+
+        logSpy.restore()
+        stub.restore()
+      })
+
+      it(`for "target: ${target}" when target version are within cooldown and a fallback exist)`, async () => {
+        // Given: cooldown set to 6, test-package@1.0.0 installed
+        // latest dist-tag (1.0.2) released 5 days ago (within 6-day cooldown)
+        // previous version (1.0.1) released 8 days ago — is before cooldown and return as a fallback
+        const cooldown = 6
+
+        const stub = stubVersions(mockedVersion)
+        const logSpy = Sinon.stub(console, 'log')
+        silenceProgressBar()
+
+        await ncu({ ...options, cooldown, target, format: ['cooldown', 'time'] })
+
+        const allMessages = getNormalizedLogs(logSpy)
+
+        expect(allMessages[0]).to.equal(`Skipped due to ${cooldown}-day cooldown`)
+
+        if (target === '@latest') {
+          // if version from dist-tag does not meet cooldown requirement skip finding other versions
+          expect(allMessages[1]).to.equal(`test-package ^1.0.0 → ^1.0.2 5 days ago`)
+          expect(allMessages.at(-1)?.includes('All dependencies not in cooldown')).to.be.true
+        } else {
+          expect(allMessages[1]).to.equal(`test-package ^1.0.1 → ^1.0.2 5 days ago`)
+          expect(allMessages[2]).to.equal(`Updates`)
+          expect(allMessages[3]).to.equal(`test-package ^1.0.0 → ^1.0.1 [cooldown] 1.0.2 1 week ago`)
+        }
+
+        logSpy.restore()
+        stub.restore()
+      })
+    })
+
+    const latestTarget = ['latest', '@latest'] as const
+    latestTarget.forEach(async target => {
+      it(`distTag cooldownInfo must contain new version`, async () => {
+        const mockedVersion = createMockVersion({
+          name: 'test-package',
+          versions: {
+            '2.0.0': new Date(NOW - 3 * DAY).toISOString(),
+            '1.0.0': new Date(NOW - 10 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '2.0.0',
+          },
+        })
+        const packageData: PackageFile = {
+          dependencies: {
+            'test-package': '^2.0.0',
+          },
+        }
+
+        const cooldown = 6
+
+        const stub = stubVersions(mockedVersion)
+        const logSpy = Sinon.stub(console, 'log')
+        silenceProgressBar()
+
+        await ncu({ ...options, packageData, cooldown, target, format: ['cooldown', 'time'] })
+
+        const allMessages = getNormalizedLogs(logSpy)
+        const [_name, from, , to] = allMessages[1].split(' ')
+        expect(from).not.to.equal(to)
+
+        logSpy.restore()
+        stub.restore()
+      })
     })
   })
 })

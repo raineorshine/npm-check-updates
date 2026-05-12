@@ -48,14 +48,16 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       ? ['distTag', targetString.slice(1)]
       : [targetString, 'latest']
 
-    const cached = options.cacher?.get(name, target)
     // Skip the cache if cooldown is active since current cache does not store
     // timestamp constraints; otherwise, validate based on version and time presence.
-    const isValidCache = !options.cooldown && cached?.version && (cached?.time || !options.format?.includes('time'))
-    if (isValidCache) {
-      bar?.tick()
+    if (!options.cooldown) {
+      const cached = options.cacher?.get(name, target)
+      const isValidCache = cached?.version && (cached?.time || !options.format?.includes('time'))
+      if (isValidCache) {
+        bar?.tick()
 
-      return cached
+        return cached
+      }
     }
 
     let versionResult: VersionResult
@@ -144,7 +146,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   options.cacher?.log()
 
   const versionResultObject = keyValueBy(versionResultList, (versionResult, i) =>
-    versionResult.version || versionResult.error || versionResult.cooldown
+    versionResult.version || versionResult.error || versionResult.cooldownInfo
       ? {
           [packageList[i]]: versionResult,
         }

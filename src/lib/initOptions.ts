@@ -47,12 +47,19 @@ function isValidUrl(url: string): boolean {
   }
 }
 
+/** pretty print for days `3.4722222222222223 days` -> `3.5 days` */
+const formatDays = (d: number, r = Math.round(d * 10) / 10) => `${r} day${r !== 1 ? 's' : ''}`
+
 /** Initializes, validates, sets defaults, and consolidates program options. */
 async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Promise<Options> {
   const chalk = getChalk(runOptions.color)
 
+  let raw: RunOptions | undefined
+
   // if not executed on the command-line (i.e. executed as a node module), set the defaults
   if (!cli) {
+    raw = { ...runOptions }
+
     // set cli defaults since they are not set by commander in this case
     const cliDefaults = cliOptions.reduce(
       (acc, curr) => ({
@@ -79,6 +86,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       ? { packageData: JSON.stringify(runOptions.packageData, null, 2) as any }
       : null),
     cli,
+    ...(cli ? null : { raw }),
   }
 
   // consolidate loglevel
@@ -226,7 +234,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
             : null
       if (days != null && !isNaN(days)) {
         options.cooldown = days
-        print({ ...options, json }, `Using min-release-age from .npmrc: ${days} day${days !== 1 ? 's' : ''}`)
+        print({ ...options, json }, `Using min-release-age from .npmrc: ${formatDays(days)}`)
       }
     } else if (packageManager === 'pnpm') {
       // Automatically apply pnpm's minimumReleaseAge from pnpm-workspace.yaml as cooldown if cooldown is not explicitly set.
@@ -241,11 +249,11 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
           options.cooldown = (packageName: string) => (matchers.some(m => m(packageName)) ? null : days)
           print(
             { ...options, json },
-            `Using minimumReleaseAge from pnpm-workspace.yaml: ${days} day${days !== 1 ? 's' : ''} (${minimumReleaseAgeExclude.length} excluded pattern${minimumReleaseAgeExclude.length !== 1 ? 's' : ''})`,
+            `Using minimumReleaseAge from pnpm-workspace.yaml: ${formatDays(days)} (${minimumReleaseAgeExclude.length} excluded pattern${minimumReleaseAgeExclude.length !== 1 ? 's' : ''})`,
           )
         } else {
           options.cooldown = days
-          print({ ...options, json }, `Using minimumReleaseAge from pnpm-workspace.yaml: ${days} day${days !== 1 ? 's' : ''}`)
+          print({ ...options, json }, `Using minimumReleaseAge from pnpm-workspace.yaml: ${formatDays(days)}`)
         }
       }
     } else if (packageManager === 'yarn') {
@@ -266,7 +274,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
           )
         } else {
           options.cooldown = days
-          print({ ...options, json }, `Using npmMinimalAgeGate from .yarnrc.yml: ${days} day${days !== 1 ? 's' : ''}`)
+          print({ ...options, json }, `Using npmMinimalAgeGate from .yarnrc.yml: ${formatDays(days)}`)
         }
       }
     }

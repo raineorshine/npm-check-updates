@@ -275,7 +275,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#format">--format &lt;value&gt;</a></td>
-    <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion. (default: [])</td>
+    <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. (default: [])</td>
   </tr>
   <tr>
     <td>-g, --global</td>
@@ -506,6 +506,22 @@ You can also provide a custom function in your .ncurc.js file or when importing 
 cooldown: packageName => (packageName.startsWith('@my-company') ? 0 : 3)
 ```
 
+### Cooldown Formatting
+
+When using `--format cooldown` alongside the `--cooldown` option, `ncu` will show a list of packages that were skipped due to the `--cooldown` threshold.
+
+Example:
+
+```js
+ncu --format cooldown --cooldown 7
+```
+
+Output:
+
+    Skipped due to 7-day cooldown
+     @typescript-eslint/parser  ^8.50.0  →  ^8.59.1      5 days ago
+     eslint                     ^10.0.1  →  ^10.3.0      1 day ago
+
 ## doctor
 
 Usage:
@@ -670,6 +686,7 @@ Modify the output formatting or show additional information. Specify one or more
   <tr><td>repo</td><td>Infers and displays links to the package's source code repository. Requires packages to be installed.</td></tr>
   <tr><td>diff</td><td>Display link to compare the changes between package versions.</td></tr>
   <tr><td>time</td><td>Shows the publish time of each upgrade.</td></tr>
+  <tr><td>cooldown</td><td>Shows a list of packages that were skipped due to the --cooldown threshold.</td></tr>
 </table>
 
 ## groupFunction

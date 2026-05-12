@@ -170,7 +170,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion. Run \"ncu --help --format\" for details."
+          "description": "Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. Run \"ncu --help --format\" for details."
         },
         "global": {
           "type": "boolean",

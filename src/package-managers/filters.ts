@@ -60,16 +60,19 @@ export function satisfiesPeerDependencies(versionResult: Partial<Packument>, pee
 /**
  * Determines if a package version satisfies the specified cooldown period.
  *
- * @param versionResult - Partial packument object containing version and release time information.
- * @param cooldownDays - The cooldown period in days. If not specified or invalid, the function returns true.
- * @returns `true` if the version's release date is older than the cooldown period; otherwise, `false`.
+ * @param packageName - Package name used when cooldown is a predicate.
+ * @param version - The version string.
+ * @param versionTimeData - The publish time for the specific version.
+ * @param cooldownDaysOrPredicateFn - Cooldown period in days or package-name predicate.
+ * If not specified or invalid, the function returns true.
  */
-export function satisfiesCooldownPeriod(
-  versionResult: Partial<Packument>,
-  cooldownDaysOrPredicateFn: Maybe<number> | Maybe<CooldownFunction>,
-): boolean {
-  const version = versionResult.version
-  const versionTimeData = versionResult?.time?.[version!]
+export const satisfiesCooldownPeriod = (
+  packageName: string,
+  version: Maybe<string>,
+  versionTimeData: Maybe<string>,
+  cooldownDaysOrPredicateFn: Maybe<number | string> | Maybe<CooldownFunction>,
+): boolean => {
+  if (!version) return false
 
   if (!cooldownDaysOrPredicateFn) return true
   if (!versionTimeData) return false
@@ -78,21 +81,25 @@ export function satisfiesCooldownPeriod(
   const DAY_AS_MS = 86400000 // milliseconds in a day
   const rawCooldown =
     typeof cooldownDaysOrPredicateFn === 'function'
-      ? (cooldownDaysOrPredicateFn(versionResult.name!) ?? 0) // null → 0 days = no cooldown
+      ? (cooldownDaysOrPredicateFn(packageName ?? '') ?? 0) // null → 0 days = no cooldown
       : cooldownDaysOrPredicateFn
   const cooldownDays = typeof rawCooldown === 'string' ? (parseCooldown(rawCooldown) ?? 0) : rawCooldown
 
   return Date.now() - versionReleaseDate.getTime() >= cooldownDays * DAY_AS_MS
 }
 
-/** Returns a composite predicate that filters out deprecated, prerelease, and node engine incompatibilities from version objects returns by packument. */
+/**
+ * Returns a composite predicate that filters out deprecated, prerelease,
+ * and node engine incompatibilities from version objects returns by packument.
+ *
+ * Note: this function does not filter cooldown.
+ */
 export function filterPredicate(options: Options) {
   const predicates: (((o: Partial<Packument>) => boolean) | null)[] = [
     o => allowDeprecatedOrIsNotDeprecated(o, options),
     o => allowPreOrIsNotPre(o, options),
     options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null,
     options.peerDependencies ? o => satisfiesPeerDependencies(o, options.peerDependencies!) : null,
-    options.cooldown ? o => satisfiesCooldownPeriod(o, options.cooldown as number | CooldownFunction) : null,
   ]
 
   return (o: Partial<Packument>) => predicates.every(predicate => (predicate ? predicate(o) : true))
