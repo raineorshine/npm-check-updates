@@ -481,7 +481,7 @@ export async function printUpgrades(
 
   const printed = await printSkippedByCooldownTable({ skippedByCooldown, pkgFile, options })
 
-  if (!options.format?.includes('group')) {
+  if (!options.deep && !options.format?.includes('group')) {
     if (printed && numUpgraded) {
       // print 'Updates' heading after "Skipped due to cooldown" list
       print(options, '\n' + chalk.blue(chalk.bold('Updates')))
