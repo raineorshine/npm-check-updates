@@ -217,7 +217,7 @@ const install = async (
 async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<Index<string> | PackageFile | void> {
   const [selectedPackageInfos, workspacePackages]: [PackageInfo[], string[]] = await getAllPackages(options)
 
-  const packageFilepaths: string[] = selectedPackageInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
+  let packageFilepaths: string[] = selectedPackageInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
 
   // enable deep mode if --deep, --workspace, --workspaces, or if multiple package files are found
   const isWorkspace = options.workspaces || !!options.workspace?.length
@@ -232,6 +232,7 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
     analysis = await selectedPackageInfos.reduce(
       async (previousPromise, packageInfo: PackageInfo) => {
         const packages = await previousPromise
+        const isSubsequentPackage = Object.keys(packages).length > 0
         // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
         const rcResult = await getNcuRc({ packageFile: packageInfo.filepath, options })
         let rcConfig = rcResult.config
@@ -262,9 +263,15 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
 
           // Print the same message as findPackage for consistency
           const relPathToPackage = path.resolve(indexKey)
+          if (isSubsequentPackage) {
+            print(pkgOptions, '')
+          }
           print(pkgOptions, `${pkgOptions.upgrade ? 'Upgrading' : 'Checking'} ${relPathToPackage} catalog dependencies`)
         } else {
           // Regular file - read from disk
+          if (isSubsequentPackage) {
+            print(pkgOptions, '')
+          }
           const result = await findPackage(pkgOptions)
           pkgData = result.pkgData
           pkgFile = result.pkgFile || packageInfo.filepath
@@ -295,6 +302,11 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
       options.packageFile = selectedPackageInfos[0].filepath
     }
     const { pkgData, pkgFile } = await findPackage(options)
+    // When packageFilepaths is empty (e.g., running from a subdirectory without a package.json),
+    // use the found package file so the install hint works correctly.
+    if (packageFilepaths.length === 0 && pkgFile) {
+      packageFilepaths = [pkgFile]
+    }
     analysis = await runLocal(options, pkgData, pkgFile)
   }
   clearTimeout(timeout)

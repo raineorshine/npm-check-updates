@@ -1,6 +1,6 @@
 {
   "name": "npm-check-updates",
-  "version": "22.1.1",
+  "version": "22.2.0",
   "author": "Tomas Junnonen <tomas1@gmail.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -76,6 +76,7 @@
       "chai": "$chai"
     },
     "diff": ">=8.0.3",
+    "ip-address": ">=10.1.1",
     "lodash": ">=4.18.1",
     "serialize-javascript": ">=7.0.3",
     "uuid": ">=14.0.0"

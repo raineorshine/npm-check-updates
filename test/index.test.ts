@@ -431,4 +431,24 @@ describe('run', function () {
       }
     })
   })
+
+  it('does not throw when run from a subdirectory without a package.json (find-up behavior)', async () => {
+    const stub = stubVersions('99.9.9')
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
+    const subDir = path.join(tempDir, 'subdir')
+    await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1.0.0" } }', 'utf-8')
+    await fs.mkdir(subDir)
+
+    try {
+      // When running from a subdirectory without a package.json, ncu should use find-up to locate
+      // the parent's package.json and upgrade it without throwing:
+      // TypeError [ERR_INVALID_ARG_TYPE]: The "paths[0]" argument must be of type string. Received undefined
+      const result = await ncu({ cwd: subDir, upgrade: true })
+      result!.should.have.property('express')
+    } finally {
+      await removeDir(tempDir)
+      stub.restore()
+    }
+  })
 })

@@ -1,4 +1,5 @@
 import { expect } from 'chai'
+import fsSync from 'fs'
 import fs from 'fs/promises'
 import os from 'os'
 import path, { dirname } from 'path'
@@ -14,6 +15,14 @@ chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
+const srcBin = path.join(__dirname, '../src/bin/cli.ts')
+const tsNodeBin = path.join(__dirname, `../node_modules/.bin/ts-node${process.platform === 'win32' ? '.CMD' : ''}`)
+
+/** Returns the CLI invocation command and arguments, using the built binary if available, otherwise using ts-node. */
+const getCliInvocation = (...args: string[]) =>
+  fsSync.existsSync(bin)
+    ? { command: 'node', args: [bin, ...args] }
+    : { command: tsNodeBin, args: [srcBin, ...args] }
 
 /** Creates a temp directory with nested package files for --deep testing. Returns the temp directory name (should be removed by caller).
  *
@@ -46,6 +55,26 @@ const setupDeepTest = async () => {
   return tempDir
 }
 
+/** Creates a temp directory with nested package files to test deep-mode status output formatting. */
+const setupDeepStatusTest = async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+
+  await fs.writeFile(
+    path.join(tempDir, 'package.json'),
+    JSON.stringify({
+      dependencies: {
+        'ncu-test-v2': '99.9.9',
+      },
+    }),
+    'utf-8',
+  )
+
+  await fs.mkdir(path.join(tempDir, 'packages/no-deps'), { recursive: true })
+  await fs.writeFile(path.join(tempDir, 'packages/no-deps/package.json'), JSON.stringify({}), 'utf-8')
+
+  return tempDir
+}
+
 describe('--deep', function () {
   this.timeout(60000)
 
@@ -60,7 +89,8 @@ describe('--deep', function () {
   it('output json with --jsonAll', async () => {
     const tempDir = await setupDeepTest()
     try {
-      const { stdout } = await spawn('node', [bin, '--jsonAll', '--deep'], {}, { cwd: tempDir })
+      const cli = getCliInvocation('--jsonAll', '--deep')
+      const { stdout } = await spawn(cli.command, cli.args, {}, { cwd: tempDir })
       const deepJsonOut = JSON.parse(stdout)
       deepJsonOut.should.have.property('package.json')
       deepJsonOut.should.have.property('packages/sub1/package.json')
@@ -76,9 +106,10 @@ describe('--deep', function () {
   it('ignore stdin if --packageFile glob is specified', async () => {
     const tempDir = await setupDeepTest()
     try {
+      const cli = getCliInvocation('-u', '--packageFile', path.join(tempDir, '/**/package.json'))
       await spawn(
-        'node',
-        [bin, '-u', '--packageFile', path.join(tempDir, '/**/package.json')],
+        cli.command,
+        cli.args,
         { stdin: '{ "dependencies": {}}' },
         {
           cwd: tempDir,
@@ -96,9 +127,10 @@ describe('--deep', function () {
   it('update multiple packages', async () => {
     const tempDir = await setupDeepTest()
     try {
+      const cli = getCliInvocation('-u', '--jsonUpgraded', '--packageFile', path.join(tempDir, '**/package.json'))
       const { stdout } = await spawn(
-        'node',
-        [bin, '-u', '--jsonUpgraded', '--packageFile', path.join(tempDir, '**/package.json')],
+        cli.command,
+        cli.args,
         { stdin: '{ "dependencies": {}}' },
         { cwd: tempDir },
       )
@@ -136,14 +168,36 @@ describe('--deep', function () {
     await fs.writeFile(path.join(tempDir, 'package.json'), pkgData, 'utf-8')
 
     try {
+      const cli = getCliInvocation('--deep', '--errorLevel', '2')
       await spawn(
-        'node',
-        [bin, '--deep', '--errorLevel', '2'],
+        cli.command,
+        cli.args,
         {},
         {
           cwd: tempDir,
         },
       )
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('formats package status output without extra blank lines in deep mode', async () => {
+    const tempDir = await setupDeepStatusTest()
+    const { default: stripAnsi } = await import('strip-ansi')
+
+    try {
+      const cli = getCliInvocation('-u', '--deep')
+      const { stdout } = await spawn(cli.command, cli.args, {}, { cwd: tempDir })
+      const output = stripAnsi(stdout)
+      const rootPackage = path.resolve(tempDir, 'package.json')
+      const nestedPackage = path.resolve(tempDir, 'packages/no-deps/package.json')
+
+      output.should.include(`Upgrading ${rootPackage}\nAll dependencies match the latest package versions :)`)
+      output.should.include(
+        `All dependencies match the latest package versions :)\n\nUpgrading ${nestedPackage}\nNo dependencies.`,
+      )
+      output.should.not.include(`Upgrading ${rootPackage}\n\nAll dependencies match the latest package versions :)`)
     } finally {
       await removeDir(tempDir)
     }
@@ -160,7 +214,8 @@ describe('--deep with nested ncurc files', function () {
   after(() => stub.restore())
 
   it('use ncurc of nested packages', async () => {
-    const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--deep'], {}, { cwd })
+    const cli = getCliInvocation('--jsonUpgraded', '--deep')
+    const { stdout } = await spawn(cli.command, cli.args, {}, { cwd })
     const deepJsonOut = JSON.parse(stdout)
 
     // root: reject: ['cute-animals']
@@ -188,7 +243,8 @@ describe('--deep with nested ncurc files', function () {
   })
 
   it('use ncurc of nested packages with --mergeConfig option', async () => {
-    const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--deep', '--mergeConfig'], {}, { cwd })
+    const cli = getCliInvocation('--jsonUpgraded', '--deep', '--mergeConfig')
+    const { stdout } = await spawn(cli.command, cli.args, {}, { cwd })
     const deepJsonOut = JSON.parse(stdout)
 
     // root: reject: ['cute-animals']
