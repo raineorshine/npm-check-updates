@@ -287,7 +287,8 @@ describe('bin', async function () {
       const { stdout } = await spawn('node', [bin, '--stdin'], { stdin: JSON.stringify({ dependencies }) })
       stripAnsi(stdout)
         .trim()
-        .should.equal('ncu-test-v2  https://github.com/raineorshine/ncu-test-v2.git#v1.0.0  →  v2.0.0')
+        .replace(/\s+/g, ' ') // Replace all whitespace sequences with a single space
+        .should.equal('ncu-test-v2 https://github.com/raineorshine/ncu-test-v2.git#v1.0.0 → v2.0.0 [missing time]')
     })
 
     it('strip prefix from npm alias in "to" output', async () => {
