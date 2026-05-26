@@ -14,6 +14,16 @@ import keyValueBy from './keyValueBy'
 import programError from './programError'
 import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-util'
 
+const PKG_MANAGER_PROTOCOLS = ['catalog:', 'workspace:', 'link:', 'file:', 'portal:'] as const
+
+/**
+ * Returns true if the spec uses a package manager protocol that references something
+ * other than a registry version (e.g. pnpm's `catalog:` / `workspace:`, or `link:` / `file:`).
+ */
+function isPackageManagerProtocol(spec: VersionSpec): boolean {
+  return PKG_MANAGER_PROTOCOLS.some(protocol => spec.startsWith(protocol))
+}
+
 /**
  * Get the latest or greatest versions from the NPM repository based on the version target.
  *
@@ -42,6 +52,13 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   async function getPackageVersionProtected(dep: VersionSpec): Promise<VersionResult> {
     const npmAlias = parseNpmAlias(packageMap[dep])
     const [name, version] = npmAlias || [dep, packageMap[dep]]
+
+    // Skip valid specs that are not registry versions, such as different package manager protocols.
+    if (isPackageManagerProtocol(version)) {
+      bar?.tick()
+      return { version: null }
+    }
+
     const targetOption = options.target || 'latest'
     const targetString = typeof targetOption === 'string' ? targetOption : targetOption(name, parseRange(version))
     const [target, distTag] = targetString.startsWith('@')
