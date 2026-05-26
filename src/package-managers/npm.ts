@@ -171,6 +171,14 @@ const findTargetAndFallback = ({
     }
   }
 
+  if (versions.length === 0) {
+    return {
+      targetVersion: null,
+      fallbackVersion: null,
+      targetBlockedByCooldown: false,
+    }
+  }
+
   const result = versions.reduce(
     (acc, versionData) => {
       const version = versionData.version
@@ -212,7 +220,7 @@ const findTargetAndFallback = ({
     },
   )
 
-  let targetVersion: string | null = result.targetVersion
+  const targetVersion: string = result.targetVersion
   let fallbackVersion: string | null = result.fallbackVersion
 
   if (fallbackVersion === result.targetVersion) {
@@ -221,10 +229,6 @@ const findTargetAndFallback = ({
 
   if (fallbackVersion && !nodeSemver.gt(fallbackVersion, cur)) {
     fallbackVersion = null
-  }
-
-  if (!nodeSemver.gt(targetVersion, cur)) {
-    targetVersion = null
   }
 
   return {

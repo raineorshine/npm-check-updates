@@ -20,9 +20,7 @@ const tsNodeBin = path.join(__dirname, `../node_modules/.bin/ts-node${process.pl
 
 /** Returns the CLI invocation command and arguments, using the built binary if available, otherwise using ts-node. */
 const getCliInvocation = (...args: string[]) =>
-  fsSync.existsSync(bin)
-    ? { command: 'node', args: [bin, ...args] }
-    : { command: tsNodeBin, args: [srcBin, ...args] }
+  fsSync.existsSync(bin) ? { command: 'node', args: [bin, ...args] } : { command: tsNodeBin, args: [srcBin, ...args] }
 
 /** Creates a temp directory with nested package files for --deep testing. Returns the temp directory name (should be removed by caller).
  *
@@ -128,12 +126,7 @@ describe('--deep', function () {
     const tempDir = await setupDeepTest()
     try {
       const cli = getCliInvocation('-u', '--jsonUpgraded', '--packageFile', path.join(tempDir, '**/package.json'))
-      const { stdout } = await spawn(
-        cli.command,
-        cli.args,
-        { stdin: '{ "dependencies": {}}' },
-        { cwd: tempDir },
-      )
+      const { stdout } = await spawn(cli.command, cli.args, { stdin: '{ "dependencies": {}}' }, { cwd: tempDir })
 
       const upgradedPkg1 = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/sub1/package.json'), 'utf-8'))
       upgradedPkg1.should.have.property('dependencies')
