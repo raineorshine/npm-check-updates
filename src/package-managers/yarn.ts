@@ -44,7 +44,7 @@ interface YarnConfig {
 
 /** Shape of the yarn .yarnrc.yml npmMinimalAgeGate settings. */
 export interface YarnMinimalAgeGate {
-  /** Minimum release age in seconds (yarn's native unit). */
+  /** Minimum release age in minutes (yarn's native unit). */
   npmMinimalAgeGate: number
   /** List of package names excluded from the age gate check. */
   npmPreapprovedPackages: string[]
@@ -181,8 +181,8 @@ const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMini
     } else if (typeof rawNpmMinimalAgeGate === 'string') {
       const days = parseCooldown(rawNpmMinimalAgeGate)
       if (days === null || days <= 0) continue
-      const SECONDS_PER_DAY = 24 * 60 * 60
-      npmMinimalAgeGate = days * SECONDS_PER_DAY
+      const MINUTES_PER_DAY = 24 * 60
+      npmMinimalAgeGate = days * MINUTES_PER_DAY
     } else {
       continue
     }

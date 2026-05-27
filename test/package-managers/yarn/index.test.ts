@@ -168,12 +168,12 @@ describe('yarn', function () {
       }
     }
 
-    it('parses a numeric npmMinimalAgeGate (seconds) from .yarnrc.yml', async () => {
-      const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: 86400\n')
+    it('parses a numeric npmMinimalAgeGate (minutes) from .yarnrc.yml', async () => {
+      const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: 1440\n')
       try {
         const result = await yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
         should.exist(result)
-        result!.npmMinimalAgeGate.should.equal(86400)
+        result!.npmMinimalAgeGate.should.equal(1440)
         result!.npmPreapprovedPackages.should.deep.equal([])
       } finally {
         await cleanup()
@@ -185,8 +185,8 @@ describe('yarn', function () {
       try {
         const result = await yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
         should.exist(result)
-        // "3d" → 3 days → 3 * 86400 = 259200 seconds
-        result!.npmMinimalAgeGate.should.equal(3 * 86400)
+        // "3d" → 3 days → 3 * 1440 = 4320 minutes
+        result!.npmMinimalAgeGate.should.equal(3 * 1440)
         result!.npmPreapprovedPackages.should.deep.equal([])
       } finally {
         await cleanup()
@@ -198,8 +198,8 @@ describe('yarn', function () {
       try {
         const result = await yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
         should.exist(result)
-        // "12h" → 12/24 days → 0.5 * 86400 = 43200 seconds
-        result!.npmMinimalAgeGate.should.equal(43200)
+        // "12h" → 12/24 days → 0.5 * 1440 = 720 minutes
+        result!.npmMinimalAgeGate.should.equal(720)
         result!.npmPreapprovedPackages.should.deep.equal([])
       } finally {
         await cleanup()
@@ -223,8 +223,8 @@ describe('yarn', function () {
       try {
         const result = await yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
         should.exist(result)
-        // "7d" → 7 * 86400 = 604800 seconds
-        result!.npmMinimalAgeGate.should.equal(7 * 86400)
+        // "7d" → 7 * 1440 = 10080 minutes
+        result!.npmMinimalAgeGate.should.equal(7 * 1440)
         result!.npmPreapprovedPackages.should.deep.equal(['@my-org/*'])
       } finally {
         await cleanup()
