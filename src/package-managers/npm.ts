@@ -162,7 +162,8 @@ const findTargetAndFallback = ({
   compare?: (v1: string, v2: string) => number
 }): GreatestWithFallbackResult => {
   const isValidVersion = filterPredicate(options)
-  const cur = nodeSemver.minVersion(currentVersion)?.version
+  // nodeSemver.minVersion throws on non-semver specs (e.g. catalog: or workspace:)
+  const cur = nodeSemver.validRange(currentVersion) ? nodeSemver.minVersion(currentVersion)?.version : null
   if (!cur) {
     return {
       targetVersion: null,
@@ -265,7 +266,7 @@ const toVersionResult = ({
 
   // only check fallback if target is in cooldown period.
   if (options.cooldown && targetVersion && targetBlockedByCooldown) {
-    const current = nodeSemver.minVersion(currentVersion)?.version
+    const current = nodeSemver.validRange(currentVersion) ? nodeSemver.minVersion(currentVersion)?.version : null
     const cooldownInfo: CooldownInfo = {
       name: packageName,
       currentVersion,
@@ -1010,7 +1011,7 @@ export const distTag: GetVersion = async (
 
   const publishTime = packument?.time?.[version!]
   const maybeTime = publishTime ? { time: publishTime } : null
-  const current = nodeSemver.minVersion(currentVersion)?.version ?? '0.0.0'
+  const current = (nodeSemver.validRange(currentVersion) && nodeSemver.minVersion(currentVersion)?.version) || '0.0.0'
 
   const isSatisfiesCooldown =
     tagPackument.version === current ||
