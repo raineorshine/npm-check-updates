@@ -4,6 +4,7 @@ import fs from 'fs/promises'
 import os from 'os'
 import path, { dirname } from 'path'
 import spawn from 'spawn-please'
+import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
@@ -184,7 +185,6 @@ describe('--deep', function () {
 
   it('formats package status output without extra blank lines in deep mode', async () => {
     const tempDir = await setupDeepStatusTest()
-    const { default: stripAnsi } = await import('strip-ansi')
 
     try {
       const cli = getCliInvocation('-u', '--deep')
