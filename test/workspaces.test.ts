@@ -83,7 +83,6 @@ const setupSymlinkedPackages = async (
   customName?: string,
 ) => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-  await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
 
   const pkgDataRoot = JSON.stringify({ workspaces })
 
