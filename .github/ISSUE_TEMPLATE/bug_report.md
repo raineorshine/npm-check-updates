@@ -7,6 +7,8 @@ assignees: ''
 ---
 
 - [] I have searched for [similar issues](https://github.com/raineorshine/npm-check-updates/issues)
+- [] I am using the [latest version](https://www.npmjs.com/package/npm-check-updates?activeTab=versions) of `npm-check-updates`
+- [] I am using a [compatible version of node](https://github.com/raineorshine/npm-check-updates/blob/main/package.json#L20)
 
 ---
 
