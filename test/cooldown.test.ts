@@ -1328,7 +1328,7 @@ describe('cooldown', () => {
 
   describe('yarn npmMinimalAgeGate', () => {
     it('applies npmMinimalAgeGate from .yarnrc.yml as cooldown when cooldown is not set', async () => {
-      // Given: .yarnrc.yml has npmMinimalAgeGate=86400 (86400 seconds = 1 day),
+      // Given: .yarnrc.yml has npmMinimalAgeGate=1440 (1440 minutes = 1 day),
       // test-package@1.0.0 installed, latest version 1.1.0 released 12 hours ago (within cooldown)
       const packageData: PackageFile = {
         dependencies: {
@@ -1349,9 +1349,9 @@ describe('cooldown', () => {
 
       const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
 
-      // Stub getYarnMinimalAgeGate to return a config with npmMinimalAgeGate: 86400 seconds (1 day)
+      // Stub getYarnMinimalAgeGate to return a config with npmMinimalAgeGate: 1440 minutes (1 day)
       const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
-        npmMinimalAgeGate: 86400,
+        npmMinimalAgeGate: 1440,
         npmPreapprovedPackages: [],
       })
 
@@ -1367,7 +1367,7 @@ describe('cooldown', () => {
     })
 
     it('upgrades packages older than npmMinimalAgeGate', async () => {
-      // Given: .yarnrc.yml has npmMinimalAgeGate=86400 (1 day),
+      // Given: .yarnrc.yml has npmMinimalAgeGate=1440 (1 day),
       // test-package@1.0.0 installed, latest version 1.1.0 released 2 days ago (outside cooldown)
       const packageData: PackageFile = {
         dependencies: {
@@ -1389,7 +1389,7 @@ describe('cooldown', () => {
       const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
 
       const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
-        npmMinimalAgeGate: 86400,
+        npmMinimalAgeGate: 1440,
         npmPreapprovedPackages: [],
       })
 
@@ -1405,7 +1405,7 @@ describe('cooldown', () => {
     })
 
     it('excludes packages listed in npmPreapprovedPackages from cooldown', async () => {
-      // Given: .yarnrc.yml has npmMinimalAgeGate=604800 (7 days) with @myorg/pkg pre-approved,
+      // Given: .yarnrc.yml has npmMinimalAgeGate=10080 (7 days) with @myorg/pkg pre-approved,
       // test-package released 3 days ago (within cooldown), @myorg/pkg released 3 days ago (pre-approved)
       const packageData: PackageFile = {
         dependencies: {
@@ -1430,7 +1430,7 @@ describe('cooldown', () => {
 
       // Stub getYarnMinimalAgeGate to return a 7-day cooldown with @myorg/pkg pre-approved
       const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
-        npmMinimalAgeGate: 604800,
+        npmMinimalAgeGate: 10080,
         npmPreapprovedPackages: ['@myorg/pkg'],
       })
 
@@ -1447,7 +1447,7 @@ describe('cooldown', () => {
     })
 
     it('does not apply npmMinimalAgeGate when cooldown is explicitly set', async () => {
-      // Given: .yarnrc.yml has npmMinimalAgeGate=604800 (7 days), but cooldown is explicitly set to 0
+      // Given: .yarnrc.yml has npmMinimalAgeGate=10080 (7 days), but cooldown is explicitly set to 0
       const packageData: PackageFile = {
         dependencies: {
           'test-package': '1.0.0',
@@ -1466,7 +1466,7 @@ describe('cooldown', () => {
       )
 
       const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
-        npmMinimalAgeGate: 604800,
+        npmMinimalAgeGate: 10080,
         npmPreapprovedPackages: [],
       })
 
@@ -1482,7 +1482,7 @@ describe('cooldown', () => {
     })
 
     it('does not apply npmMinimalAgeGate when npm min-release-age is set', async () => {
-      // Given: both npm config has min-release-age=2 and .yarnrc.yml has npmMinimalAgeGate=604800 (7 days)
+      // Given: both npm config has min-release-age=2 and .yarnrc.yml has npmMinimalAgeGate=10080 (7 days)
       // test-package latest released 3 days ago (within 7-day yarn cooldown but outside 2-day npm cooldown)
       const packageData: PackageFile = {
         dependencies: {
@@ -1504,7 +1504,7 @@ describe('cooldown', () => {
       // Stub npm config with min-release-age=2
       const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '2' })
       const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
-        npmMinimalAgeGate: 604800,
+        npmMinimalAgeGate: 10080,
         npmPreapprovedPackages: [],
       })
 

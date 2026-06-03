@@ -261,9 +261,9 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       const yarnAgeGateConfig = await yarnApi.getYarnMinimalAgeGate(options)
       if (yarnAgeGateConfig != null) {
         const { npmMinimalAgeGate, npmPreapprovedPackages } = yarnAgeGateConfig
-        // yarn's npmMinimalAgeGate is in seconds; convert to days
-        const SECONDS_PER_DAY = 24 * 60 * 60
-        const days = npmMinimalAgeGate / SECONDS_PER_DAY
+        // yarn's npmMinimalAgeGate is in minutes; convert to days
+        const MINUTES_PER_DAY = 24 * 60
+        const days = npmMinimalAgeGate / MINUTES_PER_DAY
         if (npmPreapprovedPackages.length > 0) {
           const matchers = npmPreapprovedPackages.map(pattern => picomatch(pattern))
           // Returning null skips the cooldown check for pre-approved packages

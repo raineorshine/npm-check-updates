@@ -9,6 +9,7 @@ import exists from '../lib/exists'
 import findLockfile from '../lib/findLockfile'
 import { keyValueBy } from '../lib/keyValueBy'
 import { print } from '../lib/logging'
+import parseCooldown from '../lib/parseCooldown'
 import spawnCommand from '../lib/spawnCommand'
 import { type GetVersion } from '../types/GetVersion'
 import { type Index } from '../types/IndexType'
@@ -37,13 +38,13 @@ export interface NpmScope {
 
 interface YarnConfig {
   npmScopes?: Index<NpmScope>
-  npmMinimalAgeGate?: number
+  npmMinimalAgeGate?: number | string
   npmPreapprovedPackages?: string[]
 }
 
 /** Shape of the yarn .yarnrc.yml npmMinimalAgeGate settings. */
 export interface YarnMinimalAgeGate {
-  /** Minimum release age in seconds (yarn's native unit). */
+  /** Minimum release age in minutes (yarn's native unit). */
   npmMinimalAgeGate: number
   /** List of package names excluded from the age gate check. */
   npmPreapprovedPackages: string[]
@@ -172,8 +173,19 @@ const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMini
       continue
     }
 
-    const { npmMinimalAgeGate } = parsed
-    if (typeof npmMinimalAgeGate !== 'number' || isNaN(npmMinimalAgeGate) || npmMinimalAgeGate <= 0) continue
+    const { npmMinimalAgeGate: rawNpmMinimalAgeGate } = parsed
+    let npmMinimalAgeGate: number
+    if (typeof rawNpmMinimalAgeGate === 'number') {
+      if (isNaN(rawNpmMinimalAgeGate) || rawNpmMinimalAgeGate <= 0) continue
+      npmMinimalAgeGate = rawNpmMinimalAgeGate
+    } else if (typeof rawNpmMinimalAgeGate === 'string') {
+      const days = parseCooldown(rawNpmMinimalAgeGate)
+      if (days === null || days <= 0) continue
+      const MINUTES_PER_DAY = 24 * 60
+      npmMinimalAgeGate = days * MINUTES_PER_DAY
+    } else {
+      continue
+    }
 
     const rawPreapproved = parsed.npmPreapprovedPackages
     const npmPreapprovedPackages: string[] = Array.isArray(rawPreapproved)
