@@ -37,7 +37,6 @@ const getCliInvocation = (...args: string[]) =>
  */
 const setupDeepTest = async () => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-  await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
   const pkgData = JSON.stringify({
     dependencies: {
       express: '1',
@@ -158,7 +157,6 @@ describe('--deep', function () {
 
   it('--deep --errorLevel 2 should exit with code 0 when there are no upgrades', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
-    await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgData = JSON.stringify({
       dependencies: {
         'ncu-test-v2': '99.9.9',
