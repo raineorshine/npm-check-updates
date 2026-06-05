@@ -2,6 +2,7 @@ import memoize from 'fast-memoize'
 import { findUp } from 'find-up'
 import fs from 'fs/promises'
 import ini from 'ini'
+import os from 'os'
 import path from 'path'
 import { parse as parseYaml } from 'yaml'
 import keyValueBy from '../lib/keyValueBy'
@@ -60,35 +61,115 @@ export interface PnpmWorkspaceMinimumReleaseAge {
   minimumReleaseAgeExclude: string[]
 }
 
-/** Reads minimumReleaseAge settings from pnpm-workspace.yaml if present. */
-const getPnpmWorkspaceMinimumReleaseAge = memoize(async (): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
-  const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
-  if (!pnpmWorkspacePath) return null
+/** A single config layer's parsed minimumReleaseAge settings. minimumReleaseAge is optional since a layer may only define excludes. */
+interface MinimumReleaseAgeLayer {
+  minimumReleaseAge?: number
+  minimumReleaseAgeExclude: string[]
+}
 
+/** Coerces an arbitrary config value into a non-negative minimumReleaseAge number (in minutes), or undefined if invalid. */
+const coerceMinimumReleaseAge = (raw: unknown): number | undefined => {
+  const value = typeof raw === 'number' ? raw : typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN
+  return typeof value === 'number' && !isNaN(value) && value >= 0 ? value : undefined
+}
+
+/**
+ * Coerces an arbitrary config value into a list of minimumReleaseAgeExclude glob patterns.
+ * Supports native arrays (YAML) as well as JSON-encoded array strings (e.g. `["react"]`)
+ * which is how `pnpm config set` stores arrays in the ini-formatted `rc` file.
+ */
+const coerceMinimumReleaseAgeExclude = (raw: unknown): string[] => {
+  if (Array.isArray(raw)) return raw.filter((x): x is string => typeof x === 'string')
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim()
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        if (Array.isArray(parsed)) return parsed.filter((x): x is string => typeof x === 'string')
+      } catch {
+        // fall through to treat the value as a single pattern
+      }
+    }
+    return trimmed !== '' ? [trimmed] : []
+  }
+  return []
+}
+
+/** Extracts minimumReleaseAge settings from an already-parsed config object. */
+const parseMinimumReleaseAgeLayer = (parsed: Record<string, unknown>): MinimumReleaseAgeLayer => ({
+  // pnpm exposes the setting as camelCase in YAML and as kebab-case in ini/rc files.
+  minimumReleaseAge: coerceMinimumReleaseAge(parsed.minimumReleaseAge ?? parsed['minimum-release-age']),
+  minimumReleaseAgeExclude: coerceMinimumReleaseAgeExclude(
+    parsed.minimumReleaseAgeExclude ?? parsed['minimum-release-age-exclude'],
+  ),
+})
+
+/** Resolves the directory that holds pnpm's global config files, matching pnpm's own resolution. */
+const getPnpmGlobalConfigDir = (): string => {
+  if (process.env.XDG_CONFIG_HOME) return path.join(process.env.XDG_CONFIG_HOME, 'pnpm')
+  if (process.platform === 'win32') {
+    const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local')
+    return path.join(localAppData, 'pnpm', 'config')
+  }
+  if (process.platform === 'darwin') return path.join(os.homedir(), 'Library', 'Preferences', 'pnpm')
+  return path.join(os.homedir(), '.config', 'pnpm')
+}
+
+/** Reads and parses a config file, returning its minimumReleaseAge settings, or null if it does not exist or cannot be parsed. */
+const readMinimumReleaseAgeLayer = async (
+  filePath: string,
+  format: 'yaml' | 'ini',
+): Promise<MinimumReleaseAgeLayer | null> => {
   let content: string
   try {
-    content = await fs.readFile(pnpmWorkspacePath, 'utf-8')
+    content = await fs.readFile(filePath, 'utf-8')
   } catch {
     return null
   }
 
   let parsed: Record<string, unknown>
   try {
-    parsed = parseYaml(content) ?? {}
+    parsed = (format === 'yaml' ? parseYaml(content) : ini.parse(content)) ?? {}
   } catch {
     return null
   }
 
-  const minimumReleaseAge = parsed.minimumReleaseAge
-  if (typeof minimumReleaseAge !== 'number' || isNaN(minimumReleaseAge) || minimumReleaseAge < 0) return null
+  return parseMinimumReleaseAgeLayer(parsed)
+}
 
-  const rawExclude = parsed.minimumReleaseAgeExclude
-  const minimumReleaseAgeExclude: string[] = Array.isArray(rawExclude)
-    ? rawExclude.filter((x): x is string => typeof x === 'string')
-    : []
+/**
+ * Reads minimumReleaseAge settings from pnpm's config, falling back through pnpm's config layers.
+ *
+ * pnpm-workspace.yaml takes precedence over pnpm's global config (config.yaml for pnpm >= 11, rc for
+ * pnpm <= 10) for the minimumReleaseAge value. minimumReleaseAgeExclude patterns are merged across all
+ * layers, matching pnpm's config resolution. Returns null if no layer defines a minimumReleaseAge.
+ */
+const getPnpmWorkspaceMinimumReleaseAge = async (): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
+  const globalConfigDir = getPnpmGlobalConfigDir()
+
+  const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
+
+  // Ordered from highest to lowest precedence. Each entry resolves to a config layer (or null if absent).
+  const layers = await Promise.all([
+    // workspace / project config
+    pnpmWorkspacePath ? readMinimumReleaseAgeLayer(pnpmWorkspacePath, 'yaml') : Promise.resolve(null),
+    // pnpm >= 11 global config
+    readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'config.yaml'), 'yaml'),
+    // pnpm <= 10 global config
+    readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'rc'), 'ini'),
+  ])
+
+  // Use the minimumReleaseAge from the highest-precedence layer that defines it.
+  const minimumReleaseAge = layers.find(layer => layer?.minimumReleaseAge != null)?.minimumReleaseAge
+  if (minimumReleaseAge == null) return null
+
+  // Merge minimumReleaseAgeExclude patterns across all layers, de-duplicating while preserving order.
+  const minimumReleaseAgeExclude = [
+    ...new Set(layers.flatMap(layer => layer?.minimumReleaseAgeExclude ?? [])),
+  ]
 
   return { minimumReleaseAge, minimumReleaseAgeExclude }
-})
+}
 
 /** Fetches the list of all installed packages. */
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {

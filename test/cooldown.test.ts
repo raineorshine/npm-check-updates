@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // eslint doesn't like .to.be.false syntax
 import { expect } from 'chai'
+import fs from 'fs/promises'
+import os from 'os'
+import path from 'path'
 import { stripVTControlCharacters } from 'node:util'
 import Sinon from 'sinon'
 import ncu from '../src/'
@@ -1331,6 +1334,129 @@ describe('cooldown', () => {
       stub.restore()
       findNpmConfigStub.restore()
       pnpmWorkspaceStub.restore()
+    })
+  })
+
+  describe('pnpm global minimumReleaseAge config fallback', () => {
+    let originalCwd: string
+    let originalXdg: string | undefined
+    let projectDir: string
+    let xdgDir: string
+
+    beforeEach(async () => {
+      originalCwd = process.cwd()
+      originalXdg = process.env.XDG_CONFIG_HOME
+      // A project directory without a pnpm-workspace.yaml so the workspace layer is absent.
+      projectDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-pnpm-project-'))
+      // An isolated XDG_CONFIG_HOME so pnpm's global config resolves to a temp directory.
+      xdgDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-pnpm-xdg-'))
+      await fs.mkdir(path.join(xdgDir, 'pnpm'), { recursive: true })
+      process.env.XDG_CONFIG_HOME = xdgDir
+      process.chdir(projectDir)
+    })
+
+    afterEach(async () => {
+      process.chdir(originalCwd)
+      if (originalXdg === undefined) {
+        delete process.env.XDG_CONFIG_HOME
+      } else {
+        process.env.XDG_CONFIG_HOME = originalXdg
+      }
+      await fs.rm(projectDir, { recursive: true, force: true })
+      await fs.rm(xdgDir, { recursive: true, force: true })
+    })
+
+    it('reads minimumReleaseAge from pnpm global config.yaml (pnpm >= 11) when pnpm-workspace.yaml is absent', async () => {
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
+      )
+
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+
+      expect(result).to.deep.equal({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['react'] })
+    })
+
+    it('reads minimumReleaseAge from pnpm global rc (pnpm <= 10) when pnpm-workspace.yaml is absent', async () => {
+      // `pnpm config set minimumReleaseAgeExclude '["react"]' --global` stores a JSON-encoded array string in the ini rc file.
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'rc'),
+        'minimumReleaseAge=10080\nminimumReleaseAgeExclude=["react"]\n',
+      )
+
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+
+      expect(result).to.deep.equal({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['react'] })
+    })
+
+    it('returns null when no config layer defines minimumReleaseAge', async () => {
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+      expect(result).to.equal(null)
+    })
+
+    it('prefers minimumReleaseAge from pnpm-workspace.yaml over global config and merges excludes', async () => {
+      await fs.writeFile(
+        path.join(projectDir, 'pnpm-workspace.yaml'),
+        'packages:\n  - "packages/*"\nminimumReleaseAge: 1440\nminimumReleaseAgeExclude:\n  - "@myorg/*"\n',
+      )
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
+      )
+
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+
+      // workspace minimumReleaseAge wins; excludes from both layers are merged
+      expect(result).to.deep.equal({ minimumReleaseAge: 1440, minimumReleaseAgeExclude: ['@myorg/*', 'react'] })
+    })
+
+    it('falls back to global minimumReleaseAge when pnpm-workspace.yaml omits it, merging excludes from both layers', async () => {
+      await fs.writeFile(
+        path.join(projectDir, 'pnpm-workspace.yaml'),
+        'packages:\n  - "packages/*"\nminimumReleaseAgeExclude:\n  - "@myorg/*"\n',
+      )
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
+      )
+
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+
+      expect(result).to.deep.equal({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['@myorg/*', 'react'] })
+    })
+
+    it('applies the cooldown from pnpm global config when pnpm-workspace.yaml does not define minimumReleaseAge', async () => {
+      // Given: only pnpm global config defines minimumReleaseAge=1440 (1 day); latest released 12 hours ago (within cooldown)
+      await fs.writeFile(path.join(xdgDir, 'pnpm', 'config.yaml'), 'minimumReleaseAge: 1440\n')
+
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      // Prevent the user's .npmrc min-release-age from taking precedence over pnpm config in tests
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData, packageManager: 'pnpm' })
+
+      // Then: package upgrade is skipped because latest version (1.1.0) is within the 1-day cooldown
+      expect(result).to.not.have.property('test-package')
+
+      stub.restore()
+      findNpmConfigStub.restore()
     })
   })
 
