@@ -162,7 +162,8 @@ const findTargetAndFallback = ({
   compare?: (v1: string, v2: string) => number
 }): GreatestWithFallbackResult => {
   const isValidVersion = filterPredicate(options)
-  const cur = nodeSemver.minVersion(currentVersion)?.version
+  // nodeSemver.minVersion throws on non-semver specs (e.g. catalog: or workspace:)
+  const cur = nodeSemver.validRange(currentVersion) ? nodeSemver.minVersion(currentVersion)?.version : null
   if (!cur) {
     return {
       targetVersion: null,
@@ -170,6 +171,7 @@ const findTargetAndFallback = ({
       targetBlockedByCooldown: false,
     }
   }
+  const currentInCooldown = !satisfiesCooldownPeriod(packageName, cur, time?.[cur], options.cooldown)
 
   const result = versions.reduce(
     (acc, versionData) => {
@@ -204,7 +206,7 @@ const findTargetAndFallback = ({
     {
       targetVersion: cur,
       fallbackVersion: cur,
-      targetBlockedByCooldown: false,
+      targetBlockedByCooldown: currentInCooldown,
     } as {
       targetVersion: string
       fallbackVersion: string
@@ -212,7 +214,7 @@ const findTargetAndFallback = ({
     },
   )
 
-  let targetVersion: string | null = result.targetVersion
+  const targetVersion: string | null = result.targetVersion
   let fallbackVersion: string | null = result.fallbackVersion
 
   if (fallbackVersion === result.targetVersion) {
@@ -223,8 +225,9 @@ const findTargetAndFallback = ({
     fallbackVersion = null
   }
 
-  if (!nodeSemver.gt(targetVersion, cur)) {
-    targetVersion = null
+  // don't "Block" current version
+  if (currentInCooldown && targetVersion === cur) {
+    result.targetBlockedByCooldown = false
   }
 
   return {
@@ -263,7 +266,7 @@ const toVersionResult = ({
 
   // only check fallback if target is in cooldown period.
   if (options.cooldown && targetVersion && targetBlockedByCooldown) {
-    const current = nodeSemver.minVersion(currentVersion)?.version
+    const current = nodeSemver.validRange(currentVersion) ? nodeSemver.minVersion(currentVersion)?.version : null
     const cooldownInfo: CooldownInfo = {
       name: packageName,
       currentVersion,
@@ -562,7 +565,10 @@ npmApi.mockFetchUpgradedPackument =
       )
     }
 
-    const time = (isPackument(partialPackument) && partialPackument.time?.[version]) || new Date().toISOString()
+    const time =
+      isPackument(partialPackument) && partialPackument.time
+        ? partialPackument.time?.[version]
+        : new Date().toISOString()
     const packument: Packument = {
       name,
       'dist-tags': {
@@ -1005,9 +1011,11 @@ export const distTag: GetVersion = async (
 
   const publishTime = packument?.time?.[version!]
   const maybeTime = publishTime ? { time: publishTime } : null
+  const current = (nodeSemver.validRange(currentVersion) && nodeSemver.minVersion(currentVersion)?.version) || '0.0.0'
 
   const isSatisfiesCooldown =
-    tagPackument && satisfiesCooldownPeriod(packageName, tagPackument.version, publishTime, options.cooldown)
+    tagPackument.version === current ||
+    (tagPackument && satisfiesCooldownPeriod(packageName, tagPackument.version, publishTime, options.cooldown))
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
@@ -1031,20 +1039,15 @@ export const distTag: GetVersion = async (
       )
     }
 
-    const current = nodeSemver.minVersion(currentVersion)?.version ?? '0.0.0'
-    if (nodeSemver.gt(tagPackument.version, current)) {
-      return {
-        cooldownInfo: {
-          name: packageName,
-          currentVersion,
-          currentVersionTime: packument?.time?.[current],
-          version: tagPackument.version,
-          ...maybeTime,
-        },
-      }
+    return {
+      cooldownInfo: {
+        name: packageName,
+        currentVersion,
+        currentVersionTime: packument?.time?.[current],
+        version: tagPackument.version,
+        ...maybeTime,
+      },
     }
-
-    return {}
   }
 
   // If we use a custom dist-tag, we do not want to get other 'pre' versions, just the ones from this dist-tag
@@ -1119,16 +1122,24 @@ export const newest: GetVersion = async (
   )
 
   const versions = Object.values(packument?.versions ?? {})
-  const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }
+  const time = packument?.time
+  const isTimeMissing = !time || Object.keys(time).length === 0
+  const packageInfo = { packageName, currentVersion, options, versions, time }
 
-  const versionResult = findTargetAndFallback({
-    ...packageInfo,
-    compare: (v1, v2) => {
-      const t1 = packument?.time?.[v1] || ''
-      const t2 = packument?.time?.[v2] || ''
-      return t1 > t2 ? 1 : t1 < t2 ? -1 : 0
-    },
-  })
+  const versionResult = isTimeMissing
+    ? {
+        targetVersion: currentVersion,
+        fallbackVersion: null,
+        targetBlockedByCooldown: false,
+      }
+    : findTargetAndFallback({
+        ...packageInfo,
+        compare: (v1, v2) => {
+          const t1 = packument?.time?.[v1] || ''
+          const t2 = packument?.time?.[v2] || ''
+          return t1 > t2 ? 1 : t1 < t2 ? -1 : 0
+        },
+      })
 
   return toVersionResult({ ...packageInfo, ...versionResult })
 }

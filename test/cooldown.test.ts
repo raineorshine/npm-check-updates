@@ -52,11 +52,14 @@ const getNormalizedLogs = (logSpy: Sinon.SinonStub<any[], void>): string[] => {
   return logSpy.args
     .flat()
     .filter((arg): arg is string => typeof arg === 'string')
+    .join('\n')
+    .replace(/^\n+|\n+$/g, '') // Remove newlines at the start and end
+    .replace(/\n+/g, '\n') // Remove consecutive newlines
+    .split('\n')
     .map(
       l =>
         stripVTControlCharacters(l)
           .replace(/\s+/g, ' ') // Replace all whitespace sequences with a single space
-          .replace(/^\n+|\n+$/g, '') // Remove newlines at the start and end
           .trim(), // Ensure no stray spaces remain at the edges
     )
 }
@@ -505,6 +508,43 @@ describe('cooldown', () => {
     })
   })
 
+  it('prints "All dependencies match the latest package versions" instead of registry error when installed version is the latest and within cooldown', async () => {
+    // Given: cooldown set to 10, test-package@1.1.0 installed and it is latest version 1.1.0 released 5 days ago (within 10-day cooldown)
+    const cooldown = 10
+    const packageData: PackageFile = {
+      dependencies: {
+        'test-package': '1.1.0',
+      },
+    }
+    const stub = stubVersions(
+      createMockVersion({
+        name: 'test-package',
+        versions: {
+          '1.1.0': new Date(NOW - 5 * DAY).toISOString(),
+          '1.0.0': new Date(NOW - 11 * DAY).toISOString(),
+        },
+        distTags: {
+          latest: '1.1.0',
+        },
+      }),
+    )
+
+    const logSpy = Sinon.stub(console, 'log')
+    silenceProgressBar()
+
+    // When ncu is run with cooldown and jsonUpgraded disabled
+    // Note: loglevel must be set explicitly since the module default sets silent mode
+    await ncu({ packageData, cooldown, target: 'latest', jsonUpgraded: false, loglevel: 'warn' })
+
+    // Then: the output should say "All dependencies match the latest package versions", not "No package versions were returned"
+    const allMessages = logSpy.args.flat().filter(arg => typeof arg === 'string')
+    expect(allMessages.some(msg => msg.includes('All dependencies match the latest package versions'))).to.be.true
+    expect(allMessages.some(msg => msg.includes('No package versions were returned'))).to.be.false
+
+    logSpy.restore()
+    stub.restore()
+  })
+
   describe('when @TAG target', () => {
     it('upgrades package when @next version was released outside cooldown period', async () => {
       // Given: cooldown set to 10, test-package@1.0.0 installed, @next version 1.1.0-rc.1 released 15 days ago (outside 10-day cooldown boundary)
@@ -792,38 +832,6 @@ describe('cooldown', () => {
       expect(result).to.have.property('test-package', '^1.0.1')
       stub.restore()
     })
-  })
-
-  it('skips package upgrade if no time data and cooldown is set', async () => {
-    // Given: cooldown days is set to 10 days, test-package is installed in version 1.0.0, and the latest version - 1.1.0 was released 5 days ago (inside cooldown period). Another version 1.0.1 was released 10 days ago (outside cooldown period), but it is not the latest version, so it should not be upgraded either.
-    const cooldown = 10
-    const packageData: PackageFile = {
-      dependencies: {
-        'test-package': '1.0.0',
-      },
-    }
-    const stub = stubVersions(
-      createMockVersion({
-        name: 'test-package',
-        versions: {
-          // @ts-expect-error -- testing missing time data
-          '1.1.0': undefined,
-          // @ts-expect-error -- testing missing time data
-          '1.0.1': undefined,
-        },
-        distTags: {
-          latest: '1.1.0',
-        },
-      }),
-    )
-
-    // When ncu is run with a 1 day cooldown parameter
-    const result = await ncu({ packageData, cooldown })
-
-    // Then test-package should not be upgraded
-    expect(result).to.not.have.property('test-package')
-
-    stub.restore()
   })
 
   it('upgrades package when version was released exactly at the cooldown boundary', async () => {
@@ -1549,7 +1557,7 @@ describe('cooldown', () => {
 
     const targets = ['latest', 'newest', 'greatest', 'minor', 'patch', 'semver', '@latest'] as const
     targets.forEach(async target => {
-      it(`for "target: ${target}" when all versions are within cooldown (no fallback possible)`, async () => {
+      it(`handles "target: ${target}" when all versions are within cooldown (no fallback possible)`, async () => {
         // Given: cooldown set to 10, test-package@1.0.0 installed
         // latest dist-tag (1.0.2) released 5 days ago (within 10-day cooldown)
         // previous version (1.0.1) released 8 days ago — also within cooldown, so no fallback exists
@@ -1571,7 +1579,7 @@ describe('cooldown', () => {
         stub.restore()
       })
 
-      it(`for "target: ${target}" when target version are within cooldown and a fallback exist)`, async () => {
+      it(`handles "target: ${target}" when target version are within cooldown and a fallback exist)`, async () => {
         // Given: cooldown set to 6, test-package@1.0.0 installed
         // latest dist-tag (1.0.2) released 5 days ago (within 6-day cooldown)
         // previous version (1.0.1) released 8 days ago — is before cooldown and return as a fallback
@@ -1601,26 +1609,33 @@ describe('cooldown', () => {
         stub.restore()
       })
     })
+  })
 
-    const latestTarget = ['latest', '@latest'] as const
-    latestTarget.forEach(async target => {
-      it(`distTag cooldownInfo must contain new version`, async () => {
-        const mockedVersion = createMockVersion({
-          name: 'test-package',
-          versions: {
-            '2.0.0': new Date(NOW - 3 * DAY).toISOString(),
-            '1.0.0': new Date(NOW - 10 * DAY).toISOString(),
-          },
-          distTags: {
-            latest: '2.0.0',
-          },
-        })
-        const packageData: PackageFile = {
-          dependencies: {
-            'test-package': '^2.0.0',
-          },
-        }
-
+  describe('when installed version matches target version and is within cooldown', () => {
+    const mockedVersion = createMockVersion({
+      name: 'test-package',
+      versions: {
+        '2.0.0': new Date(NOW - 3 * DAY).toISOString(),
+        '1.0.0': new Date(NOW - 10 * DAY).toISOString(),
+      },
+      distTags: {
+        latest: '2.0.0',
+      },
+    })
+    const packageData: PackageFile = {
+      dependencies: {
+        'test-package': '^2.0.0',
+      },
+    }
+    const options = {
+      packageData,
+      jsonUpgraded: false,
+      loglevel: 'warn',
+      format: ['cooldown'],
+    }
+    const targets = ['latest', '@latest', 'newest', 'greatest'] as const
+    targets.forEach(async target => {
+      it(`handles "target: ${target}" correctly within cooldown`, async () => {
         const cooldown = 6
 
         const stub = stubVersions(mockedVersion)
@@ -1630,12 +1645,298 @@ describe('cooldown', () => {
         await ncu({ ...options, packageData, cooldown, target, format: ['cooldown', 'time'] })
 
         const allMessages = getNormalizedLogs(logSpy)
-        const [_name, from, , to] = allMessages[1].split(' ')
-        expect(from).not.to.equal(to)
+        const happyMsg = `All dependencies match the ${target} package versions :)`
+        expect(allMessages.some(msg => msg.includes(happyMsg))).to.be.true
+        expect(allMessages.some(msg => msg.includes('No package versions were returned'))).to.be.false
+        expect(allMessages.some(msg => msg.includes(`Skipped due to ${cooldown}-day cooldown`))).to.be.false
 
         logSpy.restore()
         stub.restore()
       })
+    })
+  })
+
+  describe(`Don't skip by cooldown when package metadata doesn't have "time"`, () => {
+    const mockedVersion = createMockVersion({
+      name: 'test-package',
+      versions: {
+        '1.0.3-pre.0': new Date(NOW - 3 * DAY).toISOString(),
+        '1.0.2': new Date(NOW - 3 * DAY).toISOString(),
+        '1.0.1': new Date(NOW - 6 * DAY).toISOString(),
+        '1.0.0': new Date(NOW - 9 * DAY).toISOString(),
+      },
+      distTags: {
+        latest: '1.0.2',
+      },
+    })
+    const mockedVersionWithNoTime = {
+      ...mockedVersion,
+      time: {
+        ...mockedVersion.time,
+      },
+      name: 'test-package-with-no-time',
+    }
+
+    // mock missing time
+    // mockedVersionWithNoTime.time = {}
+    delete mockedVersionWithNoTime.time!['1.0.3-pre.0']
+    delete mockedVersionWithNoTime.time!['1.0.2']
+
+    const packageData: PackageFile = {
+      dependencies: {
+        'test-package': '^1.0.0',
+        'test-package-with-no-time': '^1.0.0',
+      },
+    }
+
+    // When ncu is run with cooldown and jsonUpgraded disabled
+    // Note: loglevel must be set explicitly since the module default sets silent mode
+    const options = {
+      packageData,
+      jsonUpgraded: false,
+      loglevel: 'warn',
+      format: ['cooldown'],
+    }
+
+    let stub: { restore: () => void }
+    const versions = {
+      'test-package': mockedVersion,
+      'test-package-with-no-time': mockedVersionWithNoTime,
+    }
+    after(() => stub.restore())
+
+    const targets = ['latest', 'greatest', 'minor', 'patch', 'semver'] as const
+    targets.forEach(async target => {
+      it(`handles "target: ${target}" correctly within cooldown`, async () => {
+        // greatest version time was deleted, all teaget function should return
+        // test-package-with-no-time: 1.0.2 or 1.0.3-pre.0, for newest and greatest for the upgrade
+        // when newest function get a package with missing time it should return greatest instead
+        stub = stubVersions(versions)
+        const cooldown = 5
+
+        const logSpy = Sinon.stub(console, 'log')
+        silenceProgressBar()
+
+        await ncu({ ...options, cooldown, target })
+
+        const upgradeVersion = ['newest', 'greatest'].includes(target) ? '1.0.3-pre.0' : '1.0.2'
+        const truncateVersion = ['newest', 'greatest'].includes(target) ? '1.0.3-+' : '1.0.2'
+
+        const allMessages = getNormalizedLogs(logSpy)
+        expect(allMessages[0]).to.equal(`Skipped due to ${cooldown}-day cooldown`)
+        expect(allMessages[1]).to.equal(`test-package ^1.0.1 → ^${upgradeVersion} 3 days ago`)
+        expect(allMessages[3]).to.equal(`test-package ^1.0.0 → ^1.0.1 [cooldown] ${truncateVersion}`)
+        expect(allMessages[4]).to.equal(`test-package-with-no-time ^1.0.0 → ^${upgradeVersion} [missing time]`)
+
+        logSpy.restore()
+      })
+    })
+
+    it(`handles "target: '@latest'" correctly within cooldown`, async () => {
+      stub = stubVersions(versions)
+      const cooldown = 5
+
+      const logSpy = Sinon.stub(console, 'log')
+      silenceProgressBar()
+
+      await ncu({ ...options, cooldown, target: '@latest' })
+
+      const allMessages = getNormalizedLogs(logSpy)
+
+      expect(allMessages[0]).to.equal(`Skipped due to ${cooldown}-day cooldown`)
+      expect(allMessages[1]).to.equal(`test-package ^1.0.0 → ^1.0.2 3 days ago`)
+      expect(allMessages[3]).to.equal(`test-package-with-no-time ^1.0.0 → ^1.0.2 [missing time]`)
+
+      logSpy.restore()
+    })
+
+    it(`"target: newest" - ignore versions without time`, async () => {
+      // test-package-with-no-time versions 1.0.2 and 1.0.3-pre.0 don't have time
+      // test-package-with-no-time will upgrade to version 1.0.1
+      stub = stubVersions(versions)
+      const cooldown = 5
+
+      const logSpy = Sinon.stub(console, 'log')
+      silenceProgressBar()
+
+      await ncu({ ...options, cooldown, target: 'newest' })
+
+      const allMessages = getNormalizedLogs(logSpy)
+      expect(allMessages[0]).to.equal(`Skipped due to ${cooldown}-day cooldown`)
+      expect(allMessages[1]).to.equal(`test-package ^1.0.1 → ^1.0.3-pre.0 3 days ago`)
+      expect(allMessages[3]).to.equal(`test-package ^1.0.0 → ^1.0.1 [cooldown] 1.0.3-+`)
+      expect(allMessages[4]).to.equal(`test-package-with-no-time ^1.0.0 → ^1.0.1`)
+
+      logSpy.restore()
+    })
+
+    it(`"target: newest" - no upgrade is possible when all times are missing`, async () => {
+      // delete all times and update stub
+      stub = stubVersions({
+        'test-package': mockedVersion,
+        'test-package-with-no-time': { ...mockedVersionWithNoTime, time: {} },
+      })
+
+      const cooldown = 5
+
+      const logSpy = Sinon.stub(console, 'log')
+      silenceProgressBar()
+
+      await ncu({ ...options, cooldown, target: 'newest' })
+
+      const allMessages = getNormalizedLogs(logSpy)
+      expect(allMessages[0]).to.equal(`Skipped due to ${cooldown}-day cooldown`)
+      expect(allMessages[1]).to.equal(`test-package ^1.0.1 → ^1.0.3-pre.0 3 days ago`)
+      expect(allMessages[3]).to.equal(`test-package ^1.0.0 → ^1.0.1 [cooldown] 1.0.3-+`)
+      expect(allMessages.join('/n')).not.to.include(`test-package-with-no-time`)
+
+      logSpy.restore()
+    })
+    // prints "All dependencies match the latest package versions"
+    it(`handles "target: newest" when all packages are without time`, async () => {
+      // delete all times for all packages and update stub
+      stub = stubVersions({
+        'test-package': { ...mockedVersion, time: {} },
+        'test-package-with-no-time': { ...mockedVersionWithNoTime, time: {} },
+      })
+
+      const cooldown = 5
+
+      const logSpy = Sinon.stub(console, 'log')
+      silenceProgressBar()
+
+      await ncu({ ...options, cooldown, target: 'newest' })
+
+      const allMessages = getNormalizedLogs(logSpy)
+      expect(allMessages[0]).to.equal(`All dependencies match the newest package versions :)`)
+
+      logSpy.restore()
+    })
+  })
+
+  describe('downgrade from prerelease when target version is within cooldown', () => {
+    const cooldown = 10
+
+    // Common options for all tests in this describe block
+    const options = {
+      cooldown,
+      jsonUpgraded: false,
+      loglevel: 'warn',
+      format: ['cooldown'],
+    }
+
+    it('downgrades from prerelease to older stable version when target @latest is not within cooldown', async () => {
+      // Given: test-package@2.0.0-beta.1 (prerelease) installed
+      // @latest is 1.5.0 released 11 days ago (outside cooldown)
+      // older stable version 1.0.0 released 15 days ago (outside cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '2.0.0-beta.1',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.5.0': new Date(NOW - 11 * DAY).toISOString(),
+            '1.0.0': new Date(NOW - 15 * DAY).toISOString(),
+            '2.0.0-beta.1': new Date(NOW - 20 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.5.0',
+          },
+        }),
+      )
+
+      const logSpy = Sinon.stub(console, 'log')
+      silenceProgressBar()
+
+      await ncu({ ...options, packageData, target: '@latest' })
+
+      const allMessages = getNormalizedLogs(logSpy)
+      expect(allMessages.length).to.equal(1)
+      expect(allMessages[0]).to.equal(`test-package 2.0.0-beta.1 → 1.5.0`)
+
+      logSpy.restore()
+      stub.restore()
+    })
+
+    it('skip by cooldown downgrades from prerelease to older stable version when target @latest is within cooldown', async () => {
+      // Given: test-package@2.0.0-beta.1 (prerelease) installed
+      // @latest is 1.5.0 released 5 days ago (within cooldown)
+      // older stable version 1.0.0 released 15 days ago (outside cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '2.0.0-beta.1',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.5.0': new Date(NOW - 5 * DAY).toISOString(),
+            '1.0.0': new Date(NOW - 15 * DAY).toISOString(),
+            '2.0.0-beta.1': new Date(NOW - 20 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.5.0',
+          },
+        }),
+      )
+
+      const logSpy = Sinon.stub(console, 'log')
+      silenceProgressBar()
+
+      await ncu({ ...options, packageData, target: '@latest' })
+
+      const allMessages = getNormalizedLogs(logSpy)
+      expect(allMessages[0]).to.equal(`Skipped due to ${cooldown}-day cooldown`)
+      expect(allMessages[1]).to.equal(`test-package 2.0.0-beta.1 → 1.5.0 5 days ago`)
+      // if version from dist-tag does not meet cooldown requirement skip finding other versions
+      expect(allMessages.join('\n')).not.to.include(`test-package 2.0.0-beta.1 → 1.0.0`)
+      expect(allMessages[2]).to.equal(`All dependencies not in cooldown match the @latest package versions :)`)
+
+      logSpy.restore()
+      stub.restore()
+    })
+
+    it('skip by cooldown upgrades from prerelease to specific tag when target tag version is within cooldown', async () => {
+      // Given: test-package@1.0.0-dev.0 (prerelease) installed
+      // @next tag is 1.5.0-rc.1 released 3 days ago (within cooldown)
+      // older version on @next tag is 1.0.0-next.0 released 15 days ago (outside cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0-dev.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.5.0-rc.1': new Date(NOW - 3 * DAY).toISOString(),
+            '1.1.0-dev.0': new Date(NOW - 15 * DAY).toISOString(),
+            '1.0.0-dev.0': new Date(NOW - 20 * DAY).toISOString(),
+          },
+          distTags: {
+            next: '1.5.0-rc.1',
+          },
+        }),
+      )
+
+      const logSpy = Sinon.stub(console, 'log')
+      silenceProgressBar()
+
+      await ncu({ ...options, packageData, target: '@next' })
+
+      const allMessages = getNormalizedLogs(logSpy)
+      expect(allMessages[0]).to.equal(`Skipped due to ${cooldown}-day cooldown`)
+      expect(allMessages[1]).to.equal(`test-package 1.0.0-dev.0 → 1.5.0-rc.1 3 days ago`)
+      // if version from dist-tag does not meet cooldown requirement skip finding other versions
+      expect(allMessages.join('\n')).not.to.include(`test-package 1.0.0-dev.0 → 1.1.0-dev.0`)
+      expect(allMessages[2]).to.equal(`All dependencies not in cooldown match the @next package versions :)`)
+
+      logSpy.restore()
+      stub.restore()
     })
   })
 })

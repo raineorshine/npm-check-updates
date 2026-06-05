@@ -242,8 +242,17 @@ export async function toDependencyTable({
           const diffUrl = format?.includes('diff')
             ? `${process.env.NCU_DIFF || 'https://npmdiff.dev'}/${encodeURIComponent(dep)}/${from.replace(/^\W+/, '')}/${to.replace(/^\W+/, '')}`
             : ''
-          const timestamp = format?.includes('time') && time?.[dep] ? time[dep] : null
-          const publishTime = timestamp ? timeAgoFormat(timestamp, 'en_US') : ''
+
+          const showCoolDown = format?.includes('cooldown')
+          const showTime = format?.includes('time')
+          // show '[missing time]' in publishTime column or cooldown column
+          const missingTime = time?.[dep] ? '' : '[missing time]'
+          const timestamp = showTime && time?.[dep] ? time[dep] : null
+          const publishTime = timestamp
+            ? timeAgoFormat(timestamp, 'en_US')
+            : showTime || !showCooldownCol
+              ? missingTime
+              : ''
 
           const cooldownVersion = skippedByCooldown?.[dep]?.version
           let cooldown = ''
@@ -256,6 +265,8 @@ export async function toDependencyTable({
               coerced && !cooldownVersion.endsWith(coerced.version) ? `${coerced.version}-+` : cooldownVersion
             const skippedColorized = colorizeDiff(to, wildcard + getVersion(shortended))
             cooldown = `[cooldown] ${skippedColorized.replace(wildcard, '')}`
+          } else if (showCoolDown && !showTime) {
+            cooldown = missingTime
           }
 
           return [
@@ -302,7 +313,7 @@ async function printSkippedByCooldownTable({
 
   for (const params of Object.values(skippedByCooldown)) {
     const { name, version, currentVersion, fallbackVersion, time: versionTime } = params
-    if (!isFetchable(currentVersion)) continue
+    if (!isFetchable(currentVersion) || !version) continue
 
     const wildcard = WILDCARDS.includes(currentVersion[0]) ? currentVersion[0] : ''
     const caf = wildcard + stripRange(fallbackVersion ?? currentVersion)

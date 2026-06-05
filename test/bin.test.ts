@@ -237,6 +237,17 @@ describe('bin', async function () {
     stub.restore()
   })
 
+  it('do not warn about empty results when every dep is already at the highest version for non-latest --target', async () => {
+    const stub = stubVersions({ 'ncu-test-v2': '1.0.0' }, { spawn: true })
+    const { stdout } = await spawn('node', [bin, '--stdin', '--target', 'minor'], {
+      stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
+    })
+    const out = stripAnsi(stdout)!
+    out.should.not.include('No package versions were returned.')
+    out.should.include('All dependencies match the minor package versions')
+    stub.restore()
+  })
+
   it('combine boolean flags with arguments', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
     const { stdout } = await spawn('node', [bin, '--stdin', '--jsonUpgraded', 'ncu-test-v2'], {
@@ -287,7 +298,8 @@ describe('bin', async function () {
       const { stdout } = await spawn('node', [bin, '--stdin'], { stdin: JSON.stringify({ dependencies }) })
       stripAnsi(stdout)
         .trim()
-        .should.equal('ncu-test-v2  https://github.com/raineorshine/ncu-test-v2.git#v1.0.0  →  v2.0.0')
+        .replace(/\s+/g, ' ') // Replace all whitespace sequences with a single space
+        .should.equal('ncu-test-v2 https://github.com/raineorshine/ncu-test-v2.git#v1.0.0 → v2.0.0 [missing time]')
     })
 
     it('strip prefix from npm alias in "to" output', async () => {

@@ -75,7 +75,8 @@ export const satisfiesCooldownPeriod = (
   if (!version) return false
 
   if (!cooldownDaysOrPredicateFn) return true
-  if (!versionTimeData) return false
+  // when there is no time to check wh can not check it for cooldown, always return true
+  if (!versionTimeData) return true
 
   const versionReleaseDate = new Date(versionTimeData)
   const DAY_AS_MS = 86400000 // milliseconds in a day
