@@ -164,9 +164,7 @@ const getPnpmWorkspaceMinimumReleaseAge = async (): Promise<PnpmWorkspaceMinimum
   if (minimumReleaseAge == null) return null
 
   // Merge minimumReleaseAgeExclude patterns across all layers, de-duplicating while preserving order.
-  const minimumReleaseAgeExclude = [
-    ...new Set(layers.flatMap(layer => layer?.minimumReleaseAgeExclude ?? [])),
-  ]
+  const minimumReleaseAgeExclude = [...new Set(layers.flatMap(layer => layer?.minimumReleaseAgeExclude ?? []))]
 
   return { minimumReleaseAge, minimumReleaseAgeExclude }
 }

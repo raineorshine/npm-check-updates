@@ -1,7 +1,7 @@
 import { chmodSync } from 'fs'
+import dts from 'unplugin-dts/vite'
 import { type Plugin, defineConfig } from 'vite'
 import { analyzer } from 'vite-bundle-analyzer'
-import dts from 'unplugin-dts/vite'
 import { buildOptions } from './src/scripts/build-options'
 
 /**
