@@ -645,6 +645,26 @@ ${chalk.green('cooldown')}: packageName ${chalk.cyan('=>')} (packageName.startsW
   { markdown },
 )}
 
+### Package Manager Configurations
+
+If \`--cooldown\` is not set explicitly, \`ncu\` automatically reads the cooldown configuration from your package manager's config file:
+
+${table({
+  colAligns: ['right', 'left'],
+  markdown,
+  rows: [
+    ['npm', `Reads \`min-release-age\` from \`.npmrc\`.`],
+    [
+      'yarn',
+      `Reads \`npmMinimalAgeGate\` from \`.yarnrc.yml\`, excluding packages matched by \`npmPreapprovedPackages\`.`,
+    ],
+    [
+      'pnpm',
+      `Reads \`minimumReleaseAge\` from \`pnpm-workspace.yaml\`, excluding packages matched by \`minimumReleaseAgeExclude\`.`,
+    ],
+  ],
+})}
+
 ### Cooldown Formatting
 
 When using \`--format cooldown\` alongside the \`--cooldown\` option, \`ncu\` will show a list of packages that were skipped due to the \`--cooldown\` threshold.

@@ -506,6 +506,16 @@ You can also provide a custom function in your .ncurc.js file or when importing 
 cooldown: packageName => (packageName.startsWith('@my-company') ? 0 : 3)
 ```
 
+### Package Manager Configurations
+
+If `--cooldown` is not set explicitly, `ncu` automatically reads the cooldown configuration from your package manager's config file:
+
+<table>
+  <tr><td>npm</td><td>Reads `min-release-age` from `.npmrc`.</td></tr>
+  <tr><td>yarn</td><td>Reads `npmMinimalAgeGate` from `.yarnrc.yml`, excluding packages matched by `npmPreapprovedPackages`.</td></tr>
+  <tr><td>pnpm</td><td>Reads `minimumReleaseAge` from `pnpm-workspace.yaml`, excluding packages matched by `minimumReleaseAgeExclude`.</td></tr>
+</table>
+
 ### Cooldown Formatting
 
 When using `--format cooldown` alongside the `--cooldown` option, `ncu` will show a list of packages that were skipped due to the `--cooldown` threshold.
