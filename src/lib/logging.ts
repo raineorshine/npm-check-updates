@@ -246,7 +246,7 @@ export async function toDependencyTable({
           const showCoolDown = format?.includes('cooldown')
           const showTime = format?.includes('time')
           // show '[missing time]' in publishTime column or cooldown column
-          const missingTime = time?.[dep] ? '' : '[missing time]'
+          const missingTime = (showTime || showCoolDown) && !time?.[dep] ? '[missing time]' : ''
           const timestamp = showTime && time?.[dep] ? time[dep] : null
           const publishTime = timestamp
             ? timeAgoFormat(timestamp, 'en_US')

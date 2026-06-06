@@ -299,7 +299,7 @@ describe('bin', async function () {
       stripAnsi(stdout)
         .trim()
         .replace(/\s+/g, ' ') // Replace all whitespace sequences with a single space
-        .should.equal('ncu-test-v2 https://github.com/raineorshine/ncu-test-v2.git#v1.0.0 → v2.0.0 [missing time]')
+        .should.equal('ncu-test-v2 https://github.com/raineorshine/ncu-test-v2.git#v1.0.0 → v2.0.0')
     })
 
     it('strip prefix from npm alias in "to" output', async () => {

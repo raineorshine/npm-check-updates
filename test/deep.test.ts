@@ -188,8 +188,9 @@ describe('--deep', function () {
       const cli = getCliInvocation('-u', '--deep')
       const { stdout } = await spawn(cli.command, cli.args, {}, { cwd: tempDir })
       const output = stripAnsi(stdout)
-      const rootPackage = path.resolve(tempDir, 'package.json')
-      const nestedPackage = path.resolve(tempDir, 'packages/no-deps/package.json')
+      const realTempDir = await fs.realpath(tempDir)
+      const rootPackage = path.resolve(realTempDir, 'package.json')
+      const nestedPackage = path.resolve(realTempDir, 'packages/no-deps/package.json')
 
       output.should.include(`Upgrading ${rootPackage}\nAll dependencies match the latest package versions :)`)
       output.should.include(
