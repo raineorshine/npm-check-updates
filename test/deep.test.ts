@@ -1,10 +1,10 @@
 import { expect } from 'chai'
 import fsSync from 'fs'
 import fs from 'fs/promises'
+import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path, { dirname } from 'path'
 import spawn from 'spawn-please'
-import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
@@ -21,9 +21,7 @@ const tsNodeBin = path.join(__dirname, `../node_modules/.bin/ts-node${process.pl
 
 /** Returns the CLI invocation command and arguments, using the built binary if available, otherwise using ts-node. */
 const getCliInvocation = (...args: string[]) =>
-  fsSync.existsSync(bin)
-    ? { command: 'node', args: [bin, ...args] }
-    : { command: tsNodeBin, args: [srcBin, ...args] }
+  fsSync.existsSync(bin) ? { command: 'node', args: [bin, ...args] } : { command: tsNodeBin, args: [srcBin, ...args] }
 
 /** Creates a temp directory with nested package files for --deep testing. Returns the temp directory name (should be removed by caller).
  *
@@ -128,12 +126,7 @@ describe('--deep', function () {
     const tempDir = await setupDeepTest()
     try {
       const cli = getCliInvocation('-u', '--jsonUpgraded', '--packageFile', path.join(tempDir, '**/package.json'))
-      const { stdout } = await spawn(
-        cli.command,
-        cli.args,
-        { stdin: '{ "dependencies": {}}' },
-        { cwd: tempDir },
-      )
+      const { stdout } = await spawn(cli.command, cli.args, { stdin: '{ "dependencies": {}}' }, { cwd: tempDir })
 
       const upgradedPkg1 = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/sub1/package.json'), 'utf-8'))
       upgradedPkg1.should.have.property('dependencies')
@@ -188,15 +181,14 @@ describe('--deep', function () {
       const cli = getCliInvocation('-u', '--deep')
       const { stdout } = await spawn(cli.command, cli.args, {}, { cwd: tempDir })
       const output = stripAnsi(stdout)
-      const realTempDir = await fs.realpath(tempDir)
-      const rootPackage = path.resolve(realTempDir, 'package.json')
-      const nestedPackage = path.resolve(realTempDir, 'packages/no-deps/package.json')
 
-      output.should.include(`Upgrading ${rootPackage}\nAll dependencies match the latest package versions :)`)
-      output.should.include(
-        `All dependencies match the latest package versions :)\n\nUpgrading ${nestedPackage}\nNo dependencies.`,
+      // Use path-agnostic regexes since the absolute temp path printed by the CLI may differ from
+      // os.tmpdir() (e.g. /var vs /private/var on macOS, or short 8.3 paths on Windows).
+      output.should.match(/Upgrading .*package\.json\nAll dependencies match the latest package versions :\)/)
+      output.should.match(
+        /All dependencies match the latest package versions :\)\n\nUpgrading .*no-deps.*package\.json\nNo dependencies\./,
       )
-      output.should.not.include(`Upgrading ${rootPackage}\n\nAll dependencies match the latest package versions :)`)
+      output.should.not.match(/Upgrading .*package\.json\n\nAll dependencies match the latest package versions :\)/)
     } finally {
       await removeDir(tempDir)
     }
