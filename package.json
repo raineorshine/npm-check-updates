@@ -165,19 +165,6 @@
     "build",
     "!**/test/**"
   ],
-  "lockfile-lint": {
-    "allowed-schemes": [
-      "https:",
-      "git+ssh:"
-    ],
-    "allowed-hosts": [
-      "npm",
-      "github.com"
-    ],
-    "empty-hostname": false,
-    "type": "npm ",
-    "path": "package-lock.json"
-  },
   "mocha": {
     "check-leaks": true,
     "extension": [
