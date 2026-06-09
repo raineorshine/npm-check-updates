@@ -1,0 +1,14 @@
+{
+  "check-leaks": true,
+  "extension": ["test.ts"],
+  "node-option": [
+    "import=tsx",
+    "enable-source-maps",
+    "trace-deprecation",
+    "trace-warnings",
+    "no-warnings=TimeoutNaNWarning"
+  ],
+  "timeout": 60000,
+  "recursive": true,
+  "exit": true
+}
