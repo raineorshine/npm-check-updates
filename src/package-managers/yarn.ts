@@ -1,10 +1,10 @@
 import memoize from 'fast-memoize'
 import fs from 'fs/promises'
-import yaml from 'js-yaml'
 import jsonlines from 'jsonlines'
 import { curry } from 'lodash-es'
 import os from 'os'
 import path from 'path'
+import { parse as parseYaml } from 'yaml'
 import exists from '../lib/exists'
 import findLockfile from '../lib/findLockfile'
 import { keyValueBy } from '../lib/keyValueBy'
@@ -116,8 +116,8 @@ const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> =
   const yarnrcUserExists = await exists(yarnrcUserPath)
   const yarnrcLocal = yarnrcLocalExists ? await fs.readFile(yarnrcLocalPath, 'utf-8') : ''
   const yarnrcUser = yarnrcUserExists ? await fs.readFile(yarnrcUserPath, 'utf-8') : ''
-  const yarnConfigLocal: YarnConfig = yaml.load(yarnrcLocal) as YarnConfig
-  const yarnConfigUser: YarnConfig = yaml.load(yarnrcUser) as YarnConfig
+  const yarnConfigLocal: YarnConfig = parseYaml(yarnrcLocal) as YarnConfig
+  const yarnConfigUser: YarnConfig = parseYaml(yarnrcUser) as YarnConfig
 
   let npmConfig: Index<string | boolean> = {
     ...keyValueBy(yarnConfigUser?.npmScopes || {}, npmRegistryKeyValue),
@@ -168,7 +168,7 @@ const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMini
 
     let parsed: YarnConfig
     try {
-      parsed = (yaml.load(content) as YarnConfig) ?? {}
+      parsed = (parseYaml(content) as YarnConfig) ?? {}
     } catch {
       continue
     }
