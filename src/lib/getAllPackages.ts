@@ -1,8 +1,8 @@
 import glob, { type Options as GlobOptions } from 'fast-glob'
 import fs from 'fs/promises'
-import yaml from 'js-yaml'
 import path from 'path'
 import untildify from 'untildify'
+import { parse as parseYaml } from 'yaml'
 import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
 import { type PackageFile } from '../types/PackageFile'
@@ -38,7 +38,7 @@ const readPnpmWorkspaces = async (pkgPath: string): Promise<PnpmWorkspaces | nul
   } catch {
     return null
   }
-  return yaml.load(pnpmWorkspaceFile) as PnpmWorkspaces
+  return parseYaml(pnpmWorkspaceFile) as PnpmWorkspaces
 }
 
 /** Reads, parses, and resolves catalog information from the yarn config file at the same path as the package file. */
@@ -50,7 +50,7 @@ const readYarnConfig = async (pkgPath: string): Promise<YarnConfig | null> => {
   } catch {
     return null
   }
-  return yaml.load(yarnConfig) as YarnConfig
+  return parseYaml(yarnConfig) as YarnConfig
 }
 
 /** Gets catalog dependencies from both pnpm-workspace.yaml and package.json files. */
