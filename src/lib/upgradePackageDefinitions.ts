@@ -1,4 +1,4 @@
-import { dequal } from 'dequal'
+import { isDeepStrictEqual } from 'node:util'
 import { intersects, satisfies, validRange } from 'semver'
 import { parse, parseRange } from 'semver-utils'
 import { type Index } from '../types/IndexType'
@@ -117,7 +117,7 @@ export async function upgradePackageDefinitions(
     let checkPeerViolationResult: CheckIfInPeerViolationResult
 
     if (
-      dequal(options.peerDependencies, {
+      isDeepStrictEqual(options.peerDependencies, {
         ...options.peerDependencies,
         ...upgradedPeerDependencies,
       })
@@ -146,7 +146,7 @@ export async function upgradePackageDefinitions(
         ...options.peerDependencies,
         ...checkPeerViolationResult.upgradedPeerDependencies,
       }
-      if (dequal(options.peerDependencies, peerDependenciesAfterUpgrade)) {
+      if (isDeepStrictEqual(options.peerDependencies, peerDependenciesAfterUpgrade)) {
         // We can't find anything to do, will not upgrade anything
         return [{}, latestVersionResults, options.peerDependencies]
       }
