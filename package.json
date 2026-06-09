@@ -91,7 +91,6 @@
     "@types/chai": "^5.2.3",
     "@types/chai-as-promised": "^8.0.2",
     "@types/chai-string": "^1.4.5",
-    "@types/cli-table": "^0.3.4",
     "@types/hosted-git-info": "^3.0.5",
     "@types/ini": "^4.1.1",
     "@types/js-yaml": "^4.0.9",
