@@ -1,4 +1,3 @@
-import { dequal } from 'dequal'
 import { propertyOf } from 'lodash-es'
 import picomatch from 'picomatch'
 import cliOptions from '../cli-options'
@@ -148,7 +147,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
 
   // convert to string for comparison purposes
   // otherwise ['a b'] will not match ['a', 'b']
-  if (options.filter && args && !dequal(args.join(' '), Array.isArray(filter) ? filter.join(' ') : filter)) {
+  if (options.filter && args && args.join(' ') !== (Array.isArray(filter) ? filter.join(' ') : filter)) {
     programError(
       options,
       'Cannot specify a filter using both --filter and args. Did you forget to quote an argument?\nSee: https://github.com/raineorshine/npm-check-updates/issues/759#issuecomment-723587297',
