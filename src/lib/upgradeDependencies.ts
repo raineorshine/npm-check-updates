@@ -1,4 +1,3 @@
-import { flow } from 'lodash-es'
 import { parseRange } from 'semver-utils'
 import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
@@ -45,7 +44,7 @@ function upgradeDependencies(
       removeRange: options.removeRange,
     })
 
-  return flow([
+  const pipeline: ((deps: any) => any)[] = [
     // only include packages for which a latest version was fetched
     (deps: Index<VersionSpec>): Index<VersionSpec> =>
       pickBy(deps, (current, packageName) => packageName in latestVersions),
@@ -104,7 +103,9 @@ function upgradeDependencies(
         },
         {},
       ),
-  ])(currentDependencies)
+  ]
+
+  return pipeline.reduce((deps, fn) => fn(deps), currentDependencies as Index<VersionSpec>)
 }
 
 export default upgradeDependencies
