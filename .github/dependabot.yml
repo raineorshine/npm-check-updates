@@ -1,14 +1,33 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
 updates:
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    cooldown:
+      default-days: 7
+    schedule:
+      interval: 'monthly'
+    groups:
+      github-actions:
+        patterns:
+          - '*'
   - package-ecosystem: 'npm'
     directory: '/'
+    cooldown:
+      default-days: 7
     exclude-paths:
       - 'test/test-data/**'
     schedule:
       interval: 'weekly'
     open-pull-requests-limit: 10
+    versioning-strategy: 'increase'
+    groups:
+      production-dependencies:
+        dependency-type: 'production'
+        update-types:
+          - 'minor'
+          - 'patch'
+      development-dependencies:
+        dependency-type: 'development'
+        update-types:
+          - 'minor'
+          - 'patch'
