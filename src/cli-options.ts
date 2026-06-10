@@ -653,7 +653,7 @@ ${table({
   colAligns: ['right', 'left'],
   markdown,
   rows: [
-    ['npm', `Reads \`min-release-age\` from \`.npmrc\`.`],
+    ['npm', `Reads \`min-release-age\` from \`.npmrc\`, excluding packages matched by \`min-release-age-exclude\`.`],
     [
       'yarn',
       `Reads \`npmMinimalAgeGate\` from \`.yarnrc.yml\`, excluding packages matched by \`npmPreapprovedPackages\`.`,
