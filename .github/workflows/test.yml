@@ -8,12 +8,17 @@ on:
   pull_request:
     branches:
       - '**'
+  workflow_dispatch:
 
 env:
   FORCE_COLOR: 2
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   run:
@@ -22,6 +27,7 @@ jobs:
 
     name: Node ${{ matrix.node }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     if: github.event_name != 'pull_request' || github.event.pull_request.changed_files > 0
 
     strategy:
@@ -32,10 +38,12 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ matrix.node }}
           cache: npm
@@ -55,7 +63,7 @@ jobs:
           NODE_OPTIONS: ${{ matrix.os == 'windows-latest' && '--dns-result-order=ipv4first' || '' }}
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
 
       - name: Bun Tests
         run: npm run test:bun
