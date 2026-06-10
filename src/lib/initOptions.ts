@@ -233,8 +233,38 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
             ? minReleaseAge
             : null
       if (days != null && !isNaN(days)) {
-        options.cooldown = days
-        print({ ...options, json }, `Using min-release-age from .npmrc: ${formatDays(days)}`)
+        // npm's min-release-age-exclude is a list of package names or glob patterns that are exempt from min-release-age.
+        // a single .npmrc entry parses as a string; repeated entries (min-release-age-exclude[]=) parse as an array.
+        const minReleaseAgeExcludeRaw = npmConfigCooldown?.minReleaseAgeExclude
+        const minReleaseAgeExclude = [
+          ...new Set(
+            (Array.isArray(minReleaseAgeExcludeRaw)
+              ? minReleaseAgeExcludeRaw
+              : typeof minReleaseAgeExcludeRaw === 'string'
+                ? [minReleaseAgeExcludeRaw]
+                : []
+            )
+              .flatMap(pattern => pattern.split(','))
+              .map(pattern => pattern.trim())
+              .filter(pattern => pattern),
+          ),
+        ]
+        if (minReleaseAgeExclude.length > 0) {
+          const matchers = minReleaseAgeExclude.map(pattern => ({
+            pattern,
+            match: picomatch(pattern, { nonegate: true, noext: true }),
+          }))
+          // returning null skips the cooldown check for excluded packages
+          options.cooldown = (packageName: string) =>
+            matchers.some(({ pattern, match }) => packageName === pattern || match(packageName)) ? null : days
+          print(
+            { ...options, json },
+            `Using min-release-age from .npmrc: ${formatDays(days)} (${minReleaseAgeExclude.length} excluded pattern${minReleaseAgeExclude.length !== 1 ? 's' : ''})`,
+          )
+        } else {
+          options.cooldown = days
+          print({ ...options, json }, `Using min-release-age from .npmrc: ${formatDays(days)}`)
+        }
       }
     } else if (packageManager === 'pnpm') {
       // Automatically apply pnpm's minimumReleaseAge from pnpm-workspace.yaml as cooldown if cooldown is not explicitly set.

@@ -1177,6 +1177,270 @@ describe('cooldown', () => {
       stub.restore()
       findNpmConfigStub.restore()
     })
+
+    it('excludes packages matching min-release-age-exclude patterns from cooldown', async () => {
+      // Given: npm config has min-release-age=7 with @myorg/* excluded,
+      // test-package released 3 days ago (within cooldown), @myorg/pkg released 3 days ago (excluded from cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+          '@myorg/pkg': '1.0.0',
+        },
+      }
+      const stub = stubVersions({
+        'test-package': createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+        '@myorg/pkg': createMockVersion({
+          name: '@myorg/pkg',
+          versions: { '2.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '2.0.0' },
+        }),
+      })
+
+      // Stub findNpmConfig to return a config with minReleaseAge: '7' and @myorg/* excluded
+      // (repeated min-release-age-exclude[] entries in .npmrc parse as an array)
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+        minReleaseAge: '7',
+        minReleaseAgeExclude: ['@myorg/*'],
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData })
+
+      // Then: test-package is skipped (within 7-day cooldown), @myorg/pkg is upgraded (excluded from cooldown)
+      expect(result).to.not.have.property('test-package')
+      expect(result).to.have.property('@myorg/pkg', '2.0.0')
+
+      stub.restore()
+      findNpmConfigStub.restore()
+    })
+
+    it('excludes a package when min-release-age-exclude is a single string', async () => {
+      // Given: npm config has min-release-age=7 and a single min-release-age-exclude entry,
+      // which the ini parser returns as a string rather than an array
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+          'excluded-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions({
+        'test-package': createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+        'excluded-package': createMockVersion({
+          name: 'excluded-package',
+          versions: { '2.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '2.0.0' },
+        }),
+      })
+
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+        minReleaseAge: '7',
+        minReleaseAgeExclude: 'excluded-package',
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData })
+
+      // Then: test-package is skipped (within 7-day cooldown), excluded-package is upgraded
+      expect(result).to.not.have.property('test-package')
+      expect(result).to.have.property('excluded-package', '2.0.0')
+
+      stub.restore()
+      findNpmConfigStub.restore()
+    })
+
+    it('splits comma-separated min-release-age-exclude values and removes duplicates', async () => {
+      const packageData: PackageFile = {
+        dependencies: {
+          react: '17.0.0',
+          '@myorg/pkg': '1.0.0',
+          vue: '2.0.0',
+        },
+      }
+      const stub = stubVersions({
+        react: createMockVersion({
+          name: 'react',
+          versions: { '18.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '18.0.0' },
+        }),
+        '@myorg/pkg': createMockVersion({
+          name: '@myorg/pkg',
+          versions: { '2.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '2.0.0' },
+        }),
+        vue: createMockVersion({
+          name: 'vue',
+          versions: { '3.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '3.0.0' },
+        }),
+      })
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+        minReleaseAge: '7',
+        minReleaseAgeExclude: ['react, @myorg/*', 'react'],
+      })
+      const logSpy = Sinon.stub(console, 'log')
+
+      const result = await ncu({ packageData, jsonUpgraded: false, loglevel: 'warn' })
+
+      expect(result).to.have.property('react', '18.0.0')
+      expect(result).to.have.property('@myorg/pkg', '2.0.0')
+      expect(result).to.not.have.property('vue')
+      expect(logSpy.args.flat()).to.include('Using min-release-age from .npmrc: 7 days (2 excluded patterns)')
+
+      logSpy.restore()
+      stub.restore()
+      findNpmConfigStub.restore()
+    })
+
+    it('disables negation, comments, and extglobs in min-release-age-exclude patterns', async () => {
+      const packageData: PackageFile = {
+        dependencies: {
+          react: '17.0.0',
+          vue: '2.0.0',
+          lodash: '4.0.0',
+        },
+      }
+      const stub = stubVersions({
+        react: createMockVersion({
+          name: 'react',
+          versions: { '18.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '18.0.0' },
+        }),
+        vue: createMockVersion({
+          name: 'vue',
+          versions: { '3.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '3.0.0' },
+        }),
+        lodash: createMockVersion({
+          name: 'lodash',
+          versions: { '5.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '5.0.0' },
+        }),
+      })
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+        minReleaseAge: '7',
+        minReleaseAgeExclude: ['!react', '#lodash', '@(react|vue)'],
+      })
+
+      const result = await ncu({ packageData })
+
+      expect(result).to.deep.equal({})
+
+      stub.restore()
+      findNpmConfigStub.restore()
+    })
+
+    it('only excludes packages that exactly match a non-glob pattern', async () => {
+      // Given: npm config has min-release-age=7 with "react" excluded;
+      // react-dom released 3 days ago should still be within cooldown
+      const packageData: PackageFile = {
+        dependencies: {
+          react: '17.0.0',
+          'react-dom': '17.0.0',
+        },
+      }
+      const stub = stubVersions({
+        react: createMockVersion({
+          name: 'react',
+          versions: { '18.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '18.0.0' },
+        }),
+        'react-dom': createMockVersion({
+          name: 'react-dom',
+          versions: { '18.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '18.0.0' },
+        }),
+      })
+
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+        minReleaseAge: '7',
+        minReleaseAgeExclude: ['react'],
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData })
+
+      // Then: react is upgraded (exact match excluded), react-dom is skipped (within cooldown)
+      expect(result).to.have.property('react', '18.0.0')
+      expect(result).to.not.have.property('react-dom')
+
+      stub.restore()
+      findNpmConfigStub.restore()
+    })
+
+    it('does not apply any cooldown when min-release-age-exclude is set without min-release-age', async () => {
+      // Given: npm config has min-release-age-exclude but no min-release-age
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 3 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+        minReleaseAgeExclude: ['react'],
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData })
+
+      // Then: package is upgraded since no cooldown is in effect
+      expect(result).to.have.property('test-package', '1.1.0')
+
+      stub.restore()
+      findNpmConfigStub.restore()
+    })
+
+    it('ignores min-release-age-exclude when cooldown is explicitly set', async () => {
+      // Given: npm config has min-release-age=7 with test-package excluded, but cooldown is explicitly set to 10
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 3 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+        minReleaseAge: '7',
+        minReleaseAgeExclude: ['test-package'],
+      })
+
+      // When: ncu is run with explicit cooldown=10 (overrides min-release-age and its exclusions)
+      const result = await ncu({ packageData, cooldown: 10 })
+
+      // Then: package is not upgraded since the explicit cooldown applies to all packages
+      expect(result).to.not.have.property('test-package')
+
+      stub.restore()
+      findNpmConfigStub.restore()
+    })
   })
 
   describe('pnpm workspace minimumReleaseAge', () => {

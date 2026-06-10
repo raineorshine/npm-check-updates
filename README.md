@@ -511,7 +511,7 @@ cooldown: packageName => (packageName.startsWith('@my-company') ? 0 : 3)
 If `--cooldown` is not set explicitly, `ncu` automatically reads the cooldown configuration from your package manager's config file:
 
 <table>
-  <tr><td>npm</td><td>Reads `min-release-age` from `.npmrc`.</td></tr>
+  <tr><td>npm</td><td>Reads `min-release-age` from `.npmrc`, excluding packages matched by `min-release-age-exclude`.</td></tr>
   <tr><td>yarn</td><td>Reads `npmMinimalAgeGate` from `.yarnrc.yml`, excluding packages matched by `npmPreapprovedPackages`.</td></tr>
   <tr><td>pnpm</td><td>Reads `minimumReleaseAge` from `pnpm-workspace.yaml`, excluding packages matched by `minimumReleaseAgeExclude`.</td></tr>
 </table>
