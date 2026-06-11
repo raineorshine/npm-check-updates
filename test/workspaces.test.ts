@@ -623,6 +623,55 @@ catalog:
         }
       })
 
+      it('do not throw on valid package protocols when target is not "latest"', async () => {
+        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        try {
+          await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({}), 'utf-8')
+          await fs.writeFile(
+            path.join(tempDir, 'pnpm-workspace.yaml'),
+            `packages:\n  - 'packages/**'\n\ncatalog:\n  ncu-test-tag: '1.0.0'\n`,
+            'utf-8',
+          )
+          await fs.writeFile(path.join(tempDir, 'pnpm-lock.yaml'), '', 'utf-8')
+
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              dependencies: {
+                'ncu-test-tag': 'catalog:',
+                'ncu-test-v2': 'workspace:^',
+                'some-link': 'link:../local-pkg',
+                'some-file': 'file:./local.tgz',
+              },
+            }),
+            'utf-8',
+          )
+
+          const { stdout, stderr } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspaces', '--target', 'minor'],
+            { rejectOnError: false },
+            { cwd: tempDir },
+          )
+
+          stderr.should.not.match(/Invalid comparator/)
+          stdout.should.not.match(/Invalid comparator/)
+
+          // Workspace package.json should be left untouched because its dependencies
+          // are all package-manager protocol refs.
+          const output = JSON.parse(stdout)
+          output['packages/a/package.json'].dependencies.should.deep.equal({
+            'ncu-test-tag': 'catalog:',
+            'ncu-test-v2': 'workspace:^',
+            'some-link': 'link:../local-pkg',
+            'some-file': 'file:./local.tgz',
+          })
+        } finally {
+          await removeDir(tempDir)
+        }
+      })
+
       it('update pnpm catalog dependencies from pnpm-workspace.yaml', async () => {
         const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
         try {
