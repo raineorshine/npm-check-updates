@@ -5,6 +5,7 @@ import chalk from './chalk'
 import getInstalledPackages from './getInstalledPackages'
 import { keyValueBy } from './keyValueBy'
 import programError from './programError'
+import quoteGlobalPackageSpec from './quoteGlobalPackageSpec'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
 
 /** Checks global dependencies for upgrades. */
@@ -60,7 +61,9 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
     time,
   })
 
-  const instruction = upgraded ? upgradedPackageNames.map(pkg => pkg + '@' + upgraded[pkg]).join(' ') : '[package]'
+  const instruction = upgraded
+    ? upgradedPackageNames.map(pkg => quoteGlobalPackageSpec(pkg + '@' + upgraded[pkg])).join(' ')
+    : '[package]'
 
   if (options.json) {
     // since global packages do not have a package.json, return the upgraded deps directly (no version range replacements)
