@@ -10,19 +10,10 @@ import { type VersionResult } from '../types/VersionResult'
 import { type VersionSpec } from '../types/VersionSpec'
 import { getChalk } from './chalk'
 import getPackageManager from './getPackageManager'
+import isPackageManagerProtocol from './isPackageManagerProtocol'
 import keyValueBy from './keyValueBy'
 import programError from './programError'
 import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-util'
-
-const PKG_MANAGER_PROTOCOLS = ['catalog:', 'workspace:', 'link:', 'file:', 'portal:'] as const
-
-/**
- * Returns true if the spec uses a package manager protocol that references something
- * other than a registry version (e.g. pnpm's `catalog:` / `workspace:`, or `link:` / `file:`).
- */
-function isPackageManagerProtocol(spec: VersionSpec): boolean {
-  return PKG_MANAGER_PROTOCOLS.some(protocol => spec.startsWith(protocol))
-}
 
 /**
  * Get the latest or greatest versions from the NPM repository based on the version target.
