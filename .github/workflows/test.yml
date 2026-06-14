@@ -51,6 +51,10 @@ jobs:
       - name: Enable yarn via corepack
         run: corepack enable yarn
 
+      - name: Install yarn v4 for tests via corepack
+        working-directory: test/package-managers/yarn/v4
+        run: corepack install
+
       - name: Install npm dependencies
         run: npm ci
 
