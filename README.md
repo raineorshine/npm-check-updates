@@ -17,7 +17,7 @@
 > `npm-check-updates` is now a dual ESM/CJS module. If you use a `.ncurc.js` config or programmatic imports,
 > please see the [ESM Migration Guide in the CHANGELOG](CHANGELOG.md#migration-guide) for required updates.
 
-<img width="500" alt="example output" src="https://github.com/user-attachments/assets/4808618b-ac20-4fc0-92e0-a777de70a2b6">
+<img width="500" alt="example output" src=".github/screenshot-1.png">
 
 $${\color{red}Red}$$ major upgrade (and all [major version zero](https://semver.org/#spec-item-4))<br/>
 $${\color{cyan}Cyan}$$ minor upgrade<br/>
@@ -94,11 +94,11 @@ ncu --interactive
 ncu -i
 ```
 
-![ncu --interactive](https://user-images.githubusercontent.com/750276/175337598-cdbb2c46-64f8-44f5-b54e-4ad74d7b52b4.png)
+![ncu --interactive](.github/screenshot-2.png)
 
 Combine with `--format group` for a truly _luxe_ experience:
 
-![ncu --interactive --format group](https://user-images.githubusercontent.com/750276/175336533-539261e4-5cf1-458f-9fbb-a7be2b477ebb.png)
+![ncu --interactive --format group](.github/screenshot-3.png)
 
 ### Keys
 
