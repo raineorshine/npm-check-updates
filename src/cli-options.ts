@@ -20,8 +20,8 @@ const padLeft = (s: string, n: number) =>
     .join('\n')
 
 /** Formats a code block for CLI or markdown. */
-const codeBlock = (code: string, { markdown }: { markdown?: boolean } = {}) =>
-  `${markdown ? '```js\n' : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
+const codeBlock = (code: string, { markdown, lang = 'js' }: { markdown?: boolean; lang?: string } = {}) =>
+  `${markdown ? `\`\`\`${lang}\n` : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
 
 /** Parses a number from a string or number input. Throws if the value is not a number. */
 const parseNumberOption =
@@ -42,23 +42,32 @@ const parseNumberOption =
 /** Renders the extended help for an option with usage information. */
 export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?: boolean } = {}) => {
   let output = ''
+  const usageLines: string[] = []
+
   if (option.cli !== false) {
     // add -u to doctor option
-    output = `Usage:
+    usageLines.push(
+      `ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}${option.long === 'doctor' ? ' -u' : ''}`,
+    )
+  }
 
-    ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}${option.long === 'doctor' ? ' -u' : ''}\n`
-  }
   if (option.type === 'boolean') {
-    output += `    ncu --no-${option.long}\n`
+    usageLines.push(`ncu --no-${option.long}`)
   }
+
   if (option.short) {
     // add -u to doctor option
-    output += `    ncu -${option.short}${option.arg ? ` [${option.arg}]` : ''}${option.long === 'doctor' ? 'u' : ''}\n`
+    usageLines.push(`ncu -${option.short}${option.arg ? ` [${option.arg}]` : ''}${option.long === 'doctor' ? 'u' : ''}`)
+  }
+
+  if (usageLines.length > 0) {
+    output = `Usage:\n\n${codeBlock(usageLines.join('\n'), { markdown, lang: 'sh' })}\n`
   }
 
   if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
     output += `\nDefault: ${option.default}\n`
   }
+
   if (option.help) {
     const helpText =
       typeof option.help === 'function'
@@ -104,32 +113,35 @@ ${table({
 
 Example:
 
-    $ ncu --doctor -u
-    Running tests before upgrading
-    npm install
-    npm run test
-    Upgrading all dependencies and re-running tests
-    ncu -u
-    npm install
-    npm run test
-    Tests failed
-    Identifying broken dependencies
-    npm install
-    npm install --no-save react@16.0.0
-    npm run test
-      ✓ react 15.0.0 → 16.0.0
-    npm install --no-save react-redux@7.0.0
-    npm run test
-      ✗ react-redux 6.0.0 → 7.0.0
+${codeBlock(
+  `$ ncu --doctor -u
+Running tests before upgrading
+npm install
+npm run test
+Upgrading all dependencies and re-running tests
+ncu -u
+npm install
+npm run test
+Tests failed
+Identifying broken dependencies
+npm install
+npm install --no-save react@16.0.0
+npm run test
+  ✓ react 15.0.0 → 16.0.0
+npm install --no-save react-redux@7.0.0
+npm run test
+  ✗ react-redux 6.0.0 → 7.0.0
 
-    /projects/myproject/test.js:13
-      throw new Error('Test failed!')
-      ^
+/projects/myproject/test.js:13
+  throw new Error('Test failed!')
+  ^
 
-    npm install --no-save react-dnd@11.1.3
-    npm run test
-      ✓ react-dnd 10.0.0 → 11.1.3
-    Saving partially upgraded package.json
+npm install --no-save react-dnd@11.1.3
+npm run test
+  ✓ react-dnd 10.0.0 → 11.1.3
+Saving partially upgraded package.json`,
+  { markdown, lang: 'console' },
+)}
 `
 
 /** Extended help for the filterResults option. */
@@ -395,7 +407,7 @@ ${padLeft(tableString, markdown ? 0 : 4)}
 
 e.g.
 
-${codeBlock(`ncu --target semver`)}
+${codeBlock(`ncu --target semver`, { markdown, lang: 'sh' })}
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 
@@ -450,35 +462,39 @@ const extendedHelpRegistryType: ExtendedHelp = ({ markdown }) => {
       ['npm', `Default npm registry`],
       [
         'json',
-        `Checks versions from a file or url to a simple JSON registry. Must include the ${chalk.cyan(
-          '`--registry`',
-        )} option.
-
-Example:
-
-    ${chalk.gray('// local file')}
-    ${chalk.cyan('$')} ncu --registryType json --registry ./registry.json
-
-    ${chalk.gray('// url')}
-    ${chalk.cyan('$')} ncu --registryType json --registry https://api.mydomain/registry.json
-
-    ${chalk.gray('// you can omit --registryType when the registry ends in .json')}
-    ${chalk.cyan('$')} ncu --registry ./registry.json
-    ${chalk.cyan('$')} ncu --registry https://api.mydomain/registry.json
-
-registry.json:
-
-    {
-      "prettier": "2.7.1",
-      "typescript": "4.7.4"
-    }
-
-`,
+        `Checks versions from a file or url to a simple JSON registry. Must include the ${chalk.cyan('`--registry`')} option.`,
       ],
     ],
   })
 
-  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+  return `${header}
+
+${padLeft(tableString, markdown ? 0 : 4)}
+
+Example:
+
+${codeBlock(
+  `${chalk.gray('// local file')}
+ncu --registryType json --registry ./registry.json
+
+${chalk.gray('// url')}
+ncu --registryType json --registry https://api.mydomain/registry.json
+
+${chalk.gray('// you can omit --registryType when the registry ends in .json')}
+ncu --registry ./registry.json
+ncu --registry https://api.mydomain/registry.json`,
+  { markdown, lang: 'sh' },
+)}
+
+registry.json:
+
+${codeBlock(
+  `{
+  "prettier": "2.7.1",
+  "typescript": "4.7.4"
+}`,
+  { markdown, lang: 'json' },
+)}
 `
 }
 
@@ -499,27 +515,39 @@ The package ${chalk.bold('ncu-test-peer-update')} has two versions published:
 
 Our test app has the following dependencies:
 
-    "ncu-test-peer-update": "1.0.0",
-    "ncu-test-return-version": "1.0.0"
+${codeBlock(
+  `"ncu-test-peer-update": "1.0.0",
+"ncu-test-return-version": "1.0.0"`,
+  { markdown, lang: 'json' },
+)}
 
 The latest versions of these packages are:
 
-    "ncu-test-peer-update": "1.1.0",
-    "ncu-test-return-version": "2.0.0"
+${codeBlock(
+  `"ncu-test-peer-update": "1.1.0",
+"ncu-test-return-version": "2.0.0"`,
+  { markdown, lang: 'json' },
+)}
 
 ${chalk.bold('With `--peer`')}:
 
 ncu upgrades packages to the highest version that still adheres to the peer dependency constraints:
 
-    ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
-    ncu-test-return-version  1.0.0  →  1.${chalk.cyan('1.0')}
+${codeBlock(
+  `ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
+ncu-test-return-version  1.0.0  →  1.${chalk.cyan('1.0')}`,
+  { markdown, lang: 'text' },
+)}
 
 ${chalk.bold('Without `--peer`')}:
 
 As a comparison: without using the \`--peer\` option, ncu will suggest the latest versions, ignoring peer dependencies:
 
-    ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
-    ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}
+${codeBlock(
+  `ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
+ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}`,
+  { markdown, lang: 'text' },
+)}
 `
 }
 
@@ -529,10 +557,13 @@ const extendedHelpCooldown: ExtendedHelp = ({ markdown }) => {
 
 The value can be a plain number (days) or a string with a unit suffix:
 
-    --cooldown 7       7 days
-    --cooldown 7d      7 days (same as above)
-    --cooldown 12h     12 hours
-    --cooldown 30m     30 minutes
+${codeBlock(
+  `--cooldown 7       7 days
+--cooldown 7d      7 days (same as above)
+--cooldown 12h     12 hours
+--cooldown 30m     30 minutes`,
+  { markdown, lang: 'text' },
+)}
 
 With the default \`--target latest\`, if the latest dist-tag version is within the cooldown window, ncu falls back to the greatest version that passes the cooldown threshold. To instead skip the package entirely (strict behaviour), use \`--target "@latest"\`.
 
@@ -540,19 +571,22 @@ ${chalk.bold('Example')}:
 
 Let's examine how cooldown works with a package that has these versions available:
 
-    1.0.0          Released 7 days ago    (initial version)
-    1.1.0          Released 6 days ago    (minor update)
-    1.1.1          Released 5 days ago    (patch update)
-    1.2.0          Released 5 days ago    (minor update)
-    2.0.0-beta.1   Released 5 days ago    (beta release)
-    1.2.1          Released 4 days ago    (patch update)
-    1.3.0          Released 4 days ago    (minor update) [latest]
-    2.0.0-beta.2   Released 3 days ago    (beta release)
-    2.0.0-beta.3   Released 2 days ago    (beta release) [beta]
+${codeBlock(
+  `1.0.0          Released 7 days ago    (initial version)
+1.1.0          Released 6 days ago    (minor update)
+1.1.1          Released 5 days ago    (patch update)
+1.2.0          Released 5 days ago    (minor update)
+2.0.0-beta.1   Released 5 days ago    (beta release)
+1.2.1          Released 4 days ago    (patch update)
+1.3.0          Released 4 days ago    (minor update) [latest]
+2.0.0-beta.2   Released 3 days ago    (beta release)
+2.0.0-beta.3   Released 2 days ago    (beta release) [beta]`,
+  { markdown, lang: 'text' },
+)}
 
 ${chalk.bold('With default target (latest)')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5`, { markdown })}
+${codeBlock(`ncu --cooldown 5`, { markdown, lang: 'sh' })}
 
 Falls back to 1.2.0 because:
 
@@ -561,7 +595,7 @@ Falls back to 1.2.0 because:
 
 ${chalk.bold('With `@latest` strict target')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5 --target @latest`, { markdown })}
+${codeBlock(`ncu --cooldown 5 --target @latest`, { markdown, lang: 'sh' })}
 
 No update will be suggested because:
 
@@ -571,7 +605,7 @@ No update will be suggested because:
 
 ${chalk.bold('With `@beta`/`@tag` target')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 3 --target @beta`, { markdown })}
+${codeBlock(`ncu --cooldown 3 --target @beta`, { markdown, lang: 'sh' })}
 
 No update will be suggested because:
 
@@ -581,14 +615,17 @@ No update will be suggested because:
 
 ${chalk.bold('With other targets')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5 --target greatest|newest|minor|patch|semver`, { markdown })}
+${codeBlock(`ncu --cooldown 5 --target greatest|newest|minor|patch|semver`, { markdown, lang: 'sh' })}
 
 Each target will select the best version that is at least 5 days old:
 
-    greatest → 1.2.0        (highest version number outside cooldown)
-    newest   → 2.0.0-beta.1 (most recently published version outside cooldown)
-    minor    → 1.2.0        (highest minor version outside cooldown)
-    patch    → 1.1.1        (highest patch version outside cooldown)
+${codeBlock(
+  `greatest → 1.2.0        (highest version number outside cooldown)
+newest   → 2.0.0-beta.1 (most recently published version outside cooldown)
+minor    → 1.2.0        (highest minor version outside cooldown)
+patch    → 1.1.1        (highest patch version outside cooldown)`,
+  { markdown, lang: 'text' },
+)}
 
 You can also provide a custom function in your .ncurc.js file or when importing npm-check-updates as a module.
 
@@ -629,14 +666,12 @@ When using \`--format cooldown\` alongside the \`--cooldown\` option, \`ncu\` wi
 
 Example:
 
-${codeBlock(`ncu --format cooldown --cooldown 7`, { markdown })}
-
-Output:
-
 ${codeBlock(
-  `Skipped due to 7-day cooldown
+  `$ ncu --format cooldown --cooldown 7
+Skipped due to 7-day cooldown
  @typescript-eslint/parser  ^8.50.0  →  ^8.59.1      5 days ago
  eslint                     ^10.0.1  →  ^10.3.0      1 day ago`,
+  { markdown, lang: 'console' },
 )}
 `
 }
