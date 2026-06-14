@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 import prompts from 'prompts-ncu'
 import pkg from '../package.json'
 import { cliOptionsMap } from './cli-options'

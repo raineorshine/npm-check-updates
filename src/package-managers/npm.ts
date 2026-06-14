@@ -1,10 +1,10 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { JSONParser } from '@streamparser/json'
 import camelCase from 'camelcase'
 import memoize from 'fast-memoize'
-import fs from 'fs'
 import ini from 'ini'
 import npmRegistryFetch from 'npm-registry-fetch'
-import path from 'path'
 import nodeSemver from 'semver'
 import { parseRange } from 'semver-utils'
 import untildify from 'untildify'
@@ -161,7 +161,7 @@ const findTargetAndFallback = ({
   compare?: (v1: string, v2: string) => number
 }): GreatestWithFallbackResult => {
   const isValidVersion = filterPredicate(options)
-  // nodeSemver.minVersion throws on non-semver specs (e.g. catalog: or workspace:)
+  // minVersion throws on non-semver specs (e.g. catalog: or workspace:)
   const cur = nodeSemver.validRange(currentVersion) ? nodeSemver.minVersion(currentVersion)?.version : null
   if (!cur) {
     return {

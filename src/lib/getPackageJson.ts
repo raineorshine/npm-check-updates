@@ -1,6 +1,6 @@
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
 import { createRequire } from 'node:module'
-import path from 'path'
+import path from 'node:path'
 import { type PackageFile } from '../types/PackageFile'
 import exists from './exists'
 

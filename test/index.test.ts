@@ -1,14 +1,14 @@
-import fs from 'fs/promises'
-import os from 'os'
-import path, { dirname } from 'path'
-import { fileURLToPath } from 'url'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 describe('run', function () {
   it('return jsonUpgraded by default', async () => {

@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
 import { type Index } from '../types/IndexType'
 import { type VersionSpec } from '../types/VersionSpec'
 import { escapeRegExp } from './escapeRegExp'

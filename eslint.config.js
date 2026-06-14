@@ -80,7 +80,15 @@ export default [
     return config
   }),
 
-  // --- 5. JSDOC SPECIFIC OVERRIDES ---
+  // --- 5. IMPORT HYGIENE ---
+  {
+    rules: {
+      'n/prefer-node-protocol': 'error',
+      'import-x/no-duplicates': ['error', { 'prefer-inline': true }],
+    },
+  },
+
+  // --- 6. JSDOC SPECIFIC OVERRIDES ---
   {
     rules: {
       'jsdoc/require-jsdoc': [
@@ -93,7 +101,7 @@ export default [
     },
   },
 
-  // --- 6. TYPESCRIPT OVERRIDES ---
+  // --- 7. TYPESCRIPT OVERRIDES ---
   {
     files: ['**/*.ts', '**/*.mts', '**/*.cts'],
     languageOptions: {
@@ -145,6 +153,6 @@ export default [
     },
   },
 
-  // --- 7. PRETTIER ---
+  // --- 8. PRETTIER ---
   prettierConfig,
 ]

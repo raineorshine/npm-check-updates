@@ -1,5 +1,5 @@
+import fs from 'node:fs/promises'
 import memoize from 'fast-memoize'
-import fs from 'fs/promises'
 import programError from '../lib/programError'
 import { type GetVersion } from '../types/GetVersion'
 import { type Options } from '../types/Options'

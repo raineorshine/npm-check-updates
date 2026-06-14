@@ -1,6 +1,6 @@
+import os from 'node:os'
+import path from 'node:path'
 import { type Loader, lilconfig } from 'lilconfig'
-import os from 'os'
-import path from 'path'
 import { parse as parseYaml } from 'yaml'
 import { cliOptionsMap } from '../cli-options'
 import { type Options } from '../types/Options'
