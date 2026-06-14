@@ -102,7 +102,6 @@ async function getNcuRc({
       rawResult = await explorer.load(targetFile)
     } else {
       rawResult = await explorer.search(cwd)
-      targetFile = rawResult?.filepath
     }
   } catch (err: any) {
     const errorMessage = err.message || ''
