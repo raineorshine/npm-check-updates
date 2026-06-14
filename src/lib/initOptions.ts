@@ -1,4 +1,3 @@
-import { propertyOf } from 'lodash-es'
 import picomatch from 'picomatch'
 import cliOptions from '../cli-options'
 import { print } from '../lib/logging'
@@ -94,7 +93,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
 
   const json = Object.keys(options)
     .filter(option => option.startsWith('json'))
-    .some(propertyOf(options))
+    .some(option => options[option as keyof Options])
 
   if (!json && loglevel !== 'silent' && options.rcConfigPath && !options.doctor) {
     print(options, `Using config file ${options.rcConfigPath}`)

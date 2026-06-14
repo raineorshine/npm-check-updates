@@ -1,4 +1,3 @@
-import { propertyOf } from 'lodash-es'
 import parseGitHubUrl from 'parse-github-url'
 import semver from 'semver'
 import semverutils, { type SemVer, parse, parseRange } from 'semver-utils'
@@ -110,7 +109,9 @@ export function stringify(semver: SemVer, precision?: VersionPart) {
 export function getPrecision(version: string) {
   const [semver] = semverutils.parseRange(version)
   // expects VERSION_PARTS to be in correct order
-  return VERSION_PARTS.slice().reverse().find(propertyOf(semver))
+  return VERSION_PARTS.slice()
+    .reverse()
+    .find(part => semver?.[part])
 }
 
 /**
