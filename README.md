@@ -48,7 +48,7 @@ npx npm-check-updates
 
 Check the latest versions of all project dependencies:
 
-```sh
+```console
 $ ncu
 Checking package.json
 [====================] 5/5 100%
@@ -67,7 +67,7 @@ Upgrade a project's package file:
 
 > **Make sure your package file is in version control and all changes have been committed. This _will_ overwrite your package file.**
 
-```sh
+```console
 $ ncu -u
 Upgrading package.json
 [====================] 1/1 100%
@@ -418,17 +418,21 @@ Run `ncu --help [OPTION]` to view advanced help for a specific option, or see be
 
 Usage:
 
-    ncu --cooldown [period]
-    ncu -c [period]
+```sh
+ncu --cooldown [period]
+ncu -c [period]
+```
 
 The cooldown option helps protect against supply chain attacks by requiring package versions to be published at least the given amount of time before considering them for upgrade.
 
 The value can be a plain number (days) or a string with a unit suffix:
 
-    --cooldown 7       7 days
-    --cooldown 7d      7 days (same as above)
-    --cooldown 12h     12 hours
-    --cooldown 30m     30 minutes
+```text
+--cooldown 7       7 days
+--cooldown 7d      7 days (same as above)
+--cooldown 12h     12 hours
+--cooldown 30m     30 minutes
+```
 
 With the default `--target latest`, if the latest dist-tag version is within the cooldown window, ncu falls back to the greatest version that passes the cooldown threshold. To instead skip the package entirely (strict behaviour), use `--target "@latest"`.
 
@@ -436,20 +440,22 @@ Example:
 
 Let's examine how cooldown works with a package that has these versions available:
 
-    1.0.0          Released 7 days ago    (initial version)
-    1.1.0          Released 6 days ago    (minor update)
-    1.1.1          Released 5 days ago    (patch update)
-    1.2.0          Released 5 days ago    (minor update)
-    2.0.0-beta.1   Released 5 days ago    (beta release)
-    1.2.1          Released 4 days ago    (patch update)
-    1.3.0          Released 4 days ago    (minor update) [latest]
-    2.0.0-beta.2   Released 3 days ago    (beta release)
-    2.0.0-beta.3   Released 2 days ago    (beta release) [beta]
+```text
+1.0.0          Released 7 days ago    (initial version)
+1.1.0          Released 6 days ago    (minor update)
+1.1.1          Released 5 days ago    (patch update)
+1.2.0          Released 5 days ago    (minor update)
+2.0.0-beta.1   Released 5 days ago    (beta release)
+1.2.1          Released 4 days ago    (patch update)
+1.3.0          Released 4 days ago    (minor update) [latest]
+2.0.0-beta.2   Released 3 days ago    (beta release)
+2.0.0-beta.3   Released 2 days ago    (beta release) [beta]
+```
 
 With default target (latest):
 
-```js
-$ ncu --cooldown 5
+```sh
+ncu --cooldown 5
 ```
 
 Falls back to 1.2.0 because:
@@ -459,8 +465,8 @@ Falls back to 1.2.0 because:
 
 With `@latest` strict target:
 
-```js
-$ ncu --cooldown 5 --target @latest
+```sh
+ncu --cooldown 5 --target @latest
 ```
 
 No update will be suggested because:
@@ -471,8 +477,8 @@ No update will be suggested because:
 
 With `@beta`/`@tag` target:
 
-```js
-$ ncu --cooldown 3 --target @beta
+```sh
+ncu --cooldown 3 --target @beta
 ```
 
 No update will be suggested because:
@@ -483,16 +489,18 @@ No update will be suggested because:
 
 With other targets:
 
-```js
-$ ncu --cooldown 5 --target greatest|newest|minor|patch|semver
+```sh
+ncu --cooldown 5 --target greatest|newest|minor|patch|semver
 ```
 
 Each target will select the best version that is at least 5 days old:
 
-    greatest → 1.2.0        (highest version number outside cooldown)
-    newest   → 2.0.0-beta.1 (most recently published version outside cooldown)
-    minor    → 1.2.0        (highest minor version outside cooldown)
-    patch    → 1.1.1        (highest patch version outside cooldown)
+```text
+greatest → 1.2.0        (highest version number outside cooldown)
+newest   → 2.0.0-beta.1 (most recently published version outside cooldown)
+minor    → 1.2.0        (highest minor version outside cooldown)
+patch    → 1.1.1        (highest patch version outside cooldown)
+```
 
 You can also provide a custom function in your .ncurc.js file or when importing npm-check-updates as a module.
 
@@ -522,23 +530,22 @@ When using `--format cooldown` alongside the `--cooldown` option, `ncu` will sho
 
 Example:
 
-```js
-ncu --format cooldown --cooldown 7
+```console
+$ ncu --format cooldown --cooldown 7
+Skipped due to 7-day cooldown
+ @typescript-eslint/parser  ^8.50.0  →  ^8.59.1      5 days ago
+ eslint                     ^10.0.1  →  ^10.3.0      1 day ago
 ```
-
-Output:
-
-    Skipped due to 7-day cooldown
-     @typescript-eslint/parser  ^8.50.0  →  ^8.59.1      5 days ago
-     eslint                     ^10.0.1  →  ^10.3.0      1 day ago
 
 ## doctor
 
 Usage:
 
-    ncu --doctor -u
-    ncu --no-doctor
-    ncu -du
+```sh
+ncu --doctor -u
+ncu --no-doctor
+ncu -du
+```
 
 Iteratively installs upgrades and runs your project's tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
 
@@ -563,39 +570,43 @@ Additional options:
 
 Example:
 
-    $ ncu --doctor -u
-    Running tests before upgrading
-    npm install
-    npm run test
-    Upgrading all dependencies and re-running tests
-    ncu -u
-    npm install
-    npm run test
-    Tests failed
-    Identifying broken dependencies
-    npm install
-    npm install --no-save react@16.0.0
-    npm run test
-      ✓ react 15.0.0 → 16.0.0
-    npm install --no-save react-redux@7.0.0
-    npm run test
-      ✗ react-redux 6.0.0 → 7.0.0
+```console
+$ ncu --doctor -u
+Running tests before upgrading
+npm install
+npm run test
+Upgrading all dependencies and re-running tests
+ncu -u
+npm install
+npm run test
+Tests failed
+Identifying broken dependencies
+npm install
+npm install --no-save react@16.0.0
+npm run test
+  ✓ react 15.0.0 → 16.0.0
+npm install --no-save react-redux@7.0.0
+npm run test
+  ✗ react-redux 6.0.0 → 7.0.0
 
-    /projects/myproject/test.js:13
-      throw new Error('Test failed!')
-      ^
+/projects/myproject/test.js:13
+  throw new Error('Test failed!')
+  ^
 
-    npm install --no-save react-dnd@11.1.3
-    npm run test
-      ✓ react-dnd 10.0.0 → 11.1.3
-    Saving partially upgraded package.json
+npm install --no-save react-dnd@11.1.3
+npm run test
+  ✓ react-dnd 10.0.0 → 11.1.3
+Saving partially upgraded package.json
+```
 
 ## filter
 
 Usage:
 
-    ncu --filter [p]
-    ncu -f [p]
+```sh
+ncu --filter [p]
+ncu -f [p]
+```
 
 Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Only included packages will be checked with `--peer`.
 
@@ -653,7 +664,9 @@ For the SemVer type definition, see: https://git.coolaj86.com/coolaj86/semver-ut
 
 Usage:
 
-    ncu --filterVersion [p]
+```sh
+ncu --filterVersion [p]
+```
 
 Include only versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
 
@@ -682,7 +695,9 @@ filterVersion: (name, semver) => {
 
 Usage:
 
-    ncu --format [value]
+```sh
+ncu --format [value]
+```
 
 Modify the output formatting or show additional information. Specify one or more comma-delimited values.
 
@@ -729,7 +744,9 @@ groupFunction: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion) 
 
 Usage:
 
-    ncu --install [value]
+```sh
+ncu --install [value]
+```
 
 Default: prompt
 
@@ -745,8 +762,10 @@ Control the auto-install behavior.
 
 Usage:
 
-    ncu --packageManager [s]
-    ncu -p [s]
+```sh
+ncu --packageManager [s]
+ncu -p [s]
+```
 
 Specifies the package manager to use when looking up versions.
 
@@ -761,8 +780,10 @@ Specifies the package manager to use when looking up versions.
 
 Usage:
 
-    ncu --peer
-    ncu --no-peer
+```sh
+ncu --peer
+ncu --no-peer
+```
 
 Check peer dependencies of installed packages and filter updates to compatible versions.
 
@@ -777,68 +798,82 @@ The package ncu-test-peer-update has two versions published:
 
 Our test app has the following dependencies:
 
-    "ncu-test-peer-update": "1.0.0",
-    "ncu-test-return-version": "1.0.0"
+```json
+"ncu-test-peer-update": "1.0.0",
+"ncu-test-return-version": "1.0.0"
+```
 
 The latest versions of these packages are:
 
-    "ncu-test-peer-update": "1.1.0",
-    "ncu-test-return-version": "2.0.0"
+```json
+"ncu-test-peer-update": "1.1.0",
+"ncu-test-return-version": "2.0.0"
+```
 
 With `--peer`:
 
 ncu upgrades packages to the highest version that still adheres to the peer dependency constraints:
 
-    ncu-test-peer-update     1.0.0  →  1.1.0
-    ncu-test-return-version  1.0.0  →  1.1.0
+```text
+ncu-test-peer-update     1.0.0  →  1.1.0
+ncu-test-return-version  1.0.0  →  1.1.0
+```
 
 Without `--peer`:
 
 As a comparison: without using the `--peer` option, ncu will suggest the latest versions, ignoring peer dependencies:
 
-    ncu-test-peer-update     1.0.0  →  1.1.0
-    ncu-test-return-version  1.0.0  →  2.0.0
+```text
+ncu-test-peer-update     1.0.0  →  1.1.0
+ncu-test-return-version  1.0.0  →  2.0.0
+```
 
 ## registryType
 
 Usage:
 
-    ncu --registryType [type]
+```sh
+ncu --registryType [type]
+```
 
 Specify whether `--registry` refers to a full npm registry or a simple JSON file.
 
 <table>
   <tr><td>npm</td><td>Default npm registry</td></tr>
-  <tr><td>json</td><td>Checks versions from a file or url to a simple JSON registry. Must include the <code>--registry</code> option.
+  <tr><td>json</td><td>Checks versions from a file or url to a simple JSON registry. Must include the <code>--registry</code> option.</td></tr>
+</table>
 
 Example:
 
-    // local file
-    $ ncu --registryType json --registry ./registry.json
+```sh
+// local file
+ncu --registryType json --registry ./registry.json
 
-    // url
-    $ ncu --registryType json --registry https://api.mydomain/registry.json
+// url
+ncu --registryType json --registry https://api.mydomain/registry.json
 
-    // you can omit --registryType when the registry ends in .json
-    $ ncu --registry ./registry.json
-    $ ncu --registry https://api.mydomain/registry.json
+// you can omit --registryType when the registry ends in .json
+ncu --registry ./registry.json
+ncu --registry https://api.mydomain/registry.json
+```
 
 registry.json:
 
-    {
-      "prettier": "2.7.1",
-      "typescript": "4.7.4"
-    }
-
-</td></tr>
-</table>
+```json
+{
+  "prettier": "2.7.1",
+  "typescript": "4.7.4"
+}
+```
 
 ## reject
 
 Usage:
 
-    ncu --reject [p]
-    ncu -x [p]
+```sh
+ncu --reject [p]
+ncu -x [p]
+```
 
 The inverse of `--filter`. Exclude package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. This will also exclude them from the `--peer` check.
 
@@ -867,7 +902,9 @@ reject: (name, semver) => {
 
 Usage:
 
-    ncu --rejectVersion [p]
+```sh
+ncu --rejectVersion [p]
+```
 
 The inverse of `--filterVersion`. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
 
@@ -896,8 +933,10 @@ rejectVersion: (name, semver) => {
 
 Usage:
 
-    ncu --target [value]
-    ncu -t [value]
+```sh
+ncu --target [value]
+ncu -t [value]
+```
 
 Determines the version to upgrade to. (default: "latest")
 
@@ -913,7 +952,9 @@ Determines the version to upgrade to. (default: "latest")
 
 e.g.
 
-    ncu --target semver
+```sh
+ncu --target semver
+```
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 
