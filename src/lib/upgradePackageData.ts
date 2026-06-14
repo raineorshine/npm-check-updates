@@ -140,7 +140,7 @@ async function upgradePackageData(
     // replace each upgraded dependency in the section
     return Object.entries(upgraded).reduce((updatedSection, [dep]) => {
       // const expression = `"${dep}"\\s*:\\s*"(${escapeRegexp(current[dep])})"`
-      const expression = `"${dep}"\\s*:\\s*("|{\\s*"."\\s*:\\s*")(${escapeRegexp(current[dep])})"`
+      const expression = `"${escapeRegexp(dep)}"\\s*:\\s*("|{\\s*"."\\s*:\\s*")(${escapeRegexp(current[dep])})"`
       const regExp = new RegExp(expression, 'g')
       return updatedSection.replace(regExp, (match, child) => `"${dep}${child ? `": ${child}` : ': '}${upgraded[dep]}"`)
     }, section)
