@@ -21,7 +21,7 @@ const execFile = promisify(childProcess.execFile)
  * @returns the extracted git tags.
  */
 async function getGitTags(url: string): Promise<Index<string>> {
-  const out = (await execFile('git', ['ls-remote', '--tags', url])).stdout
+  const out = (await execFile('git', ['ls-remote', '--tags', '--', url])).stdout
   const tags: Index<string> = {}
   for (const line of out.trim().split('\n')) {
     const splitted = line.split('\t')
