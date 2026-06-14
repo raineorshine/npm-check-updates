@@ -1,4 +1,4 @@
-import { escapeRegExp, propertyOf } from 'lodash-es'
+import { propertyOf } from 'lodash-es'
 import parseGitHubUrl from 'parse-github-url'
 import semver from 'semver'
 import semverutils, { type SemVer, parse, parseRange } from 'semver-utils'
@@ -10,6 +10,7 @@ import { type Options } from '../types/Options'
 import { type UpgradeGroup } from '../types/UpgradeGroup'
 import { type VersionLevel } from '../types/VersionLevel'
 import chalk from './chalk'
+import { escapeRegExp } from './escapeRegExp'
 import { keyValueBy } from './keyValueBy'
 import { sortBy } from './sortBy'
 
