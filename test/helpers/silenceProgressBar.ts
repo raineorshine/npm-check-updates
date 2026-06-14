@@ -20,6 +20,8 @@ export function silenceProgressBar() {
   ]
 
   afterEach(() => {
-    stubs.forEach(s => s.restore())
+    for (const s of stubs) {
+      s.restore()
+    }
   })
 }

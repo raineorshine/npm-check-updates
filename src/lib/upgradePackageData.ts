@@ -61,46 +61,46 @@ async function upgradePackageData(
       const reconstructedUpdates: { path: string[]; newValue: string }[] = []
 
       if (catalogData.catalogs) {
-        Object.entries(catalogData.catalogs).forEach(([catalogName, catalog]) => {
-          Object.entries(upgraded).forEach(([dep, version]) => {
+        for (const [catalogName, catalog] of Object.entries(catalogData.catalogs)) {
+          for (const [dep, version] of Object.entries(upgraded)) {
             if (catalog[dep]) {
               reconstructedUpdates.push({ path: ['catalogs', catalogName, dep], newValue: version })
             }
-          })
-        })
+          }
+        }
       }
 
       if (catalogData.catalog) {
-        Object.entries(upgraded).forEach(([dep, version]) => {
+        for (const [dep, version] of Object.entries(upgraded)) {
           if (catalogData.catalog?.[dep]) {
             reconstructedUpdates.push({ path: ['catalog', dep], newValue: version })
           }
-        })
+        }
       }
 
       // Handle nested workspaces.catalog and workspaces.catalogs format
       const workspacesData = catalogData.workspaces
       if (workspacesData && !Array.isArray(workspacesData)) {
         if (workspacesData.catalogs) {
-          Object.entries(workspacesData.catalogs).forEach(([catalogName, catalog]) => {
-            Object.entries(upgraded).forEach(([dep, version]) => {
+          for (const [catalogName, catalog] of Object.entries(workspacesData.catalogs)) {
+            for (const [dep, version] of Object.entries(upgraded)) {
               if (catalog[dep]) {
                 reconstructedUpdates.push({ path: ['workspaces', 'catalogs', catalogName, dep], newValue: version })
               }
-            })
-          })
+            }
+          }
         }
         if (workspacesData.catalog) {
-          Object.entries(upgraded).forEach(([dep, version]) => {
+          for (const [dep, version] of Object.entries(upgraded)) {
             if (workspacesData.catalog?.[dep]) {
               reconstructedUpdates.push({ path: ['workspaces', 'catalog', dep], newValue: version })
             }
-          })
+          }
         }
       }
 
       let updatedContent = yamlContent
-      reconstructedUpdates.forEach(upgrade => {
+      for (const upgrade of reconstructedUpdates) {
         const updatedYaml = updateYamlCatalogDependencies({
           fileContent: updatedContent,
           upgrade,
@@ -110,7 +110,7 @@ async function upgradePackageData(
         if (updatedYaml) {
           updatedContent = updatedYaml
         }
-      })
+      }
 
       return updatedContent
     }
