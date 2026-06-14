@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# shellcheck enable=require-variable-braces
-
 # These can be set once the fnm permission errors are figured out
 # See: https://github.com/Schniz/fnm
 # set -e
 # set -o pipefail
+# When set -e is enabled, we can drop `|| exit (1)?` from commands that are expected to fail
 
 cwd=$(pwd)
 e2e_dir=$(dirname "$(readlink -f "$0")")
@@ -21,23 +20,23 @@ cleanup() {
   exit_status=$?
 
   # shut down verdaccio
-  if [ -n "${verdaccio_pid}" ]; then
+  if [[ -n "${verdaccio_pid}" ]]; then
     echo Shutting down verdaccio
-    kill -9 ${verdaccio_pid} 2>/dev/null
-    wait ${verdaccio_pid} 2>/dev/null
+    kill -9 ${verdaccio_pid} 2>/dev/null || true
+    wait ${verdaccio_pid} 2>/dev/null || true
   fi
 
   # delete authToken
   # WARNING: The original authToken cannot be restored because it is protected and cannot be read with 'npm config get'.
-  npm config delete "//localhost:${registry_port}/:_authToken"
+  npm config delete "//localhost:${registry_port}/:_authToken" || true
 
   # remove temp directory
-  rm -rf "${temp_dir}"
+  rm -rf -- "${temp_dir}"
 
   # return to working directory
   cd "${cwd}" || exit
 
-  if [ ${exit_status} -ne 0 ]; then
+  if [[ ${exit_status} -ne 0 ]]; then
     echo Error
   else
     echo Done
@@ -93,7 +92,7 @@ for _ in {1..20}; do
   sleep 1
 done
 
-if [ "${publish_visible}" = false ]; then
+if [[ "${publish_visible}" == false ]]; then
   echo "Warning: npm-check-updates@${package_version} not visible in local registry after retry window"
 fi
 
@@ -115,7 +114,7 @@ echo '{
 # --pre 1 to ensure that an upgrade is always suggested even if npm-check-updates is on a prerelease version
 npx --registry ${registry_local} npm-check-updates --configFilePath "${temp_dir}" --cwd "${temp_dir}" --pre 1 --registry ${registry_local}
 
-rm "${temp_dir}/package.json"
+rm -f -- "${temp_dir}/package.json"
 cp -r "${e2e_dir}/e2e" "${temp_dir}"
 
 # Test: cjs
@@ -126,7 +125,7 @@ echo Installing
 npm i npm-check-updates@latest --registry ${registry_local}
 
 echo Running test
-REGISTRY=${registry_local} node "${temp_dir}/e2e/cjs/index.js" || { exit 1; }
+REGISTRY=${registry_local} node "${temp_dir}/e2e/cjs/index.js" || exit 1
 
 # Test: esm
 echo Test: esm
@@ -136,4 +135,4 @@ echo Installing
 npm i npm-check-updates@latest --registry ${registry_local}
 
 echo Running test
-REGISTRY=${registry_local} node "${temp_dir}/e2e/esm/index.js" || { exit 1; }
+REGISTRY=${registry_local} node "${temp_dir}/e2e/esm/index.js" || exit 1
