@@ -1,67 +1,20 @@
 #!/usr/bin/env node
 import { Help, Option, program } from 'commander'
-import semver from 'semver'
-import updateNotifier from 'update-notifier'
 import pkg from '../../package.json' with { type: 'json' }
 import cliOptions, { cliOptionsMap, renderExtendedHelp } from '../cli-options.ts'
 import ncu from '../index.ts'
 // async global contexts are only available in esm modules -> function
 import getNcuRc from '../lib/getNcuRc.ts'
+import notifyUpdate from '../lib/notifyUpdate.ts'
 import { pickBy } from '../lib/pick.ts'
-import { getStyle, styleInit } from '../lib/style.ts'
+import { styleInit } from '../lib/style.ts'
 import uncode from '../lib/uncode.ts'
 import { type RunOptions } from '../types/RunOptions.ts'
 
 const optionVersionDescription = 'Output the version number of npm-check-updates.'
 
 ;(async () => {
-  // check if a new version of ncu is available and print an update notification
-  //
-  // For testing from specific versions, use:
-  //
-  // updateNotifier({
-  //   pkg: {
-  //     name: 'npm-check-updates',
-  //     version: x.y.z
-  //   },
-  //   updateCheckInterval: 0
-  // })
-
-  const notifier = updateNotifier({ pkg })
-  if (notifier.update && notifier.update.latest !== pkg.version) {
-    const style = getStyle(true)
-
-    // generate release urls for all the major versions from the current version up to the latest
-    const currentMajor = semver.parse(notifier.update.current)?.major
-    const latestMajor = semver.parse(notifier.update.latest)?.major
-    const majorVersions =
-      // Greater than or equal to (>=) will always return false if either operant is NaN or undefined.
-      // Without this condition, it can result in a RangeError: Invalid array length.
-      // See: https://github.com/raineorshine/npm-check-updates/issues/1200
-      currentMajor && latestMajor && latestMajor >= currentMajor
-        ? new Array(latestMajor - currentMajor).fill(0).map((x, i) => currentMajor + i + 1)
-        : []
-    const releaseUrls = majorVersions.map(majorVersion => `${pkg.homepage ?? ''}/releases/tag/v${majorVersion}.0.0`)
-
-    // for non-major updates, generate a URL to view all commits since the current version
-    const compareUrl = `${pkg.homepage ?? ''}/compare/v${notifier.update.current}...v${notifier.update.latest}`
-
-    notifier.notify({
-      defer: false,
-      isGlobal: true,
-      message: `Update available ${style.dim('{currentVersion}')}${style.reset(' → ')}${
-        notifier.update.type === 'major'
-          ? style.red('{latestVersion}')
-          : notifier.update.type === 'minor'
-            ? style.yellow('{latestVersion}')
-            : style.green('{latestVersion}')
-      }
-Run ${style.cyan('{updateCommand}')} to update
-${style.dim.underline(
-  notifier.update.type === 'major' ? releaseUrls.map(url => style.dim.underline(url)).join('\n') : compareUrl,
-)}`,
-    })
-  }
+  notifyUpdate()
 
   // manually detect option-specific help
   // https://github.com/raineorshine/npm-check-updates/issues/787
