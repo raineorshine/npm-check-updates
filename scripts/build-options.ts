@@ -4,9 +4,9 @@ import { pathToFileURL } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import prettier from 'prettier'
 import { createGenerator } from 'ts-json-schema-generator'
-import cliOptions, { renderExtendedHelp } from '../cli-options'
-import { chalkInit, getChalk } from '../lib/chalk'
-import type CLIOption from '../types/CLIOption'
+import cliOptions, { renderExtendedHelp } from '../src/cli-options'
+import { chalkInit, getChalk } from '../src/lib/chalk'
+import type CLIOption from '../src/types/CLIOption'
 
 const INJECT_HEADER =
   '<!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->'
