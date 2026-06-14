@@ -45,6 +45,8 @@ jobs:
       - name: Build
         run: npm run build
 
+      - run: npm pack --dry-run
+
       - name: Check for uncommitted changes
         run: |
           changed=$(git diff --name-only)
