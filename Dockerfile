@@ -1,7 +1,7 @@
-FROM        node:latest
+FROM node:lts-slim
 
-RUN         npm install -g npm-check-updates
+RUN npm install -g npm-check-updates
 
-WORKDIR     /app
+WORKDIR /app
 
-ENTRYPOINT  ["npm-check-updates"]
+ENTRYPOINT ["npm-check-updates"]
