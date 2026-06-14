@@ -1,7 +1,7 @@
+import { format } from 'node:util'
 import parseGitHubUrl from 'parse-github-url'
 import semver from 'semver'
 import semverutils, { type SemVer, parse, parseRange } from 'semver-utils'
-import util from 'util'
 import { type DependencyGroup } from '../types/DependencyGroup'
 import { type Index } from '../types/IndexType'
 import { type Maybe } from '../types/Maybe'
@@ -47,7 +47,7 @@ export function numParts(version: string) {
 
   if (!semver) {
     throw new Error(
-      util.format(
+      format(
         'semverutils.parseRange returned null when trying to parse "%s". This is probably a problem with the "semver-utils" dependency. Please report an issue at https://github.com/raineorshine/npm-check-updates/issues.',
         version,
       ),

@@ -1,5 +1,5 @@
+import { URL } from 'node:url'
 import hostedGitInfo from 'hosted-git-info'
-import { URL } from 'url'
 import { type PackageFile } from '../types/PackageFile'
 import { type PackageFileRepository } from '../types/PackageFileRepository'
 import getPackageJson from './getPackageJson'

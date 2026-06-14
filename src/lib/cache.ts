@@ -1,6 +1,6 @@
-import fs from 'fs'
-import os from 'os'
-import path from 'path'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 import { CURRENT_CACHE_SCHEMA, type CacheData, type Cacher } from '../types/Cacher'
 import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
@@ -45,7 +45,7 @@ export async function cacheClear(options: Options) {
     return
   }
 
-  await fs.promises.rm(resolveCacheFile(options.cacheFile), { force: true })
+  await fs.rm(resolveCacheFile(options.cacheFile), { force: true })
 }
 
 /**
@@ -70,7 +70,7 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
   }
 
   try {
-    const raw = await fs.promises.readFile(cacheFile, 'utf-8')
+    const raw = await fs.readFile(cacheFile, 'utf-8')
     const parsed = JSON.parse(raw)
 
     // Validate schema before assigning
@@ -79,7 +79,7 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
       cacheData = { schema, timestamp, packages, peers }
     } else {
       // reset cache
-      await fs.promises.rm(cacheFile, { force: true })
+      await fs.rm(cacheFile, { force: true })
     }
   } catch (error) {
     // ignore file read/parse/remove errors
@@ -113,7 +113,7 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
       cacheData.peers[key] = peers
     },
     save: async () => {
-      await fs.promises.writeFile(cacheFile, JSON.stringify(cacheData))
+      await fs.writeFile(cacheFile, JSON.stringify(cacheData))
     },
     log: (peers?: boolean) => {
       const cacheCount = cacheHits.size

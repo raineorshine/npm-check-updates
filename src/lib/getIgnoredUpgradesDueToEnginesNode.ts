@@ -1,4 +1,4 @@
-import { minVersion, satisfies } from 'semver'
+import semver from 'semver'
 import { type IgnoredUpgradeDueToEnginesNode } from '../types/IgnoredUpgradeDueToEnginesNode'
 import { type Index } from '../types/IndexType'
 import { type Maybe } from '../types/Maybe'
@@ -11,7 +11,7 @@ import upgradePackageDefinitions from './upgradePackageDefinitions'
 
 /** Checks if package.json min node version satisfies given package engine.node spec */
 const satisfiesNodeEngine = (enginesNode: Maybe<VersionSpec>, optionsEnginesNodeMinVersion: Version) =>
-  !enginesNode || satisfies(optionsEnginesNodeMinVersion, enginesNode)
+  !enginesNode || semver.satisfies(optionsEnginesNodeMinVersion, enginesNode)
 
 /** Get all upgrades that are ignored due to incompatible engines.node. */
 export async function getIgnoredUpgradesDueToEnginesNode(
@@ -20,7 +20,7 @@ export async function getIgnoredUpgradesDueToEnginesNode(
   options: Options = {},
 ) {
   if (!options.nodeEngineVersion) return {}
-  const optionsEnginesNodeMinVersion = minVersion(options.nodeEngineVersion)?.version
+  const optionsEnginesNodeMinVersion = semver.minVersion(options.nodeEngineVersion)?.version
   if (!optionsEnginesNodeMinVersion) return {}
   const [upgradedLatestVersions, latestVersionResults] = await upgradePackageDefinitions(current, {
     ...options,

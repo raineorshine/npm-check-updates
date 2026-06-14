@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // eslint doesn't like .to.be.false syntax
-import { expect } from 'chai'
-import fs from 'fs/promises'
-import { dirname } from 'node:path'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
-import os from 'os'
-import path from 'path'
+import { expect } from 'chai'
 import spawn from 'spawn-please'
 import exists from '../src/lib/exists'
 import chaiSetup from './helpers/chaiSetup'
@@ -14,7 +13,7 @@ import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 

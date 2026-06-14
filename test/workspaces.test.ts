@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // eslint doesn't like .should.be.empty syntax
-import fs from 'fs/promises'
-import os from 'os'
-import path, { dirname } from 'path'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 

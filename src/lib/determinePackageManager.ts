@@ -1,12 +1,12 @@
-import fs from 'fs/promises'
-import { dirname } from 'node:path'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
 import { type PackageManagerName } from '../types/PackageManagerName'
 import findLockfile from './findLockfile'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // map lockfiles to package managers
 const packageManagerLockfileMap: Index<PackageManagerName> = {

@@ -1,9 +1,9 @@
 /**
  * Loggin functions.
  */
+import fs from 'node:fs/promises'
 import Table from 'cli-table3'
-import fs from 'fs/promises'
-import nodeSemver from 'semver'
+import semver from 'semver'
 import { format as timeAgoFormat } from 'timeago.js'
 import type { CooldownFunction } from '../types/CooldownFunction'
 import { type IgnoredUpgradeDueToEnginesNode } from '../types/IgnoredUpgradeDueToEnginesNode'
@@ -250,7 +250,7 @@ export async function toDependencyTable({
           let cooldown = ''
           if (cooldownVersion) {
             const wildcard = WILDCARDS.includes(to[0]) ? to[0] : ''
-            const coerced = nodeSemver.coerce(cooldownVersion)
+            const coerced = semver.coerce(cooldownVersion)
             // Truncate long versions for single-line terminal display.
             // e.g., 1.2.3-alpha.20260503T1728 -> 1.2.3-+
             const shortended =

@@ -1,11 +1,11 @@
-import { expect } from 'chai'
-import fsSync from 'fs'
-import fs from 'fs/promises'
+import fsSync from 'node:fs'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
-import os from 'os'
-import path, { dirname } from 'path'
+import { expect } from 'chai'
 import spawn from 'spawn-please'
-import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
 import chaiSetup from './helpers/chaiSetup'
@@ -13,7 +13,7 @@ import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 const srcBin = path.join(__dirname, '../src/bin/cli.ts')

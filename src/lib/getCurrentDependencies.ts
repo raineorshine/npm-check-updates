@@ -1,4 +1,4 @@
-import * as semver from 'semver'
+import semver from 'semver'
 import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
 import { type PackageFile } from '../types/PackageFile'

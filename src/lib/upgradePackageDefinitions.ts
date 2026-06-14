@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from 'node:util'
-import { intersects, satisfies, validRange } from 'semver'
+import semver from 'semver'
 import { parse, parseRange } from 'semver-utils'
 import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
@@ -37,10 +37,10 @@ const checkIfInPeerViolation = (
     return Object.entries(peerDeps).every(
       ([peer, peerSpec]) =>
         upgradedDependencies[peer] === undefined ||
-        !validRange(peerSpec) ||
+        !semver.validRange(peerSpec) ||
         // Non-semver specs like catalog: references cannot be compared; treat as compatible
-        !validRange(upgradedDependencies[peer]) ||
-        intersects(upgradedDependencies[peer], peerSpec),
+        !semver.validRange(upgradedDependencies[peer]) ||
+        semver.intersects(upgradedDependencies[peer], peerSpec),
     )
   })
   const violated =
@@ -96,7 +96,7 @@ export async function upgradePackageDefinitions(
   const upgradedDependencies = upgradeDependencies(currentDependencies, latestVersions, options)
 
   const filteredUpgradedDependencies = pickBy(upgradedDependencies, (v, dep) => {
-    return !options.jsonUpgraded || !options.minimal || !satisfies(latestVersions[dep], currentDependencies[dep])
+    return !options.jsonUpgraded || !options.minimal || !semver.satisfies(latestVersions[dep], currentDependencies[dep])
   })
 
   const filteredLatestDependencies = pickBy(latestVersions, (spec, dep) => filteredUpgradedDependencies[dep])
