@@ -403,27 +403,32 @@ export const normalizeNpmConfig = (
   // See: https://github.com/zkat/pacote/issues/156
   const config: NpmConfig = keyValueBy(npmConfig, (key: string, value: NpmConfig[keyof NpmConfig]) => {
     // replace env ${VARS} in strings with the process.env value
-    const normalizedValue =
-      typeof value !== 'string'
-        ? value
-        : // parse stringified booleans
-          keyTypes[key.replace(/-/g, '').toLowerCase()] === 'boolean'
-          ? stringToBoolean(value)
-          : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
-            ? stringToNumber(value)
-            : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
+    let normalizedValue
+    if (typeof value !== 'string') {
+      normalizedValue = value
+    } else if (keyTypes[key.replace(/-/g, '').toLowerCase()] === 'boolean') {
+      // parse stringified booleans
+      normalizedValue = stringToBoolean(value)
+    } else if (keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number') {
+      normalizedValue = stringToNumber(value)
+    } else {
+      normalizedValue = value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
+    }
 
     // normalize the key for pacote
     const { [key]: pacoteKey }: Index<NpmConfig[keyof NpmConfig]> = npmConfigToPacoteMap
 
-    return typeof pacoteKey === 'string'
-      ? // key is mapped to a string
-        { [pacoteKey]: normalizedValue }
-      : // key is mapped to a function
-        typeof pacoteKey === 'function'
-        ? { ...(pacoteKey(normalizedValue.toString()) as any) }
-        : // otherwise assign the camel-cased key
-          { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
+    // key is mapped to a string
+    if (typeof pacoteKey === 'string') {
+      return { [pacoteKey]: normalizedValue }
+    }
+    // key is mapped to a function
+    if (typeof pacoteKey === 'function') {
+      return { ...(pacoteKey(normalizedValue.toString()) as any) }
+    }
+
+    // otherwise assign the camel-cased key
+    return { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
   })
 
   return config
@@ -550,12 +555,14 @@ npmApi.mockFetchUpgradedPackument =
   (mockReturnedVersions: MockedVersions): typeof fetchUpgradedPackument =>
   (name: string, fields: (keyof Packument)[], currentVersion: Version, options: Options) => {
     // a partial Packument
-    const partialPackument =
-      typeof mockReturnedVersions === 'function'
-        ? mockReturnedVersions(options)?.[name]
-        : typeof mockReturnedVersions === 'string' || isPackument(mockReturnedVersions)
-          ? mockReturnedVersions
-          : mockReturnedVersions[name]
+    let partialPackument
+    if (typeof mockReturnedVersions === 'function') {
+      partialPackument = mockReturnedVersions(options)?.[name]
+    } else if (typeof mockReturnedVersions === 'string' || isPackument(mockReturnedVersions)) {
+      partialPackument = mockReturnedVersions
+    } else {
+      partialPackument = mockReturnedVersions[name]
+    }
 
     const version = isPackument(partialPackument) ? partialPackument.version : partialPackument
 
@@ -825,15 +832,17 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
 
   // FIX: for ncu -g doesn't work on homebrew or windows #146
   // https://github.com/raineorshine/npm-check-updates/issues/146
-  return options.global && prefix?.match('Cellar')
-    ? '/usr/local'
-    : // Workaround: get prefix on windows for global packages
-      // Only needed when using npm api directly
-      process.platform === 'win32' && options.global && !process.env.prefix
-      ? prefix
-        ? prefix.trim()
-        : `${process.env.AppData}\\npm`
-      : undefined
+  if (options.global && prefix?.match('Cellar')) {
+    return '/usr/local'
+  }
+
+  // Workaround: get prefix on windows for global packages
+  // Only needed when using npm api directly
+  if (process.platform === 'win32' && options.global && !process.env.prefix) {
+    return prefix ? prefix.trim() : `${process.env.AppData}\\npm`
+  }
+
+  return undefined
 }
 
 /**

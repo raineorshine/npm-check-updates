@@ -133,16 +133,16 @@ export function updateYamlCatalogDependencies({
   const nestedWorkspaces =
     parsedContents.workspaces && !Array.isArray(parsedContents.workspaces) ? parsedContents.workspaces : undefined
 
-  const oldVersion =
-    path[0] === 'catalog'
-      ? parsedContents.catalog?.[path[1]]
-      : path[0] === 'catalogs'
-        ? parsedContents.catalogs?.[path[1]]?.[path[2]]
-        : path[0] === 'workspaces' && path[1] === 'catalog'
-          ? nestedWorkspaces?.catalog?.[path[2]]
-          : path[0] === 'workspaces' && path[1] === 'catalogs'
-            ? nestedWorkspaces?.catalogs?.[path[2]]?.[path[3]]
-            : undefined
+  let oldVersion: string | undefined
+  if (path[0] === 'catalog') {
+    oldVersion = parsedContents.catalog?.[path[1]]
+  } else if (path[0] === 'catalogs') {
+    oldVersion = parsedContents.catalogs?.[path[1]]?.[path[2]]
+  } else if (path[0] === 'workspaces' && path[1] === 'catalog') {
+    oldVersion = nestedWorkspaces?.catalog?.[path[2]]
+  } else if (path[0] === 'workspaces' && path[1] === 'catalogs') {
+    oldVersion = nestedWorkspaces?.catalogs?.[path[2]]?.[path[3]]
+  }
 
   if (oldVersion === newValue) {
     return fileContent

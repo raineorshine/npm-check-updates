@@ -504,15 +504,16 @@ export function upgradeDependencyDeclaration(
    * anyway.
    */
   function chooseVersion(part: VersionPart): string | null {
-    return (
-      (isWildPart(declaredSemver[part])
-        ? declaredSemver[part]
-        : VERSION_BASE_PARTS.includes(part) && declaredSemver[part]
-          ? latestSemver[part]
-          : VERSION_ADDED_PARTS.includes(part)
-            ? latestSemver[part]
-            : null) || null
-    )
+    let version: string | null | undefined
+    if (isWildPart(declaredSemver[part])) {
+      version = declaredSemver[part]
+    } else if (VERSION_BASE_PARTS.includes(part) && declaredSemver[part]) {
+      version = latestSemver[part]
+    } else if (VERSION_ADDED_PARTS.includes(part)) {
+      version = latestSemver[part]
+    }
+
+    return version || null
   }
 
   // create a new semver object with major, minor, patch, build, and release parts

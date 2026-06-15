@@ -114,19 +114,25 @@ ${chalk.dim.underline(
     .usage('[options] [filter]')
     // See: boolean optional arg below
     .configureHelp({
-      optionTerm: option =>
-        option.long && noCli.has(option.long)
-          ? option.long.replace('--', '') + '*'
-          : option.long === '--version'
-            ? // add -v to version help to cover the alias added below
-              '-v, -V, --version'
-            : option.flags.replace('[bool]', ''),
-      optionDescription: option =>
-        option.long === '--version'
-          ? optionVersionDescription
-          : option.long === '--help'
-            ? `You're lookin' at it. Run "ncu --help <option>" for a specific option.`
-            : Help.prototype.optionDescription(option),
+      optionTerm: option => {
+        if (option.long && noCli.has(option.long)) {
+          return option.long.replace('--', '') + '*'
+        }
+        if (option.long === '--version') {
+          // add -v to version help to cover the alias added below
+          return '-v, -V, --version'
+        }
+        return option.flags.replace('[bool]', '')
+      },
+      optionDescription: option => {
+        if (option.long === '--version') {
+          return optionVersionDescription
+        }
+        if (option.long === '--help') {
+          return `You're lookin' at it. Run "ncu --help <option>" for a specific option.`
+        }
+        return Help.prototype.optionDescription(option)
+      },
     })
     // add hidden -v alias for --V/--version
     .addOption(new Option('-v, --versionAlias').hideHelp())

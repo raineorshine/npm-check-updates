@@ -225,12 +225,13 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     const npmConfigCooldown = npmApi.findNpmConfig()
     const minReleaseAge = npmConfigCooldown?.minReleaseAge
     if (minReleaseAge != null) {
-      const days =
-        typeof minReleaseAge === 'string'
-          ? (parseCooldown(minReleaseAge) ?? parseInt(minReleaseAge, 10))
-          : typeof minReleaseAge === 'number'
-            ? minReleaseAge
-            : null
+      let days: number | null = null
+      if (typeof minReleaseAge === 'string') {
+        days = parseCooldown(minReleaseAge) ?? parseInt(minReleaseAge, 10)
+      } else if (typeof minReleaseAge === 'number') {
+        days = minReleaseAge
+      }
+
       if (days != null && !isNaN(days)) {
         // npm's min-release-age-exclude is a list of package names or glob patterns that are exempt from min-release-age.
         // a single .npmrc entry parses as a string; repeated entries (min-release-age-exclude[]=) parse as an array.

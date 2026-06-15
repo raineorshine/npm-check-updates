@@ -219,13 +219,15 @@ export async function toDependencyTable({
                   : ''
           const toRaw = toDeps[dep] || ''
           const to = getVersion(toRaw)
-          const ownerChanged = ownersChangedDeps
-            ? dep in ownersChangedDeps
-              ? ownersChangedDeps[dep]
-                ? '*owner changed*'
-                : ''
-              : '*unknown*'
-            : ''
+          let ownerChanged = ''
+          if (ownersChangedDeps) {
+            if (!(dep in ownersChangedDeps)) {
+              ownerChanged = '*unknown*'
+            } else if (ownersChangedDeps[dep]) {
+              ownerChanged = '*owner changed*'
+            }
+          }
+
           const toColorized = colorizeDiff(getVersion(from), to)
           const homepageUrl = format?.includes('homepage')
             ? (await getPackageJson(dep, { pkgFile }))?.homepage || ''
@@ -240,11 +242,12 @@ export async function toDependencyTable({
           // show '[missing time]' in publishTime column or cooldown column
           const missingTime = (showTime || showCoolDown) && !time?.[dep] ? '[missing time]' : ''
           const timestamp = showTime && time?.[dep] ? time[dep] : null
-          const publishTime = timestamp
-            ? timeAgoFormat(timestamp, 'en_US')
-            : showTime || !showCooldownCol
-              ? missingTime
-              : ''
+          let publishTime = ''
+          if (timestamp) {
+            publishTime = timeAgoFormat(timestamp, 'en_US')
+          } else if (showTime || !showCooldownCol) {
+            publishTime = missingTime
+          }
 
           const cooldownVersion = skippedByCooldown?.[dep]?.version
           let cooldown = ''

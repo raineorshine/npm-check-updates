@@ -309,13 +309,15 @@ export default async function runLocal(
 
   const newPkgData = await upgradePackageData(pkgData, current, chosenUpgraded, options, pkgFile || undefined)
 
-  const output: PackageFile | Index<VersionSpec> = options.jsonAll
-    ? pkgFile?.endsWith('.yaml') || pkgFile?.endsWith('.yml')
-      ? parseDocument(newPkgData).toJSON()
-      : (parseJson(newPkgData) as PackageFile)
-    : options.jsonDeps && pkgFile?.endsWith('.json')
-      ? pick(parseJson(newPkgData) as PackageFile, resolveDepSections(options.dep))
-      : chosenUpgraded
+  let output: PackageFile | Index<VersionSpec> = chosenUpgraded
+  if (options.jsonAll) {
+    output =
+      pkgFile?.endsWith('.yaml') || pkgFile?.endsWith('.yml')
+        ? parseDocument(newPkgData).toJSON()
+        : (parseJson(newPkgData) as PackageFile)
+  } else if (options.jsonDeps && pkgFile?.endsWith('.json')) {
+    output = pick(parseJson(newPkgData) as PackageFile, resolveDepSections(options.dep))
+  }
 
   // will be overwritten with the result of fs.writeFile so that the return promise waits for the package file to be written
   let writePromise
