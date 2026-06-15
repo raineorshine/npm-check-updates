@@ -7,7 +7,7 @@ chaiSetup()
 
 describe('getPeerDependenciesFromRegistry', function () {
   it('single package', async () => {
-    await chalkInit()
+    chalkInit()
     silenceProgressBar()
     const data = await getPeerDependenciesFromRegistry({ 'ncu-test-peer': '1.0' }, {})
     data.should.deep.equal({
@@ -18,14 +18,14 @@ describe('getPeerDependenciesFromRegistry', function () {
   })
 
   it('single package empty', async () => {
-    await chalkInit()
+    chalkInit()
     silenceProgressBar()
     const data = await getPeerDependenciesFromRegistry({ 'ncu-test-return-version': '1.0' }, {})
     data.should.deep.equal({ 'ncu-test-return-version': {} })
   })
 
   it('multiple packages', async () => {
-    await chalkInit()
+    chalkInit()
     silenceProgressBar()
     const data = await getPeerDependenciesFromRegistry(
       {

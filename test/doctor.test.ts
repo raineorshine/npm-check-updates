@@ -45,7 +45,7 @@ describe('doctor', function () {
 
   describe('npm', () => {
     it('print instructions when -u is not specified', async () => {
-      await chalkInit()
+      chalkInit()
       const cwd = path.join(doctorTests, 'nopackagefile')
       const output = await ncu(['--doctor'], {}, { cwd })
       return stripAnsi(output).should.equal(

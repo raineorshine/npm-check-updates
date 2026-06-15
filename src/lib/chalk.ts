@@ -5,7 +5,7 @@ This chalk wrapper allows synchronous chalk.COLOR(...) syntax with special suppo
 1) force color on all instances
 2) disable color on all instances
 
-Call await chalkInit(color) at the beginning of execution and the chalk instance will be available everywhere.
+Call chalkInit(color) at the beginning of execution and the chalk instance will be available everywhere.
 
 It is a hacky solution, but it is the easiest way to import and pass the color option to all chalk instances without brutalizing the syntax.
 

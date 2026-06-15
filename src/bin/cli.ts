@@ -74,7 +74,7 @@ ${chalk.dim.underline(
     if (helpOption === 'help' || helpOption === 'h') {
       console.info('Would you like some help with your help?')
     } else {
-      await chalkInit()
+      chalkInit()
       const nonHelpArgs = [...rawArgs.slice(0, indexHelp), ...rawArgs.slice(indexHelp + 1)]
       for (const arg of nonHelpArgs) {
         // match option by long or short
@@ -169,7 +169,7 @@ ${chalk.dim.underline(
 
   // Force color on all chalk instances.
   // See: /src/lib/chalk.ts
-  await chalkInit(color)
+  chalkInit(color)
 
   // load .ncurc
   // Do not load when tests are running (can be overridden if configFilePath is set explicitly, or --mergeConfig option specified)

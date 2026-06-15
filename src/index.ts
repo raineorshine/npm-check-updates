@@ -168,7 +168,7 @@ const install = async (
     const isWorkspace = options.workspaces || !!options.workspace?.length
     const pkgsNormalized = isWorkspace ? ['package.json'] : pkgs
 
-    for await (const pkgFile of pkgsNormalized) {
+    for (const pkgFile of pkgsNormalized) {
       const packageManager = await getPackageManagerForInstall(options, pkgFile)
       const cwd = options.cwd || path.resolve(pkgFile, '..')
       let stdout = ''
@@ -354,7 +354,7 @@ export async function run(
 
   // chalk may already have been initialized in cli.ts, but when imported as a module
   // chalkInit is idempotent
-  await chalkInit(options.color)
+  chalkInit(options.color)
 
   noVolta(options)
 
