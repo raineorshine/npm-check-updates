@@ -17,6 +17,7 @@ import filterObject from './filterObject'
 import getPackageJson from './getPackageJson'
 import getPackageVersion from './getPackageVersion'
 import getRepoUrl from './getRepoUrl'
+import isFetchable from './isFetchable'
 import {
   WILDCARDS,
   colorizeDiff,
@@ -40,15 +41,6 @@ const logLevels = {
   verbose: 5,
   silly: 6,
 }
-
-/** Returns true if the dependency spec is not fetchable from the registry and is ignored. */
-const isFetchable = (spec: VersionSpec) =>
-  !spec.startsWith('file:') &&
-  !spec.startsWith('link:') &&
-  !spec.startsWith('workspace:') &&
-  !spec.startsWith('catalog:') &&
-  // short github urls that are ignored, e.g. raineorshine/foo
-  !/^[^/:@]+\/\w+/.test(spec)
 
 /**
  * Prints a message if it is included within options.loglevel.

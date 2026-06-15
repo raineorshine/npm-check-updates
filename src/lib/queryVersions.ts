@@ -10,6 +10,7 @@ import { type VersionResult } from '../types/VersionResult'
 import { type VersionSpec } from '../types/VersionSpec'
 import { getChalk } from './chalk'
 import getPackageManager from './getPackageManager'
+import isPackageManagerProtocol from './isPackageManagerProtocol'
 import keyValueBy from './keyValueBy'
 import programError from './programError'
 import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-util'
@@ -42,6 +43,13 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   async function getPackageVersionProtected(dep: VersionSpec): Promise<VersionResult> {
     const npmAlias = parseNpmAlias(packageMap[dep])
     const [name, version] = npmAlias || [dep, packageMap[dep]]
+
+    // Skip valid specs that are not registry versions, such as different package manager protocols.
+    if (isPackageManagerProtocol(version)) {
+      bar?.tick()
+      return { version: null }
+    }
+
     const targetOption = options.target || 'latest'
     const targetString = typeof targetOption === 'string' ? targetOption : targetOption(name, parseRange(version))
     const [target, distTag] = targetString.startsWith('@')

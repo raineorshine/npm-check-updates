@@ -427,6 +427,33 @@ describe('version-util', () => {
     })
   })
 
+  describe('filterByLevel', () => {
+    it('only return true for versions at the given semantic versioning level', () => {
+      const minor = versionUtil.filterByLevel('1.0.0', 'minor')
+      minor('1.0.0')!.should.equal(true)
+      minor('1.5.0')!.should.equal(true)
+      minor('2.0.0')!.should.equal(false)
+
+      const patch = versionUtil.filterByLevel('1.0.0', 'patch')
+      patch('1.0.5')!.should.equal(true)
+      patch('1.1.0')!.should.equal(false)
+    })
+
+    it('return false for every version when current is not a valid semver range', () => {
+      const catalog = versionUtil.filterByLevel('catalog:', 'minor')
+      catalog('1.0.0')!.should.equal(false)
+
+      const workspace = versionUtil.filterByLevel('workspace:^1.0.0', 'patch')
+      workspace('1.0.0')!.should.equal(false)
+
+      const link = versionUtil.filterByLevel('link:../local-pkg', 'minor')
+      link('1.0.0')!.should.equal(false)
+
+      const file = versionUtil.filterByLevel('file:./local.tgz', 'patch')
+      file('1.0.0')!.should.equal(false)
+    })
+  })
+
   describe('findGreatestByLevel', () => {
     it('find the greatest version at the given semantic versioning level', () => {
       const versions = ['0.1.0', '1.0.0', '1.0.1', '1.1.0', '2.0.1']

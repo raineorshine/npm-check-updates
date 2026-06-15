@@ -332,6 +332,12 @@ export function findGreatestByLevel(versions: string[], current: string, level: 
 
 /** Returns a filter function that can be used to filter versions by a level. */
 export function filterByLevel(current: string, level: VersionLevel): (v: string) => boolean | null {
+  // semver.minVersion throws on non-semver specs (e.g. pnpm's `catalog:` / `workspace:`
+  // protocols, `link:`, `file:`). Guard with validRange to keep this safe.
+  if (!semver.validRange(current)) {
+    return () => false
+  }
+
   const cur = semver.minVersion(current)
   return (v: string) => {
     const parsed = semver.parse(v)
