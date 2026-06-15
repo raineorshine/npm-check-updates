@@ -6,10 +6,10 @@ import { type Options } from '../types/Options'
 import { type VersionResult } from '../types/VersionResult'
 import { type VersionSpec } from '../types/VersionSpec'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
-import keyValueBy from './keyValueBy'
-import { pickBy } from './pick'
 import queryVersions from './queryVersions'
 import upgradeDependencies from './upgradeDependencies'
+import keyValueBy from './utils/keyValueBy'
+import { pickBy } from './utils/pick'
 
 type CheckIfInPeerViolationResult = {
   violated: boolean

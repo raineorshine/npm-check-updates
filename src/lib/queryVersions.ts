@@ -11,8 +11,8 @@ import { type VersionSpec } from '../types/VersionSpec'
 import { getChalk } from './chalk'
 import getPackageManager from './getPackageManager'
 import isPackageManagerProtocol from './isPackageManagerProtocol'
-import keyValueBy from './keyValueBy'
 import programError from './programError'
+import keyValueBy from './utils/keyValueBy'
 import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-util'
 
 /**

@@ -1,5 +1,5 @@
 import { type Index } from '../types/IndexType'
-import { sortBy } from './sortBy'
+import { sortBy } from './utils/sortBy'
 import { WILDCARDS } from './version-util'
 
 /**

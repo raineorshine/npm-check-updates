@@ -12,10 +12,10 @@ import { type Target } from '../types/Target'
 import cacher from './cache'
 import { getChalk } from './chalk'
 import determinePackageManager from './determinePackageManager'
-import exists from './exists'
-import keyValueBy from './keyValueBy'
 import parseCooldown from './parseCooldown'
 import programError from './programError'
+import exists from './utils/exists'
+import keyValueBy from './utils/keyValueBy'
 
 function parseFilterExpression(filterExpression: string[] | undefined): string[] | undefined
 function parseFilterExpression(filterExpression: FilterPattern | undefined): FilterPattern | undefined

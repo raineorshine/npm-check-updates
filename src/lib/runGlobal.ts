@@ -3,10 +3,10 @@ import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
 import chalk from './chalk'
 import getInstalledPackages from './getInstalledPackages'
-import { keyValueBy } from './keyValueBy'
 import programError from './programError'
 import quoteGlobalPackageSpec from './quoteGlobalPackageSpec'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
+import { keyValueBy } from './utils/keyValueBy'
 
 /** Checks global dependencies for upgrades. */
 async function runGlobal(options: Options): Promise<Index<string> | void> {
