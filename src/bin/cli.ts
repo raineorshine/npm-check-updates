@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { Help, Option, program } from 'commander'
-import createCloneDeep from 'rfdc'
 import semver from 'semver'
 import updateNotifier from 'update-notifier'
 import pkg from '../../package.json'
@@ -16,8 +15,6 @@ const optionVersionDescription = 'Output the version number of npm-check-updates
 
 /** Removes inline code ticks. */
 const uncode = (s: string) => s.replace(/`/g, '')
-
-const cloneDeep = createCloneDeep()
 
 ;(async () => {
   // check if a new version of ncu is available and print an update notification
@@ -161,7 +158,7 @@ ${chalk.dim.underline(
   // commander mutates its optionValues with program.parse
   // In order to call program.parse again and parse the rc file options, we need to clear commander's internal optionValues
   // Otherwise array options will be duplicated
-  const defaultOptionValues = cloneDeep((program as any)._optionValues)
+  const defaultOptionValues = structuredClone((program as any)._optionValues)
   program.allowExcessArguments(true)
   program.parse(process.argv)
 
