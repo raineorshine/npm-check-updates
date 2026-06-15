@@ -24,9 +24,16 @@ const filteredPath = (process.env.PATH || '')
   .split(path.delimiter)
   .filter(p => !p.includes(path.join('node_modules', '.bin'))) // Avoid running yarn form the node module bin
   .join(path.delimiter)
+// On Windows process.env exposes the PATH variable as `Path`, so spreading process.env and adding a
+// `PATH` key leaves two keys that differ only by case. Node 26 changed how such duplicate keys are
+// resolved for spawned processes on Windows, which made the v4 test resolve the wrong yarn (the
+// node_modules/.bin v1 devDependency that should have been filtered out). Setting every common casing
+// to the filtered value ensures the child receives a single, well-formed PATH regardless of which
+// casing Node resolves.
 const cleanEnv = {
   ...process.env,
   PATH: filteredPath,
+  Path: filteredPath,
 }
 
 describe('yarn', function () {
