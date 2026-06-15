@@ -27,13 +27,11 @@ const filteredPath = (process.env.PATH || '')
 // On Windows process.env exposes the PATH variable as `Path`, so spreading process.env and adding a
 // `PATH` key leaves two keys that differ only by case. Node 26 changed how such duplicate keys are
 // resolved for spawned processes on Windows, which made the v4 test resolve the wrong yarn (the
-// node_modules/.bin v1 devDependency that should have been filtered out). Setting every common casing
-// to the filtered value ensures the child receives a single, well-formed PATH regardless of which
-// casing Node resolves.
+// node_modules/.bin v1 devDependency that should have been filtered out). Strip every casing of PATH
+// before adding a single filtered `PATH` so the child receives exactly one, well-formed PATH key.
 const cleanEnv = {
-  ...process.env,
+  ...Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toUpperCase() !== 'PATH')),
   PATH: filteredPath,
-  Path: filteredPath,
 }
 
 describe('yarn', function () {
