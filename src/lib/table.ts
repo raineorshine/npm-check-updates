@@ -4,8 +4,11 @@ import wrap from './wrap'
 /** Wraps the second column in a list of 2-column cli-table rows. */
 const wrapRows = (rows: string[][]) => rows.map(([col1, col2]) => [col1, wrap(col2)])
 
+/** Replaces markdown code ticks with <code>...</code>, since backticks are not rendered inside HTML tables. */
+const codeHtml = (s: string) => s.replace(/`(.+?)`/g, '<code>$1</code>')
+
 /** Renders an HTML row. */
-const row = (cells: string[]) => '\n  <tr>' + cells.map(cell => `<td>${cell}</td>`).join('') + '</tr>'
+const row = (cells: string[]) => '\n  <tr>' + cells.map(cell => `<td>${codeHtml(cell)}</td>`).join('') + '</tr>'
 
 /** Renders a table for the CLI or markdown. */
 const table = ({
