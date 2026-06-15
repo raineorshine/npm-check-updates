@@ -6,10 +6,10 @@ import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
 import { type PackageFile } from '../types/PackageFile'
 import { type VersionSpec } from '../types/VersionSpec'
-import { escapeRegExp } from './escapeRegExp'
 import resolveDepSections from './resolveDepSections'
 import { upgradeJsonCatalogDependencies } from './upgradeJsonCatalogDependencies'
 import { updateYamlCatalogDependencies } from './upgradeYamlCatalogDependencies'
+import { escapeRegExp } from './utils/escapeRegExp'
 
 /**
  * Upgrade the dependency declarations in the package data.

@@ -4,10 +4,10 @@ import { type Options } from '../types/Options'
 import { type PackageFile } from '../types/PackageFile'
 import { type VersionSpec } from '../types/VersionSpec'
 import filterAndReject from './filterAndReject'
-import filterObject from './filterObject'
-import { keyValueBy } from './keyValueBy'
 import programError from './programError'
 import resolveDepSections from './resolveDepSections'
+import filterObject from './utils/filterObject'
+import { keyValueBy } from './utils/keyValueBy'
 
 /** Returns true if spec1 is greater than spec2, ignoring invalid version ranges. */
 const isGreaterThanSafe = (spec1: VersionSpec, spec2: VersionSpec) =>

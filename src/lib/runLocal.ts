@@ -16,7 +16,6 @@ import { getIgnoredUpgradesDueToEnginesNode } from './getIgnoredUpgradesDueToEng
 import getIgnoredUpgradesDueToPeerDeps from './getIgnoredUpgradesDueToPeerDeps'
 import getPackageManager from './getPackageManager'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
-import keyValueBy from './keyValueBy'
 import {
   print,
   printIgnoredUpdatesDueToEnginesNode,
@@ -26,12 +25,13 @@ import {
   printUpgrades,
   toDependencyTable,
 } from './logging'
-import { pick } from './pick'
 import programError from './programError'
 import resolveDepSections from './resolveDepSections'
 import upgradePackageData from './upgradePackageData'
 import upgradePackageDefinitions from './upgradePackageDefinitions'
+import keyValueBy from './utils/keyValueBy'
 import parseJson from './utils/parseJson'
+import { pick } from './utils/pick'
 import { getDependencyGroups } from './version-util'
 
 const INTERACTIVE_HINT = `

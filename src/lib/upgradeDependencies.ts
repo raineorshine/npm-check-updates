@@ -3,10 +3,10 @@ import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
 import { type Version } from '../types/Version'
 import { type VersionSpec } from '../types/VersionSpec'
-import filterObject from './filterObject'
 import getPreferredWildcard from './getPreferredWildcard'
 import isUpgradeable from './isUpgradeable'
-import { pickBy } from './pick'
+import filterObject from './utils/filterObject'
+import { pickBy } from './utils/pick'
 import * as versionUtil from './version-util'
 
 interface UpgradeSpec {

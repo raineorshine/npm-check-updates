@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import { type Index } from '../types/IndexType'
 import { type VersionSpec } from '../types/VersionSpec'
-import { escapeRegExp } from './escapeRegExp'
+import { escapeRegExp } from './utils/escapeRegExp'
 
 /**
  * Upgrade catalog dependencies in a JSON file (e.g., package.json for Bun).

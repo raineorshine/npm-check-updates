@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { type PackageFile } from '../types/PackageFile'
-import exists from './exists'
+import exists from './utils/exists'
 
 const require = createRequire(import.meta.url)
 

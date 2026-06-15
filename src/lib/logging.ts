@@ -13,11 +13,11 @@ import { type Options } from '../types/Options'
 import type { CooldownInfo, VersionResult } from '../types/VersionResult'
 import { type VersionSpec } from '../types/VersionSpec'
 import chalk from './chalk'
-import filterObject from './filterObject'
 import getPackageJson from './getPackageJson'
 import getPackageVersion from './getPackageVersion'
 import getRepoUrl from './getRepoUrl'
 import isFetchable from './isFetchable'
+import filterObject from './utils/filterObject'
 import {
   WILDCARDS,
   colorizeDiff,

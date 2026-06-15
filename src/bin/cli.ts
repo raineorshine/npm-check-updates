@@ -7,7 +7,7 @@ import { chalkInit } from '../lib/chalk'
 // async global contexts are only available in esm modules -> function
 import getNcuRc from '../lib/getNcuRc'
 import notifyUpdate from '../lib/notifyUpdate'
-import { pickBy } from '../lib/pick'
+import { pickBy } from '../lib/utils/pick'
 import { type RunOptions } from '../types/RunOptions'
 
 const optionVersionDescription = 'Output the version number of npm-check-updates.'

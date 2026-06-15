@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
-import keyValueBy from '../lib/keyValueBy'
+import keyValueBy from '../lib/utils/keyValueBy'
 import { type Index } from '../types/IndexType'
 import { type NpmOptions } from '../types/NpmOptions'
 import { type Options } from '../types/Options'

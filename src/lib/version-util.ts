@@ -9,9 +9,9 @@ import { type Options } from '../types/Options'
 import { type UpgradeGroup } from '../types/UpgradeGroup'
 import { type VersionLevel } from '../types/VersionLevel'
 import chalk from './chalk'
-import { escapeRegExp } from './escapeRegExp'
-import { keyValueBy } from './keyValueBy'
-import { sortBy } from './sortBy'
+import { escapeRegExp } from './utils/escapeRegExp'
+import { keyValueBy } from './utils/keyValueBy'
+import { sortBy } from './utils/sortBy'
 
 type VersionPart = keyof SemVer
 

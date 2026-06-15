@@ -3,9 +3,9 @@ import { type Options } from '../types/Options'
 import { type Version } from '../types/Version'
 import { type VersionSpec } from '../types/VersionSpec'
 import filterAndReject from './filterAndReject'
-import filterObject from './filterObject'
 import getPackageManager from './getPackageManager'
 import programError from './programError'
+import filterObject from './utils/filterObject'
 import { isWildPart } from './version-util'
 
 /**
