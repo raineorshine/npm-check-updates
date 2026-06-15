@@ -1,13 +1,7 @@
 import fs from 'fs/promises'
 import { type Index } from '../types/IndexType'
 import { type VersionSpec } from '../types/VersionSpec'
-
-/**
- * @returns String safe for use in `new RegExp()`
- */
-function escapeRegexp(s: string) {
-  return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
-}
+import { escapeRegExp } from './escapeRegExp'
 
 /**
  * Upgrade catalog dependencies in a JSON file (e.g., package.json for Bun).
@@ -26,7 +20,7 @@ export async function upgradeJsonCatalogDependencies(
       const currentVersion = current[dep]
 
       // Match catalog and catalogs sections in JSON (both top-level and within workspaces)
-      const catalogPattern = `("${escapeRegexp(dep)}"\\s*:\\s*")(${escapeRegexp(currentVersion)})(")`
+      const catalogPattern = `("${escapeRegExp(dep)}"\\s*:\\s*")(${escapeRegExp(currentVersion)})(")`
       const catalogRegex = new RegExp(catalogPattern, 'g')
 
       return content.replace(catalogRegex, `$1${newVersion}$3`)

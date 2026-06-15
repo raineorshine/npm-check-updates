@@ -6,16 +6,10 @@ import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
 import { type PackageFile } from '../types/PackageFile'
 import { type VersionSpec } from '../types/VersionSpec'
+import { escapeRegExp } from './escapeRegExp'
 import resolveDepSections from './resolveDepSections'
 import { upgradeJsonCatalogDependencies } from './upgradeJsonCatalogDependencies'
 import { updateYamlCatalogDependencies } from './upgradeYamlCatalogDependencies'
-
-/**
- * @returns String safe for use in `new RegExp()`
- */
-function escapeRegexp(s: string) {
-  return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') // Thanks Stack Overflow!
-}
 
 /**
  * Upgrade the dependency declarations in the package data.
@@ -139,8 +133,8 @@ async function upgradePackageData(
   let newPkgData = pkgData.replace(sectionRegExp, section => {
     // replace each upgraded dependency in the section
     return Object.entries(upgraded).reduce((updatedSection, [dep]) => {
-      // const expression = `"${dep}"\\s*:\\s*"(${escapeRegexp(current[dep])})"`
-      const expression = `"${escapeRegexp(dep)}"\\s*:\\s*("|{\\s*"."\\s*:\\s*")(${escapeRegexp(current[dep])})"`
+      // const expression = `"${dep}"\\s*:\\s*"(${escapeRegExp(current[dep])})"`
+      const expression = `"${escapeRegExp(dep)}"\\s*:\\s*("|{\\s*"."\\s*:\\s*")(${escapeRegExp(current[dep])})"`
       const regExp = new RegExp(expression, 'g')
       return updatedSection.replace(regExp, (match, child) => `"${dep}${child ? `": ${child}` : ': '}${upgraded[dep]}"`)
     }, section)
