@@ -34,7 +34,7 @@ describe('cache', () => {
 
       await ncu({ packageData, cache: true, peer: true })
 
-      const cacheData: CacheData = await fs.readFile(resolvedDefaultCacheFile, 'utf-8').then(JSON.parse)
+      const cacheData: CacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
 
       expect(cacheData.timestamp).lessThanOrEqual(Date.now())
       expect(cacheData.packages).deep.eq({
@@ -85,7 +85,7 @@ describe('cache', () => {
       // first run caches latest
       await ncu({ packageData, cache: true })
 
-      const cacheData1: CacheData = await fs.readFile(resolvedDefaultCacheFile, 'utf-8').then(JSON.parse)
+      const cacheData1: CacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
 
       expect(cacheData1.packages).deep.eq({
         [`ncu-test-v2${CACHE_DELIMITER}latest`]: { version: '2.0.0', time: getTime(10) },
@@ -102,7 +102,7 @@ describe('cache', () => {
         'ncu-test-alpha': '2.0.0-alpha.2',
       })
 
-      const cacheData2: CacheData = await fs.readFile(resolvedDefaultCacheFile, 'utf-8').then(JSON.parse)
+      const cacheData2: CacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
 
       expect(cacheData2.packages).deep.eq({
         [`ncu-test-v2${CACHE_DELIMITER}latest`]: { version: '2.0.0', time: getTime(10) },
@@ -160,7 +160,7 @@ describe('cache', () => {
       await ncu({ packageData, cache: true })
 
       // 3. Verify the cache was overwritten with the new schema (v1)
-      const newCache = await fs.readFile(resolvedDefaultCacheFile, 'utf-8').then(JSON.parse)
+      const newCache = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
       expect(newCache.schema).eq(CURRENT_CACHE_SCHEMA)
       expect(newCache.packages[`ncu-test-v2${CACHE_DELIMITER}latest`].version).eq('2.0.0')
     } finally {
@@ -187,7 +187,7 @@ describe('cache', () => {
       await ncu({ packageData, cache: true })
 
       // 3. Verify it refreshed
-      const cacheData = await fs.readFile(resolvedDefaultCacheFile, 'utf-8').then(JSON.parse)
+      const cacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
       expect(cacheData.packages[`ncu-test-v2${CACHE_DELIMITER}latest`].version).eq('2.0.0')
     } finally {
       await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })

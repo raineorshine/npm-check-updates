@@ -90,17 +90,19 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
     }
 
     try {
-      versionResult = await getPackageVersion(name, version, {
-        ...options,
-        distTag,
-        // upgrade prereleases to newer prereleases by default
-        // allow downgrading when explicit tag is used
-        pre: options.pre != null ? options.pre : targetString.startsWith('@') || isPre(version),
-        retry: options.retry ?? 2,
-      }).catch(reason => {
+      try {
+        versionResult = await getPackageVersion(name, version, {
+          ...options,
+          distTag,
+          // upgrade prereleases to newer prereleases by default
+          // allow downgrading when explicit tag is used
+          pre: options.pre != null ? options.pre : targetString.startsWith('@') || isPre(version),
+          retry: options.retry ?? 2,
+        })
+      } catch (reason: any) {
         // This might happen if a (private) package cannot be accessed due to a missing or invalid token.
-        return { error: reason?.body?.error || reason.toString() }
-      })
+        versionResult = { error: reason?.body?.error || reason.toString() }
+      }
 
       versionResult.version =
         !isGitHubDependency && npmAlias && versionResult?.version
