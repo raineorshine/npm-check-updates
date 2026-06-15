@@ -136,7 +136,9 @@ function renderDependencyTable(rows: string[][]) {
  * @param dep Raw dependency, could be version / npm: string / Git url
  */
 function getVersion(dep: string): string {
-  return isGitHubUrl(dep) ? getGitHubUrlTag(dep)! : isNpmAlias(dep) ? parseNpmAlias(dep)![1] : dep
+  if (isGitHubUrl(dep)) return getGitHubUrlTag(dep)!
+  if (isNpmAlias(dep)) return parseNpmAlias(dep)![1]
+  return dep
 }
 
 /** return prettify version from cooldown, `1-day` `20-hour` */
@@ -209,14 +211,15 @@ export async function toDependencyTable({
             (format?.includes('installedVersion')
               ? await getPackageVersion(dep, undefined, { pkgFile })
               : fromDeps[dep]) || ''
-          const depType =
-            dep in (pkg?.devDependencies ?? {})
-              ? 'dev'
-              : dep in (pkg?.peerDependencies ?? {})
-                ? 'peer'
-                : dep in (pkg?.optionalDependencies ?? {})
-                  ? 'optional'
-                  : ''
+          let depType = ''
+          if (dep in (pkg?.devDependencies ?? {})) {
+            depType = 'dev'
+          } else if (dep in (pkg?.peerDependencies ?? {})) {
+            depType = 'peer'
+          } else if (dep in (pkg?.optionalDependencies ?? {})) {
+            depType = 'optional'
+          }
+
           const toRaw = toDeps[dep] || ''
           const to = getVersion(toRaw)
           let ownerChanged = ''

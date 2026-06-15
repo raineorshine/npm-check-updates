@@ -69,7 +69,13 @@ interface MinimumReleaseAgeLayer {
 
 /** Coerces an arbitrary config value into a non-negative minimumReleaseAge number (in minutes), or undefined if invalid. */
 const coerceMinimumReleaseAge = (raw: unknown): number | undefined => {
-  const value = typeof raw === 'number' ? raw : typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN
+  let value = NaN
+  if (typeof raw === 'number') {
+    value = raw
+  } else if (typeof raw === 'string' && raw.trim() !== '') {
+    value = Number(raw)
+  }
+
   return typeof value === 'number' && !isNaN(value) && value >= 0 ? value : undefined
 }
 

@@ -67,11 +67,12 @@ export function numParts(version: string) {
 export function precisionAdd(precision: VersionPart, n: number) {
   if (n === 0) return precision
 
-  const index = VERSION_BASE_PARTS.includes(precision)
-    ? VERSION_BASE_PARTS.indexOf(precision) + n
-    : VERSION_ADDED_PARTS.includes(precision)
-      ? VERSION_BASE_PARTS.length + n
-      : null
+  let index: number | null = null
+  if (VERSION_BASE_PARTS.includes(precision)) {
+    index = VERSION_BASE_PARTS.indexOf(precision) + n
+  } else if (VERSION_ADDED_PARTS.includes(precision)) {
+    index = VERSION_BASE_PARTS.length + n
+  }
 
   if (index === null || !VERSION_PARTS[index]) {
     throw new Error(`Invalid precision: ${precision}`)
@@ -181,7 +182,10 @@ export function partChanged(from: string, to: string): UpgradeGroup {
   // major = red (or any change before 1.0.0)
   // minor = cyan
   // patch = green
-  return partsTo[0] === '0' ? 'majorVersionZero' : i === 0 ? 'major' : i === 1 ? 'minor' : 'patch'
+  if (partsTo[0] === '0') return 'majorVersionZero'
+  if (i === 0) return 'major'
+  if (i === 1) return 'minor'
+  return 'patch'
 }
 
 /**
@@ -262,7 +266,12 @@ export function colorizeDiff(from: string, to: string) {
   // major = red (or any change before 1.0.0)
   // minor = cyan
   // patch = green
-  const color = i === 0 || partsToColor[0] === '0' ? 'red' : i === 1 ? 'cyan' : 'green'
+  let color: 'red' | 'cyan' | 'green' = 'green'
+  if (i === 0 || partsToColor[0] === '0') {
+    color = 'red'
+  } else if (i === 1) {
+    color = 'cyan'
+  }
 
   // if we are colorizing only part of the word, add a dot in the middle
   const middot = i > 0 && i < partsToColor.length ? '.' : ''
@@ -301,7 +310,9 @@ export function isComparable(a: string, b: string) {
 export function compareVersions(a: string, b: string) {
   const isValid = semver.valid(a) && semver.valid(b)
   const isGreater = isValid ? semver.gt(a, b) : a > b
-  return isGreater ? 1 : a === b ? 0 : -1
+  if (isGreater) return 1
+  if (a === b) return 0
+  return -1
 }
 
 /**

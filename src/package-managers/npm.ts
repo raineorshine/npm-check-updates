@@ -1146,7 +1146,9 @@ export const newest: GetVersion = async (
         compare: (v1, v2) => {
           const t1 = packument?.time?.[v1] || ''
           const t2 = packument?.time?.[v2] || ''
-          return t1 > t2 ? 1 : t1 < t2 ? -1 : 0
+          if (t1 > t2) return 1
+          if (t1 < t2) return -1
+          return 0
         },
       })
 

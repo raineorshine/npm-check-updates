@@ -8,6 +8,10 @@ export function sortBy<T>(collection: T[] | null | undefined, selector: (item: T
   if (!collection) return []
   return collection
     .map(item => ({ item, key: selector(item) }))
-    .sort((a, b) => (a.key > b.key ? 1 : a.key < b.key ? -1 : 0))
+    .sort((a, b) => {
+      if (a.key > b.key) return 1
+      if (a.key < b.key) return -1
+      return 0
+    })
     .map(({ item }) => item)
 }

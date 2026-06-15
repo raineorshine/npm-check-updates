@@ -89,8 +89,12 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   }
 
   // consolidate loglevel
-  const loglevel =
-    options.silent || options.format?.includes('lines') ? 'silent' : options.verbose ? 'verbose' : options.loglevel
+  let loglevel = options.loglevel
+  if (options.silent || options.format?.includes('lines')) {
+    loglevel = 'silent'
+  } else if (options.verbose) {
+    loglevel = 'verbose'
+  }
 
   const json = Object.keys(options)
     .filter(option => option.startsWith('json'))
@@ -236,14 +240,18 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
         // npm's min-release-age-exclude is a list of package names or glob patterns that are exempt from min-release-age.
         // a single .npmrc entry parses as a string; repeated entries (min-release-age-exclude[]=) parse as an array.
         const minReleaseAgeExcludeRaw = npmConfigCooldown?.minReleaseAgeExclude
+        let excludePatterns: string[]
+        if (Array.isArray(minReleaseAgeExcludeRaw)) {
+          excludePatterns = minReleaseAgeExcludeRaw
+        } else if (typeof minReleaseAgeExcludeRaw === 'string') {
+          excludePatterns = [minReleaseAgeExcludeRaw]
+        } else {
+          excludePatterns = []
+        }
+
         const minReleaseAgeExclude = [
           ...new Set(
-            (Array.isArray(minReleaseAgeExcludeRaw)
-              ? minReleaseAgeExcludeRaw
-              : typeof minReleaseAgeExcludeRaw === 'string'
-                ? [minReleaseAgeExcludeRaw]
-                : []
-            )
+            excludePatterns
               .flatMap(pattern => pattern.split(','))
               .map(pattern => pattern.trim())
               .filter(pattern => pattern),

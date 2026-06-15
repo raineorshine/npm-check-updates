@@ -95,11 +95,13 @@ function upgradeDependencies(
         (acc, [packageName, { current, currentParsed, latest, latestParsed }]) => {
           const upgraded = upgradeDep(currentParsed || current, latestParsed || latest)
 
-          acc[packageName] = versionUtil.isNpmAlias(current)
-            ? versionUtil.upgradeNpmAlias(current, upgraded)
-            : versionUtil.isGitHubUrl(current)
-              ? versionUtil.upgradeGitHubUrl(current, upgraded)
-              : upgraded
+          acc[packageName] = upgraded
+          if (versionUtil.isNpmAlias(current)) {
+            acc[packageName] = versionUtil.upgradeNpmAlias(current, upgraded)
+          } else if (versionUtil.isGitHubUrl(current)) {
+            acc[packageName] = versionUtil.upgradeGitHubUrl(current, upgraded)
+          }
+
           return acc
         },
         {},

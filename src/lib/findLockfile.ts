@@ -32,7 +32,12 @@ export default async function findLockfile(
     // 1. explicit cwd
     // 2. same directory as package file
     // 3. current directory
-    let currentPath = options.cwd ? options.cwd : options.packageFile ? path.dirname(options.packageFile) : '.'
+    let currentPath = '.'
+    if (options.cwd) {
+      currentPath = options.cwd
+    } else if (options.packageFile) {
+      currentPath = path.dirname(options.packageFile)
+    }
     currentPath = path.resolve(currentPath)
 
     while (true) {

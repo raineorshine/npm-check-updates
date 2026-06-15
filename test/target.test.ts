@@ -392,8 +392,12 @@ describe('target', () => {
   describe('custom', () => {
     it('custom target function to mimic semver', async () => {
       // eslint-disable-next-line jsdoc/require-jsdoc
-      const target: TargetFunction = (name, [{ operator }]) =>
-        operator === '^' ? 'minor' : operator === '~' ? 'patch' : 'latest'
+      const target: TargetFunction = (name, [{ operator }]) => {
+        if (operator === '^') return 'minor'
+        if (operator === '~') return 'patch'
+        return 'latest'
+      }
+
       const pkgData = (await ncu({
         target,
         packageData: {
@@ -417,8 +421,12 @@ describe('target', () => {
 
     it('custom target and filter function to mimic semver', async () => {
       // eslint-disable-next-line jsdoc/require-jsdoc
-      const target: TargetFunction = (name, [{ operator }]) =>
-        operator === '^' ? 'minor' : operator === '~' ? 'patch' : 'latest'
+      const target: TargetFunction = (name, [{ operator }]) => {
+        if (operator === '^') return 'minor'
+        if (operator === '~') return 'patch'
+        return 'latest'
+      }
+
       // eslint-disable-next-line jsdoc/require-jsdoc
       const filter: FilterFunction = (_, [{ major, operator }]) =>
         !(major === '0' || major === undefined || operator === undefined)

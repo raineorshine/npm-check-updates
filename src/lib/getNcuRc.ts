@@ -79,7 +79,16 @@ async function getNcuRc({
   })
 
   // Determine the base directory for searching or resolving
-  const cwd = configFilePath || (global ? os.homedir() : packageFile ? path.dirname(packageFile) : process.cwd())
+  let cwd: string
+  if (configFilePath) {
+    cwd = configFilePath
+  } else if (global) {
+    cwd = os.homedir()
+  } else if (packageFile) {
+    cwd = path.dirname(packageFile)
+  } else {
+    cwd = process.cwd()
+  }
 
   let rawResult: Awaited<ReturnType<typeof explorer.search>> = null
   let targetFile: string | undefined

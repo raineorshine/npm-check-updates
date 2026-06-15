@@ -46,15 +46,16 @@ const npm = (
     ...(options.prefix ? { prefix: options.prefix } : null),
   }
 
-  return (
-    options.packageManager === 'pnpm'
-      ? spawnPnpm
-      : options.packageManager === 'yarn'
-        ? spawnYarn
-        : options.packageManager === 'bun'
-          ? spawnBun
-          : spawnNpm
-  )(args, npmOptions, spawnPleaseOptions, spawnOptionsMerged)
+  let spawn: typeof spawnNpm | typeof spawnPnpm | typeof spawnYarn | typeof spawnBun = spawnNpm
+  if (options.packageManager === 'pnpm') {
+    spawn = spawnPnpm
+  } else if (options.packageManager === 'yarn') {
+    spawn = spawnYarn
+  } else if (options.packageManager === 'bun') {
+    spawn = spawnBun
+  }
+
+  return spawn(args, npmOptions, spawnPleaseOptions, spawnOptionsMerged)
 }
 
 /** Load and validate package file and tests. */
@@ -94,13 +95,14 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
 
   // bun lockFileName defaults to bun.lock but will be overwritten to bun.lockb if detected at the readFile step below
   let lockFileName: 'package-lock.json' | 'yarn.lock' | 'pnpm-lock.yaml' | 'bun.lock' | 'bun.lockb' =
-    options.packageManager === 'yarn'
-      ? 'yarn.lock'
-      : options.packageManager === 'pnpm'
-        ? 'pnpm-lock.yaml'
-        : options.packageManager === 'bun'
-          ? 'bun.lock'
-          : 'package-lock.json'
+    'package-lock.json'
+  if (options.packageManager === 'yarn') {
+    lockFileName = 'yarn.lock'
+  } else if (options.packageManager === 'pnpm') {
+    lockFileName = 'pnpm-lock.yaml'
+  } else if (options.packageManager === 'bun') {
+    lockFileName = 'bun.lock'
+  }
   const { pkg, pkgFile }: PackageInfo = await loadPackageFileForDoctor(options)
 
   // flatten all deps into one so we can iterate over them

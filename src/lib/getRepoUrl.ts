@@ -33,11 +33,12 @@ async function getRepoUrl(
     pkgFile?: string
   } = {},
 ) {
-  const repositoryMetadata: string | PackageFileRepository | null = !packageJson
-    ? await getPackageRepo(packageName, { pkgFile })
-    : packageJson.repository
-      ? packageJson.repository
-      : null
+  let repositoryMetadata: string | PackageFileRepository | null = null
+  if (!packageJson) {
+    repositoryMetadata = await getPackageRepo(packageName, { pkgFile })
+  } else if (packageJson.repository) {
+    repositoryMetadata = packageJson.repository
+  }
 
   if (!repositoryMetadata) return null
 

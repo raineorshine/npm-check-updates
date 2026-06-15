@@ -47,7 +47,9 @@ let chalkInstance: Record<keyof typeof chalkMethods, any>
 
 /** Returns a chalk instance based on the provided color option. */
 export const getChalk = (color?: boolean | null) => {
-  return color === true ? new Chalk({ level: 1 }) : color === null ? chalkNoop : chalkDefault
+  if (color === true) return new Chalk({ level: 1 })
+  if (color === null) return chalkNoop
+  return chalkDefault
 }
 
 /** Initializes the global chalk instance with an optional flag for forced color. Idempotent. */

@@ -45,16 +45,16 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
     const cwd = path.join(doctorTests, 'pass')
     const pkgPath = path.join(cwd, 'package.json')
     const nodeModulesPath = path.join(cwd, 'node_modules')
-    const lockfilePath = path.join(
-      cwd,
-      packageManager === 'yarn'
-        ? 'yarn.lock'
-        : packageManager === 'pnpm'
-          ? 'pnpm-lock.yaml'
-          : packageManager === 'bun'
-            ? 'bun.lockb'
-            : 'package-lock.json',
-    )
+    let lockfileName = 'package-lock.json'
+    if (packageManager === 'yarn') {
+      lockfileName = 'yarn.lock'
+    } else if (packageManager === 'pnpm') {
+      lockfileName = 'pnpm-lock.yaml'
+    } else if (packageManager === 'bun') {
+      lockfileName = 'bun.lockb'
+    }
+
+    const lockfilePath = path.join(cwd, lockfileName)
     const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
     let stderr = ''
@@ -125,16 +125,16 @@ export const testFail = ({ packageManager }: { packageManager: PackageManagerNam
     const cwd = path.join(doctorTests, 'fail')
     const pkgPath = path.join(cwd, 'package.json')
     const nodeModulesPath = path.join(cwd, 'node_modules')
-    const lockfilePath = path.join(
-      cwd,
-      packageManager === 'yarn'
-        ? 'yarn.lock'
-        : packageManager === 'pnpm'
-          ? 'pnpm-lock.yaml'
-          : packageManager === 'bun'
-            ? 'bun.lockb'
-            : 'package-lock.json',
-    )
+    let lockfileName = 'package-lock.json'
+    if (packageManager === 'yarn') {
+      lockfileName = 'yarn.lock'
+    } else if (packageManager === 'pnpm') {
+      lockfileName = 'pnpm-lock.yaml'
+    } else if (packageManager === 'bun') {
+      lockfileName = 'bun.lockb'
+    }
+
+    const lockfilePath = path.join(cwd, lockfileName)
     const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
     let stderr = ''
