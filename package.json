@@ -45,7 +45,7 @@
     "lint:types": "tsc --noEmit",
     "lint:markdown": "markdownlint \"**/*.md\" --ignore \"**/node_modules/**/*.md\" --ignore build --config .markdownlint.json",
     "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives",
-    "prepare": "git config core.hooksPath .hooks",
+    "prepare": "git config core.hooksPath .hooks || exit 0",
     "prepublishOnly": "npm run build",
     "prettier": "prettier . --check",
     "prettier:fix": "prettier . --write",
