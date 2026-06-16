@@ -24,14 +24,18 @@ const filteredPath = (process.env.PATH || '')
   .split(path.delimiter)
   .filter(p => !p.includes(path.join('node_modules', '.bin'))) // Avoid running yarn form the node module bin
   .join(path.delimiter)
-// On Windows process.env exposes the PATH variable as `Path`, so spreading process.env and adding a
-// `PATH` key leaves two keys that differ only by case. Node 26 changed how such duplicate keys are
-// resolved for spawned processes on Windows, which made the v4 test resolve the wrong yarn (the
-// node_modules/.bin v1 devDependency that should have been filtered out). Strip every casing of PATH
-// before adding a single filtered `PATH` so the child receives exactly one, well-formed PATH key.
+// `corepack enable yarn` (run in CI before the tests) installs the corepack-managed yarn shim in the
+// directory of the running node binary. Prepend that directory so the v4 project resolves corepack's
+// yarn 4 rather than a globally pre-installed yarn classic. yarn classic refuses to run when
+// package.json pins `packageManager: yarn@4` ("the current global version of Yarn is 1.22.22"),
+// producing an empty result and an empty peerDependencies. This is what broke getPeerDependencies v4 on
+// Node 26 windows-latest, where the runner's global yarn was resolved ahead of the corepack shim.
+// A single PATH key (no case-variant Path/PATH duplicate) is kept because Node 26 on Windows resolves
+// such duplicates unpredictably for spawned processes.
+const nodeBinDir = path.dirname(process.execPath)
 const cleanEnv = {
   ...Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toUpperCase() !== 'PATH')),
-  PATH: filteredPath,
+  PATH: [nodeBinDir, filteredPath].filter(Boolean).join(path.delimiter),
 }
 
 describe('yarn', function () {
