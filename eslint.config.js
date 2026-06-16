@@ -38,7 +38,7 @@ export default [
         ...globals.browser,
         ...globals.mocha,
         ...globals.node,
-        ...globals.es2021,
+        ...globals.es2023,
         ...globals.jest,
         ...raineConfig.globals,
       },
@@ -114,7 +114,7 @@ export default [
       },
       globals: {
         ...globals.node,
-        ...globals.es2021,
+        ...globals.es2023,
       },
     },
     plugins: {
