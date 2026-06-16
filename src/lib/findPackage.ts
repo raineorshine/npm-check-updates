@@ -2,10 +2,10 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { text } from 'node:stream/consumers'
 import { findUp } from 'find-up'
-import { print } from '../lib/logging'
-import { type Options } from '../types/Options'
-import chalk from './chalk'
-import programError from './programError'
+import { print } from '../lib/logging.ts'
+import { type Options } from '../types/Options.ts'
+import chalk from './chalk.ts'
+import programError from './programError.ts'
 
 /**
  * Finds the package file and data.

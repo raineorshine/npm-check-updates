@@ -1,5 +1,5 @@
-import { updateYamlCatalogDependencies } from '../src/lib/upgradeYamlCatalogDependencies'
-import chaiSetup from './helpers/chaiSetup'
+import { updateYamlCatalogDependencies } from '../src/lib/upgradeYamlCatalogDependencies.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
 
 const should = chaiSetup()
 

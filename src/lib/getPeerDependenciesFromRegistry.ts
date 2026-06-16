@@ -1,9 +1,9 @@
 import pMap from 'p-map'
 import ProgressBar from 'progress'
-import { type Index } from '../types/IndexType'
-import { type Options } from '../types/Options'
-import { type Version } from '../types/Version'
-import getPackageManager from './getPackageManager'
+import { type Index } from '../types/IndexType.ts'
+import { type Options } from '../types/Options.ts'
+import { type Version } from '../types/Version.ts'
+import getPackageManager from './getPackageManager.ts'
 
 type CircularData =
   | {

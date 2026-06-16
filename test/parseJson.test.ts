@@ -1,5 +1,5 @@
-import parseJson from '../src/lib/utils/parseJson'
-import chaiSetup from './helpers/chaiSetup'
+import parseJson from '../src/lib/utils/parseJson.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
 
 chaiSetup()
 

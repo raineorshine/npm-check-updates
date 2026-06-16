@@ -1,5 +1,5 @@
-import { getSpawnCommands } from '../src/lib/spawnCommand'
-import chaiSetup from './helpers/chaiSetup'
+import { getSpawnCommands } from '../src/lib/spawnCommand.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
 
 chaiSetup()
 

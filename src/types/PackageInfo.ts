@@ -1,4 +1,4 @@
-import { type PackageFile } from './PackageFile'
+import { type PackageFile } from './PackageFile.ts'
 
 /** Describes package data plus it's filepath */
 export interface PackageInfo {

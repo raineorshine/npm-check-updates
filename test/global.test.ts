@@ -2,7 +2,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect } from 'chai'
 import spawn from 'spawn-please'
-import chaiSetup from './helpers/chaiSetup'
+import chaiSetup from './helpers/chaiSetup.ts'
 
 chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

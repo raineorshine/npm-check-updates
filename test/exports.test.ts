@@ -2,7 +2,7 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { expect } from 'chai'
-import chaiSetup from './helpers/chaiSetup'
+import chaiSetup from './helpers/chaiSetup.ts'
 
 // Resolve the builds at module load so the globals they set (e.g. zod's) land
 // before mocha's check-leaks baseline.

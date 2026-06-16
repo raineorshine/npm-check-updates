@@ -1,11 +1,11 @@
 import path from 'node:path'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
-import keyValueBy from '../lib/keyValueBy'
-import { type Index } from '../types/IndexType'
-import { type NpmOptions } from '../types/NpmOptions'
-import { type Options } from '../types/Options'
-import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
+import keyValueBy from '../lib/keyValueBy.ts'
+import { type Index } from '../types/IndexType.ts'
+import { type NpmOptions } from '../types/NpmOptions.ts'
+import { type Options } from '../types/Options.ts'
+import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
 
 /** Spawn bun. */
 async function spawnBun(
@@ -82,6 +82,6 @@ export {
   packageAuthorChanged,
   patch,
   semver,
-} from './npm'
+} from './npm.ts'
 
 export default spawnBun

@@ -2,11 +2,11 @@ import os from 'node:os'
 import path from 'node:path'
 import { type Loader, lilconfig } from 'lilconfig'
 import { parse as parseYaml } from 'yaml'
-import { cliOptionsMap } from '../cli-options'
-import { type Options } from '../types/Options'
-import { type RcOptions } from '../types/RcOptions'
-import { getChalk } from './chalk'
-import programError from './programError'
+import { cliOptionsMap } from '../cli-options.ts'
+import { type Options } from '../types/Options.ts'
+import { type RcOptions } from '../types/RcOptions.ts'
+import { getChalk } from './chalk.ts'
+import programError from './programError.ts'
 
 /** Parses YAML config since lilconfig has no YAML loader; matches cosmiconfig's "YAML Error in <path>" message. */
 const loadYaml: Loader = (filepath, content) => {

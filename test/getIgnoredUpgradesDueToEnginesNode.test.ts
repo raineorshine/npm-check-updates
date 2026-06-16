@@ -1,5 +1,5 @@
-import getIgnoredUpgradesDueToEnginesNode from '../src/lib/getIgnoredUpgradesDueToEnginesNode'
-import chaiSetup from './helpers/chaiSetup'
+import getIgnoredUpgradesDueToEnginesNode from '../src/lib/getIgnoredUpgradesDueToEnginesNode.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
 
 const MOCK_ESLINT_VERSION = '999.0.0'
 const MOCK_DEL_VERSION = '999.0.1'

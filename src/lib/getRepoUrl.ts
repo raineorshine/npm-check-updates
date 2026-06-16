@@ -1,8 +1,8 @@
 import { URL } from 'node:url'
 import hostedGitInfo from 'hosted-git-info'
-import { type PackageFile } from '../types/PackageFile'
-import { type PackageFileRepository } from '../types/PackageFileRepository'
-import getPackageJson from './getPackageJson'
+import { type PackageFile } from '../types/PackageFile.ts'
+import { type PackageFileRepository } from '../types/PackageFileRepository.ts'
+import getPackageJson from './getPackageJson.ts'
 
 /** Gets the repo url of an installed package. */
 async function getPackageRepo(

@@ -1,7 +1,7 @@
-import { type Cacher } from './Cacher'
-import { type Index } from './IndexType'
-import { type RunOptions } from './RunOptions'
-import { type VersionSpec } from './VersionSpec'
+import { type Cacher } from './Cacher.ts'
+import { type Index } from './IndexType.ts'
+import { type RunOptions } from './RunOptions.ts'
+import { type VersionSpec } from './VersionSpec.ts'
 
 /** Internal, normalized options for all ncu behavior. Includes RunOptions that are specified in the CLI or passed to the ncu module, as well as meta information including CLI arguments, package information, and ncurc config. */
 export type Options = RunOptions & {

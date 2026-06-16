@@ -1,5 +1,5 @@
-import { type Index } from '../types/IndexType'
-import keyValueBy from './keyValueBy'
+import { type Index } from '../types/IndexType.ts'
+import keyValueBy from './keyValueBy.ts'
 
 /** Filters an object by a predicate. Does not catch exceptions thrown by the predicate. */
 const filterObject = <T>(obj: Index<T>, predicate: (key: string, value: T) => boolean) =>

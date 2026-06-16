@@ -2,10 +2,10 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import ncu from '../src'
-import { type Index } from '../src/types/IndexType'
-import chaiSetup from './helpers/chaiSetup'
-import stubVersions from './helpers/stubVersions'
+import ncu from '../src/index.ts'
+import { type Index } from '../src/types/IndexType.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
+import stubVersions from './helpers/stubVersions.ts'
 
 chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

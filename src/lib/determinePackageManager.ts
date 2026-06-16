@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { type Index } from '../types/IndexType'
-import { type Options } from '../types/Options'
-import { type PackageManagerName } from '../types/PackageManagerName'
-import findLockfile from './findLockfile'
+import { type Index } from '../types/IndexType.ts'
+import { type Options } from '../types/Options.ts'
+import { type PackageManagerName } from '../types/PackageManagerName.ts'
+import findLockfile from './findLockfile.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

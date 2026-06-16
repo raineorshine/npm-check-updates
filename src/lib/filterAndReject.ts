@@ -1,9 +1,9 @@
 import { and, or } from 'fp-and-or'
 import picomatch from 'picomatch'
 import { parseRange } from 'semver-utils'
-import { type FilterPattern } from '../types/FilterPattern'
-import { type Maybe } from '../types/Maybe'
-import { type VersionSpec } from '../types/VersionSpec'
+import { type FilterPattern } from '../types/FilterPattern.ts'
+import { type Maybe } from '../types/Maybe.ts'
+import { type VersionSpec } from '../types/VersionSpec.ts'
 
 /**
  * Creates a filter function from a given filter string.
