@@ -4,10 +4,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
-import { type GroupFunction } from '../src/types/GroupFunction'
-import chaiSetup from './helpers/chaiSetup'
-import removeDir from './helpers/removeDir'
-import stubVersions from './helpers/stubVersions'
+import { type GroupFunction } from '../src/types/GroupFunction.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
+import removeDir from './helpers/removeDir.ts'
+import stubVersions from './helpers/stubVersions.ts'
 
 chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

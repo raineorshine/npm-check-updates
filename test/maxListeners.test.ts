@@ -1,6 +1,6 @@
-import ncu from '../src/'
-import chaiSetup from './helpers/chaiSetup'
-import stubVersions from './helpers/stubVersions'
+import ncu from '../src/index.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
+import stubVersions from './helpers/stubVersions.ts'
 
 chaiSetup()
 

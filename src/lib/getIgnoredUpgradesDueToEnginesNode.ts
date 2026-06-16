@@ -1,13 +1,13 @@
 import semver from 'semver'
-import { type IgnoredUpgradeDueToEnginesNode } from '../types/IgnoredUpgradeDueToEnginesNode'
-import { type Index } from '../types/IndexType'
-import { type Maybe } from '../types/Maybe'
-import { type Options } from '../types/Options'
-import { type Version } from '../types/Version'
-import { type VersionSpec } from '../types/VersionSpec'
-import getEnginesNodeFromRegistry from './getEnginesNodeFromRegistry'
-import keyValueBy from './keyValueBy'
-import upgradePackageDefinitions from './upgradePackageDefinitions'
+import { type IgnoredUpgradeDueToEnginesNode } from '../types/IgnoredUpgradeDueToEnginesNode.ts'
+import { type Index } from '../types/IndexType.ts'
+import { type Maybe } from '../types/Maybe.ts'
+import { type Options } from '../types/Options.ts'
+import { type Version } from '../types/Version.ts'
+import { type VersionSpec } from '../types/VersionSpec.ts'
+import getEnginesNodeFromRegistry from './getEnginesNodeFromRegistry.ts'
+import keyValueBy from './keyValueBy.ts'
+import upgradePackageDefinitions from './upgradePackageDefinitions.ts'
 
 /** Checks if package.json min node version satisfies given package engine.node spec */
 const satisfiesNodeEngine = (enginesNode: Maybe<VersionSpec>, optionsEnginesNodeMinVersion: Version) =>

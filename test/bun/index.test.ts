@@ -1,10 +1,10 @@
 import { spawnSync } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import * as bun from '../../src/package-managers/bun'
-import chaiSetup from '../helpers/chaiSetup'
-import { testFail, testPass } from '../helpers/doctorHelpers'
-import stubVersions from '../helpers/stubVersions'
+import * as bun from '../../src/package-managers/bun.ts'
+import chaiSetup from '../helpers/chaiSetup.ts'
+import { testFail, testPass } from '../helpers/doctorHelpers.ts'
+import stubVersions from '../helpers/stubVersions.ts'
 
 chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

@@ -85,6 +85,7 @@ export default [
     rules: {
       'n/prefer-node-protocol': 'error',
       'import-x/no-duplicates': ['error', { 'prefer-inline': true }],
+      'import-x/extensions': ['error', 'always', { ignorePackages: true, checkTypeImports: true }],
     },
   },
 

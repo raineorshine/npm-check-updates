@@ -1,5 +1,5 @@
-import { type VersionSpec } from '../types/VersionSpec'
-import isPackageManagerProtocol from './isPackageManagerProtocol'
+import { type VersionSpec } from '../types/VersionSpec.ts'
+import isPackageManagerProtocol from './isPackageManagerProtocol.ts'
 
 /** Returns true if the dependency spec is not fetchable from the registry and is ignored. */
 function isFetchable(spec: VersionSpec): boolean {

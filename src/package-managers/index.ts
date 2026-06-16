@@ -1,11 +1,11 @@
-import { type Index } from '../types/IndexType'
-import { type PackageManager } from '../types/PackageManager'
-import * as bun from './bun'
-import * as gitTags from './gitTags'
-import * as npm from './npm'
-import * as pnpm from './pnpm'
-import * as staticRegistry from './staticRegistry'
-import * as yarn from './yarn'
+import { type Index } from '../types/IndexType.ts'
+import { type PackageManager } from '../types/PackageManager.ts'
+import * as bun from './bun.ts'
+import * as gitTags from './gitTags.ts'
+import * as npm from './npm.ts'
+import * as pnpm from './pnpm.ts'
+import * as staticRegistry from './staticRegistry.ts'
+import * as yarn from './yarn.ts'
 
 export default {
   npm,

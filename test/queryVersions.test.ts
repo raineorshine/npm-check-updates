@@ -1,6 +1,6 @@
-import queryVersions from '../src/lib/queryVersions'
-import chaiSetup from './helpers/chaiSetup'
-import stubVersions from './helpers/stubVersions'
+import queryVersions from '../src/lib/queryVersions.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
+import stubVersions from './helpers/stubVersions.ts'
 
 chaiSetup()
 

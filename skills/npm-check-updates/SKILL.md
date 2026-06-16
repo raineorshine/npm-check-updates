@@ -121,10 +121,10 @@ const upgraded = await ncu({
 console.log(upgraded) // { 'react': '^18.3.1', 'react-dom': '^18.3.1' }
 ```
 
-Run it via `tsx` (the repo is pure ESM):
+Run it directly with Node:
 
 ```sh
-tsx ./scripts/check-deps.ts
+node ./scripts/check-deps.ts
 ```
 
 ## Recommended workflows

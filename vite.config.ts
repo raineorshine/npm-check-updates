@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import dts from 'unplugin-dts/vite'
 import { type Plugin, defineConfig } from 'vite'
 import { analyzer } from 'vite-bundle-analyzer'
-import { buildOptions } from './scripts/build-options'
+import { buildOptions } from './scripts/build-options.ts'
 
 /**
  * A Vite plugin that triggers the `buildOptions` logic at the start of the build process.

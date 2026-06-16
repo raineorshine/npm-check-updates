@@ -6,11 +6,11 @@ import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import { expect } from 'chai'
 import spawn from 'spawn-please'
-import ncu from '../src/'
-import mergeOptions from '../src/lib/mergeOptions'
-import chaiSetup from './helpers/chaiSetup'
-import removeDir from './helpers/removeDir'
-import stubVersions from './helpers/stubVersions'
+import ncu from '../src/index.ts'
+import mergeOptions from '../src/lib/mergeOptions.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
+import removeDir from './helpers/removeDir.ts'
+import stubVersions from './helpers/stubVersions.ts'
 
 chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

@@ -1,9 +1,9 @@
 import ProgressBar from 'progress'
-import { type Index } from '../types/IndexType'
-import { type Options } from '../types/Options'
-import { type Version } from '../types/Version'
-import { type VersionSpec } from '../types/VersionSpec'
-import getPackageManager from './getPackageManager'
+import { type Index } from '../types/IndexType.ts'
+import { type Options } from '../types/Options.ts'
+import { type Version } from '../types/Version.ts'
+import { type VersionSpec } from '../types/VersionSpec.ts'
+import getPackageManager from './getPackageManager.ts'
 
 /**
  * Get the engines.node versions from the NPM repository based on the version target.

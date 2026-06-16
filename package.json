@@ -38,7 +38,7 @@
   },
   "scripts": {
     "build": "vite build",
-    "build:options": "tsx scripts/build-options.ts",
+    "build:options": "node scripts/build-options.ts",
     "build:analyze": "cross-env ANALYZER=true vite build",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --continue-on-error --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
@@ -149,7 +149,6 @@
     "spawn-please": "^3.0.0",
     "timeago.js": "^4.0.2",
     "ts-json-schema-generator": "2.4.0",
-    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "unplugin-dts": "^1.0.2",
     "untildify": "^6.0.0",

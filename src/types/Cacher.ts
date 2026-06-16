@@ -1,5 +1,5 @@
-import { type Index } from './IndexType'
-import { type Version } from './Version'
+import { type Index } from './IndexType.ts'
+import { type Version } from './Version.ts'
 
 export interface PackageInfo {
   version: string

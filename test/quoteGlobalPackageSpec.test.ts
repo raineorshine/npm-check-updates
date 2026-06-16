@@ -1,5 +1,5 @@
-import quoteGlobalPackageSpec from '../src/lib/quoteGlobalPackageSpec'
-import chaiSetup from './helpers/chaiSetup'
+import quoteGlobalPackageSpec from '../src/lib/quoteGlobalPackageSpec.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
 
 chaiSetup()
 

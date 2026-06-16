@@ -1,11 +1,11 @@
 import semver from 'semver'
-import { type IgnoredUpgradeDueToPeerDeps } from '../types/IgnoredUpgradeDueToPeerDeps'
-import { type Index } from '../types/IndexType'
-import { type Options } from '../types/Options'
-import { type Version } from '../types/Version'
-import { type VersionSpec } from '../types/VersionSpec'
-import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry'
-import upgradePackageDefinitions from './upgradePackageDefinitions'
+import { type IgnoredUpgradeDueToPeerDeps } from '../types/IgnoredUpgradeDueToPeerDeps.ts'
+import { type Index } from '../types/IndexType.ts'
+import { type Options } from '../types/Options.ts'
+import { type Version } from '../types/Version.ts'
+import { type VersionSpec } from '../types/VersionSpec.ts'
+import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry.ts'
+import upgradePackageDefinitions from './upgradePackageDefinitions.ts'
 
 /** Get all upgrades that are ignored due to incompatible peer dependencies. */
 export async function getIgnoredUpgradesDueToPeerDeps(

@@ -1,5 +1,5 @@
-import { type PackageFile } from '../types/PackageFile'
-import getPackageJson from './getPackageJson'
+import { type PackageFile } from '../types/PackageFile.ts'
+import getPackageJson from './getPackageJson.ts'
 
 /**
  * @param packageName A package name as listed in package.json's dependencies list
