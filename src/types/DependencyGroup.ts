@@ -1,4 +1,4 @@
-import { type Index } from './IndexType'
+import { type Index } from './IndexType.ts'
 
 export interface DependencyGroup {
   heading: string

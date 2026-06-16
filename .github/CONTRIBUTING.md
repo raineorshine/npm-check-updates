@@ -21,12 +21,12 @@ This project is now **pure ESM** with support for both ESM and CJS via Vite. It 
 
 ### Running Tests
 
-Since the project is now ESM, tests must be run with `tsx` for TypeScript support:
+TypeScript sources run directly on Node's native type stripping, so no loader is needed.
 
 ```sh
 npm test
 # or manually:
-mocha --node-option import=tsx 'test/**/*.test.ts'
+mocha "test/**/*.test.ts"
 ```
 
 ## Executable Stack Trace
@@ -43,7 +43,7 @@ To execute npm-check-updates with an accurate stack trace using the original Typ
 
 ```sh
 git clone https://github.com/raineorshine/npm-check-updates /MY_PROJECTS
-npx tsx /MY_PROJECTS/npm-check-updates/src/bin/cli.ts
+node /MY_PROJECTS/npm-check-updates/src/bin/cli.ts
 ```
 
 ## Design Guidelines

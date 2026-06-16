@@ -1,6 +1,6 @@
 import { type SpawnOptions } from 'node:child_process'
 import spawn from 'spawn-please'
-import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
+import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
 
 /** Returns the command names to try for a spawned executable. */
 export const getSpawnCommands = (command: string, platform: NodeJS.Platform = process.platform) =>

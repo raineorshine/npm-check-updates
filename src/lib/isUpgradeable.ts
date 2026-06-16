@@ -1,8 +1,8 @@
 import semver from 'semver'
 import semverutils from 'semver-utils'
-import { type Version } from '../types/Version'
-import { type VersionSpec } from '../types/VersionSpec'
-import { fixPseudoVersion, isComparable, isWildCard, stringify } from './version-util'
+import { type Version } from '../types/Version.ts'
+import { type VersionSpec } from '../types/VersionSpec.ts'
+import { fixPseudoVersion, isComparable, isWildCard, stringify } from './version-util.ts'
 
 /**
  * Check if a version satisfies the latest, and is not beyond the latest). Ignores `v` prefix.

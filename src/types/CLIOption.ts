@@ -1,4 +1,4 @@
-import type ExtendedHelp from './ExtendedHelp'
+import type ExtendedHelp from './ExtendedHelp.ts'
 
 export interface CLIOption<T = any> {
   arg?: string

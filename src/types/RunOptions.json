@@ -595,7 +595,7 @@
                 "$ref": "#/definitions/VersionSpec"
               },
               {
-                "$ref": "#/definitions/alias-698261804-158-240-698261804-0-859"
+                "$ref": "#/definitions/alias-698261804-167-249-698261804-0-868"
               }
             ]
           }
@@ -653,7 +653,7 @@
       },
       "description": "A very generic object."
     },
-    "alias-698261804-158-240-698261804-0-859": {
+    "alias-698261804-167-249-698261804-0-868": {
       "type": "object",
       "additionalProperties": {
         "anyOf": [
@@ -661,7 +661,7 @@
             "$ref": "#/definitions/VersionSpec"
           },
           {
-            "$ref": "#/definitions/alias-698261804-158-240-698261804-0-859"
+            "$ref": "#/definitions/alias-698261804-167-249-698261804-0-868"
           }
         ]
       }

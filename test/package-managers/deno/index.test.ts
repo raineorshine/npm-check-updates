@@ -3,9 +3,9 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import parseJson from '../../../src/lib/utils/parseJson'
-import chaiSetup from '../../helpers/chaiSetup'
-import removeDir from '../../helpers/removeDir'
+import parseJson from '../../../src/lib/utils/parseJson.ts'
+import chaiSetup from '../../helpers/chaiSetup.ts'
+import removeDir from '../../helpers/removeDir.ts'
 
 chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

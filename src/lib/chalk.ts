@@ -11,7 +11,7 @@ It is a hacky solution, but it is the easiest way to import and pass the color o
 
 */
 import chalkDefault, { Chalk } from 'chalk'
-import keyValueBy from './utils/keyValueBy'
+import keyValueBy from './utils/keyValueBy.ts'
 
 // Updated type to ensure the function itself has the chaining properties
 type ChalkMethod = {

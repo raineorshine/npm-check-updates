@@ -10,7 +10,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { findUpSync } from 'find-up'
 import ini from 'ini'
-import figgyPudding from '../figgy-pudding'
+import figgyPudding from '../figgy-pudding/index.js'
 
 const NpmConfig = figgyPudding(
   {},

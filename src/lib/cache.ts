@@ -1,11 +1,11 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { CURRENT_CACHE_SCHEMA, type CacheData, type Cacher } from '../types/Cacher'
-import { type Index } from '../types/IndexType'
-import { type Options } from '../types/Options'
-import { type Version } from '../types/Version'
-import { print } from './logging'
+import { CURRENT_CACHE_SCHEMA, type CacheData, type Cacher } from '../types/Cacher.ts'
+import { type Index } from '../types/IndexType.ts'
+import { type Options } from '../types/Options.ts'
+import { type Version } from '../types/Version.ts'
+import { print } from './logging.ts'
 
 export const CACHE_DELIMITER = '___'
 

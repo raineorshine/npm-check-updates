@@ -4,8 +4,8 @@ import path from 'node:path'
 import boxen from 'boxen'
 import latestVersion from 'latest-version'
 import semver from 'semver'
-import pkg from '../../package.json'
-import { getChalk } from './chalk'
+import pkg from '../../package.json' with { type: 'json' }
+import { getChalk } from './chalk.ts'
 
 // once per day, matching update-notifier's default
 const UPDATE_CHECK_INTERVAL = 1000 * 60 * 60 * 24

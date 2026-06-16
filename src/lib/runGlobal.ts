@@ -1,12 +1,12 @@
-import { print, printJson, printSorted, printUpgrades } from '../lib/logging'
-import { type Index } from '../types/IndexType'
-import { type Options } from '../types/Options'
-import chalk from './chalk'
-import getInstalledPackages from './getInstalledPackages'
-import programError from './programError'
-import quoteGlobalPackageSpec from './quoteGlobalPackageSpec'
-import upgradePackageDefinitions from './upgradePackageDefinitions'
-import { keyValueBy } from './utils/keyValueBy'
+import { print, printJson, printSorted, printUpgrades } from '../lib/logging.ts'
+import { type Index } from '../types/IndexType.ts'
+import { type Options } from '../types/Options.ts'
+import chalk from './chalk.ts'
+import getInstalledPackages from './getInstalledPackages.ts'
+import programError from './programError.ts'
+import quoteGlobalPackageSpec from './quoteGlobalPackageSpec.ts'
+import upgradePackageDefinitions from './upgradePackageDefinitions.ts'
+import { keyValueBy } from './utils/keyValueBy.ts'
 
 /** Checks global dependencies for upgrades. */
 async function runGlobal(options: Options): Promise<Index<string> | void> {

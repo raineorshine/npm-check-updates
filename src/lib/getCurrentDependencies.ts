@@ -1,13 +1,13 @@
 import semver from 'semver'
-import { type Index } from '../types/IndexType'
-import { type Options } from '../types/Options'
-import { type PackageFile } from '../types/PackageFile'
-import { type VersionSpec } from '../types/VersionSpec'
-import filterAndReject from './filterAndReject'
-import programError from './programError'
-import resolveDepSections from './resolveDepSections'
-import filterObject from './utils/filterObject'
-import { keyValueBy } from './utils/keyValueBy'
+import { type Index } from '../types/IndexType.ts'
+import { type Options } from '../types/Options.ts'
+import { type PackageFile } from '../types/PackageFile.ts'
+import { type VersionSpec } from '../types/VersionSpec.ts'
+import filterAndReject from './filterAndReject.ts'
+import programError from './programError.ts'
+import resolveDepSections from './resolveDepSections.ts'
+import filterObject from './utils/filterObject.ts'
+import { keyValueBy } from './utils/keyValueBy.ts'
 
 /** Returns true if spec1 is greater than spec2, ignoring invalid version ranges. */
 const isGreaterThanSafe = (spec1: VersionSpec, spec2: VersionSpec) =>

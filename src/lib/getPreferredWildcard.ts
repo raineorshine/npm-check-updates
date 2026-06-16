@@ -1,6 +1,6 @@
-import { type Index } from '../types/IndexType'
-import { sortBy } from './utils/sortBy'
-import { WILDCARDS } from './version-util'
+import { type Index } from '../types/IndexType.ts'
+import { sortBy } from './utils/sortBy.ts'
+import { WILDCARDS } from './version-util.ts'
 
 /**
  *

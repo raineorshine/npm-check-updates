@@ -1,9 +1,9 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import getAllPackages from '../src/lib/getAllPackages'
-import { type Options } from '../src/types/Options'
-import { type PackageInfo } from '../src/types/PackageInfo'
-import chaiSetup from './helpers/chaiSetup'
+import getAllPackages from '../src/lib/getAllPackages.ts'
+import { type Options } from '../src/types/Options.ts'
+import { type PackageInfo } from '../src/types/PackageInfo.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
 
 chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

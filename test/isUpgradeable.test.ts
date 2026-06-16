@@ -1,5 +1,5 @@
-import isUpgradeable from '../src/lib/isUpgradeable'
-import chaiSetup from './helpers/chaiSetup'
+import isUpgradeable from '../src/lib/isUpgradeable.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
 
 chaiSetup()
 

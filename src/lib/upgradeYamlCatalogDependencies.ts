@@ -1,7 +1,7 @@
 import { CST, type Document, isCollection, isPair, isScalar, parseDocument } from 'yaml'
-import { CatalogsConfig } from '../types/CatalogConfig'
-import type { Options } from '../types/Options'
-import programError from './programError'
+import { CatalogsConfig } from '../types/CatalogConfig.ts'
+import type { Options } from '../types/Options.ts'
+import programError from './programError.ts'
 
 type UpdateYamlCatalogDependenciesArgs = {
   fileContent: string

@@ -1,13 +1,13 @@
 import { parseRange } from 'semver-utils'
-import { type Index } from '../types/IndexType'
-import { type Options } from '../types/Options'
-import { type Version } from '../types/Version'
-import { type VersionSpec } from '../types/VersionSpec'
-import getPreferredWildcard from './getPreferredWildcard'
-import isUpgradeable from './isUpgradeable'
-import filterObject from './utils/filterObject'
-import { pickBy } from './utils/pick'
-import * as versionUtil from './version-util'
+import { type Index } from '../types/IndexType.ts'
+import { type Options } from '../types/Options.ts'
+import { type Version } from '../types/Version.ts'
+import { type VersionSpec } from '../types/VersionSpec.ts'
+import getPreferredWildcard from './getPreferredWildcard.ts'
+import isUpgradeable from './isUpgradeable.ts'
+import filterObject from './utils/filterObject.ts'
+import { pickBy } from './utils/pick.ts'
+import * as versionUtil from './version-util.ts'
 
 interface UpgradeSpec {
   current: VersionSpec

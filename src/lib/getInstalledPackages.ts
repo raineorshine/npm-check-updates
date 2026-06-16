@@ -1,12 +1,12 @@
-import { type Index } from '../types/IndexType'
-import { type Options } from '../types/Options'
-import { type Version } from '../types/Version'
-import { type VersionSpec } from '../types/VersionSpec'
-import filterAndReject from './filterAndReject'
-import getPackageManager from './getPackageManager'
-import programError from './programError'
-import filterObject from './utils/filterObject'
-import { isWildPart } from './version-util'
+import { type Index } from '../types/IndexType.ts'
+import { type Options } from '../types/Options.ts'
+import { type Version } from '../types/Version.ts'
+import { type VersionSpec } from '../types/VersionSpec.ts'
+import filterAndReject from './filterAndReject.ts'
+import getPackageManager from './getPackageManager.ts'
+import programError from './programError.ts'
+import filterObject from './utils/filterObject.ts'
+import { isWildPart } from './version-util.ts'
 
 /**
  * @param [options]

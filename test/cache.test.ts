@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises'
 import { expect } from 'chai'
-import ncu from '../src/'
-import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
-import { CURRENT_CACHE_SCHEMA, type CacheData } from '../src/types/Cacher'
-import chaiSetup from './helpers/chaiSetup'
-import stubVersions from './helpers/stubVersions'
+import ncu from '../src/index.ts'
+import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache.ts'
+import { CURRENT_CACHE_SCHEMA, type CacheData } from '../src/types/Cacher.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
+import stubVersions from './helpers/stubVersions.ts'
 
 chaiSetup()
 

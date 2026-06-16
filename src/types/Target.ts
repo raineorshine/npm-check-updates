@@ -1,4 +1,4 @@
-import { type TargetFunction } from './TargetFunction'
+import { type TargetFunction } from './TargetFunction.ts'
 
 /** Valid strings for the --target option. Indicates the desired version to upgrade to. */
 export const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch', 'semver'] as const

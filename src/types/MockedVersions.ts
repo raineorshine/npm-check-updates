@@ -1,7 +1,7 @@
-import { type Index } from './IndexType'
-import { type Options } from './Options'
-import { type Packument } from './Packument'
-import { type Version } from './Version'
+import { type Index } from './IndexType.ts'
+import { type Options } from './Options.ts'
+import { type Packument } from './Packument.ts'
+import { type Version } from './Version.ts'
 
 /** Parameter type for stubVersions. */
 export type MockedVersions =
