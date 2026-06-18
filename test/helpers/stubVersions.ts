@@ -7,10 +7,12 @@ const stubVersions = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?:
   // stub child process
   // the only way to stub functionality in spawned child processes is to pass data through process.env and stub internally
   if (spawn) {
-    process.env.STUB_VERSIONS = JSON.stringify(mockReturnedVersions)
+    // namespace by worker so parallel mocha workers don't clobber each other
+    const stubKey = `STUB_VERSIONS_${process.env.MOCHA_WORKER_ID ?? '0'}`
+    process.env[stubKey] = JSON.stringify(mockReturnedVersions)
     return {
       restore: () => {
-        process.env.STUB_VERSIONS = ''
+        process.env[stubKey] = ''
       },
     }
   }
