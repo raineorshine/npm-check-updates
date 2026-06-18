@@ -1,7 +1,7 @@
 {
-  "check-leaks": true,
   "extension": ["test.ts"],
   "node-option": ["enable-source-maps", "trace-deprecation", "trace-warnings", "no-warnings=TimeoutNaNWarning"],
+  "parallel": true,
   "timeout": 60000,
   "recursive": true,
   "exit": true
