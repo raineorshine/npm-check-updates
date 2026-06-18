@@ -16,7 +16,7 @@ const localBin = path.resolve(__dirname.replace('build/', ''), '../../../node_mo
 const localYarnSpawnOptions = {
   env: {
     ...process.env,
-    PATH: `${process.env.PATH}:${localBin}`,
+    PATH: [process.env.PATH, localBin].join(path.delimiter),
   },
 }
 
