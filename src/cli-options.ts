@@ -15,7 +15,7 @@ const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch
 const padLeft = (s: string, n: number) =>
   s
     .split('\n')
-    .map(line => `${''.padStart(n, ' ')}${line}`)
+    .map(line => (line ? `${''.padStart(n, ' ')}${line}` : line))
     .join('\n')
 
 /** Formats a code block for CLI or markdown. */
