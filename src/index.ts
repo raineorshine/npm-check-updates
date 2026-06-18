@@ -229,67 +229,63 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
     clearTimeout(timeout)
     return analysis
   } else if (options.deep) {
-    analysis = await selectedPackageInfos.reduce(
-      async (previousPromise, packageInfo: PackageInfo) => {
-        const packages = await previousPromise
-        const isSubsequentPackage = Object.keys(packages).length > 0
-        // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
-        const rcResult = await getNcuRc({ packageFile: packageInfo.filepath, options })
-        let rcConfig = rcResult.config
-        if (options.mergeConfig && Object.keys(rcConfig).length) {
-          // Merge config options.
-          rcConfig = mergeOptions(options, rcConfig)
-        }
-        const pkgOptions: Options = {
-          ...options,
-          ...rcConfig,
-          packageFile: packageInfo.filepath,
-          workspacePackages,
-        }
-        // For virtual catalog files (like package.json#catalog), use the PackageInfo data directly
-        // since the virtual file doesn't exist on disk
-        let pkgData: string | null
-        let pkgFile: string
-        let indexKey: string
+    const packages: Index<PackageFile> = {}
+    for (const [i, packageInfo] of selectedPackageInfos.entries()) {
+      const isSubsequentPackage = i > 0
+      // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
+      const rcResult = await getNcuRc({ packageFile: packageInfo.filepath, options })
+      let rcConfig = rcResult.config
+      if (options.mergeConfig && Object.keys(rcConfig).length) {
+        // Merge config options.
+        rcConfig = mergeOptions(options, rcConfig)
+      }
+      const pkgOptions: Options = {
+        ...options,
+        ...rcConfig,
+        packageFile: packageInfo.filepath,
+        workspacePackages,
+      }
+      // For virtual catalog files (like package.json#catalog), use the PackageInfo data directly
+      // since the virtual file doesn't exist on disk
+      let pkgData: string | null
+      let pkgFile: string
+      let indexKey: string
 
-        if (packageInfo.filepath.includes('#') || packageInfo.name === 'catalogs') {
-          // Virtual catalog file or catalog package - use PackageInfo data
-          pkgData = packageInfo.pkgFile
-          pkgFile = packageInfo.filepath
-          // For synthetic catalog files, use the actual underlying file path as the index key
-          indexKey = packageInfo.filepath.includes('#catalog')
-            ? packageInfo.filepath.replace('#catalog', '')
-            : packageInfo.filepath
+      if (packageInfo.filepath.includes('#') || packageInfo.name === 'catalogs') {
+        // Virtual catalog file or catalog package - use PackageInfo data
+        pkgData = packageInfo.pkgFile
+        pkgFile = packageInfo.filepath
+        // For synthetic catalog files, use the actual underlying file path as the index key
+        indexKey = packageInfo.filepath.includes('#catalog')
+          ? packageInfo.filepath.replace('#catalog', '')
+          : packageInfo.filepath
 
-          // Print the same message as findPackage for consistency
-          const relPathToPackage = path.resolve(indexKey)
-          if (isSubsequentPackage) {
-            print(pkgOptions, '')
-          }
-          print(pkgOptions, `${pkgOptions.upgrade ? 'Upgrading' : 'Checking'} ${relPathToPackage} catalog dependencies`)
-        } else {
-          // Regular file - read from disk
-          if (isSubsequentPackage) {
-            print(pkgOptions, '')
-          }
-          const result = await findPackage(pkgOptions)
-          pkgData = result.pkgData
-          pkgFile = result.pkgFile || packageInfo.filepath
-          indexKey = pkgFile
+        // Print the same message as findPackage for consistency
+        const relPathToPackage = path.resolve(indexKey)
+        if (isSubsequentPackage) {
+          print(pkgOptions, '')
         }
-        return {
-          ...packages,
-          // index by relative path if cwd was specified
-          [pkgOptions.cwd
-            ? path
-                .relative(path.resolve(pkgOptions.cwd), indexKey)
-                // convert Windows path to *nix path for consistency
-                .replace(/\\/g, '/')
-            : indexKey]: await runLocal(pkgOptions, pkgData, pkgFile),
+        print(pkgOptions, `${pkgOptions.upgrade ? 'Upgrading' : 'Checking'} ${relPathToPackage} catalog dependencies`)
+      } else {
+        // Regular file - read from disk
+        if (isSubsequentPackage) {
+          print(pkgOptions, '')
         }
-      },
-      Promise.resolve({} as Index<PackageFile> | PackageFile),
-    )
+        const result = await findPackage(pkgOptions)
+        pkgData = result.pkgData
+        pkgFile = result.pkgFile || packageInfo.filepath
+        indexKey = pkgFile
+      }
+      // index by relative path if cwd was specified
+      const key = pkgOptions.cwd
+        ? path
+            .relative(path.resolve(pkgOptions.cwd), indexKey)
+            // convert Windows path to *nix path for consistency
+            .replace(/\\/g, '/')
+        : indexKey
+      packages[key] = await runLocal(pkgOptions, pkgData, pkgFile)
+    }
+    analysis = packages
     if (options.json) {
       printJson(options, analysis)
     }
