@@ -38,7 +38,7 @@ const isExplicitRange = (spec: VersionSpec) => {
 
 /** Returns true if the version is sa valid, exact version. */
 const isExactVersion = (version: Version) =>
-  version && (!nodeSemver.validRange(version) || versionUtil.isWildCard(version))
+  version && (!nodeSemver.validRange(version) || versionUtil.isWildcard(version))
 
 /** Fetches a packument or dist-tag from the npm registry. */
 const fetchPartialPackument = async (
@@ -291,6 +291,12 @@ const toVersionResult = ({
   return targetMatch
 }
 
+/** Parses a string to a boolean. */
+const stringToBoolean = (s: string): boolean => !!s && s !== 'false' && s !== '0'
+
+/** Parses a string to a number. */
+const stringToNumber = (s: string): number => Number.parseInt(s) || 0
+
 /** Normalizes the keys of an npm config for pacote. */
 export const normalizeNpmConfig = (
   npmConfig: NpmConfig,
@@ -392,12 +398,6 @@ export const normalizeNpmConfig = (
     timeout: 'number',
   }
 
-  /** Parses a string to a boolean. */
-  const stringToBoolean = (s: string): boolean => !!s && s !== 'false' && s !== '0'
-
-  /** Parses a string to a number. */
-  const stringToNumber = (s: string): number => parseInt(s) || 0
-
   // needed until pacote supports full npm config compatibility
   // See: https://github.com/zkat/pacote/issues/156
   const config: NpmConfig = keyValueBy(npmConfig, (key: string, value: NpmConfig[keyof NpmConfig]) => {
@@ -406,9 +406,9 @@ export const normalizeNpmConfig = (
       typeof value !== 'string'
         ? value
         : // parse stringified booleans
-          keyTypes[key.replace(/-/g, '').toLowerCase()] === 'boolean'
+          keyTypes[key.replaceAll('-', '').toLowerCase()] === 'boolean'
           ? stringToBoolean(value)
-          : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
+          : keyTypes[key.replaceAll('-', '').toLowerCase()] === 'number'
             ? stringToNumber(value)
             : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
 
@@ -422,7 +422,7 @@ export const normalizeNpmConfig = (
         typeof pacoteKey === 'function'
         ? { ...(pacoteKey(normalizedValue.toString()) as any) }
         : // otherwise assign the camel-cased key
-          { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
+          { [/^[a-z]/i.test(key) ? camelCase(key) : key]: normalizedValue }
   })
 
   return config
@@ -716,6 +716,7 @@ async function fetchUpgradedPackument(
     const tag = options.distTag || 'latest'
     result = await fetchPartialPackument(
       packageName,
+      // eslint-disable-next-line unicorn/prefer-spread -- spread widens the literal union to string[]
       Array.from(
         new Set([
           'dist-tags',

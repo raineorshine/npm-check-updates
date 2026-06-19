@@ -25,7 +25,8 @@ async function getEnginesNodeFromRegistry(packageMap: Index<Version>, options: O
 
   const result: Index<VersionSpec | undefined> = {}
   for (const [pkg, version] of Object.entries(packageMap)) {
-    const enginesNode = (await packageManager.getEngines!(pkg, version, options)).node
+    const engines = await packageManager.getEngines!(pkg, version, options)
+    const enginesNode = engines.node
     if (bar) bar.tick()
     result[pkg] = enginesNode
   }

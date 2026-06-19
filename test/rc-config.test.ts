@@ -168,7 +168,7 @@ describe('rc-config', () => {
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
-      const firstLine = stdout.split('\n')[0]
+      const firstLine = stdout.split('\n', 1)[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
@@ -192,7 +192,7 @@ describe('rc-config', () => {
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
-      const firstLine = stdout.split('\n')[0]
+      const firstLine = stdout.split('\n', 1)[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
@@ -215,7 +215,7 @@ describe('rc-config', () => {
     )
     try {
       const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
-      const firstLine = stderr.split('\n')[0]
+      const firstLine = stderr.split('\n', 1)[0]
       stderr.should.contains('Config file error')
       stderr.should.contains('YAML Error')
       firstLine.should.contains(configFile)
@@ -236,7 +236,7 @@ describe('rc-config', () => {
     )
     try {
       const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
-      const firstLine = stderr.split('\n')[0]
+      const firstLine = stderr.split('\n', 1)[0]
       stderr.should.contains('Config file error')
       stderr.should.contains('YAML Error')
       firstLine.should.contains(configFile)
@@ -258,7 +258,7 @@ describe('rc-config', () => {
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
-      const firstLine = stdout.split('\n')[0]
+      const firstLine = stdout.split('\n', 1)[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
@@ -282,7 +282,7 @@ describe('rc-config', () => {
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
-      const firstLine = stdout.split('\n')[0]
+      const firstLine = stdout.split('\n', 1)[0]
       firstLine.should.contains('Using config file')
       firstLine.should.contains(configFile)
     } finally {
@@ -303,7 +303,7 @@ describe('rc-config', () => {
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
-      const firstLine = stdout.split('\n')[0]
+      const firstLine = stdout.split('\n', 1)[0]
       firstLine.should.contains('Using config file')
       firstLine.should.contains(configFile)
     } finally {
@@ -324,7 +324,7 @@ describe('rc-config', () => {
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
-      const firstLine = stdout.split('\n')[0]
+      const firstLine = stdout.split('\n', 1)[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
@@ -349,7 +349,7 @@ describe('rc-config', () => {
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
-      const firstLine = stdout.split('\n')[0]
+      const firstLine = stdout.split('\n', 1)[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
@@ -397,7 +397,7 @@ describe('rc-config', () => {
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
-      const firstLine = stdout.split('\n')[0]
+      const firstLine = stdout.split('\n', 1)[0]
       firstLine.should.contains('Using config file')
       firstLine.should.contains(configFile)
     } finally {
@@ -419,7 +419,7 @@ describe('rc-config', () => {
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
-      const firstLine = stdout.split('\n')[0]
+      const firstLine = stdout.split('\n', 1)[0]
       firstLine.should.contains('Using config file')
       firstLine.should.contains(configFile)
     } finally {

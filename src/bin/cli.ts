@@ -13,7 +13,7 @@ import { type RunOptions } from '../types/RunOptions.ts'
 const optionVersionDescription = 'Output the version number of npm-check-updates.'
 
 /** Removes inline code ticks. */
-const uncode = (s: string) => s.replace(/`/g, '')
+const uncode = (s: string) => s.replaceAll('`', '')
 
 ;(async () => {
   notifyUpdate()
@@ -40,7 +40,7 @@ const uncode = (s: string) => s.replace(/`/g, '')
         )
         if (option) {
           console.info(renderExtendedHelp(option) + '\n')
-        } else if (query === 'version' || query === 'v' || query === 'V') {
+        } else if (['version', 'v', 'V'].includes(query)) {
           console.info(
             renderExtendedHelp({
               long: 'version',

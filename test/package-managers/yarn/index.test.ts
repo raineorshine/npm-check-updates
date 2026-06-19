@@ -47,13 +47,13 @@ describe('yarn', function () {
   it('list', async () => {
     const testDir = path.join(__dirname, 'default')
     const { version } = await yarn.latest('chalk', '', { cwd: testDir })
-    parseInt(version!, 10).should.be.above(3)
+    Number.parseInt(version!, 10).should.be.above(3)
   })
 
   it('latest', async () => {
     const testDir = path.join(__dirname, 'default')
     const { version } = await yarn.latest('chalk', '', { cwd: testDir })
-    parseInt(version!, 10).should.be.above(3)
+    Number.parseInt(version!, 10).should.be.above(3)
   })
 
   it('greatest', async () => {

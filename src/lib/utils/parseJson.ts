@@ -12,7 +12,7 @@ const stdoutColumns = process.stdout.columns || 80
  * @returns either the hint or the actual line for the code snippet.
  */
 function ensureLineDisplay(line: string): string {
-  return `${line.length ? line.slice(0, Math.min(line.length, stdoutColumns)) : '<empty>'}\n`
+  return `${line.length > 0 ? line.slice(0, Math.min(line.length, stdoutColumns)) : '<empty>'}\n`
 }
 
 /**

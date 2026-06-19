@@ -24,7 +24,7 @@ async function stripDir(dirPath: string, paths: [string[], string[]]): Promise<[
 
 /** convenience function to call getAllPackages for a given test-path  */
 async function getAllPackagesForTest(testPath: string, options: Options): Promise<[string[], string[]]> {
-  const testCwd = path.join(__dirname, testPath).replace(/\\/g, '/')
+  const testCwd = path.join(__dirname, testPath).replaceAll('\\', '/')
   const optionsWithTestCwd: Options = { cwd: testCwd, ...options }
   const [pkgInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages(optionsWithTestCwd)
   const packagePaths: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)

@@ -68,7 +68,7 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
   if (options.json) {
     // since global packages do not have a package.json, return the upgraded deps directly (no version range replacements)
     printJson(options, upgraded)
-  } else if (instruction.length) {
+  } else if (instruction.length > 0) {
     const upgradeCmd =
       options.packageManager === 'yarn'
         ? 'yarn global upgrade'
