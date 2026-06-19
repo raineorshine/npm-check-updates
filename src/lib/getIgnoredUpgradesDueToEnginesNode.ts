@@ -39,22 +39,15 @@ export async function getIgnoredUpgradesDueToEnginesNode(
       : null,
   )
   const enginesNodes = await getEnginesNodeFromRegistry(latestVersions, options)
-  return Object.entries(upgradedLatestVersions)
-    .filter(
-      ([pkgName, newVersion]) =>
-        upgraded[pkgName] !== newVersion && !satisfiesNodeEngine(enginesNodes[pkgName], optionsEnginesNodeMinVersion),
-    )
-    .reduce(
-      (accum, [pkgName, newVersion]) => ({
-        ...accum,
-        [pkgName]: {
-          from: current[pkgName],
-          to: newVersion,
-          enginesNode: enginesNodes[pkgName]!,
-        },
-      }),
-      {} as Index<IgnoredUpgradeDueToEnginesNode>,
-    )
+  const ignored: Index<IgnoredUpgradeDueToEnginesNode> = {}
+
+  for (const [pkgName, newVersion] of Object.entries(upgradedLatestVersions)) {
+    if (upgraded[pkgName] === newVersion || satisfiesNodeEngine(enginesNodes[pkgName], optionsEnginesNodeMinVersion)) {
+      continue
+    }
+    ignored[pkgName] = { from: current[pkgName], to: newVersion, enginesNode: enginesNodes[pkgName]! }
+  }
+  return ignored
 }
 
 export default getIgnoredUpgradesDueToEnginesNode
