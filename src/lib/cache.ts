@@ -81,7 +81,7 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
       // reset cache
       await fs.rm(cacheFile, { force: true })
     }
-  } catch (error) {
+  } catch {
     // ignore file read/parse/remove errors
   }
 
@@ -108,8 +108,8 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
       return cached
     },
     setPeers: (name: string, version: Version, peers: Index<string>) => {
-      const key = `${name}${CACHE_DELIMITER}${version}`
       if (!cacheData.peers) return
+      const key = `${name}${CACHE_DELIMITER}${version}`
       cacheData.peers[key] = peers
     },
     save: async () => {

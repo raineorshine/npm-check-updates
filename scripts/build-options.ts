@@ -12,7 +12,7 @@ const INJECT_HEADER =
   '<!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->'
 
 /** Replaces markdown code ticks with <code>...</code> tag. */
-const codeHtml = (code: string) => code.replace(/`(.+?)`/g, '<code>$1</code>')
+const codeHtml = (code: string) => code.replaceAll(/`(.+?)`/g, '<code>$1</code>')
 
 /** Replaces the "Options" and "Advanced Options" sections of the README with direct output from "ncu --help". */
 const injectReadme = async () => {
@@ -157,8 +157,10 @@ export async function buildOptions(): Promise<void> {
 const isDirectRun = import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
 
 if (isDirectRun) {
-  buildOptions().catch(err => {
+  try {
+    await buildOptions()
+  } catch (err: any) {
     console.error(err?.stack || err)
     process.exit(1)
-  })
+  }
 }

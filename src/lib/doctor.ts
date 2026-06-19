@@ -74,7 +74,7 @@ const loadPackageFileForDoctor = async (options: Options): Promise<PackageInfo> 
   // assert package.json
   try {
     packageInfo = await loadPackageInfoFromFile(options, 'package.json')
-  } catch (e) {
+  } catch {
     console.error('Missing or invalid package.json')
     process.exit(1)
   }
@@ -128,12 +128,12 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
   const runTests = async (): Promise<void> => {
     const spawnPleaseOptions = {
       stderr: (data: string): void => {
-        console.error(chalk.red(data.toString()))
+        console.error(chalk.red(data))
       },
       // Test runners typically write to stdout, so we need to print stdout.
       // Otherwise test failures will be silenced.
       stdout: (data: string): void => {
-        process.stdout.write(data.toString())
+        process.stdout.write(data)
       },
     }
 
@@ -168,21 +168,21 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
   let lockFile = ''
   try {
     lockFile = await fs.readFile(lockFileName, 'utf-8')
-  } catch (e) {
+  } catch {
     // try bun.lockb if bun.lock was not found
     // set lockFileName so the rest of doctor mode uses bun.lockb for lock file updating and restoration
     if (options.packageManager === 'bun') {
       lockFileName = 'bun.lockb'
       try {
         lockFile = await fs.readFile(lockFileName, 'utf-8')
-      } catch (e) {}
+      } catch {}
     }
   }
 
   // make sure current tests pass before we begin
   try {
     await runTests()
-  } catch (e) {
+  } catch {
     console.error('Tests failed before we even got started!')
     process.exit(1)
   }
@@ -246,11 +246,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     // restore package file, lockFile and re-install
     await fs.writeFile('package.json', pkgFile)
 
-    if (lockFile) {
-      await fs.writeFile(lockFileName, lockFile)
-    } else {
-      await fs.rm(lockFileName, { recursive: true, force: true })
-    }
+    await (lockFile ? fs.writeFile(lockFileName, lockFile) : fs.rm(lockFileName, { recursive: true, force: true }))
 
     // save the last package file with passing tests
     let lastPkgFile = pkgFile

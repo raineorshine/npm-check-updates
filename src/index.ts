@@ -68,19 +68,21 @@ function registerCliHandlers() {
  */
 const noVolta = (options: Options) => {
   // The first check is for macOS/Linux and the second check is for Windows
-  if (options.global && (!!process.env.VOLTA_HOME || process.env.PATH?.includes('\\Volta'))) {
-    const message =
-      'It appears you are using Volta. `npm-check-updates --global` ' +
-      'cannot be used with Volta because Volta has its own system for ' +
-      'managing global packages which circumvents npm.\n\n' +
-      'If you are still receiving this message after uninstalling Volta, ' +
-      'ensure your PATH does not contain an entry for Volta and your ' +
-      'shell profile does not define VOLTA_HOME. You may need to reboot ' +
-      'for changes to your shell profile to take effect.'
-
-    print(options, message, 'error')
-    process.exit(1)
+  if (!(options.global && (!!process.env.VOLTA_HOME || process.env.PATH?.includes('\\Volta')))) {
+    return
   }
+
+  const message =
+    'It appears you are using Volta. `npm-check-updates --global` ' +
+    'cannot be used with Volta because Volta has its own system for ' +
+    'managing global packages which circumvents npm.\n\n' +
+    'If you are still receiving this message after uninstalling Volta, ' +
+    'ensure your PATH does not contain an entry for Volta and your ' +
+    'shell profile does not define VOLTA_HOME. You may need to reboot ' +
+    'for changes to your shell profile to take effect.'
+
+  print(options, message, 'error')
+  process.exit(1)
 }
 
 /** Returns the package manager that should be used to install packages after running "ncu -u". Uses the same detection logic as the main package manager determination. */
@@ -156,7 +158,7 @@ const install = async (
       // allow Ctrl+C to kill the process
       onState: (state: any) => {
         if (state.aborted) {
-          process.nextTick(() => process.exit(1))
+          queueMicrotask(() => process.exit(1))
         }
       },
     })
@@ -187,7 +189,7 @@ const install = async (
               stdout += data
             },
             stderr: (data: string) => {
-              console.error(chalk.red(data.toString()))
+              console.error(chalk.red(data))
             },
           },
           {
@@ -317,7 +319,7 @@ async function runUpgrades(
         ? path
             .relative(path.resolve(pkgOptions.cwd), indexKey)
             // convert Windows path to *nix path for consistency
-            .replace(/\\/g, '/')
+            .replaceAll('\\', '/')
         : indexKey
       packages[key] = await runLocal(pkgOptions, pkgData, pkgFile)
     }
@@ -410,7 +412,7 @@ async function run(
         reject(error)
         try {
           programError(options, error)
-        } catch (e) {
+        } catch {
           /* noop */
         }
       }, timeoutMs)

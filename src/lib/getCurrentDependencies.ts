@@ -20,7 +20,7 @@ const isGreaterThanSafe = (spec1: VersionSpec, spec2: VersionSpec) =>
 /** Parses the packageManager field into a { [name]: version } pair. */
 const parsePackageManager = (pkgData: PackageFile) => {
   if (!pkgData.packageManager) return {}
-  const [name, version] = pkgData.packageManager.split('@')
+  const [name, version] = pkgData.packageManager.split('@', 2)
   return { [name]: version }
 }
 /**

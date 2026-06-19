@@ -316,62 +316,62 @@ describe('version-util', () => {
     })
   })
 
-  describe('addWildCard', () => {
+  describe('addWildcard', () => {
     it('add ~', () => {
-      expect(versionUtil.addWildCard('1', '~')).toBe('~1')
-      expect(versionUtil.addWildCard('1.2', '~')).toBe('~1.2')
-      expect(versionUtil.addWildCard('1.2.3', '~')).toBe('~1.2.3')
-      expect(versionUtil.addWildCard('1.2.3-alpha.1', '~')).toBe('~1.2.3-alpha.1')
-      expect(versionUtil.addWildCard('1.2.3+build12345', '~')).toBe('~1.2.3+build12345')
+      expect(versionUtil.addWildcard('1', '~')).toBe('~1')
+      expect(versionUtil.addWildcard('1.2', '~')).toBe('~1.2')
+      expect(versionUtil.addWildcard('1.2.3', '~')).toBe('~1.2.3')
+      expect(versionUtil.addWildcard('1.2.3-alpha.1', '~')).toBe('~1.2.3-alpha.1')
+      expect(versionUtil.addWildcard('1.2.3+build12345', '~')).toBe('~1.2.3+build12345')
     })
     it('add ^', () => {
-      expect(versionUtil.addWildCard('1', '^')).toBe('^1')
-      expect(versionUtil.addWildCard('1.2', '^')).toBe('^1.2')
-      expect(versionUtil.addWildCard('1.2.3', '^')).toBe('^1.2.3')
-      expect(versionUtil.addWildCard('1.2.3-alpha.1', '^')).toBe('^1.2.3-alpha.1')
-      expect(versionUtil.addWildCard('1.2.3+build12345', '^')).toBe('^1.2.3+build12345')
+      expect(versionUtil.addWildcard('1', '^')).toBe('^1')
+      expect(versionUtil.addWildcard('1.2', '^')).toBe('^1.2')
+      expect(versionUtil.addWildcard('1.2.3', '^')).toBe('^1.2.3')
+      expect(versionUtil.addWildcard('1.2.3-alpha.1', '^')).toBe('^1.2.3-alpha.1')
+      expect(versionUtil.addWildcard('1.2.3+build12345', '^')).toBe('^1.2.3+build12345')
     })
     it('add .*', () => {
-      expect(versionUtil.addWildCard('1', '.*')).toBe('1.*')
-      expect(versionUtil.addWildCard('1.2', '.*')).toBe('1.*')
-      expect(versionUtil.addWildCard('1.2.3', '.*')).toBe('1.*')
-      expect(versionUtil.addWildCard('1.2.3-alpha.1', '.*')).toBe('1.*')
-      expect(versionUtil.addWildCard('1.2.3+build12345', '.*')).toBe('1.*')
+      expect(versionUtil.addWildcard('1', '.*')).toBe('1.*')
+      expect(versionUtil.addWildcard('1.2', '.*')).toBe('1.*')
+      expect(versionUtil.addWildcard('1.2.3', '.*')).toBe('1.*')
+      expect(versionUtil.addWildcard('1.2.3-alpha.1', '.*')).toBe('1.*')
+      expect(versionUtil.addWildcard('1.2.3+build12345', '.*')).toBe('1.*')
     })
     it('add .x', () => {
-      expect(versionUtil.addWildCard('1', '.x')).toBe('1.x')
-      expect(versionUtil.addWildCard('1.2', '.x')).toBe('1.x')
-      expect(versionUtil.addWildCard('1.2.3', '.x')).toBe('1.x')
-      expect(versionUtil.addWildCard('1.2.3-alpha.1', '.x')).toBe('1.x')
-      expect(versionUtil.addWildCard('1.2.3+build12345', '.x')).toBe('1.x')
+      expect(versionUtil.addWildcard('1', '.x')).toBe('1.x')
+      expect(versionUtil.addWildcard('1.2', '.x')).toBe('1.x')
+      expect(versionUtil.addWildcard('1.2.3', '.x')).toBe('1.x')
+      expect(versionUtil.addWildcard('1.2.3-alpha.1', '.x')).toBe('1.x')
+      expect(versionUtil.addWildcard('1.2.3+build12345', '.x')).toBe('1.x')
     })
   })
 
-  describe('isWildCard', () => {
+  describe('isWildcard', () => {
     it('return true for ~', () => {
-      expect(versionUtil.isWildCard('~')).toBe(true)
+      expect(versionUtil.isWildcard('~')).toBe(true)
     })
     it('return true for ^', () => {
-      expect(versionUtil.isWildCard('^')).toBe(true)
+      expect(versionUtil.isWildcard('^')).toBe(true)
     })
     it('return true for ^*', () => {
-      expect(versionUtil.isWildCard('^*')).toBe(true)
+      expect(versionUtil.isWildcard('^*')).toBe(true)
     })
     it('return true for *', () => {
-      expect(versionUtil.isWildCard('*')).toBe(true)
+      expect(versionUtil.isWildcard('*')).toBe(true)
     })
     it('return true for x', () => {
-      expect(versionUtil.isWildCard('x')).toBe(true)
+      expect(versionUtil.isWildcard('x')).toBe(true)
     })
     it('return true for x.x', () => {
-      expect(versionUtil.isWildCard('x.x')).toBe(true)
+      expect(versionUtil.isWildcard('x.x')).toBe(true)
     })
     it('return true for x.x.x', () => {
-      expect(versionUtil.isWildCard('x.x.x')).toBe(true)
+      expect(versionUtil.isWildcard('x.x.x')).toBe(true)
     })
     it('return false for strings that more than a wildcard', () => {
-      expect(versionUtil.isWildCard('^0.15.0')).toBe(false)
-      expect(versionUtil.isWildCard('1.*')).toBe(false)
+      expect(versionUtil.isWildcard('^0.15.0')).toBe(false)
+      expect(versionUtil.isWildcard('1.*')).toBe(false)
     })
   })
 

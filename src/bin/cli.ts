@@ -38,7 +38,7 @@ const optionVersionDescription = 'Output the version number of npm-check-updates
         )
         if (option) {
           console.info(renderExtendedHelp(option) + '\n')
-        } else if (query === 'version' || query === 'v' || query === 'V') {
+        } else if (['version', 'v', 'V'].includes(query)) {
           console.info(
             renderExtendedHelp({
               long: 'version',

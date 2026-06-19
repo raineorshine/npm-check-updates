@@ -6,7 +6,7 @@ import wrap from './wrap.ts'
 const wrapRows = (rows: string[][]) => rows.map(([col1, col2]) => [col1, wrap(col2)])
 
 /** Replaces markdown code ticks with <code>...</code>, since backticks are not rendered inside HTML tables. */
-const codeHtml = (s: string) => s.replace(/`(.+?)`/g, '<code>$1</code>')
+const codeHtml = (s: string) => s.replaceAll(/`(.+?)`/g, '<code>$1</code>')
 
 /** Renders an HTML row. */
 const row = (cells: string[]) => '\n  <tr>' + cells.map(cell => `<td>${codeHtml(cell)}</td>`).join('') + '</tr>'

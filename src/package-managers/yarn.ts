@@ -50,7 +50,7 @@ export interface YarnMinimalAgeGate {
 
 /** Safely interpolates a string as a template string. Supports `${VAR}`, `${VAR-fallback}` and `${VAR:-fallback}`. */
 const interpolate = (s: string, data: Index<string | undefined>): string =>
-  s.replace(/\$\{(\w+)(?:(:)?-([^}]*))?\}/g, (_match, key, colon, fallback = '') => {
+  s.replaceAll(/\$\{(\w+)(?:(:)?-([^}]*))?\}/g, (_match, key, colon, fallback = '') => {
     const value = data[key]
     // ${VAR:-fallback} uses the fallback when unset or empty; ${VAR-fallback} only when unset
     return colon ? value || fallback : (value ?? fallback)
@@ -175,7 +175,7 @@ const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMini
     const { npmMinimalAgeGate: rawNpmMinimalAgeGate } = parsed
     let npmMinimalAgeGate: number
     if (typeof rawNpmMinimalAgeGate === 'number') {
-      if (isNaN(rawNpmMinimalAgeGate) || rawNpmMinimalAgeGate <= 0) continue
+      if (Number.isNaN(rawNpmMinimalAgeGate) || rawNpmMinimalAgeGate <= 0) continue
       npmMinimalAgeGate = rawNpmMinimalAgeGate
     } else if (typeof rawNpmMinimalAgeGate === 'string') {
       const days = parseCooldown(rawNpmMinimalAgeGate)
@@ -215,7 +215,7 @@ function parseJsonLines(result: string): { dependencies: Index<ParsedDep> } {
 
     // only parse info data
     // ignore error info, e.g. "Visit https://yarnpkg.com/en/docs/cli/list for documentation about this command."
-    if (d.type === 'info' && !d.data.match(/^Visit/)) {
+    if (d.type === 'info' && !d.data.startsWith('Visit')) {
       // parse package name and version number from info data, e.g. "nodemon@2.0.4" has binaries
       const [, pkgName, pkgVersion] = d.data.match(/"(@?.*)@(.*)"/) || []
 

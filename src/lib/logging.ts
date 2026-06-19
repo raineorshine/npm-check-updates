@@ -78,8 +78,8 @@ export function printJson(options: Options, object: any) {
 /** Print JSON object keys as string joined by character. */
 export function printSimpleJoinedString(object: any, join: string) {
   console.log(
-    Object.keys(object)
-      .map(pkg => pkg + '@' + object[pkg])
+    Object.entries(object)
+      .map(([pkg, version]) => `${pkg}@${version}`)
       .join(join),
   )
 }
@@ -146,8 +146,8 @@ function prettifyCooldown(input: string | number | undefined | CooldownFunction)
 
   const str = String(input).trim().toLowerCase()
   const match = str.match(COOLDOWN_PATTERN)
-  const value = match ? Number(match[1]) : Number(str)
-  if (isNaN(value)) {
+  const value = Number(match ? match[1] : str)
+  if (Number.isNaN(value)) {
     return 'cooldown'
   }
 
@@ -256,7 +256,7 @@ export async function toDependencyTable({
             toColorized,
             ...(showCooldownCol ? [cooldown] : []),
             ownerChanged,
-            ...[homepageUrl, repoUrl, diffUrl, publishTime].filter(x => x),
+            ...[homepageUrl, repoUrl, diffUrl, publishTime].filter(Boolean),
           ]
         }),
     ),

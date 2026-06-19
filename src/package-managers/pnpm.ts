@@ -40,7 +40,7 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
   let pnpmWorkspaceConfig
   try {
     pnpmWorkspaceConfig = await fs.readFile(pnpmWorkspaceConfigPath, 'utf-8')
-  } catch (e) {
+  } catch {
     return {}
   }
 
@@ -70,7 +70,7 @@ interface MinimumReleaseAgeLayer {
 /** Coerces an arbitrary config value into a non-negative minimumReleaseAge number (in minutes), or undefined if invalid. */
 const coerceMinimumReleaseAge = (raw: unknown): number | undefined => {
   const value = typeof raw === 'number' ? raw : typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN
-  return typeof value === 'number' && !isNaN(value) && value >= 0 ? value : undefined
+  return typeof value === 'number' && !Number.isNaN(value) && value >= 0 ? value : undefined
 }
 
 /**
@@ -212,7 +212,7 @@ async function spawnPnpm(
   spawnPleaseOptions?: SpawnPleaseOptions,
 ): Promise<string> {
   const fullArgs = [
-    ...(npmOptions.global ? 'global' : []),
+    ...(npmOptions.global ? 'global' : ''),
     ...(Array.isArray(args) ? args : [args]),
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
   ]

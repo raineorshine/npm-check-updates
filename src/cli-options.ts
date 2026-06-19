@@ -30,8 +30,8 @@ const parseNumberOption =
     if (typeof value === 'number') {
       return value
     } else if (typeof value === 'string') {
-      const parsed = parseInt(value, 10)
-      if (!isNaN(parsed)) {
+      const parsed = Number.parseInt(value, 10)
+      if (!Number.isNaN(parsed)) {
         return parsed
       }
     }
@@ -955,7 +955,7 @@ const cliOptions: CLIOption[] = [
       if (typeof value === 'number') {
         return !!value
       } else if (typeof value === 'string') {
-        return !!parseInt(value, 10)
+        return !!Number.parseInt(value, 10)
       } else {
         throw new Error('pre must be a number')
       }
@@ -1038,7 +1038,7 @@ const cliOptions: CLIOption[] = [
     arg: 'value',
     description: `Determines the version to upgrade to: latest, newest, greatest, minor, patch, semver, \`@[tag]\`, or [function]. (default: latest)`,
     help: extendedHelpTarget,
-    // eslint-disable-next-line no-template-curly-in-string
+    // eslint-disable-next-line no-template-curly-in-string, unicorn/no-useless-template-literals
     type: `${supportedVersionTargets.map(s => `'${s}'`).join(' | ')} | ${'`@${string}`'} | TargetFunction`,
   },
   {
@@ -1086,7 +1086,7 @@ const cliOptions: CLIOption[] = [
         return value
       } else if (typeof value === 'string') {
         const days = parseCooldown(value)
-        return days !== null ? days : parseInt(value, 10)
+        return days !== null ? days : Number.parseInt(value, 10)
       } else {
         throw new Error('cooldown must be a number, string, or function')
       }

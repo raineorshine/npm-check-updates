@@ -45,8 +45,8 @@ export function createNcuRegExp(input: string): RegExp {
   // 1. Escape special regex characters (like dots in 1.0.0)
   // 2. Replace spaces with \s+ for flexible matching
   const pattern = input
-    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Standard escape for regex
-    .replace(/ /g, '\\s+') // Replace literal space with \s+
+    .replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&') // Standard escape for regex
+    .replaceAll(' ', '\\s+') // Replace literal space with \s+
 
   return new RegExp(pattern, 'i')
 }
@@ -91,7 +91,7 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
           },
           { cwd },
         )
-      } catch (e) {}
+      } catch {}
 
       pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
     } finally {

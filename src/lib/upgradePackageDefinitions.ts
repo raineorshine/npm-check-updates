@@ -45,13 +45,12 @@ const checkIfInPeerViolation = (
   })
   const violated =
     Object.keys(filteredUpgradedDependencies).length > Object.keys(filteredUpgradedDependenciesAfterPeers).length
-  let filteredUpgradedPeerDependencies = upgradedPeerDependencies
-  if (violated) {
-    filteredUpgradedPeerDependencies = pickBy(
-      upgradedPeerDependencies,
-      (spec, dep) => filteredUpgradedDependenciesAfterPeers[dep] || !filteredUpgradedDependencies[dep],
-    )
-  }
+  const filteredUpgradedPeerDependencies = violated
+    ? pickBy(
+        upgradedPeerDependencies,
+        (spec, dep) => filteredUpgradedDependenciesAfterPeers[dep] || !filteredUpgradedDependencies[dep],
+      )
+    : upgradedPeerDependencies
   return {
     violated,
     filteredUpgradedDependencies: filteredUpgradedDependenciesAfterPeers,

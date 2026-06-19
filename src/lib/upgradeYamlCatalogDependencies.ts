@@ -98,7 +98,7 @@ export function updateYamlCatalogDependencies({
 }: UpdateYamlCatalogDependenciesArgs): string | null {
   const { path } = upgrade
 
-  if (!(path.length > 1) && path[0] !== 'catalog' && path[0] !== 'catalogs') {
+  if (path.length <= 1 && path[0] !== 'catalog' && path[0] !== 'catalogs') {
     return null
   }
 

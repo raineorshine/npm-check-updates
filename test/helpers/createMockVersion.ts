@@ -19,7 +19,7 @@ const createMockVersion = ({ name, versions, distTags }: CreateMockParams): Part
   return {
     name,
     version: Object.keys(versions)[0],
-    versions: Object.fromEntries(Object.entries(versions).map(([version]) => [version, { version } as Packument])),
+    versions: Object.fromEntries(Object.keys(versions).map(version => [version, { version } as Packument])),
     time: Object.fromEntries(Object.entries(versions).map(([version, date]) => [version, date])),
     'dist-tags': distTags,
   }

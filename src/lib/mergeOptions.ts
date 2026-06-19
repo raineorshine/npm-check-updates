@@ -4,7 +4,7 @@ type OptionKey = keyof Options
 
 /** Merges two arrays into one, removing duplicates. */
 function mergeArrays<T>(arr1: T[], arr2: T[]): T[] {
-  return Array.from(new Set([...(arr1 || []), ...(arr2 || [])]))
+  return [...new Set([...(arr1 || []), ...(arr2 || [])])]
 }
 
 /**

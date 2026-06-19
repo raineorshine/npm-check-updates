@@ -41,7 +41,7 @@ function composeFilter(
         const matchScoped = (pattern: string) =>
           !pattern.includes('/') &&
           dependencyName.includes('/') &&
-          picomatch(pattern)(dependencyName.replace(/\//g, '_'))
+          picomatch(pattern)(dependencyName.replaceAll('/', '_'))
 
         // return true if any of the provided patterns match the dependency name
         return patterns.some(or(matchUnscoped, matchScoped))
