@@ -82,6 +82,19 @@ describe('getAllPackages', () => {
       workspacePackages.should.deep.equal(['basic-sub-package'])
     })
 
+    it('handles simple workspace with --workspaces and --packageFile pointing outside cwd', async () => {
+      const workspaceRoot = path.join(__dirname, 'test-data/workspace-basic')
+      const [pkgInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages({
+        packageFile: path.join(workspaceRoot, 'package.json'),
+        workspaces: true,
+      })
+      const packagePaths = pkgInfos.map((info: PackageInfo) =>
+        asPosixPath(info.filepath).replace(asPosixPath(workspaceRoot) + '/', ''),
+      )
+      packagePaths.should.deep.equal(['pkg/sub/package.json'])
+      workspacePackageNames.should.deep.equal(['basic-sub-package'])
+    })
+
     it('handles simple workspace with --workspaces and --root option', async () => {
       const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
         'test-data/workspace-basic/',
