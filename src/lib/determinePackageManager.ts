@@ -66,7 +66,7 @@ const determinePackageManager = async (
   else if (options.global) return getRunningPackageManager()
 
   const lockfileName = (await findLockfile(options, readdir))?.filename
-  return lockfileName ? packageManagerLockfileMap[lockfileName.split('.')[0]] : 'npm'
+  return lockfileName ? packageManagerLockfileMap[lockfileName.split('.', 1)[0]] : 'npm'
 }
 
 export default determinePackageManager

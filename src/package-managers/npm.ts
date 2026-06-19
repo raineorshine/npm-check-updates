@@ -302,6 +302,12 @@ const toVersionResult = ({
   return targetMatch
 }
 
+/** Parses a string to a boolean. */
+const stringToBoolean = (s: string): boolean => !!s && s !== 'false' && s !== '0'
+
+/** Parses a string to a number. */
+const stringToNumber = (s: string): number => Number.parseInt(s) || 0
+
 /** Normalizes the keys of an npm config for pacote. */
 export const normalizeNpmConfig = (
   npmConfig: NpmConfig,
@@ -403,12 +409,6 @@ export const normalizeNpmConfig = (
     timeout: 'number',
   }
 
-  /** Parses a string to a boolean. */
-  const stringToBoolean = (s: string): boolean => !!s && s !== 'false' && s !== '0'
-
-  /** Parses a string to a number. */
-  const stringToNumber = (s: string): number => parseInt(s) || 0
-
   // needed until pacote supports full npm config compatibility
   // See: https://github.com/zkat/pacote/issues/156
   const config: NpmConfig = keyValueBy(npmConfig, (key: string, value: NpmConfig[keyof NpmConfig]) => {
@@ -417,14 +417,14 @@ export const normalizeNpmConfig = (
       typeof value !== 'string'
         ? value
         : // parse stringified booleans
-          keyTypes[key.replace(/-/g, '').toLowerCase()] === 'boolean'
+          keyTypes[key.replaceAll('-', '').toLowerCase()] === 'boolean'
           ? stringToBoolean(value)
-          : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
+          : keyTypes[key.replaceAll('-', '').toLowerCase()] === 'number'
             ? stringToNumber(value)
-            : value.replace(/\${([^}]+)}/g, (_, envVar) => process.env[envVar] as string)
+            : value.replaceAll(/\${([^}]+)}/g, (_, envVar) => process.env[envVar] as string)
 
     // normalize the key for pacote
-    const { [key]: pacoteKey }: Index<NpmConfig[keyof NpmConfig]> = npmConfigToPacoteMap
+    const pacoteKey = (npmConfigToPacoteMap as Index<NpmConfig[keyof NpmConfig]>)[key]
 
     return typeof pacoteKey === 'string'
       ? // key is mapped to a string
@@ -433,7 +433,7 @@ export const normalizeNpmConfig = (
         typeof pacoteKey === 'function'
         ? { ...(pacoteKey(normalizedValue.toString()) as any) }
         : // otherwise assign the camel-cased key
-          { [key.match(/^[a-z]/i) ? camelCase(key) : key]: normalizedValue }
+          { [/^[a-z]/i.test(key) ? camelCase(key) : key]: normalizedValue }
   })
 
   return config
@@ -503,14 +503,14 @@ npmApi.findNpmConfig = memoize((): NpmConfig => {
   const envPrefix = /^npm_config_/i
   const env: NpmConfig = {}
 
-  for (const key of Object.keys(process.env)) {
+  for (const [key, value] of Object.entries(process.env)) {
     if (!envPrefix.test(key)) continue
 
     const normalizedKey = key
       .toLowerCase()
       .replace(envPrefix, '')
-      .replace(/(?!^)_/g, '-')
-    env[normalizedKey] = process.env[key] as string
+      .replaceAll(/(?!^)_/g, '-')
+    env[normalizedKey] = value as string
   }
 
   const userconfig =

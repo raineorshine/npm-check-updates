@@ -253,7 +253,7 @@ describe('yarn', () => {
         '{"type":"info","data":"Visit https://yarnpkg.com/en/docs/cli/list for documentation about this command."}',
         '{"type":"info","data":"no package spec here"}',
         '{"type":"tree","data":{"type":"list"}}',
-        '   ',
+        ' '.repeat(3),
       ].join('\n')
       expect(yarn.yarnApi.parseJsonLines(output)).toStrictEqual({ dependencies: {} })
     })

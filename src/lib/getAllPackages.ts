@@ -150,7 +150,7 @@ async function getWorkspacePackageInfos(
     path
       .join(pkgDir, workspace, 'package.json')
       // convert Windows path to *nix path
-      .replace(/\\/g, '/'),
+      .replaceAll('\\', '/'),
   )
 
   // e.g. [packages/a/package.json, ...]
@@ -187,7 +187,7 @@ async function getWorkspacePackageInfos(
         (workspacePattern: string) =>
           packageInfo.name === workspace ||
           packageInfo.filepath ===
-            path.join(pkgDir, path.dirname(workspacePattern), workspace, defaultPackageFilename).replace(/\\/g, '/'),
+            path.join(pkgDir, path.dirname(workspacePattern), workspace, defaultPackageFilename).replaceAll('\\', '/'),
       ),
     ),
   )
@@ -263,7 +263,7 @@ async function getAllPackages(options: Options): Promise<[PackageInfo[], string[
     // we are either:
     // * NOT a workspace
     // * a workspace and have requested an upgrade of the workspace-root
-    const globPattern = rootPackageFile.replace(/\\/g, '/')
+    const globPattern = rootPackageFile.replaceAll('\\', '/')
     const rootPackagePaths = await glob(globPattern, globOptions)
     // realistically there should only be zero or one
     const rootPackages = await Promise.all(

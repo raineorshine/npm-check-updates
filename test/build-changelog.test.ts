@@ -18,7 +18,7 @@ const chdirTemp = async (): Promise<void> => {
 
 /** Stubs the GitHub API with a single page of releases. */
 const stubReleases = (releases: unknown[]) => {
-  const fetchMock = vi.fn(async (_input: string | URL) => new Response(JSON.stringify(releases), { status: 200 }))
+  const fetchMock = vi.fn(async (_input: string | URL) => Response.json(releases, { status: 200 }))
   vi.stubGlobal('fetch', fetchMock)
   return fetchMock
 }

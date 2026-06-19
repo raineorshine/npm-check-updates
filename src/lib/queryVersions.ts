@@ -98,16 +98,16 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
         distTag,
         // upgrade prereleases to newer prereleases by default
         // allow downgrading when explicit tag is used
-        pre: options.pre != null ? options.pre : targetString.startsWith('@') || isPre(version),
+        pre: options.pre ?? (targetString.startsWith('@') || isPre(version)),
         retry,
       })
     } catch (err: any) {
       const errorMessage = err ? (err.message || err).toString() : ''
-      if (errorMessage.match(/E504|Gateway Timeout/i)) {
+      if (/E504|Gateway Timeout/i.test(errorMessage)) {
         versionResult = {
           error: `${errorMessage}. All ${retry} retry attempts failed.`,
         }
-      } else if (errorMessage.match(/E400|E404|ENOTFOUND|404 Not Found|400 Bad Request/i)) {
+      } else if (/E400|E404|ENOTFOUND|404 Not Found|400 Bad Request/i.test(errorMessage)) {
         versionResult = {
           error: `${errorMessage.replace(/ - Not found$/i, '')}. All ${retry} retry attempts failed. Either your internet connection is down, the registry is inaccessible, the authentication credentials are invalid, or the package does not exist.`,
         }
