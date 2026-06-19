@@ -91,7 +91,13 @@ export default defineConfig(({ mode }) => ({
     dts({
       entryRoot: 'src',
       include: ['src'],
-      bundleTypes: true,
+      /**
+       * Inline semver-utils types so the emitted .d.ts has no external import.
+       * semver-utils is bundled into the JS, not a runtime dependency.
+       */
+      bundleTypes: {
+        bundledPackages: ['semver-utils', '@types/semver-utils'],
+      },
       insertTypesEntry: true,
       outDirs: 'build',
     }),
