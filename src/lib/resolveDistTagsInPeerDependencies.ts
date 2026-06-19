@@ -52,9 +52,15 @@ async function resolveDistTagsInPeerDependencies(
         resolvedPeers[peer] = spec
         continue
       }
-      // a peer that is unpublished or on an unreachable registry is left as-is
-      const distTags = (distTagsByPackage[peer] ??= await packageManager.getDistTags!(peer, options).catch(() => ({})))
-      resolvedPeers[peer] = replaceDistTags(spec, distTags)
+      if (!distTagsByPackage[peer]) {
+        try {
+          distTagsByPackage[peer] = await packageManager.getDistTags!(peer, options)
+        } catch {
+          // a peer that is unpublished or on an unreachable registry is left as-is
+          distTagsByPackage[peer] = {}
+        }
+      }
+      resolvedPeers[peer] = replaceDistTags(spec, distTagsByPackage[peer])
     }
     result[pkg] = resolvedPeers
   }

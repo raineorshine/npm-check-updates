@@ -77,7 +77,7 @@ export function print(
 export function sanitizeForDisplay(str: string): string {
   // stripVTControlCharacters leaves bare control characters like CR, which can overwrite a rendered line
   // eslint-disable-next-line no-control-regex
-  return stripVTControlCharacters(str).replace(/[\u0000-\u001f\u007f-\u009f]/g, '')
+  return stripVTControlCharacters(str).replaceAll(/[\u{0}-\u{1F}\u{7F}-\u{9F}]/gu, '')
 }
 
 /** Converts a caught value to sanitized, displayable text, since it usually originates from a registry or package manager. */
@@ -95,8 +95,8 @@ export function printJson(options: Options, object: any) {
 /** Print JSON object keys as string joined by character. */
 export function printSimpleJoinedString(object: any, join: string) {
   console.log(
-    Object.keys(object)
-      .map(pkg => pkg + '@' + object[pkg])
+    Object.entries(object)
+      .map(([pkg, version]) => `${pkg}@${version}`)
       .join(join),
   )
 }
@@ -171,8 +171,8 @@ function prettifyCooldown(input: string | number | undefined | CooldownFunction)
 
   const str = String(input).trim().toLowerCase()
   const match = str.match(COOLDOWN_PATTERN)
-  const value = match ? Number(match[1]) : Number(str)
-  if (isNaN(value)) {
+  const value = Number(match ? match[1] : str)
+  if (Number.isNaN(value)) {
     return 'cooldown'
   }
 
@@ -282,7 +282,7 @@ export async function toDependencyTable({
             toColorized,
             ...(showCooldownCol ? [cooldown] : []),
             ownerChanged,
-            ...[homepageUrl, repoUrl, diffUrl, publishTime].filter(x => x),
+            ...[homepageUrl, repoUrl, diffUrl, publishTime].filter(Boolean),
           ]
         }),
     ),

@@ -3,11 +3,12 @@ const wrap = (s: string, maxLineLength = 92) => {
   const linesIn = s.split('\n')
   const linesOut: string[] = []
   for (const lineIn of linesIn) {
-    let i = 0
     if (lineIn.length === 0) {
       linesOut.push('')
       continue
     }
+
+    let i = 0
 
     while (i < lineIn.length) {
       const lineFull = lineIn.slice(i, i + maxLineLength + 1)
@@ -23,9 +24,8 @@ const wrap = (s: string, maxLineLength = 92) => {
       // do not wrap in the middle of a word
       // reverse the string and use match to find the first non-word character to wrap on
       const wrapOffset =
-        lineFull
-          .split('')
-          .reverse()
+        [...lineFull]
+          .toReversed()
           .join('')
           // add [^\W] to not break in the middle of --registry
           .match(/[ -][^\W]/)?.index || 0

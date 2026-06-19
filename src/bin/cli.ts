@@ -39,7 +39,7 @@ const optionVersionDescription = 'Output the version number of npm-check-updates
       // Without this condition, it can result in a RangeError: Invalid array length.
       // See: https://github.com/raineorshine/npm-check-updates/issues/1200
       currentMajor && latestMajor && latestMajor >= currentMajor
-        ? new Array(latestMajor - currentMajor).fill(0).map((x, i) => currentMajor + i + 1)
+        ? Array.from({ length: latestMajor - currentMajor }, (x, i) => currentMajor + i + 1)
         : []
     const releaseUrls = majorVersions.map(majorVersion => `${pkg.homepage ?? ''}/releases/tag/v${majorVersion}.0.0`)
 
@@ -85,7 +85,7 @@ ${style.dim.underline(
         )
         if (option) {
           console.info(renderExtendedHelp(option) + '\n')
-        } else if (query === 'version' || query === 'v' || query === 'V') {
+        } else if (['version', 'v', 'V'].includes(query)) {
           console.info(
             renderExtendedHelp({
               long: 'version',

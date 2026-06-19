@@ -46,7 +46,7 @@ const getHeaders = (): Record<string, string> => {
   const authHeader = token ? { authorization: ['Bearer', token].join(' ') } : null
   return {
     accept: 'application/vnd.github+json',
-    ...(authHeader ?? {}),
+    ...authHeader,
   }
 }
 
@@ -81,7 +81,7 @@ const fetchReleases = async (): Promise<Release[]> => {
  * left alone, and a setext heading is shifted like any other.
  */
 const shiftHeadings = (body: string): string => {
-  const normalized = body.replace(/\r\n/g, '\n')
+  const normalized = body.replaceAll('\r\n', '\n')
   const headings = markdownIt.parse(normalized, {}).filter(token => token.type === 'heading_open')
   if (headings.length === 0) return normalized
 
@@ -223,8 +223,10 @@ export async function buildChangelog(): Promise<void> {
 const isDirectRun = import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
 
 if (isDirectRun) {
-  buildChangelog().catch(err => {
+  try {
+    await buildChangelog()
+  } catch (err: any) {
     console.error(err?.stack || err)
     process.exit(1)
-  })
+  }
 }
