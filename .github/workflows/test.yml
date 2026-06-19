@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 22, 24]
+        node: [20, 22, 24, 26]
         os: [ubuntu-latest, windows-latest]
 
     steps:
@@ -44,6 +44,15 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
+
+      # Corepack is not bundled with Node >= 25.
+      # --force is needed to overwrite the runner's preinstalled global yarn.
+      - name: Install corepack
+        shell: bash
+        run: |
+          if [[ "$(node -p 'process.versions.node.split(".")[0]')" -ge 25 ]]; then
+            npm install -g --force corepack
+          fi
 
       - name: Enable yarn via corepack
         run: corepack enable yarn
