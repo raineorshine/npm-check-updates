@@ -61,7 +61,7 @@ const stylize = (names: StyleName[], value: any): string => {
   if (!text.includes('\n')) return paint(names, text)
   return text
     .split(/(\r?\n)/)
-    .map(part => (part === '' || part === '\n' || part === '\r\n' ? part : paint(names, part)))
+    .map(part => (['', '\n', '\r\n'].includes(part) ? part : paint(names, part)))
     .join('')
 }
 

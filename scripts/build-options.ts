@@ -67,7 +67,7 @@ ${readme.slice(advancedOptionsEnd)}`
 /** Renders a single CLI option for a type definition file. */
 const renderOption = (option: CLIOption<unknown>) => {
   // escape any */ in the description; otherwise, it will break the block comment
-  const description = option.description.replace(/\*\//g, '*\\/')
+  const description = option.description.replaceAll('*/', '*\\/')
 
   const type = option.typePublic ?? option.type
 
@@ -157,8 +157,10 @@ export async function buildOptions(): Promise<void> {
 const isDirectRun = import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
 
 if (isDirectRun) {
-  buildOptions().catch(err => {
+  try {
+    await buildOptions()
+  } catch (err: any) {
     console.error(err?.stack || err)
     process.exit(1)
-  })
+  }
 }

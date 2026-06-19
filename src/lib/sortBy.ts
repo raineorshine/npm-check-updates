@@ -6,8 +6,12 @@
  */
 export function sortBy<T>(collection: T[] | null | undefined, selector: (item: T) => number | string): T[] {
   if (!collection) return []
-  return collection
-    .map(item => ({ item, key: selector(item) }))
-    .sort((a, b) => (a.key > b.key ? 1 : a.key < b.key ? -1 : 0))
-    .map(({ item }) => item)
+  return (
+    collection
+      .map(item => ({ item, key: selector(item) }))
+      // key can be a string or number, so a three-way comparison is needed
+      // eslint-disable-next-line unicorn/prefer-simple-sort-comparator
+      .sort((a, b) => (a.key > b.key ? 1 : a.key < b.key ? -1 : 0))
+      .map(({ item }) => item)
+  )
 }

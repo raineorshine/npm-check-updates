@@ -12,7 +12,7 @@ const loadPackageInfoFromFile = async (options: Options, filepath: string): Prom
   try {
     pkgFile = await fs.readFile(filepath, 'utf-8')
     pkg = JSON.parse(pkgFile)
-  } catch (e) {
+  } catch {
     programError(options, `Missing or invalid ${filepath}`)
   }
 

@@ -25,7 +25,7 @@ function parseFilterExpression(filterExpression: FilterPattern | undefined): Fil
     Array.isArray(filterExpression) &&
     (filterExpression.length === 0 || typeof filterExpression[0] === 'string')
   ) {
-    const filtered = filterExpression.map(s => (typeof s === 'string' ? s.trim() : s)).filter(x => x)
+    const filtered = filterExpression.map(s => (typeof s === 'string' ? s.trim() : s)).filter(Boolean)
     return filtered.length > 0 ? filtered : undefined
   } else {
     return filterExpression
@@ -236,7 +236,8 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       }
     }
 
-    const isValidNumber = typeof options.cooldown === 'number' && !isNaN(options.cooldown) && options.cooldown >= 0
+    const isValidNumber =
+      typeof options.cooldown === 'number' && !Number.isNaN(options.cooldown) && options.cooldown >= 0
     const isValidFunction = typeof options.cooldown === 'function'
 
     if (!isValidNumber && !isValidFunction) {

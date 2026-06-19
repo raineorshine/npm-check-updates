@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import queryVersions from '../src/lib/queryVersions.ts'
+import { type Cacher } from '../src/types/Cacher.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
 describe('queryVersions', () => {
@@ -141,10 +142,10 @@ describe('queryVersions', () => {
   it('returns a cached version without fetching', async () => {
     // the fetch would return 1.0.0, but the cache holds 88.0.0
     const stub = stubVersions('1.0.0')
-    const cacher = {
+    const cacher: Cacher = {
       get: () => ({ version: '88.0.0' }),
       set: () => {},
-      getPeers: () => undefined,
+      getPeers: () => {},
       setPeers: () => {},
       save: async () => {},
       log: () => {},

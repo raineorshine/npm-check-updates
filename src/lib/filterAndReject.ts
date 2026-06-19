@@ -42,7 +42,7 @@ function composeFilter(
         matchers.some(
           ({ isMatch, unscoped }) =>
             isMatch(dependencyName) ||
-            (unscoped && dependencyName.includes('/') && isMatch(dependencyName.replace(/\//g, '_'))),
+            (unscoped && dependencyName.includes('/') && isMatch(dependencyName.replaceAll('/', '_'))),
         )
     }
   }

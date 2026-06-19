@@ -16,7 +16,7 @@ import style from './style.ts'
 type VersionPart = keyof SemVer
 
 const VERSION_BASE_PARTS: VersionPart[] = ['major', 'minor', 'patch']
-const VERSION_ADDED_PARTS: VersionPart[] = ['release', 'build']
+const VERSION_ADDED_PARTS: Set<VersionPart> = new Set(['release', 'build'])
 const VERSION_PARTS: VersionPart[] = [...VERSION_BASE_PARTS, ...VERSION_ADDED_PARTS]
 const VERSION_PART_DELIM: SemVer = {
   major: '',
@@ -69,7 +69,7 @@ export function precisionAdd(precision: VersionPart, n: number) {
 
   const index = VERSION_BASE_PARTS.includes(precision)
     ? VERSION_BASE_PARTS.indexOf(precision) + n
-    : VERSION_ADDED_PARTS.includes(precision)
+    : VERSION_ADDED_PARTS.has(precision)
       ? VERSION_BASE_PARTS.length + n
       : null
 
@@ -109,9 +109,7 @@ export function stringify(semver: SemVer, precision?: VersionPart) {
 export function getPrecision(version: string) {
   const [semver] = semverutils.parseRange(version)
   // expects VERSION_PARTS to be in correct order
-  return VERSION_PARTS.slice()
-    .reverse()
-    .find(part => semver?.[part])
+  return VERSION_PARTS.findLast(part => semver?.[part])
 }
 
 /**
@@ -183,7 +181,7 @@ function diffParts(from: string, to: string): { index: number; parts: string[] }
   const partsFrom = stripRange(from).split('.')
   const parts = stripRange(to).split('.')
   const index = parts.findIndex((part, i) => part !== partsFrom[i])
-  return { index: index >= 0 ? index : parts.length, parts }
+  return { index: index !== -1 ? index : parts.length, parts }
 }
 
 /**
@@ -426,7 +424,7 @@ export const parseNpmAlias = (alias: string) => {
 /**
  * Returns true if a version declaration is an npm alias.
  */
-export const isNpmAlias = (declaration: string) => declaration && !!declaration.match(NPM_ALIAS_REGEX)
+export const isNpmAlias = (declaration: string) => declaration && !!NPM_ALIAS_REGEX.test(declaration)
 
 /**
  * Replaces the version number embedded in an npm alias.
@@ -529,11 +527,9 @@ export function upgradeDependencyDeclaration(
     return (
       (isWildPart(declaredSemver[part])
         ? declaredSemver[part]
-        : VERSION_BASE_PARTS.includes(part) && declaredSemver[part]
+        : (VERSION_BASE_PARTS.includes(part) && declaredSemver[part]) || VERSION_ADDED_PARTS.has(part)
           ? latestSemver[part]
-          : VERSION_ADDED_PARTS.includes(part)
-            ? latestSemver[part]
-            : null) || null
+          : null) || null
     )
   }
 

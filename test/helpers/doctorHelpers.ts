@@ -54,7 +54,7 @@ const lockfileName = (packageManager: PackageManagerName): string =>
  */
 export function createNcuRegExp(input: string): RegExp {
   // replace literal spaces with \s+ for flexible matching
-  return new RegExp(escapeRegExp(input).replace(/ /g, '\\s+'), 'i')
+  return new RegExp(escapeRegExp(input).replaceAll(' ', '\\s+'), 'i')
 }
 
 /** Assertions for npm or yarn when tests pass. */
@@ -88,7 +88,7 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
           },
           { cwd },
         )
-      } catch (e) {}
+      } catch {}
 
       pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
     } finally {

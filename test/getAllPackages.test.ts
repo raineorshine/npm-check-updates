@@ -25,7 +25,7 @@ async function stripDir(dirPath: string, paths: [string[], string[]]): Promise<[
 
 /** Convenience function to call getAllPackages for a given test-path. */
 async function getAllPackagesForTest(testPath: string, options: Options): Promise<[string[], string[]]> {
-  const testCwd = path.join(__dirname, testPath).replace(/\\/g, '/')
+  const testCwd = path.join(__dirname, testPath).replaceAll('\\', '/')
   const optionsWithTestCwd: Options = { cwd: testCwd, ...options }
   const [pkgInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages(optionsWithTestCwd)
   const packagePaths: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
@@ -207,7 +207,7 @@ describe('getAllPackages', () => {
   describe('catalog dependencies', () => {
     it('includes a synthetic catalog package aggregating pnpm-workspace.yaml catalog and catalogs', async () => {
       const [pkgInfos]: [PackageInfo[], string[]] = await getAllPackages({
-        cwd: path.join(__dirname, 'test-data/workspace-catalog').replace(/\\/g, '/'),
+        cwd: path.join(__dirname, 'test-data/workspace-catalog').replaceAll('\\', '/'),
         workspaces: true,
         packageManager: 'pnpm',
         loglevel: 'silent',
@@ -238,7 +238,7 @@ describe('getAllPackages', () => {
         )
 
         const [pkgInfo]: [PackageInfo[], string[]] = await getAllPackages({
-          cwd: tempDir.replace(/\\/g, '/'),
+          cwd: tempDir.replaceAll('\\', '/'),
           workspaces: true,
           packageManager: 'pnpm',
           loglevel: 'silent',
@@ -254,7 +254,7 @@ describe('getAllPackages', () => {
 
     it('reads catalog and catalogs from .yarnrc.yml', async () => {
       const [pkgInfo]: [PackageInfo[], string[]] = await getAllPackages({
-        cwd: path.join(__dirname, 'test-data/workspace-catalog-yarn').replace(/\\/g, '/'),
+        cwd: path.join(__dirname, 'test-data/workspace-catalog-yarn').replaceAll('\\', '/'),
         workspaces: true,
         packageManager: 'yarn',
         loglevel: 'silent',
@@ -268,7 +268,7 @@ describe('getAllPackages', () => {
 
     it('returns no catalog package when there is no .yarnrc.yml', async () => {
       const [pkgInfo]: [PackageInfo[], string[]] = await getAllPackages({
-        cwd: path.join(__dirname, 'test-data/workspace-basic').replace(/\\/g, '/'),
+        cwd: path.join(__dirname, 'test-data/workspace-basic').replaceAll('\\', '/'),
         workspaces: true,
         packageManager: 'yarn',
         loglevel: 'silent',
