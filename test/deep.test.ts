@@ -136,9 +136,9 @@ describe('--deep', () => {
 
       const json = JSON.parse(stdout)
       // Make sure to fix windows paths with replace
-      expect(json).toHaveProperty(path.join(tempDir, 'packages/sub1/package.json').replace(/\\/g, '/'))
-      expect(json).toHaveProperty(path.join(tempDir, 'packages/sub2/package.json').replace(/\\/g, '/'))
-      expect(json).toHaveProperty(path.join(tempDir, 'package.json').replace(/\\/g, '/'))
+      expect(json).toHaveProperty(path.join(tempDir, 'packages/sub1/package.json').replaceAll('\\', '/'))
+      expect(json).toHaveProperty(path.join(tempDir, 'packages/sub2/package.json').replaceAll('\\', '/'))
+      expect(json).toHaveProperty(path.join(tempDir, 'package.json').replaceAll('\\', '/'))
     } finally {
       await removeDir(tempDir)
     }

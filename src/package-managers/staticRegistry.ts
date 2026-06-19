@@ -28,7 +28,7 @@ const readStaticRegistry = async (options: Options): Promise<StaticRegistry> => 
   else {
     try {
       content = await fs.readFile(path, 'utf8')
-    } catch (err) {
+    } catch {
       programError(options, `\nThe specified static registry file does not exist: ${options.registry}`)
     }
   }

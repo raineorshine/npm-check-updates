@@ -63,9 +63,9 @@ function getOptionsPerPage(showHint: boolean, groups?: DependencyGroup[]): numbe
 async function getOwnerPerDependency(fromVersion: Index<Version>, toVersion: Index<Version>, options: Options) {
   const packageManager = getPackageManager(options, options.packageManager)
   const result: Index<boolean> = {}
-  for (const dep of Object.keys(toVersion)) {
+  for (const [dep, toRaw] of Object.entries(toVersion)) {
     const from = fromVersion[dep] || null
-    const to = toVersion[dep] || null
+    const to = toRaw || null
     result[dep] = await packageManager.packageAuthorChanged!(dep, from!, to!, options)
   }
   return result
@@ -95,8 +95,8 @@ const chooseUpgrades = async (
     time,
   })
 
-  const formattedLines = keyValueBy(table.toString().split('\n'), line => {
-    const dep = line.trim().split(' ')[0]
+  const formattedLines = keyValueBy(table.split('\n'), line => {
+    const dep = line.trim().split(' ', 1)[0]
     return {
       [dep]: line.trim(),
     }
@@ -133,7 +133,7 @@ const chooseUpgrades = async (
         type: 'multiselect',
         onState: (state: any) => {
           if (state.aborted) {
-            process.nextTick(() => process.exit(1))
+            queueMicrotask(() => process.exit(1))
           }
         },
       })
@@ -158,7 +158,7 @@ const chooseUpgrades = async (
         type: 'multiselect',
         onState: (state: any) => {
           if (state.aborted) {
-            process.nextTick(() => process.exit(1))
+            queueMicrotask(() => process.exit(1))
           }
         },
       })
@@ -316,26 +316,23 @@ export default async function runLocal(
     printJson(options, output)
   }
 
-  if (Object.keys(filteredUpgraded).length > 0) {
-    // if there is a package file, write the new package data
-    // otherwise, suggest ncu -u
-    if (pkgFile) {
-      if (options.upgrade) {
-        // do not await until the end
-        writePromise = fs.writeFile(pkgFile.replace('#catalog', ''), newPkgData)
-      } else {
-        const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'
-        // quote arguments with spaces
-        const argv = process.argv
-          .slice(2)
-          .map(arg => (arg.includes(' ') ? `"${arg}"` : arg))
-          .join(' ')
-        const ncuOptions = argv ? ' ' + argv : argv
-        const upgradeHint = `\nRun ${chalk.cyan(`${ncuCmd}${ncuOptions} -u`)} to upgrade ${
-          options.packageFile || 'package.json'
-        }`
-        print(options, upgradeHint)
-      }
+  // if there is a package file, write the new package data otherwise, suggest ncu -u
+  if (Object.keys(filteredUpgraded).length > 0 && pkgFile) {
+    if (options.upgrade) {
+      // do not await until the end
+      writePromise = fs.writeFile(pkgFile.replace('#catalog', ''), newPkgData)
+    } else {
+      const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'
+      // quote arguments with spaces
+      const argv = process.argv
+        .slice(2)
+        .map(arg => (arg.includes(' ') ? `"${arg}"` : arg))
+        .join(' ')
+      const ncuOptions = argv ? ' ' + argv : argv
+      const upgradeHint = `\nRun ${chalk.cyan(`${ncuCmd}${ncuOptions} -u`)} to upgrade ${
+        options.packageFile || 'package.json'
+      }`
+      print(options, upgradeHint)
     }
   }
 

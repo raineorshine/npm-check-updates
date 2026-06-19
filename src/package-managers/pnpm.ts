@@ -41,7 +41,7 @@ const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<Npm
   let pnpmWorkspaceConfig
   try {
     pnpmWorkspaceConfig = await fs.readFile(pnpmWorkspaceConfigPath, 'utf-8')
-  } catch (e) {
+  } catch {
     return {}
   }
 
@@ -71,7 +71,7 @@ interface MinimumReleaseAgeLayer {
 /** Coerces an arbitrary config value into a non-negative minimumReleaseAge number (in minutes), or undefined if invalid. */
 const coerceMinimumReleaseAge = (raw: unknown): number | undefined => {
   const value = typeof raw === 'number' ? raw : typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN
-  return typeof value === 'number' && !isNaN(value) && value >= 0 ? value : undefined
+  return typeof value === 'number' && !Number.isNaN(value) && value >= 0 ? value : undefined
 }
 
 /**
@@ -139,11 +139,14 @@ const readMinimumReleaseAgeLayer = async (
 }
 
 /** Returns true if a path exists. */
-const pathExists = async (path: string): Promise<boolean> =>
-  fs
-    .access(path)
-    .then(() => true)
-    .catch(() => false)
+const pathExists = async (path: string): Promise<boolean> => {
+  try {
+    await fs.access(path)
+    return true
+  } catch {
+    return false
+  }
+}
 
 /**
  * Reads minimumReleaseAge settings from pnpm's config, falling back through pnpm's config layers.
@@ -209,16 +212,21 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   if (!options.global) return npm.list(options)
 
   const args = ['ls', '-g', '--json']
-  const { stdout, stderr, command } = await spawnCommand('pnpm', args).catch((err: unknown) => {
+  let result: SpawnResult
+  try {
+    result = await spawnCommand('pnpm', args)
+  } catch (err) {
     // spawn-please rejects with stderr as a bare string on a non-zero exit code, which loses err.message downstream
     if (err instanceof Error) {
       throw err
     }
 
-    throw new Error(`Error executing "pnpm ${args.join(' ')}". ${String(err).trim() || 'No error output.'}`)
-  })
+    throw new Error(`Error executing "pnpm ${args.join(' ')}". ${String(err).trim() || 'No error output.'}`, {
+      cause: err,
+    })
+  }
 
-  return parseList(stdout, command, stderr)
+  return parseList(result.stdout, result.command, result.stderr)
 }
 
 /** Wraps a GetVersion function and passes the npmrc located next to the pnpm-workspace.yaml if it exists. */
@@ -250,7 +258,7 @@ async function spawnPnpm(
   spawnOptions?: SpawnOptions,
 ): Promise<SpawnResult> {
   const fullArgs = [
-    ...(npmOptions.global ? 'global' : []),
+    ...(npmOptions.global ? 'global' : ''),
     ...(Array.isArray(args) ? args : [args]),
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
   ]

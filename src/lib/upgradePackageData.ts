@@ -192,7 +192,7 @@ async function upgradePackageData(
   if (depSections.includes('packageManager')) {
     const pkg = parseJson(pkgData) as PackageFile
     if (pkg.packageManager) {
-      const [name] = pkg.packageManager.split('@')
+      const [name] = pkg.packageManager.split('@', 1)
       if (upgraded[name]) {
         newPkgData = applyJsonValueEdits(newPkgData, [{ path: ['packageManager'], value: `${name}@${upgraded[name]}` }])
       }
