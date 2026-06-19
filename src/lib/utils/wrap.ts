@@ -23,9 +23,8 @@ const wrap = (s: string, maxLineLength = 92) => {
       // do not wrap in the middle of a word
       // reverse the string and use match to find the first non-word character to wrap on
       const wrapOffset =
-        lineFull
-          .split('')
-          .reverse()
+        [...lineFull]
+          .toReversed()
           .join('')
           // add [^\W] to not break in the middle of --registry
           .match(/[ -][^\W]/)?.index || 0

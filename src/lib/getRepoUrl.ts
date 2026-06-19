@@ -35,9 +35,7 @@ async function getRepoUrl(
 ) {
   const repositoryMetadata: string | PackageFileRepository | null = !packageJson
     ? await getPackageRepo(packageName, { pkgFile })
-    : packageJson.repository
-      ? packageJson.repository
-      : null
+    : packageJson.repository || null
 
   if (!repositoryMetadata) return null
 
@@ -54,7 +52,7 @@ async function getRepoUrl(
       if (url.protocol === 'https:' || url.protocol === 'http:') {
         return gitURL
       }
-    } catch (e) {}
+    } catch {}
   } else if (typeof repositoryMetadata.url === 'string') {
     gitURL = repositoryMetadata.url
     if (typeof repositoryMetadata.directory === 'string') {

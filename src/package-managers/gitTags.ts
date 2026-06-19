@@ -21,11 +21,12 @@ const execFile = promisify(childProcess.execFile)
  * @returns the extracted git tags.
  */
 async function getGitTags(url: string): Promise<Index<string>> {
-  const out = (await execFile('git', ['ls-remote', '--tags', '--', url])).stdout
+  const result = await execFile('git', ['ls-remote', '--tags', '--', url])
+  const out = result.stdout
   const tags: Index<string> = {}
   for (const line of out.trim().split('\n')) {
     const splitted = line.split('\t')
-    tags[splitted[1].replace(/^refs\/tags\/|\^{}$/g, '')] = splitted[0]
+    tags[splitted[1].replaceAll(/^refs\/tags\/|\^{}$/g, '')] = splitted[0]
   }
   return tags
 }
@@ -53,7 +54,7 @@ async function getSortedVersions(
         tags = await getGitTags(`https://${auth ? auth + '@' : ''}${host}/${path}`)
       }
     }
-  } catch (e) {
+  } catch {
     // catch a variety of errors that occur on invalid or private repos
     print(options ?? {}, `Invalid, private repo, or no tags for ${name}: ${declaration}`, 'verbose')
     return
@@ -61,7 +62,7 @@ async function getSortedVersions(
 
   return (
     Object.keys(tags)
-      .map(versionUtil.fixPseudoVersion)
+      .map(tag => versionUtil.fixPseudoVersion(tag))
       // do not pass nodeSemver.valid reference directly since the mapping index will be interpreted as the loose option
       // https://github.com/npm/node-semver#functions
       .filter(tag => nodeSemver.valid(tag))
@@ -74,7 +75,7 @@ export const latest: GetVersion = async (name: string, declaration: VersionSpec,
   const versions = await getSortedVersions(name, declaration, options)
   if (!versions) return { version: null }
   const versionsFiltered = options?.pre ? versions : versions.filter(v => !versionUtil.isPre(v))
-  const latestVersion = versionsFiltered[versionsFiltered.length - 1]
+  const latestVersion = versionsFiltered.at(-1)
   return { version: latestVersion ? versionUtil.upgradeGitHubUrl(declaration, latestVersion) : null }
 }
 
@@ -82,7 +83,7 @@ export const latest: GetVersion = async (name: string, declaration: VersionSpec,
 export const greatest: GetVersion = async (name: string, declaration: VersionSpec, options?: Options) => {
   const versions = await getSortedVersions(name, declaration, options)
   if (!versions) return { version: null }
-  const greatestVersion = versions[versions.length - 1]
+  const greatestVersion = versions.at(-1)
   return { version: greatestVersion ? versionUtil.upgradeGitHubUrl(declaration, greatestVersion) : null }
 }
 

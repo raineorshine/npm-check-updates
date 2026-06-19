@@ -23,7 +23,7 @@ const codeBlock = (code: string, { markdown, lang = 'js' }: { markdown?: boolean
   `${markdown ? `\`\`\`${lang}\n` : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
 
 /** Removes inline code ticks. */
-const uncode = (s: string) => s.replace(/`/g, '')
+const uncode = (s: string) => s.replaceAll('`', '')
 
 /** Parses a number from a string or number input. Throws if the value is not a number. */
 const parseNumberOption =
@@ -32,8 +32,8 @@ const parseNumberOption =
     if (typeof value === 'number') {
       return value
     } else if (typeof value === 'string') {
-      const parsed = parseInt(value, 10)
-      if (!isNaN(parsed)) {
+      const parsed = Number.parseInt(value, 10)
+      if (!Number.isNaN(parsed)) {
         return parsed
       }
     }
@@ -80,7 +80,7 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?:
     output += `\n${helpText.trim()}\n\n`
   } else if (option.description) {
     const description = markdown ? option.description : uncode(option.description)
-    output += `\n${description.replace(/`/g, '')}\n`
+    output += `\n${description.replaceAll('`', '')}\n`
   }
 
   return output.trim()
@@ -987,7 +987,7 @@ const cliOptions: CLIOption[] = [
       if (typeof value === 'number') {
         return !!value
       } else if (typeof value === 'string') {
-        return !!parseInt(value, 10)
+        return !!Number.parseInt(value, 10)
       } else {
         throw new Error('pre must be a number')
       }
@@ -1118,7 +1118,7 @@ const cliOptions: CLIOption[] = [
         return value
       } else if (typeof value === 'string') {
         const days = parseCooldown(value)
-        return days !== null ? days : parseInt(value, 10)
+        return days !== null ? days : Number.parseInt(value, 10)
       } else {
         throw new Error('cooldown must be a number, string, or function')
       }

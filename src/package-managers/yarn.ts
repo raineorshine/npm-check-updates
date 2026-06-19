@@ -51,7 +51,7 @@ export interface YarnMinimalAgeGate {
 
 /** Safely interpolates a string as a template string. */
 const interpolate = (s: string, data: Index<string | undefined>): string =>
-  s.replace(
+  s.replaceAll(
     /\$\{([^:-]+)(?:(:)?-([^}]*))?\}/g,
     (match, key, name, fallbackOnEmpty, fallback) => data[key] || (fallbackOnEmpty ? fallback : ''),
   )
@@ -99,7 +99,8 @@ export async function getPathToLookForYarnrc(
 ): Promise<string | undefined> {
   if (options.global) return undefined
 
-  const directoryPath = (await findLockfile(options, readdir))?.directoryPath
+  const lockfile = await findLockfile(options, readdir)
+  const directoryPath = lockfile?.directoryPath
   if (!directoryPath) return undefined
 
   return path.join(directoryPath, '.yarnrc.yml')
@@ -175,7 +176,7 @@ const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMini
     const { npmMinimalAgeGate: rawNpmMinimalAgeGate } = parsed
     let npmMinimalAgeGate: number
     if (typeof rawNpmMinimalAgeGate === 'number') {
-      if (isNaN(rawNpmMinimalAgeGate) || rawNpmMinimalAgeGate <= 0) continue
+      if (Number.isNaN(rawNpmMinimalAgeGate) || rawNpmMinimalAgeGate <= 0) continue
       npmMinimalAgeGate = rawNpmMinimalAgeGate
     } else if (typeof rawNpmMinimalAgeGate === 'string') {
       const days = parseCooldown(rawNpmMinimalAgeGate)
@@ -214,7 +215,7 @@ function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep
     parser.on('data', d => {
       // only parse info data
       // ignore error info, e.g. "Visit https://yarnpkg.com/en/docs/cli/list for documentation about this command."
-      if (d.type === 'info' && !d.data.match(/^Visit/)) {
+      if (d.type === 'info' && typeof d.data === 'string' && !d.data.startsWith('Visit')) {
         // parse package name and version number from info data, e.g. "nodemon@2.0.4" has binaries
         const [, pkgName, pkgVersion] = d.data.match(/"(@?.*)@(.*)"/) || []
 
@@ -310,7 +311,8 @@ export async function defaultPrefix(options: Options): Promise<string | null> {
   // https://github.com/raineorshine/npm-check-updates/issues/873
   let prefix: string | null
   try {
-    prefix = (await spawnCommand('yarn', ['global', 'dir'])).stdout
+    const result = await spawnCommand('yarn', ['global', 'dir'])
+    prefix = result.stdout
   } catch {
     prefix = null
   }

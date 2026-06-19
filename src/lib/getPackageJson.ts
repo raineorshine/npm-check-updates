@@ -27,7 +27,7 @@ async function getPackageJson(
       try {
         const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
         return packageJson
-      } catch (e) {}
+      } catch {}
     }
   }
 

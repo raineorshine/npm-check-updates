@@ -6,7 +6,7 @@ function parseCooldown(s: string): number | null {
   const match = s.match(/^(\d+(?:\.\d+)?)(d|h|m)$/)
   if (!match) return null
 
-  const value = parseFloat(match[1])
+  const value = Number.parseFloat(match[1])
   const unit = match[2]
 
   if (unit === 'd') return value

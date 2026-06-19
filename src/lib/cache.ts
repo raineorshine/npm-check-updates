@@ -81,7 +81,7 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
       // reset cache
       await fs.promises.rm(cacheFile, { force: true })
     }
-  } catch (error) {
+  } catch {
     // ignore file read/parse/remove errors
   }
 

@@ -10,6 +10,7 @@ Call chalkInit(color) at the beginning of execution and the chalk instance will 
 It is a hacky solution, but it is the easiest way to import and pass the color option to all chalk instances without brutalizing the syntax.
 
 */
+// eslint-disable-next-line unicorn/import-style -- need the Chalk class alongside the default import
 import chalkDefault, { Chalk } from 'chalk'
 import keyValueBy from './utils/keyValueBy.ts'
 

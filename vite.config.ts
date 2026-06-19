@@ -41,6 +41,7 @@ function analyzerOnce(): Plugin {
       ran = true
       if (typeof base.generateBundle === 'function') {
         console.log('run analyzer')
+        // eslint-disable-next-line unicorn/no-this-outside-of-class -- this is the rollup plugin context
         return base.generateBundle.call(this, ...args)
       }
     },

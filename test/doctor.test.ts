@@ -101,7 +101,7 @@ describe('doctor', function () {
           },
           { cwd },
         )
-      } catch (e) {}
+      } catch {}
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
@@ -153,7 +153,7 @@ describe('doctor', function () {
           },
           { cwd },
         )
-      } catch (e) {}
+      } catch {}
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
@@ -204,7 +204,7 @@ describe('doctor', function () {
           },
           { cwd },
         )
-      } catch (e) {}
+      } catch {}
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
@@ -255,7 +255,7 @@ describe('doctor', function () {
           },
           { cwd },
         )
-      } catch (e) {}
+      } catch {}
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
