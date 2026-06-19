@@ -16,9 +16,9 @@ import programError from '../src/lib/programError.ts'
 import { styleInit } from '../src/lib/style.ts'
 import removeDir from './helpers/removeDir.ts'
 
-const ESC = String.fromCharCode(0x1b)
-const BEL = String.fromCharCode(0x07)
-const CR = String.fromCharCode(0x0d)
+const ESC = String.fromCodePoint(0x1b)
+const BEL = String.fromCodePoint(0x07)
+const CR = String.fromCodePoint(0x0d)
 
 // OSC sequence that sets the terminal title. Written with char codes so editors and prettier leave it alone
 const OSC_TITLE = ESC + ']0;pwned' + BEL

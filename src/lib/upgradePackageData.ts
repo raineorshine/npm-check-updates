@@ -186,7 +186,7 @@ async function upgradePackageData(
   const pkg = parseJson<PackageFile>(pkgData)
 
   if (depSections.includes('packageManager') && pkg.packageManager) {
-    const [name, spec] = pkg.packageManager.split('@')
+    const [name, spec] = pkg.packageManager.split('@', 2)
     // spec is an exact version, so the upgrade stays exact as the field requires
     const version = upgradeDeclaration(name, spec)
     if (version) {

@@ -106,7 +106,7 @@ describe('bin', () => {
   it('fall back to package.json search when receiving empty content on stdin', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
     const { stdout } = await spawn('node', [bin, '--stdin'])
-    expect(stdout.toString().trim()).toMatch(/^Checking .+package.json/)
+    expect(stdout.trim()).toMatch(/^Checking .+package.json/)
     stub.restore()
   })
 
@@ -321,7 +321,7 @@ describe('bin', () => {
       }
       const { stdout } = await spawn('node', [bin, '--stdin'], { stdin: JSON.stringify({ dependencies }) })
       expect(
-        stripAnsi(stdout).trim().replace(/\s+/g, ' '), // Replace all whitespace sequences with a single space
+        stripAnsi(stdout).trim().replaceAll(/\s+/g, ' '), // Replace all whitespace sequences with a single space
       ).toContain('ncu-test-v2 https://github.com/raineorshine/ncu-test-v2.git#v1.0.0 → v2.0.0')
     })
 
@@ -331,7 +331,7 @@ describe('bin', () => {
         request: 'npm:ncu-test-v2@1.0.0',
       }
       const { stdout } = await spawn('node', [bin, '--stdin'], { stdin: JSON.stringify({ dependencies }) })
-      expect(stripAnsi(stdout).replace(/\s+/g, ' ')).toContain('request npm:ncu-test-v2@1.0.0 → 99.9.9')
+      expect(stripAnsi(stdout).replaceAll(/\s+/g, ' ')).toContain('request npm:ncu-test-v2@1.0.0 → 99.9.9')
       stub.restore()
     })
   })

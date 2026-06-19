@@ -57,7 +57,7 @@ interface PnpmWorkspaceRegistries {
 /** Coerces an arbitrary config value into a non-negative minimumReleaseAge number (in minutes), or undefined if invalid. */
 const coerceMinimumReleaseAge = (raw: unknown): number | undefined => {
   const value = typeof raw === 'number' ? raw : typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN
-  return typeof value === 'number' && !isNaN(value) && value >= 0 ? value : undefined
+  return typeof value === 'number' && !Number.isNaN(value) && value >= 0 ? value : undefined
 }
 
 /**
@@ -277,8 +277,13 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
  */
 const readWorkspaceNpmrc = memoize(async (pnpmWorkspaceDir: string): Promise<NpmConfig | null> => {
   const pnpmWorkspaceConfigPath = path.join(pnpmWorkspaceDir, '.npmrc')
-  const contents = await fs.readFile(pnpmWorkspaceConfigPath, 'utf-8').catch(() => null)
-  return contents == null ? null : npm.normalizeNpmConfig(ini.parse(contents), pnpmWorkspaceDir)
+  let contents: string
+  try {
+    contents = await fs.readFile(pnpmWorkspaceConfigPath, 'utf-8')
+  } catch {
+    return null
+  }
+  return npm.normalizeNpmConfig(ini.parse(contents), pnpmWorkspaceDir)
 })
 
 /** Reads the npmrc that sits next to pnpm-workspace.yaml, or an empty config if it does not exist. */

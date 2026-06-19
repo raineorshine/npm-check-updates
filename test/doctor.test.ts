@@ -85,7 +85,7 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
           },
           { cwd },
         )
-      } catch (e) {}
+      } catch {}
 
       try {
         pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
@@ -169,7 +169,7 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
           },
           { cwd },
         )
-      } catch (e) {}
+      } catch {}
 
       try {
         pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
@@ -217,7 +217,7 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
           },
           { cwd },
         )
-      } catch (e) {}
+      } catch {}
 
       try {
         pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
@@ -265,7 +265,7 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
           },
           { cwd },
         )
-      } catch (e) {}
+      } catch {}
 
       try {
         pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')

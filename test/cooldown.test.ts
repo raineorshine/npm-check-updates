@@ -25,13 +25,13 @@ const getNormalizedLogs = (logSpy: MockInstance<(...args: any[]) => void>): stri
     .flat()
     .filter((arg): arg is string => typeof arg === 'string')
     .join('\n')
-    .replace(/^\n+|\n+$/g, '') // Remove newlines at the start and end
-    .replace(/\n+/g, '\n') // Remove consecutive newlines
+    .replaceAll(/^\n+|\n+$/g, '') // Remove newlines at the start and end
+    .replaceAll(/\n+/g, '\n') // Remove consecutive newlines
     .split('\n')
     .map(
       l =>
         stripVTControlCharacters(l)
-          .replace(/\s+/g, ' ') // Replace all whitespace sequences with a single space
+          .replaceAll(/\s+/g, ' ') // Replace all whitespace sequences with a single space
           .trim(), // Ensure no stray spaces remain at the edges
     )
 }

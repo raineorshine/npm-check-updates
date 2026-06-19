@@ -40,7 +40,7 @@ const getHeaders = (): Record<string, string> => {
   const authHeader = token ? { authorization: ['Bearer', token].join(' ') } : null
   return {
     accept: 'application/vnd.github+json',
-    ...(authHeader ?? {}),
+    ...authHeader,
   }
 }
 
@@ -109,7 +109,7 @@ const parseLines = (body: string): { text: string; level: number }[] => {
  * markdownlint's heading-increment rule, which has no automatic fix.
  */
 const shiftHeadings = (body: string): string => {
-  const lines = parseLines(body.replace(/\r\n/g, '\n'))
+  const lines = parseLines(body.replaceAll('\r\n', '\n'))
   const levels = lines.filter(line => line.level > 0).map(line => line.level)
   if (levels.length === 0) return lines.map(line => line.text).join('\n')
 
@@ -173,7 +173,7 @@ export async function formatChangelog(content: string): Promise<string> {
     formatted = await prettier.format(formatted, prettierOptions)
     const errors = (await lint({ strings: { changelog: formatted }, config })).changelog
 
-    if (!errors.some(error => error.fixInfo)) {
+    if (errors.every(error => !error.fixInfo)) {
       const unfixable = [...new Set(errors.map(error => error.ruleNames[0]))].sort()
       if (unfixable.length === 0) return formatted
       console.log(`[build-changelog] Disabling rules with no automatic fix: ${unfixable.join(', ')}`)
@@ -204,8 +204,10 @@ export async function buildChangelog(): Promise<void> {
 const isDirectRun = import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
 
 if (isDirectRun) {
-  buildChangelog().catch(err => {
+  try {
+    await buildChangelog()
+  } catch (err: any) {
     console.error(err?.stack || err)
     process.exit(1)
-  })
+  }
 }

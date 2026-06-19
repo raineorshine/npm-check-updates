@@ -5,7 +5,8 @@ import style from './style.ts'
 /** Print an error. Exit the process if in CLI mode. */
 function programError(
   options: Options,
-  message: string,
+  // some callers pass an Error
+  message: string | Error,
   {
     color = true,
   }: {
@@ -14,8 +15,7 @@ function programError(
     color?: boolean
   } = {},
 ): never {
-  // callers pass registry and package manager text through here, so strip it before styleText adds its own escapes.
-  // String() because some callers pass an Error despite the signature.
+  // callers pass registry and package manager text through here, so strip it before styleText adds its own escapes
   const safe = sanitizeForDisplay(String(message))
   if (options.cli) {
     print(options, color ? style.red(safe) : safe, null, 'error')

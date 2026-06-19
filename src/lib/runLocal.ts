@@ -102,8 +102,8 @@ const chooseUpgrades = async (
     time,
   })
 
-  const formattedLines = keyValueBy(table.toString().split('\n'), line => {
-    const dep = line.trim().split(' ')[0]
+  const formattedLines = keyValueBy(table.split('\n'), line => {
+    const dep = line.trim().split(' ', 1)[0]
     return {
       [dep]: line.trim(),
     }
@@ -150,7 +150,7 @@ const chooseUpgrades = async (
       type: 'multiselect',
       onState: (state: any) => {
         if (state.aborted) {
-          process.nextTick(() => process.exit(1))
+          queueMicrotask(() => process.exit(1))
         }
       },
     })
@@ -313,26 +313,24 @@ export default async function runLocal(
     printJson(options, output)
   }
 
-  if (Object.keys(filteredUpgraded).length > 0) {
-    // if there is a package file, write the new package data
-    // otherwise, suggest ncu -u
-    if (pkgFile) {
-      if (options.upgrade) {
-        // do not await until the end
-        writePromise = fs.writeFile(pkgFile, newPkgData)
-      } else {
-        const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'
-        // quote arguments with spaces
-        const argv = process.argv
-          .slice(2)
-          .map(arg => (arg.includes(' ') ? `"${arg}"` : arg))
-          .join(' ')
-        const ncuOptions = argv ? ' ' + argv : argv
-        const upgradeHint = `\nRun ${style.cyan(`${ncuCmd}${ncuOptions} -u`)} to upgrade ${
-          options.packageFile || 'package.json'
-        }`
-        print(options, upgradeHint)
-      }
+  // if there is a package file, write the new package data
+  // otherwise, suggest ncu -u
+  if (Object.keys(filteredUpgraded).length > 0 && pkgFile) {
+    if (options.upgrade) {
+      // do not await until the end
+      writePromise = fs.writeFile(pkgFile, newPkgData)
+    } else {
+      const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'
+      // quote arguments with spaces
+      const argv = process.argv
+        .slice(2)
+        .map(arg => (arg.includes(' ') ? `"${arg}"` : arg))
+        .join(' ')
+      const ncuOptions = argv ? ' ' + argv : argv
+      const upgradeHint = `\nRun ${style.cyan(`${ncuCmd}${ncuOptions} -u`)} to upgrade ${
+        options.packageFile || 'package.json'
+      }`
+      print(options, upgradeHint)
     }
   }
 

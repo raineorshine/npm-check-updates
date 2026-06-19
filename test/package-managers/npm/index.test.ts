@@ -123,7 +123,7 @@ describe('npm', () => {
   })
 
   describe('malformed registry versions', () => {
-    const CR = String.fromCharCode(0x0d)
+    const CR = String.fromCodePoint(0x0d)
 
     /** Stubs a packument with a CR-padded version. */
     const stubPadded = () => {

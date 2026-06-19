@@ -169,7 +169,7 @@ const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMini
     const { npmMinimalAgeGate: rawNpmMinimalAgeGate } = parsed
     let npmMinimalAgeGate: number
     if (typeof rawNpmMinimalAgeGate === 'number') {
-      if (isNaN(rawNpmMinimalAgeGate) || rawNpmMinimalAgeGate <= 0) continue
+      if (Number.isNaN(rawNpmMinimalAgeGate) || rawNpmMinimalAgeGate <= 0) continue
       npmMinimalAgeGate = rawNpmMinimalAgeGate
     } else if (typeof rawNpmMinimalAgeGate === 'string') {
       const days = parseCooldown(rawNpmMinimalAgeGate)
@@ -209,7 +209,7 @@ function parseJsonLines(result: string): { dependencies: Index<ParsedDep> } {
 
     // only parse info data
     // ignore error info, e.g. "Visit https://yarnpkg.com/en/docs/cli/list for documentation about this command."
-    if (d.type === 'info' && !d.data.match(/^Visit/)) {
+    if (d.type === 'info' && !d.data.startsWith('Visit')) {
       // parse package name and version number from info data, e.g. "nodemon@2.0.4" has binaries
       const [, pkgName, pkgVersion] = d.data.match(/"(@?[^@]*)@([^"]*)"/) || []
       if (!pkgName) continue

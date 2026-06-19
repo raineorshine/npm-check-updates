@@ -30,7 +30,7 @@ function throwYamlSyntaxError(error: unknown, { options, filePath }: { options?:
 
 /** Returns true if the path points into a catalog or catalogs section. */
 function isCatalogPath(path: string[]): boolean {
-  return path.length >= 2 && (path[0] === 'catalog' || path[0] === 'catalogs' || path[0] === 'workspaces')
+  return path.length >= 2 && ['catalog', 'catalogs', 'workspaces'].includes(path[0])
 }
 
 /** Reads the version currently declared at a catalog path. */
