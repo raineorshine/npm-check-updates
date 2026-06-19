@@ -20,16 +20,20 @@ type CircularData =
  * If a cycle was found, the offending peer dependency of the specified package is returned
  */
 function isCircularPeer(peerDependencies: Index<Index<string>>, packageName: string): CircularData {
+  const visited = new Set<string>()
   let queue = [[packageName]]
   while (queue.length > 0) {
     const nextQueue: string[][] = []
     for (const path of queue) {
-      const parents = Object.keys(peerDependencies[path[0]] ?? {})
+      const head = path[0]
+      if (visited.has(head)) continue
+      visited.add(head)
+      const parents = Object.keys(peerDependencies[head] ?? {})
       for (const name of parents) {
         if (name === path.at(-1)) {
           return {
             isCircular: true,
-            offendingPackage: path[0],
+            offendingPackage: head,
           }
         }
         nextQueue.push([name, ...path])
