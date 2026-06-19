@@ -24,10 +24,12 @@ async function spawnBun(
 }
 
 /** Returns the global directory of bun. */
-export const defaultPrefix = async (options: Options): Promise<string | undefined> =>
-  options.global
-    ? options.prefix || process.env.BUN_INSTALL || path.dirname((await spawn('bun', ['pm', '-g', 'bin'])).stdout)
-    : undefined
+export const defaultPrefix = async (options: Options): Promise<string | undefined> => {
+  if (!options.global) return undefined
+  if (options.prefix || process.env.BUN_INSTALL) return options.prefix || process.env.BUN_INSTALL
+  const binResult = await spawn('bun', ['pm', '-g', 'bin'])
+  return path.dirname(binResult.stdout)
+}
 
 /**
  * (Bun) Fetches the list of all installed packages.

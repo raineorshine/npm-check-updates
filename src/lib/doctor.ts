@@ -71,7 +71,7 @@ const loadPackageFileForDoctor = async (options: Options): Promise<PackageInfo> 
   // assert package.json
   try {
     packageInfo = await loadPackageInfoFromFile(options, 'package.json')
-  } catch (e) {
+  } catch {
     console.error('Missing or invalid package.json')
     process.exit(1)
   }
@@ -165,21 +165,21 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
   let lockFile = ''
   try {
     lockFile = await fs.readFile(lockFileName, 'utf-8')
-  } catch (e) {
+  } catch {
     // try bun.lockb if bun.lock was not found
     // set lockFileName so the rest of doctor mode uses bun.lockb for lock file updating and restoration
     if (options.packageManager === 'bun') {
       lockFileName = 'bun.lockb'
       try {
         lockFile = await fs.readFile(lockFileName, 'utf-8')
-      } catch (e) {}
+      } catch {}
     }
   }
 
   // make sure current tests pass before we begin
   try {
     await runTests()
-  } catch (e) {
+  } catch {
     console.error('Tests failed before we even got started!')
     process.exit(1)
   }
@@ -241,11 +241,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     // restore package file, lockFile and re-install
     await fs.writeFile('package.json', pkgFile)
 
-    if (lockFile) {
-      await fs.writeFile(lockFileName, lockFile)
-    } else {
-      await fs.rm(lockFileName, { recursive: true, force: true })
-    }
+    await (lockFile ? fs.writeFile(lockFileName, lockFile) : fs.rm(lockFileName, { recursive: true, force: true }))
 
     // save the last package file with passing tests
     let lastPkgFile = pkgFile
@@ -273,11 +269,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         // install single dependency
         await npm(
           [
-            ...(options.packageManager === 'yarn' ||
-            options.packageManager === 'pnpm' ||
-            options.packageManager === 'bun'
-              ? ['add']
-              : ['install', '--no-save']),
+            ...(['yarn', 'pnpm', 'bun'].includes(options.packageManager ?? '') ? ['add'] : ['install', '--no-save']),
             `${name}@${version}`,
           ],
           { packageManager: options.packageManager },
@@ -318,11 +310,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         await fs.writeFile(lockFileName, lockFile)
 
         // restore package.json since yarn and pnpm do not have the --no-save option
-        if (
-          options.packageManager === 'yarn' ||
-          options.packageManager === 'pnpm' ||
-          options.packageManager === 'bun'
-        ) {
+        if (['yarn', 'pnpm', 'bun'].includes(options.packageManager ?? '')) {
           await fs.writeFile('package.json', lastPkgFile)
         }
       }

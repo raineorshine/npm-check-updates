@@ -22,14 +22,14 @@ export function keyValueBy<T, R = true>(
   const isArray = Array.isArray(input)
   keyValue = keyValue || ((key: T): Index<R> => ({ [key as unknown as string]: true as unknown as R }))
   // considerably faster than Array.prototype.reduce
-  Object.entries(input || {}).forEach(([key, value], i) => {
+  for (const [i, [key, value]] of Object.entries(input || {}).entries()) {
     const o = isArray
       ? (keyValue as ArrayKeyValueGenerator<T, R>)(value, i, accum)
       : (keyValue as ObjectKeyValueGenerator<T, R>)(key, value, accum)
     for (const [k, v] of Object.entries(o || {})) {
       accum[k] = v
     }
-  })
+  }
 
   return accum
 }

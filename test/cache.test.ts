@@ -139,7 +139,7 @@ describe('cache', () => {
     let noCacheFile = false
     try {
       await fs.stat(resolvedDefaultCacheFile)
-    } catch (error) {
+    } catch {
       noCacheFile = true
     }
     expect(noCacheFile).eq(true)

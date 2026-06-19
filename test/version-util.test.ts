@@ -301,62 +301,62 @@ describe('version-util', () => {
     })
   })
 
-  describe('addWildCard', () => {
+  describe('addWildcard', () => {
     it('add ~', () => {
-      versionUtil.addWildCard('1', '~').should.equal('~1')
-      versionUtil.addWildCard('1.2', '~').should.equal('~1.2')
-      versionUtil.addWildCard('1.2.3', '~').should.equal('~1.2.3')
-      versionUtil.addWildCard('1.2.3-alpha.1', '~').should.equal('~1.2.3-alpha.1')
-      versionUtil.addWildCard('1.2.3+build12345', '~').should.equal('~1.2.3+build12345')
+      versionUtil.addWildcard('1', '~').should.equal('~1')
+      versionUtil.addWildcard('1.2', '~').should.equal('~1.2')
+      versionUtil.addWildcard('1.2.3', '~').should.equal('~1.2.3')
+      versionUtil.addWildcard('1.2.3-alpha.1', '~').should.equal('~1.2.3-alpha.1')
+      versionUtil.addWildcard('1.2.3+build12345', '~').should.equal('~1.2.3+build12345')
     })
     it('add ^', () => {
-      versionUtil.addWildCard('1', '^').should.equal('^1')
-      versionUtil.addWildCard('1.2', '^').should.equal('^1.2')
-      versionUtil.addWildCard('1.2.3', '^').should.equal('^1.2.3')
-      versionUtil.addWildCard('1.2.3-alpha.1', '^').should.equal('^1.2.3-alpha.1')
-      versionUtil.addWildCard('1.2.3+build12345', '^').should.equal('^1.2.3+build12345')
+      versionUtil.addWildcard('1', '^').should.equal('^1')
+      versionUtil.addWildcard('1.2', '^').should.equal('^1.2')
+      versionUtil.addWildcard('1.2.3', '^').should.equal('^1.2.3')
+      versionUtil.addWildcard('1.2.3-alpha.1', '^').should.equal('^1.2.3-alpha.1')
+      versionUtil.addWildcard('1.2.3+build12345', '^').should.equal('^1.2.3+build12345')
     })
     it('add .*', () => {
-      versionUtil.addWildCard('1', '.*').should.equal('1.*')
-      versionUtil.addWildCard('1.2', '.*').should.equal('1.*')
-      versionUtil.addWildCard('1.2.3', '.*').should.equal('1.*')
-      versionUtil.addWildCard('1.2.3-alpha.1', '.*').should.equal('1.*')
-      versionUtil.addWildCard('1.2.3+build12345', '.*').should.equal('1.*')
+      versionUtil.addWildcard('1', '.*').should.equal('1.*')
+      versionUtil.addWildcard('1.2', '.*').should.equal('1.*')
+      versionUtil.addWildcard('1.2.3', '.*').should.equal('1.*')
+      versionUtil.addWildcard('1.2.3-alpha.1', '.*').should.equal('1.*')
+      versionUtil.addWildcard('1.2.3+build12345', '.*').should.equal('1.*')
     })
     it('add .x', () => {
-      versionUtil.addWildCard('1', '.x').should.equal('1.x')
-      versionUtil.addWildCard('1.2', '.x').should.equal('1.x')
-      versionUtil.addWildCard('1.2.3', '.x').should.equal('1.x')
-      versionUtil.addWildCard('1.2.3-alpha.1', '.x').should.equal('1.x')
-      versionUtil.addWildCard('1.2.3+build12345', '.x').should.equal('1.x')
+      versionUtil.addWildcard('1', '.x').should.equal('1.x')
+      versionUtil.addWildcard('1.2', '.x').should.equal('1.x')
+      versionUtil.addWildcard('1.2.3', '.x').should.equal('1.x')
+      versionUtil.addWildcard('1.2.3-alpha.1', '.x').should.equal('1.x')
+      versionUtil.addWildcard('1.2.3+build12345', '.x').should.equal('1.x')
     })
   })
 
-  describe('isWildCard', () => {
+  describe('isWildcard', () => {
     it('return true for ~', () => {
-      versionUtil.isWildCard('~').should.equal(true)
+      versionUtil.isWildcard('~').should.equal(true)
     })
     it('return true for ^', () => {
-      versionUtil.isWildCard('^').should.equal(true)
+      versionUtil.isWildcard('^').should.equal(true)
     })
     it('return true for ^*', () => {
-      versionUtil.isWildCard('^*').should.equal(true)
+      versionUtil.isWildcard('^*').should.equal(true)
     })
     it('return true for *', () => {
-      versionUtil.isWildCard('*').should.equal(true)
+      versionUtil.isWildcard('*').should.equal(true)
     })
     it('return true for x', () => {
-      versionUtil.isWildCard('x').should.equal(true)
+      versionUtil.isWildcard('x').should.equal(true)
     })
     it('return true for x.x', () => {
-      versionUtil.isWildCard('x.x').should.equal(true)
+      versionUtil.isWildcard('x.x').should.equal(true)
     })
     it('return true for x.x.x', () => {
-      versionUtil.isWildCard('x.x.x').should.equal(true)
+      versionUtil.isWildcard('x.x.x').should.equal(true)
     })
     it('return false for strings that more than a wildcard', () => {
-      versionUtil.isWildCard('^0.15.0').should.equal(false)
-      versionUtil.isWildCard('1.*').should.equal(false)
+      versionUtil.isWildcard('^0.15.0').should.equal(false)
+      versionUtil.isWildcard('1.*').should.equal(false)
     })
   })
 

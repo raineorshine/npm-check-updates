@@ -27,7 +27,7 @@ function parseFilterExpression(filterExpression: FilterPattern | undefined): Fil
     Array.isArray(filterExpression) &&
     (filterExpression.length === 0 || typeof filterExpression[0] === 'string')
   ) {
-    const filtered = filterExpression.map(s => (typeof s === 'string' ? s.trim() : s)).filter(x => x)
+    const filtered = filterExpression.map(s => (typeof s === 'string' ? s.trim() : s)).filter(Boolean)
     return filtered.length > 0 ? filtered : undefined
   } else {
     return filterExpression
@@ -210,7 +210,8 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       }
     }
 
-    const isValidNumber = typeof options.cooldown === 'number' && !isNaN(options.cooldown) && options.cooldown >= 0
+    const isValidNumber =
+      typeof options.cooldown === 'number' && !Number.isNaN(options.cooldown) && options.cooldown >= 0
     const isValidFunction = typeof options.cooldown === 'function'
 
     if (!isValidNumber && !isValidFunction) {
@@ -271,11 +272,11 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       if (minReleaseAge != null) {
         const days =
           typeof minReleaseAge === 'string'
-            ? (parseCooldown(minReleaseAge) ?? parseInt(minReleaseAge, 10))
+            ? (parseCooldown(minReleaseAge) ?? Number.parseInt(minReleaseAge, 10))
             : typeof minReleaseAge === 'number'
               ? minReleaseAge
               : null
-        if (days != null && !isNaN(days)) {
+        if (days != null && !Number.isNaN(days)) {
           // npm's min-release-age-exclude is a list of package names or glob patterns that are exempt from min-release-age.
           // a single .npmrc entry parses as a string; repeated entries (min-release-age-exclude[]=) parse as an array.
           const minReleaseAgeExcludeRaw = npmConfigCooldown?.minReleaseAgeExclude
@@ -289,7 +290,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
               )
                 .flatMap(pattern => pattern.split(','))
                 .map(pattern => pattern.trim())
-                .filter(pattern => pattern),
+                .filter(Boolean),
             ),
           ]
           if (minReleaseAgeExclude.length > 0) {

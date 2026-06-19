@@ -150,7 +150,7 @@ const install = async (
       // allow Ctrl+C to kill the process
       onState: (state: any) => {
         if (state.aborted) {
-          process.nextTick(() => process.exit(1))
+          queueMicrotask(() => process.exit(1))
         }
       },
     })
@@ -247,7 +247,7 @@ async function runUpgrades(
       // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
       const rcResult = await getNcuRc({ packageFile: packageInfo.filepath, options })
       let rcConfig = rcResult.config
-      if (options.mergeConfig && Object.keys(rcConfig).length) {
+      if (options.mergeConfig && Object.keys(rcConfig).length > 0) {
         // Merge config options.
         rcConfig = mergeOptions(options, rcConfig)
       }
@@ -293,7 +293,7 @@ async function runUpgrades(
         ? path
             .relative(path.resolve(pkgOptions.cwd), indexKey)
             // convert Windows path to *nix path for consistency
-            .replace(/\\/g, '/')
+            .replaceAll('\\', '/')
         : indexKey
       packages[key] = await runLocal(pkgOptions, pkgData, pkgFile)
     }
@@ -382,7 +382,7 @@ async function run(
         reject(error)
         try {
           programError(options, error)
-        } catch (e) {
+        } catch {
           /* noop */
         }
       }, timeoutMs)
@@ -417,5 +417,7 @@ ncu.defineConfig = defineConfig
 
 export default ncu
 
-export { ncu as run, defineConfig }
-export type { RunOptions }
+export { ncu as run }
+
+export { default as defineConfig } from './lib/defineConfig.ts'
+export { type RunOptions } from './types/RunOptions.ts'

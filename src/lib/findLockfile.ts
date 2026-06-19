@@ -32,7 +32,7 @@ export default async function findLockfile(
     // 1. explicit cwd
     // 2. same directory as package file
     // 3. current directory
-    let currentPath = options.cwd ? options.cwd : options.packageFile ? path.dirname(options.packageFile) : '.'
+    let currentPath = options.cwd || (options.packageFile ? path.dirname(options.packageFile) : '.')
     currentPath = path.resolve(currentPath)
 
     while (true) {
@@ -45,20 +45,14 @@ export default async function findLockfile(
       }
 
       const pathParent = path.resolve(currentPath, '..')
-      if (
-        // Stop if we have reached the root of the file system.
-        pathParent === currentPath ||
-        // Stop if we have reached the root of a user's home directory.
-        pathParent === homeDir ||
-        // Stop if we have reached the root of the temporary directory.
-        pathParent === tempDir
-      ) {
+      // Stop at the root of the file system, the user's home directory, or the temporary directory.
+      if ([currentPath, homeDir, tempDir].includes(pathParent)) {
         break
       }
 
       currentPath = pathParent
     }
-  } catch (e) {
+  } catch {
     // if readdirSync fails, return null
   }
 

@@ -140,9 +140,9 @@ describe('--deep', function () {
 
       const json = JSON.parse(stdout)
       // Make sure to fix windows paths with replace
-      json.should.have.property(path.join(tempDir, 'packages/sub1/package.json').replace(/\\/g, '/'))
-      json.should.have.property(path.join(tempDir, 'packages/sub2/package.json').replace(/\\/g, '/'))
-      json.should.have.property(path.join(tempDir, 'package.json').replace(/\\/g, '/'))
+      json.should.have.property(path.join(tempDir, 'packages/sub1/package.json').replaceAll('\\', '/'))
+      json.should.have.property(path.join(tempDir, 'packages/sub2/package.json').replaceAll('\\', '/'))
+      json.should.have.property(path.join(tempDir, 'package.json').replaceAll('\\', '/'))
     } finally {
       await removeDir(tempDir)
     }

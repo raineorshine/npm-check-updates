@@ -148,7 +148,7 @@ function prettifyCooldown(input: string | number | undefined | CooldownFunction)
   const str = String(input).trim().toLowerCase()
   const match = str.match(COOLDOWN_PATTERN)
   const value = match ? Number(match[1]) : Number(str)
-  if (isNaN(value)) {
+  if (Number.isNaN(value)) {
     return 'cooldown'
   }
 
@@ -213,9 +213,8 @@ export async function toDependencyTable({
               : '*unknown*'
             : ''
           const toColorized = colorizeDiff(getVersion(from), to)
-          const homepageUrl = format?.includes('homepage')
-            ? (await getPackageJson(dep, { pkgFile }))?.homepage || ''
-            : ''
+          const homepagePackageJson = format?.includes('homepage') ? await getPackageJson(dep, { pkgFile }) : undefined
+          const homepageUrl = homepagePackageJson?.homepage || ''
           const repoUrl = format?.includes('repo') ? (await getRepoUrl(dep, undefined, { pkgFile })) || '' : ''
           const diffUrl = format?.includes('diff')
             ? `${process.env.NCU_DIFF || 'https://npmdiff.dev'}/${encodeURIComponent(dep)}/${from.replace(/^\W+/, '')}/${to.replace(/^\W+/, '')}`
@@ -255,7 +254,7 @@ export async function toDependencyTable({
             toColorized,
             ...(showCooldownCol ? [cooldown] : []),
             ownerChanged,
-            ...[homepageUrl, repoUrl, diffUrl, publishTime].filter(x => x),
+            ...[homepageUrl, repoUrl, diffUrl, publishTime].filter(Boolean),
           ]
         }),
     ),
@@ -302,7 +301,7 @@ async function printSkippedByCooldownTable({
     time[name] = versionTime || ''
   }
 
-  if (!Object.keys(currentAfterFallback).length) {
+  if (Object.keys(currentAfterFallback).length === 0) {
     return false
   }
 
