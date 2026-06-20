@@ -142,11 +142,14 @@ async function getWorkspacePackageInfos(
     )
   }
 
+  // when --packageFile is explicit, resolve workspaces relative to its directory
+  const pkgDir = options.packageFile ? path.dirname(path.resolve(options.packageFile)) : cwd
+
   // build a glob from the workspaces
   // FIXME: the following workspaces check is redundant
   const workspacePackageGlob: string[] = (workspaces || []).map(workspace =>
     path
-      .join(cwd, workspace, 'package.json')
+      .join(pkgDir, workspace, 'package.json')
       // convert Windows path to *nix path for globby
       .replace(/\\/g, '/'),
   )
@@ -185,7 +188,7 @@ async function getWorkspacePackageInfos(
         (workspacePattern: string) =>
           packageInfo.name === workspace ||
           packageInfo.filepath ===
-            path.join(cwd, path.dirname(workspacePattern), workspace, defaultPackageFilename).replace(/\\/g, '/'),
+            path.join(pkgDir, path.dirname(workspacePattern), workspace, defaultPackageFilename).replace(/\\/g, '/'),
       ),
     ),
   )
