@@ -61,18 +61,13 @@ function getOptionsPerPage(showHint: boolean, groups?: DependencyGroup[]): numbe
  */
 async function getOwnerPerDependency(fromVersion: Index<Version>, toVersion: Index<Version>, options: Options) {
   const packageManager = getPackageManager(options, options.packageManager)
-  return await Object.keys(toVersion).reduce(
-    async (accum, dep) => {
-      const from = fromVersion[dep] || null
-      const to = toVersion[dep] || null
-      const ownerChanged = await packageManager.packageAuthorChanged!(dep, from!, to!, options)
-      return {
-        ...(await accum),
-        [dep]: ownerChanged,
-      }
-    },
-    {} as Promise<Index<boolean>>,
-  )
+  const result: Index<boolean> = {}
+  for (const dep of Object.keys(toVersion)) {
+    const from = fromVersion[dep] || null
+    const to = toVersion[dep] || null
+    result[dep] = await packageManager.packageAuthorChanged!(dep, from!, to!, options)
+  }
+  return result
 }
 
 /** Prompts the user to choose which upgrades to upgrade. */

@@ -17,20 +17,19 @@ async function getEnginesNodeFromRegistry(packageMap: Index<Version>, options: O
   if (!packageManager.getEngines) return {}
 
   const numItems = Object.keys(packageMap).length
-  let bar: ProgressBar
+  let bar: ProgressBar | undefined
   if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && numItems > 0) {
     bar = new ProgressBar('[:bar] :current/:total :percent', { total: numItems, width: 20 })
     bar.render()
   }
 
-  return Object.entries(packageMap).reduce(async (accumPromise, [pkg, version]) => {
+  const result: Index<VersionSpec | undefined> = {}
+  for (const [pkg, version] of Object.entries(packageMap)) {
     const enginesNode = (await packageManager.getEngines!(pkg, version, options)).node
-    if (bar) {
-      bar.tick()
-    }
-    const accum = await accumPromise
-    return { ...accum, [pkg]: enginesNode }
-  }, Promise.resolve<Index<VersionSpec | undefined>>({}))
+    if (bar) bar.tick()
+    result[pkg] = enginesNode
+  }
+  return result
 }
 
 export default getEnginesNodeFromRegistry
