@@ -695,7 +695,7 @@ async function fetchUpgradedPackument(
   }
 
   if (isExactVersion(currentVersion)) {
-    return Promise.resolve({} as Index<Packument>)
+    return {} as Index<Packument>
   }
 
   // fields may already include time
@@ -802,7 +802,7 @@ async function spawnNpm(
  */
 export async function defaultPrefix(options: Options): Promise<string | undefined> {
   if (options.prefix) {
-    return Promise.resolve(options.prefix)
+    return options.prefix
   }
 
   let prefix: string | undefined
