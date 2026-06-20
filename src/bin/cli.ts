@@ -148,7 +148,7 @@ ${chalk.dim.underline(
     // add --no- prefixed boolean options
     // necessary for overriding booleans set to true in the ncurc
     if (type === 'boolean') {
-      program.addOption(new Option(`--no-${long}`).default(false).hideHelp())
+      program.addOption(new Option(`--no-${long}`).hideHelp())
     }
   }
 
