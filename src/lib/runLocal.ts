@@ -59,7 +59,7 @@ function getOptionsPerPage(showHint: boolean, groups?: DependencyGroup[]): numbe
  * @param options
  * @returns
  */
-export async function getOwnerPerDependency(fromVersion: Index<Version>, toVersion: Index<Version>, options: Options) {
+async function getOwnerPerDependency(fromVersion: Index<Version>, toVersion: Index<Version>, options: Options) {
   const packageManager = getPackageManager(options, options.packageManager)
   return await Object.keys(toVersion).reduce(
     async (accum, dep) => {
