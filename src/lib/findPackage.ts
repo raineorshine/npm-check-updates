@@ -73,7 +73,7 @@ async function findPackage(options: Options): Promise<{
 
     // if no stdin content fall back to searching for package.json from pwd and up to root
     pkgFile = data || !pkgPath ? null : await findUp(pkgPath)
-    pkgData = data || getPackageDataFromFile(await pkgFile, pkgPath)
+    pkgData = data || getPackageDataFromFile(pkgFile, pkgPath)
   } else {
     // find the closest package starting from the current working directory and going up to the root
     pkgFile = pkgPath

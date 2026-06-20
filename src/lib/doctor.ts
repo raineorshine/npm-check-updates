@@ -90,7 +90,7 @@ const loadPackageFileForDoctor = async (options: Options): Promise<PackageInfo> 
 /** Iteratively installs upgrades and runs tests to identify breaking upgrades. */
 // we have to pass run directly since it would be a circular require if doctor included this file
 const doctor = async (run: Run, options: Options): Promise<void> => {
-  await chalkInit()
+  chalkInit()
 
   // bun lockFileName defaults to bun.lock but will be overwritten to bun.lockb if detected at the readFile step below
   let lockFileName: 'package-lock.json' | 'yarn.lock' | 'pnpm-lock.yaml' | 'bun.lock' | 'bun.lockb' =

@@ -141,6 +141,7 @@ export default [
         },
       ],
       '@typescript-eslint/array-type': ['error', { default: 'array' }],
+      '@typescript-eslint/await-thenable': 'error',
     },
   },
 

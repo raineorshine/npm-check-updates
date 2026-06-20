@@ -399,8 +399,8 @@ describe('version-util', () => {
     })
   })
 
-  describe('colorizeDiff', async () => {
-    await chalkInit()
+  describe('colorizeDiff', () => {
+    chalkInit()
     it('do not colorize unchanged versions', () => {
       versionUtil.colorizeDiff('1.0.0', '1.0.0').should.equal('1.0.0')
     })

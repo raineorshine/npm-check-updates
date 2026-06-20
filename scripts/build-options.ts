@@ -42,7 +42,7 @@ ${readme.slice(optionsEnd)}`
 
   // Inject advanced options into README
   // Even though chalkInit has a colorless option, we need stripAnsi to remove the ANSI characters frim the output of cli-table
-  await chalkInit()
+  chalkInit()
   const advancedOptionsStart =
     readme.indexOf('<!-- BEGIN Advanced Options -->') + '<!-- BEGIN Advanced Options -->'.length
   const advancedOptionsEnd = readme.indexOf('<!-- END Advanced Options -->', advancedOptionsStart)
