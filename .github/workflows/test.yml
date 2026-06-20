@@ -22,9 +22,6 @@ concurrency:
 
 jobs:
   run:
-    permissions:
-      contents: read # for actions/checkout to fetch code
-
     name: Node ${{ matrix.node }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
