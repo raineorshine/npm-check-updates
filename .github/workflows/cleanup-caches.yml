@@ -28,5 +28,5 @@ jobs:
           GH_REPO: ${{ github.repository }}
           BRANCH: refs/pull/${{ github.event.pull_request.number }}/merge
         run: |
-          gh cache list --ref "$BRANCH" --limit 100 --json id --jq '.[].id' \
-            | xargs -r -n1 gh cache delete
+          gh cache list --ref "${BRANCH}" --limit 100 --json key --jq '.[].key' \
+            | xargs -r -n1 -t gh cache delete
