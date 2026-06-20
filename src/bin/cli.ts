@@ -76,7 +76,7 @@ ${chalk.dim.underline(
     } else {
       await chalkInit()
       const nonHelpArgs = [...rawArgs.slice(0, indexHelp), ...rawArgs.slice(indexHelp + 1)]
-      nonHelpArgs.forEach(arg => {
+      for (const arg of nonHelpArgs) {
         // match option by long or short
         const query = arg.replace(/^-*/, '')
         const option = cliOptions.find(
@@ -100,7 +100,7 @@ ${chalk.dim.underline(
         } else {
           console.info(`Unknown option: ${arg}`)
         }
-      })
+      }
     }
     process.exit(0)
   }
@@ -136,7 +136,7 @@ ${chalk.dim.underline(
     })
 
   // add cli options
-  cliOptions.forEach(({ long, short, arg, description, default: defaultValue, help, parse, type }) => {
+  for (const { long, short, arg, description, default: defaultValue, help, parse, type } of cliOptions) {
     const flags = `${short ? `-${short}, ` : ''}--${long}${arg ? ` <${arg}>` : ''}`
     // format description for cli by removing inline code ticks
     // point to help in description if extended help text is available
@@ -150,7 +150,7 @@ ${chalk.dim.underline(
     if (type === 'boolean') {
       program.addOption(new Option(`--no-${long}`).default(false).hideHelp())
     }
-  })
+  }
 
   // set version option at the end
   program.version(pkg.version)

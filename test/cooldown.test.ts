@@ -1946,7 +1946,7 @@ describe('cooldown', () => {
     }
 
     const targets = ['latest', 'newest', 'greatest', 'minor', 'patch', 'semver', '@latest'] as const
-    targets.forEach(async target => {
+    for (const target of targets) {
       it(`handles "target: ${target}" when all versions are within cooldown (no fallback possible)`, async () => {
         // Given: cooldown set to 10, test-package@1.0.0 installed
         // latest dist-tag (1.0.2) released 5 days ago (within 10-day cooldown)
@@ -1998,7 +1998,7 @@ describe('cooldown', () => {
         logSpy.restore()
         stub.restore()
       })
-    })
+    }
   })
 
   describe('when installed version matches target version and is within cooldown', () => {
@@ -2024,7 +2024,7 @@ describe('cooldown', () => {
       format: ['cooldown'],
     }
     const targets = ['latest', '@latest', 'newest', 'greatest'] as const
-    targets.forEach(async target => {
+    for (const target of targets) {
       it(`handles "target: ${target}" correctly within cooldown`, async () => {
         const cooldown = 6
 
@@ -2043,7 +2043,7 @@ describe('cooldown', () => {
         logSpy.restore()
         stub.restore()
       })
-    })
+    }
   })
 
   describe(`Don't skip by cooldown when package metadata doesn't have "time"`, () => {
@@ -2096,7 +2096,7 @@ describe('cooldown', () => {
     after(() => stub.restore())
 
     const targets = ['latest', 'greatest', 'minor', 'patch', 'semver'] as const
-    targets.forEach(async target => {
+    for (const target of targets) {
       it(`handles "target: ${target}" correctly within cooldown`, async () => {
         // greatest version time was deleted, all teaget function should return
         // test-package-with-no-time: 1.0.2 or 1.0.3-pre.0, for newest and greatest for the upgrade
@@ -2120,7 +2120,7 @@ describe('cooldown', () => {
 
         logSpy.restore()
       })
-    })
+    }
 
     it(`handles "target: '@latest'" correctly within cooldown`, async () => {
       stub = stubVersions(versions)

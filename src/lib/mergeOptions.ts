@@ -15,11 +15,12 @@ function mergeOptions(rawOptions1: Options | null, rawOptions2: Options | null) 
   const options1: Options = rawOptions1 || {}
   const options2: Options = rawOptions2 || {}
   const result = { ...options1, ...options2 }
-  ;(Object.keys(result) as OptionKey[]).forEach(key => {
+
+  for (const key of Object.keys(result) as OptionKey[]) {
     if (Array.isArray(options1[key]) && Array.isArray(options2[key])) {
       result[key] = mergeArrays(options1[key] as any[], options2[key] as any[]) as any
     }
-  })
+  }
   return result
 }
 

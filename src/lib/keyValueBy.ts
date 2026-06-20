@@ -26,9 +26,9 @@ export function keyValueBy<T, R = true>(
     const o = isArray
       ? (keyValue as ArrayKeyValueGenerator<T, R>)(value, i, accum)
       : (keyValue as ObjectKeyValueGenerator<T, R>)(key, value, accum)
-    Object.entries(o || {}).forEach(entry => {
-      accum[entry[0]] = entry[1]
-    })
+    for (const [k, v] of Object.entries(o || {})) {
+      accum[k] = v
+    }
   })
 
   return accum

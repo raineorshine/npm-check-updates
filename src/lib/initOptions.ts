@@ -107,28 +107,28 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       (long === 'packageManager' && options.packageManager === 'staticRegistry'),
   )
   if (deprecatedOptions.length > 0) {
-    deprecatedOptions.forEach(({ long, description }) => {
+    for (const { long, description } of deprecatedOptions) {
       const deprecationMessage =
         long === 'packageManager'
           ? '--packageManager staticRegistry is deprecated. Use --registryType json.'
           : `--${long}: ${description}`
       print(options, chalk.yellow(deprecationMessage), 'warn')
-    })
+    }
     print(options, '', 'warn')
   }
 
   // validate options with predefined choices
-  cliOptions.forEach(({ long, choices }) => {
-    if (!choices || choices.length === 0) return
+  for (const { long, choices } of cliOptions) {
+    if (!choices || choices.length === 0) continue
     const value = options[long as keyof Options]
     const values = Array.isArray(value) ? value : [value]
-    if (values.length === 0) return
+    if (values.length === 0) continue
     // make sure the option value is valid
     // if an array of values is given, make sure each one is a valid choice
     if (values.every(value => !choices.includes(value))) {
       programError(options, `Invalid option value: --${long} ${value}. Valid values are: ${choices.join(', ')}.`)
     }
-  })
+  }
 
   // validate options.cwd
   if (options.cwd && !(await exists(options.cwd))) {

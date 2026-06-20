@@ -2,11 +2,11 @@
 const wrap = (s: string, maxLineLength = 92) => {
   const linesIn = s.split('\n')
   const linesOut: string[] = []
-  linesIn.forEach(lineIn => {
+  for (const lineIn of linesIn) {
     let i = 0
     if (lineIn.length === 0) {
       linesOut.push('')
-      return
+      continue
     }
 
     while (i < lineIn.length) {
@@ -37,7 +37,7 @@ const wrap = (s: string, maxLineLength = 92) => {
       linesOut.push(line.trimEnd())
       i += line.length
     }
-  })
+  }
   return linesOut.join('\n').trim()
 }
 

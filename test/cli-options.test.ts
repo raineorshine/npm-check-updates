@@ -5,9 +5,9 @@ chaiSetup()
 
 describe('cli-options', () => {
   it('require long and description properties', () => {
-    cliOptions.forEach(option => {
+    for (const option of cliOptions) {
       option.should.have.property('long')
       option.should.have.property('description')
-    })
+    }
   })
 })
