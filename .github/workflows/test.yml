@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 22, 24, 26]
+        node: [22, 24, 26]
         os: [ubuntu-latest, windows-latest]
 
     steps:
@@ -72,4 +72,4 @@ jobs:
 
       - name: E2E Tests
         run: npm run test:e2e
-        if: startsWith(matrix.os, 'ubuntu') && matrix.node == 20
+        if: startsWith(matrix.os, 'ubuntu') && matrix.node == 22

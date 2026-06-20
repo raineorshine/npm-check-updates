@@ -2,8 +2,8 @@
   "include": ["src/", "scripts/", "test/", "vite.config.ts"],
   "exclude": ["**/node_modules"],
   "compilerOptions": {
-    "target": "ES2023",
-    "lib": ["ES2023"],
+    "target": "ES2024",
+    "lib": ["ES2024"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "types": ["node", "mocha"],

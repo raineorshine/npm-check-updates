@@ -81,7 +81,7 @@ export default defineConfig(({ mode }) => ({
         cli: 'src/bin/cli.ts',
       },
     },
-    target: 'node20',
+    target: 'node22',
     outDir: 'build',
     sourcemap: true,
     minify: mode === 'production' && 'oxc',
