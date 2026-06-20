@@ -10,12 +10,26 @@ import jsdocPlugin from 'eslint-plugin-jsdoc'
 // The modern replacement
 import nPlugin from 'eslint-plugin-n'
 import promisePlugin from 'eslint-plugin-promise'
+import unicornPlugin from 'eslint-plugin-unicorn'
 import globals from 'globals'
 
 export default [
   // --- 1. GLOBAL IGNORES ---
   {
-    ignores: ['**/node_modules/', 'dist/', 'build/', 'temp/', '.cache/', '**/node_modules/**/*.md'],
+    ignores: [
+      '**/node_modules/',
+      'dist/',
+      'build/',
+      'temp/',
+      '.cache/',
+      '**/node_modules/**/*.md',
+      // vendored third-party code
+      'src/lib/libnpmconfig/',
+      'src/lib/figgy-pudding/',
+      // CommonJS test fixtures
+      'test/e2e/cjs/',
+      'test/test-data/deep-ncurc/',
+    ],
   },
 
   // --- 2. PLUGIN DEFINITIONS ---
@@ -80,6 +94,29 @@ export default [
     }
     return config
   }),
+
+  // --- UNICORN (unopinionated) ---
+  unicornPlugin.configs.unopinionated,
+  {
+    rules: {
+      // too opinionated for this codebase
+      'unicorn/no-array-reduce': 'off',
+      'unicorn/no-array-sort': 'off',
+      'unicorn/no-negated-condition': 'off',
+      'unicorn/no-process-exit': 'off',
+      'unicorn/numeric-separators-style': 'off',
+      'unicorn/prefer-number-coercion': 'off',
+      'unicorn/prefer-string-raw': 'off',
+      'unicorn/prefer-top-level-await': 'off',
+      'unicorn/prefer-type-error': 'off',
+      'unicorn/prevent-abbreviations': 'off',
+      // all .sort() usages are on string arrays where the default order is intended
+      'unicorn/require-array-sort-compare': 'off',
+      'unicorn/text-encoding-identifier-case': 'off',
+      // not on by default in unopinionated, but we want it enforced
+      'unicorn/prefer-includes-over-repeated-comparisons': 'error',
+    },
+  },
 
   // --- 5. IMPORT HYGIENE ---
   {
