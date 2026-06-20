@@ -34,6 +34,8 @@ if (process.env.INJECT_PROMPTS) {
 /** Tracks the (first) unhandled rejection so the process can exit with an error code at the end. This allows other errors to be logged before the process exits. */
 let unhandledRejectionError = false
 
+let lastRunOptions: Options | null = null
+
 // Use `node --trace-uncaught ...` to show where the exception was thrown.
 // See: https://nodejs.org/api/process.html#event-unhandledrejection
 process.on('unhandledRejection', (reason: string | Error) => {
@@ -42,6 +44,13 @@ process.on('unhandledRejection', (reason: string | Error) => {
 
   // ensure the process exits with a non-zero code at the end
   unhandledRejectionError = true
+})
+
+// ensure that the process exits with an error code if there was an unhandled rejection
+process.on('exit', () => {
+  if (unhandledRejectionError && lastRunOptions) {
+    programError(lastRunOptions, `Unhandled Rejection! This is a bug and should be reported: ${pkg.bugs.url}`)
+  }
 })
 
 /**
@@ -338,15 +347,10 @@ export async function run(
   runOptions: RunOptions = {},
   { cli }: { cli?: boolean } = {},
 ): Promise<PackageFile | Index<VersionSpec> | void> {
-  const options = await initOptions(runOptions, { cli })
+  unhandledRejectionError = false
 
-  // ensure that the process exits with an error code if there was an unhandled rejection
-  const bugsUrl = pkg.bugs.url
-  process.on('exit', () => {
-    if (unhandledRejectionError) {
-      programError(options, `Unhandled Rejection! This is a bug and should be reported: ${bugsUrl}`)
-    }
-  })
+  const options = await initOptions(runOptions, { cli })
+  lastRunOptions = options
 
   // chalk may already have been initialized in cli.ts, but when imported as a module
   // chalkInit is idempotent
