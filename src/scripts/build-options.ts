@@ -122,6 +122,7 @@ const generateRunOptionsJsonSchema = (): string => {
 export async function buildOptions(): Promise<void> {
   const chalk = getChalk(true)
   const logPrefix = chalk.cyan('[build-options]')
+
   console.log(logPrefix, chalk.green('Generating RunOptions type definition and JSON schema...'))
 
   // Generate TypeScript
@@ -135,13 +136,20 @@ export async function buildOptions(): Promise<void> {
     ...prettierConfig,
     parser: 'json',
   })
-  await fs.writeFile('src/types/RunOptions.json', formattedSchema)
 
-  // Update README (parallel with last write for speed)
-  console.log(logPrefix, chalk.green('Updating README.md...'))
-  const readmePromise = injectReadme().then(readme => fs.writeFile('README.md', readme))
+  /** Inject the options into the README and write it. */
+  const writeReadme = async () => {
+    console.log(logPrefix, chalk.green('Updating README.md...'))
+    return fs.writeFile('README.md', await injectReadme())
+  }
+  /** Write the JSON schema to a file. */
+  const writeSchema = async () => {
+    console.log(logPrefix, chalk.green('Writing RunOptions.json...'))
+    return fs.writeFile('src/types/RunOptions.json', formattedSchema)
+  }
 
-  await Promise.all([readmePromise, fs.writeFile('src/types/RunOptions.json', formattedSchema)])
+  // Write the JSON schema and README in parallel for speed
+  await Promise.all([writeReadme(), writeSchema()])
 
   console.log(logPrefix, chalk.green('Done!\n'))
 }
