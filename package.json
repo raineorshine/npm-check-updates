@@ -38,7 +38,7 @@
   },
   "scripts": {
     "build": "vite build",
-    "build:options": "tsx src/scripts/build-options.ts",
+    "build:options": "tsx scripts/build-options.ts",
     "build:analyze": "cross-env ANALYZER=true vite build",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",

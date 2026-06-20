@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*", "test/**/*", "vite.config.ts"],
+  "include": ["src/**/*", "scripts/**/*", "test/**/*", "vite.config.ts"],
   "exclude": ["test/deep", "test/doctor", "node_modules"],
   "compilerOptions": {
     "target": "ES2023",
