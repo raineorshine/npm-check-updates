@@ -1,4 +1,5 @@
 import fs from 'fs/promises'
+import { execFileSync } from 'node:child_process'
 import os from 'os'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -16,7 +17,7 @@ const localBin = path.resolve(__dirname.replace('build/', ''), '../../../node_mo
 const localYarnSpawnOptions = {
   env: {
     ...process.env,
-    PATH: `${process.env.PATH}:${localBin}`,
+    PATH: [process.env.PATH, localBin].join(path.delimiter),
   },
 }
 
@@ -28,6 +29,20 @@ const cleanEnv = {
   ...process.env,
   PATH: filteredPath,
 }
+
+// skip getPeerDependencies tests if yarn is not available outside node_modules/.bin
+const hasSystemYarn = (() => {
+  try {
+    execFileSync(isWindows ? 'where.exe' : 'which', ['yarn'], {
+      env: { ...process.env, PATH: filteredPath },
+      stdio: 'pipe',
+    })
+    return true
+  } catch {
+    return false
+  }
+})()
+const itWithSystemYarn = hasSystemYarn ? it : it.skip
 
 describe('yarn', function () {
   it('list', async () => {
@@ -59,7 +74,7 @@ describe('yarn', function () {
     await yarn.list({ cwd: testDir }, localYarnSpawnOptions).should.eventually.be.rejectedWith(lockFileErrorMessage)
   })
 
-  it('getPeerDependencies v1', async () => {
+  itWithSystemYarn('getPeerDependencies v1', async () => {
     const testDir = path.join(__dirname, 'default')
     const spawnOptions = { cwd: testDir, env: cleanEnv }
     await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})
@@ -69,7 +84,7 @@ describe('yarn', function () {
     await yarn.getPeerDependencies('fffffffffffff', '1.0.0', spawnOptions).should.eventually.deep.equal({})
   })
 
-  it('getPeerDependencies v4', async () => {
+  itWithSystemYarn('getPeerDependencies v4', async () => {
     const testDir = path.join(__dirname, 'v4')
     const spawnOptions = { cwd: testDir, env: cleanEnv }
     await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})
