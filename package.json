@@ -104,6 +104,7 @@
     "eslint-plugin-jsdoc": "^63.1.0",
     "eslint-plugin-n": "^18.2.2",
     "eslint-plugin-promise": "^7.3.0",
+    "eslint-plugin-unicorn": "^72.0.0",
     "fast-glob": "^3.3.3",
     "fast-memoize": "^2.5.2",
     "find-up": "^8.0.0",
