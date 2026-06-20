@@ -10,12 +10,26 @@ import jsdocPlugin from 'eslint-plugin-jsdoc'
 // The modern replacement
 import nPlugin from 'eslint-plugin-n'
 import promisePlugin from 'eslint-plugin-promise'
+import unicornPlugin from 'eslint-plugin-unicorn'
 import globals from 'globals'
 
 export default [
   // --- 1. GLOBAL IGNORES ---
   {
-    ignores: ['**/node_modules/', 'dist/', 'build/', 'temp/', '.cache/', '**/node_modules/**/*.md'],
+    ignores: [
+      '**/node_modules/',
+      'dist/',
+      'build/',
+      'temp/',
+      '.cache/',
+      '**/node_modules/**/*.md',
+      // vendored third-party code
+      'src/lib/libnpmconfig/',
+      'src/lib/figgy-pudding/',
+      // CommonJS test fixtures
+      'test/e2e/cjs/',
+      'test/test-data/deep-ncurc/',
+    ],
   },
 
   // --- 2. PLUGIN DEFINITIONS ---
@@ -79,6 +93,38 @@ export default [
     }
     return config
   }),
+
+  // --- UNICORN (recommended) ---
+  unicornPlugin.configs['flat/recommended'],
+  {
+    rules: {
+      // too opinionated for this codebase
+      'unicorn/catch-error-name': 'off',
+      'unicorn/filename-case': 'off',
+      'unicorn/no-array-reduce': 'off',
+      'unicorn/no-array-sort': 'off',
+      'unicorn/no-negated-condition': 'off',
+      'unicorn/no-null': 'off',
+      'unicorn/no-process-exit': 'off',
+      'unicorn/numeric-separators-style': 'off',
+      'unicorn/prefer-https': 'off',
+      'unicorn/prefer-string-raw': 'off',
+      'unicorn/prefer-top-level-await': 'off',
+      'unicorn/prefer-type-error': 'off',
+      'unicorn/prevent-abbreviations': 'off',
+      'unicorn/switch-case-braces': 'off',
+      'unicorn/text-encoding-identifier-case': 'off',
+    },
+  },
+
+  // Test files use mocha's function() callbacks (this) and local helper functions.
+  {
+    files: ['test/**'],
+    rules: {
+      'unicorn/consistent-function-scoping': 'off',
+      'unicorn/no-this-outside-of-class': 'off',
+    },
+  },
 
   // --- 5. IMPORT HYGIENE ---
   {
