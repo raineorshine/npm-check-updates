@@ -37,9 +37,9 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "rimraf build && vite build",
+    "build": "vite build",
     "build:options": "tsx src/scripts/build-options.ts",
-    "build:analyze": "rimraf build && cross-env ANALYZER=true vite build",
+    "build:analyze": "cross-env ANALYZER=true vite build",
     "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
     "lint:types": "tsc --noEmit",
@@ -143,7 +143,6 @@
     "prettier": "^3.8.3",
     "progress": "^2.0.3",
     "prompts-ncu": "^3.0.2",
-    "rimraf": "^6.1.3",
     "semver": "^7.8.2",
     "semver-utils": "^1.1.4",
     "sinon": "^22.0.0",
