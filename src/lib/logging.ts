@@ -309,7 +309,7 @@ async function printSkippedByCooldownTable({
 
     const wildcard = WILDCARDS.includes(currentVersion[0]) ? currentVersion[0] : ''
     const caf = wildcard + stripRange(fallbackVersion ?? currentVersion)
-    const target = wildcard + stripRange(version || '')
+    const target = wildcard + stripRange(version)
 
     currentAfterFallback[name] = caf
     skippedUpgrades[name] = colorizeDiff(caf, target)

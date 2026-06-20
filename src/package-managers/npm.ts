@@ -117,7 +117,6 @@ const fetchPartialPackument = async (
         if (parseError) throw parseError
         if (foundAll) break
       }
-      if (parseError) throw parseError
 
       return partialPackument
     }
