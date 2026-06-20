@@ -76,52 +76,49 @@ describe('run', function () {
     }
   })
 
-  it('exclude -alpha, -beta, -rc', () => {
-    return ncu({
+  it('exclude -alpha, -beta, -rc', async () => {
+    const data = await ncu({
       jsonAll: true,
       packageData: {
         dependencies: {
           'ncu-mock-pre': '1.0.0',
         },
       },
-    }).then(data => {
-      return data!.should.eql({
-        dependencies: {
-          'ncu-mock-pre': '1.0.0',
-        },
-      })
+    })
+    data!.should.eql({
+      dependencies: {
+        'ncu-mock-pre': '1.0.0',
+      },
     })
   })
 
-  it('upgrade prereleases to newer prereleases', () => {
-    return ncu({
+  it('upgrade prereleases to newer prereleases', async () => {
+    const data = await ncu({
       packageData: {
         dependencies: {
           'ncu-test-alpha-latest': '1.0.0-alpha.1',
         },
       },
-    }).then(data => {
-      return data!.should.eql({
-        'ncu-test-alpha-latest': '1.0.0-alpha.2',
-      })
+    })
+    data!.should.eql({
+      'ncu-test-alpha-latest': '1.0.0-alpha.2',
     })
   })
 
-  it('do not upgrade prereleases to newer prereleases with --pre 0', () => {
-    return ncu({
+  it('do not upgrade prereleases to newer prereleases with --pre 0', async () => {
+    const data = await ncu({
       pre: false,
       packageData: {
         dependencies: {
           'ncu-test-alpha-latest': '1.0.0-alpha.1',
         },
       },
-    }).then(data => {
-      return data!.should.eql({})
     })
+    data!.should.eql({})
   })
 
-  it('include -alpha, -beta, -rc with --pre option', () => {
-    return ncu({
+  it('include -alpha, -beta, -rc with --pre option', async () => {
+    const data = await ncu({
       jsonAll: true,
       packageData: {
         dependencies: {
@@ -129,12 +126,11 @@ describe('run', function () {
         },
       },
       pre: true,
-    }).then(data => {
-      return data!.should.eql({
-        dependencies: {
-          'ncu-mock-pre': '2.0.0-alpha.0',
-        },
-      })
+    })
+    data!.should.eql({
+      dependencies: {
+        'ncu-mock-pre': '2.0.0-alpha.0',
+      },
     })
   })
 

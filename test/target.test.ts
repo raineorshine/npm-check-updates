@@ -62,8 +62,8 @@ describe('target', () => {
   })
 
   describe('newest', () => {
-    it('do not require --pre with --target newest', () => {
-      return ncu({
+    it('do not require --pre with --target newest', async () => {
+      const data = await ncu({
         jsonAll: true,
         packageData: {
           dependencies: {
@@ -71,17 +71,16 @@ describe('target', () => {
           },
         },
         target: 'newest',
-      }).then(data => {
-        return data!.should.eql({
-          dependencies: {
-            'ncu-mock-pre': '2.0.0-alpha.0',
-          },
-        })
+      })
+      data!.should.eql({
+        dependencies: {
+          'ncu-mock-pre': '2.0.0-alpha.0',
+        },
       })
     })
 
-    it('allow --pre 0 with --target newest to exclude prereleases', () => {
-      return ncu({
+    it('allow --pre 0 with --target newest to exclude prereleases', async () => {
+      const data = await ncu({
         jsonAll: true,
         packageData: {
           dependencies: {
@@ -90,12 +89,11 @@ describe('target', () => {
         },
         target: 'newest',
         pre: false,
-      }).then(data => {
-        return data!.should.eql({
-          dependencies: {
-            'ncu-mock-pre': '1.0.0',
-          },
-        })
+      })
+      data!.should.eql({
+        dependencies: {
+          'ncu-mock-pre': '1.0.0',
+        },
       })
     })
 
@@ -142,8 +140,8 @@ describe('target', () => {
   })
 
   describe('greatest', () => {
-    it('do not require --pre with --target greatest', () => {
-      return ncu({
+    it('do not require --pre with --target greatest', async () => {
+      const data = await ncu({
         jsonAll: true,
         packageData: {
           dependencies: {
@@ -151,12 +149,11 @@ describe('target', () => {
           },
         },
         target: 'greatest',
-      }).then(data => {
-        return data!.should.eql({
-          dependencies: {
-            'ncu-mock-pre': '2.0.0-alpha.0',
-          },
-        })
+      })
+      data!.should.eql({
+        dependencies: {
+          'ncu-mock-pre': '2.0.0-alpha.0',
+        },
       })
     })
   })

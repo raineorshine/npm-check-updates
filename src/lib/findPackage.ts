@@ -27,7 +27,7 @@ async function findPackage(options: Options): Promise<{
   const pkgPath = options.packageFile || 'package.json'
 
   /** Reads the contents of a package file. */
-  function getPackageDataFromFile(pkgFile: string | null | undefined, pkgFileName: string): Promise<string> {
+  async function getPackageDataFromFile(pkgFile: string | null | undefined, pkgFileName: string): Promise<string> {
     // exit if no pkgFile to read from fs
     if (pkgFile != null) {
       const relPathToPackage = path.resolve(pkgFile)
@@ -46,9 +46,11 @@ async function findPackage(options: Options): Promise<{
       )
     }
 
-    return fs.readFile(pkgFile!, 'utf-8').catch(e => {
+    try {
+      return await fs.readFile(pkgFile!, 'utf-8')
+    } catch (e: any) {
       programError(options, e)
-    })
+    }
   }
 
   print(options, 'Running in local mode', 'verbose')
