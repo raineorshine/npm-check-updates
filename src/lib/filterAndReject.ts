@@ -1,5 +1,4 @@
 import { and, or } from 'fp-and-or'
-import { identity } from 'lodash-es'
 import picomatch from 'picomatch'
 import { parseRange } from 'semver-utils'
 import { type FilterPattern } from '../types/FilterPattern'
@@ -19,7 +18,7 @@ function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec
 
   // no filter
   if (!filterPattern) {
-    predicate = identity
+    predicate = () => true
   }
   // string
   else if (typeof filterPattern === 'string') {

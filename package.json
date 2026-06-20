@@ -77,7 +77,6 @@
     },
     "diff": ">=8.0.3",
     "ip-address": ">=10.1.1",
-    "lodash": ">=4.18.1",
     "serialize-javascript": ">=7.0.3",
     "uuid": ">=14.0.0"
   },
@@ -94,7 +93,6 @@
     "@types/hosted-git-info": "^3.0.5",
     "@types/ini": "^4.1.1",
     "@types/jsonlines": "^0.1.5",
-    "@types/lodash-es": "^4.17.12",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.9.2",
     "@types/npm-registry-fetch": "^8.0.9",
@@ -136,7 +134,6 @@
     "jsonc-parser": "^3.3.1",
     "jsonlines": "^0.1.1",
     "lockfile-lint": "^5.0.0",
-    "lodash-es": "^4.18.1",
     "markdownlint-cli": "^0.48.0",
     "mocha": "^11.7.6",
     "npm-registry-fetch": "^19.1.1",

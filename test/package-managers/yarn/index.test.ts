@@ -81,7 +81,7 @@ describe('yarn', function () {
 
   describe('npmAuthTokenKeyValue', () => {
     it('npmRegistryServer with trailing slash', () => {
-      const authToken = yarn.npmAuthTokenKeyValue({}, 'fortawesome', {
+      const authToken = yarn.npmAuthTokenKeyValue({})('fortawesome', {
         npmAlwaysAuth: true,
         npmAuthToken: 'MY-AUTH-TOKEN',
         npmRegistryServer: 'https://npm.fontawesome.com/',
@@ -93,7 +93,7 @@ describe('yarn', function () {
     })
 
     it('npmRegistryServer without trailing slash', () => {
-      const authToken = yarn.npmAuthTokenKeyValue({}, 'fortawesome', {
+      const authToken = yarn.npmAuthTokenKeyValue({})('fortawesome', {
         npmAlwaysAuth: true,
         npmAuthToken: 'MY-AUTH-TOKEN',
         npmRegistryServer: 'https://npm.fontawesome.com',
@@ -105,7 +105,7 @@ describe('yarn', function () {
     })
 
     it('returns null when no npmAlwaysAuth', () => {
-      const authToken = yarn.npmAuthTokenKeyValue({}, 'fortawesome', {
+      const authToken = yarn.npmAuthTokenKeyValue({})('fortawesome', {
         npmAlwaysAuth: true,
         // undefined: npmAuthToken: 'MY-AUTH-TOKEN',
         npmRegistryServer: 'https://npm.fontawesome.com/',
@@ -115,7 +115,7 @@ describe('yarn', function () {
     })
 
     it('returns null when no registry server', () => {
-      const authToken = yarn.npmAuthTokenKeyValue({}, 'fortawesome', {
+      const authToken = yarn.npmAuthTokenKeyValue({})('fortawesome', {
         npmAlwaysAuth: true,
         npmAuthToken: 'MY-AUTH-TOKEN',
         // undefined: npmRegistryServer: 'https://npm.fontawesome.com/',

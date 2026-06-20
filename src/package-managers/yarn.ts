@@ -1,7 +1,6 @@
 import memoize from 'fast-memoize'
 import fs from 'fs/promises'
 import jsonlines from 'jsonlines'
-import { curry } from 'lodash-es'
 import os from 'os'
 import path from 'path'
 import { parse as parseYaml } from 'yaml'
@@ -58,7 +57,7 @@ const interpolate = (s: string, data: Index<string | undefined>): string =>
   )
 
 /** Reads an auth token from a yarn config, interpolates it, and returns it as an npm config key-value pair. */
-export const npmAuthTokenKeyValue = curry((npmConfig: Index<string | boolean>, dep: string, scopedConfig: NpmScope) => {
+export const npmAuthTokenKeyValue = (npmConfig: Index<string | boolean>) => (dep: string, scopedConfig: NpmScope) => {
   if (scopedConfig.npmAuthToken) {
     // get registry server from this config or a previous config (assumes setNpmRegistry has already been called on all npm scopes)
     const registryServer = scopedConfig.npmRegistryServer || (npmConfig[`@${dep}:registry`] as string | undefined)
@@ -78,7 +77,7 @@ export const npmAuthTokenKeyValue = curry((npmConfig: Index<string | boolean>, d
   }
 
   return null
-})
+}
 
 /** Reads a registry from a yarn config. interpolates it, and returns it as an npm config key-value pair. */
 const npmRegistryKeyValue = (dep: string, scopedConfig: NpmScope): null | Index<VersionSpec> =>
