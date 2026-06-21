@@ -2,21 +2,6 @@ import fs from 'node:fs'
 import dts from 'unplugin-dts/vite'
 import { type Plugin, defineConfig } from 'vite'
 import { analyzer } from 'vite-bundle-analyzer'
-import { buildOptions } from './scripts/build-options.ts'
-
-/**
- * A Vite plugin that triggers the `buildOptions` logic at the start of the build process.
- * This ensures that any necessary configuration or pre-build steps
- * are executed before the actual bundling begins.
- */
-function buildOptionsPlugin(): Plugin {
-  return {
-    name: 'build-options',
-    async configResolved() {
-      await buildOptions()
-    },
-  }
-}
 
 /** Makes the CLI entry point executable after build (cross-platform fs.chmodSync). */
 function chmodBinPlugin(): Plugin {
@@ -51,11 +36,6 @@ function analyzerOnce(): Plugin {
 
 export default defineConfig(({ mode }) => ({
   plugins: [
-    /**
-     * buildOptionsPlugin() must run before dts() so the files exist
-     * when TypeScript scans
-     */
-    buildOptionsPlugin(),
     dts({
       entryRoot: 'src',
       include: ['src'],
