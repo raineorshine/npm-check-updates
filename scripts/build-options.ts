@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { pathToFileURL } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import prettier from 'prettier'
 import { createGenerator } from 'ts-json-schema-generator'
@@ -41,7 +40,7 @@ ${optionRows}
 ${readme.slice(optionsEnd)}`
 
   // Inject advanced options into README
-  // Even though chalkInit has a colorless option, we need stripAnsi to remove the ANSI characters frim the output of cli-table
+  // Even though chalkInit has a colorless option, we need stripAnsi to remove the ANSI characters from the output of cli-table
   chalkInit()
   const advancedOptionsStart =
     readme.indexOf('<!-- BEGIN Advanced Options -->') + '<!-- BEGIN Advanced Options -->'.length
@@ -154,11 +153,7 @@ export async function buildOptions(): Promise<void> {
   console.log(logPrefix, chalk.green('Done!\n'))
 }
 
-const isDirectRun = import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
-
-if (isDirectRun) {
-  buildOptions().catch(err => {
-    console.error(err?.stack || err)
-    process.exit(1)
-  })
-}
+buildOptions().catch(err => {
+  console.error(err?.stack || err)
+  process.exit(1)
+})

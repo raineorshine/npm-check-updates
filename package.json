@@ -37,6 +37,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
+    "prebuild": "npm run build:options",
     "build": "vite build",
     "build:options": "node scripts/build-options.ts",
     "build:analyze": "cross-env ANALYZER=true vite build",
