@@ -99,7 +99,6 @@ export default defineConfig(({ mode }) => ({
         {
           format: 'cjs',
           entryFileNames: '[name].cjs',
-          chunkFileNames: 'chunks/[name]-[hash].cjs', // The fix for p-map
           exports: 'named',
         },
       ],
