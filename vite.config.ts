@@ -100,7 +100,8 @@ export default defineConfig(({ mode }) => ({
         {
           format: 'cjs',
           entryFileNames: '[name].cjs',
-          chunkFileNames: 'chunks/[name]-[hash].cjs', // The fix for p-map
+          // keep CJS chunks as .cjs so that require() works
+          chunkFileNames: 'chunks/[name]-[hash].cjs',
           exports: 'named',
         },
       ],
