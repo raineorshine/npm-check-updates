@@ -22,8 +22,10 @@ function buildOptionsPlugin(): Plugin {
 function chmodBinPlugin(): Plugin {
   return {
     name: 'chmod-bin',
-    closeBundle() {
-      fs.chmodSync('build/cli.js', 0o755)
+    writeBundle(_options, bundle) {
+      if (bundle['cli.js']) {
+        fs.chmodSync('build/cli.js', 0o755)
+      }
     },
   }
 }
