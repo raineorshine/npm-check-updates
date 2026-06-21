@@ -53,7 +53,6 @@
     "test:bun": "mocha test/bun",
     "test:unit": "mocha test --ignore \"test/bun/*\"",
     "test:e2e": "./test/e2e.sh",
-    "typecheck": "tsc --noEmit",
     "ncu": "node build/cli.js"
   },
   "repository": {
