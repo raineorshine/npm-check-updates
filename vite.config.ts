@@ -32,20 +32,19 @@ function chmodBinPlugin(): Plugin {
 
 /** A simple helper to run analyzer plugin only once */
 function analyzerOnce(): Plugin {
-  let ran = false
   const base = analyzer() as Plugin
+  const generate = base.generateBundle
+  let ran = false
 
   return {
     ...base,
-    name: (base.name ?? 'analyzer') + '-once',
+    name: 'analyzer-once',
     generateBundle(...args) {
-      if (ran) return
+      if (ran || typeof generate !== 'function') return
       ran = true
-      if (typeof base.generateBundle === 'function') {
-        console.log('run analyzer')
-        // eslint-disable-next-line unicorn/no-this-outside-of-class -- this is the rollup plugin context
-        return base.generateBundle.call(this, ...args)
-      }
+      console.log('\nrun analyzer')
+      // eslint-disable-next-line unicorn/no-this-outside-of-class -- this is the rollup plugin context
+      return generate.apply(this, args)
     },
   }
 }
