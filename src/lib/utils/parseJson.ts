@@ -1,4 +1,4 @@
-import { type ParseError, ParseErrorCode, parse, stripComments } from 'jsonc-parser'
+import { type ParseError, parse, printParseErrorCode, stripComments } from 'jsonc-parser'
 
 const stdoutColumns = process.stdout.columns || 80
 
@@ -81,8 +81,7 @@ export default function parseJson(jsonString: string) {
         currentOffset += line.length + 1 // +1 for the newline character
         lineNumber++
       }
-      // @ts-expect-error due to --isolatedModules forbidding to implement ambient constant enums.
-      errorString += `Error at line ${lineNumber}, column ${columnNumber}: ${ParseErrorCode[error.error]}\n${showSnippet(lines, lineNumber, columnNumber)}\n`
+      errorString += `Error at line ${lineNumber}, column ${columnNumber}: ${printParseErrorCode(error.error)}\n${showSnippet(lines, lineNumber, columnNumber)}\n`
     }
     throw new SyntaxError(errorString)
   }
