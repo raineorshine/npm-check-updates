@@ -1,9 +1,9 @@
 {
-  "include": ["src/**/*", "scripts/**/*", "test/**/*", "vite.config.ts"],
-  "exclude": ["test/deep", "test/doctor", "node_modules"],
+  "include": ["src/", "scripts/", "test/", "vite.config.ts"],
+  "exclude": ["node_modules"],
   "compilerOptions": {
     "target": "ES2023",
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "lib": ["ES2023"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -17,13 +17,8 @@
     "skipLibCheck": true,
     "strict": true,
     "erasableSyntaxOnly": true,
-    "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
     "incremental": true,
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo",
-    "paths": {
-      "libnpmconfig": ["./src/types/libnpmconfig"],
-      "prompts-ncu": ["./src/types/prompts-ncu"]
-    }
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo"
   }
 }
