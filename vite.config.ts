@@ -32,19 +32,18 @@ function chmodBinPlugin(): Plugin {
 
 /** A simple helper to run analyzer plugin only once */
 function analyzerOnce(): Plugin {
-  let ran = false
   const base = analyzer() as Plugin
+  const generate = base.generateBundle
+  let ran = false
 
   return {
     ...base,
-    name: (base.name ?? 'analyzer') + '-once',
+    name: `${base.name}-once`,
     generateBundle(...args) {
-      if (ran) return
+      if (ran || typeof generate !== 'function') return
       ran = true
-      if (typeof base.generateBundle === 'function') {
-        console.log('run analyzer')
-        return base.generateBundle.call(this, ...args)
-      }
+      console.log('\nrun analyzer')
+      return generate.apply(this, args)
     },
   }
 }
