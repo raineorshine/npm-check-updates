@@ -16,4 +16,4 @@ export interface CLIOption<T = any> {
   type: string
 }
 
-export default CLIOption
+export type { CLIOption as default }
