@@ -12,10 +12,6 @@ on:
     - cron: '0 2 * * 5'
   workflow_dispatch:
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
-
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
