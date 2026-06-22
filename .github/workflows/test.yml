@@ -56,9 +56,6 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
       - name: Unit Tests
         run: npm run test:unit
         env:
@@ -69,6 +66,12 @@ jobs:
 
       - name: Bun Tests
         run: npm run test:bun
+
+      # The E2E script publishes to a local registry and performs real npm installs,
+      # so it requires the freshly compiled distribution binaries.
+      - name: Build Package for E2E
+        run: npm run build
+        if: startsWith(matrix.os, 'ubuntu') && matrix.node == 20
 
       - name: E2E Tests
         run: npm run test:e2e

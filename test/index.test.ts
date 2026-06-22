@@ -3,16 +3,23 @@ import os from 'os'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
-import chaiSetup from './helpers/chaiSetup'
+import { type MockedVersions } from '../src/types/MockedVersions'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
+import ncuMockPreData from './test-data/packages/ncu-mock-pre.json'
 
-chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
+const ncuMockPre = ncuMockPreData as MockedVersions
+
 describe('run', function () {
+  let stub: { mockRestore: () => void }
+  afterEach(() => {
+    if (stub) stub.mockRestore()
+  })
+
   it('return jsonUpgraded by default', async () => {
-    const stub = stubVersions('99.9.9')
+    stub = stubVersions('99.9.9')
 
     const output = await ncu({
       packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package.json'), 'utf-8'),
@@ -20,12 +27,10 @@ describe('run', function () {
     output!.should.deep.equal({
       express: '^99.9.9',
     })
-
-    stub.restore()
   })
 
   it('pass object as packageData', async () => {
-    const stub = stubVersions('99.9.9')
+    stub = stubVersions('99.9.9')
 
     const output = await ncu({
       packageData: {
@@ -35,12 +40,10 @@ describe('run', function () {
       },
     })
     output!.should.have.property('MOCK_PACKAGE')
-
-    stub.restore()
   })
 
   it('do not suggest upgrades to versions within the specified version range if jsonUpgraded is true and minimal is true', async () => {
-    const stub = stubVersions('2.1.1')
+    stub = stubVersions('2.1.1')
 
     const upgraded = await ncu({
       packageData: { dependencies: { MOCK_PACKAGE: '^2.1.0' } },
@@ -49,12 +52,10 @@ describe('run', function () {
     })
 
     upgraded!.should.not.have.property('MOCK_PACKAGE')
-
-    stub.restore()
   })
 
   it('write to --packageFile and output jsonUpgraded', async () => {
-    const stub = stubVersions('99.9.9')
+    stub = stubVersions('99.9.9')
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
@@ -72,13 +73,14 @@ describe('run', function () {
       upgradedPkg.dependencies.should.have.property('express')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
     }
   })
 
   it('exclude -alpha, -beta, -rc', async () => {
+    stub = stubVersions(ncuMockPre)
     const data = await ncu({
       jsonAll: true,
+      cooldown: 5,
       packageData: {
         dependencies: {
           'ncu-mock-pre': '1.0.0',
@@ -93,6 +95,16 @@ describe('run', function () {
   })
 
   it('upgrade prereleases to newer prereleases', async () => {
+    stub = stubVersions({
+      name: 'ncu-test-alpha-latest',
+      version: '1.0.0-alpha.1',
+      'dist-tags': { latest: '1.0.0-alpha.2' },
+      versions: {
+        '1.0.0-alpha.1': { version: '1.0.0-alpha.1' },
+        '1.0.0-alpha.2': { version: '1.0.0-alpha.2' },
+      },
+    } as MockedVersions)
+
     const data = await ncu({
       packageData: {
         dependencies: {
@@ -106,6 +118,16 @@ describe('run', function () {
   })
 
   it('do not upgrade prereleases to newer prereleases with --pre 0', async () => {
+    stub = stubVersions({
+      name: 'ncu-test-alpha-latest',
+      version: '1.0.0-alpha.1',
+      'dist-tags': { latest: '1.0.0-alpha.2' },
+      versions: {
+        '1.0.0-alpha.1': { version: '1.0.0-alpha.1' },
+        '1.0.0-alpha.2': { version: '1.0.0-alpha.2' },
+      },
+    } as MockedVersions)
+
     const data = await ncu({
       pre: false,
       packageData: {
@@ -118,6 +140,7 @@ describe('run', function () {
   })
 
   it('include -alpha, -beta, -rc with --pre option', async () => {
+    stub = stubVersions(ncuMockPre)
     const data = await ncu({
       jsonAll: true,
       packageData: {
@@ -136,6 +159,7 @@ describe('run', function () {
 
   describe('deprecated', () => {
     it('deprecated included by default', async () => {
+      stub = stubVersions({ name: 'ncu-test-deprecated', version: '2.0.0', deprecated: true })
       const upgrades = await ncu({
         packageData: {
           dependencies: {
@@ -149,6 +173,7 @@ describe('run', function () {
     })
 
     it('deprecated included with --deprecated', async () => {
+      stub = stubVersions({ name: 'ncu-test-deprecated', version: '2.0.0', deprecated: true })
       const upgrades = await ncu({
         deprecated: true,
         packageData: {
@@ -163,6 +188,7 @@ describe('run', function () {
     })
 
     it('deprecated excluded with --no-deprecated', async () => {
+      stub = stubVersions({ name: 'ncu-test-deprecated', version: '2.0.0', deprecated: true })
       const upgrades = await ncu({
         deprecated: false,
         packageData: {
@@ -176,6 +202,7 @@ describe('run', function () {
   })
 
   it('ignore non-string versions (sometimes used as comments)', async () => {
+    stub = stubVersions({ name: '//', version: 'This is a comment' })
     const upgrades = await ncu({
       packageData: {
         dependencies: {
@@ -187,7 +214,7 @@ describe('run', function () {
   })
 
   it('update devDependency when duplicate dependency is up-to-date', async () => {
-    const stub = stubVersions('2.0.0')
+    stub = stubVersions('2.0.0')
     const upgrades = await ncu({
       packageData: {
         dependencies: {
@@ -201,11 +228,10 @@ describe('run', function () {
     upgrades!.should.deep.equal({
       'ncu-test-v2': '^2.0.0',
     })
-    stub.restore()
   })
 
   it('update dependency when duplicate devDependency is up-to-date', async () => {
-    const stub = stubVersions('2.0.0')
+    stub = stubVersions('2.0.0')
     const upgrades = await ncu({
       packageData: {
         dependencies: {
@@ -219,22 +245,33 @@ describe('run', function () {
     upgrades!.should.deep.equal({
       'ncu-test-v2': '^2.0.0',
     })
-    stub.restore()
   })
 
   // https://github.com/raineorshine/npm-check-updates/issues/1129
   it('ignore invalid semver version', async () => {
+    stub = stubVersions({
+      name: 'grunt-contrib-requirejs',
+      version: '0.3.0',
+      versions: {
+        '0.3.0': { version: '0.3.0' },
+        '0.3.4': { version: '0.3.4' },
+        // this is not a valid semver version and should be ignored
+        '0.4.0rc7': { version: '0.4.0rc7' },
+      },
+    } as MockedVersions)
     const upgrades = await ncu({
       // needed to cause the npm package handler to use greatest or newest and compare all published versions
+      pre: true,
       target: 'minor',
       packageData: {
         dependencies: {
-          // grunt-contrib-requirejs contains 0.4.0rc7 which is not valid semver
           'grunt-contrib-requirejs': '0.3.0',
         },
       },
     })
-    upgrades!.should.haveOwnProperty('grunt-contrib-requirejs')
+    upgrades!.should.deep.equal({
+      'grunt-contrib-requirejs': '0.3.4',
+    })
   })
 
   it('ignore file: and link: protocols', async () => {
@@ -251,7 +288,7 @@ describe('run', function () {
 
   describe('overrides', () => {
     it('upgrade overrides', async () => {
-      const stub = stubVersions('99.9.9')
+      stub = stubVersions('99.9.9')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const packageFile = path.join(tempDir, 'package.json')
       await fs.writeFile(
@@ -285,12 +322,11 @@ describe('run', function () {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
       }
     })
 
     it('upgrade self override', async () => {
-      const stub = stubVersions('99.9.9')
+      stub = stubVersions('99.9.9')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const packageFile = path.join(tempDir, 'package.json')
       await fs.writeFile(
@@ -331,12 +367,11 @@ describe('run', function () {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
       }
     })
 
     it('upgrade child override', async () => {
-      const stub = stubVersions('99.9.9')
+      stub = stubVersions('99.9.9')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const packageFile = path.join(tempDir, 'package.json')
       await fs.writeFile(
@@ -375,12 +410,11 @@ describe('run', function () {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
       }
     })
 
     it('upgrade nested override', async () => {
-      const stub = stubVersions('99.9.9')
+      stub = stubVersions('99.9.9')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const packageFile = path.join(tempDir, 'package.json')
       await fs.writeFile(
@@ -423,7 +457,6 @@ describe('run', function () {
         })
       } finally {
         await removeDir(tempDir)
-        stub.restore()
       }
     })
   })
@@ -444,7 +477,7 @@ describe('run', function () {
       result!.should.have.property('express')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 })

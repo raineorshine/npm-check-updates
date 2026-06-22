@@ -1,19 +1,11 @@
 import { expect } from 'chai'
-import path, { dirname } from 'path'
-import spawn from 'spawn-please'
-import { fileURLToPath } from 'url'
-import chaiSetup from './helpers/chaiSetup'
-
-chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../build/cli.js')
+import { runNcuCli } from './helpers/runNcuCli'
 
 describe('global', () => {
   // TODO: Hangs on Windows
   const itSkipWindows = process.platform === 'win32' ? it.skip : it
   itSkipWindows('global should run', async () => {
-    const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--global', 'npm'])
+    const { stdout } = await runNcuCli(['--jsonUpgraded', '--global', 'npm'])
     expect(JSON.parse(stdout))
   })
 })

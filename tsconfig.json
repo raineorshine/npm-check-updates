@@ -1,12 +1,12 @@
 {
   "include": ["src/**/*", "scripts/**/*", "test/**/*", "vite.config.ts"],
-  "exclude": ["test/deep", "test/doctor", "node_modules"],
+  "exclude": ["test/deep", "test/doctor", "test/fixtures-cache", "node_modules", "coverage"],
   "compilerOptions": {
     "target": "ES2023",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "types": ["node", "mocha"],
+    "types": ["node", "vitest/globals"],
     "noEmit": true,
     "allowJs": true,
     "esModuleInterop": true,

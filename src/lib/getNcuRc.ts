@@ -64,6 +64,34 @@ function getModuleMismatchError(errorMessage: string, filename: string): string 
   return null
 }
 
+/**
+ * Determines the directory boundary where configuration searching should stop during tests.
+ *
+ * This is necessary to isolate tests from the host machine's configuration files:
+ * 1. For dynamic tests running in temporary OS folders, it locks the search to the OS temp root.
+ * 2. For static fixture tests running inside the repository, it locks the search to the project's 'test' folder.
+ *
+ * This allows nested test setups to climb up and inherit mock configs inside their respective test trees,
+ * while preventing cosmiconfig from escaping into the project root or the developer's home directory
+ * where local `.ncurc` files would break test assertions.
+ */
+function getTestStopDir(cwd: string): string | undefined {
+  if (!process.env.NCU_TESTS) return undefined
+
+  if (cwd.includes(os.tmpdir())) {
+    return os.tmpdir()
+  }
+
+  cwd = path.isAbsolute(cwd) ? cwd : path.resolve(process.cwd(), cwd)
+
+  // Find where 'test' or 'test/test-data' ends in the path and establish that as the hard boundary
+  const testData = path.join('test', 'test-data')
+  const testDirMarker = cwd.includes(testData) ? path.join('test', 'test-data') : 'test'
+  const index = cwd.indexOf(testDirMarker)
+
+  return index !== -1 ? cwd.slice(0, index + testDirMarker.length) : cwd
+}
+
 /** Loads the .ncurc config file. */
 async function getNcuRc({
   configFileName,
@@ -81,17 +109,24 @@ async function getNcuRc({
 }) {
   const chalk = getChalk(options?.color)
 
+  // Determine the base directory for searching or resolving
+  const cwd =
+    configFilePath || (global ? os.homedir() : packageFile ? path.dirname(packageFile) : options.cwd || process.cwd())
+
   const explorer = lilconfig('ncu', {
     searchPlaces: ['.ncurc', '.ncurc.json', '.ncurc.yaml', '.ncurc.yml', '.ncurc.mjs', '.ncurc.cjs', '.ncurc.js'],
+
     loaders: {
       noExt: loadYaml,
       '.yaml': loadYaml,
       '.yml': loadYaml,
     },
-  })
 
-  // Determine the base directory for searching or resolving
-  const cwd = configFilePath || (global ? os.homedir() : packageFile ? path.dirname(packageFile) : process.cwd())
+    // Limits directory traversal during tests to prevent host config file leakage.
+    // Returns a path boundary (like os.tmpdir or the test folder) during test runs,
+    // and returns undefined in production to allow full system traversal.
+    stopDir: getTestStopDir(cwd),
+  })
 
   let rawResult: Awaited<ReturnType<typeof explorer.search>> = null
   let targetFile: string | undefined

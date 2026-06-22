@@ -1,15 +1,19 @@
 import { chalkInit } from '../src/lib/chalk'
 import getPeerDependenciesFromRegistry from '../src/lib/getPeerDependenciesFromRegistry'
-import chaiSetup from './helpers/chaiSetup'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
 
-chaiSetup()
-
 describe('getPeerDependenciesFromRegistry', function () {
-  it('single package', async () => {
+  let pb: ReturnType<typeof silenceProgressBar>
+  beforeEach(() => {
     chalkInit()
-    silenceProgressBar()
-    const data = await getPeerDependenciesFromRegistry({ 'ncu-test-peer': '1.0' }, {})
+    pb = silenceProgressBar()
+  })
+  afterEach(() => {
+    pb.mockRestore()
+  })
+
+  it('single package', async () => {
+    const data = await getPeerDependenciesFromRegistry({ 'ncu-test-peer': '1.0' }, { cwd: sandbox.cwd })
     data.should.deep.equal({
       'ncu-test-peer': {
         'ncu-test-return-version': '1.x',
@@ -18,21 +22,17 @@ describe('getPeerDependenciesFromRegistry', function () {
   })
 
   it('single package empty', async () => {
-    chalkInit()
-    silenceProgressBar()
-    const data = await getPeerDependenciesFromRegistry({ 'ncu-test-return-version': '1.0' }, {})
+    const data = await getPeerDependenciesFromRegistry({ 'ncu-test-return-version': '1.0' }, { cwd: sandbox.cwd })
     data.should.deep.equal({ 'ncu-test-return-version': {} })
   })
 
   it('multiple packages', async () => {
-    chalkInit()
-    silenceProgressBar()
     const data = await getPeerDependenciesFromRegistry(
       {
         'ncu-test-return-version': '1.0.0',
         'ncu-test-peer': '1.0.0',
       },
-      {},
+      { cwd: sandbox.cwd },
     )
     data.should.deep.equal({
       'ncu-test-return-version': {},

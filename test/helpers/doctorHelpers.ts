@@ -1,25 +1,8 @@
-import fs from 'fs/promises'
-import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
-import path from 'path'
-import spawn from 'spawn-please'
 import { type PackageManagerName } from '../../src/types/PackageManagerName'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../../build/cli.js')
-const doctorTests = path.join(__dirname, '../test-data/doctor')
-
-/** Run the ncu CLI. */
-const ncu = async (
-  args: string[],
-  spawnPleaseOptions?: Parameters<typeof spawn>[2],
-  spawnOptions?: Parameters<typeof spawn>[3],
-) => {
-  const { stdout } = await spawn('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
-  return stdout
-}
+import { runNcuCli } from './runNcuCli'
 
 /**
  * Windows terminal environments (like Git-Bash) often render different column padding
@@ -42,9 +25,8 @@ export function createNcuRegExp(input: string): RegExp {
 /** Assertions for npm or yarn when tests pass. */
 export const testPass = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('upgrade dependencies when tests pass', async function () {
-    const cwd = path.join(doctorTests, 'pass')
+    const cwd = await sandbox.createTestFolder('doctor/pass')
     const pkgPath = path.join(cwd, 'package.json')
-    const nodeModulesPath = path.join(cwd, 'node_modules')
     const lockfilePath = path.join(
       cwd,
       packageManager === 'yarn'
@@ -55,9 +37,6 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
             ? 'bun.lockb'
             : 'package-lock.json',
     )
-    const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
-    let stdout = ''
-    let stderr = ''
 
     // touch yarn.lock
     // yarn.lock is necessary otherwise yarn sees the package.json in the npm-check-updates directory and throws an error.
@@ -65,50 +44,10 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
       await fs.writeFile(lockfilePath, '')
     }
 
-    try {
-      // explicitly set packageManager to avoid auto yarn detection
-      await ncu(
-        ['--doctor', '-u', '-p', packageManager],
-        {
-          stdout: function (data: string) {
-            stdout += data
-          },
-          stderr: function (data: string) {
-            stderr += data
-          },
-        },
-        { cwd },
-      )
-    } catch (e) {}
+    // explicitly set packageManager to avoid auto yarn detection
+    const { stdout } = await runNcuCli(['--doctor', '-u', '-p', packageManager], { rejectOnError: false, cwd })
 
     const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-
-    // cleanup before assertions in case they fail
-    await fs.writeFile(pkgPath, pkgOriginal)
-    await fs.rm(nodeModulesPath, { recursive: true, force: true })
-    await fs.rm(lockfilePath, { recursive: true, force: true })
-
-    // delete yarn cache
-    if (packageManager === 'yarn') {
-      await fs.rm(path.join(cwd, '.yarn'), { recursive: true, force: true })
-      await fs.rm(path.join(cwd, '.pnp.js'), { recursive: true, force: true })
-    }
-
-    // bun prints the run header to stderr instead of stdout
-    if (packageManager === 'bun') {
-      stripAnsi(stderr).should.equal('$ echo Success\n\n$ echo Success\n\n')
-    } else {
-      stderr = stripAnsi(stderr).trim()
-      if (stderr !== '') {
-        stderr.should.equal(`> test
-> echo Success
-
-
-
-> test
-> echo Success`)
-      }
-    }
 
     // stdout should include normal output
     stripAnsi(stdout).should.containIgnoreCase('Tests pass')
@@ -122,9 +61,8 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
 /** Assertions for npm or yarn when tests fail. */
 export const testFail = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('identify broken upgrade', async function () {
-    const cwd = path.join(doctorTests, 'fail')
+    const cwd = await sandbox.createTestFolder('doctor/fail')
     const pkgPath = path.join(cwd, 'package.json')
-    const nodeModulesPath = path.join(cwd, 'node_modules')
     const lockfilePath = path.join(
       cwd,
       packageManager === 'yarn'
@@ -135,42 +73,16 @@ export const testFail = ({ packageManager }: { packageManager: PackageManagerNam
             ? 'bun.lockb'
             : 'package-lock.json',
     )
-    const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
-    let stdout = ''
-    let stderr = ''
-    let pkgUpgraded
 
     // touch yarn.lock (see fail/README)
     if (packageManager === 'yarn') {
       await fs.writeFile(lockfilePath, '')
     }
 
-    try {
-      // explicitly set packageManager to avoid auto yarn detection
-      await ncu(
-        ['--doctor', '-u', '-p', packageManager],
-        {
-          stdout: function (data: string) {
-            stdout += data
-          },
-          stderr: function (data: string) {
-            stderr += data
-          },
-        },
-        { cwd },
-      )
-    } finally {
-      pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
-      await fs.rm(lockfilePath, { recursive: true, force: true })
+    // explicitly set packageManager to avoid auto yarn detection
+    const { stdout, stderr } = await runNcuCli(['--doctor', '-u', '-p', packageManager], { rejectOnError: false, cwd })
 
-      // delete yarn cache
-      if (packageManager === 'yarn') {
-        await fs.rm(path.join(cwd, '.yarn'), { recursive: true, force: true })
-        await fs.rm(path.join(cwd, '.pnp.js'), { recursive: true, force: true })
-      }
-    }
+    const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
     const testVersion = createNcuRegExp('ncu-test-return-version ~1.0.0 →')
     const testV2 = createNcuRegExp('ncu-test-v2 ~1.0.0 →')

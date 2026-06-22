@@ -1,4 +1,5 @@
 import fs from 'fs/promises'
+import path from 'node:path'
 import spawn from 'spawn-please'
 import { printUpgrades } from '../lib/logging'
 import spawnBun from '../package-managers/bun'
@@ -91,6 +92,7 @@ const loadPackageFileForDoctor = async (options: Options): Promise<PackageInfo> 
 // we have to pass run directly since it would be a circular require if doctor included this file
 const doctor = async (run: Run, options: Options): Promise<void> => {
   chalkInit()
+  const cwd = options.cwd || process.cwd()
 
   // bun lockFileName defaults to bun.lock but will be overwritten to bun.lockb if detected at the readFile step below
   let lockFileName: 'package-lock.json' | 'yarn.lock' | 'pnpm-lock.yaml' | 'bun.lock' | 'bun.lockb' =
@@ -101,6 +103,8 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         : options.packageManager === 'bun'
           ? 'bun.lock'
           : 'package-lock.json'
+
+  let lockFilePath = path.join(cwd, lockFileName)
   const { pkg, pkgFile }: PackageInfo = await loadPackageFileForDoctor(options)
 
   // flatten all deps into one so we can iterate over them
@@ -115,9 +119,9 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     if (options.doctorInstall) {
       const [installCommand, ...testArgs] = options.doctorInstall.split(' ')
       console.log(chalk.blue(options.doctorInstall))
-      await spawn(installCommand, testArgs)
+      await spawn(installCommand, testArgs, {}, { cwd })
     } else {
-      await npm(['install'], { packageManager: options.packageManager }, true)
+      await npm(['install'], options, true)
     }
   }
 
@@ -143,16 +147,9 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
       }
       const [testCommand, ...testArgs] = groups
       console.log(chalk.blue(options.doctorTest))
-      await spawn(testCommand, testArgs, spawnPleaseOptions)
+      await spawn(testCommand, testArgs, spawnPleaseOptions, { cwd })
     } else {
-      await npm(
-        ['run', 'test'],
-        {
-          packageManager: options.packageManager,
-        },
-        true,
-        { spawnPleaseOptions },
-      )
+      await npm(['run', 'test'], options, true, { spawnPleaseOptions })
     }
   }
 
@@ -164,14 +161,15 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
   // save lock file if there is one
   let lockFile = ''
   try {
-    lockFile = await fs.readFile(lockFileName, 'utf-8')
+    lockFile = await fs.readFile(lockFilePath, 'utf-8')
   } catch (e) {
     // try bun.lockb if bun.lock was not found
     // set lockFileName so the rest of doctor mode uses bun.lockb for lock file updating and restoration
     if (options.packageManager === 'bun') {
       lockFileName = 'bun.lockb'
+      lockFilePath = path.join(cwd, lockFileName)
       try {
-        lockFile = await fs.readFile(lockFileName, 'utf-8')
+        lockFile = await fs.readFile(lockFilePath, 'utf-8')
       } catch (e) {}
     }
   }
@@ -239,12 +237,13 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     console.log(`Identifying broken dependencies`)
 
     // restore package file, lockFile and re-install
-    await fs.writeFile('package.json', pkgFile)
+    const packagePath = path.join(cwd, 'package.json')
+    await fs.writeFile(packagePath, pkgFile)
 
     if (lockFile) {
-      await fs.writeFile(lockFileName, lockFile)
+      await fs.writeFile(lockFilePath, lockFile)
     } else {
-      await fs.rm(lockFileName, { recursive: true, force: true })
+      await fs.rm(lockFilePath, { recursive: true, force: true })
     }
 
     // save the last package file with passing tests
@@ -280,7 +279,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
               : ['install', '--no-save']),
             `${name}@${version}`,
           ],
-          { packageManager: options.packageManager },
+          options,
           true,
         )
 
@@ -288,7 +287,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         // https://github.com/raineorshine/npm-check-updates/issues/1170
         if (pkg.scripts?.prepare) {
           try {
-            await npm(['run', 'prepare'], { packageManager: options.packageManager }, true)
+            await npm(['run', 'prepare'], options, true)
           } catch (e) {
             console.error(chalk.red('Prepare script failed'))
             throw e
@@ -308,14 +307,14 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         )
 
         // save working lock file
-        lockFile = await fs.readFile(lockFileName, 'utf-8')
+        lockFile = await fs.readFile(lockFilePath, 'utf-8')
       } catch (e) {
         // print failing package
         console.error(`  ${chalk.red('✗')} ${name} ${allDependencies[name]} → ${version}\n`)
         console.error(chalk.red(e))
 
         // restore last good lock file
-        await fs.writeFile(lockFileName, lockFile)
+        await fs.writeFile(lockFilePath, lockFile)
 
         // restore package.json since yarn and pnpm do not have the --no-save option
         if (
@@ -323,7 +322,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
           options.packageManager === 'pnpm' ||
           options.packageManager === 'bun'
         ) {
-          await fs.writeFile('package.json', lastPkgFile)
+          await fs.writeFile(packagePath, lastPkgFile)
         }
       }
     }
@@ -332,7 +331,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     // only print message if package file is updated
     if (lastPkgFile !== pkgFile) {
       console.log('Saving partially upgraded package.json')
-      await fs.writeFile('package.json', lastPkgFile)
+      await fs.writeFile(packagePath, lastPkgFile)
     }
 
     // re-install from restored package.json and lockfile

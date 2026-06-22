@@ -31,7 +31,7 @@ type PnpmList = {
 
 /** Reads the npmrc config file from the pnpm-workspace.yaml directory. */
 const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<NpmConfig> => {
-  const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
+  const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml', { cwd: options.cwd })
   if (!pnpmWorkspacePath) return {}
 
   const pnpmWorkspaceDir = path.dirname(pnpmWorkspacePath)
@@ -105,7 +105,13 @@ const parseMinimumReleaseAgeLayer = (parsed: Record<string, unknown>): MinimumRe
 })
 
 /** Resolves the directory that holds pnpm's global config files, matching pnpm's own resolution. */
-const getPnpmGlobalConfigDir = (): string => {
+const getPnpmGlobalConfigDir = (): string | null => {
+  // If it's a test, completely bypass reading environment variables or local host files
+  // (Unless the test explicitly sets XDG_CONFIG_HOME to test a specific behavior)
+  if (process.env.NCU_TESTS && !process.env.XDG_CONFIG_HOME?.includes('ncu-pnpm-xdg')) {
+    return null
+  }
+
   if (process.env.XDG_CONFIG_HOME) return path.join(process.env.XDG_CONFIG_HOME, 'pnpm')
   if (process.platform === 'win32') {
     const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local')
@@ -144,19 +150,23 @@ const readMinimumReleaseAgeLayer = async (
  * pnpm <= 10) for the minimumReleaseAge value. minimumReleaseAgeExclude patterns are merged across all
  * layers, matching pnpm's config resolution. Returns null if no layer defines a minimumReleaseAge.
  */
-const getPnpmWorkspaceMinimumReleaseAge = async (): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
+const getPnpmWorkspaceMinimumReleaseAge = async (
+  options: Options = {},
+): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
   const globalConfigDir = getPnpmGlobalConfigDir()
 
-  const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
+  const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml', { cwd: options.cwd })
 
   // Ordered from highest to lowest precedence. Each entry resolves to a config layer (or null if absent).
   const layers = await Promise.all([
     // workspace / project config
     pnpmWorkspacePath ? readMinimumReleaseAgeLayer(pnpmWorkspacePath, 'yaml') : Promise.resolve(null),
     // pnpm >= 11 global config
-    readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'config.yaml'), 'yaml'),
+    globalConfigDir
+      ? readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'config.yaml'), 'yaml')
+      : Promise.resolve(null),
     // pnpm <= 10 global config
-    readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'rc'), 'ini'),
+    globalConfigDir ? readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'rc'), 'ini') : Promise.resolve(null),
   ])
 
   // Use the minimumReleaseAge from the highest-precedence layer that defines it.

@@ -1,29 +1,22 @@
 import fs from 'fs/promises'
 import os from 'os'
-import path, { dirname } from 'path'
-import spawn from 'spawn-please'
-import { fileURLToPath } from 'url'
-import chaiSetup from './helpers/chaiSetup'
+import path from 'path'
 import removeDir from './helpers/removeDir'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
-
-chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../build/cli.js')
 
 describe('rc-config', () => {
   // before/after must be placed within the describe block; otherwise, they will apply to tests in other files
-  let stub: { restore: () => void }
-  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
-  after(() => stub.restore())
+  let stub: { mockRestore: () => void }
+  beforeEach(() => (stub = stubVersions('99.9.9', { spawn: true })))
+  afterEach(() => stub.mockRestore())
 
   it('print rcConfigPath when there is a non-empty rc config file', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, JSON.stringify({ filter: 'ncu-test-v2' }), 'utf-8')
     try {
-      const { stdout } = await spawn('node', [bin, '--stdin', '--configFilePath', tempDir], {
+      const { stdout } = await runNcuCli(['--stdin', '--configFilePath', tempDir], {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
       })
       stdout.should.containIgnoreCase(`Using config file ${tempConfigFile}`)
@@ -35,7 +28,7 @@ describe('rc-config', () => {
   it('do not print rcConfigPath when there is no rc config file', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     try {
-      const { stdout } = await spawn('node', [bin, '--stdin', '--cwd', tempDir], {
+      const { stdout } = await runNcuCli(['--stdin', '--cwd', tempDir], {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
       })
       stdout.should.not.include('Using config file')
@@ -49,7 +42,7 @@ describe('rc-config', () => {
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, '{}', 'utf-8')
     try {
-      const { stdout } = await spawn('node', [bin, '--stdin', '--configFilePath', tempDir], {
+      const { stdout } = await runNcuCli(['--stdin', '--configFilePath', tempDir], {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
       })
       stdout.should.not.include('Using config file')
@@ -62,7 +55,7 @@ describe('rc-config', () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const configFileName = '.ncurc_missing.json'
     try {
-      const result = spawn('node', [bin, '--stdin', '--configFilePath', tempDir, '--configFileName', configFileName], {
+      const result = runNcuCli(['--stdin', '--configFilePath', tempDir, '--configFileName', configFileName], {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
       })
       await result.should.eventually.be.rejectedWith(`Config file ${configFileName} not found in ${tempDir}`)
@@ -76,7 +69,7 @@ describe('rc-config', () => {
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, filter: 'ncu-test-v2' }), 'utf-8')
     try {
-      const { stdout } = await spawn('node', [bin, '--stdin', '--configFilePath', tempDir], {
+      const { stdout } = await runNcuCli(['--stdin', '--configFilePath', tempDir], {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
       })
       const pkgData = JSON.parse(stdout)
@@ -93,9 +86,8 @@ describe('rc-config', () => {
     const tempConfigFile = path.join(tempDir, tempConfigFileName)
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, filter: 'ncu-test-v2' }), 'utf-8')
     try {
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--stdin', '--configFilePath', tempDir, '--configFileName', tempConfigFileName],
+      const { stdout } = await runNcuCli(
+        ['--stdin', '--configFilePath', tempDir, '--configFileName', tempConfigFileName],
         { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }) },
       )
       const pkgData = JSON.parse(stdout)
@@ -111,11 +103,9 @@ describe('rc-config', () => {
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, filter: 'ncu-test-v2' }), 'utf-8')
     try {
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--stdin', '--configFilePath', tempDir, '--filter', 'ncu-test-tag'],
-        { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }) },
-      )
+      const { stdout } = await runNcuCli(['--stdin', '--configFilePath', tempDir, '--filter', 'ncu-test-tag'], {
+        stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
+      })
       const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('ncu-test-tag')
       pkgData.should.not.have.property('ncu-test-v2')
@@ -129,7 +119,7 @@ describe('rc-config', () => {
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true }), 'utf-8')
     try {
-      const { stdout } = await spawn('node', [bin, '--stdin', '--configFilePath', tempDir, '--no-jsonUpgraded'], {
+      const { stdout } = await runNcuCli(['--stdin', '--configFilePath', tempDir, '--no-jsonUpgraded'], {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
       })
       // if the output contains "Using config file", then we know that jsonUpgraded was overridden
@@ -145,7 +135,7 @@ describe('rc-config', () => {
     // if boolean arguments are not handled as a special case, ncu will incorrectly pass "--deep false" to commander, which will interpret it as two args, i.e. --deep and --filter false
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, deep: false }), 'utf-8')
     try {
-      const { stdout } = await spawn('node', [bin, '--stdin', '--configFilePath', tempDir], {
+      const { stdout } = await runNcuCli(['--stdin', '--configFilePath', tempDir], {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-tag': '0.1.0' } }),
       })
       const pkgData = JSON.parse(stdout)
@@ -167,7 +157,7 @@ describe('rc-config', () => {
     )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--mergeConfig'], { cwd: tempDir })
       const firstLine = stdout.split('\n')[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
@@ -191,7 +181,7 @@ describe('rc-config', () => {
     )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--mergeConfig'], { cwd: tempDir })
       const firstLine = stdout.split('\n')[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
@@ -214,7 +204,7 @@ describe('rc-config', () => {
       'utf-8',
     )
     try {
-      const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
+      const { stderr } = await runNcuCli(['--mergeConfig'], { rejectOnError: false, cwd: tempDir })
       const firstLine = stderr.split('\n')[0]
       stderr.should.contains('Config file error')
       stderr.should.contains('YAML Error')
@@ -235,7 +225,7 @@ describe('rc-config', () => {
       'utf-8',
     )
     try {
-      const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
+      const { stderr } = await runNcuCli(['--mergeConfig'], { rejectOnError: false, cwd: tempDir })
       const firstLine = stderr.split('\n')[0]
       stderr.should.contains('Config file error')
       stderr.should.contains('YAML Error')
@@ -257,7 +247,7 @@ describe('rc-config', () => {
     )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--mergeConfig'], { cwd: tempDir })
       const firstLine = stdout.split('\n')[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
@@ -281,7 +271,7 @@ describe('rc-config', () => {
     )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--mergeConfig'], { cwd: tempDir })
       const firstLine = stdout.split('\n')[0]
       firstLine.should.contains('Using config file')
       firstLine.should.contains(configFile)
@@ -302,7 +292,7 @@ describe('rc-config', () => {
     )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--mergeConfig'], { cwd: tempDir })
       const firstLine = stdout.split('\n')[0]
       firstLine.should.contains('Using config file')
       firstLine.should.contains(configFile)
@@ -323,7 +313,7 @@ describe('rc-config', () => {
     )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--mergeConfig'], { cwd: tempDir })
       const firstLine = stdout.split('\n')[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
@@ -348,7 +338,7 @@ describe('rc-config', () => {
     )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--mergeConfig'], { cwd: tempDir })
       const firstLine = stdout.split('\n')[0]
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
@@ -374,7 +364,7 @@ describe('rc-config', () => {
     )
     try {
       // --mergeConfig enables rc auto-detection in tests.
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--mergeConfig'], {}, { cwd: nestedDir })
+      const { stdout } = await runNcuCli(['--jsonUpgraded', '--mergeConfig'], { cwd: nestedDir })
       const pkgData = JSON.parse(stdout)
       pkgData.should.have.property('ncu-test-v2')
       pkgData.should.not.have.property('ncu-test-tag')
@@ -396,7 +386,7 @@ describe('rc-config', () => {
     )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--mergeConfig'], { cwd: tempDir })
       const firstLine = stdout.split('\n')[0]
       firstLine.should.contains('Using config file')
       firstLine.should.contains(configFile)
@@ -418,7 +408,7 @@ describe('rc-config', () => {
     )
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--mergeConfig'], { cwd: tempDir })
       const firstLine = stdout.split('\n')[0]
       firstLine.should.contains('Using config file')
       firstLine.should.contains(configFile)
@@ -435,7 +425,7 @@ describe('rc-config', () => {
     await fs.writeFile(configFile, 'module.exports = { filter: "test" }', 'utf-8')
     await fs.writeFile(pkgFile, JSON.stringify({ type: 'module', dependencies: { 'ncu-test-v2': '1.0.0' } }), 'utf-8')
     try {
-      const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
+      const { stderr } = await runNcuCli(['--mergeConfig'], { rejectOnError: false, cwd: tempDir })
       stderr.should.contain('CommonJS syntax')
       stderr.should.contain('.cjs')
     } finally {
@@ -451,7 +441,11 @@ describe('rc-config', () => {
     await fs.writeFile(configFile, 'export default { filter: "test" }', 'utf-8')
     await fs.writeFile(pkgFile, JSON.stringify({ type: 'commonjs', dependencies: { 'ncu-test-v2': '1.0.0' } }), 'utf-8')
     try {
-      const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
+      const { stderr } = await runNcuCli(['--mergeConfig'], {
+        rejectOnError: false,
+        cwd: tempDir,
+        silenceRunnerWarning: true,
+      })
       stderr.should.contain('ESM syntax')
       stderr.should.contain('.mjs')
     } finally {
@@ -468,7 +462,7 @@ describe('rc-config', () => {
 
     try {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-      await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
+      await runNcuCli(['--mergeConfig'], { cwd: tempDir })
     } finally {
       await removeDir(tempDir)
     }
@@ -493,7 +487,7 @@ describe('rc-config', () => {
       )
       try {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-        const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
+        const { stdout } = await runNcuCli(['--mergeConfig', '--jsonUpgraded'], { cwd: tempDir })
         const pkgData = JSON.parse(stdout)
         pkgData.should.not.have.property('ncu-test-v2')
         pkgData.should.have.property('ncu-test-tag')
@@ -520,7 +514,7 @@ describe('rc-config', () => {
       )
       try {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-        const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
+        const { stdout } = await runNcuCli(['--mergeConfig', '--jsonUpgraded'], { cwd: tempDir })
         const pkgData = JSON.parse(stdout)
         pkgData.should.have.property('ncu-test-v2')
         pkgData.should.not.have.property('ncu-test-tag')
@@ -547,7 +541,7 @@ describe('rc-config', () => {
       )
       try {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-        const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
+        const { stdout } = await runNcuCli(['--mergeConfig', '--jsonUpgraded'], { cwd: tempDir })
         const pkgData = JSON.parse(stdout)
         pkgData.should.have.property('ncu-test-v2')
         pkgData.should.have.property('ncu-test-tag')
@@ -574,7 +568,7 @@ describe('rc-config', () => {
       )
       try {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-        const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
+        const { stdout } = await runNcuCli(['--mergeConfig', '--jsonUpgraded'], { cwd: tempDir })
         const pkgData = JSON.parse(stdout)
         pkgData.should.have.property('ncu-test-v2')
         pkgData.should.not.have.property('ncu-test-tag')
@@ -601,7 +595,7 @@ describe('rc-config', () => {
       )
       try {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-        const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
+        const { stdout } = await runNcuCli(['--mergeConfig', '--jsonUpgraded'], { cwd: tempDir })
         const pkgData = JSON.parse(stdout)
         pkgData.should.not.have.property('ncu-test-v2')
         pkgData.should.have.property('ncu-test-tag')

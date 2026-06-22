@@ -1,26 +1,19 @@
-import path, { dirname } from 'path'
-import spawn from 'spawn-please'
-import { fileURLToPath } from 'url'
 import ncu from '../src'
-import chaiSetup from './helpers/chaiSetup'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
-
-chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../build/cli.js')
 
 describe('filterVersion', () => {
   describe('module', () => {
-    let stub: { restore: () => void }
-    before(() => {
+    let stub: { mockRestore: () => void }
+    beforeEach(() => {
       stub = stubVersions({
         'ncu-test-v2': '2.0.0',
         'ncu-test-return-version': '2.0.0',
+        'fp-and-or': '1.0.2',
       })
     })
-    after(() => {
-      stub.restore()
+    afterEach(() => {
+      stub.mockRestore()
     })
 
     it('filter by package version with string', async () => {
@@ -38,8 +31,6 @@ describe('filterVersion', () => {
 
       upgraded!.should.have.property('ncu-test-v2')
       upgraded!.should.not.have.property('ncu-test-return-version')
-
-      stub.restore()
     })
 
     it('filter by package version with space-delimited list of strings', async () => {
@@ -129,15 +120,14 @@ describe('filterVersion', () => {
         },
       }
 
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--jsonUpgraded', '--verbose', '--stdin', '--filterVersion', '1.0.0', '--filterVersion', '1.0.9'],
+      const { stdout } = await runNcuCli(
+        ['--jsonUpgraded', '--verbose', '--stdin', '--filterVersion', '1.0.0', '--filterVersion', '1.0.9'],
         { stdin: JSON.stringify(pkgData) },
       )
       const upgraded = JSON.parse(stdout)
       upgraded.should.have.property('ncu-test-v2')
       upgraded.should.have.property('ncu-test-10')
-      stub.restore()
+      stub.mockRestore()
     })
   })
 })
@@ -153,15 +143,14 @@ describe('rejectVersion', () => {
         },
       }
 
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--jsonUpgraded', '--verbose', '--stdin', '--rejectVersion', '1.0.0', '--rejectVersion', '1.0.9'],
+      const { stdout } = await runNcuCli(
+        ['--jsonUpgraded', '--verbose', '--stdin', '--rejectVersion', '1.0.0', '--rejectVersion', '1.0.9'],
         { stdin: JSON.stringify(pkgData) },
       )
       const upgraded = JSON.parse(stdout)
       upgraded.should.not.have.property('ncu-test-v2')
       upgraded.should.not.have.property('ncu-test-10')
-      stub.restore()
+      stub.mockRestore()
     })
   })
 })

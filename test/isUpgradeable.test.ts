@@ -1,7 +1,4 @@
 import isUpgradeable from '../src/lib/isUpgradeable'
-import chaiSetup from './helpers/chaiSetup'
-
-chaiSetup()
 
 describe('isUpgradeable', () => {
   it('do not upgrade pure wildcards', () => {

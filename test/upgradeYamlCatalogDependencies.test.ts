@@ -1,7 +1,4 @@
 import { updateYamlCatalogDependencies } from '../src/lib/upgradeYamlCatalogDependencies'
-import chaiSetup from './helpers/chaiSetup'
-
-const should = chaiSetup()
 
 describe('updateYamlCatalogDependencies', () => {
   it('updates a catalog dependency while preserving quotes', () => {

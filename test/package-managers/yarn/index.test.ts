@@ -5,9 +5,9 @@ import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import * as yarn from '../../../src/package-managers/yarn'
 import { getPathToLookForYarnrc, yarnApi } from '../../../src/package-managers/yarn'
-import chaiSetup from '../../helpers/chaiSetup'
+import { type MockedVersions } from '../../../src/types/MockedVersions'
+import stubVersions from '../../helpers/stubVersions'
 
-const should = chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const isWindows = process.platform === 'win32'
@@ -45,25 +45,37 @@ const hasSystemYarn = (() => {
 const itWithSystemYarn = hasSystemYarn ? it : it.skip
 
 describe('yarn', function () {
-  it('list', async () => {
-    const testDir = path.join(__dirname, 'default')
-    const { version } = await yarn.latest('chalk', '', { cwd: testDir })
-    parseInt(version!, 10).should.be.above(3)
+  let versionStub: { mockRestore: () => void }
+  afterEach(() => {
+    versionStub?.mockRestore()
   })
 
   it('latest', async () => {
     const testDir = path.join(__dirname, 'default')
+    versionStub = stubVersions({ chalk: '5.0.0' })
     const { version } = await yarn.latest('chalk', '', { cwd: testDir })
     parseInt(version!, 10).should.be.above(3)
   })
 
   it('greatest', async () => {
+    versionStub = stubVersions({ 'ncu-test-greatest-not-newest': '2.0.0-beta' })
     const { version } = await yarn.greatest('ncu-test-greatest-not-newest', '', { pre: true, cwd: __dirname })
     version!.should.equal('2.0.0-beta')
   })
 
   it('avoids deprecated', async () => {
     const testDir = path.join(__dirname, 'default')
+    versionStub = stubVersions({
+      version: '1.15.0',
+      versions: {
+        '1.15.0': { version: '1.15.0', deprecated: true },
+        '1.16.0': { version: '1.16.0', deprecated: true },
+        '1.16.1': { version: '1.16.1', deprecated: true },
+        '1.16.1-lts': { version: '1.16.1-lts' },
+        '2.0.0-next-4': { version: '2.0.0-next-4' },
+      },
+      time: {},
+    } as MockedVersions)
     const { version } = await yarn.minor('popper.js', '1.15.0', { cwd: testDir, pre: true })
     version!.should.equal('1.16.1-lts')
   })
@@ -75,6 +87,7 @@ describe('yarn', function () {
   })
 
   itWithSystemYarn('getPeerDependencies v1', async () => {
+    process.env.YARN_CONFIG_PREFER_OFFLINE = 'true'
     const testDir = path.join(__dirname, 'default')
     const spawnOptions = { cwd: testDir, env: cleanEnv }
     await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})
@@ -85,6 +98,7 @@ describe('yarn', function () {
   })
 
   itWithSystemYarn('getPeerDependencies v4', async () => {
+    process.env.YARN_ENABLE_OFFLINE_MODE = '1'
     const testDir = path.join(__dirname, 'v4')
     const spawnOptions = { cwd: testDir, env: cleanEnv }
     await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})

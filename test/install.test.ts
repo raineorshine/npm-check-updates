@@ -2,21 +2,13 @@
 // eslint doesn't like .to.be.false syntax
 import { expect } from 'chai'
 import fs from 'fs/promises'
-import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
-import spawn from 'spawn-please'
 import exists from '../src/lib/exists'
-import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
-
-chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../build/cli.js')
 
 describe('install', () => {
   describe('non-interactive', () => {
@@ -33,14 +25,14 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile])
+        const { stdout } = await runNcuCli(['-u', '--packageFile', pkgFile])
         stripAnsi(stdout).should.match(/Run (npm|yarn) install to install new versions/)
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'yarn.lock'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -57,13 +49,13 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'always'])
+        const { stdout } = await runNcuCli(['-u', '--packageFile', pkgFile, '--install', 'always'])
         stripAnsi(stdout).should.not.match(/Run (npm|yarn) install to install new versions/)
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -80,14 +72,14 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'never'])
+        const { stdout } = await runNcuCli(['-u', '--packageFile', pkgFile, '--install', 'never'])
         stripAnsi(stdout).should.not.match(/Run (npm|yarn) install to install new versions/)
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'yarn.lock'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
   })
@@ -106,22 +98,18 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn(
-          'node',
-          [bin, '-iu', '--packageFile', pkgFile],
-          {},
+        await runNcuCli(
+          ['-iu', '--packageFile', pkgFile],
+
           {
-            env: {
-              ...process.env,
-              INJECT_PROMPTS: JSON.stringify([['ncu-test-v2'], true]),
-            },
+            inject: [['ncu-test-v2'], true],
           },
         )
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -138,22 +126,14 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn(
-          'node',
-          [bin, '-iu', '--packageFile', pkgFile],
-          {},
-          {
-            env: {
-              ...process.env,
-              INJECT_PROMPTS: JSON.stringify([['ncu-test-v2'], false]),
-            },
-          },
-        )
+        await runNcuCli(['-iu', '--packageFile', pkgFile], {
+          inject: [['ncu-test-v2'], false],
+        })
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -170,24 +150,16 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn(
-          'node',
-          [bin, '-iu', '--packageFile', pkgFile, '--install', 'always'],
-          {},
-          {
-            env: {
-              ...process.env,
-              // NOTE: We can inject values, but we cannot test if the prompt was actually shown or not.
-              // i.e. Testing that the prompt is not shown with --install always must be done manually.
-              INJECT_PROMPTS: JSON.stringify([['ncu-test-v2']]),
-            },
-          },
-        )
+        await runNcuCli(['-iu', '--packageFile', pkgFile, '--install', 'always'], {
+          // NOTE: We can inject values, but we cannot test if the prompt was actually shown or not.
+          // i.e. Testing that the prompt is not shown with --install always must be done manually.
+          inject: [['ncu-test-v2']],
+        })
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
 
@@ -204,24 +176,16 @@ describe('install', () => {
       await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
 
       try {
-        await spawn(
-          'node',
-          [bin, '-iu', '--packageFile', pkgFile, '--install', 'never'],
-          {},
-          {
-            env: {
-              ...process.env,
-              // NOTE: We can inject values, but we cannot test if the prompt was actually shown or not.
-              // i.e. Testing that the prompt is not shown with --install never must be done manually.
-              INJECT_PROMPTS: JSON.stringify([['ncu-test-v2']]),
-            },
-          },
-        )
+        await runNcuCli(['-iu', '--packageFile', pkgFile, '--install', 'never'], {
+          // NOTE: We can inject values, but we cannot test if the prompt was actually shown or not.
+          // i.e. Testing that the prompt is not shown with --install never must be done manually.
+          inject: [['ncu-test-v2']],
+        })
         expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
         expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
       } finally {
         await removeDir(tempDir)
-        stub.restore()
+        stub.mockRestore()
       }
     })
   })

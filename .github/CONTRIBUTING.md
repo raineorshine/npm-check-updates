@@ -21,13 +21,23 @@ This project is now **pure ESM** with support for both ESM and CJS via Vite. It 
 
 ### Running Tests
 
-Since the project is now ESM, tests must be run with `tsx` for TypeScript support:
+This project uses [Vitest](https://vitest.dev/) for unit testing.
 
 ```sh
-npm test
-# or manually:
-mocha --node-option import=tsx 'test/**/*.test.ts'
+npm test                    # Run all tests (lint + unit + e2e)
+npm run test:unit           # Run unit tests only
+npm run test:unit:watch     # Run unit tests in watch mode
+
+# Test Coverage
+npm run test:coverage       # Generate coverage report (terminal output)
+npm run test:coverage:html  # Generate and open interactive HTML coverage report
 ```
+
+Coverage reports are generated in the `coverage/` directory:
+
+- `coverage/index.html` - Interactive browser-based report
+- `coverage/lcov-report/` - Detailed line-by-line coverage
+- `coverage/lcov.info` - Standard LCOV format for IDE integration
 
 ## Executable Stack Trace
 

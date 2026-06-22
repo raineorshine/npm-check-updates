@@ -1,22 +1,15 @@
 import fs from 'fs/promises'
-import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path from 'path'
-import spawn from 'spawn-please'
 import { cliOptionsMap } from '../src/cli-options'
 import { chalkInit } from '../src/lib/chalk'
-import chaiSetup from './helpers/chaiSetup'
 import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
 import removeDir from './helpers/removeDir'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
-
-chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../build/cli.js')
-const doctorTests = path.join(__dirname, 'test-data/doctor')
+import { doctorSpawnHandler } from './helpers/stubs/stubDoctor'
+import { stubSpawnPlease } from './helpers/stubs/stubSpawnPlease'
 
 const mockNpmVersions = {
   emitter20: '2.0.0',
@@ -25,30 +18,27 @@ const mockNpmVersions = {
   'ncu-test-v2': '2.0.0',
 }
 
-/** Run the ncu CLI. */
-const ncu = async (
-  args: string[],
-  spawnPleaseOptions?: Parameters<typeof spawn>[2],
-  spawnOptions?: Parameters<typeof spawn>[3],
-) => {
-  const { stdout } = await spawn('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
-  return stdout
-}
-
 describe('doctor', function () {
-  // 3 min timeout
-  this.timeout(3 * 60 * 1000)
+  let stub: { mockRestore: () => void }
 
-  let stub: { restore: () => void }
-  before(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
-  after(() => stub.restore())
+  beforeAll(async () => {
+    stubSpawnPlease.useFirst(doctorSpawnHandler)
+  })
+
+  beforeEach(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
+  afterEach(() => stub.mockRestore())
+
+  afterAll(async () => {
+    vi.restoreAllMocks()
+    sandbox.cleanup()
+  })
 
   describe('npm', () => {
     it('print instructions when -u is not specified', async () => {
       chalkInit()
-      const cwd = path.join(doctorTests, 'nopackagefile')
-      const output = await ncu(['--doctor'], {}, { cwd })
-      return stripAnsi(output).should.equal(
+      const cwd = await sandbox.createTestFolder('doctor/nopackagefile')
+      const { stdout } = await runNcuCli(['--doctor'], { cwd })
+      return stripAnsi(stdout).should.equal(
         `Usage: ncu --doctor\n\n${stripAnsi(
           (cliOptionsMap.doctor.help as (options: { markdown: boolean }) => string)({ markdown: false }),
         )}\n`,
@@ -56,21 +46,22 @@ describe('doctor', function () {
     })
 
     it('throw an error if there is no package file', async () => {
-      const cwd = path.join(doctorTests, 'nopackagefile')
-      return ncu(['--doctor', '-u'], {}, { cwd }).should.eventually.be.rejectedWith('Missing or invalid package.json')
+      const cwd = await sandbox.createTestFolder('doctor/nopackagefile')
+      return runNcuCli(['--doctor', '-u'], { cwd }).should.eventually.be.rejectedWith('Missing or invalid package.json')
     })
 
     it('throw an error if there is no test script', async () => {
-      const cwd = path.join(doctorTests, 'notestscript')
-      return ncu(['--doctor', '-u'], {}, { cwd }).should.eventually.be.rejectedWith('No npm "test" script')
+      const cwd = await sandbox.createTestFolder('doctor/notestscript')
+      return runNcuCli(['--doctor', '-u'], { cwd }).should.eventually.be.rejectedWith('No npm "test" script')
     })
 
     it('throw an error if --packageData or --packageFile are supplied', async () => {
-      return Promise.all([
-        ncu(['--doctor', '-u', '--packageFile', 'package.json']).should.eventually.be.rejectedWith(
+      await sandbox.createPackageJson()
+      await Promise.all([
+        runNcuCli(['--doctor', '-u', '--packageFile', 'package.json']).should.eventually.be.rejectedWith(
           '--packageData and --packageFile are not allowed with --doctor',
         ),
-        ncu(['--doctor', '-u', '--packageData', '{}']).should.eventually.be.rejectedWith(
+        runNcuCli(['--doctor', '-u', '--packageData', '{}']).should.eventually.be.rejectedWith(
           '--packageData and --packageFile are not allowed with --doctor',
         ),
       ])
@@ -80,36 +71,15 @@ describe('doctor', function () {
     testFail({ packageManager: 'npm' })
 
     it('pass through options', async function () {
-      const cwd = path.join(doctorTests, 'options')
+      const cwd = await sandbox.createTestFolder('doctor/options')
       const pkgPath = path.join(cwd, 'package.json')
-      const lockfilePath = path.join(cwd, 'package-lock.json')
-      const nodeModulesPath = path.join(cwd, 'node_modules')
-      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
-      let stdout = ''
-      let stderr = ''
 
-      try {
-        // check only ncu-test-v2 (excluding ncu-return-version)
-        await ncu(
-          ['--doctor', '-u', '--filter', 'ncu-test-v2'],
-          {
-            stdout: function (data: string) {
-              stdout += data
-            },
-            stderr: function (data: string) {
-              stderr += data
-            },
-          },
-          { cwd },
-        )
-      } catch (e) {}
+      let { stdout, stderr } = await runNcuCli(['--doctor', '-u', '--filter', 'ncu-test-v2'], {
+        rejectOnError: false,
+        cwd,
+      })
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-
-      // cleanup before assertions in case they fail
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -132,36 +102,25 @@ describe('doctor', function () {
     })
 
     it('custom install script with --doctorInstall', async function () {
-      const cwd = path.join(doctorTests, 'custominstall')
+      const cwd = await sandbox.createTestFolder('doctor/custominstall')
       const pkgPath = path.join(cwd, 'package.json')
-      const lockfilePath = path.join(cwd, 'package-lock.json')
-      const nodeModulesPath = path.join(cwd, 'node_modules')
-      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-      let stdout = ''
-      let stderr = ''
 
-      try {
-        await ncu(
-          ['--doctor', '-u', '--doctorInstall', npmCmd + ' run myinstall'],
-          {
-            stdout: function (data: string) {
-              stdout += data
-            },
-            stderr: function (data: string) {
-              stderr += data
-            },
-          },
-          { cwd },
-        )
-      } catch (e) {}
+      let { stdout, stderr } = await runNcuCli(['--doctor', '-u', '--doctorInstall', npmCmd + ' run myinstall'], {
+        rejectOnError: false,
+        cwd,
+      })
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
-      // cleanup before assertions in case they fail
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
+      // spawn have been called with the right arguments
+      const [cmd1, args1 = []] = stubSpawnPlease.spy.mock.calls.at(-2)!
+      cmd1.should.equal(npmCmd)
+      args1.join(' ').should.endsWith('run myinstall')
+      // doctor run test after the custom install
+      const [cmd2, args2 = []] = stubSpawnPlease.spy.mock.calls.at(-1)!
+      cmd2.should.equal(npmCmd)
+      args2.join(' ').should.endsWith('run test')
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -183,36 +142,21 @@ describe('doctor', function () {
     })
 
     it('custom test script with --doctorTest', async function () {
-      const cwd = path.join(doctorTests, 'customtest')
+      const cwd = await sandbox.createTestFolder('doctor/customtest')
       const pkgPath = path.join(cwd, 'package.json')
-      const lockfilePath = path.join(cwd, 'package-lock.json')
-      const nodeModulesPath = path.join(cwd, 'node_modules')
-      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-      let stdout = ''
-      let stderr = ''
 
-      try {
-        await ncu(
-          ['--doctor', '-u', '--doctorTest', npmCmd + ' run mytest'],
-          {
-            stdout: function (data: string) {
-              stdout += data
-            },
-            stderr: function (data: string) {
-              stderr += data
-            },
-          },
-          { cwd },
-        )
-      } catch (e) {}
+      let { stdout, stderr } = await runNcuCli(['--doctor', '-u', '--doctorTest', `${npmCmd} run mytest`], {
+        rejectOnError: false,
+        cwd,
+      })
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
-      // cleanup before assertions in case they fail
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
+      // spawn have been called with the right arguments
+      const [cmd, args = []] = stubSpawnPlease.spy.mock.calls.at(-1)!
+      cmd.should.equal(npmCmd)
+      args.join(' ').should.endsWith('run mytest')
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -234,36 +178,22 @@ describe('doctor', function () {
     })
 
     it('custom test script with --doctorTest command that includes spaced words wrapped in quotes', async function () {
-      const cwd = path.join(doctorTests, 'customtest2')
+      const cwd = await sandbox.createTestFolder('doctor/customtest2')
       const pkgPath = path.join(cwd, 'package.json')
-      const lockfilePath = path.join(cwd, 'package-lock.json')
-      const nodeModulesPath = path.join(cwd, 'node_modules')
       const echoPath = path.join(cwd, 'echo.js')
-      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
-      let stdout = ''
-      let stderr = ''
 
-      try {
-        await ncu(
-          ['--doctor', '-u', '--doctorTest', `node ${echoPath} '123 456'`],
-          {
-            stdout: function (data: string) {
-              stdout += data
-            },
-            stderr: function (data: string) {
-              stderr += data
-            },
-          },
-          { cwd },
-        )
-      } catch (e) {}
+      const { stdout, stderr } = await runNcuCli(['--doctor', '-u', '--doctorTest', `node ${echoPath} '123 456'`], {
+        rejectOnError: false,
+        cwd,
+      })
 
       const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
-      // cleanup before assertions in case they fail
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
+      // spawn have been called with the right arguments
+      const [cmd, args = []] = stubSpawnPlease.spy.mock.calls.at(-1)!
+      cmd.should.equal('node')
+      args[0].should.equal(echoPath)
+      args[1].should.endsWith('123 456')
 
       // stderr should be empty
       stderr.should.equal('')
@@ -278,7 +208,6 @@ describe('doctor', function () {
     it('handle failed prepare script', async () => {
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgPath = path.join(tempDir, 'package.json')
-      await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
 
       // package.json
       await fs.writeFile(
@@ -290,7 +219,7 @@ describe('doctor', function () {
             test: 'echo "No tests"',
           },
           dependencies: {
-            'ncu-test-v2': '1.0.0',
+            'ncu-test-return-version': '1.0.0',
             'ncu-test-tag': '1.0.0',
           },
         }),
@@ -298,67 +227,50 @@ describe('doctor', function () {
       )
 
       // prepare.js
-      // A script that fails if ncu-test-v2 is not at 1.0.0.
-      // This is an arbitrary fail condition used to test that doctor mode still works when the npm prepare script fails.
       await fs.writeFile(
         path.join(tempDir, 'prepare.js'),
         `import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const ncuTestPkg = require('./node_modules/ncu-test-v2/package.json');
+const ncuTestPkg = require('./node_modules/ncu-test-return-version/package.json');
 if (ncuTestPkg.version === '1.0.0') {
   console.log('done')
   process.exitCode = 0;
 }
 else {
-  console.error('failed')
+  console.error('Breaks with v2.x :(')
   process.exitCode = 1;
 }`,
         'utf-8',
       )
 
-      let stdout = ''
-      let stderr = ''
-      let pkgUpgraded
+      // explicitly set packageManager to avoid auto yarn detection
+      await stubSpawnPlease.spy('npm', ['install'], {}, { cwd: tempDir })
+      const { stdout, stderr } = await runNcuCli(['--doctor', '-u', '-p', 'npm'], {
+        rejectOnError: false,
+        cwd: tempDir,
+      })
 
-      try {
-        // explicitly set packageManager to avoid auto yarn detection
-        await spawn('npm', ['install'], {}, { cwd: tempDir })
-
-        await ncu(
-          ['--doctor', '-u', '-p', 'npm'],
-          {
-            stdout: function (data: string) {
-              stdout += data
-            },
-            stderr: function (data: string) {
-              stderr += data
-            },
-          },
-          { cwd: tempDir },
-        )
-
-        pkgUpgraded = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
-      } finally {
-        await removeDir(tempDir)
-      }
+      const pkgUpgraded = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
 
       const testTag = createNcuRegExp('ncu-test-tag 1.0.0 →')
-      const testV2 = createNcuRegExp('ncu-test-v2 1.0.0 →')
+      const testV2 = createNcuRegExp('ncu-test-return-version 1.0.0 →')
 
       // stdout should include successful upgrades
       stdout.should.match(testTag)
       stdout.should.not.match(testV2)
 
       // stderr should include failed prepare script
-      stderr.should.containIgnoreCase('failed')
+      stderr.should.containIgnoreCase('Breaks with v2.x :(')
       stderr.should.match(testV2)
       stderr.should.not.match(testTag)
 
       // package file should only include successful upgrades
       pkgUpgraded.dependencies.should.deep.equal({
-        'ncu-test-v2': '1.0.0',
+        'ncu-test-return-version': '1.0.0',
         'ncu-test-tag': '1.1.0',
       })
+
+      await removeDir(tempDir)
     })
   })
 

@@ -3,9 +3,7 @@ import { fileURLToPath } from 'url'
 import getAllPackages from '../src/lib/getAllPackages'
 import { type Options } from '../src/types/Options'
 import { type PackageInfo } from '../src/types/PackageInfo'
-import chaiSetup from './helpers/chaiSetup'
 
-chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 /** forces path to a posix version (windows-style) */
@@ -33,6 +31,10 @@ async function getAllPackagesForTest(testPath: string, options: Options): Promis
 }
 
 describe('getAllPackages', () => {
+  beforeEach(async () => {
+    await sandbox.createPackageJson()
+  })
+
   it('returns default package without cwd', async () => {
     const [pkgInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages({})
     const packagePaths: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)

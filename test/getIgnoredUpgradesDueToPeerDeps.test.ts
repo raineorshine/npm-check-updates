@@ -1,14 +1,30 @@
 import getIgnoredUpgradesDueToPeerDeps from '../src/lib/getIgnoredUpgradesDueToPeerDeps'
+import { type MockedVersions } from '../src/types/MockedVersions'
 import { type Packument } from '../src/types/Packument'
-import chaiSetup from './helpers/chaiSetup'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
-
 describe('getIgnoredUpgradesDueToPeerDeps', function () {
+  let pb: ReturnType<typeof silenceProgressBar>
+  let versionStub: { mockRestore: () => void }
+  beforeEach(() => {
+    pb = silenceProgressBar()
+  })
+  afterEach(() => {
+    pb.mockRestore()
+    versionStub?.mockRestore()
+  })
+
   it('ncu-test-peer-update', async () => {
-    silenceProgressBar()
+    versionStub = stubVersions({
+      'ncu-test-return-version': {
+        version: '2.0.0',
+        versions: {
+          '2.0.0': { version: '2.0.0' },
+          '1.0.0': { version: '1.0.0' },
+        },
+      },
+    } as MockedVersions)
     const data = await getIgnoredUpgradesDueToPeerDeps(
       {
         'ncu-test-return-version': '1.0.0',
@@ -23,7 +39,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
           'ncu-test-return-version': '1.1.x',
         },
       },
-      {},
+      { cwd: sandbox.cwd },
     )
     data.should.deep.equal({
       'ncu-test-return-version': {
@@ -35,6 +51,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
       },
     })
   })
+
   it('ignored peer after upgrade', async () => {
     const stub = stubVersions({
       '@vitest/ui': {
@@ -90,7 +107,6 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
         },
       },
     })
-    silenceProgressBar()
     const data = await getIgnoredUpgradesDueToPeerDeps(
       {
         '@vitest/ui': '1.3.1',
@@ -125,6 +141,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
         },
       },
       {
+        cwd: sandbox.cwd,
         target: packageName => {
           return packageName === 'eslint-plugin-unused-imports' ? 'greatest' : 'minor'
         },
@@ -139,6 +156,6 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
         to: '4.0.0',
       },
     })
-    stub.restore()
+    stub.mockRestore()
   })
 })

@@ -1,0 +1,134 @@
+{
+  "peer dependencies > circular peer dependencies are ignored": {
+    "spawnPlease": {
+      "command: npm, args: --json :: view :: @vitest/ui@1.3.1 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"vitest\": \"1.3.1\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: @vitest/ui@1.6.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"vitest\": \"1.6.0\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: vitest@1.3.1 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"jsdom\": \"*\",\n  \"happy-dom\": \"*\",\n  \"@vitest/ui\": \"1.3.1\",\n  \"@types/node\": \"^18.0.0 || >=20.0.0\",\n  \"@vitest/browser\": \"1.3.1\",\n  \"@edge-runtime/vm\": \"*\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: vitest@1.6.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"jsdom\": \"*\",\n  \"happy-dom\": \"*\",\n  \"@vitest/ui\": \"1.6.0\",\n  \"@types/node\": \"^18.0.0 || >=20.0.0\",\n  \"@vitest/browser\": \"1.6.0\",\n  \"@edge-runtime/vm\": \"*\"\n}\n"
+      }
+    }
+  },
+  "peer dependencies > does not throw when pnpm catalog: references appear as dependency versions with --peer": {
+    "spawnPlease": {
+      "command: npm, args: --json :: view :: ncu-test-peer@1.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: ncu-test-return-version@catalog: :: peerDependencies": {
+        "stderr": "npm error code EUNSUPPORTEDPROTOCOL\nnpm error Unsupported URL Type \"catalog:\": catalog:\nnpm error A complete log of this run can be found in: <NPM_LOG_PATH>\n",
+        "stdout": "{\n  \"error\": {\n    \"code\": \"EUNSUPPORTEDPROTOCOL\",\n    \"summary\": \"Unsupported URL Type \\\"catalog:\\\": catalog:\",\n    \"detail\": \"\"\n  }\n}\n"
+      }
+    }
+  },
+  "peer dependencies > git urls are ignored": {
+    "spawnPlease": {
+      "command: npm, args: --json :: view :: @libraries/project-4-utils@git+gitlab.com/projects/libraries/project-4-utils.git :: peerDependencies": {
+        "stderr": "npm error code ENOENT\nnpm error syscall open\nnpm error path <ROOT>/git+gitlab.com/projects/libraries/project-4-utils.git/package.json\nnpm error errno -4058\nnpm error enoent Could not read package.json: Error: ENOENT: no such file or directory, open '<ROOT>/git+gitlab.com/projects/libraries/project-4-utils.git/package.json'\nnpm error enoent This is related to npm not being able to find a file.\nnpm error enoent\nnpm error A complete log of this run can be found in: <NPM_LOG_PATH>\n",
+        "stdout": "{\n  \"error\": {\n    \"code\": \"ENOENT\",\n    \"summary\": \"Could not read package.json: Error: ENOENT: no such file or directory, open '<ROOT>/git+gitlab.com/projects/libraries/project-4-utils.git/package.json'\",\n    \"detail\": \"This is related to npm not being able to find a file.\"\n  }\n}\n"
+      }
+    }
+  },
+  "peer dependencies > ignores if post upgrade peers are unmet": {
+    "spawnPlease": {
+      "command: npm, args: --json :: view :: @vitest/ui@1.3.1 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"vitest\": \"1.3.1\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: @vitest/ui@1.6.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"vitest\": \"1.6.0\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: eslint-plugin-import@2.29.1 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"eslint\": \"^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0 || ^8\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: eslint-plugin-unused-imports@3.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"eslint\": \"^8.0.0\",\n  \"@typescript-eslint/eslint-plugin\": \"^6.0.0\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: eslint-plugin-unused-imports@4.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"eslint\": \"9\",\n  \"@typescript-eslint/eslint-plugin\": \"8\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: eslint@8.57.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      },
+      "command: npm, args: --json :: view :: vitest@1.3.1 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"jsdom\": \"*\",\n  \"happy-dom\": \"*\",\n  \"@vitest/ui\": \"1.3.1\",\n  \"@types/node\": \"^18.0.0 || >=20.0.0\",\n  \"@vitest/browser\": \"1.3.1\",\n  \"@edge-runtime/vm\": \"*\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: vitest@1.6.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"jsdom\": \"*\",\n  \"happy-dom\": \"*\",\n  \"@vitest/ui\": \"1.6.0\",\n  \"@types/node\": \"^18.0.0 || >=20.0.0\",\n  \"@vitest/browser\": \"1.6.0\",\n  \"@edge-runtime/vm\": \"*\"\n}\n"
+      }
+    }
+  },
+  "peer dependencies > ignores if post upgrade peers are unmet - no upgrades": {
+    "spawnPlease": {
+      "command: npm, args: --json :: view :: eslint-plugin-import@2.29.1 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"eslint\": \"^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0 || ^8\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: eslint-plugin-unused-imports@3.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"eslint\": \"^8.0.0\",\n  \"@typescript-eslint/eslint-plugin\": \"^6.0.0\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: eslint-plugin-unused-imports@4.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"eslint\": \"9\",\n  \"@typescript-eslint/eslint-plugin\": \"8\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: eslint@8.57.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      }
+    }
+  },
+  "peer dependencies > peer dependencies are checked iteratively when using option peer": {
+    "spawnPlease": {
+      "command: npm, args: --json :: view :: ncu-test-peer-update@1.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"ncu-test-return-version\": \"1.0.x\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: ncu-test-peer-update@1.1.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"ncu-test-return-version\": \"1.1.x\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: ncu-test-return-version@1.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      },
+      "command: npm, args: --json :: view :: ncu-test-return-version@1.1.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      }
+    }
+  },
+  "peer dependencies > peer dependencies are checked when using option peer": {
+    "spawnPlease": {
+      "command: npm, args: --json :: view :: ncu-test-peer@1.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: ncu-test-return-version@1.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      },
+      "command: npm, args: --json :: view :: ncu-test-return-version@1.1.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      }
+    }
+  }
+}

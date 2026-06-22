@@ -1,14 +1,34 @@
 import { chalkInit } from '../src/lib/chalk'
 import getEnginesNodeFromRegistry from '../src/lib/getEnginesNodeFromRegistry'
-import chaiSetup from './helpers/chaiSetup'
+import { type MockedVersions } from '../src/types/MockedVersions'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
-
-chaiSetup()
+import { stubFetchPartialPackument } from './helpers/stubVersions'
 
 describe('getEnginesNodeFromRegistry', function () {
-  it('single package', async () => {
+  let pb: ReturnType<typeof silenceProgressBar>
+  let versionStub: { mockRestore: () => void }
+  beforeEach(() => {
     chalkInit()
-    silenceProgressBar()
+    pb = silenceProgressBar()
+    versionStub = stubFetchPartialPackument({
+      del: {
+        version: '8.0.1',
+        engines: { node: '>=0.10.0' },
+        versions: {
+          '8.0.1': { version: '8.0.1', engines: { node: '>=18.0.0' } },
+          '2.0.0': { name: 'del', engines: { node: '>=0.10.0' } },
+        },
+      },
+      'ncu-test-return-version': { version: '1.0.0', engines: {} },
+      'ncu-test-peer': { version: '1.0.0', engines: {} },
+    } as MockedVersions)
+  })
+  afterEach(() => {
+    pb.mockRestore()
+    versionStub?.mockRestore()
+  })
+
+  it('single package', async () => {
     const data = await getEnginesNodeFromRegistry({ del: '2.0.0' }, {})
     data.should.deep.equal({
       del: '>=0.10.0',
@@ -16,15 +36,11 @@ describe('getEnginesNodeFromRegistry', function () {
   })
 
   it('single package empty', async () => {
-    chalkInit()
-    silenceProgressBar()
     const data = await getEnginesNodeFromRegistry({ 'ncu-test-return-version': '1.0.0' }, {})
     data.should.deep.equal({ 'ncu-test-return-version': undefined })
   })
 
   it('multiple packages', async () => {
-    chalkInit()
-    silenceProgressBar()
     const data = await getEnginesNodeFromRegistry(
       {
         'ncu-test-return-version': '1.0.0',

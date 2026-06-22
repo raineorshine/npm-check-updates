@@ -1,7 +1,4 @@
 import ncu from '../src'
-import chaiSetup from './helpers/chaiSetup'
-
-chaiSetup()
 
 describe('github urls', () => {
   it('upgrade github https urls', async () => {

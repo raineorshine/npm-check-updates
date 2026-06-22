@@ -110,7 +110,7 @@ export async function getPathToLookForYarnrc(
 // https://github.com/raineorshine/npm-check-updates/issues/1036
 const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> => {
   const yarnrcLocalPath = await getPathToLookForYarnrc(options)
-  const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
+  const yarnrcUserPath = process.env.NCU_TESTS ? '' : path.join(os.homedir(), '.yarnrc.yml')
   const yarnrcLocalExists = typeof yarnrcLocalPath === 'string' && (await exists(yarnrcLocalPath))
   const yarnrcUserExists = await exists(yarnrcUserPath)
   const yarnrcLocal = yarnrcLocalExists ? await fs.readFile(yarnrcLocalPath, 'utf-8') : ''
@@ -152,7 +152,7 @@ const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> =
 /** Reads npmMinimalAgeGate settings from .yarnrc.yml if present. Checks local config first, then user config. */
 const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMinimalAgeGate | null> => {
   const yarnrcLocalPath = await getPathToLookForYarnrc(options)
-  const yarnrcUserPath = path.join(os.homedir(), '.yarnrc.yml')
+  const yarnrcUserPath = process.env.NCU_TESTS ? '' : path.join(os.homedir(), '.yarnrc.yml')
 
   for (const yarnrcPath of [yarnrcLocalPath, yarnrcUserPath]) {
     if (!yarnrcPath) continue

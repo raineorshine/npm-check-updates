@@ -47,32 +47,34 @@ function analyzerOnce(): Plugin {
   }
 }
 
+const isTest = !!process.env.VITEST
+
 export default defineConfig(({ mode }) => ({
-  plugins: [
-    /**
-     * buildOptionsPlugin() must run before dts() so the files exist
-     * when TypeScript scans
-     */
-    buildOptionsPlugin(),
-    dts({
-      entryRoot: 'src',
-      include: ['src'],
-      /**
-       * Inline semver-utils types so the emitted .d.ts has no external import.
-       * semver-utils is bundled into the JS, not a runtime dependency.
-       */
-      bundleTypes: {
-        bundledPackages: ['semver-utils', '@types/semver-utils'],
-      },
-      insertTypesEntry: true,
-      outDirs: 'build',
-    }),
-    chmodBinPlugin(),
-    ...(process.env.ANALYZER ? [analyzerOnce()] : []),
-  ],
-  ssr: {
-    noExternal: true,
-  },
+  plugins: isTest
+    ? []
+    : [
+        /**
+         * buildOptionsPlugin() must run before dts() so the files exist
+         * when TypeScript scans
+         */
+        buildOptionsPlugin(),
+        dts({
+          entryRoot: 'src',
+          include: ['src'],
+          /**
+           * Inline semver-utils types so the emitted .d.ts has no external import.
+           * semver-utils is bundled into the JS, not a runtime dependency.
+           */
+          bundleTypes: {
+            bundledPackages: ['semver-utils', '@types/semver-utils'],
+          },
+          insertTypesEntry: true,
+          outDirs: 'build',
+        }),
+        chmodBinPlugin(),
+        ...(process.env.ANALYZER ? [analyzerOnce()] : []),
+      ],
+  ...(isTest ? {} : { ssr: { noExternal: true } }),
   build: {
     ssr: true,
     lib: {
@@ -104,5 +106,42 @@ export default defineConfig(({ mode }) => ({
         },
       ],
     },
+  },
+
+  /* Vitest config */
+  test: {
+    env: {
+      NCU_TESTS: 'true',
+    },
+    globals: true,
+    environment: 'node',
+    include: ['test/**/*.test.ts'],
+    exclude: ['node_modules', 'build', 'test/test-data'],
+
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov'],
+      include: ['src/**/*.ts'],
+      exclude: ['node_modules/', 'build/', 'test/', 'src/types/*.*', '**/*.d.ts'],
+      // Coverage thresholds not enforced yet - establish baseline first
+      // lines: 80,
+      // functions: 80,
+      // branches: 75,
+      // statements: 80,
+      excludeAfterRemap: true,
+    },
+
+    isolate: false,
+    pool: 'threads',
+    maxWorkers: '50%',
+    testTimeout: 60000,
+    hookTimeout: 60000,
+    teardownTimeout: 30000,
+
+    setupFiles: ['./test/setup/vitest.setup.ts'],
+    globalSetup: ['./test/setup/vitest.global.ts'],
+
+    disableConsoleIntercept: true,
+    reporters: [['default', { summary: false }]],
   },
 }))

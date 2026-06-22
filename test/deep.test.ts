@@ -1,27 +1,16 @@
 import { expect } from 'chai'
-import fsSync from 'fs'
 import fs from 'fs/promises'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import os from 'os'
 import path, { dirname } from 'path'
-import spawn from 'spawn-please'
 import { fileURLToPath } from 'url'
 import ncu from '../src/'
 import mergeOptions from '../src/lib/mergeOptions'
-import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../build/cli.js')
-const srcBin = path.join(__dirname, '../src/bin/cli.ts')
-const tsNodeBin = path.join(__dirname, `../node_modules/.bin/ts-node${process.platform === 'win32' ? '.CMD' : ''}`)
-
-/** Returns the CLI invocation command and arguments, using the built binary if available, otherwise using ts-node. */
-const getCliInvocation = (...args: string[]) =>
-  fsSync.existsSync(bin) ? { command: 'node', args: [bin, ...args] } : { command: tsNodeBin, args: [srcBin, ...args] }
 
 /** Creates a temp directory with nested package files for --deep testing. Returns the temp directory name (should be removed by caller).
  *
@@ -74,11 +63,9 @@ const setupDeepStatusTest = async () => {
 }
 
 describe('--deep', function () {
-  this.timeout(60000)
-
-  let stub: { restore: () => void }
-  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
-  after(() => stub.restore())
+  let stub: { mockRestore: () => void }
+  beforeEach(() => (stub = stubVersions('99.9.9', { spawn: true })))
+  afterEach(() => stub.mockRestore())
 
   it('do not allow --packageFile and --deep together', async () => {
     await ncu({ packageFile: './package.json', deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
@@ -87,8 +74,7 @@ describe('--deep', function () {
   it('output json with --jsonAll', async () => {
     const tempDir = await setupDeepTest()
     try {
-      const cli = getCliInvocation('--jsonAll', '--deep')
-      const { stdout } = await spawn(cli.command, cli.args, {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--jsonAll', '--deep'], { cwd: tempDir })
       const deepJsonOut = JSON.parse(stdout)
       deepJsonOut.should.have.property('package.json')
       deepJsonOut.should.have.property('packages/sub1/package.json')
@@ -104,15 +90,10 @@ describe('--deep', function () {
   it('ignore stdin if --packageFile glob is specified', async () => {
     const tempDir = await setupDeepTest()
     try {
-      const cli = getCliInvocation('-u', '--packageFile', path.join(tempDir, '/**/package.json'))
-      await spawn(
-        cli.command,
-        cli.args,
-        { stdin: '{ "dependencies": {}}' },
-        {
-          cwd: tempDir,
-        },
-      )
+      await runNcuCli(['-u', '--packageFile', path.join(tempDir, '/**/package.json')], {
+        stdin: '{ "dependencies": {}}',
+        cwd: tempDir,
+      })
       const upgradedPkg = JSON.parse(await fs.readFile(path.join(tempDir, 'package.json'), 'utf-8'))
       upgradedPkg.should.have.property('dependencies')
       upgradedPkg.dependencies.should.have.property('express')
@@ -125,8 +106,10 @@ describe('--deep', function () {
   it('update multiple packages', async () => {
     const tempDir = await setupDeepTest()
     try {
-      const cli = getCliInvocation('-u', '--jsonUpgraded', '--packageFile', path.join(tempDir, '**/package.json'))
-      const { stdout } = await spawn(cli.command, cli.args, { stdin: '{ "dependencies": {}}' }, { cwd: tempDir })
+      const { stdout } = await runNcuCli(
+        ['-u', '--jsonUpgraded', '--packageFile', path.join(tempDir, '**/package.json')],
+        { stdin: '{ "dependencies": {}}', cwd: tempDir },
+      )
 
       const upgradedPkg1 = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/sub1/package.json'), 'utf-8'))
       upgradedPkg1.should.have.property('dependencies')
@@ -140,9 +123,9 @@ describe('--deep', function () {
 
       const json = JSON.parse(stdout)
       // Make sure to fix windows paths with replace
-      json.should.have.property(path.join(tempDir, 'packages/sub1/package.json').replace(/\\/g, '/'))
-      json.should.have.property(path.join(tempDir, 'packages/sub2/package.json').replace(/\\/g, '/'))
-      json.should.have.property(path.join(tempDir, 'package.json').replace(/\\/g, '/'))
+      json.should.have.property('packages/sub1/package.json')
+      json.should.have.property('packages/sub2/package.json')
+      json.should.have.property('package.json')
     } finally {
       await removeDir(tempDir)
     }
@@ -160,15 +143,9 @@ describe('--deep', function () {
     await fs.writeFile(path.join(tempDir, 'package.json'), pkgData, 'utf-8')
 
     try {
-      const cli = getCliInvocation('--deep', '--errorLevel', '2')
-      await spawn(
-        cli.command,
-        cli.args,
-        {},
-        {
-          cwd: tempDir,
-        },
-      )
+      await runNcuCli(['--deep', '--errorLevel', '2'], {
+        cwd: tempDir,
+      })
     } finally {
       await removeDir(tempDir)
     }
@@ -178,8 +155,7 @@ describe('--deep', function () {
     const tempDir = await setupDeepStatusTest()
 
     try {
-      const cli = getCliInvocation('-u', '--deep')
-      const { stdout } = await spawn(cli.command, cli.args, {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['-u', '--deep'], { cwd: tempDir })
       const output = stripAnsi(stdout)
 
       // Use path-agnostic regexes since the absolute temp path printed by the CLI may differ from
@@ -198,15 +174,12 @@ describe('--deep', function () {
 describe('--deep with nested ncurc files', function () {
   const cwd = path.join(__dirname, 'test-data/deep-ncurc')
 
-  this.timeout(60000)
-
-  let stub: { restore: () => void }
-  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
-  after(() => stub.restore())
+  let stub: { mockRestore: () => void }
+  beforeEach(() => (stub = stubVersions('99.9.9', { spawn: true })))
+  afterEach(() => stub.mockRestore())
 
   it('use ncurc of nested packages', async () => {
-    const cli = getCliInvocation('--jsonUpgraded', '--deep')
-    const { stdout } = await spawn(cli.command, cli.args, {}, { cwd })
+    const { stdout } = await runNcuCli(['--jsonUpgraded', '--deep'], { cwd })
     const deepJsonOut = JSON.parse(stdout)
 
     // root: reject: ['cute-animals']
@@ -234,8 +207,7 @@ describe('--deep with nested ncurc files', function () {
   })
 
   it('use ncurc of nested packages with --mergeConfig option', async () => {
-    const cli = getCliInvocation('--jsonUpgraded', '--deep', '--mergeConfig')
-    const { stdout } = await spawn(cli.command, cli.args, {}, { cwd })
+    const { stdout } = await runNcuCli(['--jsonUpgraded', '--deep', '--mergeConfig'], { cwd })
     const deepJsonOut = JSON.parse(stdout)
 
     // root: reject: ['cute-animals']

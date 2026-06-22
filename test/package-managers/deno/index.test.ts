@@ -1,18 +1,16 @@
 import fs from 'node:fs/promises'
 import os from 'node:os'
-import path, { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import spawn from 'spawn-please'
+import path from 'node:path'
 import parseJson from '../../../src/lib/utils/parseJson'
-import chaiSetup from '../../helpers/chaiSetup'
 import removeDir from '../../helpers/removeDir'
-
-chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../../../build/cli.js')
+import { runNcuCli } from '../../helpers/runNcuCli'
+import stubVersions from '../../helpers/stubVersions'
 
 describe('deno', async function () {
+  let versionStub: { mockRestore: () => void }
+  beforeEach(() => (versionStub = stubVersions({ 'ncu-test-v2': '2.0.0' })))
+  afterEach(() => versionStub.mockRestore())
+
   it('handle import map', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'deno.json')
@@ -23,14 +21,7 @@ describe('deno', async function () {
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
     try {
-      const { stdout } = await spawn('node', [
-        bin,
-        '--jsonUpgraded',
-        '--packageManager',
-        'deno',
-        '--packageFile',
-        pkgFile,
-      ])
+      const { stdout } = await runNcuCli(['--jsonUpgraded', '--packageManager', 'deno', '--packageFile', pkgFile])
       const pkg = parseJson(stdout)
       pkg.should.have.property('ncu-test-v2')
     } finally {
@@ -48,7 +39,7 @@ describe('deno', async function () {
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
     try {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
+      const { stdout } = await runNcuCli(['--jsonUpgraded'], {
         cwd: tempDir,
       })
       const pkg = parseJson(stdout)
@@ -68,7 +59,7 @@ describe('deno', async function () {
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
     try {
-      await spawn('node', [bin, '-u'], undefined, { cwd: tempDir })
+      await runNcuCli(['-u'], { cwd: tempDir })
       const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
       const pkg = parseJson(pkgDataNew)
       pkg.should.deep.equal({
@@ -92,7 +83,7 @@ describe('deno', async function () {
 }`
     await fs.writeFile(pkgFile, pkgString)
     try {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
+      const { stdout } = await runNcuCli(['--jsonUpgraded'], {
         cwd: tempDir,
       })
       const pkg = parseJson(stdout)
@@ -112,7 +103,7 @@ describe('deno', async function () {
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
     try {
-      await spawn('node', [bin, '-u'], undefined, { cwd: tempDir })
+      await runNcuCli(['-u'], { cwd: tempDir })
       const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
       const pkg = parseJson(pkgDataNew)
       pkg.should.deep.equal({

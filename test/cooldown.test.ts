@@ -5,18 +5,15 @@ import fs from 'fs/promises'
 import { stripVTControlCharacters } from 'node:util'
 import os from 'os'
 import path from 'path'
-import Sinon from 'sinon'
+import { type Mock } from 'vitest'
 import ncu from '../src/'
 import { npmApi } from '../src/package-managers/npm'
 import { pnpmApi } from '../src/package-managers/pnpm'
 import { yarnApi } from '../src/package-managers/yarn'
 import type { PackageFile } from '../src/types/PackageFile'
 import type { Packument } from '../src/types/Packument'
-import chaiSetup from './helpers/chaiSetup'
 import { silenceProgressBar } from './helpers/silenceProgressBar'
 import stubVersions from './helpers/stubVersions'
-
-chaiSetup()
 
 const DAY = 24 * 60 * 60 * 1000
 const NOW = Date.now()
@@ -51,10 +48,10 @@ const createMockVersion = ({ name, versions, distTags }: CreateMockParams): Part
  * internal whitespace (multiple spaces/tabs) into a single space,
  * and trimming leading/trailing newlines.
  */
-const getNormalizedLogs = (logSpy: Sinon.SinonStub<any[], void>): string[] => {
-  return logSpy.args
+const getNormalizedLogs = (logSpy: Mock<(...args: any[]) => void>): string[] => {
+  return logSpy.mock.calls
     .flat()
-    .filter((arg): arg is string => typeof arg === 'string')
+    .filter((arg): arg is string => typeof arg === 'string' && !arg.includes('NCU_DEBUG'))
     .join('\n')
     .replace(/^\n+|\n+$/g, '') // Remove newlines at the start and end
     .replace(/\n+/g, '\n') // Remove consecutive newlines
@@ -68,10 +65,6 @@ const getNormalizedLogs = (logSpy: Sinon.SinonStub<any[], void>): string[] => {
 }
 
 describe('cooldown', () => {
-  beforeEach(() => {
-    Sinon.restore()
-  })
-
   describe('invalid cooldown values', () => {
     it('throws error for negative cooldown', () => {
       expect(
@@ -115,7 +108,7 @@ describe('cooldown', () => {
 
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('skips upgrade when cooldown is given in days ("6d") and version is inside period', async () => {
@@ -138,7 +131,7 @@ describe('cooldown', () => {
 
       expect(result).to.not.have.property('test-package')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('upgrades package when cooldown is given in hours ("12h")', async () => {
@@ -162,7 +155,7 @@ describe('cooldown', () => {
 
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('skips upgrade when cooldown is given in hours ("12h") and version is inside period', async () => {
@@ -186,7 +179,7 @@ describe('cooldown', () => {
 
       expect(result).to.not.have.property('test-package')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('upgrades package when cooldown is given in minutes ("30m")', async () => {
@@ -210,7 +203,7 @@ describe('cooldown', () => {
 
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('skips upgrade when cooldown is given in minutes ("30m") and version is inside period', async () => {
@@ -234,7 +227,7 @@ describe('cooldown', () => {
 
       expect(result).to.not.have.property('test-package')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('"6d" string is equivalent to the number 6', async () => {
@@ -248,19 +241,16 @@ describe('cooldown', () => {
         distTags: { latest: '1.1.0' },
       })
 
-      const stub1 = stubVersions(mockData)
+      stubVersions(mockData)
       const resultNumber = await ncu({
         packageData,
         cooldown: 6,
       })
-      stub1.restore()
 
-      const stub2 = stubVersions(mockData)
       const resultString = await ncu({
         packageData,
         cooldown: '6d',
       })
-      stub2.restore()
 
       expect(resultNumber).to.deep.equal(resultString)
     })
@@ -285,7 +275,7 @@ describe('cooldown', () => {
       }),
     )
 
-    const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+    const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue(null)
 
     // When: running ncu without cooldown
     const result = await ncu({ packageData })
@@ -293,8 +283,8 @@ describe('cooldown', () => {
     // Then: package is upgraded to latest version (1.2.0)
     expect(result).to.have.property('test-package', '1.2.0')
 
-    stub.restore()
-    findNpmConfigStub.restore()
+    stub.mockRestore()
+    findNpmConfigStub.mockRestore()
   })
 
   it('upgrades package when cooldown is set to 0 (no cooldown)', async () => {
@@ -323,7 +313,7 @@ describe('cooldown', () => {
     // Then test-package should be upgraded to version 1.2.0 (latest) - as cooldown of 0 means no cooldown.
     expect(result).to.have.property('test-package', '1.2.0')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   describe('when latest target', () => {
@@ -353,7 +343,7 @@ describe('cooldown', () => {
       // Then: package is upgraded to version 1.1.0
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('falls back to most recent passing version when latest dist-tag is within cooldown', async () => {
@@ -378,7 +368,7 @@ describe('cooldown', () => {
 
       expect(result).to.have.property('test-package', '1.0.1')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('skips package entirely when all versions are within cooldown (no fallback possible)', async () => {
@@ -410,7 +400,7 @@ describe('cooldown', () => {
       // Then: package is not upgraded (latest version within cooldown, 1.0.1 is ignored as not latest)
       expect(result).to.not.have.property('test-package')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('does not return a pre-release version as the fallback when latest is within cooldown', async () => {
@@ -436,7 +426,7 @@ describe('cooldown', () => {
 
       expect(result).to.not.have.property('test-package')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('logs a verbose message when a package is skipped due to cooldown', async () => {
@@ -459,19 +449,21 @@ describe('cooldown', () => {
         }),
       )
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
       // When ncu is run with verbose logging and cooldown
       // Note: jsonUpgraded is set to false to disable json mode, which would otherwise suppress verbose output
       await ncu({ packageData, cooldown, target: 'latest', loglevel: 'verbose', jsonUpgraded: false })
 
       // Then: a verbose message mentioning cooldown is logged
-      const cooldownMessages = logSpy.args.flat().filter(arg => typeof arg === 'string' && arg.includes('cooldown'))
+      const cooldownMessages = logSpy.mock.calls
+        .flat()
+        .filter(arg => typeof arg === 'string' && arg.includes('cooldown'))
       expect(cooldownMessages).to.have.length.greaterThan(0)
       expect(cooldownMessages[0]).to.include('test-package@1.1.0')
 
-      logSpy.restore()
-      stub.restore()
+      logSpy.mockRestore()
+      stub.mockRestore()
     })
 
     it('prints "All dependencies not in cooldown" instead of registry error when all packages are within cooldown', async () => {
@@ -494,7 +486,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       // When ncu is run with cooldown and jsonUpgraded disabled
@@ -502,12 +494,12 @@ describe('cooldown', () => {
       await ncu({ packageData, cooldown, target: 'latest', jsonUpgraded: false, loglevel: 'warn' })
 
       // Then: the output should say "All dependencies not in cooldown", not "No package versions were returned"
-      const allMessages = logSpy.args.flat().filter(arg => typeof arg === 'string')
+      const allMessages = logSpy.mock.calls.flat().filter(arg => typeof arg === 'string')
       expect(allMessages.some(msg => msg.includes('All dependencies not in cooldown'))).to.be.true
       expect(allMessages.some(msg => msg.includes('No package versions were returned'))).to.be.false
 
-      logSpy.restore()
-      stub.restore()
+      logSpy.mockRestore()
+      stub.mockRestore()
     })
   })
 
@@ -532,7 +524,7 @@ describe('cooldown', () => {
       }),
     )
 
-    const logSpy = Sinon.stub(console, 'log')
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
     silenceProgressBar()
 
     // When ncu is run with cooldown and jsonUpgraded disabled
@@ -540,12 +532,12 @@ describe('cooldown', () => {
     await ncu({ packageData, cooldown, target: 'latest', jsonUpgraded: false, loglevel: 'warn' })
 
     // Then: the output should say "All dependencies match the latest package versions", not "No package versions were returned"
-    const allMessages = logSpy.args.flat().filter(arg => typeof arg === 'string')
+    const allMessages = logSpy.mock.calls.flat().filter(arg => typeof arg === 'string')
     expect(allMessages.some(msg => msg.includes('All dependencies match the latest package versions'))).to.be.true
     expect(allMessages.some(msg => msg.includes('No package versions were returned'))).to.be.false
 
-    logSpy.restore()
-    stub.restore()
+    logSpy.mockRestore()
+    stub.mockRestore()
   })
 
   describe('when @TAG target', () => {
@@ -575,7 +567,7 @@ describe('cooldown', () => {
       // Then: package is upgraded to @next version 1.1.0-rc.1
       expect(result).to.have.property('test-package', '1.1.0-rc.1')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('skips package upgrade completely when @next version is inside cooldown period', async () => {
@@ -605,7 +597,7 @@ describe('cooldown', () => {
       // Then: package is not upgraded (next version within cooldown, 1.1.0-rc.2 is ignored as not tagged as next)
       expect(result).to.not.have.property('test-package')
 
-      stub.restore()
+      stub.mockRestore()
     })
   })
 
@@ -630,7 +622,7 @@ describe('cooldown', () => {
 
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('skips the package entirely when @latest is within cooldown, with no fallback', async () => {
@@ -656,7 +648,7 @@ describe('cooldown', () => {
 
       expect(result).to.not.have.property('test-package')
 
-      stub.restore()
+      stub.mockRestore()
     })
   })
 
@@ -688,7 +680,7 @@ describe('cooldown', () => {
       // Then: package is upgraded to version 1.1.0 (oldest version outside cooldown)
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('skips package upgrade if no versions are older than cooldown period', async () => {
@@ -718,7 +710,7 @@ describe('cooldown', () => {
       // Then test-package should not be upgraded (as no versions were released outside cooldown period)
       expect(result).to.not.have.property('test-package')
 
-      stub.restore()
+      stub.mockRestore()
     })
   })
 
@@ -747,7 +739,7 @@ describe('cooldown', () => {
       // Then: package is upgraded to version 1.1.0 (newest version outside cooldown)
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
+      stub.mockRestore()
     })
   })
 
@@ -776,7 +768,7 @@ describe('cooldown', () => {
       // Then: package is upgraded to version 1.1.0 (newest minor version outside cooldown)
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
+      stub.mockRestore()
     })
   })
 
@@ -805,7 +797,7 @@ describe('cooldown', () => {
       // Then: package is upgraded to version 1.0.1 (newest patch version outside cooldown)
       expect(result).to.have.property('test-package', '1.0.1')
 
-      stub.restore()
+      stub.mockRestore()
     })
   })
 
@@ -833,7 +825,7 @@ describe('cooldown', () => {
 
       // Then: package is upgraded to version ^1.0.1 (newest semver version outside cooldown)
       expect(result).to.have.property('test-package', '^1.0.1')
-      stub.restore()
+      stub.mockRestore()
     })
   })
 
@@ -863,7 +855,7 @@ describe('cooldown', () => {
     // Then: test-package should be upgraded to version 1.1.0 (as 1.1.0 was released exactly at the cooldown boundary)
     expect(result).to.have.property('test-package', '1.1.0')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   describe('cooldown predicate function', () => {
@@ -897,7 +889,7 @@ describe('cooldown', () => {
       // Then: test-package is upgraded to version 1.1.0 (cooldown check skipped)
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('applies custom cooldown when predicate returns a number', async () => {
@@ -941,7 +933,7 @@ describe('cooldown', () => {
       expect(result).to.have.property('test-package', '1.1.0')
       expect(result).to.not.have.property('test-package-2')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('upgrades when predicate returns a sub-day (fractional) value and version is outside that period', async () => {
@@ -968,7 +960,7 @@ describe('cooldown', () => {
       // Then: test-package is upgraded to 1.1.0
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('skips upgrade when predicate returns a sub-day (fractional) value and version is inside that period', async () => {
@@ -995,7 +987,7 @@ describe('cooldown', () => {
       // Then: test-package is not upgraded
       expect(result).to.not.have.property('test-package')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('accepts a string ("3m") returned from the predicate for per-package unit suffixes', async () => {
@@ -1033,7 +1025,7 @@ describe('cooldown', () => {
       expect(result).to.have.property('test-package', '1.1.0')
       expect(result).to.not.have.property('test-package-2')
 
-      stub.restore()
+      stub.mockRestore()
     })
 
     it('upgrades when predicate returns 0, disabling cooldown for that package', async () => {
@@ -1068,7 +1060,7 @@ describe('cooldown', () => {
       expect(result).to.have.property('test-package', '1.1.0')
       expect(result).to.not.have.property('test-package-2')
 
-      stub.restore()
+      stub.mockRestore()
     })
   })
 
@@ -1096,7 +1088,7 @@ describe('cooldown', () => {
       )
 
       // Stub findNpmConfig to return a config with minReleaseAge: '7'
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '7' })
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '7' })
 
       // When: ncu is run without explicit cooldown option
       const result = await ncu({ packageData })
@@ -1104,8 +1096,8 @@ describe('cooldown', () => {
       // Then: package upgrade is skipped because latest version (1.1.0) is within the 7-day min-release-age
       expect(result).to.have.property('test-package', '1.0.1')
 
-      stub.restore()
-      findNpmConfigStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
     })
 
     it('ignores min-release-age when cooldown is explicitly set', async () => {
@@ -1128,7 +1120,7 @@ describe('cooldown', () => {
       )
 
       // Stub findNpmConfig to return a config with minReleaseAge: '7'
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '7' })
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '7' })
 
       // When: ncu is run with explicit cooldown=0 (overrides min-release-age)
       const result = await ncu({ packageData, cooldown: 0 })
@@ -1136,8 +1128,8 @@ describe('cooldown', () => {
       // Then: package is upgraded since explicit cooldown=0 overrides min-release-age
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
-      findNpmConfigStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
     })
 
     it('does not log "Using min-release-age" message when jsonUpgraded is enabled', async () => {
@@ -1160,22 +1152,22 @@ describe('cooldown', () => {
       )
 
       // Stub findNpmConfig to return a config with minReleaseAge: '7'
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '7' })
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '7' })
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
       // When: ncu is run with jsonUpgraded enabled
       await ncu({ packageData, jsonUpgraded: true })
 
       // Then: the "Using min-release-age from .npmrc" message should NOT be logged to stdout
-      const minReleaseAgeMessages = logSpy.args
+      const minReleaseAgeMessages = logSpy.mock.calls
         .flat()
         .filter(arg => typeof arg === 'string' && arg.includes('min-release-age'))
       expect(minReleaseAgeMessages).to.have.length(0)
 
-      logSpy.restore()
-      stub.restore()
-      findNpmConfigStub.restore()
+      logSpy.mockRestore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
     })
 
     it('excludes packages matching min-release-age-exclude patterns from cooldown', async () => {
@@ -1202,7 +1194,7 @@ describe('cooldown', () => {
 
       // Stub findNpmConfig to return a config with minReleaseAge: '7' and @myorg/* excluded
       // (repeated min-release-age-exclude[] entries in .npmrc parse as an array)
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['@myorg/*'],
       })
@@ -1214,8 +1206,8 @@ describe('cooldown', () => {
       expect(result).to.not.have.property('test-package')
       expect(result).to.have.property('@myorg/pkg', '2.0.0')
 
-      stub.restore()
-      findNpmConfigStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
     })
 
     it('excludes a package when min-release-age-exclude is a single string', async () => {
@@ -1240,7 +1232,7 @@ describe('cooldown', () => {
         }),
       })
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAge: '7',
         minReleaseAgeExclude: 'excluded-package',
       })
@@ -1252,8 +1244,8 @@ describe('cooldown', () => {
       expect(result).to.not.have.property('test-package')
       expect(result).to.have.property('excluded-package', '2.0.0')
 
-      stub.restore()
-      findNpmConfigStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
     })
 
     it('splits comma-separated min-release-age-exclude values and removes duplicates', async () => {
@@ -1281,22 +1273,22 @@ describe('cooldown', () => {
           distTags: { latest: '3.0.0' },
         }),
       })
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['react, @myorg/*', 'react'],
       })
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
       const result = await ncu({ packageData, jsonUpgraded: false, loglevel: 'warn' })
 
       expect(result).to.have.property('react', '18.0.0')
       expect(result).to.have.property('@myorg/pkg', '2.0.0')
       expect(result).to.not.have.property('vue')
-      expect(logSpy.args.flat()).to.include('Using min-release-age from .npmrc: 7 days (2 excluded patterns)')
+      expect(logSpy.mock.calls.flat()).to.include('Using min-release-age from .npmrc: 7 days (2 excluded patterns)')
 
-      logSpy.restore()
-      stub.restore()
-      findNpmConfigStub.restore()
+      logSpy.mockRestore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
     })
 
     it('disables negation, comments, and extglobs in min-release-age-exclude patterns', async () => {
@@ -1324,7 +1316,7 @@ describe('cooldown', () => {
           distTags: { latest: '5.0.0' },
         }),
       })
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['!react', '#lodash', '@(react|vue)'],
       })
@@ -1333,8 +1325,8 @@ describe('cooldown', () => {
 
       expect(result).to.deep.equal({})
 
-      stub.restore()
-      findNpmConfigStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
     })
 
     it('only excludes packages that exactly match a non-glob pattern', async () => {
@@ -1359,7 +1351,7 @@ describe('cooldown', () => {
         }),
       })
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['react'],
       })
@@ -1371,8 +1363,8 @@ describe('cooldown', () => {
       expect(result).to.have.property('react', '18.0.0')
       expect(result).to.not.have.property('react-dom')
 
-      stub.restore()
-      findNpmConfigStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
     })
 
     it('does not apply any cooldown when min-release-age-exclude is set without min-release-age', async () => {
@@ -1394,7 +1386,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAgeExclude: ['react'],
       })
 
@@ -1404,8 +1396,8 @@ describe('cooldown', () => {
       // Then: package is upgraded since no cooldown is in effect
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
-      findNpmConfigStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
     })
 
     it('ignores min-release-age-exclude when cooldown is explicitly set', async () => {
@@ -1427,7 +1419,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['test-package'],
       })
@@ -1438,8 +1430,272 @@ describe('cooldown', () => {
       // Then: package is not upgraded since the explicit cooldown applies to all packages
       expect(result).to.not.have.property('test-package')
 
-      stub.restore()
-      findNpmConfigStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+    })
+
+    it('excludes packages matching min-release-age-exclude patterns from cooldown', async () => {
+      // Given: npm config has min-release-age=7 with @myorg/* excluded,
+      // test-package released 3 days ago (within cooldown), @myorg/pkg released 3 days ago (excluded from cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+          '@myorg/pkg': '1.0.0',
+        },
+      }
+      const stub = stubVersions({
+        'test-package': createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+        '@myorg/pkg': createMockVersion({
+          name: '@myorg/pkg',
+          versions: { '2.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '2.0.0' },
+        }),
+      })
+
+      // Stub findNpmConfig to return a config with minReleaseAge: '7' and @myorg/* excluded
+      // (repeated min-release-age-exclude[] entries in .npmrc parse as an array)
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
+        minReleaseAge: '7',
+        minReleaseAgeExclude: ['@myorg/*'],
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData })
+
+      // Then: test-package is skipped (within 7-day cooldown), @myorg/pkg is upgraded (excluded from cooldown)
+      expect(result).to.not.have.property('test-package')
+      expect(result).to.have.property('@myorg/pkg', '2.0.0')
+
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+    })
+
+    it('excludes a package when min-release-age-exclude is a single string', async () => {
+      // Given: npm config has min-release-age=7 and a single min-release-age-exclude entry,
+      // which the ini parser returns as a string rather than an array
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+          'excluded-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions({
+        'test-package': createMockVersion({
+          name: 'test-package',
+          versions: { '1.1.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '1.1.0' },
+        }),
+        'excluded-package': createMockVersion({
+          name: 'excluded-package',
+          versions: { '2.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '2.0.0' },
+        }),
+      })
+
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
+        minReleaseAge: '7',
+        minReleaseAgeExclude: 'excluded-package',
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData })
+
+      // Then: test-package is skipped (within 7-day cooldown), excluded-package is upgraded
+      expect(result).to.not.have.property('test-package')
+      expect(result).to.have.property('excluded-package', '2.0.0')
+
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+    })
+
+    it('splits comma-separated min-release-age-exclude values and removes duplicates', async () => {
+      const packageData: PackageFile = {
+        dependencies: {
+          react: '17.0.0',
+          '@myorg/pkg': '1.0.0',
+          vue: '2.0.0',
+        },
+      }
+      const stub = stubVersions({
+        react: createMockVersion({
+          name: 'react',
+          versions: { '18.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '18.0.0' },
+        }),
+        '@myorg/pkg': createMockVersion({
+          name: '@myorg/pkg',
+          versions: { '2.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '2.0.0' },
+        }),
+        vue: createMockVersion({
+          name: 'vue',
+          versions: { '3.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '3.0.0' },
+        }),
+      })
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
+        minReleaseAge: '7',
+        minReleaseAgeExclude: ['react, @myorg/*', 'react'],
+      })
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      const result = await ncu({ packageData, jsonUpgraded: false, loglevel: 'warn' })
+
+      expect(result).to.have.property('react', '18.0.0')
+      expect(result).to.have.property('@myorg/pkg', '2.0.0')
+      expect(result).to.not.have.property('vue')
+      expect(logSpy.mock.calls.flat()).to.include('Using min-release-age from .npmrc: 7 days (2 excluded patterns)')
+
+      logSpy.mockRestore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+    })
+
+    it('disables negation, comments, and extglobs in min-release-age-exclude patterns', async () => {
+      const packageData: PackageFile = {
+        dependencies: {
+          react: '17.0.0',
+          vue: '2.0.0',
+          lodash: '4.0.0',
+        },
+      }
+      const stub = stubVersions({
+        react: createMockVersion({
+          name: 'react',
+          versions: { '18.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '18.0.0' },
+        }),
+        vue: createMockVersion({
+          name: 'vue',
+          versions: { '3.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '3.0.0' },
+        }),
+        lodash: createMockVersion({
+          name: 'lodash',
+          versions: { '5.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '5.0.0' },
+        }),
+      })
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
+        minReleaseAge: '7',
+        minReleaseAgeExclude: ['!react', '#lodash', '@(react|vue)'],
+      })
+
+      const result = await ncu({ packageData })
+
+      expect(result).to.deep.equal({})
+
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+    })
+
+    it('only excludes packages that exactly match a non-glob pattern', async () => {
+      // Given: npm config has min-release-age=7 with "react" excluded;
+      // react-dom released 3 days ago should still be within cooldown
+      const packageData: PackageFile = {
+        dependencies: {
+          react: '17.0.0',
+          'react-dom': '17.0.0',
+        },
+      }
+      const stub = stubVersions({
+        react: createMockVersion({
+          name: 'react',
+          versions: { '18.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '18.0.0' },
+        }),
+        'react-dom': createMockVersion({
+          name: 'react-dom',
+          versions: { '18.0.0': new Date(NOW - 3 * DAY).toISOString() },
+          distTags: { latest: '18.0.0' },
+        }),
+      })
+
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
+        minReleaseAge: '7',
+        minReleaseAgeExclude: ['react'],
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData })
+
+      // Then: react is upgraded (exact match excluded), react-dom is skipped (within cooldown)
+      expect(result).to.have.property('react', '18.0.0')
+      expect(result).to.not.have.property('react-dom')
+
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+    })
+
+    it('does not apply any cooldown when min-release-age-exclude is set without min-release-age', async () => {
+      // Given: npm config has min-release-age-exclude but no min-release-age
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 3 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
+        minReleaseAgeExclude: ['react'],
+      })
+
+      // When: ncu is run without explicit cooldown option
+      const result = await ncu({ packageData })
+
+      // Then: package is upgraded since no cooldown is in effect
+      expect(result).to.have.property('test-package', '1.1.0')
+
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+    })
+
+    it('ignores min-release-age-exclude when cooldown is explicitly set', async () => {
+      // Given: npm config has min-release-age=7 with test-package excluded, but cooldown is explicitly set to 10
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 3 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
+        minReleaseAge: '7',
+        minReleaseAgeExclude: ['test-package'],
+      })
+
+      // When: ncu is run with explicit cooldown=10 (overrides min-release-age and its exclusions)
+      const result = await ncu({ packageData, cooldown: 10 })
+
+      // Then: package is not upgraded since the explicit cooldown applies to all packages
+      expect(result).to.not.have.property('test-package')
+
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
     })
   })
 
@@ -1465,10 +1721,10 @@ describe('cooldown', () => {
       )
 
       // Prevent user's .npmrc min-release-age from taking precedence over pnpm/yarn config in tests
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue(null)
 
       // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with minimumReleaseAge: 1440 minutes
-      const pnpmWorkspaceStub = Sinon.stub(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
+      const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue({
         minimumReleaseAge: 1440,
         minimumReleaseAgeExclude: [],
       })
@@ -1479,9 +1735,9 @@ describe('cooldown', () => {
       // Then: package upgrade is skipped because latest version (1.1.0) is within the 1-day cooldown
       expect(result).to.not.have.property('test-package')
 
-      stub.restore()
-      findNpmConfigStub.restore()
-      pnpmWorkspaceStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+      pnpmWorkspaceStub.mockRestore()
     })
 
     it('excludes packages matching minimumReleaseAgeExclude patterns from cooldown', async () => {
@@ -1506,10 +1762,10 @@ describe('cooldown', () => {
         }),
       })
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue(null)
 
       // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with 7 days cooldown and @myorg/* excluded
-      const pnpmWorkspaceStub = Sinon.stub(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
+      const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue({
         minimumReleaseAge: 10080, // 7 days in minutes
         minimumReleaseAgeExclude: ['@myorg/*'],
       })
@@ -1521,9 +1777,9 @@ describe('cooldown', () => {
       expect(result).to.not.have.property('test-package')
       expect(result).to.have.property('@myorg/pkg', '2.0.0')
 
-      stub.restore()
-      findNpmConfigStub.restore()
-      pnpmWorkspaceStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+      pnpmWorkspaceStub.mockRestore()
     })
 
     it('does not apply pnpm minimumReleaseAge when cooldown is explicitly set', async () => {
@@ -1546,7 +1802,7 @@ describe('cooldown', () => {
       )
 
       // Stub getPnpmWorkspaceMinimumReleaseAge to return a 7-day config
-      const pnpmWorkspaceStub = Sinon.stub(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
+      const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue({
         minimumReleaseAge: 10080,
         minimumReleaseAgeExclude: [],
       })
@@ -1557,8 +1813,8 @@ describe('cooldown', () => {
       // Then: package is upgraded since explicit cooldown=0 overrides pnpm minimumReleaseAge
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
-      pnpmWorkspaceStub.restore()
+      stub.mockRestore()
+      pnpmWorkspaceStub.mockRestore()
     })
 
     it('does not apply pnpm minimumReleaseAge when npm min-release-age is set', async () => {
@@ -1582,9 +1838,9 @@ describe('cooldown', () => {
       )
 
       // Stub npm config with min-release-age=2
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '2' })
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '2' })
       // Stub pnpm workspace with 7-day cooldown
-      const pnpmWorkspaceStub = Sinon.stub(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
+      const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue({
         minimumReleaseAge: 10080,
         minimumReleaseAgeExclude: [],
       })
@@ -1595,38 +1851,33 @@ describe('cooldown', () => {
       // Then: package is upgraded because npm's 2-day cooldown takes precedence and 3 days > 2 days
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
-      findNpmConfigStub.restore()
-      pnpmWorkspaceStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+      pnpmWorkspaceStub.mockRestore()
     })
   })
 
   describe('pnpm global minimumReleaseAge config fallback', () => {
-    let originalCwd: string
     let originalXdg: string | undefined
     let projectDir: string
     let xdgDir: string
 
     beforeEach(async () => {
-      originalCwd = process.cwd()
       originalXdg = process.env.XDG_CONFIG_HOME
       // A project directory without a pnpm-workspace.yaml so the workspace layer is absent.
-      projectDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-pnpm-project-'))
+      projectDir = sandbox.cwd
       // An isolated XDG_CONFIG_HOME so pnpm's global config resolves to a temp directory.
       xdgDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-pnpm-xdg-'))
       await fs.mkdir(path.join(xdgDir, 'pnpm'), { recursive: true })
       process.env.XDG_CONFIG_HOME = xdgDir
-      process.chdir(projectDir)
     })
 
     afterEach(async () => {
-      process.chdir(originalCwd)
       if (originalXdg === undefined) {
         delete process.env.XDG_CONFIG_HOME
       } else {
         process.env.XDG_CONFIG_HOME = originalXdg
       }
-      await fs.rm(projectDir, { recursive: true, force: true })
       await fs.rm(xdgDir, { recursive: true, force: true })
     })
 
@@ -1698,7 +1949,7 @@ describe('cooldown', () => {
           'test-package': '1.0.0',
         },
       }
-      const stub = stubVersions(
+      stubVersions(
         createMockVersion({
           name: 'test-package',
           versions: {
@@ -1711,7 +1962,7 @@ describe('cooldown', () => {
       )
 
       // Prevent the user's .npmrc min-release-age from taking precedence over pnpm config in tests
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue(null)
 
       // When: ncu is run without explicit cooldown option
       const result = await ncu({ packageData, packageManager: 'pnpm' })
@@ -1719,8 +1970,7 @@ describe('cooldown', () => {
       // Then: package upgrade is skipped because latest version (1.1.0) is within the 1-day cooldown
       expect(result).to.not.have.property('test-package')
 
-      stub.restore()
-      findNpmConfigStub.restore()
+      findNpmConfigStub.mockRestore()
     })
   })
 
@@ -1745,10 +1995,10 @@ describe('cooldown', () => {
         }),
       )
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue(null)
 
       // Stub getYarnMinimalAgeGate to return a config with npmMinimalAgeGate: 1440 minutes (1 day)
-      const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
+      const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
         npmMinimalAgeGate: 1440,
         npmPreapprovedPackages: [],
       })
@@ -1759,9 +2009,9 @@ describe('cooldown', () => {
       // Then: package upgrade is skipped because latest version (1.1.0) is within the 1-day cooldown
       expect(result).to.not.have.property('test-package')
 
-      stub.restore()
-      findNpmConfigStub.restore()
-      yarnAgeGateStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+      yarnAgeGateStub.mockRestore()
     })
 
     it('upgrades packages older than npmMinimalAgeGate', async () => {
@@ -1784,9 +2034,9 @@ describe('cooldown', () => {
         }),
       )
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue(null)
 
-      const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
+      const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
         npmMinimalAgeGate: 1440,
         npmPreapprovedPackages: [],
       })
@@ -1797,9 +2047,9 @@ describe('cooldown', () => {
       // Then: package is upgraded because 2 days > 1 day cooldown
       expect(result).to.have.property('test-package', '1.1.0')
 
-      stub.restore()
-      findNpmConfigStub.restore()
-      yarnAgeGateStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+      yarnAgeGateStub.mockRestore()
     })
 
     it('excludes packages listed in npmPreapprovedPackages from cooldown', async () => {
@@ -1824,10 +2074,10 @@ describe('cooldown', () => {
         }),
       })
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue(null)
 
       // Stub getYarnMinimalAgeGate to return a 7-day cooldown with @myorg/pkg pre-approved
-      const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
+      const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
         npmMinimalAgeGate: 10080,
         npmPreapprovedPackages: ['@myorg/pkg'],
       })
@@ -1839,9 +2089,9 @@ describe('cooldown', () => {
       expect(result).to.not.have.property('test-package')
       expect(result).to.have.property('@myorg/pkg', '2.0.0')
 
-      stub.restore()
-      findNpmConfigStub.restore()
-      yarnAgeGateStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+      yarnAgeGateStub.mockRestore()
     })
 
     it('does not apply npmMinimalAgeGate when cooldown is explicitly set', async () => {
@@ -1863,7 +2113,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
+      const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
         npmMinimalAgeGate: 10080,
         npmPreapprovedPackages: [],
       })
@@ -1873,10 +2123,10 @@ describe('cooldown', () => {
 
       // Then: package is upgraded since explicit cooldown=0 overrides npmMinimalAgeGate
       expect(result).to.have.property('test-package', '1.1.0')
-      expect(yarnAgeGateStub.called).to.equal(false)
+      expect(yarnAgeGateStub.mock.calls.length).to.equal(0)
 
-      stub.restore()
-      yarnAgeGateStub.restore()
+      stub.mockRestore()
+      yarnAgeGateStub.mockRestore()
     })
 
     it('does not apply npmMinimalAgeGate when npm min-release-age is set', async () => {
@@ -1900,8 +2150,8 @@ describe('cooldown', () => {
       )
 
       // Stub npm config with min-release-age=2
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '2' })
-      const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '2' })
+      const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
         npmMinimalAgeGate: 10080,
         npmPreapprovedPackages: [],
       })
@@ -1911,11 +2161,11 @@ describe('cooldown', () => {
 
       // Then: package is upgraded because npm's 2-day cooldown takes precedence and 3 days > 2 days
       expect(result).to.have.property('test-package', '1.1.0')
-      expect(yarnAgeGateStub.called).to.equal(false)
+      expect(yarnAgeGateStub.mock.calls.length).to.equal(0)
 
-      stub.restore()
-      findNpmConfigStub.restore()
-      yarnAgeGateStub.restore()
+      stub.mockRestore()
+      findNpmConfigStub.mockRestore()
+      yarnAgeGateStub.mockRestore()
     })
   })
 
@@ -1954,7 +2204,7 @@ describe('cooldown', () => {
         const cooldown = 10
 
         const stub = stubVersions(mockedVersion)
-        const logSpy = Sinon.stub(console, 'log')
+        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         silenceProgressBar()
 
         await ncu({ ...options, cooldown, target })
@@ -1965,8 +2215,8 @@ describe('cooldown', () => {
         expect(allMessages[1]).to.equal(`test-package ^1.0.0 → ^1.0.2 5 days ago`)
         expect(allMessages.at(-1)?.includes('All dependencies not in cooldown')).to.be.true
 
-        logSpy.restore()
-        stub.restore()
+        logSpy.mockRestore()
+        stub.mockRestore()
       })
 
       it(`handles "target: ${target}" when target version are within cooldown and a fallback exist)`, async () => {
@@ -1976,7 +2226,7 @@ describe('cooldown', () => {
         const cooldown = 6
 
         const stub = stubVersions(mockedVersion)
-        const logSpy = Sinon.stub(console, 'log')
+        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         silenceProgressBar()
 
         await ncu({ ...options, cooldown, target, format: ['cooldown', 'time'] })
@@ -1995,8 +2245,8 @@ describe('cooldown', () => {
           expect(allMessages[3]).to.equal(`test-package ^1.0.0 → ^1.0.1 [cooldown] 1.0.2 1 week ago`)
         }
 
-        logSpy.restore()
-        stub.restore()
+        logSpy.mockRestore()
+        stub.mockRestore()
       })
     }
   })
@@ -2029,7 +2279,7 @@ describe('cooldown', () => {
         const cooldown = 6
 
         const stub = stubVersions(mockedVersion)
-        const logSpy = Sinon.stub(console, 'log')
+        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         silenceProgressBar()
 
         await ncu({ ...options, packageData, cooldown, target, format: ['cooldown', 'time'] })
@@ -2040,8 +2290,8 @@ describe('cooldown', () => {
         expect(allMessages.some(msg => msg.includes('No package versions were returned'))).to.be.false
         expect(allMessages.some(msg => msg.includes(`Skipped due to ${cooldown}-day cooldown`))).to.be.false
 
-        logSpy.restore()
-        stub.restore()
+        logSpy.mockRestore()
+        stub.mockRestore()
       })
     }
   })
@@ -2088,12 +2338,12 @@ describe('cooldown', () => {
       format: ['cooldown'],
     }
 
-    let stub: { restore: () => void }
+    let stub: { mockRestore: () => void }
     const versions = {
       'test-package': mockedVersion,
       'test-package-with-no-time': mockedVersionWithNoTime,
     }
-    after(() => stub.restore())
+    afterEach(() => stub.mockRestore())
 
     const targets = ['latest', 'greatest', 'minor', 'patch', 'semver'] as const
     for (const target of targets) {
@@ -2104,7 +2354,7 @@ describe('cooldown', () => {
         stub = stubVersions(versions)
         const cooldown = 5
 
-        const logSpy = Sinon.stub(console, 'log')
+        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         silenceProgressBar()
 
         await ncu({ ...options, cooldown, target })
@@ -2118,7 +2368,7 @@ describe('cooldown', () => {
         expect(allMessages[3]).to.equal(`test-package ^1.0.0 → ^1.0.1 [cooldown] ${truncateVersion}`)
         expect(allMessages[4]).to.equal(`test-package-with-no-time ^1.0.0 → ^${upgradeVersion} [missing time]`)
 
-        logSpy.restore()
+        logSpy.mockRestore()
       })
     }
 
@@ -2126,7 +2376,7 @@ describe('cooldown', () => {
       stub = stubVersions(versions)
       const cooldown = 5
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, cooldown, target: '@latest' })
@@ -2137,7 +2387,7 @@ describe('cooldown', () => {
       expect(allMessages[1]).to.equal(`test-package ^1.0.0 → ^1.0.2 3 days ago`)
       expect(allMessages[3]).to.equal(`test-package-with-no-time ^1.0.0 → ^1.0.2 [missing time]`)
 
-      logSpy.restore()
+      logSpy.mockRestore()
     })
 
     it(`"target: newest" - ignore versions without time`, async () => {
@@ -2146,7 +2396,7 @@ describe('cooldown', () => {
       stub = stubVersions(versions)
       const cooldown = 5
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, cooldown, target: 'newest' })
@@ -2157,7 +2407,7 @@ describe('cooldown', () => {
       expect(allMessages[3]).to.equal(`test-package ^1.0.0 → ^1.0.1 [cooldown] 1.0.3-+`)
       expect(allMessages[4]).to.equal(`test-package-with-no-time ^1.0.0 → ^1.0.1`)
 
-      logSpy.restore()
+      logSpy.mockRestore()
     })
 
     it(`"target: newest" - no upgrade is possible when all times are missing`, async () => {
@@ -2169,7 +2419,7 @@ describe('cooldown', () => {
 
       const cooldown = 5
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, cooldown, target: 'newest' })
@@ -2180,7 +2430,7 @@ describe('cooldown', () => {
       expect(allMessages[3]).to.equal(`test-package ^1.0.0 → ^1.0.1 [cooldown] 1.0.3-+`)
       expect(allMessages.join('/n')).not.to.include(`test-package-with-no-time`)
 
-      logSpy.restore()
+      logSpy.mockRestore()
     })
     // prints "All dependencies match the latest package versions"
     it(`handles "target: newest" when all packages are without time`, async () => {
@@ -2192,7 +2442,7 @@ describe('cooldown', () => {
 
       const cooldown = 5
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, cooldown, target: 'newest' })
@@ -2200,7 +2450,7 @@ describe('cooldown', () => {
       const allMessages = getNormalizedLogs(logSpy)
       expect(allMessages[0]).to.equal(`All dependencies match the newest package versions :)`)
 
-      logSpy.restore()
+      logSpy.mockRestore()
     })
   })
 
@@ -2238,7 +2488,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, packageData, target: '@latest' })
@@ -2247,8 +2497,8 @@ describe('cooldown', () => {
       expect(allMessages.length).to.equal(1)
       expect(allMessages[0]).to.equal(`test-package 2.0.0-beta.1 → 1.5.0`)
 
-      logSpy.restore()
-      stub.restore()
+      logSpy.mockRestore()
+      stub.mockRestore()
     })
 
     it('skip by cooldown downgrades from prerelease to older stable version when target @latest is within cooldown', async () => {
@@ -2274,7 +2524,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, packageData, target: '@latest' })
@@ -2286,8 +2536,8 @@ describe('cooldown', () => {
       expect(allMessages.join('\n')).not.to.include(`test-package 2.0.0-beta.1 → 1.0.0`)
       expect(allMessages[2]).to.equal(`All dependencies not in cooldown match the @latest package versions :)`)
 
-      logSpy.restore()
-      stub.restore()
+      logSpy.mockRestore()
+      stub.mockRestore()
     })
 
     it('skip by cooldown upgrades from prerelease to specific tag when target tag version is within cooldown', async () => {
@@ -2313,7 +2563,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const logSpy = Sinon.stub(console, 'log')
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       silenceProgressBar()
 
       await ncu({ ...options, packageData, target: '@next' })
@@ -2325,8 +2575,8 @@ describe('cooldown', () => {
       expect(allMessages.join('\n')).not.to.include(`test-package 1.0.0-dev.0 → 1.1.0-dev.0`)
       expect(allMessages[2]).to.equal(`All dependencies not in cooldown match the @next package versions :)`)
 
-      logSpy.restore()
-      stub.restore()
+      logSpy.mockRestore()
+      stub.mockRestore()
     })
   })
 })

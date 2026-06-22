@@ -18,4 +18,5 @@ export type Options = RunOptions & {
   // A list of local workspace packages by name.
   // This is used to ignore local workspace packages when fetching new versions.
   workspacePackages?: string[]
+  ncuTimeoutSignal?: AbortSignal
 }

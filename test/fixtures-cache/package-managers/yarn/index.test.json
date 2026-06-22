@@ -1,0 +1,52 @@
+{
+  "yarn > \"No lockfile\" error should be thrown on list command when there is no lockfile": {
+    "spawnPlease": {
+      "command: yarn, args: --depth=0 :: --json :: --no-progress :: list": {
+        "_isError": true,
+        "exitCode": 1,
+        "message": "{\"type\":\"error\",\"data\":\"No lockfile in this directory. Run `yarn install` to generate one.\"}\n",
+        "stderr": ""
+      }
+    }
+  },
+  "yarn > getPeerDependencies v1": {
+    "spawnPlease": {
+      "command: yarn, args: --json :: info :: fffffffffffff@1.0.0 :: peerDependencies": {
+        "stderr": "(node:<PID>) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n{\"type\":\"error\",\"data\":\"Received invalid response from npm.\"}\n",
+        "stdout": ""
+      },
+      "command: yarn, args: --json :: info :: ncu-test-peer@1.0.0 :: peerDependencies": {
+        "stderr": "(node:<PID>) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n",
+        "stdout": "{\"type\":\"inspect\",\"data\":{\"ncu-test-return-version\":\"1.x\"}}\n"
+      },
+      "command: yarn, args: --json :: info :: ncu-test-return-version@1.0.0 :: peerDependencies": {
+        "stderr": "(node:<PID>) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n",
+        "stdout": "{\"type\":\"inspect\"}\n"
+      },
+      "command: yarn, args: --version": {
+        "stderr": "",
+        "stdout": "1.22.22\n"
+      }
+    }
+  },
+  "yarn > getPeerDependencies v4": {
+    "spawnPlease": {
+      "command: yarn, args: --json :: npm :: info :: fffffffffffff@1.0.0 :: --fields :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\"type\":\"error\",\"name\":35,\"displayName\":\"YN0035\",\"indent\":\"\",\"data\":\"Package not found\"}\n{\"type\":\"error\",\"name\":35,\"displayName\":\"YN0035\",\"indent\":\"\",\"data\":\"  Response Code: 404 (Not Found)\"}\n{\"type\":\"error\",\"name\":35,\"displayName\":\"YN0035\",\"indent\":\"\",\"data\":\"  Request Method: GET\"}\n{\"type\":\"error\",\"name\":35,\"displayName\":\"YN0035\",\"indent\":\"\",\"data\":\"  Request URL: https://registry.yarnpkg.com/fffffffffffff\"}\n"
+      },
+      "command: yarn, args: --json :: npm :: info :: ncu-test-peer@1.0.0 :: --fields :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\"name\":\"ncu-test-peer\",\"peerDependencies\":{\"ncu-test-return-version\":\"1.x\"}}\n"
+      },
+      "command: yarn, args: --json :: npm :: info :: ncu-test-return-version@1.0.0 :: --fields :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\"name\":\"ncu-test-return-version\"}\n"
+      },
+      "command: yarn, args: --version": {
+        "stderr": "",
+        "stdout": "4.9.2\n"
+      }
+    }
+  }
+}
