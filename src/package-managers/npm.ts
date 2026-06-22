@@ -1,10 +1,10 @@
-import Config from '@npmcli/config'
-import npmcliDefinitions from '@npmcli/config/lib/definitions/index.js'
 import { JSONParser } from '@streamparser/json'
 import camelCase from 'camelcase'
 import memoize from 'fast-memoize'
+import { findUp } from 'find-up'
 import fs from 'fs'
 import ini from 'ini'
+import os from 'node:os'
 import npmRegistryFetch from 'npm-registry-fetch'
 import path from 'path'
 import nodeSemver from 'semver'
@@ -457,7 +457,8 @@ const parseNpmrc = memoize((configPath?: string): NpmConfig | null => {
 
   let config
   try {
-    config = ini.parse(fs.readFileSync(configPath, 'utf-8'))
+    const data = fs.readFileSync(configPath, 'utf-8')
+    config = ini.parse(data)
   } catch (err: any) {
     if (err.code === 'ENOENT') {
       return null
@@ -469,25 +470,53 @@ const parseNpmrc = memoize((configPath?: string): NpmConfig | null => {
   return normalizeNpmConfig(config, configPath)
 })
 
-/** Reads and merges the npm config (global, user, project, and npm_config_* env) via @npmcli/config. Memoized so it loads once. */
-npmApi.findNpmConfig = memoize(async (): Promise<NpmConfig> => {
-  const { definitions, shorthands, flatten } = npmcliDefinitions
-  const config = new Config({
-    npmPath: path.dirname(process.execPath),
-    definitions,
-    shorthands,
-    flatten,
-    // do not let nopt parse ncu's own CLI flags as npm config
-    argv: process.argv.slice(0, 2),
-  })
-
+/** Reads and parses an .npmrc file, returning {} if it does not exist. */
+const readNpmrc = async (file: string): Promise<NpmConfig> => {
   try {
-    await config.load()
-  } catch {
-    return { cache: false }
+    return ini.parse(await fs.promises.readFile(file, 'utf-8'))
+  } catch (err: any) {
+    if (err.code === 'ENOENT') return {}
+    throw err
+  }
+}
+
+/** Returns the global npm prefix, used to locate the global npmrc. */
+const getGlobalPrefix = (): string => {
+  if (process.env.PREFIX) return process.env.PREFIX
+  // c:\node\node.exe -> c:\node
+  if (process.platform === 'win32') return path.dirname(process.execPath)
+  // /usr/local/bin/node -> /usr/local
+  const prefix = path.dirname(path.dirname(process.execPath))
+  return process.env.DESTDIR ? path.join(process.env.DESTDIR, prefix) : prefix
+}
+
+/** Reads and merges the global, user, and project .npmrc files plus npm_config_* env vars. Memoized so it loads once. */
+npmApi.findNpmConfig = memoize(async (): Promise<NpmConfig> => {
+  const envPrefix = /^npm_config_/i
+  const env: NpmConfig = {}
+
+  for (const key of Object.keys(process.env)) {
+    if (!envPrefix.test(key)) continue
+
+    const normalizedKey = key
+      .toLowerCase()
+      .replace(envPrefix, '')
+      .replace(/(?!^)_/g, '-')
+    env[normalizedKey] = process.env[key] as string
   }
 
-  return { ...config.flat, cache: false } as NpmConfig
+  const userconfig =
+    process.env.npm_config_userconfig || process.env.NPM_CONFIG_USERCONFIG || path.join(os.homedir(), '.npmrc')
+  const globalconfig = path.join(getGlobalPrefix(), 'etc', 'npmrc')
+  const [global, user, projectConfigPath] = await Promise.all([
+    readNpmrc(globalconfig),
+    readNpmrc(userconfig),
+    findUp(['npmrc', '.npmrc']),
+  ])
+  const project = projectConfigPath && projectConfigPath !== userconfig ? await readNpmrc(projectConfigPath) : {}
+
+  // precedence (low to high): global < user < project < env
+  return normalizeNpmConfig({ ...global, ...user, ...project, ...env, cache: false })
 })
 
 /**
