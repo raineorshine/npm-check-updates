@@ -266,7 +266,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     } else {
       // Automatically apply npm's min-release-age config as cooldown if cooldown is not explicitly set.
       // This applies to npm and any unknown/unset package manager.
-      const npmConfigCooldown = npmApi.findNpmConfig()
+      const npmConfigCooldown = await npmApi.findNpmConfig()
       const minReleaseAge = npmConfigCooldown?.minReleaseAge
       if (minReleaseAge != null) {
         const days =
