@@ -1,5 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import Config from '@npmcli/config'
+import npmcliDefinitions from '@npmcli/config/lib/definitions/index.js'
 import { JSONParser } from '@streamparser/json'
 import camelCase from 'camelcase'
 import memoize from 'fast-memoize'
@@ -10,7 +12,6 @@ import { parseRange } from 'semver-utils'
 import untildify from 'untildify'
 import pkg from '../../package.json' with { type: 'json' }
 import { keyValueBy } from '../lib/keyValueBy.ts'
-import libnpmconfig from '../lib/libnpmconfig/index.js'
 import { print, printSorted } from '../lib/logging.ts'
 import spawnCommand from '../lib/spawnCommand.ts'
 import * as versionUtil from '../lib/version-util.ts'
@@ -311,7 +312,7 @@ export const normalizeNpmConfig = (
     cafile: (capath: string): undefined | { ca: string[] } => {
       // load-cafile, based on github.com/npm/cli/blob/40c1b0f/lib/config/load-cafile.js
       if (!capath) return
-      // synchronous since it is loaded once on startup, and to avoid complexity in libnpmconfig
+      // synchronous since it is loaded once on startup
       // https://github.com/raineorshine/npm-check-updates/issues/636?notification_referrer_id=MDE4Ok5vdGlmaWNhdGlvblRocmVhZDc0Njk2NjAzMjo3NTAyNzY%3D
       const cadata = fs.readFileSync(path.resolve(configPath || '', untildify(capath)), 'utf8')
       const delim = '-----END CERTIFICATE-----'
@@ -448,7 +449,7 @@ interface NpmApi {
     npmConfigLocal?: NpmConfig,
     npmConfigWorkspaceProject?: NpmConfig,
   ) => Promise<Partial<Packument> | undefined>
-  findNpmConfig: (configPath?: string | undefined) => NpmConfig | null
+  findNpmConfig: () => Promise<NpmConfig>
   mockFetchUpgradedPackument: (mockReturnedVersions: MockedVersions) => typeof fetchUpgradedPackument
 }
 
@@ -460,33 +461,43 @@ interface NpmApi {
  */
 export const npmApi = {} as NpmApi
 
-/** Finds and parses the npm config at the given path. If the path does not exist, returns null. If no path is provided, finds and merges the global and user npm configs using libnpmconfig and sets cache: false. */
-npmApi.findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
-  let config
+/** Parses the .npmrc at the given path (project- and cwd-level). Returns null if it does not exist. */
+const parseNpmrc = memoize((configPath?: string): NpmConfig | null => {
+  if (!configPath) return null
 
-  if (configPath) {
-    try {
-      config = ini.parse(fs.readFileSync(configPath, 'utf-8'))
-    } catch (err: any) {
-      if (err.code === 'ENOENT') {
-        return null
-      } else {
-        throw err
-      }
-    }
-  } else {
-    // libnpmconfig incorrectly (?) ignores NPM_CONFIG_USERCONFIG because it is always overridden by the default builtin.userconfig
-    // set userconfig manually so that it is prioritized
-    const opts = libnpmconfig(null, {
-      userconfig: process.env.npm_config_userconfig || process.env.NPM_CONFIG_USERCONFIG,
-    })
-    config = {
-      ...opts.toJSON(),
-      cache: false,
+  let config
+  try {
+    config = ini.parse(fs.readFileSync(configPath, 'utf-8'))
+  } catch (err: any) {
+    if (err.code === 'ENOENT') {
+      return null
+    } else {
+      throw err
     }
   }
 
   return normalizeNpmConfig(config, configPath)
+})
+
+/** Reads and merges the npm config (global, user, project, and npm_config_* env) via @npmcli/config. Memoized so it loads once. */
+npmApi.findNpmConfig = memoize(async (): Promise<NpmConfig> => {
+  const { definitions, shorthands, flatten } = npmcliDefinitions
+  const config = new Config({
+    npmPath: path.dirname(process.execPath),
+    definitions,
+    shorthands,
+    flatten,
+    // do not let nopt parse ncu's own CLI flags as npm config
+    argv: process.argv.slice(0, 2),
+  })
+
+  try {
+    await config.load()
+  } catch {
+    return { cache: false }
+  }
+
+  return { ...config.flat, cache: false } as NpmConfig
 })
 
 /**
@@ -566,7 +577,7 @@ npmApi.mockFetchUpgradedPackument =
   }
 
 /** Merges the workspace, global, user, local, project, and cwd npm configs (in that order). */
-// Note that this is memoized on configs and options, but not on package name. This avoids duplicate messages when log level is verbose. findNpmConfig is memoized on config path, so it is not expensive to call multiple times.
+// Note that this is memoized on configs and options, but not on package name. This avoids duplicate messages when log level is verbose. parseNpmrc is memoized on config path, so it is not expensive to call multiple times.
 const mergeNpmConfigs = memoize(
   (
     {
@@ -582,9 +593,9 @@ const mergeNpmConfigs = memoize(
   ) => {
     // merge project npm config with base config
     const npmConfigProjectPath = options.packageFile ? path.join(options.packageFile, '../.npmrc') : null
-    const npmConfigProject = options.packageFile ? npmApi.findNpmConfig(npmConfigProjectPath || undefined) : null
+    const npmConfigProject = options.packageFile ? parseNpmrc(npmConfigProjectPath || undefined) : null
     const npmConfigCWDPath = options.cwd ? path.join(options.cwd, '.npmrc') : null
-    const npmConfigCWD = options.cwd ? npmApi.findNpmConfig(npmConfigCWDPath!) : null
+    const npmConfigCWD = options.cwd ? parseNpmrc(npmConfigCWDPath!) : null
 
     if (npmConfigWorkspaceProject && Object.keys(npmConfigWorkspaceProject).length > 0) {
       print(options, `\nnpm config (workspace project):`, 'verbose')
@@ -656,9 +667,10 @@ export async function packageAuthorChanged(
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<boolean> {
+  const npmConfig = await npmApi.findNpmConfig()
   // merge the project/cwd .npmrc so a scoped private registry is respected, like the main fetch path
   const npmConfigMerged = mergeNpmConfigs(
-    { npmConfigUser: { ...npmApi.findNpmConfig(), fullMetadata: true }, npmConfigLocal },
+    { npmConfigUser: { ...npmConfig, fullMetadata: true }, npmConfigLocal },
     options,
   )
   const result = await fetchPartialPackument(packageName, ['versions'], null, npmConfigMerged)
@@ -709,9 +721,10 @@ async function fetchUpgradedPackument(
     options.format?.includes('time') && !fields.includes('time') ? [...fields, 'time'] : fields
   const fullMetadata = fieldsExtended.includes('time')
 
+  const npmConfig = await npmApi.findNpmConfig()
   const npmConfigMerged = mergeNpmConfigs(
     {
-      npmConfigUser: { ...npmApi.findNpmConfig(), fullMetadata },
+      npmConfigUser: { ...npmConfig, fullMetadata },
       npmConfigLocal,
       npmConfigWorkspaceProject,
     },
@@ -921,8 +934,9 @@ export const getEngines = async (
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<Index<VersionSpec | undefined>> => {
+  const npmConfig = await npmApi.findNpmConfig()
   // merge the project/cwd .npmrc so a scoped private registry is respected, like the main fetch path
-  const npmConfigMerged = mergeNpmConfigs({ npmConfigUser: { ...npmApi.findNpmConfig() }, npmConfigLocal }, options)
+  const npmConfigMerged = mergeNpmConfigs({ npmConfigUser: { ...npmConfig }, npmConfigLocal }, options)
   const result = await fetchPartialPackument(packageName, [`engines`], null, npmConfigMerged, version)
   return result.engines || {}
 }
