@@ -285,7 +285,7 @@ describe('cooldown', () => {
       }),
     )
 
-    const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+    const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({})
 
     // When: running ncu without cooldown
     const result = await ncu({ packageData })
@@ -1095,8 +1095,8 @@ describe('cooldown', () => {
         }),
       )
 
-      // Stub findNpmConfig to return a config with minReleaseAge: '7'
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '7' })
+      // Stub findNpmConfig to resolve a config with minReleaseAge: '7'
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({ minReleaseAge: '7' })
 
       // When: ncu is run without explicit cooldown option
       const result = await ncu({ packageData })
@@ -1127,8 +1127,8 @@ describe('cooldown', () => {
         }),
       )
 
-      // Stub findNpmConfig to return a config with minReleaseAge: '7'
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '7' })
+      // Stub findNpmConfig to resolve a config with minReleaseAge: '7'
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({ minReleaseAge: '7' })
 
       // When: ncu is run with explicit cooldown=0 (overrides min-release-age)
       const result = await ncu({ packageData, cooldown: 0 })
@@ -1159,8 +1159,8 @@ describe('cooldown', () => {
         }),
       )
 
-      // Stub findNpmConfig to return a config with minReleaseAge: '7'
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '7' })
+      // Stub findNpmConfig to resolve a config with minReleaseAge: '7'
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({ minReleaseAge: '7' })
 
       const logSpy = Sinon.stub(console, 'log')
 
@@ -1200,9 +1200,9 @@ describe('cooldown', () => {
         }),
       })
 
-      // Stub findNpmConfig to return a config with minReleaseAge: '7' and @myorg/* excluded
+      // Stub findNpmConfig to resolve a config with minReleaseAge: '7' and @myorg/* excluded
       // (repeated min-release-age-exclude[] entries in .npmrc parse as an array)
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['@myorg/*'],
       })
@@ -1240,7 +1240,7 @@ describe('cooldown', () => {
         }),
       })
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({
         minReleaseAge: '7',
         minReleaseAgeExclude: 'excluded-package',
       })
@@ -1281,7 +1281,7 @@ describe('cooldown', () => {
           distTags: { latest: '3.0.0' },
         }),
       })
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['react, @myorg/*', 'react'],
       })
@@ -1324,7 +1324,7 @@ describe('cooldown', () => {
           distTags: { latest: '5.0.0' },
         }),
       })
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['!react', '#lodash', '@(react|vue)'],
       })
@@ -1359,7 +1359,7 @@ describe('cooldown', () => {
         }),
       })
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['react'],
       })
@@ -1394,7 +1394,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({
         minReleaseAgeExclude: ['react'],
       })
 
@@ -1427,7 +1427,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['test-package'],
       })
@@ -1465,7 +1465,7 @@ describe('cooldown', () => {
       )
 
       // Prevent user's .npmrc min-release-age from taking precedence over pnpm/yarn config in tests
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({})
 
       // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with minimumReleaseAge: 1440 minutes
       const pnpmWorkspaceStub = Sinon.stub(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
@@ -1506,7 +1506,7 @@ describe('cooldown', () => {
         }),
       })
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({})
 
       // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with 7 days cooldown and @myorg/* excluded
       const pnpmWorkspaceStub = Sinon.stub(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
@@ -1582,7 +1582,7 @@ describe('cooldown', () => {
       )
 
       // Stub npm config with min-release-age=2
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '2' })
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({ minReleaseAge: '2' })
       // Stub pnpm workspace with 7-day cooldown
       const pnpmWorkspaceStub = Sinon.stub(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
         minimumReleaseAge: 10080,
@@ -1711,7 +1711,7 @@ describe('cooldown', () => {
       )
 
       // Prevent the user's .npmrc min-release-age from taking precedence over pnpm config in tests
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({})
 
       // When: ncu is run without explicit cooldown option
       const result = await ncu({ packageData, packageManager: 'pnpm' })
@@ -1745,7 +1745,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({})
 
       // Stub getYarnMinimalAgeGate to return a config with npmMinimalAgeGate: 1440 minutes (1 day)
       const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
@@ -1784,7 +1784,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({})
 
       const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
         npmMinimalAgeGate: 1440,
@@ -1824,7 +1824,7 @@ describe('cooldown', () => {
         }),
       })
 
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns(null)
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({})
 
       // Stub getYarnMinimalAgeGate to return a 7-day cooldown with @myorg/pkg pre-approved
       const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
@@ -1900,7 +1900,7 @@ describe('cooldown', () => {
       )
 
       // Stub npm config with min-release-age=2
-      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '2' })
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').resolves({ minReleaseAge: '2' })
       const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
         npmMinimalAgeGate: 10080,
         npmPreapprovedPackages: [],
