@@ -23,8 +23,8 @@ This project is now **pure ESM** with support for both ESM and CJS via Vite. It 
 
 ```sh
 npm test
-# or manually:
-mocha "test/**/*.test.ts"
+# or run the unit tests directly:
+npx vitest run
 ```
 
 ## Executable Stack Trace

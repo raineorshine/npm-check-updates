@@ -1,9 +1,7 @@
 import { type SemVer } from 'semver-utils'
+import { beforeEach, describe, expect, it } from 'vitest'
 import getCurrentDependencies from '../src/lib/getCurrentDependencies.ts'
 import { type PackageFile } from '../src/types/PackageFile.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
-
-chaiSetup()
 
 describe('getCurrentDependencies', () => {
   let deps: PackageFile
@@ -27,13 +25,13 @@ describe('getCurrentDependencies', () => {
   })
 
   it('return an empty object for an empty package.json and handle default options', () => {
-    getCurrentDependencies().should.eql({})
-    getCurrentDependencies({}).should.eql({})
-    getCurrentDependencies({}, {}).should.eql({})
+    expect(getCurrentDependencies()).toStrictEqual({})
+    expect(getCurrentDependencies({})).toStrictEqual({})
+    expect(getCurrentDependencies({}, {})).toStrictEqual({})
   })
 
   it('get dependencies, devDependencies, and optionalDependencies by default', () => {
-    getCurrentDependencies(deps).should.eql({
+    expect(getCurrentDependencies(deps)).toStrictEqual({
       bluebird: '^1.0.0',
       mocha: '1.2',
       lodash: '^3.9.3',
@@ -44,33 +42,33 @@ describe('getCurrentDependencies', () => {
 
   describe('dep', () => {
     it('only get dependencies with --dep prod', () => {
-      getCurrentDependencies(deps, { dep: 'prod' }).should.eql({
+      expect(getCurrentDependencies(deps, { dep: 'prod' })).toStrictEqual({
         bluebird: '^1.0.0',
         mocha: '1.2',
       })
     })
 
     it('only get devDependencies with --dep dev', () => {
-      getCurrentDependencies(deps, { dep: 'dev' }).should.eql({
+      expect(getCurrentDependencies(deps, { dep: 'dev' })).toStrictEqual({
         lodash: '^3.9.3',
         moment: '^1.0.0',
       })
     })
 
     it('only get optionalDependencies with --dep optional', () => {
-      getCurrentDependencies(deps, { dep: 'optional' }).should.eql({
+      expect(getCurrentDependencies(deps, { dep: 'optional' })).toStrictEqual({
         chalk: '^1.1.0',
       })
     })
 
     it('only get peerDependencies with --dep peer', () => {
-      getCurrentDependencies(deps, { dep: 'peer' }).should.eql({
+      expect(getCurrentDependencies(deps, { dep: 'peer' })).toStrictEqual({
         'ncu-test-v2': '0.1.0',
       })
     })
 
     it('only get devDependencies and peerDependencies with --dep dev,peer', () => {
-      getCurrentDependencies(deps, { dep: 'dev,peer' }).should.eql({
+      expect(getCurrentDependencies(deps, { dep: 'dev,peer' })).toStrictEqual({
         lodash: '^3.9.3',
         moment: '^1.0.0',
         'ncu-test-v2': '0.1.0',
@@ -80,7 +78,7 @@ describe('getCurrentDependencies', () => {
 
   describe('filter', () => {
     it('filter dependencies by package name', () => {
-      getCurrentDependencies(deps, { filter: 'mocha' }).should.eql({
+      expect(getCurrentDependencies(deps, { filter: 'mocha' })).toStrictEqual({
         mocha: '1.2',
       })
     })
@@ -93,37 +91,37 @@ describe('getCurrentDependencies', () => {
         },
       }
 
-      getCurrentDependencies(deps, { filter: '@ngrx/store' }).should.eql({
+      expect(getCurrentDependencies(deps, { filter: '@ngrx/store' })).toStrictEqual({
         '@ngrx/store': '4.0.0',
       })
     })
 
     it('do not filter out dependencies with a partial package name', () => {
-      getCurrentDependencies(deps, { filter: 'o' }).should.eql({})
+      expect(getCurrentDependencies(deps, { filter: 'o' })).toStrictEqual({})
     })
 
     it('filter dependencies by multiple packages', () => {
-      getCurrentDependencies(deps, { filter: 'mocha lodash' }).should.eql({
+      expect(getCurrentDependencies(deps, { filter: 'mocha lodash' })).toStrictEqual({
         mocha: '1.2',
         lodash: '^3.9.3',
       })
-      getCurrentDependencies(deps, { filter: 'mocha,lodash' }).should.eql({
+      expect(getCurrentDependencies(deps, { filter: 'mocha,lodash' })).toStrictEqual({
         mocha: '1.2',
         lodash: '^3.9.3',
       })
-      getCurrentDependencies(deps, { filter: ['mocha', 'lodash'] }).should.eql({
+      expect(getCurrentDependencies(deps, { filter: ['mocha', 'lodash'] })).toStrictEqual({
         mocha: '1.2',
         lodash: '^3.9.3',
       })
     })
 
     it('filter dependencies by regex', () => {
-      getCurrentDependencies(deps, { filter: /o/ }).should.eql({
+      expect(getCurrentDependencies(deps, { filter: /o/ })).toStrictEqual({
         lodash: '^3.9.3',
         mocha: '1.2',
         moment: '^1.0.0',
       })
-      getCurrentDependencies(deps, { filter: '/o/' }).should.eql({
+      expect(getCurrentDependencies(deps, { filter: '/o/' })).toStrictEqual({
         lodash: '^3.9.3',
         mocha: '1.2',
         moment: '^1.0.0',
@@ -131,22 +129,24 @@ describe('getCurrentDependencies', () => {
     })
 
     it.skip('should filter org dependencies by regex', () => {
-      getCurrentDependencies(deps, { filter: /store/ }).should.eql({
+      expect(getCurrentDependencies(deps, { filter: /store/ })).toStrictEqual({
         '@ngrx/store': '4.0.0',
       })
     })
 
     it('filter dependencies by name with a filter function', () => {
-      getCurrentDependencies(deps, { filter: (s: string) => s.startsWith('m') }).should.eql({
+      expect(getCurrentDependencies(deps, { filter: (s: string) => s.startsWith('m') })).toStrictEqual({
         mocha: '1.2',
         moment: '^1.0.0',
       })
     })
 
     it('filter dependencies by version spec with a filter function', () => {
-      getCurrentDependencies(deps, {
-        filter: (name: string, versionSpec: SemVer[]) => versionSpec[0].major === '1',
-      }).should.eql({
+      expect(
+        getCurrentDependencies(deps, {
+          filter: (name: string, versionSpec: SemVer[]) => versionSpec[0].major === '1',
+        }),
+      ).toStrictEqual({
         mocha: '1.2',
         moment: '^1.0.0',
         chalk: '^1.1.0',
@@ -157,25 +157,25 @@ describe('getCurrentDependencies', () => {
 
   describe('filterVersion', () => {
     it('filter dependency versions by pinned version', () => {
-      getCurrentDependencies(deps, { filterVersion: '1.2' }).should.eql({
+      expect(getCurrentDependencies(deps, { filterVersion: '1.2' })).toStrictEqual({
         mocha: '1.2',
       })
     })
 
     it('filter dependency versions by caret version', () => {
-      getCurrentDependencies(deps, { filterVersion: '^1.0.0' }).should.eql({
+      expect(getCurrentDependencies(deps, { filterVersion: '^1.0.0' })).toStrictEqual({
         moment: '^1.0.0',
         bluebird: '^1.0.0',
       })
     })
 
     it('filter dependencies by multiple versions (comma-or-space-delimited)', () => {
-      getCurrentDependencies(deps, { filterVersion: '^1.0.0,^1.1.0' }).should.eql({
+      expect(getCurrentDependencies(deps, { filterVersion: '^1.0.0,^1.1.0' })).toStrictEqual({
         chalk: '^1.1.0',
         moment: '^1.0.0',
         bluebird: '^1.0.0',
       })
-      getCurrentDependencies(deps, { filterVersion: '^1.0.0 ^1.1.0' }).should.eql({
+      expect(getCurrentDependencies(deps, { filterVersion: '^1.0.0 ^1.1.0' })).toStrictEqual({
         chalk: '^1.1.0',
         moment: '^1.0.0',
         bluebird: '^1.0.0',
@@ -183,12 +183,12 @@ describe('getCurrentDependencies', () => {
     })
 
     it('filter dependency versions by regex', () => {
-      getCurrentDependencies(deps, { filterVersion: '/^\\^1/' }).should.eql({
+      expect(getCurrentDependencies(deps, { filterVersion: '/^\\^1/' })).toStrictEqual({
         chalk: '^1.1.0',
         moment: '^1.0.0',
         bluebird: '^1.0.0',
       })
-      getCurrentDependencies(deps, { filterVersion: /^\^1/ }).should.eql({
+      expect(getCurrentDependencies(deps, { filterVersion: /^\^1/ })).toStrictEqual({
         chalk: '^1.1.0',
         moment: '^1.0.0',
         bluebird: '^1.0.0',
@@ -196,9 +196,11 @@ describe('getCurrentDependencies', () => {
     })
 
     it('filter dependencies by version spec with a filterVersion function', () => {
-      getCurrentDependencies(deps, {
-        filterVersion: (name: string, versionSpec: SemVer[]) => versionSpec[0].major === '1',
-      }).should.eql({
+      expect(
+        getCurrentDependencies(deps, {
+          filterVersion: (name: string, versionSpec: SemVer[]) => versionSpec[0].major === '1',
+        }),
+      ).toStrictEqual({
         mocha: '1.2',
         moment: '^1.0.0',
         chalk: '^1.1.0',
@@ -209,7 +211,7 @@ describe('getCurrentDependencies', () => {
 
   describe('reject', () => {
     it('reject dependencies by package name', () => {
-      getCurrentDependencies(deps, { reject: 'chalk' }).should.eql({
+      expect(getCurrentDependencies(deps, { reject: 'chalk' })).toStrictEqual({
         mocha: '1.2',
         lodash: '^3.9.3',
         bluebird: '^1.0.0',
@@ -218,7 +220,7 @@ describe('getCurrentDependencies', () => {
     })
 
     it('do not reject dependencies with a partial package name', () => {
-      getCurrentDependencies(deps, { reject: 'o' }).should.eql({
+      expect(getCurrentDependencies(deps, { reject: 'o' })).toStrictEqual({
         mocha: '1.2',
         lodash: '^3.9.3',
         chalk: '^1.1.0',
@@ -228,17 +230,17 @@ describe('getCurrentDependencies', () => {
     })
 
     it('reject dependencies by multiple packages', () => {
-      getCurrentDependencies(deps, { reject: 'mocha lodash' }).should.eql({
+      expect(getCurrentDependencies(deps, { reject: 'mocha lodash' })).toStrictEqual({
         chalk: '^1.1.0',
         bluebird: '^1.0.0',
         moment: '^1.0.0',
       })
-      getCurrentDependencies(deps, { reject: 'mocha,lodash' }).should.eql({
+      expect(getCurrentDependencies(deps, { reject: 'mocha,lodash' })).toStrictEqual({
         chalk: '^1.1.0',
         bluebird: '^1.0.0',
         moment: '^1.0.0',
       })
-      getCurrentDependencies(deps, { reject: ['mocha', 'lodash'] }).should.eql({
+      expect(getCurrentDependencies(deps, { reject: ['mocha', 'lodash'] })).toStrictEqual({
         chalk: '^1.1.0',
         bluebird: '^1.0.0',
         moment: '^1.0.0',
@@ -246,18 +248,18 @@ describe('getCurrentDependencies', () => {
     })
 
     it('reject dependencies by regex', () => {
-      getCurrentDependencies(deps, { reject: /o/ }).should.eql({
+      expect(getCurrentDependencies(deps, { reject: /o/ })).toStrictEqual({
         chalk: '^1.1.0',
         bluebird: '^1.0.0',
       })
-      getCurrentDependencies(deps, { reject: '/o/' }).should.eql({
+      expect(getCurrentDependencies(deps, { reject: '/o/' })).toStrictEqual({
         chalk: '^1.1.0',
         bluebird: '^1.0.0',
       })
     })
 
     it('reject dependencies by function', () => {
-      getCurrentDependencies(deps, { reject: (s: string) => s.startsWith('m') }).should.eql({
+      expect(getCurrentDependencies(deps, { reject: (s: string) => s.startsWith('m') })).toStrictEqual({
         lodash: '^3.9.3',
         chalk: '^1.1.0',
         bluebird: '^1.0.0',
@@ -265,7 +267,7 @@ describe('getCurrentDependencies', () => {
     })
 
     it('filter and reject', () => {
-      getCurrentDependencies(deps, { filter: 'mocha chalk', reject: 'chalk' }).should.eql({
+      expect(getCurrentDependencies(deps, { filter: 'mocha chalk', reject: 'chalk' })).toStrictEqual({
         mocha: '1.2',
       })
     })
@@ -273,7 +275,7 @@ describe('getCurrentDependencies', () => {
 
   describe('rejectVersion', () => {
     it('reject dependency versions by pinned version', () => {
-      getCurrentDependencies(deps, { rejectVersion: '1.2' }).should.eql({
+      expect(getCurrentDependencies(deps, { rejectVersion: '1.2' })).toStrictEqual({
         lodash: '^3.9.3',
         moment: '^1.0.0',
         chalk: '^1.1.0',
@@ -282,7 +284,7 @@ describe('getCurrentDependencies', () => {
     })
 
     it('reject dependency versions by caret version', () => {
-      getCurrentDependencies(deps, { rejectVersion: '^1.0.0' }).should.eql({
+      expect(getCurrentDependencies(deps, { rejectVersion: '^1.0.0' })).toStrictEqual({
         mocha: '1.2',
         lodash: '^3.9.3',
         chalk: '^1.1.0',
@@ -290,29 +292,29 @@ describe('getCurrentDependencies', () => {
     })
 
     it('reject dependencies by multiple versions (comma-or-space-delimited)', () => {
-      getCurrentDependencies(deps, { rejectVersion: '^1.0.0,^1.1.0' }).should.eql({
+      expect(getCurrentDependencies(deps, { rejectVersion: '^1.0.0,^1.1.0' })).toStrictEqual({
         mocha: '1.2',
         lodash: '^3.9.3',
       })
-      getCurrentDependencies(deps, { rejectVersion: '^1.0.0 ^1.1.0' }).should.eql({
+      expect(getCurrentDependencies(deps, { rejectVersion: '^1.0.0 ^1.1.0' })).toStrictEqual({
         mocha: '1.2',
         lodash: '^3.9.3',
       })
     })
 
     it('reject dependency versions by regex', () => {
-      getCurrentDependencies(deps, { rejectVersion: '/^\\^1/' }).should.eql({
+      expect(getCurrentDependencies(deps, { rejectVersion: '/^\\^1/' })).toStrictEqual({
         mocha: '1.2',
         lodash: '^3.9.3',
       })
-      getCurrentDependencies(deps, { rejectVersion: /^\^1/ }).should.eql({
+      expect(getCurrentDependencies(deps, { rejectVersion: /^\^1/ })).toStrictEqual({
         mocha: '1.2',
         lodash: '^3.9.3',
       })
     })
 
     it('reject dependency versions by function', () => {
-      getCurrentDependencies(deps, { rejectVersion: (s: string) => s.startsWith('^3') }).should.eql({
+      expect(getCurrentDependencies(deps, { rejectVersion: (s: string) => s.startsWith('^3') })).toStrictEqual({
         mocha: '1.2',
         moment: '^1.0.0',
         chalk: '^1.1.0',

@@ -3,16 +3,15 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
+import { describe, expect, it } from 'vitest'
 import parseJson from '../../../src/lib/utils/parseJson.ts'
-import chaiSetup from '../../helpers/chaiSetup.ts'
 import removeDir from '../../helpers/removeDir.ts'
 
-chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../../../build/cli.js')
 
-describe('deno', async function () {
+describe('deno', () => {
   it('handle import map', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'deno.json')
@@ -32,7 +31,7 @@ describe('deno', async function () {
         pkgFile,
       ])
       const pkg = parseJson(stdout)
-      pkg.should.have.property('ncu-test-v2')
+      expect(pkg).toHaveProperty('ncu-test-v2')
     } finally {
       await removeDir(tempDir)
     }
@@ -52,7 +51,7 @@ describe('deno', async function () {
         cwd: tempDir,
       })
       const pkg = parseJson(stdout)
-      pkg.should.have.property('ncu-test-v2')
+      expect(pkg).toHaveProperty('ncu-test-v2')
     } finally {
       await removeDir(tempDir)
     }
@@ -71,7 +70,7 @@ describe('deno', async function () {
       await spawn('node', [bin, '-u'], undefined, { cwd: tempDir })
       const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
       const pkg = parseJson(pkgDataNew)
-      pkg.should.deep.equal({
+      expect(pkg).toStrictEqual({
         imports: {
           'ncu-test-v2': 'npm:ncu-test-v2@2.0.0',
         },
@@ -96,7 +95,7 @@ describe('deno', async function () {
         cwd: tempDir,
       })
       const pkg = parseJson(stdout)
-      pkg.should.have.property('ncu-test-v2')
+      expect(pkg).toHaveProperty('ncu-test-v2')
     } finally {
       await removeDir(tempDir)
     }
@@ -115,7 +114,7 @@ describe('deno', async function () {
       await spawn('node', [bin, '-u'], undefined, { cwd: tempDir })
       const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
       const pkg = parseJson(pkgDataNew)
-      pkg.should.deep.equal({
+      expect(pkg).toStrictEqual({
         imports: {
           'ncu-test-v2': 'npm:ncu-test-v2@2.0.0',
         },

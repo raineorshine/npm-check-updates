@@ -1,18 +1,14 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-// eslint doesn't like .to.be.false syntax
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
-import { expect } from 'chai'
 import spawn from 'spawn-please'
+import { describe, expect, it } from 'vitest'
 import exists from '../src/lib/exists.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
-chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -33,10 +29,10 @@ describe('install', () => {
 
       try {
         const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile])
-        stripAnsi(stdout).should.match(/Run (npm|yarn) install to install new versions/)
-        expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
-        expect(await exists(path.join(tempDir, 'yarn.lock'))).to.be.false
-        expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
+        expect(stripAnsi(stdout)).toMatch(/Run (npm|yarn) install to install new versions/)
+        expect(await exists(path.join(tempDir, 'package-lock.json'))).toBe(false)
+        expect(await exists(path.join(tempDir, 'yarn.lock'))).toBe(false)
+        expect(await exists(path.join(tempDir, 'node_modules'))).toBe(false)
       } finally {
         await removeDir(tempDir)
         stub.restore()
@@ -57,9 +53,9 @@ describe('install', () => {
 
       try {
         const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'always'])
-        stripAnsi(stdout).should.not.match(/Run (npm|yarn) install to install new versions/)
-        expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
-        expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
+        expect(stripAnsi(stdout)).not.toMatch(/Run (npm|yarn) install to install new versions/)
+        expect(await exists(path.join(tempDir, 'package-lock.json'))).toBe(true)
+        expect(await exists(path.join(tempDir, 'node_modules'))).toBe(true)
       } finally {
         await removeDir(tempDir)
         stub.restore()
@@ -80,10 +76,10 @@ describe('install', () => {
 
       try {
         const { stdout } = await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'never'])
-        stripAnsi(stdout).should.not.match(/Run (npm|yarn) install to install new versions/)
-        expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
-        expect(await exists(path.join(tempDir, 'yarn.lock'))).to.be.false
-        expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
+        expect(stripAnsi(stdout)).not.toMatch(/Run (npm|yarn) install to install new versions/)
+        expect(await exists(path.join(tempDir, 'package-lock.json'))).toBe(false)
+        expect(await exists(path.join(tempDir, 'yarn.lock'))).toBe(false)
+        expect(await exists(path.join(tempDir, 'node_modules'))).toBe(false)
       } finally {
         await removeDir(tempDir)
         stub.restore()
@@ -116,8 +112,8 @@ describe('install', () => {
             },
           },
         )
-        expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
-        expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
+        expect(await exists(path.join(tempDir, 'package-lock.json'))).toBe(true)
+        expect(await exists(path.join(tempDir, 'node_modules'))).toBe(true)
       } finally {
         await removeDir(tempDir)
         stub.restore()
@@ -148,8 +144,8 @@ describe('install', () => {
             },
           },
         )
-        expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
-        expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
+        expect(await exists(path.join(tempDir, 'package-lock.json'))).toBe(false)
+        expect(await exists(path.join(tempDir, 'node_modules'))).toBe(false)
       } finally {
         await removeDir(tempDir)
         stub.restore()
@@ -182,8 +178,8 @@ describe('install', () => {
             },
           },
         )
-        expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.true
-        expect(await exists(path.join(tempDir, 'node_modules'))).to.be.true
+        expect(await exists(path.join(tempDir, 'package-lock.json'))).toBe(true)
+        expect(await exists(path.join(tempDir, 'node_modules'))).toBe(true)
       } finally {
         await removeDir(tempDir)
         stub.restore()
@@ -216,8 +212,8 @@ describe('install', () => {
             },
           },
         )
-        expect(await exists(path.join(tempDir, 'package-lock.json'))).to.be.false
-        expect(await exists(path.join(tempDir, 'node_modules'))).to.be.false
+        expect(await exists(path.join(tempDir, 'package-lock.json'))).toBe(false)
+        expect(await exists(path.join(tempDir, 'node_modules'))).toBe(false)
       } finally {
         await removeDir(tempDir)
         stub.restore()

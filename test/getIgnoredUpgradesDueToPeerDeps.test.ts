@@ -1,12 +1,10 @@
+import { describe, expect, it } from 'vitest'
 import getIgnoredUpgradesDueToPeerDeps from '../src/lib/getIgnoredUpgradesDueToPeerDeps.ts'
 import { type Packument } from '../src/types/Packument.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import { silenceProgressBar } from './helpers/silenceProgressBar.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
-chaiSetup()
-
-describe('getIgnoredUpgradesDueToPeerDeps', function () {
+describe('getIgnoredUpgradesDueToPeerDeps', () => {
   it('ncu-test-peer-update', async () => {
     silenceProgressBar()
     const data = await getIgnoredUpgradesDueToPeerDeps(
@@ -25,7 +23,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
       },
       {},
     )
-    data.should.deep.equal({
+    expect(data).toStrictEqual({
       'ncu-test-return-version': {
         from: '1.0.0',
         to: '2.0.0',
@@ -130,7 +128,7 @@ describe('getIgnoredUpgradesDueToPeerDeps', function () {
         },
       },
     )
-    data.should.deep.equal({
+    expect(data).toStrictEqual({
       'eslint-plugin-unused-imports': {
         from: '3.0.0',
         reason: {

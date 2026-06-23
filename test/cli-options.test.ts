@@ -1,13 +1,11 @@
+import { describe, expect, it } from 'vitest'
 import cliOptions from '../src/cli-options.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
-
-chaiSetup()
 
 describe('cli-options', () => {
   it('require long and description properties', () => {
     for (const option of cliOptions) {
-      option.should.have.property('long')
-      option.should.have.property('description')
+      expect(option).toHaveProperty('long')
+      expect(option).toHaveProperty('description')
     }
   })
 })
