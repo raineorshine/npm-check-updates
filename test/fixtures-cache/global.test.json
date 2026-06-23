@@ -1,0 +1,10 @@
+{
+  "global > global should run": {
+    "spawnPlease": {
+      "command: npm, args: --global :: --json :: ls :: --depth=0": {
+        "stderr": "",
+        "stdout": "{\n  \"name\": \"npm-global-test\",\n  \"dependencies\": {\n    \"ncu-test-tag\": {\n      \"version\": \"1.0.0\",\n      \"overridden\": false\n    },\n    \"ncu-test-v2\": {\n      \"version\": \"1.0.0\",\n      \"overridden\": false\n    }\n  }\n}\n"
+      }
+    }
+  }
+}

@@ -106,7 +106,13 @@ async function runNcuCliInternal(args: string[] = [], options: RunCliOptions = {
     try {
       process.argv = original.argv
       Object.defineProperty(process, 'stdin', { value: original.stdin, configurable: true })
-      for (const key in options.env) process.env[key] = original.env[key]
+      for (const key in options.env) {
+        if (key in original.env) {
+          process.env[key] = original.env[key]
+        } else {
+          delete process.env[key]
+        }
+      }
     } catch (error) {
       console.warn('⚠️ Error during state restoration:', error)
     }

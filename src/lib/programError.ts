@@ -14,7 +14,9 @@ function programError(
     color?: boolean
   } = {},
 ): never {
-  if (options.cli) {
+  // we want to show the real error in the test console
+  const skipExit = process.env.NCU_TESTS && message.includes('Sandbox violation')
+  if (options.cli && !skipExit) {
     print(options, color ? chalk.red(message) : message, null, 'error')
     process.exit(1)
   } else {
