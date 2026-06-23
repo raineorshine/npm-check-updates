@@ -182,46 +182,42 @@ const findTargetAndFallback = ({
   }
   const currentInCooldown = !satisfiesCooldownPeriod(packageName, cur, time?.[cur], options.cooldown)
 
-  const result = versions.reduce(
-    (acc, versionData) => {
-      const version = versionData.version
-      if (!version) return acc
+  const result = {
+    targetVersion: cur,
+    fallbackVersion: cur,
+    targetBlockedByCooldown: currentInCooldown,
+  } as {
+    targetVersion: string
+    fallbackVersion: string
+    targetBlockedByCooldown: boolean
+  }
+  for (const versionData of versions) {
+    const version = versionData.version
+    if (!version) continue
 
-      // candidate must beat current fallback.
-      if (compare(version, acc.fallbackVersion) <= 0) return acc
+    // candidate must beat current fallback.
+    if (compare(version, result.fallbackVersion) <= 0) continue
 
-      const entry = { ...versionData, name: packageName } satisfies Partial<Packument>
-      if (!isValidVersion(entry)) return acc
+    const entry = { ...versionData, name: packageName } satisfies Partial<Packument>
+    if (!isValidVersion(entry)) continue
 
-      if (!filter?.(version)) return acc
+    if (!filter?.(version)) continue
 
-      const versionTime = time?.[version]
-      const isSatisfiesCooldown = options.cooldown
-        ? satisfiesCooldownPeriod(packageName, version, versionTime, options.cooldown)
-        : true
+    const versionTime = time?.[version]
+    const isSatisfiesCooldown = options.cooldown
+      ? satisfiesCooldownPeriod(packageName, version, versionTime, options.cooldown)
+      : true
 
-      const isNewTarget = compare(version, acc.targetVersion) > 0
-      if (isNewTarget) {
-        acc.targetVersion = version
-        acc.targetBlockedByCooldown = !isSatisfiesCooldown
-      }
+    const isNewTarget = compare(version, result.targetVersion) > 0
+    if (isNewTarget) {
+      result.targetVersion = version
+      result.targetBlockedByCooldown = !isSatisfiesCooldown
+    }
 
-      if (isSatisfiesCooldown) {
-        acc.fallbackVersion = version
-      }
-
-      return acc
-    },
-    {
-      targetVersion: cur,
-      fallbackVersion: cur,
-      targetBlockedByCooldown: currentInCooldown,
-    } as {
-      targetVersion: string
-      fallbackVersion: string
-      targetBlockedByCooldown: boolean
-    },
-  )
+    if (isSatisfiesCooldown) {
+      result.fallbackVersion = version
+    }
+  }
 
   const targetVersion: string | null = result.targetVersion
   let fallbackVersion: string | null = result.fallbackVersion
