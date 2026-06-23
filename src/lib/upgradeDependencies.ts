@@ -49,8 +49,9 @@ function upgradeDependencies(
     (deps: Index<VersionSpec>): Index<VersionSpec> =>
       pickBy(deps, (current, packageName) => packageName in latestVersions),
     // unpack npm alias and git urls
-    (deps: Index<VersionSpec>): Index<UpgradeSpec> =>
-      Object.entries(deps).reduce<Index<UpgradeSpec>>((acc, [packageName, current]) => {
+    (deps: Index<VersionSpec>): Index<UpgradeSpec> => {
+      const result: Index<UpgradeSpec> = {}
+      for (const [packageName, current] of Object.entries(deps)) {
         const latest = latestVersions[packageName]
         let currentParsed = null
         let latestParsed = null
@@ -76,9 +77,10 @@ function upgradeDependencies(
           latestParsed = versionUtil.stringify(latestSemver)
         }
 
-        acc[packageName] = { current, currentParsed, latest, latestParsed }
-        return acc
-      }, {}),
+        result[packageName] = { current, currentParsed, latest, latestParsed }
+      }
+      return result
+    },
     // pick the packages that are upgradeable
     (deps: Index<UpgradeSpec>): Index<UpgradeSpec> =>
       pickBy(deps, ({ current, currentParsed, latest, latestParsed }: UpgradeSpec, name) => {
@@ -89,23 +91,26 @@ function upgradeDependencies(
         return isUpgradeable(currentParsed || current, latestParsed || latest, { downgrade })
       }),
     // pack embedded versions: npm aliases and git urls
-    (deps: Index<UpgradeSpec>): Index<Version | null> =>
-      Object.entries(deps).reduce<Index<Version | null>>(
-        (acc, [packageName, { current, currentParsed, latest, latestParsed }]) => {
-          const upgraded = upgradeDep(currentParsed || current, latestParsed || latest)
+    (deps: Index<UpgradeSpec>): Index<Version | null> => {
+      const result: Index<Version | null> = {}
+      for (const [packageName, { current, currentParsed, latest, latestParsed }] of Object.entries(deps)) {
+        const upgraded = upgradeDep(currentParsed || current, latestParsed || latest)
 
-          acc[packageName] = versionUtil.isNpmAlias(current)
-            ? versionUtil.upgradeNpmAlias(current, upgraded)
-            : versionUtil.isGitHubUrl(current)
-              ? versionUtil.upgradeGitHubUrl(current, upgraded)
-              : upgraded
-          return acc
-        },
-        {},
-      ),
+        result[packageName] = versionUtil.isNpmAlias(current)
+          ? versionUtil.upgradeNpmAlias(current, upgraded)
+          : versionUtil.isGitHubUrl(current)
+            ? versionUtil.upgradeGitHubUrl(current, upgraded)
+            : upgraded
+      }
+      return result
+    },
   ]
 
-  return pipeline.reduce((deps, fn) => fn(deps), currentDependencies as Index<VersionSpec>)
+  let pipelineResult: any = currentDependencies as Index<VersionSpec>
+  for (const fn of pipeline) {
+    pipelineResult = fn(pipelineResult)
+  }
+  return pipelineResult
 }
 
 export default upgradeDependencies
