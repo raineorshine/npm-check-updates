@@ -17,6 +17,10 @@ const NOW = Date.now()
 const getTime = (daysAgo: number) => new Date(NOW - daysAgo * DAY).toISOString()
 
 describe('cache', () => {
+  before(async () => {
+    await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
+  })
+
   it('cache latest versions', async () => {
     const stub = stubVersions({
       'ncu-test-v2': { version: '2.0.0', time: { '2.0.0': getTime(10) } },
