@@ -38,17 +38,18 @@ function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}
 
   // get all dependencies from the selected sections
   // if a dependency appears in more than one section, take the lowest version number
-  const allDependencies = depSections.reduce((accum, depSection) => {
-    return {
-      ...accum,
-      ...(depSection === 'packageManager'
+  const allDependencies: Index<VersionSpec> = {}
+  for (const depSection of depSections) {
+    Object.assign(
+      allDependencies,
+      depSection === 'packageManager'
         ? parsePackageManager(pkgData)
         : filterObject(
             (pkgData[depSection] as Index<string>) || {},
-            (dep, spec) => !isGreaterThanSafe(spec, accum[dep]),
-          )),
-    }
-  }, {} as Index<VersionSpec>)
+            (dep, spec) => !isGreaterThanSafe(spec, allDependencies[dep]),
+          ),
+    )
+  }
 
   // filter & reject dependencies and versions
   const workspacePackageMap = keyValueBy(options.workspacePackages || [])
