@@ -1127,14 +1127,11 @@ const cliOptions: CLIOption[] = [
 ]
 
 // put cliOptions into an object for O(1) lookups
-export const cliOptionsMap = cliOptions.reduce(
-  (accum, option) => ({
-    ...accum,
-    ...(option.short ? { [option.short]: option } : null),
-    ...(option.long ? { [option.long]: option } : null),
-  }),
-  {} as Index<CLIOption>,
-)
+export const cliOptionsMap: Index<CLIOption> = {}
+for (const option of cliOptions) {
+  if (option.short) cliOptionsMap[option.short] = option
+  if (option.long) cliOptionsMap[option.long] = option
+}
 
 const cliOptionsSorted = sortBy(cliOptions, v => v.long)
 

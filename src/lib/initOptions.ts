@@ -59,13 +59,12 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     raw = { ...runOptions }
 
     // set cli defaults since they are not set by commander in this case
-    const cliDefaults = cliOptions.reduce(
-      (acc, curr) => ({
-        ...acc,
-        ...(curr.default != null ? { [curr.long]: curr.default } : null),
-      }),
-      {},
-    )
+    const cliDefaults: Record<string, unknown> = {}
+    for (const curr of cliOptions) {
+      if (curr.default != null) {
+        cliDefaults[curr.long] = curr.default
+      }
+    }
 
     // set default options that are specific to module usage
     const moduleDefaults: Options = {

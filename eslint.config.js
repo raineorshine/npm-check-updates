@@ -100,7 +100,6 @@ export default [
       // too opinionated for this codebase
       'unicorn/catch-error-name': 'off',
       'unicorn/filename-case': 'off',
-      'unicorn/no-array-reduce': 'off',
       'unicorn/no-array-sort': 'off',
       'unicorn/no-negated-condition': 'off',
       'unicorn/no-null': 'off',
