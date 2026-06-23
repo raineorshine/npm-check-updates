@@ -32,9 +32,14 @@ const installHandler = async (ctx: SpawnCtx) => {
       // Create the empty lockfile and empty node_module
       fs.mkdirSync(path.join(cwd, 'node_modules'), { recursive: true })
 
-      const lockfilePath = path.join(cwd, validLockFile)
-      if (!fs.existsSync(lockfilePath)) {
-        fs.writeFileSync(lockfilePath, '', 'utf8')
+      try {
+        const lockfilePath = path.join(cwd, validLockFile)
+        fs.writeFileSync(lockfilePath, '', { flag: 'wx', encoding: 'utf8' })
+      } catch (err: any) {
+        // ignore error if the file exist
+        if (err.code !== 'EEXIST') {
+          throw err
+        }
       }
     }
     return { stdout: `stubSpawnCommand for '${command} install' finished successfully.`, stderr: '' }

@@ -1,6 +1,6 @@
 ## Architectural Infrastructure Analysis
 
-```
+```text
 +---------------------------------------------------------------------------------+
 |                                 Vitest Worker Thread                            |
 |                                                                                 |

@@ -1,6 +1,5 @@
 import { expect } from 'chai'
 import fs from 'fs/promises'
-import os from 'os'
 import path from 'path'
 import ncu from '../src/'
 import { CACHE_DELIMITER } from '../src/lib/cache'
@@ -21,7 +20,7 @@ describe('cache', () => {
 
   beforeEach(async () => {
     const randomName = `.ncu-cache-${crypto.randomUUID().slice(0, 8)}.json`
-    cacheFile = path.join(os.tmpdir(), randomName)
+    cacheFile = path.join(sandbox.cwd, randomName)
   })
 
   afterEach(async () => {
