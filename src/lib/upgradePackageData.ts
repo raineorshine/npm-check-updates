@@ -132,12 +132,17 @@ async function upgradePackageData(
   const sectionRegExp = new RegExp(`"(${depSections.join(`|`)})"s*:[^}]*`, 'g')
   let newPkgData = pkgData.replace(sectionRegExp, section => {
     // replace each upgraded dependency in the section
-    return Object.entries(upgraded).reduce((updatedSection, [dep]) => {
+    let updatedSection = section
+    for (const [dep] of Object.entries(upgraded)) {
       // const expression = `"${dep}"\\s*:\\s*"(${escapeRegExp(current[dep])})"`
       const expression = `"${escapeRegExp(dep)}"\\s*:\\s*("|{\\s*"."\\s*:\\s*")(${escapeRegExp(current[dep])})"`
       const regExp = new RegExp(expression, 'g')
-      return updatedSection.replace(regExp, (match, child) => `"${dep}${child ? `": ${child}` : ': '}${upgraded[dep]}"`)
-    }, section)
+      updatedSection = updatedSection.replace(
+        regExp,
+        (match, child) => `"${dep}${child ? `": ${child}` : ': '}${upgraded[dep]}"`,
+      )
+    }
+    return updatedSection
   })
 
   if (depSections.includes('packageManager')) {

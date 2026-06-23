@@ -89,10 +89,10 @@ export function printSimpleJoinedString(object: any, join: string) {
 /** Prints an object sorted by key. */
 export function printSorted<T extends { [key: string]: any }>(options: Options, obj: T, loglevel: LogLevel) {
   const sortedKeys = Object.keys(obj).sort() as (keyof T)[]
-  const objSorted = sortedKeys.reduce<T>((accum, key) => {
-    accum[key] = obj[key]
-    return accum
-  }, {} as T)
+  const objSorted = {} as T
+  for (const key of sortedKeys) {
+    objSorted[key] = obj[key]
+  }
   print(options, objSorted, loglevel)
 }
 
