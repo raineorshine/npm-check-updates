@@ -2,14 +2,12 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { expect } from 'chai'
 import spawn from 'spawn-please'
 import { format as timeAgoFormat } from 'timeago.js'
-import chaiSetup from './helpers/chaiSetup.ts'
+import { describe, expect, it } from 'vitest'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
-chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -54,9 +52,9 @@ describe('format', () => {
         { cwd: tempDir },
       )
 
-      stdout.should.include('dev')
-      stdout.should.include('peer')
-      stdout.should.include('optional')
+      expect(stdout).toContain('dev')
+      expect(stdout).toContain('peer')
+      expect(stdout).toContain('optional')
     } finally {
       await removeDir(tempDir)
       stub.restore()
@@ -78,7 +76,7 @@ describe('format', () => {
       )
       try {
         const { stdout } = await spawn('node', [bin, '--format', 'diff'], {}, { cwd: tempDir })
-        stdout.should.include('https://npmdiff.dev/ncu-test-v2/1.0.0/2.0.0')
+        expect(stdout).toContain('https://npmdiff.dev/ncu-test-v2/1.0.0/2.0.0')
       } finally {
         await removeDir(tempDir)
       }
@@ -100,7 +98,7 @@ describe('format', () => {
       try {
         const { stdout } = await spawn('node', [bin, '--format', 'diff'], {}, { cwd: tempDir })
         // purposefully omit 'to' version since this is a live package
-        stdout.should.include('https://npmdiff.dev/%40types%2Fjsonlines/0.1.0/')
+        expect(stdout).toContain('https://npmdiff.dev/%40types%2Fjsonlines/0.1.0/')
       } finally {
         await removeDir(tempDir)
       }
@@ -117,7 +115,7 @@ describe('format', () => {
     }
     const { stdout } = await spawn('node', [bin, '--format', 'time', '--stdin'], { stdin: JSON.stringify(packageData) })
     const expectedString = timeAgoFormat(timestamp, 'en_US')
-    expect(stdout).contains(expectedString)
+    expect(stdout).toContain(expectedString)
   })
 
   it('--format repo', async () => {
@@ -135,7 +133,7 @@ describe('format', () => {
     try {
       await spawn('npm', ['install'], {}, { cwd: tempDir })
       const { stdout } = await spawn('node', [bin, '--format', 'repo'], {}, { cwd: tempDir })
-      stdout.should.include('https://github.com/Mitsunee/modern-diacritics')
+      expect(stdout).toContain('https://github.com/Mitsunee/modern-diacritics')
     } finally {
       await removeDir(tempDir)
     }
@@ -156,7 +154,7 @@ describe('format', () => {
     try {
       await spawn('npm', ['install'], {}, { cwd: tempDir })
       const { stdout } = await spawn('node', [bin, '--format', 'homepage'], {}, { cwd: tempDir })
-      stdout.should.include('https://github.com/npm/hosted-git-info')
+      expect(stdout).toContain('https://github.com/npm/hosted-git-info')
     } finally {
       await removeDir(tempDir)
     }
@@ -184,7 +182,7 @@ describe('format', () => {
     )
     try {
       const { stdout } = await spawn('node', [bin, '--format', 'lines'], {}, { cwd: tempDir })
-      stdout.should.equals('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
+      expect(stdout).toBe('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
     } finally {
       await removeDir(tempDir)
       stub.restore()
@@ -212,14 +210,16 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn(
-        'node',
-        [bin, '--format', 'lines', '--jsonUpgraded'],
-        {},
-        {
-          cwd: tempDir,
-        },
-      ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonUpgraded.')
+      await expect(
+        spawn(
+          'node',
+          [bin, '--format', 'lines', '--jsonUpgraded'],
+          {},
+          {
+            cwd: tempDir,
+          },
+        ),
+      ).rejects.toThrow('Cannot specify both --format lines and --jsonUpgraded.')
     } finally {
       await removeDir(tempDir)
       stub.restore()
@@ -247,14 +247,16 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn(
-        'node',
-        [bin, '--format', 'lines', '--jsonAll'],
-        {},
-        {
-          cwd: tempDir,
-        },
-      ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonAll.')
+      await expect(
+        spawn(
+          'node',
+          [bin, '--format', 'lines', '--jsonAll'],
+          {},
+          {
+            cwd: tempDir,
+          },
+        ),
+      ).rejects.toThrow('Cannot specify both --format lines and --jsonAll.')
     } finally {
       await removeDir(tempDir)
       stub.restore()
@@ -282,14 +284,16 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn(
-        'node',
-        [bin, '--format', 'lines,group'],
-        {},
-        {
-          cwd: tempDir,
-        },
-      ).should.eventually.be.rejectedWith('Cannot use --format lines with other formatting options.')
+      await expect(
+        spawn(
+          'node',
+          [bin, '--format', 'lines,group'],
+          {},
+          {
+            cwd: tempDir,
+          },
+        ),
+      ).rejects.toThrow('Cannot use --format lines with other formatting options.')
     } finally {
       await removeDir(tempDir)
       stub.restore()

@@ -1,5 +1,5 @@
 import ProgressBar from 'progress'
-import Sinon from 'sinon'
+import { afterEach, vi } from 'vitest'
 
 /**
  * Silences the ProgressBar for the current test only.
@@ -14,14 +14,14 @@ import Sinon from 'sinon'
  */
 export function silenceProgressBar() {
   const stubs = [
-    Sinon.stub(ProgressBar.prototype, 'render'),
-    Sinon.stub(ProgressBar.prototype, 'tick'),
-    Sinon.stub(ProgressBar.prototype, 'update'),
+    vi.spyOn(ProgressBar.prototype, 'render').mockImplementation(() => {}),
+    vi.spyOn(ProgressBar.prototype, 'tick').mockImplementation(() => {}),
+    vi.spyOn(ProgressBar.prototype, 'update').mockImplementation(() => {}),
   ]
 
   afterEach(() => {
     for (const s of stubs) {
-      s.restore()
+      s.mockRestore()
     }
   })
 }

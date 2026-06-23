@@ -1,11 +1,10 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { describe, expect, it } from 'vitest'
 import getAllPackages from '../src/lib/getAllPackages.ts'
 import { type Options } from '../src/types/Options.ts'
 import { type PackageInfo } from '../src/types/PackageInfo.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 
-chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /** forces path to a posix version (windows-style) */
@@ -36,28 +35,32 @@ describe('getAllPackages', () => {
   it('returns default package without cwd', async () => {
     const [pkgInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages({})
     const packagePaths: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
-    packagePaths.should.deep.equal(['package.json'])
-    // allPackageInfos[0].name.should.deep.equal(undefined)
-    workspacePackageNames.should.deep.equal([])
+    expect(packagePaths).toStrictEqual(['package.json'])
+    // expect(allPackageInfos[0].name).toBeUndefined()
+    expect(workspacePackageNames).toStrictEqual([])
   })
 
   describe('basic npm package', () => {
     it('handles tradition flat npm project ', async () => {
       const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest('test-data/basic/', {})
-      pkgs.should.deep.equal(['package.json'])
-      workspacePackages.should.deep.equal([])
+      expect(pkgs).toStrictEqual(['package.json'])
+      expect(workspacePackages).toStrictEqual([])
     })
 
     it('errors in non-workspace project with --workspaces option', async () => {
-      await getAllPackagesForTest('test-data/basic/', {
-        workspaces: true,
-      }).should.be.rejectedWith('workspaces property missing from package.json. --workspaces')
+      await expect(
+        getAllPackagesForTest('test-data/basic/', {
+          workspaces: true,
+        }),
+      ).rejects.toThrow('workspaces property missing from package.json. --workspaces')
     })
 
     it('errors in non-workspace project with --workspace=<name> option', async () => {
-      await getAllPackagesForTest('test-data/basic/', {
-        workspace: ['basic-sub-package'],
-      }).should.be.rejectedWith('workspaces property missing from package.json. --workspace')
+      await expect(
+        getAllPackagesForTest('test-data/basic/', {
+          workspace: ['basic-sub-package'],
+        }),
+      ).rejects.toThrow('workspaces property missing from package.json. --workspace')
     })
   })
 
@@ -67,8 +70,8 @@ describe('getAllPackages', () => {
         'test-data/workspace-basic/',
         {},
       )
-      pkgs.should.deep.equal(['package.json'])
-      workspacePackages.should.deep.equal([])
+      expect(pkgs).toStrictEqual(['package.json'])
+      expect(workspacePackages).toStrictEqual([])
     })
 
     it('handles simple workspace with --workspaces option', async () => {
@@ -78,8 +81,8 @@ describe('getAllPackages', () => {
       )
 
       // without --root should just return the sub-package
-      pkgs.should.deep.equal(['pkg/sub/package.json'])
-      workspacePackages.should.deep.equal(['basic-sub-package'])
+      expect(pkgs).toStrictEqual(['pkg/sub/package.json'])
+      expect(workspacePackages).toStrictEqual(['basic-sub-package'])
     })
 
     it('handles simple workspace with --workspaces and --packageFile pointing outside cwd', async () => {
@@ -91,8 +94,8 @@ describe('getAllPackages', () => {
       const packagePaths = pkgInfos.map((info: PackageInfo) =>
         asPosixPath(info.filepath).replace(asPosixPath(workspaceRoot) + '/', ''),
       )
-      packagePaths.should.deep.equal(['pkg/sub/package.json'])
-      workspacePackageNames.should.deep.equal(['basic-sub-package'])
+      expect(packagePaths).toStrictEqual(['pkg/sub/package.json'])
+      expect(workspacePackageNames).toStrictEqual(['basic-sub-package'])
     })
 
     it('handles simple workspace with --workspaces and --root option', async () => {
@@ -102,8 +105,8 @@ describe('getAllPackages', () => {
       )
 
       // with --root should return root package and the sub-package
-      pkgs.should.deep.equal(['package.json', 'pkg/sub/package.json'])
-      workspacePackages.should.deep.equal(['basic-sub-package'])
+      expect(pkgs).toStrictEqual(['package.json', 'pkg/sub/package.json'])
+      expect(workspacePackages).toStrictEqual(['basic-sub-package'])
     })
 
     it('handles simple workspace with --workspaces=false', async () => {
@@ -114,8 +117,8 @@ describe('getAllPackages', () => {
 
       // with workspaces=false should return just the root package, no sub-packages,
       // when inside a workspace project
-      pkgs.should.deep.equal(['package.json'])
-      workspacePackages.should.deep.equal([])
+      expect(pkgs).toStrictEqual(['package.json'])
+      expect(workspacePackages).toStrictEqual([])
     })
 
     describe('--workspace="<string>"', () => {
@@ -126,8 +129,8 @@ describe('getAllPackages', () => {
         )
 
         // should only return the sub-package
-        pkgs.should.deep.equal(['pkg/sub/package.json'])
-        workspacePackages.should.deep.equal(['basic-sub-package'])
+        expect(pkgs).toStrictEqual(['pkg/sub/package.json'])
+        expect(workspacePackages).toStrictEqual(['basic-sub-package'])
       })
 
       it('handles simple workspace with --workspaces and --workspace="basic-sub-package"', async () => {
@@ -136,8 +139,8 @@ describe('getAllPackages', () => {
           { workspaces: true, workspace: ['basic-sub-package'] },
         )
 
-        pkgs.should.deep.equal(['pkg/sub/package.json'])
-        workspacePackages.should.deep.equal(['basic-sub-package'])
+        expect(pkgs).toStrictEqual(['pkg/sub/package.json'])
+        expect(workspacePackages).toStrictEqual(['basic-sub-package'])
       })
 
       it('handles simple workspace with --workspaces, --workspace="basic-sub-package", and --root option', async () => {
@@ -147,8 +150,8 @@ describe('getAllPackages', () => {
         )
 
         // with --root should return root package and the sub-package
-        pkgs.should.deep.equal(['package.json', 'pkg/sub/package.json'])
-        workspacePackages.should.deep.equal(['basic-sub-package'])
+        expect(pkgs).toStrictEqual(['package.json', 'pkg/sub/package.json'])
+        expect(workspacePackages).toStrictEqual(['basic-sub-package'])
       })
 
       it('handles simple workspace with --workspaces and --workspace=<empty>', async () => {
@@ -157,8 +160,8 @@ describe('getAllPackages', () => {
           { workspaces: true, workspace: [] },
         )
 
-        pkgs.should.deep.equal(['pkg/sub/package.json'])
-        workspacePackages.should.deep.equal(['basic-sub-package'])
+        expect(pkgs).toStrictEqual(['pkg/sub/package.json'])
+        expect(workspacePackages).toStrictEqual(['basic-sub-package'])
       })
 
       it('handles simple workspace with --workspaces=false and --workspace="basic-sub-package"', async () => {
@@ -167,8 +170,8 @@ describe('getAllPackages', () => {
           { workspaces: false, workspace: ['basic-sub-package'] },
         )
 
-        pkgs.should.deep.equal(['pkg/sub/package.json'])
-        workspacePackages.should.deep.equal(['basic-sub-package'])
+        expect(pkgs).toStrictEqual(['pkg/sub/package.json'])
+        expect(workspacePackages).toStrictEqual(['basic-sub-package'])
       })
     })
   })
@@ -181,8 +184,8 @@ describe('getAllPackages', () => {
           { workspaces: true },
         )
 
-        pkgs.should.deep.equal([])
-        workspacePackages.should.deep.equal([])
+        expect(pkgs).toStrictEqual([])
+        expect(workspacePackages).toStrictEqual([])
       })
     })
 
@@ -193,8 +196,8 @@ describe('getAllPackages', () => {
           { workspaces: true },
         )
 
-        pkgs.should.deep.equal([])
-        workspacePackages.should.deep.equal([])
+        expect(pkgs).toStrictEqual([])
+        expect(workspacePackages).toStrictEqual([])
       })
     })
   })
@@ -207,8 +210,8 @@ describe('getAllPackages', () => {
       )
 
       // should only find the root package.json, not the one inside .pnpm-store
-      pkgs.should.deep.equal(['package.json'])
-      workspacePackages.should.deep.equal([])
+      expect(pkgs).toStrictEqual(['package.json'])
+      expect(workspacePackages).toStrictEqual([])
     })
   })
 
@@ -220,8 +223,8 @@ describe('getAllPackages', () => {
         { workspaces: true },
       )
 
-      pkgs.should.deep.equal(['pkg/dirname-matches-name/package.json', 'pkg/dirname-will-become-name/package.json'])
-      workspacePackages.should.deep.equal([
+      expect(pkgs).toStrictEqual(['pkg/dirname-matches-name/package.json', 'pkg/dirname-will-become-name/package.json'])
+      expect(workspacePackages).toStrictEqual([
         'dirname-matches-name',
         'dirname-will-become-name', // should use the directory name
         'dirname-does-not-match-name', // TODO: this should be returned too
@@ -242,8 +245,8 @@ describe('getAllPackages', () => {
         },
       )
 
-      pkgs.should.deep.equal(['pkg/dirname-matches-name/package.json', 'pkg/dirname-will-become-name/package.json'])
-      workspacePackages.should.deep.equal([
+      expect(pkgs).toStrictEqual(['pkg/dirname-matches-name/package.json', 'pkg/dirname-will-become-name/package.json'])
+      expect(workspacePackages).toStrictEqual([
         'dirname-matches-name',
         'dirname-will-become-name',
         'dirname-does-not-match-name', // TODO: this should be returned too

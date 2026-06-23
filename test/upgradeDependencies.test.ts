@@ -1,61 +1,63 @@
+import { describe, expect, it } from 'vitest'
 import upgradeDependencies from '../src/lib/upgradeDependencies.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
-
-chaiSetup()
 
 describe('upgradeDependencies', () => {
   it('upgrade simple, non-semver versions', () => {
-    upgradeDependencies({ foo: '1' }, { foo: '2' }).should.eql({ foo: '2' })
-    upgradeDependencies({ foo: '1.0' }, { foo: '1.1' }).should.eql({ foo: '1.1' })
-    upgradeDependencies({ 'ncu-test-simple-tag': 'v1' }, { 'ncu-test-simple-tag': 'v3' }).should.eql({
+    expect(upgradeDependencies({ foo: '1' }, { foo: '2' })).toStrictEqual({ foo: '2' })
+    expect(upgradeDependencies({ foo: '1.0' }, { foo: '1.1' })).toStrictEqual({ foo: '1.1' })
+    expect(upgradeDependencies({ 'ncu-test-simple-tag': 'v1' }, { 'ncu-test-simple-tag': 'v3' })).toStrictEqual({
       'ncu-test-simple-tag': 'v3',
     })
   })
 
   it('upgrade github dependencies', () => {
-    upgradeDependencies({ foo: 'github:foo/bar#v1' }, { foo: 'github:foo/bar#v2' }).should.eql({
+    expect(upgradeDependencies({ foo: 'github:foo/bar#v1' }, { foo: 'github:foo/bar#v2' })).toStrictEqual({
       foo: 'github:foo/bar#v2',
     })
-    upgradeDependencies({ foo: 'github:foo/bar#v1.0' }, { foo: 'github:foo/bar#v2.0' }).should.eql({
+    expect(upgradeDependencies({ foo: 'github:foo/bar#v1.0' }, { foo: 'github:foo/bar#v2.0' })).toStrictEqual({
       foo: 'github:foo/bar#v2.0',
     })
-    upgradeDependencies({ foo: 'github:foo/bar#v1.0.0' }, { foo: 'github:foo/bar#v2.0.0' }).should.eql({
+    expect(upgradeDependencies({ foo: 'github:foo/bar#v1.0.0' }, { foo: 'github:foo/bar#v2.0.0' })).toStrictEqual({
       foo: 'github:foo/bar#v2.0.0',
     })
   })
 
   it('upgrade latest versions that already satisfy the specified version', () => {
-    upgradeDependencies({ mongodb: '^1.0.0' }, { mongodb: '1.4.30' }).should.eql({
+    expect(upgradeDependencies({ mongodb: '^1.0.0' }, { mongodb: '1.4.30' })).toStrictEqual({
       mongodb: '^1.4.30',
     })
   })
 
   it('do not downgrade', () => {
-    upgradeDependencies({ mongodb: '^2.0.7' }, { mongodb: '1.4.30' }).should.eql({})
+    expect(upgradeDependencies({ mongodb: '^2.0.7' }, { mongodb: '1.4.30' })).toStrictEqual({})
   })
 
   it('allow to update to latest via @latest tag', () => {
-    upgradeDependencies({ mongodb: '^1.5.0-alpha.1' }, { mongodb: '1.4.30' }, { target: '@latest' }).should.eql({
+    expect(
+      upgradeDependencies({ mongodb: '^1.5.0-alpha.1' }, { mongodb: '1.4.30' }, { target: '@latest' }),
+    ).toStrictEqual({
       mongodb: '^1.4.30',
     })
   })
 
   it('use the preferred wildcard when converting <, closed, or mixed ranges', () => {
-    upgradeDependencies({ a: '1.*', mongodb: '<1.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '3.*' })
-    upgradeDependencies({ a: '1.x', mongodb: '<1.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '3.x' })
-    upgradeDependencies({ a: '~1', mongodb: '<1.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '~3.0' })
-    upgradeDependencies({ a: '^1', mongodb: '<1.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '^3.0' })
+    expect(upgradeDependencies({ a: '1.*', mongodb: '<1.0' }, { mongodb: '3.0.0' })).toStrictEqual({ mongodb: '3.*' })
+    expect(upgradeDependencies({ a: '1.x', mongodb: '<1.0' }, { mongodb: '3.0.0' })).toStrictEqual({ mongodb: '3.x' })
+    expect(upgradeDependencies({ a: '~1', mongodb: '<1.0' }, { mongodb: '3.0.0' })).toStrictEqual({ mongodb: '~3.0' })
+    expect(upgradeDependencies({ a: '^1', mongodb: '<1.0' }, { mongodb: '3.0.0' })).toStrictEqual({ mongodb: '^3.0' })
 
-    upgradeDependencies({ a: '1.*', mongodb: '1.0 < 2.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '3.*' })
-    upgradeDependencies({ mongodb: '1.0 < 2.*' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '3.*' })
+    expect(upgradeDependencies({ a: '1.*', mongodb: '1.0 < 2.0' }, { mongodb: '3.0.0' })).toStrictEqual({
+      mongodb: '3.*',
+    })
+    expect(upgradeDependencies({ mongodb: '1.0 < 2.*' }, { mongodb: '3.0.0' })).toStrictEqual({ mongodb: '3.*' })
   })
 
   it('convert closed ranges to caret (^) when preferred wildcard is unknown', () => {
-    upgradeDependencies({ mongodb: '1.0 < 2.0' }, { mongodb: '3.0.0' }).should.eql({ mongodb: '^3.0' })
+    expect(upgradeDependencies({ mongodb: '1.0 < 2.0' }, { mongodb: '3.0.0' })).toStrictEqual({ mongodb: '^3.0' })
   })
 
   it('ignore packages with empty values', () => {
-    upgradeDependencies({ mongodb: null }, { mongodb: '1.4.30' }).should.eql({})
-    upgradeDependencies({ mongodb: '' }, { mongodb: '1.4.30' }).should.eql({})
+    expect(upgradeDependencies({ mongodb: null }, { mongodb: '1.4.30' })).toStrictEqual({})
+    expect(upgradeDependencies({ mongodb: '' }, { mongodb: '1.4.30' })).toStrictEqual({})
   })
 })

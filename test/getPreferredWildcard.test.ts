@@ -1,7 +1,5 @@
+import { describe, expect, it } from 'vitest'
 import getPreferredWildcard from '../src/lib/getPreferredWildcard.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
-
-const should = chaiSetup()
 
 describe('getPreferredWildcard', () => {
   it('identify ^ when it is preferred', () => {
@@ -12,7 +10,7 @@ describe('getPreferredWildcard', () => {
       commander: '~2.8.1',
       lodash: '^3.2.0',
     }
-    getPreferredWildcard(deps)!.should.equal('^')
+    expect(getPreferredWildcard(deps)).toBe('^')
   })
 
   it('identify ~ when it is preferred', () => {
@@ -23,7 +21,7 @@ describe('getPreferredWildcard', () => {
       commander: '~2.8.1',
       lodash: '^3.2.0',
     }
-    getPreferredWildcard(deps)!.should.equal('~')
+    expect(getPreferredWildcard(deps)).toBe('~')
   })
 
   it('identify .x when it is preferred', () => {
@@ -34,7 +32,7 @@ describe('getPreferredWildcard', () => {
       commander: '~2.8.1',
       lodash: '3.x',
     }
-    getPreferredWildcard(deps)!.should.equal('.x')
+    expect(getPreferredWildcard(deps)).toBe('.x')
   })
 
   it('identify .* when it is preferred', () => {
@@ -45,7 +43,7 @@ describe('getPreferredWildcard', () => {
       commander: '~2.8.1',
       lodash: '3.*',
     }
-    getPreferredWildcard(deps)!.should.equal('.*')
+    expect(getPreferredWildcard(deps)).toBe('.*')
   })
 
   it('do not allow wildcards to be outnumbered by non-wildcards', () => {
@@ -54,7 +52,7 @@ describe('getPreferredWildcard', () => {
       typescript: '3.3.0',
       webpack: '4.30.0',
     }
-    getPreferredWildcard(deps)!.should.equal('^')
+    expect(getPreferredWildcard(deps)).toBe('^')
   })
 
   it('use the first wildcard if there is a tie', () => {
@@ -62,7 +60,7 @@ describe('getPreferredWildcard', () => {
       async: '0.9.x',
       commander: '2.8.*',
     }
-    getPreferredWildcard(deps)!.should.equal('.x')
+    expect(getPreferredWildcard(deps)).toBe('.x')
   })
 
   it('return null when it cannot be determined from other dependencies', () => {
@@ -71,7 +69,7 @@ describe('getPreferredWildcard', () => {
       commander: '2.8.1',
       lodash: '3.2.0',
     }
-    should.equal(getPreferredWildcard(deps), null)
-    should.equal(getPreferredWildcard({}), null)
+    expect(getPreferredWildcard(deps)).toBeNull()
+    expect(getPreferredWildcard({})).toBeNull()
   })
 })

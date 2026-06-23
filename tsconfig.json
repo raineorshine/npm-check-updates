@@ -7,7 +7,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "types": ["node", "mocha"],
+    "types": ["node"],
     "noEmit": true,
     "allowJs": true,
     "esModuleInterop": true,

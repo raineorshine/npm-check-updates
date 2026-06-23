@@ -1,19 +1,17 @@
+import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
 import { type FilterFunction } from '../src/types/FilterFunction.ts'
 import { type Index } from '../src/types/IndexType.ts'
 import { type TargetFunction } from '../src/types/TargetFunction.ts'
 import { type Version } from '../src/types/Version.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import stubVersions from './helpers/stubVersions.ts'
-
-chaiSetup()
 
 // TODO: Mock based on real output of viewMany
 describe('target', () => {
   describe('minor', () => {
     it('do not update major versions with --target minor', async () => {
       const pkgData = await ncu({ target: 'minor', packageData: { dependencies: { chalk: '3.0.0' } } })
-      pkgData!.should.not.have.property('chalk')
+      expect(pkgData).not.toHaveProperty('chalk')
     })
 
     it('update minor versions with --target minor', async () => {
@@ -21,8 +19,8 @@ describe('target', () => {
         target: 'minor',
         packageData: { dependencies: { chalk: '2.3.0' } },
       })) as Index<Version>
-      pkgData!.should.have.property('chalk')
-      pkgData.chalk.should.equal('2.4.2')
+      expect(pkgData).toHaveProperty('chalk')
+      expect(pkgData.chalk).toBe('2.4.2')
     })
 
     it('update patch versions with --target minor', async () => {
@@ -30,20 +28,20 @@ describe('target', () => {
         target: 'minor',
         packageData: { dependencies: { chalk: '2.4.0' } },
       })) as Index<Version>
-      pkgData!.should.have.property('chalk')
-      pkgData.chalk.should.equal('2.4.2')
+      expect(pkgData).toHaveProperty('chalk')
+      expect(pkgData.chalk).toBe('2.4.2')
     })
   })
 
   describe('patch', () => {
     it('do not update major versions with --target patch', async () => {
       const pkgData = await ncu({ target: 'patch', packageData: { dependencies: { chalk: '3.0.0' } } })
-      pkgData!.should.not.have.property('chalk')
+      expect(pkgData).not.toHaveProperty('chalk')
     })
 
     it('do not update minor versions with --target patch', async () => {
       const pkgData = await ncu({ target: 'patch', packageData: { dependencies: { chalk: '2.3.2' } } })
-      pkgData!.should.not.have.property('chalk')
+      expect(pkgData).not.toHaveProperty('chalk')
     })
 
     it('update patch versions with --target patch', async () => {
@@ -51,13 +49,13 @@ describe('target', () => {
         target: 'patch',
         packageData: { dependencies: { chalk: '2.4.1' } },
       })) as Index<Version>
-      pkgData!.should.have.property('chalk')
-      pkgData.chalk.should.equal('2.4.2')
+      expect(pkgData).toHaveProperty('chalk')
+      expect(pkgData.chalk).toBe('2.4.2')
     })
 
     it('skip non-semver versions with --target patch', async () => {
       const pkgData = await ncu({ target: 'patch', packageData: { dependencies: { test: 'github:a/b' } } })
-      pkgData!.should.not.have.property('test')
+      expect(pkgData).not.toHaveProperty('test')
     })
   })
 
@@ -72,7 +70,7 @@ describe('target', () => {
         },
         target: 'newest',
       })
-      data!.should.eql({
+      expect(data).toStrictEqual({
         dependencies: {
           'ncu-mock-pre': '2.0.0-alpha.0',
         },
@@ -90,7 +88,7 @@ describe('target', () => {
         target: 'newest',
         pre: false,
       })
-      data!.should.eql({
+      expect(data).toStrictEqual({
         dependencies: {
           'ncu-mock-pre': '1.0.0',
         },
@@ -150,7 +148,7 @@ describe('target', () => {
         },
         target: 'greatest',
       })
-      data!.should.eql({
+      expect(data).toStrictEqual({
         dependencies: {
           'ncu-mock-pre': '2.0.0-alpha.0',
         },
@@ -171,7 +169,7 @@ describe('target', () => {
           target: 'semver',
         })
 
-        data!.should.eql({
+        expect(data).toStrictEqual({
           dependencies: {
             'ncu-test-semver': '^1.2.0',
           },
@@ -189,7 +187,7 @@ describe('target', () => {
           target: 'semver',
         })
 
-        data!.should.eql({
+        expect(data).toStrictEqual({
           dependencies: {
             'ncu-test-pre1': '^0.1.2',
           },
@@ -209,7 +207,7 @@ describe('target', () => {
           target: 'semver',
         })
 
-        data!.should.eql({
+        expect(data).toStrictEqual({
           dependencies: {
             'ncu-test-alpha': '^1.0.0-alpha.2',
           },
@@ -229,7 +227,7 @@ describe('target', () => {
           target: 'semver',
         })
 
-        data!.should.eql({
+        expect(data).toStrictEqual({
           dependencies: {
             'ncu-test-semver': '~1.0.1',
           },
@@ -247,7 +245,7 @@ describe('target', () => {
           target: 'semver',
         })
 
-        data!.should.eql({
+        expect(data).toStrictEqual({
           dependencies: {
             'ncu-test-pre1': '~0.1.2',
           },
@@ -267,7 +265,7 @@ describe('target', () => {
           target: 'semver',
         })
 
-        data!.should.eql({
+        expect(data).toStrictEqual({
           dependencies: {
             'ncu-test-semver': '1.0.0',
           },
@@ -287,7 +285,7 @@ describe('target', () => {
           target: 'semver',
         })
 
-        data!.should.eql({
+        expect(data).toStrictEqual({
           dependencies: {
             'ncu-test-semver': '1.0.0 - 1.3.0',
           },
@@ -305,7 +303,7 @@ describe('target', () => {
           target: 'semver',
         })
 
-        data!.should.eql({
+        expect(data).toStrictEqual({
           dependencies: {
             'ncu-test-semver': '>1',
           },
@@ -323,7 +321,7 @@ describe('target', () => {
           target: 'semver',
         })
 
-        data!.should.eql({
+        expect(data).toStrictEqual({
           dependencies: {
             'ncu-test-semver': '>=1',
           },
@@ -341,7 +339,7 @@ describe('target', () => {
           target: 'semver',
         })
 
-        data!.should.eql({
+        expect(data).toStrictEqual({
           dependencies: {
             'ncu-test-semver': '<2',
           },
@@ -359,7 +357,7 @@ describe('target', () => {
           target: 'semver',
         })
 
-        data!.should.eql({
+        expect(data).toStrictEqual({
           dependencies: {
             'ncu-test-semver': '<=2',
           },
@@ -377,7 +375,7 @@ describe('target', () => {
           target: 'semver',
         })
 
-        data!.should.eql({
+        expect(data).toStrictEqual({
           dependencies: {
             'ncu-test-semver': '1 || 2',
           },
@@ -402,14 +400,14 @@ describe('target', () => {
           },
         },
       })) as Index<Version>
-      pkgData!.should.have.property('eslint-plugin-jsdoc')
-      pkgData['eslint-plugin-jsdoc'].should.equal('~36.1.1')
-      pkgData!.should.have.property('jsonlines')
-      pkgData.jsonlines.should.equal('0.1.1')
-      pkgData!.should.have.property('juggernaut')
-      pkgData.juggernaut.should.equal('2.1.1')
-      pkgData!.should.have.property('mocha')
-      pkgData.mocha.should.equal('^8.4.0')
+      expect(pkgData).toHaveProperty('eslint-plugin-jsdoc')
+      expect(pkgData['eslint-plugin-jsdoc']).toBe('~36.1.1')
+      expect(pkgData).toHaveProperty('jsonlines')
+      expect(pkgData.jsonlines).toBe('0.1.1')
+      expect(pkgData).toHaveProperty('juggernaut')
+      expect(pkgData.juggernaut).toBe('2.1.1')
+      expect(pkgData).toHaveProperty('mocha')
+      expect(pkgData.mocha).toBe('^8.4.0')
     })
 
     it('custom target and filter function to mimic semver', async () => {
@@ -431,12 +429,12 @@ describe('target', () => {
           },
         },
       })) as Index<Version>
-      pkgData!.should.have.property('eslint-plugin-jsdoc')
-      pkgData['eslint-plugin-jsdoc'].should.equal('~36.1.1')
-      pkgData!.should.not.have.property('jsonlines')
-      pkgData!.should.not.have.property('juggernaut')
-      pkgData!.should.have.property('mocha')
-      pkgData.mocha.should.equal('^8.4.0')
+      expect(pkgData).toHaveProperty('eslint-plugin-jsdoc')
+      expect(pkgData['eslint-plugin-jsdoc']).toBe('~36.1.1')
+      expect(pkgData).not.toHaveProperty('jsonlines')
+      expect(pkgData).not.toHaveProperty('juggernaut')
+      expect(pkgData).toHaveProperty('mocha')
+      expect(pkgData.mocha).toBe('^8.4.0')
     })
   })
 }) // end 'target'
@@ -452,7 +450,7 @@ describe('tags', () => {
       },
     })) as Index<Version>
 
-    upgraded['ncu-test-tag'].should.equal('1.0.0-1')
+    expect(upgraded['ncu-test-tag']).toBe('1.0.0-1')
   })
 
   it('upgrade prerelease version without preid to nonprerelease', async () => {
@@ -465,7 +463,7 @@ describe('tags', () => {
       },
     })) as Index<Version>
 
-    upgraded['ncu-test-tag'].should.equal('1.1.0')
+    expect(upgraded['ncu-test-tag']).toBe('1.1.0')
   })
 
   it('upgrade prerelease version with preid to higher version on a specific tag', async () => {
@@ -478,7 +476,7 @@ describe('tags', () => {
       },
     })) as Index<Version>
 
-    upgraded['ncu-test-tag'].should.equal('1.0.1-beta.0')
+    expect(upgraded['ncu-test-tag']).toBe('1.0.1-beta.0')
   })
 
   // can't detect which prerelease is higher, so just allow switching
@@ -492,7 +490,7 @@ describe('tags', () => {
       },
     })) as Index<Version>
 
-    upgraded['ncu-test-tag'].should.equal('1.0.0-task-42.0')
+    expect(upgraded['ncu-test-tag']).toBe('1.0.0-task-42.0')
   })
 
   // need to test reverse order too, because by base semver logic preid are sorted alphabetically
@@ -506,7 +504,7 @@ describe('tags', () => {
       },
     })) as Index<Version>
 
-    upgraded['ncu-test-tag'].should.equal('1.0.0-1')
+    expect(upgraded['ncu-test-tag']).toBe('1.0.0-1')
   })
 
   // comparing semver between different dist-tags is incorrect, both versions could be released from the same latest
@@ -521,7 +519,7 @@ describe('tags', () => {
       },
     })) as Index<Version>
 
-    upgraded['ncu-test-tag'].should.equal('1.0.0-task-42.0')
+    expect(upgraded['ncu-test-tag']).toBe('1.0.0-task-42.0')
   })
 
   // same as previous, doesn't matter if it's patch, minor or major, comparing different dist-tags is incorrect
@@ -535,7 +533,7 @@ describe('tags', () => {
       },
     })) as Index<Version>
 
-    upgraded['ncu-test-tag'].should.equal('1.0.0-1')
+    expect(upgraded['ncu-test-tag']).toBe('1.0.0-1')
   })
 
   it('do not downgrade nonprerelease version to lower version with specific tag', async () => {
@@ -550,7 +548,7 @@ describe('tags', () => {
       },
     })
 
-    upgraded!.should.not.have.property('ncu-test-tag')
+    expect(upgraded).not.toHaveProperty('ncu-test-tag')
 
     stub.restore()
   })
@@ -566,7 +564,7 @@ describe('tags', () => {
       },
     })
 
-    upgraded!.should.not.have.property('ncu-test-tag')
+    expect(upgraded).not.toHaveProperty('ncu-test-tag')
 
     stub.restore()
   })
@@ -583,7 +581,7 @@ describe('tags', () => {
       },
     })
 
-    upgraded!.should.not.have.property('ncu-test-tag')
+    expect(upgraded).not.toHaveProperty('ncu-test-tag')
 
     stub.restore()
   })
@@ -600,7 +598,7 @@ describe('tags', () => {
       },
     })) as Index<Version>
 
-    upgraded['ncu-test-tag'].should.equal('^1.1.0')
+    expect(upgraded['ncu-test-tag']).toBe('^1.1.0')
 
     stub.restore()
   })
@@ -617,7 +615,7 @@ describe('tags', () => {
       },
     })) as Index<Version>
 
-    upgraded['ncu-test-tag'].should.equal('^1.1.0')
+    expect(upgraded['ncu-test-tag']).toBe('^1.1.0')
 
     stub.restore()
   })

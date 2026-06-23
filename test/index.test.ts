@@ -2,22 +2,21 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
-chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-describe('run', function () {
+describe('run', () => {
   it('return jsonUpgraded by default', async () => {
     const stub = stubVersions('99.9.9')
 
     const output = await ncu({
       packageData: await fs.readFile(path.join(__dirname, 'test-data/ncu/package.json'), 'utf-8'),
     })
-    output!.should.deep.equal({
+    expect(output).toStrictEqual({
       express: '^99.9.9',
     })
 
@@ -34,7 +33,7 @@ describe('run', function () {
         },
       },
     })
-    output!.should.have.property('MOCK_PACKAGE')
+    expect(output).toHaveProperty('MOCK_PACKAGE')
 
     stub.restore()
   })
@@ -48,7 +47,7 @@ describe('run', function () {
       minimal: true,
     })
 
-    upgraded!.should.not.have.property('MOCK_PACKAGE')
+    expect(upgraded).not.toHaveProperty('MOCK_PACKAGE')
 
     stub.restore()
   })
@@ -65,11 +64,11 @@ describe('run', function () {
         jsonUpgraded: true,
         upgrade: true,
       })
-      result!.should.have.property('express')
+      expect(result).toHaveProperty('express')
 
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-      upgradedPkg.should.have.property('dependencies')
-      upgradedPkg.dependencies.should.have.property('express')
+      expect(upgradedPkg).toHaveProperty('dependencies')
+      expect(upgradedPkg.dependencies).toHaveProperty('express')
     } finally {
       await removeDir(tempDir)
       stub.restore()
@@ -85,7 +84,7 @@ describe('run', function () {
         },
       },
     })
-    data!.should.eql({
+    expect(data).toStrictEqual({
       dependencies: {
         'ncu-mock-pre': '1.0.0',
       },
@@ -100,7 +99,7 @@ describe('run', function () {
         },
       },
     })
-    data!.should.eql({
+    expect(data).toStrictEqual({
       'ncu-test-alpha-latest': '1.0.0-alpha.2',
     })
   })
@@ -114,7 +113,7 @@ describe('run', function () {
         },
       },
     })
-    data!.should.eql({})
+    expect(data).toStrictEqual({})
   })
 
   it('include -alpha, -beta, -rc with --pre option', async () => {
@@ -127,7 +126,7 @@ describe('run', function () {
       },
       pre: true,
     })
-    data!.should.eql({
+    expect(data).toStrictEqual({
       dependencies: {
         'ncu-mock-pre': '2.0.0-alpha.0',
       },
@@ -143,7 +142,7 @@ describe('run', function () {
           },
         },
       })
-      upgrades!.should.deep.equal({
+      expect(upgrades).toStrictEqual({
         'ncu-test-deprecated': '2.0.0',
       })
     })
@@ -157,7 +156,7 @@ describe('run', function () {
           },
         },
       })
-      upgrades!.should.deep.equal({
+      expect(upgrades).toStrictEqual({
         'ncu-test-deprecated': '2.0.0',
       })
     })
@@ -171,7 +170,7 @@ describe('run', function () {
           },
         },
       })
-      upgrades!.should.deep.equal({})
+      expect(upgrades).toStrictEqual({})
     })
   })
 
@@ -183,7 +182,7 @@ describe('run', function () {
         },
       },
     })
-    upgrades!.should.deep.equal({})
+    expect(upgrades).toStrictEqual({})
   })
 
   it('update devDependency when duplicate dependency is up-to-date', async () => {
@@ -198,7 +197,7 @@ describe('run', function () {
         },
       },
     })
-    upgrades!.should.deep.equal({
+    expect(upgrades).toStrictEqual({
       'ncu-test-v2': '^2.0.0',
     })
     stub.restore()
@@ -216,7 +215,7 @@ describe('run', function () {
         },
       },
     })
-    upgrades!.should.deep.equal({
+    expect(upgrades).toStrictEqual({
       'ncu-test-v2': '^2.0.0',
     })
     stub.restore()
@@ -234,7 +233,7 @@ describe('run', function () {
         },
       },
     })
-    upgrades!.should.haveOwnProperty('grunt-contrib-requirejs')
+    expect(upgrades).toHaveProperty('grunt-contrib-requirejs')
   })
 
   it('ignore file: and link: protocols', async () => {
@@ -246,7 +245,7 @@ describe('run', function () {
         },
       },
     })
-    output!.should.deep.equal({})
+    expect(output).toStrictEqual({})
   })
 
   describe('overrides', () => {
@@ -275,7 +274,7 @@ describe('run', function () {
         await ncu({ packageFile, upgrade: true })
 
         const upgradedPkg = JSON.parse(await fs.readFile(packageFile, 'utf-8'))
-        upgradedPkg.should.deep.equal({
+        expect(upgradedPkg).toStrictEqual({
           dependencies: {
             'ncu-test-v2': '^99.9.9',
           },
@@ -358,7 +357,7 @@ describe('run', function () {
 
         const pkgDataNew = await fs.readFile(packageFile, 'utf-8')
         const upgradedPkg = JSON.parse(pkgDataNew)
-        upgradedPkg.should.deep.equal({
+        expect(upgradedPkg).toStrictEqual({
           dependencies: {
             'ncu-test-v2': '^99.9.9',
           },
@@ -403,7 +402,7 @@ describe('run', function () {
 
         const pkgDataNew = await fs.readFile(packageFile, 'utf-8')
         const upgradedPkg = JSON.parse(pkgDataNew)
-        upgradedPkg.should.deep.equal({
+        expect(upgradedPkg).toStrictEqual({
           dependencies: {
             'ncu-test-v2': '^99.9.9',
           },
@@ -449,7 +448,7 @@ describe('run', function () {
 
         const pkgDataNew = await fs.readFile(packageFile, 'utf-8')
         const upgradedPkg = JSON.parse(pkgDataNew)
-        upgradedPkg.should.deep.equal({
+        expect(upgradedPkg).toStrictEqual({
           dependencies: {
             'ncu-test-v2': '^99.9.9',
           },
@@ -481,7 +480,7 @@ describe('run', function () {
       // the parent's package.json and upgrade it without throwing:
       // TypeError [ERR_INVALID_ARG_TYPE]: The "paths[0]" argument must be of type string. Received undefined
       const result = await ncu({ cwd: subDir, upgrade: true })
-      result!.should.have.property('express')
+      expect(result).toHaveProperty('express')
     } finally {
       await removeDir(tempDir)
       stub.restore()
