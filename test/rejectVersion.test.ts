@@ -1,8 +1,6 @@
+import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import stubVersions from './helpers/stubVersions.ts'
-
-chaiSetup()
 
 describe('rejectVersion', () => {
   it('reject by package version with string', async () => {
@@ -23,8 +21,8 @@ describe('rejectVersion', () => {
       rejectVersion: '1.0.0',
     })
 
-    upgraded!.should.not.have.property('ncu-test-v2')
-    upgraded!.should.have.property('ncu-test-return-version')
+    expect(upgraded).not.toHaveProperty('ncu-test-v2')
+    expect(upgraded).toHaveProperty('ncu-test-return-version')
 
     stub.restore()
   })
@@ -49,9 +47,9 @@ describe('rejectVersion', () => {
       rejectVersion: '1.0.0 0.1.0',
     })
 
-    upgraded!.should.not.have.property('ncu-test-v2')
-    upgraded!.should.have.property('ncu-test-return-version')
-    upgraded!.should.not.have.property('fp-and-or')
+    expect(upgraded).not.toHaveProperty('ncu-test-v2')
+    expect(upgraded).toHaveProperty('ncu-test-return-version')
+    expect(upgraded).not.toHaveProperty('fp-and-or')
 
     stub.restore()
   })
@@ -76,9 +74,9 @@ describe('rejectVersion', () => {
       rejectVersion: '1.0.0,0.1.0',
     })
 
-    upgraded!.should.not.have.property('ncu-test-v2')
-    upgraded!.should.have.property('ncu-test-return-version')
-    upgraded!.should.not.have.property('fp-and-or')
+    expect(upgraded).not.toHaveProperty('ncu-test-v2')
+    expect(upgraded).toHaveProperty('ncu-test-return-version')
+    expect(upgraded).not.toHaveProperty('fp-and-or')
 
     stub.restore()
   })
@@ -103,9 +101,9 @@ describe('rejectVersion', () => {
       rejectVersion: /^1/,
     })
 
-    upgraded!.should.not.have.property('ncu-test-v2')
-    upgraded!.should.not.have.property('ncu-test-return-version')
-    upgraded!.should.have.property('fp-and-or')
+    expect(upgraded).not.toHaveProperty('ncu-test-v2')
+    expect(upgraded).not.toHaveProperty('ncu-test-return-version')
+    expect(upgraded).toHaveProperty('fp-and-or')
 
     stub.restore()
   })
@@ -130,9 +128,9 @@ describe('rejectVersion', () => {
       rejectVersion: '/^1/',
     })
 
-    upgraded!.should.not.have.property('ncu-test-v2')
-    upgraded!.should.not.have.property('ncu-test-return-version')
-    upgraded!.should.have.property('fp-and-or')
+    expect(upgraded).not.toHaveProperty('ncu-test-v2')
+    expect(upgraded).not.toHaveProperty('ncu-test-return-version')
+    expect(upgraded).toHaveProperty('fp-and-or')
 
     stub.restore()
   })

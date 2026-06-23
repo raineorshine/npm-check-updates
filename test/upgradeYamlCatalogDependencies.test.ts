@@ -1,7 +1,5 @@
+import { describe, expect, it } from 'vitest'
 import { updateYamlCatalogDependencies } from '../src/lib/upgradeYamlCatalogDependencies.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
-
-const should = chaiSetup()
 
 describe('updateYamlCatalogDependencies', () => {
   it('updates a catalog dependency while preserving quotes', () => {
@@ -16,8 +14,8 @@ catalog:
       upgrade: { path: ['catalog', 'react'], newValue: '19.0.0' },
     })
 
-    should.exist(updated)
-    updated!.should.equal(`nodeLinker: node-modules
+    expect(updated).toBeDefined()
+    expect(updated).toBe(`nodeLinker: node-modules
 
 catalog:
   react: '19.0.0'
@@ -37,8 +35,8 @@ catalogs:
       upgrade: { path: ['catalogs', 'react17', 'react'], newValue: '19.0.0' },
     })
 
-    should.exist(updated)
-    updated!.should.equal(`nodeLinker: node-modules
+    expect(updated).toBeDefined()
+    expect(updated).toBe(`nodeLinker: node-modules
 
 catalogs:
   react17:
@@ -56,8 +54,8 @@ catalogs:
       upgrade: { path: ['catalog', 'react'], newValue: '19.0.0' },
     })
 
-    should.exist(updated)
-    updated!.should.equal(yaml)
+    expect(updated).toBeDefined()
+    expect(updated).toBe(yaml)
   })
 
   it('returns null when the dependency is not present in the target catalog', () => {
@@ -71,7 +69,7 @@ catalogs:
       upgrade: { path: ['catalogs', 'react17', 'react'], newValue: '19.0.0' },
     })
 
-    should.equal(updated, null)
+    expect(updated).toBeNull()
   })
 
   it('returns null when the dependency value is an alias', () => {
@@ -87,7 +85,7 @@ catalog:
       upgrade: { path: ['catalog', 'react'], newValue: '19.0.0' },
     })
 
-    should.equal(updated, null)
+    expect(updated).toBeNull()
   })
 
   it('preserves inline comments and spacing', () => {
@@ -101,8 +99,8 @@ catalog:
       upgrade: { path: ['catalog', 'react'], newValue: '19.0.0' },
     })
 
-    should.exist(updated)
-    updated!.should.equal(`catalog:
+    expect(updated).toBeDefined()
+    expect(updated).toBe(`catalog:
   react:    19.0.0 # keep this
   react-dom: 18.3.1
 `)
@@ -113,10 +111,11 @@ catalog:
   react: [18.3.1
 `
 
-    ;(() =>
+    expect(() =>
       updateYamlCatalogDependencies({
         fileContent: yaml,
         upgrade: { path: ['catalog', 'react'], newValue: '19.0.0' },
-      })).should.throw('Invalid YAML syntax')
+      }),
+    ).toThrow('Invalid YAML syntax')
   })
 })

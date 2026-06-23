@@ -3,10 +3,9 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { describe, expect, it } from 'vitest'
 import * as yarn from '../../../src/package-managers/yarn.ts'
-import chaiSetup from '../../helpers/chaiSetup.ts'
 
-const should = chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const isWindows = process.platform === 'win32'
@@ -43,54 +42,54 @@ const hasSystemYarn = (() => {
 })()
 const itWithSystemYarn = hasSystemYarn ? it : it.skip
 
-describe('yarn', function () {
+describe('yarn', () => {
   it('list', async () => {
     const testDir = path.join(__dirname, 'default')
     const { version } = await yarn.latest('chalk', '', { cwd: testDir })
-    parseInt(version!, 10).should.be.above(3)
+    expect(parseInt(version!, 10)).toBeGreaterThan(3)
   })
 
   it('latest', async () => {
     const testDir = path.join(__dirname, 'default')
     const { version } = await yarn.latest('chalk', '', { cwd: testDir })
-    parseInt(version!, 10).should.be.above(3)
+    expect(parseInt(version!, 10)).toBeGreaterThan(3)
   })
 
   it('greatest', async () => {
     const { version } = await yarn.greatest('ncu-test-greatest-not-newest', '', { pre: true, cwd: __dirname })
-    version!.should.equal('2.0.0-beta')
+    expect(version).toBe('2.0.0-beta')
   })
 
   it('avoids deprecated', async () => {
     const testDir = path.join(__dirname, 'default')
     const { version } = await yarn.minor('popper.js', '1.15.0', { cwd: testDir, pre: true })
-    version!.should.equal('1.16.1-lts')
+    expect(version).toBe('1.16.1-lts')
   })
 
   it('"No lockfile" error should be thrown on list command when there is no lockfile', async () => {
     const testDir = path.join(__dirname, 'nolockfile')
     const lockFileErrorMessage = 'No lockfile in this directory. Run `yarn install` to generate one.'
-    await yarn.list({ cwd: testDir }, localYarnSpawnOptions).should.eventually.be.rejectedWith(lockFileErrorMessage)
+    await expect(yarn.list({ cwd: testDir }, localYarnSpawnOptions)).rejects.toThrow(lockFileErrorMessage)
   })
 
   itWithSystemYarn('getPeerDependencies v1', async () => {
     const testDir = path.join(__dirname, 'default')
     const spawnOptions = { cwd: testDir, env: cleanEnv }
-    await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})
-    await yarn.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions).should.eventually.deep.equal({
+    await expect(yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions)).resolves.toStrictEqual({})
+    await expect(yarn.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions)).resolves.toStrictEqual({
       'ncu-test-return-version': '1.x',
     })
-    await yarn.getPeerDependencies('fffffffffffff', '1.0.0', spawnOptions).should.eventually.deep.equal({})
+    await expect(yarn.getPeerDependencies('fffffffffffff', '1.0.0', spawnOptions)).resolves.toStrictEqual({})
   })
 
   itWithSystemYarn('getPeerDependencies v4', async () => {
     const testDir = path.join(__dirname, 'v4')
     const spawnOptions = { cwd: testDir, env: cleanEnv }
-    await yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})
-    await yarn.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions).should.eventually.deep.equal({
+    await expect(yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions)).resolves.toStrictEqual({})
+    await expect(yarn.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions)).resolves.toStrictEqual({
       'ncu-test-return-version': '1.x',
     })
-    await yarn.getPeerDependencies('fffffffffffff', '1.0.0', spawnOptions).should.eventually.deep.equal({})
+    await expect(yarn.getPeerDependencies('fffffffffffff', '1.0.0', spawnOptions)).resolves.toStrictEqual({})
   })
 
   describe('npmAuthTokenKeyValue', () => {
@@ -101,7 +100,7 @@ describe('yarn', function () {
         npmRegistryServer: 'https://npm.fontawesome.com/',
       })
 
-      authToken!.should.deep.equal({
+      expect(authToken).toStrictEqual({
         '//npm.fontawesome.com/:_authToken': 'MY-AUTH-TOKEN',
       })
     })
@@ -113,7 +112,7 @@ describe('yarn', function () {
         npmRegistryServer: 'https://npm.fontawesome.com',
       })
 
-      authToken!.should.deep.equal({
+      expect(authToken).toStrictEqual({
         '//npm.fontawesome.com/:_authToken': 'MY-AUTH-TOKEN',
       })
     })
@@ -125,7 +124,7 @@ describe('yarn', function () {
         npmRegistryServer: 'https://npm.fontawesome.com/',
       })
 
-      should.equal(authToken, null)
+      expect(authToken).toBeNull()
     })
 
     it('returns null when no registry server', () => {
@@ -135,7 +134,7 @@ describe('yarn', function () {
         // undefined: npmRegistryServer: 'https://npm.fontawesome.com/',
       })
 
-      should.equal(authToken, null)
+      expect(authToken).toBeNull()
     })
   })
 
@@ -165,8 +164,8 @@ describe('yarn', function () {
         readdirMock,
       )
 
-      should.exist(yarnrcPath)
-      yarnrcPath!.should.equal(isWindows ? 'C:\\home\\test-repo\\.yarnrc.yml' : '/home/test-repo/.yarnrc.yml')
+      expect(yarnrcPath).toBeDefined()
+      expect(yarnrcPath).toBe(isWindows ? 'C:\\home\\test-repo\\.yarnrc.yml' : '/home/test-repo/.yarnrc.yml')
     })
   })
 
@@ -186,9 +185,9 @@ describe('yarn', function () {
       const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: 1440\n')
       try {
         const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        should.exist(result)
-        result!.npmMinimalAgeGate.should.equal(1440)
-        result!.npmPreapprovedPackages.should.deep.equal([])
+        expect(result).toBeDefined()
+        expect(result!.npmMinimalAgeGate).toBe(1440)
+        expect(result!.npmPreapprovedPackages).toStrictEqual([])
       } finally {
         await cleanup()
       }
@@ -198,10 +197,10 @@ describe('yarn', function () {
       const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: "3d"\n')
       try {
         const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        should.exist(result)
+        expect(result).toBeDefined()
         // "3d" → 3 days → 3 * 1440 = 4320 minutes
-        result!.npmMinimalAgeGate.should.equal(3 * 1440)
-        result!.npmPreapprovedPackages.should.deep.equal([])
+        expect(result!.npmMinimalAgeGate).toBe(3 * 1440)
+        expect(result!.npmPreapprovedPackages).toStrictEqual([])
       } finally {
         await cleanup()
       }
@@ -211,10 +210,10 @@ describe('yarn', function () {
       const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: "12h"\n')
       try {
         const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        should.exist(result)
+        expect(result).toBeDefined()
         // "12h" → 12/24 days → 0.5 * 1440 = 720 minutes
-        result!.npmMinimalAgeGate.should.equal(720)
-        result!.npmPreapprovedPackages.should.deep.equal([])
+        expect(result!.npmMinimalAgeGate).toBe(720)
+        expect(result!.npmPreapprovedPackages).toStrictEqual([])
       } finally {
         await cleanup()
       }
@@ -224,7 +223,7 @@ describe('yarn', function () {
       const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: "invalid"\n')
       try {
         const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        should.not.exist(result)
+        expect(result).toBeNull()
       } finally {
         await cleanup()
       }
@@ -236,10 +235,10 @@ describe('yarn', function () {
       )
       try {
         const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        should.exist(result)
+        expect(result).toBeDefined()
         // "7d" → 7 * 1440 = 10080 minutes
-        result!.npmMinimalAgeGate.should.equal(7 * 1440)
-        result!.npmPreapprovedPackages.should.deep.equal(['@my-org/*'])
+        expect(result!.npmMinimalAgeGate).toBe(7 * 1440)
+        expect(result!.npmPreapprovedPackages).toStrictEqual(['@my-org/*'])
       } finally {
         await cleanup()
       }
