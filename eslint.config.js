@@ -100,7 +100,6 @@ export default [
   {
     rules: {
       // too opinionated for this codebase
-      'unicorn/no-array-reduce': 'off',
       'unicorn/no-array-sort': 'off',
       'unicorn/no-negated-condition': 'off',
       'unicorn/no-process-exit': 'off',

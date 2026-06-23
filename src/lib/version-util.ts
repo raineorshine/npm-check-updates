@@ -54,7 +54,7 @@ export function numParts(version: string) {
     )
   }
 
-  return VERSION_PARTS.reduce((count, part) => (semver[part] ? count + 1 : count), 0)
+  return VERSION_PARTS.filter(part => semver[part]).length
 }
 
 /**
