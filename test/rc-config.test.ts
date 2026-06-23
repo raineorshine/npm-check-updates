@@ -3,11 +3,10 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import chaiSetup from './helpers/chaiSetup.ts'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
-chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -15,8 +14,8 @@ const bin = path.join(__dirname, '../build/cli.js')
 describe('rc-config', () => {
   // before/after must be placed within the describe block; otherwise, they will apply to tests in other files
   let stub: { restore: () => void }
-  before(() => (stub = stubVersions('99.9.9', { spawn: true })))
-  after(() => stub.restore())
+  beforeAll(() => (stub = stubVersions('99.9.9', { spawn: true })))
+  afterAll(() => stub.restore())
 
   it('print rcConfigPath when there is a non-empty rc config file', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
@@ -26,7 +25,7 @@ describe('rc-config', () => {
       const { stdout } = await spawn('node', [bin, '--stdin', '--configFilePath', tempDir], {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '0.1.0' } }),
       })
-      stdout.should.containIgnoreCase(`Using config file ${tempConfigFile}`)
+      expect(stdout.toLowerCase()).toContain(`Using config file ${tempConfigFile}`.toLowerCase())
     } finally {
       await removeDir(tempDir)
     }
@@ -38,7 +37,7 @@ describe('rc-config', () => {
       const { stdout } = await spawn('node', [bin, '--stdin', '--cwd', tempDir], {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
       })
-      stdout.should.not.include('Using config file')
+      expect(stdout).not.toContain('Using config file')
     } finally {
       await removeDir(tempDir)
     }
@@ -52,7 +51,7 @@ describe('rc-config', () => {
       const { stdout } = await spawn('node', [bin, '--stdin', '--configFilePath', tempDir], {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
       })
-      stdout.should.not.include('Using config file')
+      expect(stdout).not.toContain('Using config file')
     } finally {
       await removeDir(tempDir)
     }
@@ -65,7 +64,7 @@ describe('rc-config', () => {
       const result = spawn('node', [bin, '--stdin', '--configFilePath', tempDir, '--configFileName', configFileName], {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
       })
-      await result.should.eventually.be.rejectedWith(`Config file ${configFileName} not found in ${tempDir}`)
+      await expect(result).rejects.toThrow(`Config file ${configFileName} not found in ${tempDir}`)
     } finally {
       await removeDir(tempDir)
     }
@@ -80,8 +79,8 @@ describe('rc-config', () => {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
       })
       const pkgData = JSON.parse(stdout)
-      pkgData.should.have.property('ncu-test-v2')
-      pkgData.should.not.have.property('ncu-test-tag')
+      expect(pkgData).toHaveProperty('ncu-test-v2')
+      expect(pkgData).not.toHaveProperty('ncu-test-tag')
     } finally {
       await removeDir(tempDir)
     }
@@ -99,8 +98,8 @@ describe('rc-config', () => {
         { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }) },
       )
       const pkgData = JSON.parse(stdout)
-      pkgData.should.have.property('ncu-test-v2')
-      pkgData.should.not.have.property('ncu-test-tag')
+      expect(pkgData).toHaveProperty('ncu-test-v2')
+      expect(pkgData).not.toHaveProperty('ncu-test-tag')
     } finally {
       await removeDir(tempDir)
     }
@@ -117,8 +116,8 @@ describe('rc-config', () => {
         { stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }) },
       )
       const pkgData = JSON.parse(stdout)
-      pkgData.should.have.property('ncu-test-tag')
-      pkgData.should.not.have.property('ncu-test-v2')
+      expect(pkgData).toHaveProperty('ncu-test-tag')
+      expect(pkgData).not.toHaveProperty('ncu-test-v2')
     } finally {
       await removeDir(tempDir)
     }
@@ -133,7 +132,7 @@ describe('rc-config', () => {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1', 'ncu-test-tag': '0.1.0' } }),
       })
       // if the output contains "Using config file", then we know that jsonUpgraded was overridden
-      stdout.should.include('Using config file')
+      expect(stdout).toContain('Using config file')
     } finally {
       await removeDir(tempDir)
     }
@@ -149,7 +148,7 @@ describe('rc-config', () => {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-tag': '0.1.0' } }),
       })
       const pkgData = JSON.parse(stdout)
-      pkgData.should.have.property('ncu-test-tag')
+      expect(pkgData).toHaveProperty('ncu-test-tag')
     } finally {
       await removeDir(tempDir)
     }
@@ -172,8 +171,8 @@ describe('rc-config', () => {
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
-      firstLine.should.contains('Using config file')
-      firstLine.should.contains(configFile)
+      expect(firstLine).toContain('Using config file')
+      expect(firstLine).toContain(configFile)
     } finally {
       await removeDir(tempDir)
     }
@@ -196,8 +195,8 @@ describe('rc-config', () => {
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
-      firstLine.should.contains('Using config file')
-      firstLine.should.contains(configFile)
+      expect(firstLine).toContain('Using config file')
+      expect(firstLine).toContain(configFile)
     } finally {
       await removeDir(tempDir)
     }
@@ -216,9 +215,9 @@ describe('rc-config', () => {
     try {
       const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
       const firstLine = stderr.split('\n', 1)[0]
-      stderr.should.contains('Config file error')
-      stderr.should.contains('YAML Error')
-      firstLine.should.contains(configFile)
+      expect(stderr).toContain('Config file error')
+      expect(stderr).toContain('YAML Error')
+      expect(firstLine).toContain(configFile)
     } finally {
       await removeDir(tempDir)
     }
@@ -237,9 +236,9 @@ describe('rc-config', () => {
     try {
       const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
       const firstLine = stderr.split('\n', 1)[0]
-      stderr.should.contains('Config file error')
-      stderr.should.contains('YAML Error')
-      firstLine.should.contains(configFile)
+      expect(stderr).toContain('Config file error')
+      expect(stderr).toContain('YAML Error')
+      expect(firstLine).toContain(configFile)
     } finally {
       await removeDir(tempDir)
     }
@@ -262,8 +261,8 @@ describe('rc-config', () => {
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
-      firstLine.should.contains('Using config file')
-      firstLine.should.contains(configFile)
+      expect(firstLine).toContain('Using config file')
+      expect(firstLine).toContain(configFile)
     } finally {
       await removeDir(tempDir)
     }
@@ -283,8 +282,8 @@ describe('rc-config', () => {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
       const firstLine = stdout.split('\n', 1)[0]
-      firstLine.should.contains('Using config file')
-      firstLine.should.contains(configFile)
+      expect(firstLine).toContain('Using config file')
+      expect(firstLine).toContain(configFile)
     } finally {
       await removeDir(tempDir)
     }
@@ -304,8 +303,8 @@ describe('rc-config', () => {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
       const firstLine = stdout.split('\n', 1)[0]
-      firstLine.should.contains('Using config file')
-      firstLine.should.contains(configFile)
+      expect(firstLine).toContain('Using config file')
+      expect(firstLine).toContain(configFile)
     } finally {
       await removeDir(tempDir)
     }
@@ -328,8 +327,8 @@ describe('rc-config', () => {
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
-      firstLine.should.contains('Using config file')
-      firstLine.should.contains(configFile)
+      expect(firstLine).toContain('Using config file')
+      expect(firstLine).toContain(configFile)
     } finally {
       await removeDir(tempDir)
     }
@@ -353,8 +352,8 @@ describe('rc-config', () => {
       // On OSX tempDir is /var/folders/cb/12345, but npm-check-updates receives /private/var/folders/cb/12345.
       // Apparently OSX symlinks /tmp to /private/tmp for historical reasons.
       // Therefore, ignore any directories prepended to the config file path.
-      firstLine.should.contains('Using config file')
-      firstLine.should.contains(configFile)
+      expect(firstLine).toContain('Using config file')
+      expect(firstLine).toContain(configFile)
     } finally {
       await removeDir(tempDir)
     }
@@ -376,8 +375,8 @@ describe('rc-config', () => {
       // --mergeConfig enables rc auto-detection in tests.
       const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--mergeConfig'], {}, { cwd: nestedDir })
       const pkgData = JSON.parse(stdout)
-      pkgData.should.have.property('ncu-test-v2')
-      pkgData.should.not.have.property('ncu-test-tag')
+      expect(pkgData).toHaveProperty('ncu-test-v2')
+      expect(pkgData).not.toHaveProperty('ncu-test-tag')
     } finally {
       await removeDir(tempDir)
     }
@@ -398,8 +397,8 @@ describe('rc-config', () => {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
       const firstLine = stdout.split('\n', 1)[0]
-      firstLine.should.contains('Using config file')
-      firstLine.should.contains(configFile)
+      expect(firstLine).toContain('Using config file')
+      expect(firstLine).toContain(configFile)
     } finally {
       await removeDir(tempDir)
     }
@@ -420,8 +419,8 @@ describe('rc-config', () => {
       // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
       const { stdout } = await spawn('node', [bin, '--mergeConfig'], {}, { cwd: tempDir })
       const firstLine = stdout.split('\n', 1)[0]
-      firstLine.should.contains('Using config file')
-      firstLine.should.contains(configFile)
+      expect(firstLine).toContain('Using config file')
+      expect(firstLine).toContain(configFile)
     } finally {
       await removeDir(tempDir)
     }
@@ -436,8 +435,8 @@ describe('rc-config', () => {
     await fs.writeFile(pkgFile, JSON.stringify({ type: 'module', dependencies: { 'ncu-test-v2': '1.0.0' } }), 'utf-8')
     try {
       const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
-      stderr.should.contain('CommonJS syntax')
-      stderr.should.contain('.cjs')
+      expect(stderr).toContain('CommonJS syntax')
+      expect(stderr).toContain('.cjs')
     } finally {
       await removeDir(tempDir)
     }
@@ -452,8 +451,8 @@ describe('rc-config', () => {
     await fs.writeFile(pkgFile, JSON.stringify({ type: 'commonjs', dependencies: { 'ncu-test-v2': '1.0.0' } }), 'utf-8')
     try {
       const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
-      stderr.should.contain('ESM syntax')
-      stderr.should.contain('.mjs')
+      expect(stderr).toContain('ESM syntax')
+      expect(stderr).toContain('.mjs')
     } finally {
       await removeDir(tempDir)
     }
@@ -495,8 +494,8 @@ describe('rc-config', () => {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
         const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
         const pkgData = JSON.parse(stdout)
-        pkgData.should.not.have.property('ncu-test-v2')
-        pkgData.should.have.property('ncu-test-tag')
+        expect(pkgData).not.toHaveProperty('ncu-test-v2')
+        expect(pkgData).toHaveProperty('ncu-test-tag')
       } finally {
         await removeDir(tempDir)
       }
@@ -522,8 +521,8 @@ describe('rc-config', () => {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
         const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
         const pkgData = JSON.parse(stdout)
-        pkgData.should.have.property('ncu-test-v2')
-        pkgData.should.not.have.property('ncu-test-tag')
+        expect(pkgData).toHaveProperty('ncu-test-v2')
+        expect(pkgData).not.toHaveProperty('ncu-test-tag')
       } finally {
         await removeDir(tempDir)
       }
@@ -549,8 +548,8 @@ describe('rc-config', () => {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
         const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
         const pkgData = JSON.parse(stdout)
-        pkgData.should.have.property('ncu-test-v2')
-        pkgData.should.have.property('ncu-test-tag')
+        expect(pkgData).toHaveProperty('ncu-test-v2')
+        expect(pkgData).toHaveProperty('ncu-test-tag')
       } finally {
         await removeDir(tempDir)
       }
@@ -576,8 +575,8 @@ describe('rc-config', () => {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
         const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
         const pkgData = JSON.parse(stdout)
-        pkgData.should.have.property('ncu-test-v2')
-        pkgData.should.not.have.property('ncu-test-tag')
+        expect(pkgData).toHaveProperty('ncu-test-v2')
+        expect(pkgData).not.toHaveProperty('ncu-test-tag')
       } finally {
         await removeDir(tempDir)
       }
@@ -603,8 +602,8 @@ describe('rc-config', () => {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
         const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
         const pkgData = JSON.parse(stdout)
-        pkgData.should.not.have.property('ncu-test-v2')
-        pkgData.should.have.property('ncu-test-tag')
+        expect(pkgData).not.toHaveProperty('ncu-test-v2')
+        expect(pkgData).toHaveProperty('ncu-test-tag')
       } finally {
         await removeDir(tempDir)
       }

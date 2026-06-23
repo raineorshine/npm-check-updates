@@ -50,10 +50,8 @@ export default [
       sourceType: 'module',
       globals: {
         ...globals.browser,
-        ...globals.mocha,
         ...globals.node,
         ...globals.es2023,
-        ...globals.jest,
         ...raineConfig.globals,
       },
     },
@@ -116,12 +114,11 @@ export default [
     },
   },
 
-  // Test files use mocha's function() callbacks (this) and local helper functions.
+  // Test files define local helper functions.
   {
     files: ['test/**'],
     rules: {
       'unicorn/consistent-function-scoping': 'off',
-      'unicorn/no-this-outside-of-class': 'off',
     },
   },
 

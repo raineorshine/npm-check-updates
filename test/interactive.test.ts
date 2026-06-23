@@ -3,18 +3,17 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import chaiSetup from './helpers/chaiSetup.ts'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
-const should = chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 
 describe('--interactive', () => {
   let stub: { restore: () => void }
-  before(() => {
+  beforeAll(() => {
     stub = stubVersions(
       {
         'ncu-test-v2': '2.0.0',
@@ -26,7 +25,7 @@ describe('--interactive', () => {
       { spawn: true },
     )
   })
-  after(() => {
+  afterAll(() => {
     stub.restore()
   })
 
@@ -54,13 +53,13 @@ describe('--interactive', () => {
         },
       )
 
-      should.equal(/^Upgrading/m.test(stdout), true)
+      expect(/^Upgrading/m.test(stdout)).toBe(true)
 
       // do not show install hint when choosing auto-install
-      should.equal(/^Run npm install to install new versions.$/m.test(stdout), false)
+      expect(/^Run npm install to install new versions.$/m.test(stdout)).toBe(false)
 
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-      upgradedPkg.dependencies.should.deep.equal({
+      expect(upgradedPkg.dependencies).toStrictEqual({
         // upgraded
         'ncu-test-v2': '2.0.0',
         'ncu-test-return-version': '2.0.0',
@@ -97,7 +96,7 @@ describe('--interactive', () => {
       )
 
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-      upgradedPkg.dependencies.should.deep.equal({
+      expect(upgradedPkg.dependencies).toStrictEqual({
         // upgraded
         'ncu-test-v2': '2.0.0',
         'ncu-test-return-version': '2.0.0',
@@ -142,7 +141,7 @@ describe('--interactive', () => {
       )
 
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-      upgradedPkg.dependencies.should.deep.equal({
+      expect(upgradedPkg.dependencies).toStrictEqual({
         // upgraded
         'ncu-test-v2': '2.0.0',
         'ncu-test-return-version': '2.0.0',
@@ -183,7 +182,7 @@ describe('--interactive', () => {
         },
       )
 
-      stdout.should.include('https://github.com/Mitsunee/modern-diacritics')
+      expect(stdout).toContain('https://github.com/Mitsunee/modern-diacritics')
     } finally {
       await removeDir(tempDir)
     }

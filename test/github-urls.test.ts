@@ -1,7 +1,5 @@
+import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
-
-chaiSetup()
 
 describe('github urls', () => {
   it('upgrade github https urls', async () => {
@@ -12,7 +10,7 @@ describe('github urls', () => {
         },
       },
     })
-    upgrades!.should.deep.equal({
+    expect(upgrades).toStrictEqual({
       'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#2.0.0',
     })
   })
@@ -25,7 +23,7 @@ describe('github urls', () => {
         },
       },
     })
-    upgrades!.should.deep.equal({
+    expect(upgrades).toStrictEqual({
       'ncu-test-v2': 'github:raineorshine/ncu-test-v2#2.0.0',
     })
   })
@@ -38,7 +36,7 @@ describe('github urls', () => {
         },
       },
     })
-    upgrades!.should.deep.equal({
+    expect(upgrades).toStrictEqual({
       'ncu-test-v2': 'raineorshine/ncu-test-v2#2.0.0',
     })
   })
@@ -51,7 +49,7 @@ describe('github urls', () => {
         },
       },
     })
-    upgrades!.should.deep.equal({
+    expect(upgrades).toStrictEqual({
       'ncu-test-v2': 'https://github.com/raineorshine/ncu-test-v2#semver:^2.0.0',
     })
   })
@@ -65,7 +63,7 @@ describe('github urls', () => {
         },
       },
     })
-    upgrades!.should.deep.equal({
+    expect(upgrades).toStrictEqual({
       'ncu-test-v2': 'git+ssh://git@github.com/raineorshine/ncu-test-v2.git#semver:^2.0.0',
     })
   })

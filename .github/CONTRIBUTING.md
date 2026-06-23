@@ -21,12 +21,12 @@ This project is now **pure ESM** with support for both ESM and CJS via Vite. It 
 
 ### Running Tests
 
-TypeScript sources run directly on Node's native type stripping, so no loader is needed.
+Tests run with [Vitest](https://vitest.dev):
 
 ```sh
 npm test
-# or manually:
-mocha "test/**/*.test.ts"
+# or run the unit tests directly:
+npx vitest run
 ```
 
 ## Executable Stack Trace
