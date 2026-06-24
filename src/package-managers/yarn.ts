@@ -138,7 +138,7 @@ const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> =
   }
   if (yarnrcUserExists) {
     print(options, `\nUsing user yarn config at ${yarnrcUserPath}:`, 'verbose')
-    print(options, yarnConfigLocal, 'verbose')
+    print(options, yarnConfigUser, 'verbose')
   }
 
   if (Object.keys(npmConfig)) {
