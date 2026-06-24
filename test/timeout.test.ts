@@ -1,34 +1,74 @@
 import fs from 'fs/promises'
-import path, { dirname } from 'path'
-import spawn from 'spawn-please'
-import { fileURLToPath } from 'url'
+import { type Mock, type MockResultThrow } from 'vitest'
 import ncu from '../src/'
-import chaiSetup from './helpers/chaiSetup'
+import { npmApi } from '../src/package-managers/npm'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
+type FetchUpgradedPackumentMock = Mock<typeof npmApi.fetchUpgradedPackumentMemo>
 
-const bin = path.join(__dirname, '../build/cli.js')
+/** helper spy to get last result from npmApi.fetchUpgradedPackumentMemo */
+function getLastFetchUpgradedPackumentResult<T>() {
+  return new Promise<T>(resolve => {
+    const originalMock = npmApi.fetchUpgradedPackumentMemo
+    const spy = (npmApi.fetchUpgradedPackumentMemo = vi.fn((...args) => {
+      resolve(spy.mock.results.at(-1) as T)
+      return originalMock(...args)
+    }) as FetchUpgradedPackumentMock)
+  })
+}
 
-describe('timeout', function () {
+describe('timeout', async () => {
+  let pkgPath: string
+  let stub: { mockRestore: () => void }
+  beforeEach(async () => {
+    pkgPath = await sandbox.createPackageJson({ dependencies: { express: '1' } })
+    stub = stubVersions({ express: '1' })
+  })
+  afterEach(async () => {
+    stub.mockRestore()
+  })
+
   it('throw an exception instead of printing to the console when timeout is exceeded', async () => {
-    const pkgPath = path.join(__dirname, './test-data/ncu/package-large.json')
-    return ncu({
-      packageData: await fs.readFile(pkgPath, 'utf-8'),
-      timeout: 1,
-    }).should.eventually.be.rejectedWith(/Exceeded global timeout of 1ms|Idle timeout reached/)
+    const fetchUpgradedMockFn = getLastFetchUpgradedPackumentResult<MockResultThrow>()
+    await ncu({ packageData: await fs.readFile(pkgPath, 'utf-8'), timeout: 1 }).should.eventually.be.rejectedWith(
+      /Exceeded global timeout of 1ms|Idle timeout reached/,
+    )
+
+    const fetchResult = await fetchUpgradedMockFn
+    fetchResult.type.should.equal('throw')
+    fetchResult.value.message.should.equal('Exceeded global timeout of 1ms (mocked)')
   })
 
   it('exit with error when timeout is exceeded', async () => {
-    return spawn('node', [bin, '--timeout', '1'], {
+    const fetchUpgradedMockFn = getLastFetchUpgradedPackumentResult<MockResultThrow>()
+
+    await runNcuCli(['--timeout', '1'], {
       stdin: '{ "dependencies": { "express": "1" } }',
     }).should.eventually.be.rejectedWith(/Exceeded global timeout of 1ms|Idle timeout reached/)
+
+    const fetchResult = await fetchUpgradedMockFn
+    fetchResult.type.should.equal('throw')
+    fetchResult.value.message.should.equal('Exceeded global timeout of 1ms (mocked)')
   })
 
   it('completes successfully with timeout', async () => {
-    const stub = stubVersions('99.9.9', { spawn: true })
-    await spawn('node', [bin, '--timeout', '100000'], { stdin: '{ "dependencies": { "express": "1" } }' })
-    stub.restore()
+    await runNcuCli(['--timeout', '100000'], {
+      stdin: '{ "dependencies": { "express": "1" } }',
+    })
+  })
+
+  it('fetch functions should throw when controller aborted', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    const ncuTimeoutSignal = controller.signal
+
+    await npmApi
+      .fetchUpgradedPackument('package', [], '', { ncuTimeoutSignal, timeout: 1 })
+      .should.eventually.be.rejectedWith(/Exceeded global timeout of 1ms/)
+
+    await npmApi
+      .fetchPartialPackument('package', [], '', { ncuTimeoutSignal, timeout: 1 })
+      .should.eventually.be.rejectedWith(/Exceeded global timeout of 1ms/)
   })
 })

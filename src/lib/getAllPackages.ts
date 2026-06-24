@@ -155,7 +155,7 @@ async function getWorkspacePackageInfos(
   )
 
   // e.g. [packages/a/package.json, ...]
-  const allWorkspacePackageFilepaths: string[] = glob.sync(workspacePackageGlob, globOptions)
+  const allWorkspacePackageFilepaths: string[] = glob.sync(workspacePackageGlob, { ...globOptions, cwd })
 
   // Get the package names from the package files.
   // If a package does not have a name, use the folder name.
@@ -265,7 +265,7 @@ async function getAllPackages(options: Options): Promise<[PackageInfo[], string[
     // * NOT a workspace
     // * a workspace and have requested an upgrade of the workspace-root
     const globPattern = rootPackageFile.replace(/\\/g, '/')
-    const rootPackagePaths = glob.sync(globPattern, globOptions)
+    const rootPackagePaths = glob.sync(globPattern, { ...globOptions, cwd })
     // realistically there should only be zero or one
     const rootPackages = await Promise.all(
       rootPackagePaths.map(

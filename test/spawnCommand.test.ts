@@ -1,7 +1,4 @@
 import { getSpawnCommands } from '../src/lib/spawnCommand'
-import chaiSetup from './helpers/chaiSetup'
-
-chaiSetup()
 
 describe('spawnCommand', () => {
   it('prefers cmd shims on Windows and falls back to extensionless commands', () => {

@@ -1,7 +1,4 @@
 import quoteGlobalPackageSpec from '../src/lib/quoteGlobalPackageSpec'
-import chaiSetup from './helpers/chaiSetup'
-
-chaiSetup()
 
 describe('quoteGlobalPackageSpec', () => {
   it('quote scoped specs whose scope contains a period', () => {

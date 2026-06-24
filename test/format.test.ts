@@ -1,18 +1,11 @@
 import { expect } from 'chai'
 import fs from 'fs/promises'
 import os from 'os'
-import path, { dirname } from 'path'
-import spawn from 'spawn-please'
+import path from 'path'
 import { format as timeAgoFormat } from 'timeago.js'
-import { fileURLToPath } from 'url'
-import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
-
-chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../build/cli.js')
 
 describe('format', () => {
   it('--format dep', async () => {
@@ -46,11 +39,9 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      const { stdout } = await spawn(
-        'node',
+      const { stdout } = await runNcuCli(
         // -u was added to avoid accidentally matching dev, peer, optional from "Run ncu --dep prod,dev,peer,optional --format dep -u to upgrade package.json"
-        [bin, '--dep', 'prod,dev,peer,optional', '--format', 'dep', '-u'],
-        {},
+        ['--dep', 'prod,dev,peer,optional', '--format', 'dep', '-u'],
         { cwd: tempDir },
       )
 
@@ -59,7 +50,7 @@ describe('format', () => {
       stdout.should.include('optional')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -76,11 +67,13 @@ describe('format', () => {
         }),
         'utf-8',
       )
+      const stub = stubVersions('2.0.0', { spawn: true })
       try {
-        const { stdout } = await spawn('node', [bin, '--format', 'diff'], {}, { cwd: tempDir })
+        const { stdout } = await runNcuCli(['--format', 'diff'], { cwd: tempDir })
         stdout.should.include('https://npmdiff.dev/ncu-test-v2/1.0.0/2.0.0')
       } finally {
         await removeDir(tempDir)
+        stub.mockRestore()
       }
     })
 
@@ -97,12 +90,14 @@ describe('format', () => {
         }),
         'utf-8',
       )
+      const stub = stubVersions('1.1.0', { spawn: true })
       try {
-        const { stdout } = await spawn('node', [bin, '--format', 'diff'], {}, { cwd: tempDir })
+        const { stdout } = await runNcuCli(['--format', 'diff'], { cwd: tempDir })
         // purposefully omit 'to' version since this is a live package
         stdout.should.include('https://npmdiff.dev/%40types%2Fjsonlines/0.1.0/')
       } finally {
         await removeDir(tempDir)
+        stub.mockRestore()
       }
     })
   })
@@ -110,17 +105,28 @@ describe('format', () => {
   // do not stubVersions here, because we need to test if time is parsed correctly from npm-registry-fetch
   it('--format time', async () => {
     const timestamp = '2020-04-27T21:48:11.660Z'
+    const stub = stubVersions({
+      name: 'ncu-test-v2',
+      version: '2.0.0',
+      time: {
+        '2.0.0': timestamp,
+      },
+    })
     const packageData = {
       dependencies: {
         'ncu-test-v2': '^1.0.0',
       },
     }
-    const { stdout } = await spawn('node', [bin, '--format', 'time', '--stdin'], { stdin: JSON.stringify(packageData) })
+    const { stdout } = await runNcuCli(['--format', 'time', '--stdin'], {
+      stdin: JSON.stringify(packageData),
+    })
     const expectedString = timeAgoFormat(timestamp, 'en_US')
     expect(stdout).contains(expectedString)
+    stub.mockRestore()
   })
 
   it('--format repo', async () => {
+    const stub = stubVersions({ 'modern-diacritics': '2.3.1' })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -132,16 +138,25 @@ describe('format', () => {
       }),
       'utf-8',
     )
+    const modernDiacriticsPath = path.join(tempDir, 'node_modules', 'modern-diacritics')
+    await fs.mkdir(modernDiacriticsPath, { recursive: true })
+    const modernDiacriticsPkgFile = path.join(modernDiacriticsPath, 'package.json')
+    await fs.writeFile(
+      modernDiacriticsPkgFile,
+      JSON.stringify({ repository: 'https://github.com/Mitsunee/modern-diacritics' }),
+      'utf-8',
+    )
     try {
-      await spawn('npm', ['install'], {}, { cwd: tempDir })
-      const { stdout } = await spawn('node', [bin, '--format', 'repo'], {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--format', 'repo'], { cwd: tempDir })
       stdout.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {
       await removeDir(tempDir)
+      stub.mockRestore()
     }
   })
 
   it('--format homepage', async () => {
+    const stub = stubVersions({ 'hosted-git-info': '10.1.1' })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
@@ -153,12 +168,20 @@ describe('format', () => {
       }),
       'utf-8',
     )
+    const modernDiacriticsPath = path.join(tempDir, 'node_modules', 'hosted-git-info')
+    await fs.mkdir(modernDiacriticsPath, { recursive: true })
+    const modernDiacriticsPkgFile = path.join(modernDiacriticsPath, 'package.json')
+    await fs.writeFile(
+      modernDiacriticsPkgFile,
+      JSON.stringify({ homepage: 'https://github.com/npm/hosted-git-info' }),
+      'utf-8',
+    )
     try {
-      await spawn('npm', ['install'], {}, { cwd: tempDir })
-      const { stdout } = await spawn('node', [bin, '--format', 'homepage'], {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--format', 'homepage'], { cwd: tempDir })
       stdout.should.include('https://github.com/npm/hosted-git-info')
     } finally {
       await removeDir(tempDir)
+      stub.mockRestore()
     }
   })
 
@@ -183,11 +206,11 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      const { stdout } = await spawn('node', [bin, '--format', 'lines'], {}, { cwd: tempDir })
+      const { stdout } = await runNcuCli(['--format', 'lines'], { cwd: tempDir })
       stdout.should.equals('ncu-test-v2@^2.0.0\nncu-test-tag@^1.1.0\n')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -212,17 +235,12 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn(
-        'node',
-        [bin, '--format', 'lines', '--jsonUpgraded'],
-        {},
-        {
-          cwd: tempDir,
-        },
-      ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonUpgraded.')
+      await runNcuCli(['--format', 'lines', '--jsonUpgraded'], { cwd: tempDir }).should.eventually.be.rejectedWith(
+        'Cannot specify both --format lines and --jsonUpgraded.',
+      )
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -247,17 +265,12 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn(
-        'node',
-        [bin, '--format', 'lines', '--jsonAll'],
-        {},
-        {
-          cwd: tempDir,
-        },
-      ).should.eventually.be.rejectedWith('Cannot specify both --format lines and --jsonAll.')
+      await runNcuCli(['--format', 'lines', '--jsonAll'], { cwd: tempDir }).should.eventually.be.rejectedWith(
+        'Cannot specify both --format lines and --jsonAll.',
+      )
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 
@@ -282,17 +295,12 @@ describe('format', () => {
       'utf-8',
     )
     try {
-      await spawn(
-        'node',
-        [bin, '--format', 'lines,group'],
-        {},
-        {
-          cwd: tempDir,
-        },
-      ).should.eventually.be.rejectedWith('Cannot use --format lines with other formatting options.')
+      await runNcuCli(['--format', 'lines,group'], { cwd: tempDir }).should.eventually.be.rejectedWith(
+        'Cannot use --format lines with other formatting options.',
+      )
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 })

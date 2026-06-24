@@ -16,6 +16,7 @@ import programError from './lib/programError'
 import runGlobal from './lib/runGlobal'
 import runLocal from './lib/runLocal'
 import spawnCommand from './lib/spawnCommand'
+import { errorState, installGlobalErrorHandlers } from './lib/utils/global-error-handlers'
 import { type Index } from './types/IndexType'
 import { type Options } from './types/Options'
 import { type PackageFile } from './types/PackageFile'
@@ -31,27 +32,7 @@ if (process.env.INJECT_PROMPTS) {
   prompts.inject(JSON.parse(process.env.INJECT_PROMPTS))
 }
 
-/** Tracks the (first) unhandled rejection so the process can exit with an error code at the end. This allows other errors to be logged before the process exits. */
-let unhandledRejectionError = false
-
-let lastRunOptions: Options | null = null
-
-// Use `node --trace-uncaught ...` to show where the exception was thrown.
-// See: https://nodejs.org/api/process.html#event-unhandledrejection
-process.on('unhandledRejection', (reason: string | Error) => {
-  // do not rethrow, as there may be other errors to print out
-  console.error(reason)
-
-  // ensure the process exits with a non-zero code at the end
-  unhandledRejectionError = true
-})
-
-// ensure that the process exits with an error code if there was an unhandled rejection
-process.on('exit', () => {
-  if (unhandledRejectionError && lastRunOptions) {
-    programError(lastRunOptions, `Unhandled Rejection! This is a bug and should be reported: ${pkg.bugs.url}`)
-  }
-})
+installGlobalErrorHandlers()
 
 /**
  * Volta is a tool for managing JavaScript tooling like Node and npm. Volta has
@@ -286,12 +267,10 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
         indexKey = pkgFile
       }
       // index by relative path if cwd was specified
-      const key = pkgOptions.cwd
-        ? path
-            .relative(path.resolve(pkgOptions.cwd), indexKey)
-            // convert Windows path to *nix path for consistency
-            .replace(/\\/g, '/')
-        : indexKey
+      const key = path
+        .relative(path.resolve(pkgOptions.cwd || './'), indexKey)
+        // convert Windows path to *nix path for consistency
+        .replace(/\\/g, '/')
       packages[key] = await runLocal(pkgOptions, pkgData, pkgFile)
     }
     analysis = packages
@@ -347,10 +326,17 @@ export async function run(
   runOptions: RunOptions = {},
   { cli }: { cli?: boolean } = {},
 ): Promise<PackageFile | Index<VersionSpec> | void> {
-  unhandledRejectionError = false
-
   const options = await initOptions(runOptions, { cli })
-  lastRunOptions = options
+
+  const bugsUrl = pkg.bugs.url
+  /** ensure that the process exits with an error code if there was an unhandled rejection */
+  const exitListener = () => {
+    if (errorState.unhandledRejectionError) {
+      programError(options, `Unhandled Rejection! This is a bug and should be reported: ${bugsUrl}`)
+    }
+  }
+
+  process.on('exit', exitListener)
 
   // chalk may already have been initialized in cli.ts, but when imported as a module
   // chalkInit is idempotent
@@ -364,12 +350,17 @@ export async function run(
     await cacheClear(options)
   }
 
+  const controller = new AbortController()
+  // pass the signal to stop all fetch call
+  options.ncuTimeoutSignal = controller.signal
   let timeout: NodeJS.Timeout | undefined
   let timeoutPromise: Promise<void> = new Promise(() => null)
   if (options.timeout) {
     const timeoutMs = typeof options.timeout === 'string' ? Number.parseInt(options.timeout, 10) : options.timeout
     timeoutPromise = new Promise((resolve, reject) => {
       timeout = setTimeout(() => {
+        // abort everything downstream
+        controller.abort()
         // must catch the error and reject explicitly since we are in a setTimeout
         const error = `Exceeded global timeout of ${timeoutMs}ms`
         reject(error)
@@ -382,23 +373,29 @@ export async function run(
     })
   }
 
-  // doctor mode
-  if (options.doctor) {
-    // execute with -u
-    if (options.upgrade) {
-      // we have to pass run directly since it would be a circular require if doctor included this file
-      return Promise.race([timeoutPromise, doctor(run, options)])
+  try {
+    // doctor mode
+    if (options.doctor) {
+      // execute with -u
+      if (options.upgrade) {
+        // we have to pass run directly since it would be a circular require if doctor included this file
+        // await the return to prevnet process.off in finally to run before this promise resolved
+        return await Promise.race([timeoutPromise, doctor(run, options)])
+      }
+      // print help otherwise
+      else {
+        const help =
+          typeof cliOptionsMap.doctor.help === 'function' ? cliOptionsMap.doctor.help({}) : cliOptionsMap.doctor.help
+        print(options, `Usage: ncu --doctor\n\n${help}`, 'warn')
+      }
     }
-    // print help otherwise
+    // normal mode
     else {
-      const help =
-        typeof cliOptionsMap.doctor.help === 'function' ? cliOptionsMap.doctor.help({}) : cliOptionsMap.doctor.help
-      print(options, `Usage: ncu --doctor\n\n${help}`, 'warn')
+      // await the return to prevnet process.off in finally to run before this promise resolved
+      return await Promise.race([timeoutPromise, runUpgrades(options, timeout)])
     }
-  }
-  // normal mode
-  else {
-    return Promise.race([timeoutPromise, runUpgrades(options, timeout)])
+  } finally {
+    process.off('exit', exitListener)
   }
 }
 

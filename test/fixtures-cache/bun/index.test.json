@@ -1,0 +1,10 @@
+{
+  "bun > list": {
+    "spawnPlease": {
+      "command: bun, args: pm :: ls": {
+        "stderr": "",
+        "stdout": "<ROOT>/bun node_modules (1)\n ncu-test-v2@1.0.0\n"
+      }
+    }
+  }
+}

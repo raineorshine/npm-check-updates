@@ -1,0 +1,26 @@
+{
+  "cache > cache latest versions": {
+    "spawnPlease": {
+      "command: npm, args: --json :: view :: ncu-test-alpha@1.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      },
+      "command: npm, args: --json :: view :: ncu-test-tag@1.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      },
+      "command: npm, args: --json :: view :: ncu-test-tag@1.1.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      },
+      "command: npm, args: --json :: view :: ncu-test-v2@1.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      },
+      "command: npm, args: --json :: view :: ncu-test-v2@2.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      }
+    }
+  }
+}

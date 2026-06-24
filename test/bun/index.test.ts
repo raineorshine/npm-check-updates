@@ -2,11 +2,11 @@ import { spawnSync } from 'node:child_process'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as bun from '../../src/package-managers/bun'
-import chaiSetup from '../helpers/chaiSetup'
 import { testFail, testPass } from '../helpers/doctorHelpers'
 import stubVersions from '../helpers/stubVersions'
+import { doctorSpawnHandler } from '../helpers/stubs/stubDoctor'
+import { stubSpawnPlease } from '../helpers/stubs/stubSpawnPlease'
 
-chaiSetup()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const mockNpmVersions = {
@@ -17,10 +17,11 @@ const mockNpmVersions = {
 }
 
 describe('bun', function () {
+  let versionStub: { mockRestore: () => void }
+
   // Use a synchronous check to fail the suite immediately if bun is missing
-  before('check-environment', function () {
+  beforeAll(function () {
     const result = spawnSync('bun', ['--version'], {
-      shell: true,
       encoding: 'utf8',
     })
 
@@ -37,6 +38,14 @@ describe('bun', function () {
     }
   })
 
+  beforeEach(async () => {
+    versionStub = stubVersions(mockNpmVersions, { spawn: true })
+  })
+
+  afterEach(async () => {
+    versionStub?.mockRestore()
+  })
+
   it('list', async () => {
     const result = await bun.list({ cwd: __dirname })
     result.should.have.property('ncu-test-v2')
@@ -48,11 +57,9 @@ describe('bun', function () {
   })
 
   describe('doctor', function () {
-    this.timeout(3 * 60 * 1000)
-
-    let stub: { restore: () => void }
-    before(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
-    after(() => stub.restore())
+    beforeAll(async () => {
+      stubSpawnPlease.useFirst(doctorSpawnHandler)
+    })
 
     testPass({ packageManager: 'bun' })
     testFail({ packageManager: 'bun' })

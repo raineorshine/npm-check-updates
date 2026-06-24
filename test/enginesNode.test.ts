@@ -1,11 +1,31 @@
 import ncu from '../src/'
 import { type Index } from '../src/types/IndexType'
+import { type MockedVersions } from '../src/types/MockedVersions'
 import { type VersionSpec } from '../src/types/VersionSpec'
-import chaiSetup from './helpers/chaiSetup'
-
-chaiSetup()
+import stubVersions from './helpers/stubVersions'
 
 describe('enginesNode', () => {
+  let stub: { mockRestore: () => void }
+  beforeEach(() => {
+    stub = stubVersions({
+      del: {
+        version: '8.0.1',
+        versions: {
+          '8.0.1': { version: '8.0.1', engines: { node: '>=18.0.0' } },
+          '5.1.0': { version: '5.1.0', engines: { node: '>=8' } },
+          '4.1.1': { version: '4.1.1', engines: { node: '>=6' } },
+          '4.1.0': { version: '4.1.0', engines: { node: '>=6' } },
+          '4.0.0': { version: '4.0.1', engines: { node: '>=6' } },
+          '3.0.0': { version: '3.0.0', engines: { node: '>=4' } },
+        },
+      },
+      'ncu-test-v2': '2.0.0',
+    } as MockedVersions)
+  })
+  afterEach(() => {
+    stub.mockRestore()
+  })
+
   it("update packages that satisfy the project's engines.node", async () => {
     const upgraded = await ncu({
       enginesNode: true,

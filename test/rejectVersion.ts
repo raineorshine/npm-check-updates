@@ -1,8 +1,5 @@
 import ncu from '../src'
-import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
-
-chaiSetup()
 
 describe('rejectVersion', () => {
   it('reject by package version with string', async () => {
@@ -26,7 +23,7 @@ describe('rejectVersion', () => {
     upgraded!.should.not.have.property('ncu-test-v2')
     upgraded!.should.have.property('ncu-test-return-version')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('reject by package version with space-delimited list of strings', async () => {
@@ -53,7 +50,7 @@ describe('rejectVersion', () => {
     upgraded!.should.have.property('ncu-test-return-version')
     upgraded!.should.not.have.property('fp-and-or')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('reject by package version with comma-delimited list of strings', async () => {
@@ -80,7 +77,7 @@ describe('rejectVersion', () => {
     upgraded!.should.have.property('ncu-test-return-version')
     upgraded!.should.not.have.property('fp-and-or')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('reject by package version with RegExp', async () => {
@@ -107,7 +104,7 @@ describe('rejectVersion', () => {
     upgraded!.should.not.have.property('ncu-test-return-version')
     upgraded!.should.have.property('fp-and-or')
 
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('reject by package version with RegExp string', async () => {
@@ -134,6 +131,6 @@ describe('rejectVersion', () => {
     upgraded!.should.not.have.property('ncu-test-return-version')
     upgraded!.should.have.property('fp-and-or')
 
-    stub.restore()
+    stub.mockRestore()
   })
 })

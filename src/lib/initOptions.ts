@@ -266,7 +266,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       }
     } else if (packageManager === 'pnpm') {
       // Automatically apply pnpm's minimumReleaseAge from pnpm-workspace.yaml as cooldown if cooldown is not explicitly set.
-      const pnpmWorkspaceConfig = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+      const pnpmWorkspaceConfig = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(options)
       if (pnpmWorkspaceConfig != null) {
         const { minimumReleaseAge, minimumReleaseAgeExclude } = pnpmWorkspaceConfig
         // pnpm's minimumReleaseAge is in minutes; convert to days

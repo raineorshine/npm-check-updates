@@ -1,32 +1,35 @@
 import queryVersions from '../src/lib/queryVersions'
-import chaiSetup from './helpers/chaiSetup'
+import { type MockedVersions } from '../src/types/MockedVersions'
 import stubVersions from './helpers/stubVersions'
 
-chaiSetup()
-
 describe('queryVersions', function () {
+  let stub: { mockRestore: () => void }
+
+  afterEach(() => {
+    stub?.mockRestore()
+  })
+
   it('valid single package', async () => {
-    const stub = stubVersions('99.9.9')
+    stub = stubVersions('99.9.9')
     const latestVersions = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })
     latestVersions.should.have.property('async')
-    stub.restore()
   })
 
   it('valid packages', async () => {
-    const stub = stubVersions('99.9.9')
+    stub = stubVersions('99.9.9')
     const latestVersions = await queryVersions({ async: '1.5.1', npm: '3.10.3' }, { loglevel: 'silent' })
     latestVersions.should.have.property('async')
     latestVersions.should.have.property('npm')
-    stub.restore()
   })
 
   it('unavailable packages should be ignored', async () => {
+    stub = stubVersions({ default: { skipVersionValidation: true } } as MockedVersions)
     const result = await queryVersions({ abchdefntofknacuifnt: '1.2.3' }, { loglevel: 'silent' })
     result.should.deep.equal({})
   })
 
   it('error while querying version should be handled', async () => {
-    const stub = stubVersions(() => {
+    stub = stubVersions(() => {
       throw new Error(`Package inaccessible`)
     })
 
@@ -37,8 +40,6 @@ describe('queryVersions', function () {
         version: null,
       },
     })
-
-    stub.restore()
   })
 
   it('local file urls should be ignored', async () => {
@@ -50,17 +51,16 @@ describe('queryVersions', function () {
   })
 
   it('set the target explicitly to latest', async () => {
-    const stub = stubVersions('99.9.9')
+    stub = stubVersions('99.9.9')
     const result = await queryVersions({ async: '1.5.1' }, { target: 'latest', loglevel: 'silent' })
     result.should.have.property('async')
-    stub.restore()
   })
 
   it('set the target to greatest', async () => {
-    const stub = stubVersions('99.9.9')
+    stub = stubVersions('99.9.9')
     const result = await queryVersions({ async: '1.5.1' }, { target: 'greatest', loglevel: 'silent' })
     result.should.have.property('async')
-    stub.restore()
+    stub.mockRestore()
   })
 
   it('return an error for an unsupported target', () => {
@@ -69,6 +69,11 @@ describe('queryVersions', function () {
   })
 
   it('npm aliases should upgrade the installed package', async () => {
+    stub = stubVersions({
+      name: 'ncu-test-v2',
+      version: '2.0.0',
+      time: { '2.0.0': '2023-08-12' },
+    })
     const result = await queryVersions(
       {
         request: 'npm:ncu-test-v2@1.0.0',
@@ -77,6 +82,7 @@ describe('queryVersions', function () {
     )
     result.should.deep.equal({
       request: {
+        time: '2023-08-12',
         version: 'npm:ncu-test-v2@2.0.0',
       },
     })
@@ -178,10 +184,12 @@ describe('queryVersions', function () {
         },
         { loglevel: 'silent' },
       )
+
       upgrades.should.deep.equal({})
     })
 
     it('valid but nonexistent github urls with tags should be ignored', async () => {
+      const stub = stubVersions({ name: 'ncu-test-v2', version: '2.0.0', time: {} })
       const upgrades = await queryVersions(
         {
           'ncu-test-alpha': 'git+https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git#v283',
@@ -198,6 +206,7 @@ describe('queryVersions', function () {
           version: '2.0.0',
         },
       })
+      stub.mockRestore()
     })
 
     it('github urls should upgrade the embedded semver version range', async () => {

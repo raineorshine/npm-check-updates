@@ -1,0 +1,222 @@
+{
+  "queryVersions > github urls > git+https urls should upgrade the embedded version tag": {
+    "getGitTags": {
+      "https://github.com/raineorshine/ncu-test-v2": {
+        "v0.1.0": "16910ae4a91ed41d1803f823f320e9122a0a5b29",
+        "v1.0.0": "9643e16efeb39c27bfe97f8f6462cc830767176d",
+        "v2.0.0": "d1810298bf7dfd05b671a37317c413bc1afd7747"
+      }
+    }
+  },
+  "queryVersions > github urls > github urls should not upgrade embedded semver version ranges to prereleases by default": {
+    "getGitTags": {
+      "https://github.com/raineorshine/ncu-test-greatest-not-newest": {
+        "v1.0.0": "0c51b76ad3629870790021faab501fe17c5b0f75",
+        "v1.0.1": "5e7fc50f2865d07362d15d93b72c5d4c62fde662",
+        "v2.0.0-beta": "80b22bf596e7c2011f42509587206dc0a8d01262"
+      }
+    }
+  },
+  "queryVersions > github urls > github urls should support --target greatest": {
+    "getGitTags": {
+      "https://github.com/raineorshine/ncu-test-greatest-not-newest": {
+        "v1.0.0": "0c51b76ad3629870790021faab501fe17c5b0f75",
+        "v1.0.1": "5e7fc50f2865d07362d15d93b72c5d4c62fde662",
+        "v2.0.0-beta": "80b22bf596e7c2011f42509587206dc0a8d01262"
+      }
+    }
+  },
+  "queryVersions > github urls > github urls should support --target minor": {
+    "getGitTags": {
+      "https://github.com/raineorshine/ncu-test-return-version": {
+        "v0.1.0": "714b42656544790ba0265bc035d1eb598276eddc",
+        "v0.2.0": "1e9896620cc83078608e34ad2a26d961a935decf",
+        "v1.0.0": "c0435a12bc701263052e9bf61ee08858b56838bc",
+        "v1.0.1": "170cd28012e86e4b62fac39daea393dbc4b973af",
+        "v1.1.0": "6f606bc5691bc26018893df510691d611997d4cd",
+        "v2.0.0": "83939d20200ed781b311d56d69ee85d029ccfb0e"
+      }
+    }
+  },
+  "queryVersions > github urls > github urls should support --target newest": {
+    "getGitTags": {
+      "https://github.com/raineorshine/ncu-test-greatest-not-newest": {
+        "v1.0.0": "0c51b76ad3629870790021faab501fe17c5b0f75",
+        "v1.0.1": "5e7fc50f2865d07362d15d93b72c5d4c62fde662",
+        "v2.0.0-beta": "80b22bf596e7c2011f42509587206dc0a8d01262"
+      }
+    }
+  },
+  "queryVersions > github urls > github urls should support --target patch": {
+    "getGitTags": {
+      "https://github.com/raineorshine/ncu-test-return-version": {
+        "v0.1.0": "714b42656544790ba0265bc035d1eb598276eddc",
+        "v0.2.0": "1e9896620cc83078608e34ad2a26d961a935decf",
+        "v1.0.0": "c0435a12bc701263052e9bf61ee08858b56838bc",
+        "v1.0.1": "170cd28012e86e4b62fac39daea393dbc4b973af",
+        "v1.1.0": "6f606bc5691bc26018893df510691d611997d4cd",
+        "v2.0.0": "83939d20200ed781b311d56d69ee85d029ccfb0e"
+      }
+    }
+  },
+  "queryVersions > github urls > github urls should upgrade embedded semver version ranges to prereleases with --target greatest and newest": {
+    "getGitTags": {
+      "https://github.com/raineorshine/ncu-test-greatest-not-newest": {
+        "v1.0.0": "0c51b76ad3629870790021faab501fe17c5b0f75",
+        "v1.0.1": "5e7fc50f2865d07362d15d93b72c5d4c62fde662",
+        "v2.0.0-beta": "80b22bf596e7c2011f42509587206dc0a8d01262"
+      }
+    }
+  },
+  "queryVersions > github urls > github urls should upgrade the embedded semver version range": {
+    "getGitTags": {
+      "https://github.com/raineorshine/ncu-test-v2": {
+        "v0.1.0": "16910ae4a91ed41d1803f823f320e9122a0a5b29",
+        "v1.0.0": "9643e16efeb39c27bfe97f8f6462cc830767176d",
+        "v2.0.0": "d1810298bf7dfd05b671a37317c413bc1afd7747"
+      }
+    }
+  },
+  "queryVersions > github urls > github urls should upgrade the embedded version tag": {
+    "getGitTags": {
+      "https://github.com/raineorshine/ncu-test-v2": {
+        "v0.1.0": "16910ae4a91ed41d1803f823f320e9122a0a5b29",
+        "v1.0.0": "9643e16efeb39c27bfe97f8f6462cc830767176d",
+        "v2.0.0": "d1810298bf7dfd05b671a37317c413bc1afd7747"
+      }
+    }
+  },
+  "queryVersions > github urls > ignore repos with no tags": {
+    "getGitTags": {
+      "https://github.com/raineorshine/ncu-test-no-tags": {
+        "_isError": true,
+        "exitCode": 1,
+        "message": "Cannot read properties of undefined (reading 'replace')",
+        "stderr": ""
+      }
+    }
+  },
+  "queryVersions > github urls > ignore tags that are not valid versions": {
+    "getGitTags": {
+      "https://github.com/raineorshine/ncu-test-v0.1.3a.git": {
+        "0.1.2": "7c1617ccc23b54aeeb63e6a594a65a79ddc885d2",
+        "1.0.5": "d40b3f2b1f7260185c98ffacbd0828eedd41a142",
+        "1.0.6": "cd040c99002b8650e95872c72ce661f527b2f264",
+        "1.0.7": "5bd70fdcbf442fb5c1f34dac449dc789c8474760",
+        "v0.1.3": "6a6b137902a941fc5c680f7b90a1ed233b7d9db6",
+        "v0.1.3a": "3b04fa253d5a0d7e165154ab2429530391e1f1f4",
+        "v0.1.4": "5a42921e5e626d3fb49429dbce0a2b9e235824ed",
+        "v0.1.5": "f3830e7bb7dc2f4ea2062e6175f658fb39d06709",
+        "v0.1.6": "6f9d4cbe2fdc52d8343a29ad5d361f683eeda16e",
+        "v0.1.7": "9f40bfb0d13cfc55a94cabcc1b5c7301f055d7d8",
+        "v0.1.8": "e86917d3e101c9b84ebe4c94f8aef1c4cb06176c",
+        "v1.0.0": "46a9dd345791bded859a187dfab35c14ab8dd84c",
+        "v1.0.1": "3bd8ebb988a8c8b3544ba6150fcebdcd04a42aa5",
+        "v1.0.2": "b7553f61648c9de80f7f72ad27c2bef82f56a75e",
+        "v1.0.3": "8cee4fcdf2be350259831053b72458c05dd67ce5",
+        "v1.0.4": "3dab633f65541b2ba8c113d28eca743016b08c30"
+      },
+      "ssh://git@github.com/raineorshine/ncu-test-invalid-tag.git": {
+        "0.1": "858303df6a3eb43fb4a793a4d096e41c47294041",
+        "1.0": "b2a34fdcd3e9fd13d854a5a9a76bcc59fc2b633b",
+        "1.1": "30b27596b2964fa810d5b314a7b7e77cdd6331c6",
+        "1.2": "41b271f3fc75b1004ef1bcae22b058e13a59c1ba",
+        "1.2.1": "ac69a861ee8f39010b4037311f02bb6453ed4eac",
+        "1.2.1-bower": "2ef7d1e4cfc27bc3e60961f9b3ff446b59d30933",
+        "1.3": "0e6963e04d765304d07a8c9b68480dd0f013b2ab",
+        "1.3.0": "a75571dfc78c6a59f4bf8ad1cad5a9a29cda9ca7",
+        "1.3.1": "5b7d35a2f2c0ee1b8e6cd7acfa235c497f3f616a",
+        "2.0.0": "0223d7b34a5df9153c34e322a2fd7c4721a7a606",
+        "2.1.0": "077bacd847df631f82c7162db9b3a54276cbfe19",
+        "2.1.1": "e55c2b85aa037e9ecd4ef30f913104dde91a2826",
+        "v1.2.1": "2ef7d1e4cfc27bc3e60961f9b3ff446b59d30933",
+        "v2.0.0": "4a4457b5d3ad0ce265342d2e2784dc39110a16cf",
+        "v2.0.1": "4a4457b5d3ad0ce265342d2e2784dc39110a16cf",
+        "v2.0.2": "57fb76966bc7bba09276bffad4cddcde9a311582",
+        "v2.0.3": "59e2ba0e170aa9402eb17f7fb5815bc4f6628799",
+        "v2.0.4": "4f40077a5bb38bc154f0512f1748ca7187831467",
+        "v2.0.5": "c25a8710f419a1be142f9b46037be00388a7272c",
+        "v2.1.0-alpha-1": "ba23ea0a1167ffddc1ae8dbb759c83c371a51ae5",
+        "v2.1.0-beta": "6757b695af99c3dd5d9e33bd57b39c14d7115093",
+        "v2.1.2": "406de4e708e84ed0abbc08b09870828254a6b2ef",
+        "v2.2.0": "a6c2500da3cb4a333ca436f4f78cf09dd00ca9ba",
+        "v2.2.1": "5e57d8f4c182a844b0d2cb80107e0f413f9e63a8",
+        "v2.3.0": "81aa879d3a4489213888e24975b073c7478f0447",
+        "v2.3.1": "bbb67bafa5e4a10c47098057ed6c82b001e786ea",
+        "v2.3.10": "95d377eabc8bfa6f691b68efad6b4acb6f8d4d5a",
+        "v2.3.11": "2be703222af2edcb87e562d3da2299e4352bff8a",
+        "v2.3.2": "1ee281b3b99e8d8cccdc72fb8437c6888149cb46",
+        "v2.3.3": "8db979795044412a2e2b4e9659788c23cb59fcd3",
+        "v2.3.4": "64a91f7b569cc87de1be5553402576c969a03876",
+        "v2.3.5": "0ab2eb7f382e79810ebf3032ce766a02af2b0f3b",
+        "v2.3.6": "be11566d9539370b196ac85f22a6baf9f42c87cb",
+        "v2.3.7": "797b65b3ca90525a4e048de5b8d02ba6878ea239",
+        "v2.3.8": "ced14b133daed8c163863a497c43dcf69eea4340",
+        "v2.3.9": "194f92be3a0e88f0eb170eb96f543945d6024973",
+        "v2.4.0": "6157c7bc77bfca7e9aa75f529f3f612122d9a2f1",
+        "v2.4.0-alpha": "37c8bbb01998db487382e9d62cfb398511167f3a",
+        "v2.4.0-beta": "7cfbe94b7e289b46a01acd89b054983074ae6477",
+        "v2.4.0-rc": "1ee1030db29f62756a773b868c29a56935607c00",
+        "v2.4.1": "cc4654239ba749c9066e437abcd94c143c4309c5",
+        "v2.4.10": "4672183ea06a28d540a1d87900a7b5f84b1a1495",
+        "v2.4.11": "445a9c3e8371bdc689e88d02bb77b225ba1fea69",
+        "v2.4.12": "7309e2e5d5f8fb78d97dd5ebf9243f3168ec8f20",
+        "v2.4.13": "6c711a05ef0a9c8e0d8b0aacac84412edc18ebdc",
+        "v2.4.14": "c3dc5292219a1ed7b73f62a533623d33506aecac",
+        "v2.4.15": "78d0c113742630fd0305bc1c8cbff94a075b5532",
+        "v2.4.16": "b0416228a41e2d081eef99ed245da896e61b9e66",
+        "v2.4.17": "e0670bb49c12b0daf1678683e420abdf92f90017",
+        "v2.4.18": "e7ffa67a4649dc08d2018708a38604a6c0a02ab6",
+        "v2.4.2": "156f56c3c183a3b8486c47b122c7fa8819510a90",
+        "v2.4.3": "b3acb63ac56b13eb45b36e628b384a9a2507b50e",
+        "v2.4.4": "4215f97f7ae1854916db8aa3db65d8958957d282",
+        "v2.4.5": "89d24bd77817b28649052e2cf3740eb91d08ff08",
+        "v2.4.6": "d04c596dc0244e83b1a493f2004455c43161890f",
+        "v2.4.7": "059c74fe83b6e6885faae8e0183ce6b9543643ac",
+        "v2.4.8": "d9e68301848a95dff2e2dbef6569e617a9b3fa30",
+        "v2.4.9": "f0edf90f88c9909aaf92de25679507c3fd379985",
+        "v3.0.0": "e78ee8d9caf59e55880488dfbf10901ecd4bfbd7",
+        "v3.0.0-alpha": "65f370e23efb76564c72ccda825a5c8a901bc583",
+        "v3.0.0-alpha.2": "7bf4139bae8b23aabae2ae78ff82a003ceadf5a4",
+        "v3.0.0-beta.1": "14da827d371ed40ffe46312c25431e99e6adc674",
+        "v3.0.0-beta.2": "1ff65e5bd99ab3ee8985e9512b2096efce58edd2",
+        "v3.0.0-rc.1": "0bf308ebd69b1b08d7cb8402f4c43075dd5e7a1f",
+        "v3.0.0-rc.2": "9dc6d1dfd3f11697a27d89d89389d66cbec2d64e",
+        "v3.0.0-rc.3": "43786cdd8c4d2670bc80d92ede9bb0502a586178",
+        "v3.0.0-rc.4": "d8a6ddca02c4781dcf2bb91bbfc54bd1f27e5399",
+        "v3.0.0-rc.5": "14967aec9459073e46283b67657f1204e98aa56b",
+        "v3.0.0-rc.6": "090bffc34c78b4727628df6fb0e14f624c594eb2",
+        "v3.0.1": "5988c4f9dbed5f12c314620f1273359cffd7b887",
+        "v3.0.2": "0e48302342e9c04174ed73902b08324d47d4e792",
+        "v3.0.3": "87b8078d9b6b8556db5c04e0e6c9eb87966cb759",
+        "v3.0.4": "4723bccf4321f28d9ac8ec4f8c64b785e277ba71",
+        "v3.0.5": "6b8b69261f1aacbb4be037c934f3c3652e6dff27"
+      }
+    }
+  },
+  "queryVersions > github urls > support simple, non-semver tags in the format \"v1\"": {
+    "getGitTags": {
+      "https://github.com/raineorshine/ncu-test-simple-tag": {
+        "v1": "d8310694fc5bbe430be14f4fe04081faa5e9c4c6",
+        "v2": "81362b907727132475803f27f8689db33a45da5b",
+        "v3": "f48482b689172bf4f3a8c5828992b7229f6409b4"
+      }
+    }
+  },
+  "queryVersions > github urls > valid but nonexistent github urls with tags should be ignored": {
+    "getGitTags": {
+      "https://raineorshine@github.com/ncu-return-version": {
+        "_isError": true,
+        "exitCode": 1,
+        "message": "Command failed: git ls-remote --tags https://raineorshine@github.com/ncu-return-version\nremote: Not Found\nfatal: repository 'https://github.com/ncu-return-version/' not found\n",
+        "stderr": "remote: Not Found\nfatal: repository 'https://github.com/ncu-return-version/' not found\n"
+      },
+      "https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git": {
+        "_isError": true,
+        "exitCode": 1,
+        "message": "Command failed: git ls-remote --tags https://username:dh9dnas0nndnjnjasd4@bitbucket.org/somename/common.git\nremote: You may not have access to this repository or it no longer exists in this workspace. If you think this repository exists and you have access, make sure you are authenticated.\nfatal: Authentication failed for 'https://bitbucket.org/somename/common.git/'\n",
+        "stderr": "remote: You may not have access to this repository or it no longer exists in this workspace. If you think this repository exists and you have access, make sure you are authenticated.\nfatal: Authentication failed for 'https://bitbucket.org/somename/common.git/'\n"
+      }
+    }
+  }
+}

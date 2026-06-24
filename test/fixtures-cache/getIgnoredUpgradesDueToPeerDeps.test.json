@@ -1,0 +1,26 @@
+{
+  "getIgnoredUpgradesDueToPeerDeps > ignored peer after upgrade": {
+    "spawnPlease": {
+      "command: npm, args: --json :: view :: @vitest/ui@1.6.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"vitest\": \"1.6.0\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: eslint-plugin-unused-imports@4.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"eslint\": \"9\",\n  \"@typescript-eslint/eslint-plugin\": \"8\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: vitest@1.6.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"jsdom\": \"*\",\n  \"happy-dom\": \"*\",\n  \"@vitest/ui\": \"1.6.0\",\n  \"@types/node\": \"^18.0.0 || >=20.0.0\",\n  \"@vitest/browser\": \"1.6.0\",\n  \"@edge-runtime/vm\": \"*\"\n}\n"
+      }
+    }
+  },
+  "getIgnoredUpgradesDueToPeerDeps > ncu-test-peer-update": {
+    "spawnPlease": {
+      "command: npm, args: --json :: view :: ncu-test-return-version@2.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      }
+    }
+  }
+}

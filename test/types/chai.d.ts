@@ -23,4 +23,8 @@ declare global {
   interface Object {
     should: Chai.Assertion
   }
+
+  // Chai's should() returns should object, but we use the prototype extension
+  // so this is just for type awareness
+  var should: any
 }

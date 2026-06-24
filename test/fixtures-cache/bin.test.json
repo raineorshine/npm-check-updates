@@ -1,0 +1,11 @@
+{
+  "bin > embedded versions > strip url from GitHub url in \"to\" output": {
+    "getGitTags": {
+      "https://github.com/raineorshine/ncu-test-v2.git": {
+        "v0.1.0": "16910ae4a91ed41d1803f823f320e9122a0a5b29",
+        "v1.0.0": "9643e16efeb39c27bfe97f8f6462cc830767176d",
+        "v2.0.0": "d1810298bf7dfd05b671a37317c413bc1afd7747"
+      }
+    }
+  }
+}

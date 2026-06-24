@@ -1,7 +1,4 @@
 import determinePackageManager from '../src/lib/determinePackageManager'
-import chaiSetup from './helpers/chaiSetup'
-
-chaiSetup()
 
 const isWindows = process.platform === 'win32'
 

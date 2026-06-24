@@ -1,8 +1,5 @@
 import chalk, { chalkInit } from '../src/lib/chalk'
 import * as versionUtil from '../src/lib/version-util'
-import chaiSetup from './helpers/chaiSetup'
-
-const should = chaiSetup()
 
 describe('version-util', () => {
   describe('upgradeDependencyDeclaration', () => {

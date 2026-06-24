@@ -30,6 +30,10 @@ async function getGitTags(url: string): Promise<Index<string>> {
   return tags
 }
 
+export const gitApi = {
+  getGitTags,
+}
+
 /** Gets remote versions sorted. */
 async function getSortedVersions(
   name: string,
@@ -43,14 +47,14 @@ async function getSortedVersions(
 
   try {
     if (protocol !== null) {
-      tags = await getGitTags(
+      tags = await gitApi.getGitTags(
         `${protocol ? protocol.replace('git+', '') : 'https:'}//${auth ? auth + '@' : ''}${host}/${path?.replace(/^:/, '')}`,
       )
     } else {
       try {
-        tags = await getGitTags(`ssh://git@${host}/${path?.replace(/^:/, '')}`)
+        tags = await gitApi.getGitTags(`ssh://git@${host}/${path?.replace(/^:/, '')}`)
       } catch {
-        tags = await getGitTags(`https://${auth ? auth + '@' : ''}${host}/${path}`)
+        tags = await gitApi.getGitTags(`https://${auth ? auth + '@' : ''}${host}/${path}`)
       }
     }
   } catch (e) {

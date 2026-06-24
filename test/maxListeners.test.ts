@@ -1,8 +1,5 @@
 import ncu from '../src/'
-import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
-
-chaiSetup()
 
 const packageData = JSON.stringify({
   dependencies: { express: '1.0.0' },
@@ -19,7 +16,7 @@ describe('max listeners', function () {
 
     const afterCount = process.listenerCount('exit')
 
-    stub.restore()
+    stub.mockRestore()
 
     afterCount.should.equal(beforeCount)
   })

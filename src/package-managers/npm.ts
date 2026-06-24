@@ -28,6 +28,37 @@ import type { CooldownInfo, VersionResult } from '../types/VersionResult'
 import type { VersionSpec } from '../types/VersionSpec'
 import { filterPredicate, satisfiesCooldownPeriod } from './filters'
 
+interface NpmApi {
+  fetchUpgradedPackumentMemo: (
+    packageName: string,
+    fields: (keyof Packument)[],
+    currentVersion: Version,
+    options: Options,
+    retried?: number,
+    npmConfigLocal?: NpmConfig,
+    npmConfigWorkspaceProject?: NpmConfig,
+  ) => Promise<Partial<Packument> | undefined>
+  findNpmConfig: (configPath?: string | undefined) => NpmConfig | null
+  mockFetchUpgradedPackument: (mockReturnedVersions: MockedVersions) => typeof fetchUpgradedPackument
+  fetchPartialPackument: (
+    name: string,
+    fields: (keyof Packument)[],
+    tag: string | null,
+    opts?: npmRegistryFetch.FetchOptions,
+    version?: Version,
+  ) => Promise<Partial<Packument>>
+  fetchUpgradedPackument: typeof fetchUpgradedPackument
+  mockFetchPartialPackument: (mockReturnedVersions: MockedVersions) => typeof fetchPartialPackument
+}
+
+/**
+ * ES Modules cannot be stubbed
+ * To allow stubbing of npm functions in tests, we export the functions that
+ * need to be stubbed as properties of an object (npmApi) that can be
+ * imported and stubbed in tests without affecting the rest of the module.
+ */
+export const npmApi = {} as NpmApi
+
 const EXPLICIT_RANGE_OPS = new Set(['-', '||', '&&', '<', '<=', '>', '>='])
 
 /** Returns true if the spec is an explicit version range (not ~ or ^). */
@@ -48,6 +79,13 @@ const fetchPartialPackument = async (
   opts: npmRegistryFetch.FetchOptions = {},
   version?: Version,
 ): Promise<Partial<Packument>> => {
+  // we already aborted this upgrade by timeoutPromise in run
+  // there is no point to fetch now
+  if (opts.ncuTimeoutSignal?.aborted) {
+    throw new Error(`Exceeded global timeout of ${opts.timeout}ms`)
+  }
+  delete opts.ncuTimeoutSignal
+
   const corgiDoc = 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
   const fullDoc = 'application/json'
 
@@ -121,6 +159,10 @@ const fetchPartialPackument = async (
       return partialPackument
     }
   } catch (err: any) {
+    if (err.name === 'AbortError' || err.code === 'ABORT_ERR') {
+      throw err
+    }
+
     if (err.code !== 'E404' || opts.fullMetadata) {
       throw err
     }
@@ -129,6 +171,9 @@ const fetchPartialPackument = async (
     return fetchPartialPackument(name, fields, tag, { ...opts, fullMetadata: true }, version)
   }
 }
+
+/** Export fetchPartialPackument for testing purposes. @internal */
+npmApi.fetchPartialPackument = fetchPartialPackument
 
 interface GreatestWithFallbackResult {
   targetVersion: string | null
@@ -428,30 +473,17 @@ export const normalizeNpmConfig = (
   return config
 }
 
-interface NpmApi {
-  fetchUpgradedPackumentMemo: (
-    packageName: string,
-    fields: (keyof Packument)[],
-    currentVersion: Version,
-    options: Options,
-    retried?: number,
-    npmConfigLocal?: NpmConfig,
-    npmConfigWorkspaceProject?: NpmConfig,
-  ) => Promise<Partial<Packument> | undefined>
-  findNpmConfig: (configPath?: string | undefined) => NpmConfig | null
-  mockFetchUpgradedPackument: (mockReturnedVersions: MockedVersions) => typeof fetchUpgradedPackument
-}
-
-/**
- * ES Modules cannot be stubbed
- * To allow stubbing of npm functions in tests, we export the functions that
- * need to be stubbed as properties of an object (npmApi) that can be
- * imported and stubbed in tests without affecting the rest of the module.
- */
-export const npmApi = {} as NpmApi
-
 /** Finds and parses the npm config at the given path. If the path does not exist, returns null. If no path is provided, finds and merges the global and user npm configs using libnpmconfig and sets cache: false. */
 npmApi.findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
+  // If it's a test, completely bypass reading environment variables or local host files
+  // (Unless the test explicitly passed a configPath to test a specific behavior)
+  if (process.env.NCU_TESTS && !configPath) {
+    return {
+      configNames: ['npmrc', '.npmrc'],
+      envPrefix: {},
+    } as unknown as NpmConfig
+  }
+
   let config
 
   if (configPath) {
@@ -521,7 +553,7 @@ export async function packageAuthorChanged(
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<boolean> {
-  const result = await fetchPartialPackument(packageName, ['versions'], null, {
+  const result = await npmApi.fetchPartialPackument(packageName, ['versions'], null, {
     ...npmConfigLocal,
     ...npmConfig,
     fullMetadata: true,
@@ -548,20 +580,37 @@ const isPackument = (o: any): o is Partial<Packument> => !!(o && (o.name || o.en
 npmApi.mockFetchUpgradedPackument =
   (mockReturnedVersions: MockedVersions): typeof fetchUpgradedPackument =>
   (name: string, fields: (keyof Packument)[], currentVersion: Version, options: Options) => {
+    // nothing to mock, see original function
+    if (isExactVersion(currentVersion)) {
+      return Promise.resolve({} as Index<Packument>)
+    }
+
+    // if timeoutPromise from run aborted throw the same error
+    const message = `Exceeded global timeout of ${options.timeout}ms (mocked)`
+    if (options.ncuTimeoutSignal?.aborted) {
+      throw new Error(message)
+    }
+
+    options.ncuTimeoutSignal?.addEventListener('abort', () => {
+      throw new Error(message)
+    })
+
     // a partial Packument
     const partialPackument =
       typeof mockReturnedVersions === 'function'
         ? mockReturnedVersions(options)?.[name]
         : typeof mockReturnedVersions === 'string' || isPackument(mockReturnedVersions)
           ? mockReturnedVersions
-          : mockReturnedVersions[name]
+          : (mockReturnedVersions[name] ?? mockReturnedVersions.default)
 
-    const version = isPackument(partialPackument) ? partialPackument.version : partialPackument
-
-    if (!version) {
-      throw new Error(
-        `fetchUpgradedPackument is mocked, but no mock version was supplied for ${name}. Make sure that all dependencies are mocked. `,
-      )
+    let version: string | undefined = ''
+    if (!(partialPackument as any)?.skipVersionValidation) {
+      version = isPackument(partialPackument) ? partialPackument.version : partialPackument
+      if (!version) {
+        throw new Error(
+          `fetchUpgradedPackument is mocked, but no mock version was supplied for ${name}. Make sure that all dependencies are mocked. `,
+        )
+      }
     }
 
     const time =
@@ -571,7 +620,7 @@ npmApi.mockFetchUpgradedPackument =
     const packument: Packument = {
       name,
       'dist-tags': {
-        [options.distTag || 'latest']: version,
+        [options?.distTag || 'latest']: version,
       },
       engines: { node: '' },
       time: {
@@ -594,6 +643,28 @@ npmApi.mockFetchUpgradedPackument =
       },
     })
   }
+
+/** Used for testing fetchPartialPackument. */
+npmApi.mockFetchPartialPackument = (mockReturnedVersions: MockedVersions): typeof fetchPartialPackument => {
+  const mockFetch = npmApi.mockFetchUpgradedPackument(mockReturnedVersions)
+  return async (name: string, fields: (keyof Packument)[], tag: string | null, opts?: any, version?: Version) => {
+    const packument = await mockFetch(name, fields, '', {
+      distTag: tag || undefined,
+      ncuTimeoutSignal: opts.ncuTimeoutSignal,
+      timeout: opts.timeout,
+    })
+    if (!packument) {
+      return { name, versions: {} }
+    }
+
+    const isExist = version ? Object.keys(packument?.versions ?? {}).find(v => v === version) : true
+    if (!isExist) {
+      throw new Error(`404 Not Found - GET https://registry.npmjs.org/${name}/${version}}`)
+    }
+
+    return packument
+  }
+}
 
 /** Merges the workspace, global, user, local, project, and cwd npm configs (in that order). */
 // Note that this is memoized on configs and options, but not on package name. This avoids duplicate messages when log level is verbose. findNpmConfig is memoized on config path, so it is not expensive to call multiple times.
@@ -655,6 +726,7 @@ const mergeNpmConfigs = memoize(
       ...npmConfigCWD,
       ...(options.registry ? { registry: options.registry, silent: true } : null),
       ...(options.timeout ? { timeout: options.timeout } : null),
+      ...(options.ncuTimeoutSignal ? { ncuTimeoutSignal: options.ncuTimeoutSignal } : null),
     }
 
     const isMerged = npmConfigWorkspaceProject || npmConfigLocal || npmConfigProject || npmConfigCWD
@@ -693,6 +765,10 @@ async function fetchUpgradedPackument(
     return npmApi.mockFetchUpgradedPackument(mockReturnedVersions)(packageName, fields, currentVersion, options)
   }
 
+  if (options.ncuTimeoutSignal?.aborted) {
+    throw new Error(`Exceeded global timeout of ${options.timeout}ms`)
+  }
+
   if (isExactVersion(currentVersion)) {
     return {} as Index<Packument>
   }
@@ -714,7 +790,7 @@ async function fetchUpgradedPackument(
   let result: Partial<Packument> | undefined
   try {
     const tag = options.distTag || 'latest'
-    result = await fetchPartialPackument(
+    result = await npmApi.fetchPartialPackument(
       packageName,
       Array.from(
         new Set([
@@ -728,6 +804,10 @@ async function fetchUpgradedPackument(
       npmConfigMerged,
     )
   } catch (err: any) {
+    if (err.name === 'AbortError' || err.code === 'ABORT_ERR') {
+      throw err
+    }
+
     if (options.retry && ++retried <= options.retry) {
       return fetchUpgradedPackument(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
     }
@@ -737,6 +817,9 @@ async function fetchUpgradedPackument(
 
   return result
 }
+
+/** Export fetchPartialPackument for testing purposes. @internal */
+npmApi.fetchUpgradedPackument = fetchUpgradedPackument
 
 /** Memoize fetchUpgradedPackument for --deep and --workspaces performance. */
 // must be exported to stub
@@ -787,6 +870,7 @@ async function spawnNpm(
     '--json',
     ...(Array.isArray(args) ? args : [args]),
   ]
+
   const { stdout } = await spawnCommand('npm', fullArgs, spawnPleaseOptions, spawnOptions)
   return stdout
 }
@@ -914,7 +998,7 @@ export const getEngines = async (
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<Index<VersionSpec | undefined>> => {
-  const result = await fetchPartialPackument(
+  const result = await npmApi.fetchPartialPackument(
     packageName,
     [`engines`],
     null,
@@ -1013,8 +1097,8 @@ export const distTag: GetVersion = async (
   const current = (nodeSemver.validRange(currentVersion) && nodeSemver.minVersion(currentVersion)?.version) || '0.0.0'
 
   const isSatisfiesCooldown =
-    tagPackument.version === current ||
-    (tagPackument && satisfiesCooldownPeriod(packageName, tagPackument.version, publishTime, options.cooldown))
+    tagPackument?.version === current ||
+    (tagPackument && satisfiesCooldownPeriod(packageName, tagPackument?.version, publishTime, options.cooldown))
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it

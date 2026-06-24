@@ -1,0 +1,30 @@
+{
+  "getPeerDependenciesFromRegistry > multiple packages": {
+    "spawnPlease": {
+      "command: npm, args: --json :: view :: ncu-test-peer@1.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n"
+      },
+      "command: npm, args: --json :: view :: ncu-test-return-version@1.0.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      }
+    }
+  },
+  "getPeerDependenciesFromRegistry > single package": {
+    "spawnPlease": {
+      "command: npm, args: --json :: view :: ncu-test-peer@1.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": "{\n  \"ncu-test-return-version\": \"1.x\"\n}\n"
+      }
+    }
+  },
+  "getPeerDependenciesFromRegistry > single package empty": {
+    "spawnPlease": {
+      "command: npm, args: --json :: view :: ncu-test-return-version@1.0 :: peerDependencies": {
+        "stderr": "",
+        "stdout": ""
+      }
+    }
+  }
+}

@@ -1,20 +1,13 @@
 import fs from 'fs/promises'
 import os from 'os'
-import path, { dirname } from 'path'
-import spawn from 'spawn-please'
-import { fileURLToPath } from 'url'
-import chaiSetup from './helpers/chaiSetup'
+import path from 'path'
 import removeDir from './helpers/removeDir'
+import { runNcuCli } from './helpers/runNcuCli'
 import stubVersions from './helpers/stubVersions'
 
-const should = chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const bin = path.join(__dirname, '../build/cli.js')
-
 describe('--interactive', () => {
-  let stub: { restore: () => void }
-  before(() => {
+  let stub: { mockRestore: () => void }
+  beforeEach(() => {
     stub = stubVersions(
       {
         'ncu-test-v2': '2.0.0',
@@ -26,8 +19,9 @@ describe('--interactive', () => {
       { spawn: true },
     )
   })
-  after(() => {
-    stub.restore()
+
+  afterEach(() => {
+    stub.mockRestore()
   })
 
   it('prompt for each upgraded dependency', async () => {
@@ -41,18 +35,10 @@ describe('--interactive', () => {
       'utf-8',
     )
     try {
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--interactive'],
-        {},
-        {
-          cwd: tempDir,
-          env: {
-            ...process.env,
-            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
-          },
-        },
-      )
+      const { stdout } = await runNcuCli(['--interactive'], {
+        cwd: tempDir,
+        inject: [['ncu-test-v2', 'ncu-test-return-version'], true],
+      })
 
       should.equal(/^Upgrading/m.test(stdout), true)
 
@@ -83,18 +69,10 @@ describe('--interactive', () => {
       'utf-8',
     )
     try {
-      await spawn(
-        'node',
-        [bin, '--interactive', '--format', 'group'],
-        {},
-        {
-          cwd: tempDir,
-          env: {
-            ...process.env,
-            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
-          },
-        },
-      )
+      await runNcuCli(['--interactive', '--format', 'group'], {
+        cwd: tempDir,
+        inject: [['ncu-test-v2', 'ncu-test-return-version'], true],
+      })
 
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.dependencies.should.deep.equal({
@@ -128,18 +106,10 @@ describe('--interactive', () => {
     const configFile = path.join(tempDir, '.ncurc.js')
     await fs.writeFile(configFile, `module.exports = { groupFunction: () => 'minor' }`, 'utf-8')
     try {
-      await spawn(
-        'node',
-        [bin, '--interactive', '--format', 'group', '--configFilePath', tempDir],
-        {},
-        {
-          cwd: tempDir,
-          env: {
-            ...process.env,
-            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
-          },
-        },
-      )
+      await runNcuCli(['--interactive', '--format', 'group', '--configFilePath', tempDir], {
+        cwd: tempDir,
+        inject: [['ncu-test-v2', 'ncu-test-return-version'], true],
+      })
 
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       upgradedPkg.dependencies.should.deep.equal({
@@ -168,20 +138,19 @@ describe('--interactive', () => {
       }),
       'utf-8',
     )
+    const modernDiacriticsPath = path.join(tempDir, 'node_modules', 'modern-diacritics')
+    await fs.mkdir(modernDiacriticsPath, { recursive: true })
+    const modernDiacriticsPkgFile = path.join(modernDiacriticsPath, 'package.json')
+    await fs.writeFile(
+      modernDiacriticsPkgFile,
+      JSON.stringify({ repository: 'https://github.com/Mitsunee/modern-diacritics' }),
+      'utf-8',
+    )
     try {
-      await spawn('npm', ['install'], {}, { cwd: tempDir })
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--interactive', '--format', 'repo'],
-        {},
-        {
-          cwd: tempDir,
-          env: {
-            ...process.env,
-            INJECT_PROMPTS: JSON.stringify([['modern-diacritics'], true]),
-          },
-        },
-      )
+      const { stdout } = await runNcuCli(['--interactive', '--format', 'repo'], {
+        cwd: tempDir,
+        inject: [['modern-diacritics'], true],
+      })
 
       stdout.should.include('https://github.com/Mitsunee/modern-diacritics')
     } finally {

@@ -3,11 +3,8 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import ncu from '../src/'
-import chaiSetup from './helpers/chaiSetup'
 import removeDir from './helpers/removeDir'
 import stubVersions from './helpers/stubVersions'
-
-chaiSetup()
 
 describe('filterResults', () => {
   it('should return only major versions updated', async () => {
@@ -51,7 +48,7 @@ describe('filterResults', () => {
       expect(upgraded).to.not.have.property('ncu-test-return-version')
     } finally {
       await removeDir(tempDir)
-      stub.restore()
+      stub.mockRestore()
     }
   })
 })

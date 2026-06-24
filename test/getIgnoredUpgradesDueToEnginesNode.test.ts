@@ -1,10 +1,7 @@
 import getIgnoredUpgradesDueToEnginesNode from '../src/lib/getIgnoredUpgradesDueToEnginesNode'
-import chaiSetup from './helpers/chaiSetup'
 
 const MOCK_ESLINT_VERSION = '999.0.0'
 const MOCK_DEL_VERSION = '999.0.1'
-
-chaiSetup()
 
 /* This test needs to be rewritten because it is run against live data that affects the outcome of the test. The eslint and del versions were mocked in order to prevent this, but now the latest del.enginesNode is >=18 which fails the test. This data should either be mocked or the target packages should be entirely replaced by packages under our control. */
 describe.skip('getIgnoredUpgradesDueToEnginesNode', function () {
