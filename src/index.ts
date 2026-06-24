@@ -223,7 +223,7 @@ const install = async (
 }
 
 /** Runs the dependency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
-async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<Index<string> | PackageFile | void> {
+async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<Index<VersionSpec> | PackageFile | void> {
   const [selectedPackageInfos, workspacePackages]: [PackageInfo[], string[]] = await getAllPackages(options)
 
   let packageFilepaths: string[] = selectedPackageInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
@@ -337,11 +337,8 @@ async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<
 
 /** Main entry point.
  *
- * @returns Promise<
- * PackageFile                    Default returns upgraded package file.
- * | Index<VersionSpec>    --jsonUpgraded returns only upgraded dependencies.
- * | void                         --global upgrade returns void.
- * >
+ * @returns The upgraded package file by default, an {@link Index} of only the
+ * upgraded dependencies with `--jsonUpgraded`, or `void` with `--global`.
  */
 export async function run(
   runOptions: RunOptions = {},
