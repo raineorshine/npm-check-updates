@@ -278,7 +278,6 @@ describe('doctor', function () {
     it('handle failed prepare script', async () => {
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgPath = path.join(tempDir, 'package.json')
-      await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
 
       // package.json
       await fs.writeFile(
@@ -363,6 +362,23 @@ else {
   })
 
   describe('yarn', () => {
+    // yarn classic drops yarn--<timestamp> proxy-script dirs in the temp dir and does not reliably clean them up
+    let preexistingYarnTmp: Set<string>
+
+    before(async () => {
+      const entries = await fs.readdir(os.tmpdir())
+      preexistingYarnTmp = new Set(entries.filter(entry => entry.startsWith('yarn--')))
+    })
+
+    after(async () => {
+      const entries = await fs.readdir(os.tmpdir())
+      await Promise.all(
+        entries
+          .filter(entry => entry.startsWith('yarn--') && !preexistingYarnTmp.has(entry))
+          .map(entry => removeDir(path.join(os.tmpdir(), entry))),
+      )
+    })
+
     testPass({ packageManager: 'yarn' })
     testFail({ packageManager: 'yarn' })
   })
