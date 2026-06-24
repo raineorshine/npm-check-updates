@@ -289,6 +289,46 @@ describe('run', function () {
       }
     })
 
+    // https://github.com/raineorshine/npm-check-updates/issues/1477
+    it('preserve $ override references', async () => {
+      const stub = stubVersions('99.9.9')
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const packageFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        packageFile,
+        JSON.stringify(
+          {
+            dependencies: {
+              'ncu-test-v2': '^1.0.0',
+            },
+            overrides: {
+              'ncu-test-v2': '$ncu-test-v2',
+            },
+          },
+          null,
+          2,
+        ),
+        'utf-8',
+      )
+
+      try {
+        await ncu({ packageFile, upgrade: true })
+
+        const upgradedPkg = JSON.parse(await fs.readFile(packageFile, 'utf-8'))
+        upgradedPkg.should.deep.equal({
+          dependencies: {
+            'ncu-test-v2': '^99.9.9',
+          },
+          overrides: {
+            'ncu-test-v2': '$ncu-test-v2',
+          },
+        })
+      } finally {
+        await removeDir(tempDir)
+        stub.restore()
+      }
+    })
+
     it('upgrade self override', async () => {
       const stub = stubVersions('99.9.9')
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
