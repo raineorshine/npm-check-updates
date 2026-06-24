@@ -3,6 +3,7 @@ import fs from 'fs/promises'
 import ncu from '../src/'
 import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
 import { CURRENT_CACHE_SCHEMA, type CacheData } from '../src/types/Cacher'
+import type { Packument } from '../src/types/Packument'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 
@@ -193,5 +194,53 @@ describe('cache', () => {
       await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
       stub.restore()
     }
+  })
+
+  describe('cooldown', () => {
+    // 2.0.0 is within the cooldown window, so a cooldown run resolves to the 1.5.0 fallback
+    const mockVersions = {
+      'ncu-test-v2': {
+        version: '2.0.0',
+        'dist-tags': { latest: '2.0.0' },
+        versions: {
+          '1.0.0': { version: '1.0.0' } as Packument,
+          '1.5.0': { version: '1.5.0' } as Packument,
+          '2.0.0': { version: '2.0.0' } as Packument,
+        },
+        time: {
+          '1.0.0': getTime(30),
+          '1.5.0': getTime(20),
+          '2.0.0': getTime(1),
+        },
+      },
+    }
+    const packageData = { dependencies: { 'ncu-test-v2': '^1.0.0' } }
+
+    it('does not write to the cache when cooldown is active', async () => {
+      const stub = stubVersions(mockVersions)
+      try {
+        await ncu({ packageData, cache: true, cooldown: 7 })
+
+        const cacheData: CacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
+        expect(cacheData.packages).deep.eq({})
+      } finally {
+        await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
+
+    it('does not poison the cache for a later non-cooldown run', async () => {
+      const stub = stubVersions(mockVersions)
+      try {
+        await ncu({ packageData, cache: true, cooldown: 7 })
+
+        // a subsequent non-cooldown run must report the real latest, not the cached fallback
+        const result = await ncu({ packageData, cache: true })
+        expect(result).deep.eq({ 'ncu-test-v2': '^2.0.0' })
+      } finally {
+        await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
   })
 })
