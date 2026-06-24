@@ -91,7 +91,7 @@ const npmRegistryKeyValue = (dep: string, scopedConfig: NpmScope): null | Index<
  *
  * Exported for test purposes only.
  *
- * @param readdirSync This is only a parameter so that it can be used in tests.
+ * @param readdir This is only a parameter so that it can be used in tests.
  */
 export async function getPathToLookForYarnrc(
   options: Options,
@@ -106,7 +106,7 @@ export async function getPathToLookForYarnrc(
 }
 
 // If private registry auth is specified in npmScopes in .yarnrc.yml, read them in and convert them to npm config variables.
-// Define as a memoized function to efficiently call existsSync and readFileSync only once, and only if yarn is being used.
+// Define as a memoized function to efficiently call exists and readFile only once, and only if yarn is being used.
 // https://github.com/raineorshine/npm-check-updates/issues/1036
 const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> => {
   const yarnrcLocalPath = await getPathToLookForYarnrc(options)
