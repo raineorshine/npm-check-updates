@@ -1,5 +1,5 @@
 /**
- * Loggin functions.
+ * Logging functions.
  */
 import fs from 'node:fs/promises'
 import Table from 'cli-table3'
