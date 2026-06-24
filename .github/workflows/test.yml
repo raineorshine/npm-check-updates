@@ -61,5 +61,3 @@ jobs:
 
       - name: Unit Tests
         run: npm run test:unit
-        env:
-          NODE_OPTIONS: ${{ matrix.os == 'windows-latest' && '--dns-result-order=ipv4first' || '' }}
