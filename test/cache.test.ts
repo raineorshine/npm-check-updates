@@ -3,8 +3,8 @@ import fs from 'fs/promises'
 import ncu from '../src/'
 import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
 import { CURRENT_CACHE_SCHEMA, type CacheData } from '../src/types/Cacher'
-import type { Packument } from '../src/types/Packument'
 import chaiSetup from './helpers/chaiSetup'
+import createMockVersion from './helpers/createMockVersion'
 import stubVersions from './helpers/stubVersions'
 
 chaiSetup()
@@ -199,20 +199,15 @@ describe('cache', () => {
   describe('cooldown', () => {
     // 2.0.0 is within the cooldown window, so a cooldown run resolves to the 1.5.0 fallback
     const mockVersions = {
-      'ncu-test-v2': {
-        version: '2.0.0',
-        'dist-tags': { latest: '2.0.0' },
+      'ncu-test-v2': createMockVersion({
+        name: 'ncu-test-v2',
         versions: {
-          '1.0.0': { version: '1.0.0' } as Packument,
-          '1.5.0': { version: '1.5.0' } as Packument,
-          '2.0.0': { version: '2.0.0' } as Packument,
-        },
-        time: {
           '1.0.0': getTime(30),
           '1.5.0': getTime(20),
           '2.0.0': getTime(1),
         },
-      },
+        distTags: { latest: '2.0.0' },
+      }),
     }
     const packageData = { dependencies: { 'ncu-test-v2': '^1.0.0' } }
 
