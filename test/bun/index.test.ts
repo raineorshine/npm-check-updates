@@ -4,17 +4,11 @@ import { fileURLToPath } from 'node:url'
 import * as bun from '../../src/package-managers/bun.ts'
 import chaiSetup from '../helpers/chaiSetup.ts'
 import { testFail, testPass } from '../helpers/doctorHelpers.ts'
+import mockNpmVersions from '../helpers/mockNpmVersions.ts'
 import stubVersions from '../helpers/stubVersions.ts'
 
 chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-const mockNpmVersions = {
-  emitter20: '2.0.0',
-  'ncu-test-return-version': '2.0.0',
-  'ncu-test-tag': '1.1.0',
-  'ncu-test-v2': '2.0.0',
-}
 
 describe('bun', function () {
   // Use a synchronous check to fail the suite immediately if bun is missing

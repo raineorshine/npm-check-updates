@@ -8,6 +8,7 @@ import { cliOptionsMap } from '../src/cli-options.ts'
 import { chalkInit } from '../src/lib/chalk.ts'
 import chaiSetup from './helpers/chaiSetup.ts'
 import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers.ts'
+import mockNpmVersions from './helpers/mockNpmVersions.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -16,13 +17,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
 const doctorTests = path.join(__dirname, 'test-data/doctor')
-
-const mockNpmVersions = {
-  emitter20: '2.0.0',
-  'ncu-test-return-version': '2.0.0',
-  'ncu-test-tag': '1.1.0',
-  'ncu-test-v2': '2.0.0',
-}
 
 /** Run the ncu CLI. */
 const ncu = async (
