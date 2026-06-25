@@ -4,6 +4,7 @@ import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
 import getPackageManager from './getPackageManager.ts'
+import { shouldShowProgressBar } from './logging.ts'
 
 type CircularData =
   | {
@@ -59,7 +60,7 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
 
   const numItems = Object.keys(packageMap).length
   let bar: ProgressBar
-  if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && numItems > 0) {
+  if (shouldShowProgressBar(options, numItems)) {
     bar = new ProgressBar('[:bar] :current/:total :percent', { total: numItems, width: 20 })
     bar.render()
   }
