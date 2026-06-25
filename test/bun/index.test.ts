@@ -4,16 +4,10 @@ import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import * as bun from '../../src/package-managers/bun.ts'
 import { testFail, testPass } from '../helpers/doctorHelpers.ts'
+import mockNpmVersions from '../helpers/mockNpmVersions.ts'
 import stubVersions from '../helpers/stubVersions.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-const mockNpmVersions = {
-  emitter20: '2.0.0',
-  'ncu-test-return-version': '2.0.0',
-  'ncu-test-tag': '1.1.0',
-  'ncu-test-v2': '2.0.0',
-}
 
 describe('bun', () => {
   // Use a synchronous check to fail the suite immediately if bun is missing
