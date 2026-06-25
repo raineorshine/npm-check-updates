@@ -5,13 +5,7 @@ import { type VersionSpec } from '../types/VersionSpec.ts'
  * other than a registry version (e.g. `file:` or pnpm's `catalog:`).
  */
 function isPackageManagerProtocol(spec: VersionSpec): boolean {
-  return (
-    spec.startsWith('file:') ||
-    spec.startsWith('link:') ||
-    spec.startsWith('workspace:') ||
-    spec.startsWith('catalog:') ||
-    spec.startsWith('portal:')
-  )
+  return ['file:', 'link:', 'workspace:', 'catalog:', 'portal:'].some(prefix => spec.startsWith(prefix))
 }
 
 export default isPackageManagerProtocol
