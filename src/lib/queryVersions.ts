@@ -11,6 +11,7 @@ import { type VersionSpec } from '../types/VersionSpec.ts'
 import { getChalk } from './chalk.ts'
 import getPackageManager from './getPackageManager.ts'
 import isPackageManagerProtocol from './isPackageManagerProtocol.ts'
+import { shouldShowProgressBar } from './logging.ts'
 import programError from './programError.ts'
 import keyValueBy from './utils/keyValueBy.ts'
 import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-util.ts'
@@ -28,7 +29,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   const globalPackageManager = getPackageManager(options, options.packageManager)
 
   let bar: ProgressBar | undefined
-  if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && packageList.length > 0) {
+  if (shouldShowProgressBar(options, packageList.length)) {
     bar = new ProgressBar('[:bar] :current/:total :percent', { total: packageList.length, width: 20 })
     bar.render()
   }
