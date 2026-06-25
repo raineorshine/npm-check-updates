@@ -76,6 +76,11 @@ export function printJson(options: Options, object: any) {
   }
 }
 
+/** Returns whether a progress bar should be shown for the given number of items. */
+export function shouldShowProgressBar(options: Options, total: number): boolean {
+  return !options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && total > 0
+}
+
 /** Print JSON object keys as string joined by character. */
 export function printSimpleJoinedString(object: any, join: string) {
   console.log(
