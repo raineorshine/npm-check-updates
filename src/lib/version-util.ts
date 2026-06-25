@@ -307,6 +307,19 @@ export function compareVersions(a: string, b: string) {
 }
 
 /**
+ * Returns whether a version matches the current version at the given level: same major for minor,
+ * same major and minor for patch, anything for major. Returns null if the version is unparseable.
+ */
+function matchesLevel(v: string, cur: ReturnType<typeof semver.minVersion>, level: VersionLevel): boolean | null {
+  const parsed = semver.parse(v)
+  return (
+    parsed &&
+    (level === 'major' || parsed.major === cur?.major) &&
+    (level === 'major' || level === 'minor' || parsed.minor === cur?.minor)
+  )
+}
+
+/**
  * Finds the greatest version at the given level (minor|patch).
  *
  * @param versions  Unsorted array of all available versions
@@ -320,14 +333,7 @@ export function findGreatestByLevel(versions: string[], current: string, level: 
   }
 
   const cur = semver.minVersion(current)
-  const versionsSorted = [...versions].sort(compareVersions).filter(v => {
-    const parsed = semver.parse(v)
-    return (
-      parsed &&
-      (level === 'major' || parsed.major === cur?.major) &&
-      (level === 'major' || level === 'minor' || parsed.minor === cur?.minor)
-    )
-  })
+  const versionsSorted = [...versions].sort(compareVersions).filter(v => matchesLevel(v, cur, level))
 
   return versionsSorted.at(-1) || null
 }
@@ -341,14 +347,7 @@ export function filterByLevel(current: string, level: VersionLevel): (v: string)
   }
 
   const cur = semver.minVersion(current)
-  return (v: string) => {
-    const parsed = semver.parse(v)
-    return (
-      parsed &&
-      (level === 'major' || parsed.major === cur?.major) &&
-      (level === 'major' || level === 'minor' || parsed.minor === cur?.minor)
-    )
-  }
+  return (v: string) => matchesLevel(v, cur, level)
 }
 
 /** Returns a filter function that can be used to filter versions that satisfy a range. */
