@@ -38,6 +38,7 @@ const INTERACTIVE_HINT = `
   ↑/↓: Select a package
   Space: Toggle selection
   a: Toggle all
+  Esc/q: Quit
   Enter: Upgrade`
 
 /**
