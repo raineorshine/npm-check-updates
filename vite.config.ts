@@ -1,4 +1,4 @@
-import { chmodSync } from 'fs'
+import { chmodSync, rmSync } from 'fs'
 import dts from 'unplugin-dts/vite'
 import { type Plugin, defineConfig } from 'vite'
 import { analyzer } from 'vite-bundle-analyzer'
@@ -25,6 +25,8 @@ function chmodBinPlugin(): Plugin {
     writeBundle(_options, bundle) {
       if (bundle['cli.js']) {
         chmodSync('build/cli.js', 0o755)
+        // drop the empty `export {}` cli.d.ts dts emits for the export-less cli entry
+        rmSync('build/cli.d.ts', { force: true })
       }
     },
   }
