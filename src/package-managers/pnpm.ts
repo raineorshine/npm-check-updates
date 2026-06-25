@@ -7,6 +7,7 @@ import ini from 'ini'
 import { parse as parseYaml } from 'yaml'
 import { print } from '../lib/logging.ts'
 import spawnCommand from '../lib/spawnCommand.ts'
+import isString from '../lib/utils/isString.ts'
 import keyValueBy from '../lib/utils/keyValueBy.ts'
 import { type GetVersion } from '../types/GetVersion.ts'
 import { type Index } from '../types/IndexType.ts'
@@ -79,13 +80,13 @@ const coerceMinimumReleaseAge = (raw: unknown): number | undefined => {
  * which is how `pnpm config set` stores arrays in the ini-formatted `rc` file.
  */
 const coerceMinimumReleaseAgeExclude = (raw: unknown): string[] => {
-  if (Array.isArray(raw)) return raw.filter((x): x is string => typeof x === 'string')
+  if (Array.isArray(raw)) return raw.filter(isString)
   if (typeof raw === 'string') {
     const trimmed = raw.trim()
     if (trimmed.startsWith('[')) {
       try {
         const parsed = JSON.parse(trimmed)
-        if (Array.isArray(parsed)) return parsed.filter((x): x is string => typeof x === 'string')
+        if (Array.isArray(parsed)) return parsed.filter(isString)
       } catch {
         // fall through to treat the value as a single pattern
       }

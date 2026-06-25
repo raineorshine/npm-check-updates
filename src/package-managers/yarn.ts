@@ -9,6 +9,7 @@ import { print } from '../lib/logging.ts'
 import parseCooldown from '../lib/parseCooldown.ts'
 import spawnCommand from '../lib/spawnCommand.ts'
 import exists from '../lib/utils/exists.ts'
+import isString from '../lib/utils/isString.ts'
 import { keyValueBy } from '../lib/utils/keyValueBy.ts'
 import { type GetVersion } from '../types/GetVersion.ts'
 import { type Index } from '../types/IndexType.ts'
@@ -188,9 +189,7 @@ const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMini
     }
 
     const rawPreapproved = parsed.npmPreapprovedPackages
-    const npmPreapprovedPackages: string[] = Array.isArray(rawPreapproved)
-      ? rawPreapproved.filter((x): x is string => typeof x === 'string')
-      : []
+    const npmPreapprovedPackages: string[] = Array.isArray(rawPreapproved) ? rawPreapproved.filter(isString) : []
 
     return { npmMinimalAgeGate, npmPreapprovedPackages }
   }
