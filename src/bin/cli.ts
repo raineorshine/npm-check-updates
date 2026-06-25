@@ -8,12 +8,10 @@ import { chalkInit } from '../lib/chalk.ts'
 import getNcuRc from '../lib/getNcuRc.ts'
 import notifyUpdate from '../lib/notifyUpdate.ts'
 import { pickBy } from '../lib/pick.ts'
+import uncode from '../lib/uncode.ts'
 import { type RunOptions } from '../types/RunOptions.ts'
 
 const optionVersionDescription = 'Output the version number of npm-check-updates.'
-
-/** Removes inline code ticks. */
-const uncode = (s: string) => s.replaceAll('`', '')
 
 ;(async () => {
   notifyUpdate()

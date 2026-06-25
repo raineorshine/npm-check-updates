@@ -1,4 +1,5 @@
 import Table from 'cli-table3'
+import uncode from './uncode.ts'
 import wrap from './wrap.ts'
 
 /** Wraps the second column in a list of 2-column cli-table rows. */
@@ -29,7 +30,7 @@ const table = ({
     // Strip inline code backticks before computing the layout. In the CLI, backticks are removed
     // from the extended help output after the table is rendered, so including them here would
     // throw off cli-table3's column width calculation and break the right border alignment.
-    const uncodedRows = rows.map(cells => cells.map(cell => cell.replaceAll('`', '')))
+    const uncodedRows = rows.map(cells => cells.map(cell => uncode(cell)))
     const t = new Table({ ...(colAligns ? { colAligns } : null) })
     t.push(...wrapRows(uncodedRows))
     return t.toString()

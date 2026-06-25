@@ -4,6 +4,7 @@ import chalk from './lib/chalk.ts'
 import parseCooldown from './lib/parseCooldown.ts'
 import { sortBy } from './lib/sortBy.ts'
 import table from './lib/table.ts'
+import uncode from './lib/uncode.ts'
 import type CLIOption from './types/CLIOption.ts'
 import type ExtendedHelp from './types/ExtendedHelp.ts'
 import { type Index } from './types/IndexType.ts'
@@ -21,9 +22,6 @@ const padLeft = (s: string, n: number) =>
 /** Formats a code block for CLI or markdown. */
 const codeBlock = (code: string, { markdown, lang = 'js' }: { markdown?: boolean; lang?: string } = {}) =>
   `${markdown ? `\`\`\`${lang}\n` : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
-
-/** Removes inline code ticks. */
-const uncode = (s: string) => s.replaceAll('`', '')
 
 /** Parses a number from a string or number input. Throws if the value is not a number. */
 const parseNumberOption =
@@ -80,7 +78,7 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?:
     output += `\n${helpText.trim()}\n\n`
   } else if (option.description) {
     const description = markdown ? option.description : uncode(option.description)
-    output += `\n${description.replaceAll('`', '')}\n`
+    output += `\n${uncode(description)}\n`
   }
 
   return output.trim()
