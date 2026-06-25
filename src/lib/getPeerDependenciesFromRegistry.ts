@@ -5,7 +5,7 @@ import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
 import getPackageManager from './getPackageManager.ts'
 import isPackageManagerProtocol from './isPackageManagerProtocol.ts'
-import { print } from './logging.ts'
+import { print, shouldShowProgressBar } from './logging.ts'
 import resolveDistTagsInPeerDependencies from './resolveDistTagsInPeerDependencies.ts'
 import { isGitHubUrl, isWildcard } from './version-util.ts'
 
@@ -63,7 +63,7 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
 
   const numItems = Object.keys(packageMap).length
   let bar: ProgressBar
-  if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && numItems > 0) {
+  if (shouldShowProgressBar(options, numItems)) {
     bar = new ProgressBar('[:bar] :current/:total :percent', { total: numItems, width: 20 })
     bar.render()
   }
