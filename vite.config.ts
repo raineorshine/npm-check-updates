@@ -22,12 +22,13 @@ function buildOptionsPlugin(): Plugin {
 function chmodBinPlugin(): Plugin {
   return {
     name: 'chmod-bin',
-    writeBundle(_options, bundle) {
-      if (bundle['cli.js']) {
-        fs.chmodSync('build/cli.js', 0o755)
-        // drop the empty `export {}` cli.d.ts dts emits for the export-less cli entry
-        fs.rmSync('build/cli.d.ts', { force: true })
-      }
+    writeBundle(options) {
+      // only the ES round; the cjs round emits cli.cjs.
+      // chmodSync will throw if cli.js is missing so that we notice.
+      if (options.format !== 'es') return
+      fs.chmodSync('build/cli.js', 0o755)
+      // drop the empty `export {}` cli.d.ts dts emits for the export-less cli entry
+      fs.rmSync('build/cli.d.ts', { force: true })
     },
   }
 }
