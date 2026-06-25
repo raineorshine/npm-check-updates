@@ -8,19 +8,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { cliOptionsMap } from '../src/cli-options.ts'
 import { styleInit } from '../src/lib/style.ts'
 import { copyFixture, createNcuRegExp, ncu, testFail, testPass } from './helpers/doctorHelpers.ts'
+import mockNpmVersions from './helpers/mockNpmVersions.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const doctorTests = path.join(__dirname, 'test-data/doctor')
-
-const mockNpmVersions = {
-  emitter20: '2.0.0',
-  'ncu-test-return-version': '2.0.0',
-  'ncu-test-tag': '1.1.0',
-  'ncu-test-v2': '2.0.0',
-}
 
 // 3 min timeout
 describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
