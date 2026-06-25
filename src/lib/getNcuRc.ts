@@ -25,19 +25,22 @@ function getModuleMismatchError(errorMessage: string, filename: string): string 
   const basename = path.basename(filename)
 
   // Detect CommonJS syntax in ESM project (type: "module")
-  const isCjsInEsm =
-    errorMessage.includes('__filename is not defined') ||
-    errorMessage.includes('__dirname is not defined') ||
-    errorMessage.includes('require is not defined') ||
-    errorMessage.includes('module is not defined') ||
-    errorMessage.includes('exports is not defined')
+  const isCjsInEsm = [
+    '__filename is not defined',
+    '__dirname is not defined',
+    'require is not defined',
+    'module is not defined',
+    'exports is not defined',
+  ].some(s => errorMessage.includes(s))
 
   // Detect ESM syntax in CommonJS project (type: "commonjs" or default)
   const isEsmInCjs =
-    errorMessage.includes('Cannot use import statement outside a module') ||
-    errorMessage.includes("Unexpected token 'export'") ||
-    errorMessage.includes("Unexpected token 'import'") ||
-    errorMessage.includes('SyntaxError: export ') ||
+    [
+      'Cannot use import statement outside a module',
+      "Unexpected token 'export'",
+      "Unexpected token 'import'",
+      'SyntaxError: export ',
+    ].some(s => errorMessage.includes(s)) ||
     (errorMessage.includes('SyntaxError') && errorMessage.includes('import'))
 
   // Only provide specific guidance for .js files, not .cjs/.mjs
