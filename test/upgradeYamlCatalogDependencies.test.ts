@@ -14,7 +14,7 @@ catalog:
       upgrade: { path: ['catalog', 'react'], newValue: '19.0.0' },
     })
 
-    expect(updated).toBeDefined()
+    expect(updated).not.toBeNull()
     expect(updated).toBe(`nodeLinker: node-modules
 
 catalog:
@@ -35,7 +35,7 @@ catalogs:
       upgrade: { path: ['catalogs', 'react17', 'react'], newValue: '19.0.0' },
     })
 
-    expect(updated).toBeDefined()
+    expect(updated).not.toBeNull()
     expect(updated).toBe(`nodeLinker: node-modules
 
 catalogs:
@@ -54,7 +54,7 @@ catalogs:
       upgrade: { path: ['catalog', 'react'], newValue: '19.0.0' },
     })
 
-    expect(updated).toBeDefined()
+    expect(updated).not.toBeNull()
     expect(updated).toBe(yaml)
   })
 
@@ -99,7 +99,7 @@ catalog:
       upgrade: { path: ['catalog', 'react'], newValue: '19.0.0' },
     })
 
-    expect(updated).toBeDefined()
+    expect(updated).not.toBeNull()
     expect(updated).toBe(`catalog:
   react:    19.0.0 # keep this
   react-dom: 18.3.1

@@ -185,7 +185,7 @@ describe('yarn', () => {
       const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: 1440\n')
       try {
         const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        expect(result).toBeDefined()
+        expect(result).not.toBeNull()
         expect(result!.npmMinimalAgeGate).toBe(1440)
         expect(result!.npmPreapprovedPackages).toStrictEqual([])
       } finally {
@@ -197,7 +197,7 @@ describe('yarn', () => {
       const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: "3d"\n')
       try {
         const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        expect(result).toBeDefined()
+        expect(result).not.toBeNull()
         // "3d" → 3 days → 3 * 1440 = 4320 minutes
         expect(result!.npmMinimalAgeGate).toBe(3 * 1440)
         expect(result!.npmPreapprovedPackages).toStrictEqual([])
@@ -210,7 +210,7 @@ describe('yarn', () => {
       const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: "12h"\n')
       try {
         const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        expect(result).toBeDefined()
+        expect(result).not.toBeNull()
         // "12h" → 12/24 days → 0.5 * 1440 = 720 minutes
         expect(result!.npmMinimalAgeGate).toBe(720)
         expect(result!.npmPreapprovedPackages).toStrictEqual([])
@@ -235,7 +235,7 @@ describe('yarn', () => {
       )
       try {
         const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        expect(result).toBeDefined()
+        expect(result).not.toBeNull()
         // "7d" → 7 * 1440 = 10080 minutes
         expect(result!.npmMinimalAgeGate).toBe(7 * 1440)
         expect(result!.npmPreapprovedPackages).toStrictEqual(['@my-org/*'])
