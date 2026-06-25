@@ -4,6 +4,7 @@ import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import getPackageManager from './getPackageManager.ts'
+import { shouldShowProgressBar } from './logging.ts'
 
 /**
  * Get the engines.node versions from the NPM repository based on the version target.
@@ -18,7 +19,7 @@ async function getEnginesNodeFromRegistry(packageMap: Index<Version>, options: O
 
   const numItems = Object.keys(packageMap).length
   let bar: ProgressBar | undefined
-  if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && numItems > 0) {
+  if (shouldShowProgressBar(options, numItems)) {
     bar = new ProgressBar('[:bar] :current/:total :percent', { total: numItems, width: 20 })
     bar.render()
   }
