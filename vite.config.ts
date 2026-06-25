@@ -25,6 +25,8 @@ function chmodBinPlugin(): Plugin {
     writeBundle(_options, bundle) {
       if (bundle['cli.js']) {
         fs.chmodSync('build/cli.js', 0o755)
+        // drop the empty `export {}` cli.d.ts dts emits for the export-less cli entry
+        fs.rmSync('build/cli.d.ts', { force: true })
       }
     },
   }
