@@ -6,6 +6,7 @@ import { parse as parseYaml } from 'yaml'
 import exists from '../lib/exists.ts'
 import findLockfile from '../lib/findLockfile.ts'
 import interpolate from '../lib/interpolate.ts'
+import isString from '../lib/isString.ts'
 import { keyValueBy } from '../lib/keyValueBy.ts'
 import { print } from '../lib/logging.ts'
 import parseCooldown from '../lib/parseCooldown.ts'
@@ -181,9 +182,7 @@ const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMini
     }
 
     const rawPreapproved = parsed.npmPreapprovedPackages
-    const npmPreapprovedPackages: string[] = Array.isArray(rawPreapproved)
-      ? rawPreapproved.filter((x): x is string => typeof x === 'string')
-      : []
+    const npmPreapprovedPackages: string[] = Array.isArray(rawPreapproved) ? rawPreapproved.filter(isString) : []
 
     return { npmMinimalAgeGate, npmPreapprovedPackages }
   }
