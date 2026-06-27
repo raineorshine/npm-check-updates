@@ -1,6 +1,6 @@
 {
   "arrowParens": "avoid",
-  "importOrder": ["^\\.\\./", "^\\./"],
+  "importOrder": ["<BUILTIN_MODULES>", "<THIRD_PARTY_MODULES>", "^\\.\\./", "^\\./"],
   "importOrderSortSpecifiers": true,
   "overrides": [{ "files": "*.ts", "options": { "parser": "typescript" } }],
   "plugins": ["@trivago/prettier-plugin-sort-imports"],

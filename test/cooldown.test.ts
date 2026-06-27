@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // eslint doesn't like .to.be.false syntax
-import { expect } from 'chai'
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 import { stripVTControlCharacters } from 'node:util'
-import os from 'os'
-import path from 'path'
+import { expect } from 'chai'
 import Sinon from 'sinon'
 import ncu from '../src/'
 import { npmApi } from '../src/package-managers/npm'

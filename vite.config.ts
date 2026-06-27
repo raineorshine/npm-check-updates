@@ -1,4 +1,4 @@
-import { chmodSync } from 'fs'
+import fs from 'node:fs'
 import dts from 'unplugin-dts/vite'
 import { type Plugin, defineConfig } from 'vite'
 import { analyzer } from 'vite-bundle-analyzer'
@@ -23,7 +23,7 @@ function chmodBinPlugin(): Plugin {
   return {
     name: 'chmod-bin',
     closeBundle() {
-      chmodSync('build/cli.js', 0o755)
+      fs.chmodSync('build/cli.js', 0o755)
     },
   }
 }

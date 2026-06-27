@@ -1,4 +1,4 @@
-import { intersects, minVersion, satisfies, validRange } from 'semver'
+import semver from 'semver'
 import { type IgnoredUpgradeDueToPeerDeps } from '../types/IgnoredUpgradeDueToPeerDeps'
 import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
@@ -31,7 +31,7 @@ export async function getIgnoredUpgradesDueToPeerDeps(
           packageName,
           // git urls and other non-semver versions are ignored.
           // Make sure versionSpec is a valid semver range; otherwise, minVersion will throw.
-          validRange(versionSpec) ? (minVersion(versionSpec)?.version ?? versionSpec) : versionSpec,
+          semver.validRange(versionSpec) ? (semver.minVersion(versionSpec)?.version ?? versionSpec) : versionSpec,
         ]
       }),
     ),
@@ -47,9 +47,9 @@ export async function getIgnoredUpgradesDueToPeerDeps(
       if (
         peers[pkgName] !== undefined &&
         latestVersionResults[pkgName]?.version &&
-        !satisfies(latestVersionResults[pkgName].version!, peers[pkgName])
+        !semver.satisfies(latestVersionResults[pkgName].version!, peers[pkgName])
       ) {
-        reason[peerPkg] = !validRange(peers[pkgName])
+        reason[peerPkg] = !semver.validRange(peers[pkgName])
           ? `a range that semver does not understand: ${peers[pkgName]}. This range does not work with semver.satisfies or semver.intersects, which npm-check-updates relies on to determine peer dependency compatibility. Either this is a mistake in ${peerPkg}, or it relies on a new syntax that is not compatible with the semver package.`
           : peers[pkgName]
       }
@@ -61,8 +61,8 @@ export async function getIgnoredUpgradesDueToPeerDeps(
         if (
           upgradedPackagesWithPeerRestriction[peer] &&
           // Non-semver specs like catalog: references cannot be compared; treat as compatible
-          !!validRange(upgradedPackagesWithPeerRestriction[peer]) &&
-          !(!validRange(peerSpec) || intersects(upgradedPackagesWithPeerRestriction[peer], peerSpec))
+          !!semver.validRange(upgradedPackagesWithPeerRestriction[peer]) &&
+          !(!semver.validRange(peerSpec) || semver.intersects(upgradedPackagesWithPeerRestriction[peer], peerSpec))
         ) {
           reason[pkgName] = `${peer} ${peerSpec}`
         }

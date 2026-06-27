@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 import { defaultCacheFile } from './lib/cache'
 import chalk from './lib/chalk'
 import parseCooldown from './lib/parseCooldown'

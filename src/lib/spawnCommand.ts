@@ -1,4 +1,4 @@
-import { type SpawnOptions } from 'child_process'
+import { type SpawnOptions } from 'node:child_process'
 import spawn from 'spawn-please'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
 

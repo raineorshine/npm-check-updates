@@ -1,6 +1,6 @@
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
 import prompts from 'prompts-ncu'
-import nodeSemver from 'semver'
+import semver from 'semver'
 import { parseDocument } from 'yaml'
 import { type DependencyGroup } from '../types/DependencyGroup'
 import { type Index } from '../types/IndexType'
@@ -210,9 +210,7 @@ export default async function runLocal(
             packageName,
             // git urls and other non-semver versions are ignored.
             // Make sure versionSpec is a valid semver range; otherwise, minVersion will throw.
-            nodeSemver.validRange(versionSpec)
-              ? (nodeSemver.minVersion(versionSpec)?.version ?? versionSpec)
-              : versionSpec,
+            semver.validRange(versionSpec) ? (semver.minVersion(versionSpec)?.version ?? versionSpec) : versionSpec,
           ]
         }),
       ),
@@ -251,9 +249,7 @@ export default async function runLocal(
 
   // filter out satisfied deps when using --minimal
   const filteredUpgraded = options.minimal
-    ? keyValueBy(upgraded, (dep, version) =>
-        !nodeSemver.satisfies(latest[dep], current[dep]) ? { [dep]: version } : null,
-      )
+    ? keyValueBy(upgraded, (dep, version) => (!semver.satisfies(latest[dep], current[dep]) ? { [dep]: version } : null))
     : upgraded
 
   const ownersChangedDeps = (options.format || []).includes('ownerChanged')

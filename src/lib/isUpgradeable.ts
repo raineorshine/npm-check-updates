@@ -1,4 +1,4 @@
-import * as semver from 'semver'
+import semver from 'semver'
 import semverutils from 'semver-utils'
 import { type Version } from '../types/Version'
 import { type VersionSpec } from '../types/VersionSpec'

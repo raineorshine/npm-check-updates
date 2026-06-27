@@ -1,5 +1,5 @@
+import path from 'node:path'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
-import path from 'path'
 import spawn from 'spawn-please'
 import keyValueBy from '../lib/keyValueBy'
 import { type Index } from '../types/IndexType'

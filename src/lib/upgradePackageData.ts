@@ -1,5 +1,5 @@
-import fs from 'fs/promises'
-import path from 'path'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { parseDocument } from 'yaml'
 import { CatalogsConfig } from '../types/CatalogConfig'
 import { type Index } from '../types/IndexType'

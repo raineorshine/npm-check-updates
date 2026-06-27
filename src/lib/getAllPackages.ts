@@ -1,6 +1,6 @@
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import glob, { type Options as GlobOptions } from 'fast-glob'
-import fs from 'fs/promises'
-import path from 'path'
 import untildify from 'untildify'
 import { parse as parseYaml } from 'yaml'
 import { type Index } from '../types/IndexType'

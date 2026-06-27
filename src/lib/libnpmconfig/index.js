@@ -5,11 +5,11 @@ This is a copy of the deprecated libnpmconfig library. It has been brought into 
 https://github.com/npm/libnpmconfig
 
 */
-import { findUpSync } from 'find-up'
-import ini from 'ini'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { findUpSync } from 'find-up'
+import ini from 'ini'
 import figgyPudding from '../figgy-pudding'
 
 const NpmConfig = figgyPudding(

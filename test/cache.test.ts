@@ -1,5 +1,5 @@
+import fs from 'node:fs/promises'
 import { expect } from 'chai'
-import fs from 'fs/promises'
 import ncu from '../src/'
 import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
 import { CURRENT_CACHE_SCHEMA, type CacheData } from '../src/types/Cacher'

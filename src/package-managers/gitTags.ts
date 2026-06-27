@@ -2,7 +2,7 @@
 import childProcess from 'node:child_process'
 import { promisify } from 'node:util'
 import parseGitHubUrl from 'parse-github-url'
-import { valid } from 'semver'
+import nodeSemver from 'semver'
 import { print } from '../lib/logging'
 import * as versionUtil from '../lib/version-util'
 import { type GetVersion } from '../types/GetVersion'
@@ -62,9 +62,9 @@ async function getSortedVersions(
   return (
     Object.keys(tags)
       .map(versionUtil.fixPseudoVersion)
-      // do not pass semver.valid reference directly since the mapping index will be interpreted as the loose option
+      // do not pass nodeSemver.valid reference directly since the mapping index will be interpreted as the loose option
       // https://github.com/npm/node-semver#functions
-      .filter(tag => valid(tag))
+      .filter(tag => nodeSemver.valid(tag))
       .sort(versionUtil.compareVersions)
   )
 }

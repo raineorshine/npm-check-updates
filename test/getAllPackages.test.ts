@@ -1,12 +1,12 @@
-import path, { dirname } from 'path'
-import { fileURLToPath } from 'url'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import getAllPackages from '../src/lib/getAllPackages'
 import { type Options } from '../src/types/Options'
 import { type PackageInfo } from '../src/types/PackageInfo'
 import chaiSetup from './helpers/chaiSetup'
 
 chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /** forces path to a posix version (windows-style) */
 function asPosixPath(filepath: string): string {

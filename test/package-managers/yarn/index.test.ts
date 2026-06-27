@@ -1,14 +1,13 @@
-import fs from 'fs/promises'
 import { execFileSync } from 'node:child_process'
-import os from 'os'
-import path, { dirname } from 'path'
-import { fileURLToPath } from 'url'
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import * as yarn from '../../../src/package-managers/yarn'
-import { getPathToLookForYarnrc, yarnApi } from '../../../src/package-managers/yarn'
 import chaiSetup from '../../helpers/chaiSetup'
 
 const should = chaiSetup()
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const isWindows = process.platform === 'win32'
 
@@ -159,7 +158,7 @@ describe('yarn', function () {
         throw new Error(`Mock cannot handle path: ${path}.`)
       }
 
-      const yarnrcPath = await getPathToLookForYarnrc(
+      const yarnrcPath = await yarn.getPathToLookForYarnrc(
         {
           cwd: isWindows ? 'C:\\home\\test-repo\\packages\\package-a' : '/home/test-repo/packages/package-a',
         },
@@ -186,7 +185,7 @@ describe('yarn', function () {
     it('parses a numeric npmMinimalAgeGate (minutes) from .yarnrc.yml', async () => {
       const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: 1440\n')
       try {
-        const result = await yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
         should.exist(result)
         result!.npmMinimalAgeGate.should.equal(1440)
         result!.npmPreapprovedPackages.should.deep.equal([])
@@ -198,7 +197,7 @@ describe('yarn', function () {
     it('parses a duration string npmMinimalAgeGate ("3d") from .yarnrc.yml', async () => {
       const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: "3d"\n')
       try {
-        const result = await yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
         should.exist(result)
         // "3d" → 3 days → 3 * 1440 = 4320 minutes
         result!.npmMinimalAgeGate.should.equal(3 * 1440)
@@ -211,7 +210,7 @@ describe('yarn', function () {
     it('parses a duration string npmMinimalAgeGate ("12h") from .yarnrc.yml', async () => {
       const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: "12h"\n')
       try {
-        const result = await yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
         should.exist(result)
         // "12h" → 12/24 days → 0.5 * 1440 = 720 minutes
         result!.npmMinimalAgeGate.should.equal(720)
@@ -224,7 +223,7 @@ describe('yarn', function () {
     it('returns null for an invalid duration string from .yarnrc.yml', async () => {
       const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: "invalid"\n')
       try {
-        const result = await yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
         should.not.exist(result)
       } finally {
         await cleanup()
@@ -236,7 +235,7 @@ describe('yarn', function () {
         'npmMinimalAgeGate: "7d"\nnpmPreapprovedPackages:\n  - "@my-org/*"\n',
       )
       try {
-        const result = await yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
         should.exist(result)
         // "7d" → 7 * 1440 = 10080 minutes
         result!.npmMinimalAgeGate.should.equal(7 * 1440)
