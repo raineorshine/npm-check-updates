@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { type GlobOptions, globSync } from 'tinyglobby'
+import { type GlobOptions, glob } from 'tinyglobby'
 import untildify from 'untildify'
 import { parse as parseYaml } from 'yaml'
 import { type Index } from '../types/IndexType'
@@ -158,10 +158,10 @@ async function getWorkspacePackageInfos(
   // directory and prepend pkgDir to each match. This reproduces fast-glob's pattern-relative
   // paths (e.g. ../../packages/a/package.json), which downstream resolves and keys correctly.
   // e.g. [packages/a/package.json, ...]
-  const allWorkspacePackageFilepaths: string[] = globSync(workspacePackageGlob, {
-    ...globOptions,
-    cwd: path.resolve(pkgDir),
-  }).map(filepath => path.join(pkgDir, filepath).replace(/\\/g, '/'))
+  const workspaceMatches = await glob(workspacePackageGlob, { ...globOptions, cwd: path.resolve(pkgDir) })
+  const allWorkspacePackageFilepaths: string[] = workspaceMatches.map(filepath =>
+    path.join(pkgDir, filepath).replace(/\\/g, '/'),
+  )
 
   // Get the package names from the package files.
   // If a package does not have a name, use the folder name.
@@ -271,7 +271,7 @@ async function getAllPackages(options: Options): Promise<[PackageInfo[], string[
     // * NOT a workspace
     // * a workspace and have requested an upgrade of the workspace-root
     const globPattern = rootPackageFile.replace(/\\/g, '/')
-    const rootPackagePaths = globSync(globPattern, { ...globOptions, absolute: path.isAbsolute(globPattern) })
+    const rootPackagePaths = await glob(globPattern, { ...globOptions, absolute: path.isAbsolute(globPattern) })
     // realistically there should only be zero or one
     const rootPackages = await Promise.all(
       rootPackagePaths.map(
