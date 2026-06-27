@@ -12,11 +12,6 @@
 - CLI and module usage
 - **Pure ESM** architecture with dual-build support (ESM/CJS)
 
-> ## ⚠️ v21.0.0 Breaking Changes (ESM Migration)
->
-> `npm-check-updates` is now a dual ESM/CJS module. If you use a `.ncurc.js` config or programmatic imports,
-> please see the [ESM Migration Guide in the CHANGELOG](CHANGELOG.md#migration-guide) for required updates.
-
 <img width="500" alt="example output" src="https://github.com/user-attachments/assets/4808618b-ac20-4fc0-92e0-a777de70a2b6">
 
 $${\color{red}Red}$$ major upgrade (and all [major version zero](https://semver.org/#spec-item-4))<br/>
