@@ -28,6 +28,23 @@ function chmodBinPlugin(): Plugin {
   }
 }
 
+/**
+ * Replaces the given module ids with an empty default export.
+ * Used to drop optional dependencies that are bundled but never reached at runtime.
+ */
+function stubModulesPlugin(ids: string[]): Plugin {
+  return {
+    name: 'stub-modules',
+    enforce: 'pre',
+    resolveId(id) {
+      return ids.includes(id) ? id : null
+    },
+    load(id) {
+      return ids.includes(id) ? 'export default {}' : null
+    },
+  }
+}
+
 /** A simple helper to run analyzer plugin only once */
 function analyzerOnce(): Plugin {
   let ran = false
@@ -68,6 +85,11 @@ export default defineConfig(({ mode }) => ({
       outDirs: 'build',
     }),
     chmodBinPlugin(),
+    /**
+     * iconv-lite is an optional dep of minipass-fetch, only used by textConverted(),
+     * which ncu never calls. Stub it so it stays out of the bundle.
+     */
+    stubModulesPlugin(['iconv-lite']),
     ...(process.env.ANALYZER ? [analyzerOnce()] : []),
   ],
   ssr: {
