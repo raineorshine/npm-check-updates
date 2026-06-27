@@ -5,12 +5,12 @@
 
 **npm-check-updates upgrades your package.json dependencies to the _latest_ versions, ignoring specified versions.**
 
-- maintains existing semantic versioning _policies_, i.e. `"react": "^17.0.2"` to `"react": "^18.3.1"`.
+- maintains existing semantic versioning _policies_, i.e. `"react": "^18.3.1"` to `"react": "^19.2.7"`.
 - _only_ modifies package.json file. Run `npm install` to update your installed packages and package-lock.json.
 - sensible defaults, but highly customizable
 - compatible with npm, yarn, pnpm, deno, and bun
 - CLI and module usage
-- **Pure ESM** architecture with dual-build support (ESM/CJS)
+- Pure ESM architecture with dual-build support (ESM/CJS)
 
 <img width="500" alt="ncu example output" src="https://github.com/user-attachments/assets/9e91d8bc-e1ba-4112-92f3-abb6c2170164" />
 
@@ -22,8 +22,6 @@ $${\color{green}Green}$$ patch upgrade<br/>
 
 - **Node.js:** `^20.19.0 || ^22.12.0 || >=24.0.0`
 - **npm:** `>=10.0.0`
-
-> npm-check-updates v21+ requires modern Node.js and npm versions to support native ESM and Vite 8's Rolldown bundler.
 
 ## Installation
 
