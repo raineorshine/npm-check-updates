@@ -1,0 +1,7 @@
+# shellcheck configuration file
+
+# Shell dialect: bash-compatible POSIX shell
+shell=bash
+
+# SC2250: Prefer putting braces around variable references even when not strictly required
+enable=require-variable-braces
