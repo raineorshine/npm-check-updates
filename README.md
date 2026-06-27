@@ -25,7 +25,7 @@ $${\color{green}Green}$$ patch upgrade<br/>
 
 ## Requirements
 
-- **Node.js:** `^20.19.0 || ^22.12.0 || >=24.0.0`
+- **Node.js:** `^22.22.2 || ^24.15.0 || >=26.0.0`
 - **npm:** `>=10.0.0`
 
 > npm-check-updates v21+ requires modern Node.js and npm versions to support native ESM and Vite 8's Rolldown bundler.
