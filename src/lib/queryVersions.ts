@@ -142,7 +142,8 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
 
     bar?.tick()
 
-    if (versionResult.version) {
+    // don't cache the cooldown fallback under the plain key (see the skipped read above)
+    if (versionResult.version && !options.cooldown) {
       options.cacher?.set(name, target, versionResult.version, versionResult.time)
     }
 
