@@ -24,5 +24,10 @@ yarn.lock
 /test/temp_package*.json
 /test/.ncurc.json
 
+# doctor test artifacts
+/test/test-data/doctor/**/package-lock.json
+/test/test-data/doctor/**/.yarn/
+/test/test-data/doctor/**/.pnp.js
+
 # Agent files
 .claude
