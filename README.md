@@ -12,7 +12,7 @@
 - CLI and module usage
 - **Pure ESM** architecture with dual-build support (ESM/CJS)
 
-<img width="500" alt="example output" src="https://github.com/user-attachments/assets/4808618b-ac20-4fc0-92e0-a777de70a2b6">
+<img width="500" alt="ncu example output" src="https://github.com/user-attachments/assets/9e91d8bc-e1ba-4112-92f3-abb6c2170164" />
 
 $${\color{red}Red}$$ major upgrade (and all [major version zero](https://semver.org/#spec-item-4))<br/>
 $${\color{cyan}Cyan}$$ minor upgrade<br/>
