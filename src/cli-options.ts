@@ -647,7 +647,7 @@ ${chalk.green('cooldown')}: packageName ${chalk.cyan('=>')} (packageName.startsW
 
 ### Package Manager Configurations
 
-If \`--cooldown\` is not set explicitly, \`ncu\` automatically reads the cooldown configuration from your package manager's config file:
+If \`--cooldown\` is not set explicitly, \`ncu\` automatically reads the cooldown configuration from your package manager's own native config — each package manager only consults its own config and these are not cross-applied between package managers:
 
 ${table({
   colAligns: ['right', 'left'],

@@ -1536,8 +1536,8 @@ describe('cooldown', () => {
       pnpmWorkspaceStub.restore()
     })
 
-    it('does not apply pnpm minimumReleaseAge when npm min-release-age is set', async () => {
-      // Given: both npm config has min-release-age=2 and pnpm-workspace.yaml has minimumReleaseAge=10080 (7 days)
+    it('prefers pnpm minimumReleaseAge over npm min-release-age', async () => {
+      // Given: npm config has min-release-age=2 and pnpm-workspace.yaml has minimumReleaseAge=10080 (7 days)
       // test-package latest released 3 days ago (within 7-day pnpm cooldown but outside 2-day npm cooldown)
       const packageData: PackageFile = {
         dependencies: {
@@ -1556,7 +1556,7 @@ describe('cooldown', () => {
         }),
       )
 
-      // Stub npm config with min-release-age=2
+      // Stub npm config with min-release-age=2 (should NOT be consulted for pnpm projects)
       const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '2' })
       // Stub pnpm workspace with 7-day cooldown
       const pnpmWorkspaceStub = Sinon.stub(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').resolves({
@@ -1564,10 +1564,48 @@ describe('cooldown', () => {
         minimumReleaseAgeExclude: [],
       })
 
-      // When: ncu is run without explicit cooldown option
-      const result = await ncu({ packageData })
+      // When: ncu is run without explicit cooldown option for a pnpm project
+      const result = await ncu({ packageData, packageManager: 'pnpm' })
 
-      // Then: package is upgraded because npm's 2-day cooldown takes precedence and 3 days > 2 days
+      // Then: package is skipped because pnpm's 7-day cooldown takes precedence (3 days < 7 days)
+      // .npmrc min-release-age is ignored for pnpm projects
+      expect(result).to.not.have.property('test-package')
+
+      stub.restore()
+      findNpmConfigStub.restore()
+      pnpmWorkspaceStub.restore()
+    })
+
+    it('ignores npm min-release-age for pnpm projects when pnpm defines no minimumReleaseAge', async () => {
+      // Given: npm config has min-release-age=7 but pnpm defines no minimumReleaseAge
+      // test-package latest released 3 days ago (within 7-day npm cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 3 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      // Stub npm config with min-release-age=7 (should NOT be consulted for pnpm projects)
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '7' })
+      // Stub pnpm workspace returning null (no pnpm config)
+      const pnpmWorkspaceStub = Sinon.stub(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').resolves(null)
+
+      // When: ncu is run without explicit cooldown option for a pnpm project
+      const result = await ncu({ packageData, packageManager: 'pnpm' })
+
+      // Then: package is upgraded because .npmrc min-release-age is ignored for pnpm projects
+      // and pnpm has no minimumReleaseAge config, so no auto-cooldown is applied
       expect(result).to.have.property('test-package', '1.1.0')
 
       stub.restore()
@@ -1854,8 +1892,8 @@ describe('cooldown', () => {
       yarnAgeGateStub.restore()
     })
 
-    it('does not apply npmMinimalAgeGate when npm min-release-age is set', async () => {
-      // Given: both npm config has min-release-age=2 and .yarnrc.yml has npmMinimalAgeGate=10080 (7 days)
+    it('prefers yarn npmMinimalAgeGate over npm min-release-age', async () => {
+      // Given: npm config has min-release-age=2 and .yarnrc.yml has npmMinimalAgeGate=10080 (7 days)
       // test-package latest released 3 days ago (within 7-day yarn cooldown but outside 2-day npm cooldown)
       const packageData: PackageFile = {
         dependencies: {
@@ -1874,19 +1912,57 @@ describe('cooldown', () => {
         }),
       )
 
-      // Stub npm config with min-release-age=2
+      // Stub npm config with min-release-age=2 (should NOT be consulted for yarn projects)
       const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '2' })
       const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves({
         npmMinimalAgeGate: 10080,
         npmPreapprovedPackages: [],
       })
 
-      // When: ncu is run without explicit cooldown option
+      // When: ncu is run without explicit cooldown option for a yarn project
       const result = await ncu({ packageData, packageManager: 'yarn' })
 
-      // Then: package is upgraded because npm's 2-day cooldown takes precedence and 3 days > 2 days
+      // Then: package is skipped because yarn's 7-day cooldown takes precedence (3 days < 7 days)
+      // .npmrc min-release-age is ignored for yarn projects
+      expect(result).to.not.have.property('test-package')
+      expect(yarnAgeGateStub.called).to.equal(true)
+
+      stub.restore()
+      findNpmConfigStub.restore()
+      yarnAgeGateStub.restore()
+    })
+
+    it('ignores npm min-release-age for yarn projects when yarn defines no npmMinimalAgeGate', async () => {
+      // Given: npm config has min-release-age=7 but yarn defines no npmMinimalAgeGate
+      // test-package latest released 3 days ago (within 7-day npm cooldown)
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '1.1.0': new Date(NOW - 3 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '1.1.0',
+          },
+        }),
+      )
+
+      // Stub npm config with min-release-age=7 (should NOT be consulted for yarn projects)
+      const findNpmConfigStub = Sinon.stub(npmApi, 'findNpmConfig').returns({ minReleaseAge: '7' })
+      // Stub yarn returning null (no yarn config)
+      const yarnAgeGateStub = Sinon.stub(yarnApi, 'getYarnMinimalAgeGate').resolves(null)
+
+      // When: ncu is run without explicit cooldown option for a yarn project
+      const result = await ncu({ packageData, packageManager: 'yarn' })
+
+      // Then: package is upgraded because .npmrc min-release-age is ignored for yarn projects
+      // and yarn has no npmMinimalAgeGate config, so no auto-cooldown is applied
       expect(result).to.have.property('test-package', '1.1.0')
-      expect(yarnAgeGateStub.called).to.equal(false)
 
       stub.restore()
       findNpmConfigStub.restore()
