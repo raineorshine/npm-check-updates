@@ -1,4 +1,4 @@
-import ncu from '../src'
+import { run as ncu } from '../src'
 import chaiSetup from './helpers/chaiSetup'
 
 chaiSetup()

@@ -1,6 +1,6 @@
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
-import ncu from '../src/'
+import { run as ncu } from '../src/'
 import { type Packument } from '../src/types/Packument'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'

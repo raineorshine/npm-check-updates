@@ -1,7 +1,7 @@
 import path, { dirname } from 'path'
 import spawn from 'spawn-please'
 import { fileURLToPath } from 'url'
-import ncu from '../src'
+import { run as ncu } from '../src'
 import chaiSetup from './helpers/chaiSetup'
 import stubVersions from './helpers/stubVersions'
 

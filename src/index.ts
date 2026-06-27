@@ -402,6 +402,4 @@ export async function run(
   }
 }
 
-export default run
-
 export type { RunOptions }

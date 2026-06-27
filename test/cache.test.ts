@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import fs from 'fs/promises'
-import ncu from '../src/'
+import { run as ncu } from '../src/'
 import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache'
 import { CURRENT_CACHE_SCHEMA, type CacheData } from '../src/types/Cacher'
 import chaiSetup from './helpers/chaiSetup'

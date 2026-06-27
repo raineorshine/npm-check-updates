@@ -4,7 +4,7 @@ import semver from 'semver'
 import updateNotifier from 'update-notifier'
 import pkg from '../../package.json'
 import cliOptions, { cliOptionsMap, renderExtendedHelp } from '../cli-options'
-import ncu from '../index'
+import { run as ncu } from '../index'
 import { chalkInit, getChalk } from '../lib/chalk'
 // async global contexts are only available in esm modules -> function
 import getNcuRc from '../lib/getNcuRc'
