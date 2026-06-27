@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Enable strict mode: 
+# -E: inherit ERR traps in functions/subshells
+# -e: exit on any command failure
+# -u: error on unset variables
+# -o pipefail: fail pipelines if any command fails
 set -Eeuo pipefail
 
 SHORT_SHA=$(git rev-parse HEAD)
