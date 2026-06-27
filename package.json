@@ -71,9 +71,13 @@
       "eslint-plugin-n": "$eslint-plugin-n",
       "eslint-plugin-promise": "$eslint-plugin-promise"
     },
-    "diff": ">=8.0.3",
-    "serialize-javascript": ">=7.0.3",
-    "uuid": ">=14.0.0"
+    "mocha": {
+      "diff": "^8.0.3",
+      "serialize-javascript": "^7.0.3"
+    },
+    "@cypress/request": {
+      "uuid": "^14.0.0"
+    }
   },
   "devDependencies": {
     "@eslint/compat": "^2.1.0",
