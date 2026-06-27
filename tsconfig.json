@@ -21,7 +21,6 @@
     "incremental": true,
     "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo",
     "paths": {
-      "libnpmconfig": ["./src/types/libnpmconfig"],
       "prompts-ncu": ["./src/types/prompts-ncu"]
     }
   }
