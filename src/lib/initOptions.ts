@@ -220,52 +220,9 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       )
     }
   } else {
-    // Automatically apply npm's min-release-age config as cooldown if cooldown is not explicitly set.
-    const npmConfigCooldown = npmApi.findNpmConfig()
-    const minReleaseAge = npmConfigCooldown?.minReleaseAge
-    if (minReleaseAge != null) {
-      const days =
-        typeof minReleaseAge === 'string'
-          ? (parseCooldown(minReleaseAge) ?? parseInt(minReleaseAge, 10))
-          : typeof minReleaseAge === 'number'
-            ? minReleaseAge
-            : null
-      if (days != null && !isNaN(days)) {
-        // npm's min-release-age-exclude is a list of package names or glob patterns that are exempt from min-release-age.
-        // a single .npmrc entry parses as a string; repeated entries (min-release-age-exclude[]=) parse as an array.
-        const minReleaseAgeExcludeRaw = npmConfigCooldown?.minReleaseAgeExclude
-        const minReleaseAgeExclude = [
-          ...new Set(
-            (Array.isArray(minReleaseAgeExcludeRaw)
-              ? minReleaseAgeExcludeRaw
-              : typeof minReleaseAgeExcludeRaw === 'string'
-                ? [minReleaseAgeExcludeRaw]
-                : []
-            )
-              .flatMap(pattern => pattern.split(','))
-              .map(pattern => pattern.trim())
-              .filter(pattern => pattern),
-          ),
-        ]
-        if (minReleaseAgeExclude.length > 0) {
-          const matchers = minReleaseAgeExclude.map(pattern => ({
-            pattern,
-            match: picomatch(pattern, { nonegate: true, noext: true }),
-          }))
-          // returning null skips the cooldown check for excluded packages
-          options.cooldown = (packageName: string) =>
-            matchers.some(({ pattern, match }) => packageName === pattern || match(packageName)) ? null : days
-          print(
-            { ...options, json },
-            `Using min-release-age from .npmrc: ${formatDays(days)} (${minReleaseAgeExclude.length} excluded pattern${minReleaseAgeExclude.length !== 1 ? 's' : ''})`,
-          )
-        } else {
-          options.cooldown = days
-          print({ ...options, json }, `Using min-release-age from .npmrc: ${formatDays(days)}`)
-        }
-      }
-    } else if (packageManager === 'pnpm') {
+    if (packageManager === 'pnpm') {
       // Automatically apply pnpm's minimumReleaseAge from pnpm-workspace.yaml as cooldown if cooldown is not explicitly set.
+      // pnpm does not read .npmrc min-release-age; only consult pnpm's own native config.
       const pnpmWorkspaceConfig = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
       if (pnpmWorkspaceConfig != null) {
         const { minimumReleaseAge, minimumReleaseAgeExclude } = pnpmWorkspaceConfig
@@ -286,6 +243,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       }
     } else if (packageManager === 'yarn') {
       // Automatically apply yarn's npmMinimalAgeGate from .yarnrc.yml as cooldown if cooldown is not explicitly set.
+      // yarn does not read .npmrc min-release-age; only consult yarn's own native config.
       const yarnAgeGateConfig = await yarnApi.getYarnMinimalAgeGate(options)
       if (yarnAgeGateConfig != null) {
         const { npmMinimalAgeGate, npmPreapprovedPackages } = yarnAgeGateConfig
@@ -303,6 +261,53 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
         } else {
           options.cooldown = days
           print({ ...options, json }, `Using npmMinimalAgeGate from .yarnrc.yml: ${formatDays(days)}`)
+        }
+      }
+    } else {
+      // Automatically apply npm's min-release-age config as cooldown if cooldown is not explicitly set.
+      // This applies to npm and any unknown/unset package manager.
+      const npmConfigCooldown = npmApi.findNpmConfig()
+      const minReleaseAge = npmConfigCooldown?.minReleaseAge
+      if (minReleaseAge != null) {
+        const days =
+          typeof minReleaseAge === 'string'
+            ? (parseCooldown(minReleaseAge) ?? parseInt(minReleaseAge, 10))
+            : typeof minReleaseAge === 'number'
+              ? minReleaseAge
+              : null
+        if (days != null && !isNaN(days)) {
+          // npm's min-release-age-exclude is a list of package names or glob patterns that are exempt from min-release-age.
+          // a single .npmrc entry parses as a string; repeated entries (min-release-age-exclude[]=) parse as an array.
+          const minReleaseAgeExcludeRaw = npmConfigCooldown?.minReleaseAgeExclude
+          const minReleaseAgeExclude = [
+            ...new Set(
+              (Array.isArray(minReleaseAgeExcludeRaw)
+                ? minReleaseAgeExcludeRaw
+                : typeof minReleaseAgeExcludeRaw === 'string'
+                  ? [minReleaseAgeExcludeRaw]
+                  : []
+              )
+                .flatMap(pattern => pattern.split(','))
+                .map(pattern => pattern.trim())
+                .filter(pattern => pattern),
+            ),
+          ]
+          if (minReleaseAgeExclude.length > 0) {
+            const matchers = minReleaseAgeExclude.map(pattern => ({
+              pattern,
+              match: picomatch(pattern, { nonegate: true, noext: true }),
+            }))
+            // returning null skips the cooldown check for excluded packages
+            options.cooldown = (packageName: string) =>
+              matchers.some(({ pattern, match }) => packageName === pattern || match(packageName)) ? null : days
+            print(
+              { ...options, json },
+              `Using min-release-age from .npmrc: ${formatDays(days)} (${minReleaseAgeExclude.length} excluded pattern${minReleaseAgeExclude.length !== 1 ? 's' : ''})`,
+            )
+          } else {
+            options.cooldown = days
+            print({ ...options, json }, `Using min-release-age from .npmrc: ${formatDays(days)}`)
+          }
         }
       }
     }
