@@ -141,7 +141,7 @@
     "picomatch": "^4.0.4",
     "prettier": "^3.8.3",
     "progress": "^2.0.3",
-    "prompts-ncu": "^3.0.2",
+    "prompts-ncu": "^3.0.3",
     "semver": "^7.8.2",
     "semver-utils": "^1.1.4",
     "sinon": "^22.0.0",
