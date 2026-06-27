@@ -162,5 +162,10 @@
   },
   "files": [
     "build"
-  ]
+  ],
+  "allowScripts": {
+    "yarn@1.22.22": true,
+    "esbuild@0.28.1": true,
+    "unrs-resolver@1.11.1": true
+  }
 }
