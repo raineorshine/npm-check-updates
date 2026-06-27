@@ -1,4 +1,4 @@
-name: Lint & TypeCheck
+name: E2E Tests
 
 on:
   push:
@@ -18,9 +18,9 @@ permissions:
   contents: read
 
 jobs:
-  lint:
+  e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     if: github.event_name != 'pull_request' || github.event.pull_request.changed_files > 0
 
     steps:
@@ -38,5 +38,5 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Run lint
-        run: npm run lint
+      - name: E2E Tests
+        run: npm run test:e2e
