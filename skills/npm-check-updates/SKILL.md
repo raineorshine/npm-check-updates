@@ -109,9 +109,9 @@ export default {
 ## Programmatic API
 
 ```ts
-import ncu from 'npm-check-updates'
+import * as ncu from 'npm-check-updates'
 
-const upgraded = await ncu({
+const upgraded = await ncu.run({
   packageFile: './packages/app/package.json',
   filter: ['react', 'react-dom'],
   target: 'latest',
