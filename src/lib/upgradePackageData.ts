@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import { parseDocument } from 'yaml'
-import { CatalogsConfig } from '../types/CatalogConfig'
+import { type CatalogsConfig, parseCatalogsConfig } from '../types/CatalogConfig'
 import { type Index } from '../types/IndexType'
 import { type Options } from '../types/Options'
 import { type PackageFile } from '../types/PackageFile'
@@ -49,7 +49,7 @@ async function upgradePackageData(
     // Handle yaml catalog files
     if (fileName === 'pnpm-workspace.yaml' || fileName === '.yarnrc.yml') {
       const yamlContent = await fs.readFile(pkgFile, 'utf-8')
-      const catalogData: CatalogsConfig = CatalogsConfig.parse(parseDocument(yamlContent).toJSON())
+      const catalogData: CatalogsConfig = parseCatalogsConfig(parseDocument(yamlContent).toJSON())
 
       // Reconstruct the list of updates to apply unfortunately we lost the path information during extraction before
       const reconstructedUpdates: { path: string[]; newValue: string }[] = []

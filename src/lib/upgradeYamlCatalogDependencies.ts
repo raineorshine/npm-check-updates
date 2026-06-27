@@ -1,6 +1,6 @@
 import type { Document } from 'yaml'
 import { CST, isCollection, isPair, isScalar, parseDocument } from 'yaml'
-import { CatalogsConfig } from '../types/CatalogConfig'
+import { type CatalogsConfig, parseCatalogsConfig } from '../types/CatalogConfig'
 import type { Options } from '../types/Options'
 import programError from './programError'
 
@@ -125,7 +125,7 @@ export function updateYamlCatalogDependencies({
   }
 
   try {
-    parsedContents = CatalogsConfig.parse(document.toJSON())
+    parsedContents = parseCatalogsConfig(document.toJSON())
   } catch {
     return null
   }
