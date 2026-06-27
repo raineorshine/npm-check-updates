@@ -18,31 +18,35 @@ function buildOptionsPlugin(): Plugin {
   }
 }
 
-/** Makes the CLI entry point executable after build (cross-platform fs.chmodSync). */
+/** Makes the CLI entry point executable after build */
 function chmodBinPlugin(): Plugin {
   return {
     name: 'chmod-bin',
-    closeBundle() {
+    writeBundle(options) {
+      // only the ES round; the cjs round emits cli.cjs.
+      // chmodSync will throw if cli.js is missing so that we notice.
+      if (options.format !== 'es') return
       fs.chmodSync('build/cli.js', 0o755)
+      // drop the empty `export {}` cli.d.ts dts emits for the export-less cli entry
+      fs.rmSync('build/cli.d.ts', { force: true })
     },
   }
 }
 
 /** A simple helper to run analyzer plugin only once */
 function analyzerOnce(): Plugin {
-  let ran = false
   const base = analyzer() as Plugin
+  const generate = base.generateBundle
+  let ran = false
 
   return {
     ...base,
-    name: (base.name ?? 'analyzer') + '-once',
+    name: `${base.name}-once`,
     generateBundle(...args) {
-      if (ran) return
+      if (ran || typeof generate !== 'function') return
       ran = true
-      if (typeof base.generateBundle === 'function') {
-        console.log('run analyzer')
-        return base.generateBundle.call(this, ...args)
-      }
+      console.log('\nrun analyzer')
+      return generate.apply(this, args)
     },
   }
 }
@@ -99,7 +103,8 @@ export default defineConfig(({ mode }) => ({
         {
           format: 'cjs',
           entryFileNames: '[name].cjs',
-          chunkFileNames: 'chunks/[name]-[hash].cjs', // The fix for p-map
+          // keep CJS chunks as .cjs so that require() works
+          chunkFileNames: 'chunks/[name]-[hash].cjs',
           exports: 'named',
         },
       ],
