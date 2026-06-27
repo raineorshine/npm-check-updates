@@ -86,10 +86,11 @@ export default defineConfig(({ mode }) => ({
     }),
     chmodBinPlugin(),
     /**
-     * iconv-lite is an optional dep of minipass-fetch, only used by textConverted(),
-     * which ncu never calls. Stub it so it stays out of the bundle.
+     * Optional deps that get bundled but ncu never reaches at runtime:
+     * - iconv-lite: only used by minipass-fetch's textConverted(), which ncu never calls
+     * - @colors/colors: only used by cli-table3 for cell style colors, which ncu does not set
      */
-    stubModulesPlugin(['iconv-lite']),
+    stubModulesPlugin(['iconv-lite', '@colors/colors/safe', '@colors/colors']),
     ...(process.env.ANALYZER ? [analyzerOnce()] : []),
   ],
   ssr: {
