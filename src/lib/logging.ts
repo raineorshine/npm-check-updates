@@ -18,6 +18,7 @@ import getPackageJson from './getPackageJson'
 import getPackageVersion from './getPackageVersion'
 import getRepoUrl from './getRepoUrl'
 import isFetchable from './isFetchable'
+import { COOLDOWN_PATTERN } from './parseCooldown'
 import {
   WILDCARDS,
   colorizeDiff,
@@ -146,29 +147,15 @@ function prettifyCooldown(input: string | number | undefined | CooldownFunction)
   }
 
   const str = String(input).trim().toLowerCase()
-
-  // Case 1: input contains a unit (5d, 30m, 15h)
-  const match = str.match(/^(\d+(?:\.\d+)?)(d|h|m)$/)
-  if (match) {
-    const value = Number(match[1])
-    const unit = match[2]
-
-    const unitMap: Record<string, string> = {
-      d: 'day',
-      h: 'hour',
-      m: 'minute',
-    }
-
-    return `${+value.toFixed(1)}-${unitMap[unit]} cooldown`
+  const match = str.match(COOLDOWN_PATTERN)
+  const value = match ? Number(match[1]) : Number(str)
+  if (isNaN(value)) {
+    return 'cooldown'
   }
 
-  // Case 2: input is a plain number or numeric string → treat as days
-  const days = Number(str)
-  if (!isNaN(days)) {
-    return `${+days.toFixed(1)}-day cooldown`
-  }
-
-  return 'cooldown'
+  const units: Record<string, string> = { d: 'day', h: 'hour', m: 'minute' }
+  const unit = match ? units[match[2]] : 'day'
+  return `${+value.toFixed(1)}-${unit} cooldown`
 }
 
 /**
