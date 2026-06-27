@@ -1,14 +1,17 @@
-import { z } from 'zod'
+import * as v from 'valibot'
 
 const catalogFields = {
-  catalog: z.optional(z.record(z.string(), z.string())),
-  catalogs: z.optional(z.record(z.string(), z.record(z.string(), z.string()))).catch(undefined),
+  catalog: v.optional(v.record(v.string(), v.string())),
+  catalogs: v.fallback(v.optional(v.record(v.string(), v.record(v.string(), v.string()))), undefined),
 }
 
-export const CatalogsConfig = z.object({
+export const CatalogsConfig = v.object({
   ...catalogFields,
   // Support catalogs nested under a `workspaces` key (e.g. workspaces.catalog, workspaces.catalogs)
-  workspaces: z.optional(z.union([z.array(z.string()), z.object(catalogFields).passthrough()])).catch(undefined),
+  workspaces: v.fallback(v.optional(v.union([v.array(v.string()), v.looseObject(catalogFields)])), undefined),
 })
 
-export type CatalogsConfig = z.infer<typeof CatalogsConfig>
+export type CatalogsConfig = v.InferOutput<typeof CatalogsConfig>
+
+/** Parses and validates an unknown value against the catalogs config schema. */
+export const parseCatalogsConfig = (data: unknown): CatalogsConfig => v.parse(CatalogsConfig, data)
