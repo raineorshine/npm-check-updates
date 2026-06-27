@@ -15,8 +15,8 @@ import { updateYamlCatalogDependencies } from './upgradeYamlCatalogDependencies'
  * Upgrade the dependency declarations in the package data.
  *
  * @param pkgData The package.json data, as utf8 text
- * @param oldDependencies Old dependencies {package: range}
- * @param newDependencies New dependencies {package: range}
+ * @param current Old dependencies {package: range}
+ * @param upgraded New dependencies {package: range}
  * @param options Options object
  * @param pkgFile Optional path to the package file
  * @returns The updated package data, as utf8 text

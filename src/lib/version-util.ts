@@ -151,7 +151,7 @@ export function isWildCard(version: string) {
 /**
  * Returns true if the given digit is a wildcard for a part of a version.
  *
- * @param versionPart
+ * @param versionPartValue
  * @returns
  */
 export function isWildPart(versionPartValue: Maybe<string>) {

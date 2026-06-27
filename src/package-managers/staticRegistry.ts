@@ -12,7 +12,7 @@ const isUrl = (s: string) => (s && s.startsWith('http://')) || s.startsWith('htt
 /**
  * Returns a registry object given a valid file path or url.
  *
- * @param path
+ * @param options
  * @returns a registry object
  */
 const readStaticRegistry = async (options: Options): Promise<StaticRegistry> => {
