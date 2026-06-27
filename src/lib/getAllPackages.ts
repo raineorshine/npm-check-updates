@@ -1,6 +1,6 @@
-import glob, { type Options as GlobOptions } from 'fast-glob'
 import fs from 'fs/promises'
 import path from 'path'
+import { type GlobOptions, globSync } from 'tinyglobby'
 import untildify from 'untildify'
 import { parse as parseYaml } from 'yaml'
 import { type Index } from '../types/IndexType'
@@ -27,6 +27,8 @@ type YarnConfig = { catalog?: Index<VersionSpec>; catalogs?: Index<Index<Version
 
 const globOptions: GlobOptions = {
   ignore: ['**/node_modules/**', '**/.pnpm-store/**'],
+  // tinyglobby expands directory patterns by default; disable it to match fast-glob
+  expandDirectories: false,
 }
 
 /** Reads, parses, and resolves workspaces from a pnpm-workspace file at the same path as the package file. */
@@ -148,14 +150,18 @@ async function getWorkspacePackageInfos(
   // build a glob from the workspaces
   // FIXME: the following workspaces check is redundant
   const workspacePackageGlob: string[] = (workspaces || []).map(workspace =>
-    path
-      .join(pkgDir, workspace, 'package.json')
-      // convert Windows path to *nix path for globby
-      .replace(/\\/g, '/'),
+    // convert Windows path to *nix path
+    path.join(workspace, 'package.json').replace(/\\/g, '/'),
   )
 
+  // tinyglobby does not support '..' in patterns, so glob within the resolved package
+  // directory and prepend pkgDir to each match. This reproduces fast-glob's pattern-relative
+  // paths (e.g. ../../packages/a/package.json), which downstream resolves and keys correctly.
   // e.g. [packages/a/package.json, ...]
-  const allWorkspacePackageFilepaths: string[] = glob.sync(workspacePackageGlob, globOptions)
+  const allWorkspacePackageFilepaths: string[] = globSync(workspacePackageGlob, {
+    ...globOptions,
+    cwd: path.resolve(pkgDir),
+  }).map(filepath => path.join(pkgDir, filepath).replace(/\\/g, '/'))
 
   // Get the package names from the package files.
   // If a package does not have a name, use the folder name.
@@ -257,15 +263,15 @@ async function getAllPackages(options: Options): Promise<[PackageInfo[], string[
 
   let packageInfos: PackageInfo[] = []
 
-  // Find the package file with globby.
-  // When in workspaces mode, only include the root project package file when --root is used.
+  // Find the package file. When in workspaces mode,
+  // only include the root project package file when --root is used.
   const getBasePackageFile: boolean = !useWorkspaces || options.root === true
   if (getBasePackageFile) {
     // we are either:
     // * NOT a workspace
     // * a workspace and have requested an upgrade of the workspace-root
     const globPattern = rootPackageFile.replace(/\\/g, '/')
-    const rootPackagePaths = glob.sync(globPattern, globOptions)
+    const rootPackagePaths = globSync(globPattern, { ...globOptions, absolute: path.isAbsolute(globPattern) })
     // realistically there should only be zero or one
     const rootPackages = await Promise.all(
       rootPackagePaths.map(
