@@ -3,7 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
-import { type PackageManagerName } from '../../src/types/PackageManagerName'
+import { type PackageManagerName } from '../../src/types/PackageManagerName.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

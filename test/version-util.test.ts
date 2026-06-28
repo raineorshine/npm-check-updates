@@ -1,6 +1,6 @@
-import chalk, { chalkInit } from '../src/lib/chalk'
-import * as versionUtil from '../src/lib/version-util'
-import chaiSetup from './helpers/chaiSetup'
+import chalk, { chalkInit } from '../src/lib/chalk.ts'
+import * as versionUtil from '../src/lib/version-util.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
 
 const should = chaiSetup()
 

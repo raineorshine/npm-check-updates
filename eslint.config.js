@@ -84,6 +84,15 @@ export default [
     rules: {
       'n/prefer-node-protocol': 'error',
       'import-x/no-duplicates': ['error', { 'prefer-inline': true }],
+      'import-x/extensions': ['error', 'always', { ignorePackages: true, checkTypeImports: true }],
+      // Node's native loader requires an import attribute on JSON imports
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ImportDeclaration[source.value=/\\.json$/]:not(:has(ImportAttribute))',
+          message: "JSON imports require an import attribute: with { type: 'json' }",
+        },
+      ],
     },
   },
 

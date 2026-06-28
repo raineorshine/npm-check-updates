@@ -1,8 +1,8 @@
-import packageManagers from '../package-managers'
-import { type Maybe } from '../types/Maybe'
-import { type Options } from '../types/Options'
-import { type PackageManager } from '../types/PackageManager'
-import programError from './programError'
+import packageManagers from '../package-managers/index.ts'
+import { type Maybe } from '../types/Maybe.ts'
+import { type Options } from '../types/Options.ts'
+import { type PackageManager } from '../types/PackageManager.ts'
+import programError from './programError.ts'
 
 /**
  * Resolves the package manager from a string or object. Throws an error if an invalid packageManager is provided.

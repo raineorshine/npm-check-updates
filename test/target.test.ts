@@ -1,10 +1,10 @@
-import ncu from '../src/'
-import { type FilterFunction } from '../src/types/FilterFunction'
-import { type Index } from '../src/types/IndexType'
-import { type TargetFunction } from '../src/types/TargetFunction'
-import { type Version } from '../src/types/Version'
-import chaiSetup from './helpers/chaiSetup'
-import stubVersions from './helpers/stubVersions'
+import ncu from '../src/index.ts'
+import { type FilterFunction } from '../src/types/FilterFunction.ts'
+import { type Index } from '../src/types/IndexType.ts'
+import { type TargetFunction } from '../src/types/TargetFunction.ts'
+import { type Version } from '../src/types/Version.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
+import stubVersions from './helpers/stubVersions.ts'
 
 chaiSetup()
 

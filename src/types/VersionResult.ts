@@ -1,4 +1,4 @@
-import { type Version } from './Version'
+import { type Version } from './Version.ts'
 
 export interface CooldownInfo {
   name: string

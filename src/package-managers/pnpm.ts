@@ -5,18 +5,18 @@ import memoize from 'fast-memoize'
 import { findUp } from 'find-up'
 import ini from 'ini'
 import { parse as parseYaml } from 'yaml'
-import keyValueBy from '../lib/keyValueBy'
-import { print } from '../lib/logging'
-import spawnCommand from '../lib/spawnCommand'
-import { type GetVersion } from '../types/GetVersion'
-import { type Index } from '../types/IndexType'
-import { type NpmConfig } from '../types/NpmConfig'
-import { type NpmOptions } from '../types/NpmOptions'
-import { type Options } from '../types/Options'
-import { type SpawnOptions } from '../types/SpawnOptions'
-import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions'
-import { type Version } from '../types/Version'
-import * as npm from './npm'
+import keyValueBy from '../lib/keyValueBy.ts'
+import { print } from '../lib/logging.ts'
+import spawnCommand from '../lib/spawnCommand.ts'
+import { type GetVersion } from '../types/GetVersion.ts'
+import { type Index } from '../types/IndexType.ts'
+import { type NpmConfig } from '../types/NpmConfig.ts'
+import { type NpmOptions } from '../types/NpmOptions.ts'
+import { type Options } from '../types/Options.ts'
+import { type SpawnOptions } from '../types/SpawnOptions.ts'
+import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
+import { type Version } from '../types/Version.ts'
+import * as npm from './npm.ts'
 
 // return type of pnpm ls --json
 type PnpmList = {
@@ -222,7 +222,7 @@ async function spawnPnpm(
   return stdout
 }
 
-export { defaultPrefix, getPeerDependencies, getEngines, packageAuthorChanged } from './npm'
+export { defaultPrefix, getPeerDependencies, getEngines, packageAuthorChanged } from './npm.ts'
 
 export default spawnPnpm
 

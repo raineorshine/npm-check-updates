@@ -3,8 +3,8 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import * as yarn from '../../../src/package-managers/yarn'
-import chaiSetup from '../../helpers/chaiSetup'
+import * as yarn from '../../../src/package-managers/yarn.ts'
+import chaiSetup from '../../helpers/chaiSetup.ts'
 
 const should = chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

@@ -1,6 +1,6 @@
-import { print } from '../lib/logging'
-import { type Options } from '../types/Options'
-import chalk from './chalk'
+import { print } from '../lib/logging.ts'
+import { type Options } from '../types/Options.ts'
+import chalk from './chalk.ts'
 
 /** Print an error. Exit the process if in CLI mode. */
 function programError(

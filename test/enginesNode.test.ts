@@ -1,7 +1,7 @@
-import ncu from '../src/'
-import { type Index } from '../src/types/IndexType'
-import { type VersionSpec } from '../src/types/VersionSpec'
-import chaiSetup from './helpers/chaiSetup'
+import ncu from '../src/index.ts'
+import { type Index } from '../src/types/IndexType.ts'
+import { type VersionSpec } from '../src/types/VersionSpec.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
 
 chaiSetup()
 

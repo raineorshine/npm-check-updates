@@ -4,12 +4,12 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
-import { cliOptionsMap } from '../src/cli-options'
-import { chalkInit } from '../src/lib/chalk'
-import chaiSetup from './helpers/chaiSetup'
-import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers'
-import removeDir from './helpers/removeDir'
-import stubVersions from './helpers/stubVersions'
+import { cliOptionsMap } from '../src/cli-options.ts'
+import { chalkInit } from '../src/lib/chalk.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
+import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers.ts'
+import removeDir from './helpers/removeDir.ts'
+import stubVersions from './helpers/stubVersions.ts'
 
 chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

@@ -1,6 +1,6 @@
 import { type SemVer } from 'semver-utils'
-import { type Version } from './Version'
-import { type VersionSpec } from './VersionSpec'
+import { type Version } from './Version.ts'
+import { type VersionSpec } from './VersionSpec.ts'
 
 export type FilterResultsFunction = (
   packageName: string,

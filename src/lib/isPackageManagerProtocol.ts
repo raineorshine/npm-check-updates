@@ -1,4 +1,4 @@
-import { type VersionSpec } from '../types/VersionSpec'
+import { type VersionSpec } from '../types/VersionSpec.ts'
 
 /**
  * Returns true if the spec uses a package manager protocol that references something

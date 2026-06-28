@@ -1,8 +1,8 @@
-import getIgnoredUpgradesDueToPeerDeps from '../src/lib/getIgnoredUpgradesDueToPeerDeps'
-import { type Packument } from '../src/types/Packument'
-import chaiSetup from './helpers/chaiSetup'
-import { silenceProgressBar } from './helpers/silenceProgressBar'
-import stubVersions from './helpers/stubVersions'
+import getIgnoredUpgradesDueToPeerDeps from '../src/lib/getIgnoredUpgradesDueToPeerDeps.ts'
+import { type Packument } from '../src/types/Packument.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
+import { silenceProgressBar } from './helpers/silenceProgressBar.ts'
+import stubVersions from './helpers/stubVersions.ts'
 
 chaiSetup()
 

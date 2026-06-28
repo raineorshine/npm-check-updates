@@ -4,9 +4,9 @@ import { pathToFileURL } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import prettier from 'prettier'
 import { createGenerator } from 'ts-json-schema-generator'
-import cliOptions, { renderExtendedHelp } from '../src/cli-options'
-import { chalkInit, getChalk } from '../src/lib/chalk'
-import type CLIOption from '../src/types/CLIOption'
+import cliOptions, { renderExtendedHelp } from '../src/cli-options.ts'
+import { chalkInit, getChalk } from '../src/lib/chalk.ts'
+import type CLIOption from '../src/types/CLIOption.ts'
 
 const INJECT_HEADER =
   '<!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->'
@@ -86,12 +86,12 @@ const renderOption = (option: CLIOption<unknown>) => {
 /** Generate /src/types/RunOptions from cli-options so there is a single source of truth. */
 const generateRunOptions = (options: CLIOption<unknown>[]) => {
   const header = `/** This file is generated automatically from the options specified in /src/cli-options.ts. Do not edit manually. Run "npm run build" or "npm run build:options" to build. */
-import type { CooldownFunction } from './CooldownFunction'
-import type { FilterFunction } from './FilterFunction'
-import type { FilterResultsFunction } from './FilterResultsFunction'
-import type { GroupFunction } from './GroupFunction'
-import type { PackageFile } from './PackageFile'
-import type { TargetFunction } from './TargetFunction'
+import type { CooldownFunction } from './CooldownFunction.ts'
+import type { FilterFunction } from './FilterFunction.ts'
+import type { FilterResultsFunction } from './FilterResultsFunction.ts'
+import type { GroupFunction } from './GroupFunction.ts'
+import type { PackageFile } from './PackageFile.ts'
+import type { TargetFunction } from './TargetFunction.ts'
 
 /** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
 export interface RunOptions {

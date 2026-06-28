@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import ncu from '../src/'
-import chaiSetup from './helpers/chaiSetup'
-import removeDir from './helpers/removeDir'
-import stubVersions from './helpers/stubVersions'
+import ncu from '../src/index.ts'
+import chaiSetup from './helpers/chaiSetup.ts'
+import removeDir from './helpers/removeDir.ts'
+import stubVersions from './helpers/stubVersions.ts'
 
 chaiSetup()
 

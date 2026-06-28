@@ -5,20 +5,20 @@ import fs from 'node:fs/promises'
 import Table from 'cli-table3'
 import semver from 'semver'
 import { format as timeAgoFormat } from 'timeago.js'
-import type { CooldownFunction } from '../types/CooldownFunction'
-import { type IgnoredUpgradeDueToEnginesNode } from '../types/IgnoredUpgradeDueToEnginesNode'
-import { type IgnoredUpgradeDueToPeerDeps } from '../types/IgnoredUpgradeDueToPeerDeps'
-import { type Index } from '../types/IndexType'
-import { type Options } from '../types/Options'
-import type { CooldownInfo, VersionResult } from '../types/VersionResult'
-import { type VersionSpec } from '../types/VersionSpec'
-import chalk from './chalk'
-import filterObject from './filterObject'
-import getPackageJson from './getPackageJson'
-import getPackageVersion from './getPackageVersion'
-import getRepoUrl from './getRepoUrl'
-import isFetchable from './isFetchable'
-import { COOLDOWN_PATTERN } from './parseCooldown'
+import type { CooldownFunction } from '../types/CooldownFunction.ts'
+import { type IgnoredUpgradeDueToEnginesNode } from '../types/IgnoredUpgradeDueToEnginesNode.ts'
+import { type IgnoredUpgradeDueToPeerDeps } from '../types/IgnoredUpgradeDueToPeerDeps.ts'
+import { type Index } from '../types/IndexType.ts'
+import { type Options } from '../types/Options.ts'
+import type { CooldownInfo, VersionResult } from '../types/VersionResult.ts'
+import { type VersionSpec } from '../types/VersionSpec.ts'
+import chalk from './chalk.ts'
+import filterObject from './filterObject.ts'
+import getPackageJson from './getPackageJson.ts'
+import getPackageVersion from './getPackageVersion.ts'
+import getRepoUrl from './getRepoUrl.ts'
+import isFetchable from './isFetchable.ts'
+import { COOLDOWN_PATTERN } from './parseCooldown.ts'
 import {
   WILDCARDS,
   colorizeDiff,
@@ -28,7 +28,7 @@ import {
   isNpmAlias,
   parseNpmAlias,
   stripRange,
-} from './version-util'
+} from './version-util.ts'
 
 type LogLevel = 'silent' | 'error' | 'warn' | 'info' | 'verbose' | 'silly' | null
 
