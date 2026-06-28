@@ -57,7 +57,7 @@ function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec
   // function
   else if (typeof filterPattern === 'function') {
     predicate = (dependencyName: string, versionSpec?: string) =>
-      filterPattern(dependencyName, parseRange((versionSpec as string) ?? dependencyName))
+      filterPattern(dependencyName, parseRange(versionSpec ?? dependencyName))
   } else {
     throw new TypeError('Invalid filter. Must be a RegExp, array, or comma-or-space-delimited list.')
   }
