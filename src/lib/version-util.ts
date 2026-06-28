@@ -15,9 +15,9 @@ import { sortBy } from './sortBy'
 
 type VersionPart = keyof SemVer
 
-const VERSION_BASE_PARTS = ['major', 'minor', 'patch'] as VersionPart[]
-const VERSION_ADDED_PARTS = ['release', 'build'] as VersionPart[]
-const VERSION_PARTS = [...VERSION_BASE_PARTS, ...VERSION_ADDED_PARTS] as VersionPart[]
+const VERSION_BASE_PARTS: VersionPart[] = ['major', 'minor', 'patch']
+const VERSION_ADDED_PARTS: VersionPart[] = ['release', 'build']
+const VERSION_PARTS: VersionPart[] = [...VERSION_BASE_PARTS, ...VERSION_ADDED_PARTS]
 const VERSION_PART_DELIM: SemVer = {
   major: '',
   minor: '.',
