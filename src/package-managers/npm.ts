@@ -180,7 +180,7 @@ const findTargetAndFallback = ({
       // candidate must beat current fallback.
       if (compare(version, acc.fallbackVersion) <= 0) return acc
 
-      const entry = { ...versionData, name: packageName } as Partial<Packument>
+      const entry = { ...versionData, name: packageName } satisfies Partial<Packument>
       if (!isValidVersion(entry)) return acc
 
       if (!filter?.(version)) return acc
@@ -698,8 +698,8 @@ async function fetchUpgradedPackument(
   }
 
   // fields may already include time
-  const fieldsExtended =
-    options.format?.includes('time') && !fields.includes('time') ? ([...fields, 'time'] as (keyof Packument)[]) : fields
+  const fieldsExtended: (keyof Packument)[] =
+    options.format?.includes('time') && !fields.includes('time') ? [...fields, 'time'] : fields
   const fullMetadata = fieldsExtended.includes('time')
 
   const npmConfigMerged = mergeNpmConfigs(
