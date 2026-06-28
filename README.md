@@ -1060,9 +1060,6 @@ const upgraded = await ncu({
 console.log(upgraded) // { "mypackage": "^2.0.0", ... }
 ```
 
-The default export is also namespaced, so `ncu.run(...)` works the same as `ncu(...)`, and the named
-exports `import { run, defineConfig } from 'npm-check-updates'` are available too.
-
 ### CommonJS
 
 Use this for legacy projects using `"type": "commonjs"` or scripts using the `.cjs` extension.
