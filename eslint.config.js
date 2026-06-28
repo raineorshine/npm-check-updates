@@ -39,7 +39,6 @@ export default [
         ...globals.mocha,
         ...globals.node,
         ...globals.es2023,
-        ...globals.jest,
         ...raineConfig.globals,
       },
     },
