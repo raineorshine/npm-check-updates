@@ -1046,9 +1046,9 @@ e.g. for VS Code:
 Use this for modern projects using `"type": "module"` in `package.json` or `.mjs` files.
 
 ```js
-import * as ncu from 'npm-check-updates'
+import ncu from 'npm-check-updates'
 
-const upgraded = await ncu.run({
+const upgraded = await ncu({
   // Pass any cli option
   packageFile: '../package.json',
   upgrade: true,
@@ -1067,15 +1067,13 @@ Use this for legacy projects using `"type": "commonjs"` or scripts using the `.c
 ```js
 const ncu = require('npm-check-updates')
 
-// Since ncu.run() is an async function
-ncu
-  .run({
-    packageFile: './package.json',
-    upgrade: true,
-  })
-  .then(upgraded => {
-    console.log(upgraded)
-  })
+// ncu() is an async function
+ncu({
+  packageFile: './package.json',
+  upgrade: true,
+}).then(upgraded => {
+  console.log(upgraded)
+})
 ```
 
 ## Contributing

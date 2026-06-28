@@ -128,6 +128,11 @@ export default defineConfig(({ mode }) => ({
           // keep CJS chunks as .cjs so that require() works
           chunkFileNames: 'chunks/[name]-[hash].cjs',
           exports: 'named',
+          // make require() return the callable run function, keeping .run/.defineConfig/.default
+          // as properties. Skip chunks without a run export (e.g. cli.cjs).
+          footer: chunk => {
+            return chunk.exports.includes('run') ? 'module.exports = Object.assign(exports.run, exports)' : ''
+          },
         },
       ],
     },

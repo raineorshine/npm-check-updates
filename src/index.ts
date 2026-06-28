@@ -4,6 +4,7 @@ import pkg from '../package.json'
 import { cliOptionsMap } from './cli-options'
 import { cacheClear } from './lib/cache'
 import chalk, { chalkInit } from './lib/chalk'
+import defineConfig from './lib/defineConfig'
 import determinePackageManager from './lib/determinePackageManager'
 import doctor from './lib/doctor'
 import findPackage from './lib/findPackage'
@@ -23,7 +24,6 @@ import { type PackageInfo } from './types/PackageInfo'
 import { type RunOptions } from './types/RunOptions'
 import { type VersionSpec } from './types/VersionSpec'
 
-export { default as defineConfig } from './lib/defineConfig'
 export type { RcOptions } from './types/RcOptions'
 
 // allow prompt injection from environment variable for testing purposes
@@ -338,12 +338,19 @@ async function runUpgrades(
   return analysis
 }
 
+/** The ncu module. Callable directly (`ncu(options)`) and namespaced (`ncu.run(options)`, `ncu.defineConfig(config)`). */
+export interface Ncu {
+  (runOptions?: RunOptions, options?: { cli?: boolean }): Promise<PackageFile | Index<VersionSpec> | void>
+  run: Ncu
+  defineConfig: typeof defineConfig
+}
+
 /** Main entry point.
  *
  * @returns The upgraded package file by default, an {@link Index} of only the
  * upgraded dependencies with `--jsonUpgraded`, or `void` with `--global`.
  */
-export async function run(
+async function run(
   runOptions: RunOptions = {},
   { cli }: { cli?: boolean } = {},
 ): Promise<PackageFile | Index<VersionSpec> | void> {
@@ -402,6 +409,13 @@ export async function run(
   }
 }
 
-export default run
+// expose run and defineConfig as properties so the default export is callable
+// and also namespaced: `ncu({...})`, `ncu.run({...})`, and `ncu.defineConfig(...)` all work
+const ncu = run as Ncu
+ncu.run = ncu
+ncu.defineConfig = defineConfig
 
+export default ncu
+
+export { ncu as run, defineConfig }
 export type { RunOptions }
