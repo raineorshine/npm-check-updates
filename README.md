@@ -20,7 +20,7 @@ $${\color{green}Green}$$ patch upgrade<br/>
 
 ## Requirements
 
-- **Node.js:** `^20.19.0 || ^22.12.0 || >=24.0.0`
+- **Node.js:** `^22.22.2 || ^24.15.0 || >=26.0.0`
 - **npm:** `>=10.0.0`
 
 ## Installation
