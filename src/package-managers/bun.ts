@@ -6,7 +6,9 @@ import keyValueBy from '../lib/keyValueBy.ts'
 import { type Index } from '../types/IndexType.ts'
 import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
+import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
+import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 
 /** Spawn bun. */
@@ -73,18 +75,32 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   return dependencies
 }
 
-/** Runs `bun info <spec> [field] --json` and returns the parsed output, or null on any error. */
-async function bunInfo<R>(spec: string, field?: string, options: Options = {}): Promise<R | null> {
+/**
+ * Runs `bun info <spec> [field] --json` and returns the parsed output.
+ *
+ * By default a failed lookup (e.g. unknown package/version) resolves to null. Pass rejectOnError to
+ * surface the error instead, matching npm's behavior of throwing on 404.
+ */
+async function bunInfo<R>(
+  spec: string,
+  field?: string,
+  options: Options = {},
+  { rejectOnError = false }: { rejectOnError?: boolean } = {},
+): Promise<R | null> {
   const { stdout } = await spawnBun(
     ['info', spec, ...(field ? [field] : []), '--json'],
     {},
-    { rejectOnError: false },
+    { rejectOnError },
     {
       ...(options.cwd ? { cwd: options.cwd } : null),
     },
   )
+
   try {
-    return JSON.parse(stripAnsi(stdout)) as R
+    const parsed = JSON.parse(stripAnsi(stdout))
+    // bun --json reports a missing field/version as { error, ... } rather than empty output
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && 'error' in parsed) return null
+    return parsed as R
   } catch {
     return null
   }
@@ -126,6 +142,46 @@ export const packageAuthorChanged = async (
   return currentAuthor !== upgradedAuthor
 }
 
-export { distTag, getEngines, getPeerDependencies, greatest, latest, minor, newest, patch, semver } from './npm.ts'
+/**
+ * Fetches the list of peer dependencies for a specific package version.
+ *
+ * @param packageName
+ * @param version
+ * @param spawnOptions
+ * @returns Promised {packageName: version} collection
+ */
+export const getPeerDependencies = async (
+  packageName: string,
+  version: Version,
+  spawnOptions: SpawnOptions,
+): Promise<Index<Version>> => {
+  const manifest = await bunInfo<{ peerDependencies?: Index<Version> }>(`${packageName}@${version}`, undefined, {
+    cwd: spawnOptions.cwd,
+  })
+  return manifest?.peerDependencies || {}
+}
+
+/**
+ * Fetches the engines list from the registry for a specific package version.
+ *
+ * @param packageName
+ * @param version
+ * @returns Promised engines collection
+ */
+export const getEngines = async (
+  packageName: string,
+  version: Version,
+  options: Options = {},
+): Promise<Index<VersionSpec | undefined>> => {
+  const manifest = await bunInfo<{ engines?: Index<VersionSpec | undefined> }>(
+    `${packageName}@${version}`,
+    undefined,
+    options,
+    { rejectOnError: true },
+  )
+  return manifest?.engines || {}
+}
+
+export { distTag, greatest, latest, minor, newest, patch, semver } from './npm.ts'
 
 export default spawnBun

@@ -55,6 +55,20 @@ describe('bun', function () {
     await bun.packageAuthorChanged('ncu-test-v2', '^1.0.0', '2.2.0', { cwd: __dirname }).should.eventually.equal(false)
   })
 
+  it('getPeerDependencies', async () => {
+    const spawnOptions = { cwd: __dirname }
+    await bun.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions).should.eventually.deep.equal({})
+    await bun.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions).should.eventually.deep.equal({
+      'ncu-test-return-version': '1.x',
+    })
+  })
+
+  it('getEngines', async () => {
+    await bun.getEngines('del', '2.0.0', { cwd: __dirname }).should.eventually.deep.equal({ node: '>=0.10.0' })
+    await bun.getEngines('ncu-test-return-version', '1.0.0', { cwd: __dirname }).should.eventually.deep.equal({})
+    await bun.getEngines('ncu-test-return-version', '9999.0.0', { cwd: __dirname }).should.eventually.be.rejected
+  })
+
   describe('doctor', function () {
     this.timeout(3 * 60 * 1000)
 
