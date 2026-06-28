@@ -92,19 +92,19 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
 
   const results = await pMap(packageEntries, getPeerDepsForPackage, { concurrency: options.concurrency })
 
-  const accum: Index<Index<string>> = {}
+  const peerDepsMap: Index<Index<string>> = {}
   for (const { pkg, dependencies } of results) {
-    accum[pkg] = dependencies
-    const circularData = isCircularPeer(accum, pkg)
+    peerDepsMap[pkg] = dependencies
+    const circularData = isCircularPeer(peerDepsMap, pkg)
     if (circularData.isCircular) {
-      delete accum[pkg][circularData.offendingPackage]
+      delete peerDepsMap[pkg][circularData.offendingPackage]
     }
   }
 
   await options.cacher?.save()
   options.cacher?.log(true)
 
-  return accum
+  return peerDepsMap
 }
 
 export default getPeerDependenciesFromRegistry

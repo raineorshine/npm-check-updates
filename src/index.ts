@@ -223,7 +223,10 @@ const install = async (
 }
 
 /** Runs the dependency upgrades. Loads the ncurc, finds the package file, and handles --deep. */
-async function runUpgrades(options: Options, timeout?: NodeJS.Timeout): Promise<Index<VersionSpec> | PackageFile | void> {
+async function runUpgrades(
+  options: Options,
+  timeout?: NodeJS.Timeout,
+): Promise<Index<VersionSpec> | PackageFile | void> {
   const [selectedPackageInfos, workspacePackages]: [PackageInfo[], string[]] = await getAllPackages(options)
 
   let packageFilepaths: string[] = selectedPackageInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
