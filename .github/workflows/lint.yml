@@ -38,5 +38,8 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Check formatting
+        run: npm run prettier
+
       - name: Run lint
         run: npm run lint
