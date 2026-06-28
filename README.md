@@ -1046,9 +1046,9 @@ e.g. for VS Code:
 Use this for modern projects using `"type": "module"` in `package.json` or `.mjs` files.
 
 ```js
-import * as ncu from 'npm-check-updates'
+import ncu from 'npm-check-updates'
 
-const upgraded = await ncu.run({
+const upgraded = await ncu({
   // Pass any cli option
   packageFile: '../package.json',
   upgrade: true,
@@ -1060,6 +1060,9 @@ const upgraded = await ncu.run({
 console.log(upgraded) // { "mypackage": "^2.0.0", ... }
 ```
 
+The default export is also namespaced, so `ncu.run(...)` works the same as `ncu(...)`, and the named
+exports `import { run, defineConfig } from 'npm-check-updates'` are available too.
+
 ### CommonJS
 
 Use this for legacy projects using `"type": "commonjs"` or scripts using the `.cjs` extension.
@@ -1067,15 +1070,13 @@ Use this for legacy projects using `"type": "commonjs"` or scripts using the `.c
 ```js
 const ncu = require('npm-check-updates')
 
-// Since ncu.run() is an async function
-ncu
-  .run({
-    packageFile: './package.json',
-    upgrade: true,
-  })
-  .then(upgraded => {
-    console.log(upgraded)
-  })
+// ncu() is an async function
+ncu({
+  packageFile: './package.json',
+  upgrade: true,
+}).then(upgraded => {
+  console.log(upgraded)
+})
 ```
 
 ## Contributing
