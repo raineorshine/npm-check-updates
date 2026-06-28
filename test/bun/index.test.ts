@@ -46,6 +46,12 @@ describe('bun', () => {
     expect(version).toBe('2.0.0')
   })
 
+  it('packageAuthorChanged', async () => {
+    await expect(bun.packageAuthorChanged('mocha', '^7.1.0', '8.0.1', { cwd: __dirname })).resolves.toBe(true)
+    await expect(bun.packageAuthorChanged('htmlparser2', '^3.10.1', '^4.0.0', { cwd: __dirname })).resolves.toBe(false)
+    await expect(bun.packageAuthorChanged('ncu-test-v2', '^1.0.0', '2.2.0', { cwd: __dirname })).resolves.toBe(false)
+  })
+
   describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
     let stub: { restore: () => void }
     beforeAll(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
