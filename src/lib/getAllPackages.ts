@@ -150,12 +150,12 @@ async function getWorkspacePackageInfos(
   const workspacePackageGlob: string[] = (workspaces || []).map(workspace =>
     path
       .join(pkgDir, workspace, 'package.json')
-      // convert Windows path to *nix path for globby
+      // convert Windows path to *nix path
       .replace(/\\/g, '/'),
   )
 
   // e.g. [packages/a/package.json, ...]
-  const allWorkspacePackageFilepaths: string[] = glob.sync(workspacePackageGlob, globOptions)
+  const allWorkspacePackageFilepaths: string[] = await glob(workspacePackageGlob, globOptions)
 
   // Get the package names from the package files.
   // If a package does not have a name, use the folder name.
@@ -257,15 +257,15 @@ async function getAllPackages(options: Options): Promise<[PackageInfo[], string[
 
   let packageInfos: PackageInfo[] = []
 
-  // Find the package file with globby.
-  // When in workspaces mode, only include the root project package file when --root is used.
+  // Find the package file. When in workspaces mode, only include
+  // the root project package file when --root is used.
   const getBasePackageFile: boolean = !useWorkspaces || options.root === true
   if (getBasePackageFile) {
     // we are either:
     // * NOT a workspace
     // * a workspace and have requested an upgrade of the workspace-root
     const globPattern = rootPackageFile.replace(/\\/g, '/')
-    const rootPackagePaths = glob.sync(globPattern, globOptions)
+    const rootPackagePaths = await glob(globPattern, globOptions)
     // realistically there should only be zero or one
     const rootPackages = await Promise.all(
       rootPackagePaths.map(
