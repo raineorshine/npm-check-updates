@@ -47,6 +47,14 @@ describe('bun', function () {
     version!.should.equal('2.0.0')
   })
 
+  it('packageAuthorChanged', async () => {
+    await bun.packageAuthorChanged('mocha', '^7.1.0', '8.0.1', { cwd: __dirname }).should.eventually.equal(true)
+    await bun
+      .packageAuthorChanged('htmlparser2', '^3.10.1', '^4.0.0', { cwd: __dirname })
+      .should.eventually.equal(false)
+    await bun.packageAuthorChanged('ncu-test-v2', '^1.0.0', '2.2.0', { cwd: __dirname }).should.eventually.equal(false)
+  })
+
   describe('doctor', function () {
     this.timeout(3 * 60 * 1000)
 
