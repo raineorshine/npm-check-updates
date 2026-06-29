@@ -90,10 +90,11 @@ export default defineConfig(({ mode }) => ({
     }),
     chmodBinPlugin(),
     /**
-     * iconv-lite is an optional dep of minipass-fetch, only used by textConverted(),
-     * which ncu never calls. Stub it so it stays out of the bundle.
+     * Stub optional deps that are bundled but never reached at runtime:
+     * - iconv-lite: optional dep of minipass-fetch, only used by textConverted(), which ncu never calls
+     * - kerberos: optional peer dep of proxy-agent-negotiate (via npm-registry-fetch), only used for Negotiate proxy auth, which ncu never triggers
      */
-    stubModulesPlugin(['iconv-lite']),
+    stubModulesPlugin(['iconv-lite', 'kerberos']),
     ...(process.env.ANALYZER ? [analyzerOnce()] : []),
   ],
   ssr: {
