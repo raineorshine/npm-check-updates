@@ -49,12 +49,13 @@ export interface YarnMinimalAgeGate {
   npmPreapprovedPackages: string[]
 }
 
-/** Safely interpolates a string as a template string. */
+/** Safely interpolates a string as a template string. Supports `${VAR}`, `${VAR-fallback}` and `${VAR:-fallback}`. */
 const interpolate = (s: string, data: Index<string | undefined>): string =>
-  s.replace(
-    /\$\{([^:-]+)(?:(:)?-([^}]*))?\}/g,
-    (match, key, name, fallbackOnEmpty, fallback) => data[key] || (fallbackOnEmpty ? fallback : ''),
-  )
+  s.replace(/\$\{([^:-]+)(?:(:)?-([^}]*))?\}/g, (_match, key, colon, fallback = '') => {
+    const value = data[key]
+    // ${VAR:-fallback} uses the fallback when unset or empty; ${VAR-fallback} only when unset
+    return colon ? value || fallback : (value ?? fallback)
+  })
 
 /** Reads an auth token from a yarn config, interpolates it, and returns it as an npm config key-value pair. */
 export const npmAuthTokenKeyValue = (npmConfig: Index<string | boolean>) => (dep: string, scopedConfig: NpmScope) => {
