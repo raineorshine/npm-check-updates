@@ -4,7 +4,7 @@ import { JSONParser } from '@streamparser/json'
 import camelCase from 'camelcase'
 import memoize from 'fast-memoize'
 import ini from 'ini'
-import npmRegistryFetch from 'npm-registry-fetch'
+import type npmRegistryFetch from 'npm-registry-fetch'
 import nodeSemver from 'semver'
 import { parseRange } from 'semver-utils'
 import untildify from 'untildify'
@@ -27,6 +27,16 @@ import type { Version } from '../types/Version.ts'
 import type { CooldownInfo, VersionResult } from '../types/VersionResult.ts'
 import type { VersionSpec } from '../types/VersionSpec.ts'
 import { filterPredicate, satisfiesCooldownPeriod } from './filters.ts'
+
+/**
+ * Dynamically imports npm-registry-fetch, lazily so importing the ncu API does not eagerly pull in
+ * its http/https/tls/dns/net networking stack and pay the ESM instantiation cost.
+ */
+const importRegistryFetch = () => import('npm-registry-fetch')
+let registryFetchPromise: ReturnType<typeof importRegistryFetch> | undefined
+
+/** Lazily loads npm-registry-fetch, caching the import promise after the first call. */
+const loadRegistryFetch = async () => (await (registryFetchPromise ??= importRegistryFetch())).default
 
 const EXPLICIT_RANGE_OPS = new Set(['-', '||', '&&', '<', '<=', '>', '>='])
 
@@ -51,6 +61,7 @@ const fetchPartialPackument = async (
   const corgiDoc = 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
   const fullDoc = 'application/json'
 
+  const npmRegistryFetch = await loadRegistryFetch()
   const registry = npmRegistryFetch.pickRegistry(name, opts)
   const headers = {
     'user-agent': opts.userAgent || `npm-check-updates/${pkg.version} node/${process.version}`,
