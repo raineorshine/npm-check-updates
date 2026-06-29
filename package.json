@@ -44,7 +44,7 @@
     "lint:lockfile": "lockfile-lint",
     "lint:types": "tsc --noEmit",
     "lint:markdown": "markdownlint-cli2 \"**/*.md\" \"!**/node_modules/**/*.md\" \"!build/**/*.md\"",
-    "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives",
+    "lint:src": "eslint --cache --cache-location node_modules/.cache/.eslintcache",
     "prepare": "git config core.hooksPath .hooks || exit 0",
     "prepublishOnly": "npm run build",
     "prettier": "prettier . --check",
