@@ -205,6 +205,8 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     silent: true,
     // --doctor triggers the initial call to doctor, but the internal call needs to executes npm-check-updates normally in order to upgrade the dependencies
     doctor: false,
+    // the internal call only computes upgrades; errorLevel 2 would abort here since upgrades are expected
+    errorLevel: 1,
   })) as Index<VersionSpec>
 
   if (Object.keys(upgrades || {}).length === 0) {
