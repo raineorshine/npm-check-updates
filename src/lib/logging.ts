@@ -79,19 +79,15 @@ export function printJson(options: Options, object: any) {
 /** Print JSON object keys as string joined by character. */
 export function printSimpleJoinedString(object: any, join: string) {
   console.log(
-    Object.keys(object)
-      .map(pkg => pkg + '@' + object[pkg])
+    Object.entries(object)
+      .map(([pkg, version]) => `${pkg}@${version}`)
       .join(join),
   )
 }
 
 /** Prints an object sorted by key. */
 export function printSorted<T extends { [key: string]: any }>(options: Options, obj: T, loglevel: LogLevel) {
-  const sortedKeys = Object.keys(obj).sort() as (keyof T)[]
-  const objSorted = {} as T
-  for (const key of sortedKeys) {
-    objSorted[key] = obj[key]
-  }
+  const objSorted = Object.fromEntries(Object.entries(obj).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) as T
   print(options, objSorted, loglevel)
 }
 
