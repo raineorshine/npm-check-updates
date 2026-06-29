@@ -26,32 +26,40 @@ import { type VersionSpec } from './types/VersionSpec.ts'
 
 export type { RcOptions } from './types/RcOptions.ts'
 
-// allow prompt injection from environment variable for testing purposes
-if (process.env.INJECT_PROMPTS) {
-  prompts.inject(JSON.parse(process.env.INJECT_PROMPTS))
-}
-
 /** Tracks the (first) unhandled rejection so the process can exit with an error code at the end. This allows other errors to be logged before the process exits. */
 let unhandledRejectionError = false
 
 let lastRunOptions: Options | null = null
 
-// Use `node --trace-uncaught ...` to show where the exception was thrown.
-// See: https://nodejs.org/api/process.html#event-unhandledrejection
-process.on('unhandledRejection', (reason: string | Error) => {
-  // do not rethrow, as there may be other errors to print out
-  console.error(reason)
+let cliHandlersRegistered = false
 
-  // ensure the process exits with a non-zero code at the end
-  unhandledRejectionError = true
-})
+/** Registers CLI-only prompt injection and process handlers lazily, so importing the module has no side effects. */
+function registerCliHandlers() {
+  if (cliHandlersRegistered) return
+  cliHandlersRegistered = true
 
-// ensure that the process exits with an error code if there was an unhandled rejection
-process.on('exit', () => {
-  if (unhandledRejectionError && lastRunOptions) {
-    programError(lastRunOptions, `Unhandled Rejection! This is a bug and should be reported: ${pkg.bugs.url}`)
+  // allow prompt injection from environment variable for testing purposes
+  if (process.env.INJECT_PROMPTS) {
+    prompts.inject(JSON.parse(process.env.INJECT_PROMPTS))
   }
-})
+
+  // Use `node --trace-uncaught ...` to show where the exception was thrown.
+  // See: https://nodejs.org/api/process.html#event-unhandledrejection
+  process.on('unhandledRejection', (reason: string | Error) => {
+    // do not rethrow, as there may be other errors to print out
+    console.error(reason)
+
+    // ensure the process exits with a non-zero code at the end
+    unhandledRejectionError = true
+  })
+
+  // ensure that the process exits with an error code if there was an unhandled rejection
+  process.on('exit', () => {
+    if (unhandledRejectionError && lastRunOptions) {
+      programError(lastRunOptions, `Unhandled Rejection! This is a bug and should be reported: ${pkg.bugs.url}`)
+    }
+  })
+}
 
 /**
  * Volta is a tool for managing JavaScript tooling like Node and npm. Volta has
@@ -354,6 +362,10 @@ async function run(
   runOptions: RunOptions = {},
   { cli }: { cli?: boolean } = {},
 ): Promise<PackageFile | Index<VersionSpec> | void> {
+  if (cli) {
+    registerCliHandlers()
+  }
+
   unhandledRejectionError = false
 
   const options = await initOptions(runOptions, { cli })
