@@ -126,7 +126,6 @@
     "semver": "^7.8.5",
     "semver-utils": "^1.1.4",
     "spawn-please": "^3.0.0",
-    "timeago.js": "^4.0.2",
     "ts-json-schema-generator": "^2.9.0",
     "typescript": "^6.0.3",
     "unplugin-dts": "^1.0.3",
