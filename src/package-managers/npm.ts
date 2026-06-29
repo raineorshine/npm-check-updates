@@ -91,7 +91,8 @@ const fetchPartialPackument = async (
       return npmRegistryFetch.json(url.href, fetchOptions)
     } else {
       tag = tag || 'latest'
-      const response = await npmRegistryFetch(url.href, fetchOptions)
+      const controller = new AbortController()
+      const response = await npmRegistryFetch(url.href, { ...fetchOptions, signal: controller.signal })
       const parser = new JSONParser({ paths: ['$.*'], keepStack: false })
       const partialPackument: Partial<Packument> = { name }
       let foundAll = false
@@ -117,6 +118,10 @@ const fetchPartialPackument = async (
         if (parseError) throw parseError
         if (foundAll) break
       }
+
+      // break alone does not tear down the minipass stream, so the
+      // rest of the packument keeps downloading. Abort to stop it.
+      if (foundAll) controller.abort()
 
       return partialPackument
     }
