@@ -53,10 +53,14 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   const chalk = getChalk(runOptions.color)
 
   let raw: RunOptions | undefined
+  // long names of options passed to the ncu module, used to keep them ahead of per-package
+  // .ncurc configs reloaded in --deep mode (the cli sets this in cli.ts instead)
+  let moduleCliKeys: string[] | undefined
 
   // if not executed on the command-line (i.e. executed as a node module), set the defaults
   if (!cli) {
     raw = { ...runOptions }
+    moduleCliKeys = Object.keys(runOptions)
 
     // set cli defaults since they are not set by commander in this case
     const cliDefaults = cliOptions.reduce(
@@ -84,7 +88,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       ? { packageData: JSON.stringify(runOptions.packageData, null, 2) as any }
       : null),
     cli,
-    ...(cli ? null : { raw }),
+    ...(cli ? null : { raw, cliKeys: moduleCliKeys }),
   }
 
   // consolidate loglevel

@@ -262,9 +262,27 @@ async function runUpgrades(
       const pkgOptions: Options = {
         ...options,
         ...rcConfig,
-        packageFile: packageInfo.filepath,
-        workspacePackages,
       }
+
+      // cli options take precedence over the reloaded per-package config.
+      // the per-package config still overrides the root config for options not set on the cli.
+      for (const key of options.cliKeys || []) {
+        if (!(key in options)) continue
+        // in --mergeConfig mode, preserve merged arrays rather than replacing them with the cli value alone
+        if (
+          options.mergeConfig &&
+          Array.isArray(pkgOptions[key as keyof Options]) &&
+          Array.isArray(options[key as keyof Options])
+        ) {
+          continue
+        }
+
+        ;(pkgOptions as any)[key] = options[key as keyof Options]
+      }
+
+      pkgOptions.packageFile = packageInfo.filepath
+      pkgOptions.workspacePackages = workspacePackages
+
       // For virtual catalog files (like package.json#catalog), use the PackageInfo data directly
       // since the virtual file doesn't exist on disk
       let pkgData: string | null

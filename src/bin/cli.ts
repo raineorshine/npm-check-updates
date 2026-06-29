@@ -219,6 +219,12 @@ ${chalk.dim.underline(
     }
   }
 
+  // track which options were set on the command line (not the rc config) so they keep
+  // precedence over per-package configs reloaded in --deep mode. getOptionValueSource reflects
+  // the earlier program.parse(process.argv) and lets commander handle combined short options
+  // (e.g. -gf) instead of parsing them here.
+  const cliKeys = Object.keys(programOpts).filter(key => program.getOptionValueSource(key) === 'cli')
+
   // See defaultOptionValues comment above
   ;(program as any)._optionValues = defaultOptionValues
   program.parse(combinedArguments)
@@ -230,6 +236,7 @@ ${chalk.dim.underline(
     ...pickBy(program.opts(), (value: unknown) => value !== undefined),
     args: program.args,
     raw,
+    cliKeys,
     ...(combinedProgramOpts.filter ? { filter: combinedProgramOpts.filter } : null),
     ...(combinedProgramOpts.reject ? { reject: combinedProgramOpts.reject } : null),
   }
