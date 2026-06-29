@@ -9,7 +9,7 @@ import getEnginesNodeFromRegistry from './getEnginesNodeFromRegistry.ts'
 import keyValueBy from './keyValueBy.ts'
 import upgradePackageDefinitions from './upgradePackageDefinitions.ts'
 
-/** Checks if package.json min node version satisfies given package engine.node spec */
+/** Checks if package.json min node version satisfies given package engine.node spec. */
 const satisfiesNodeEngine = (enginesNode: Maybe<VersionSpec>, optionsEnginesNodeMinVersion: Version) =>
   !enginesNode || semver.satisfies(optionsEnginesNodeMinVersion, enginesNode)
 

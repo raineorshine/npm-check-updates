@@ -97,7 +97,7 @@ const getPackageManagerForInstall = async (options: Options, packageFile: string
   return await determinePackageManager(installOptions)
 }
 
-/** Returns if analysis contains upgrades */
+/** Returns if analysis contains upgrades. */
 const someUpgraded = (pkgs: string[], analysis: Index<PackageFile> | PackageFile, options: Options) => {
   // deep mode analysis is of type Index<PackageFile>
   // non-deep mode analysis is of type <PackageFile>, so we normalize it to Index<PackageFile>

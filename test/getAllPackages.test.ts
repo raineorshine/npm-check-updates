@@ -8,12 +8,12 @@ import chaiSetup from './helpers/chaiSetup.ts'
 chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-/** forces path to a posix version (windows-style) */
+/** Forces path to a posix version (windows-style). */
 function asPosixPath(filepath: string): string {
   return filepath.split(path.sep).join(path.posix.sep)
 }
 
-/** given a dirPath removes it from a tuple of strings  */
+/** Given a dirPath, removes it from a tuple of strings. */
 async function stripDir(dirPath: string, paths: [string[], string[]]): Promise<[string[], string[]]> {
   const [pkgs, workspacePackages]: [string[], string[]] = paths
   return [
@@ -22,7 +22,7 @@ async function stripDir(dirPath: string, paths: [string[], string[]]): Promise<[
   ]
 }
 
-/** convenience function to call getAllPackages for a given test-path  */
+/** Convenience function to call getAllPackages for a given test-path. */
 async function getAllPackagesForTest(testPath: string, options: Options): Promise<[string[], string[]]> {
   const testCwd = path.join(__dirname, testPath).replace(/\\/g, '/')
   const optionsWithTestCwd: Options = { cwd: testCwd, ...options }

@@ -45,7 +45,7 @@ function isValidUrl(url: string): boolean {
   }
 }
 
-/** pretty print for days `3.4722222222222223 days` -> `3.5 days` */
+/** Pretty print for days, `3.4722222222222223 days` -> `3.5 days`. */
 const formatDays = (d: number, r = Math.round(d * 10) / 10) => `${r} day${r !== 1 ? 's' : ''}`
 
 /** Initializes, validates, sets defaults, and consolidates program options. */

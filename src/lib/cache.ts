@@ -10,7 +10,7 @@ import { print } from './logging.ts'
 export const CACHE_DELIMITER = '___'
 
 /**
- * Check if cache is expired if timestamp is set
+ * Check if cache is expired if timestamp is set.
  *
  * @param cacheData
  * @param cacheExpiration

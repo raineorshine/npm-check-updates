@@ -413,7 +413,7 @@
           "additionalProperties": false
         }
       },
-      "description": "A function that can be provided to the --cooldown option for custom cooldown predicate."
+      "description": "A function that can be provided to the `--cooldown` option for a custom cooldown predicate."
     },
     "FilterFunction": {
       "$comment": "(packageName: string, versionRange: SemVer[]) => boolean",
@@ -436,7 +436,7 @@
           "additionalProperties": false
         }
       },
-      "description": "Supported function for the --filter and --reject options."
+      "description": "Supported function for the `--filter` and `--reject` options."
     },
     "SemVer": {
       "type": "object",
@@ -504,7 +504,8 @@
           "required": ["packageName", "versioningMetadata"],
           "additionalProperties": false
         }
-      }
+      },
+      "description": "Supported function for the `--filterResults` option."
     },
     "VersionSpec": {
       "type": "string",
@@ -558,7 +559,8 @@
     },
     "UpgradeGroup": {
       "type": "string",
-      "enum": ["major", "minor", "patch", "majorVersionZero", "none"]
+      "enum": ["major", "minor", "patch", "majorVersionZero", "none"],
+      "description": "The semver level by which a package is being upgraded, used to group packages with `--format group`."
     },
     "PackageFile": {
       "type": "object",
@@ -708,7 +710,7 @@
           "additionalProperties": false
         }
       },
-      "description": "A function that can be provided to the --target option for custom filtering."
+      "description": "A function that can be provided to the `--target` option to determine a custom target per package."
     }
   }
 }

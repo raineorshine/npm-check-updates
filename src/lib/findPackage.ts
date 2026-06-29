@@ -11,10 +11,10 @@ import programError from './programError.ts'
  * Finds the package file and data.
  *
  * Searches as follows:
- * --packageData flag
- * --packageFile flag
- * --stdin
- * --findUp
+ * `--packageData` flag
+ * `--packageFile` flag
+ * `--stdin`
+ * `--findUp`
  */
 async function findPackage(options: Options): Promise<{
   pkgData: string | null
