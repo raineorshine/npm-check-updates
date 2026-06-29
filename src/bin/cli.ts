@@ -221,6 +221,20 @@ ${chalk.dim.underline(
     }
   }
 
+  // track which options were set on the command line (not the rc config) so they keep
+  // precedence over per-package configs reloaded in --deep mode.
+  const cliKeys: string[] = []
+  for (let i = 0; i < programArgs.length; i++) {
+    const arg = programArgs[i]
+    if (typeof arg !== 'string' || !arg.startsWith('-')) continue
+    const option = cliOptionsMap[arg.replace(/^--?(no-)?/, '')]
+    if (option) {
+      cliKeys.push(option.long)
+      // skip the option-argument so it is not mistaken for another flag
+      if (option.arg) i++
+    }
+  }
+
   // See defaultOptionValues comment above
   ;(program as any)._optionValues = defaultOptionValues
   program.parse(combinedArguments)
@@ -232,6 +246,7 @@ ${chalk.dim.underline(
     ...pickBy(program.opts(), (value: unknown) => value !== undefined),
     args: program.args,
     raw,
+    cliKeys,
     ...(combinedProgramOpts.filter ? { filter: combinedProgramOpts.filter } : null),
     ...(combinedProgramOpts.reject ? { reject: combinedProgramOpts.reject } : null),
   }

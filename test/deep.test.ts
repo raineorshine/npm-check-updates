@@ -281,6 +281,45 @@ describe('--deep with nested ncurc files', () => {
   })
 })
 
+describe('--deep cli option precedence', () => {
+  /** Creates a temp directory with a root .ncurc and a single package.json. */
+  const setup = async (rcContents: string) => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    await fs.writeFile(
+      path.join(tempDir, 'package.json'),
+      JSON.stringify({ dependencies: { 'ncu-test-v2': '^1.0.0' } }),
+      'utf-8',
+    )
+    await fs.writeFile(path.join(tempDir, '.ncurc.js'), rcContents, 'utf-8')
+    return tempDir
+  }
+
+  // See: https://github.com/raineorshine/npm-check-updates/issues/1355
+  it('cli option overrides .ncurc in deep mode', async () => {
+    const tempDir = await setup('module.exports = { target: "minor" }')
+    try {
+      const cli = getCliInvocation('--jsonUpgraded', '--deep', '--target', 'latest')
+      const { stdout } = await spawn(cli.command, cli.args, {}, { cwd: tempDir })
+      const json = JSON.parse(stdout)
+      expect(json['package.json']['ncu-test-v2']).toBe('^2.0.0')
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  it('.ncurc still applies in deep mode when no overriding cli option is given', async () => {
+    const tempDir = await setup('module.exports = { target: "minor" }')
+    try {
+      const cli = getCliInvocation('--jsonUpgraded', '--deep')
+      const { stdout } = await spawn(cli.command, cli.args, {}, { cwd: tempDir })
+      const json = JSON.parse(stdout)
+      expect(json['package.json']).not.toHaveProperty('ncu-test-v2')
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+})
+
 describe('mergeOptions', () => {
   it('merge options', () => {
     /** Asserts that merging two options object deep equals the given result object. */

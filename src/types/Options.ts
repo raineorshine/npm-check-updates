@@ -7,6 +7,9 @@ import { type VersionSpec } from './VersionSpec.ts'
 export type Options = RunOptions & {
   args?: any[]
   raw?: Partial<Record<keyof RunOptions, any>>
+  // Long names of options that were explicitly set on the command line (or passed to the ncu module).
+  // Used to keep them ahead of per-package .ncurc configs reloaded in --deep mode.
+  cliKeys?: string[]
   cacher?: Cacher
   cli?: boolean
   distTag?: string
