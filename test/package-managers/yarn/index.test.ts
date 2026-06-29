@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import * as yarn from '../../../src/package-managers/yarn.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -135,6 +135,77 @@ describe('yarn', () => {
       })
 
       expect(authToken).toBeNull()
+    })
+
+    describe('environment variable interpolation', () => {
+      const ENV_VAR = 'NCU_TEST_NPM_AUTH_TOKEN'
+
+      afterEach(() => {
+        delete process.env[ENV_VAR]
+      })
+
+      it('interpolates a set environment variable', () => {
+        process.env[ENV_VAR] = 'TOKEN-FROM-ENV'
+        const authToken = yarn.npmAuthTokenKeyValue({})('fortawesome', {
+          npmAlwaysAuth: true,
+          npmAuthToken: `\${${ENV_VAR}}`,
+          npmRegistryServer: 'https://npm.fontawesome.com/',
+        })
+
+        expect(authToken).toStrictEqual({
+          '//npm.fontawesome.com/:_authToken': 'TOKEN-FROM-ENV',
+        })
+      })
+
+      it('uses the dash fallback when the variable is unset', () => {
+        const authToken = yarn.npmAuthTokenKeyValue({})('fortawesome', {
+          npmAlwaysAuth: true,
+          npmAuthToken: `\${${ENV_VAR}-FALLBACK-TOKEN}`,
+          npmRegistryServer: 'https://npm.fontawesome.com/',
+        })
+
+        expect(authToken).toStrictEqual({
+          '//npm.fontawesome.com/:_authToken': 'FALLBACK-TOKEN',
+        })
+      })
+
+      it('uses the colon-dash fallback when the variable is unset', () => {
+        const authToken = yarn.npmAuthTokenKeyValue({})('fortawesome', {
+          npmAlwaysAuth: true,
+          npmAuthToken: `\${${ENV_VAR}:-FALLBACK-TOKEN}`,
+          npmRegistryServer: 'https://npm.fontawesome.com/',
+        })
+
+        expect(authToken).toStrictEqual({
+          '//npm.fontawesome.com/:_authToken': 'FALLBACK-TOKEN',
+        })
+      })
+
+      it('prefers the set variable over the fallback', () => {
+        process.env[ENV_VAR] = 'TOKEN-FROM-ENV'
+        const authToken = yarn.npmAuthTokenKeyValue({})('fortawesome', {
+          npmAlwaysAuth: true,
+          npmAuthToken: `\${${ENV_VAR}:-FALLBACK-TOKEN}`,
+          npmRegistryServer: 'https://npm.fontawesome.com/',
+        })
+
+        expect(authToken).toStrictEqual({
+          '//npm.fontawesome.com/:_authToken': 'TOKEN-FROM-ENV',
+        })
+      })
+
+      it('uses the colon-dash fallback when the variable is set but empty', () => {
+        process.env[ENV_VAR] = ''
+        const authToken = yarn.npmAuthTokenKeyValue({})('fortawesome', {
+          npmAlwaysAuth: true,
+          npmAuthToken: `\${${ENV_VAR}:-FALLBACK-TOKEN}`,
+          npmRegistryServer: 'https://npm.fontawesome.com/',
+        })
+
+        expect(authToken).toStrictEqual({
+          '//npm.fontawesome.com/:_authToken': 'FALLBACK-TOKEN',
+        })
+      })
     })
   })
 
