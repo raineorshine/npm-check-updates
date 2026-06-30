@@ -131,7 +131,7 @@ function renderDependencyTable(rows: string[][]) {
 }
 
 /**
- * Extract just the version number from a package.json dep
+ * Extract just the version number from a package.json dep.
  *
  * @param dep Raw dependency, could be version / npm: string / Git url
  */
@@ -139,7 +139,7 @@ function getVersion(dep: string): string {
   return isGitHubUrl(dep) ? getGitHubUrlTag(dep)! : isNpmAlias(dep) ? parseNpmAlias(dep)![1] : dep
 }
 
-/** return prettify version from cooldown, `1-day` `20-hour` */
+/** Prettifies a cooldown value, e.g. `1-day` `20-hour`. */
 function prettifyCooldown(input: string | number | undefined | CooldownFunction): string {
   if (input === undefined || typeof input === 'function') {
     return 'cooldown'
@@ -325,7 +325,7 @@ async function printSkippedByCooldownTable({
 }
 
 /**
- * Renders one or more color-coded tables with all upgrades. Supports different formats from the --format option.
+ * Renders one or more color-coded tables with all upgrades. Supports different formats from the `--format` option.
  *
  * @param args
  * @param args.current

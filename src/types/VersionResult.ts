@@ -14,6 +14,6 @@ export interface VersionResult {
   version?: Version | null
   error?: string
   time?: string
-  /** exists only if the package was skipped due to cooldown */
+  /** Set only if the package was skipped due to cooldown. */
   cooldownInfo?: CooldownInfo
 }

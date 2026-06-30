@@ -58,7 +58,7 @@ export function numParts(version: string) {
 }
 
 /**
- * Increases or decreases precision by the given amount, e.g. major+1 -> minor
+ * Increases or decreases precision by the given amount, e.g. major+1 -> minor.
  *
  * @param precision
  * @param n
@@ -188,7 +188,7 @@ export function partChanged(from: string, to: string): UpgradeGroup {
 
 /**
  * Returns a list of group heading and a map of package names and versions.
- * Used with --format group and takes into account the custom --group function.
+ * Used with `--format group` and takes into account the custom `--groupFunction`.
  */
 export function getDependencyGroups(
   newDependencies: Index<string>,
@@ -273,7 +273,7 @@ export function colorizeDiff(from: string, to: string) {
 }
 
 /**
- * Extract prerelease tag, omitting build number
+ * Extract prerelease tag, omitting build number.
  * Example: 1.0.0-next.alpha.2 -> next.alpha
  *
  * @param version
@@ -284,7 +284,7 @@ const getPre = (version: string) => {
 }
 
 /**
- * Check if it is allowed to compare two versions based on their prerelease tag
+ * Check if it is allowed to compare two versions based on their prerelease tag.
  *
  * SemVer both states that different prerelease versions can't be compared
  * and at the same time compares them as part of the version via strcmp
@@ -299,7 +299,7 @@ export function isComparable(a: string, b: string) {
   return typeof preA !== 'string' || typeof preB !== 'string' || preA === preB
 }
 
-/** Comparator used to sort semver versions */
+/** Comparator used to sort semver versions. */
 export function compareVersions(a: string, b: string) {
   const isValid = semver.valid(a) && semver.valid(b)
   const isGreater = isValid ? semver.gt(a, b) : a > b
@@ -502,7 +502,7 @@ export function upgradeDependencyDeclaration(
   /**
    * Chooses version parts between the declared version and the latest.
    * Base parts (major, minor, patch) are only included if they are in the original declaration.
-   * Added parts (release, build) are always included. They are only present if we are checking --greatest versions
+   * Added parts (release, build) are always included. They are only present if we are checking `--greatest` versions
    * anyway.
    */
   function chooseVersion(part: VersionPart): string | null {

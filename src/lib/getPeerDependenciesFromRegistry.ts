@@ -15,9 +15,9 @@ type CircularData =
     }
 
 /**
- * Checks if the specified package will create a loop of peer dependencies by traversing all paths to find a cycle
+ * Checks if the specified package will create a loop of peer dependencies by traversing all paths to find a cycle.
  *
- * If a cycle was found, the offending peer dependency of the specified package is returned
+ * If a cycle was found, the offending peer dependency of the specified package is returned.
  */
 function isCircularPeer(peerDependencies: Index<Index<string>>, packageName: string): CircularData {
   const visited = new Set<string>()
@@ -67,7 +67,7 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
   const packageEntries = Object.entries(packageMap)
 
   /**
-   * Fetches peer dependencies for a package
+   * Fetches peer dependencies for a package.
    * @param pkg - The package name
    * @param version - The package version
    * @returns Promise that resolves to package name and its peer dependencies

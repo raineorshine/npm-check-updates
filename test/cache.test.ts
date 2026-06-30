@@ -13,7 +13,7 @@ const DAY = 24 * 60 * 60 * 1000
 const NOW = Date.now()
 
 /**
- * mock times
+ * Mock times.
  */
 const getTime = (daysAgo: number) => new Date(NOW - daysAgo * DAY).toISOString()
 
