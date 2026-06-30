@@ -1,9 +1,7 @@
+import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
 import { type Index } from '../src/types/IndexType.ts'
 import { type VersionSpec } from '../src/types/VersionSpec.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
-
-chaiSetup()
 
 describe('enginesNode', () => {
   it("update packages that satisfy the project's engines.node", async () => {
@@ -19,7 +17,7 @@ describe('enginesNode', () => {
       },
     })
 
-    upgraded!.should.eql({
+    expect(upgraded).toStrictEqual({
       del: '4.1.1',
     })
   })
@@ -37,7 +35,7 @@ describe('enginesNode', () => {
       },
     })
 
-    upgraded!.should.eql({})
+    expect(upgraded).toStrictEqual({})
   })
 
   it('update packages that do not have engines.node', async () => {
@@ -53,7 +51,7 @@ describe('enginesNode', () => {
       },
     })) as Index<VersionSpec>
 
-    upgraded!.should.eql({
+    expect(upgraded).toStrictEqual({
       'ncu-test-v2': '2.0.0',
     })
   })

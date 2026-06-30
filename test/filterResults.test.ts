@@ -1,13 +1,10 @@
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import { expect } from 'chai'
+import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
-
-chaiSetup()
 
 describe('filterResults', () => {
   it('should return only major versions updated', async () => {
@@ -46,9 +43,9 @@ describe('filterResults', () => {
           return true
         },
       })
-      expect(upgraded).to.have.property('ncu-test-tag', '2.1.0')
-      expect(upgraded).to.have.property('ncu-test-v2', '3.0.0')
-      expect(upgraded).to.not.have.property('ncu-test-return-version')
+      expect(upgraded).toHaveProperty('ncu-test-tag', '2.1.0')
+      expect(upgraded).toHaveProperty('ncu-test-v2', '3.0.0')
+      expect(upgraded).not.toHaveProperty('ncu-test-return-version')
     } finally {
       await removeDir(tempDir)
       stub.restore()

@@ -479,10 +479,6 @@ npmApi.findNpmConfig = memoize((configPath?: string): NpmConfig | null => {
   return normalizeNpmConfig(config, configPath)
 })
 
-// get the base config that is used for all npm queries
-// this may be partially overwritten by .npmrc config files when using --deep
-const npmConfig = npmApi.findNpmConfig()
-
 /**
  * Parse JSON and throw an informative error on failure.
  *
@@ -523,7 +519,7 @@ export async function packageAuthorChanged(
 ): Promise<boolean> {
   const result = await fetchPartialPackument(packageName, ['versions'], null, {
     ...npmConfigLocal,
-    ...npmConfig,
+    ...npmApi.findNpmConfig(),
     fullMetadata: true,
     ...(options.registry ? { registry: options.registry, silent: true } : null),
   })
@@ -688,7 +684,7 @@ async function fetchUpgradedPackument(
   npmConfigWorkspaceProject?: NpmConfig,
 ): Promise<Partial<Packument> | undefined> {
   // See: /test/helpers/stubVersions
-  const _stubKey = `STUB_VERSIONS_${process.env.MOCHA_WORKER_ID ?? '0'}`
+  const _stubKey = `STUB_VERSIONS_${process.env.VITEST_POOL_ID ?? '0'}`
   if (process.env[_stubKey]) {
     const mockReturnedVersions = JSON.parse(process.env[_stubKey]!)
     return npmApi.mockFetchUpgradedPackument(mockReturnedVersions)(packageName, fields, currentVersion, options)
@@ -705,7 +701,7 @@ async function fetchUpgradedPackument(
 
   const npmConfigMerged = mergeNpmConfigs(
     {
-      npmConfigUser: { ...npmConfig, fullMetadata },
+      npmConfigUser: { ...npmApi.findNpmConfig(), fullMetadata },
       npmConfigLocal,
       npmConfigWorkspaceProject,
     },
@@ -921,7 +917,7 @@ export const getEngines = async (
     null,
     {
       ...npmConfigLocal,
-      ...npmConfig,
+      ...npmApi.findNpmConfig(),
       ...(options.registry ? { registry: options.registry, silent: true } : null),
     },
     version,
