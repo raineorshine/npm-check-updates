@@ -1,4 +1,4 @@
-import sinon from 'sinon'
+import { vi } from 'vitest'
 import { npmApi } from '../../src/package-managers/npm.ts'
 import { type MockedVersions } from '../../src/types/MockedVersions.ts'
 
@@ -7,8 +7,8 @@ const stubVersions = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?:
   // stub child process
   // the only way to stub functionality in spawned child processes is to pass data through process.env and stub internally
   if (spawn) {
-    // namespace by worker so parallel mocha workers don't clobber each other
-    const stubKey = `STUB_VERSIONS_${process.env.MOCHA_WORKER_ID ?? '0'}`
+    // namespace by worker so parallel vitest workers don't clobber each other
+    const stubKey = `STUB_VERSIONS_${process.env.VITEST_POOL_ID ?? '0'}`
     process.env[stubKey] = JSON.stringify(mockReturnedVersions)
     return {
       restore: () => {
@@ -18,9 +18,14 @@ const stubVersions = (mockReturnedVersions: MockedVersions, { spawn }: { spawn?:
   }
   // stub module
   else {
-    return sinon
-      .stub(npmApi, 'fetchUpgradedPackumentMemo')
-      .callsFake(npmApi.mockFetchUpgradedPackument(mockReturnedVersions))
+    const stub = vi
+      .spyOn(npmApi, 'fetchUpgradedPackumentMemo')
+      .mockImplementation(npmApi.mockFetchUpgradedPackument(mockReturnedVersions))
+    return {
+      restore: () => {
+        stub.mockRestore()
+      },
+    }
   }
 }
 
