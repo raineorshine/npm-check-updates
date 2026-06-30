@@ -1,9 +1,7 @@
+import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 
-chaiSetup()
-
-describe('staticRegistry', function () {
+describe('staticRegistry', () => {
   it('upgrade to the version specified in the static registry file', async () => {
     const output = await ncu({
       packageData: {
@@ -15,7 +13,7 @@ describe('staticRegistry', function () {
       registry: './test/test-data/registry.json',
     })
 
-    output!.should.deep.equal({
+    expect(output).toStrictEqual({
       'ncu-test-v2': '99.9.9',
     })
   })
@@ -31,7 +29,7 @@ describe('staticRegistry', function () {
       registry: './test/test-data/registry.json',
     })
 
-    output!.should.deep.equal({})
+    expect(output).toStrictEqual({})
   })
 
   it('fetch static registry from a url', async () => {
@@ -47,7 +45,7 @@ describe('staticRegistry', function () {
         'https://gist.githubusercontent.com/raineorshine/0802d7388c69193bed49c5ee6ab611b9/raw/6f22bfdf19b7596089e56e0b14cd66d077f049d5/staticRegistry.json',
     })
 
-    output!.should.deep.equal({})
+    expect(output).toStrictEqual({})
   })
 
   it('infer registryType json when --registry file path ends in .json', async () => {
@@ -60,7 +58,7 @@ describe('staticRegistry', function () {
       registry: './test/test-data/registry.json',
     })
 
-    output!.should.deep.equal({
+    expect(output).toStrictEqual({
       'ncu-test-v2': '99.9.9',
     })
   })
@@ -77,7 +75,7 @@ describe('staticRegistry', function () {
         'https://gist.githubusercontent.com/raineorshine/0802d7388c69193bed49c5ee6ab611b9/raw/6f22bfdf19b7596089e56e0b14cd66d077f049d5/staticRegistry.json',
     })
 
-    output!.should.deep.equal({
+    expect(output).toStrictEqual({
       'ncu-test-v2': '99.9.9',
     })
   })

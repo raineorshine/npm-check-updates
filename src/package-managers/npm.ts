@@ -688,7 +688,7 @@ async function fetchUpgradedPackument(
   npmConfigWorkspaceProject?: NpmConfig,
 ): Promise<Partial<Packument> | undefined> {
   // See: /test/helpers/stubVersions
-  const _stubKey = `STUB_VERSIONS_${process.env.MOCHA_WORKER_ID ?? '0'}`
+  const _stubKey = `STUB_VERSIONS_${process.env.VITEST_POOL_ID ?? '0'}`
   if (process.env[_stubKey]) {
     const mockReturnedVersions = JSON.parse(process.env[_stubKey]!)
     return npmApi.mockFetchUpgradedPackument(mockReturnedVersions)(packageName, fields, currentVersion, options)
