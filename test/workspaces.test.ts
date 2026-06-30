@@ -1,16 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-// eslint doesn't like .should.be.empty syntax
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
-chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -116,7 +113,7 @@ let stub: { restore: () => void }
 
 describe('workspaces', () => {
   describe('stubbed', () => {
-    before(() => {
+    beforeAll(() => {
       stub = stubVersions(
         {
           'ncu-test-v2': '2.0.0',
@@ -126,15 +123,13 @@ describe('workspaces', () => {
         { spawn: true },
       )
     })
-    after(() => {
+    afterAll(() => {
       stub.restore()
     })
 
-    describe('--workspaces', function () {
-      this.timeout(60000)
-
+    describe('--workspaces', () => {
       it('do not allow --workspaces and --deep together', async () => {
-        await ncu({ workspaces: true, deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+        await expect(ncu({ workspaces: true, deep: true })).rejects.toThrow('Cannot specify both')
       })
 
       it('update workspaces with --workspaces', async () => {
@@ -142,9 +137,9 @@ describe('workspaces', () => {
         try {
           const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
-          output.should.have.property('packages/a/package.json')
-          output.should.not.have.property('packages/b/package.json')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).not.toHaveProperty('packages/b/package.json')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
         } finally {
           await removeDir(tempDir)
         }
@@ -155,10 +150,10 @@ describe('workspaces', () => {
         try {
           const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
-          output.should.have.property('packages/a/package.json')
-          output.should.have.property('packages/b/package.json')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
-          output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).toHaveProperty('packages/b/package.json')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
+          expect(output['packages/b/package.json'].dependencies).toHaveProperty('ncu-test-return-version')
         } finally {
           await removeDir(tempDir)
         }
@@ -169,10 +164,10 @@ describe('workspaces', () => {
         try {
           const { stdout } = await spawn('node', [bin, '--jsonAll', '-w'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
-          output.should.have.property('packages/a/package.json')
-          output.should.have.property('packages/b/package.json')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
-          output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).toHaveProperty('packages/b/package.json')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
+          expect(output['packages/b/package.json'].dependencies).toHaveProperty('ncu-test-return-version')
         } finally {
           await removeDir(tempDir)
         }
@@ -194,11 +189,11 @@ describe('workspaces', () => {
         try {
           const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
-          output.should.have.property('packages/a/package.json')
-          output.should.have.property('packages/b/package.json')
-          output.should.not.have.property('other/package.json')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
-          output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).toHaveProperty('packages/b/package.json')
+          expect(output).not.toHaveProperty('other/package.json')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
+          expect(output['packages/b/package.json'].dependencies).toHaveProperty('ncu-test-return-version')
         } finally {
           await removeDir(tempDir)
         }
@@ -211,10 +206,10 @@ describe('workspaces', () => {
         try {
           const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
-          output.should.have.property('packages/a/package.json')
-          output.should.have.property('packages/b/package.json')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
-          output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).toHaveProperty('packages/b/package.json')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
+          expect(output['packages/b/package.json'].dependencies).toHaveProperty('ncu-test-return-version')
         } finally {
           await removeDir(tempDir)
         }
@@ -226,7 +221,7 @@ describe('workspaces', () => {
         try {
           const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--workspaces'], {}, { cwd: tempDir })
           const upgrades = JSON.parse(stdout)
-          upgrades.should.deep.equal({
+          expect(upgrades).toStrictEqual({
             'package.json': {},
             'packages/foo/package.json': {
               'ncu-test-v2': '2.0.0',
@@ -245,7 +240,7 @@ describe('workspaces', () => {
         try {
           const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--workspaces'], {}, { cwd: tempDir })
           const upgrades = JSON.parse(stdout)
-          upgrades.should.deep.equal({
+          expect(upgrades).toStrictEqual({
             'package.json': {},
             'packages/foo/package.json': {
               'ncu-test-v2': '2.0.0',
@@ -260,15 +255,13 @@ describe('workspaces', () => {
       })
     })
 
-    describe('--workspace', function () {
-      this.timeout(60000)
-
+    describe('--workspace', () => {
       it('do not allow --workspace and --deep together', async () => {
-        await ncu({ workspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+        await expect(ncu({ workspace: ['a'], deep: true })).rejects.toThrow('Cannot specify both')
       })
 
       it('do not allow --workspace and --workspaces together', async () => {
-        await ncu({ workspace: ['a'], deep: true }).should.eventually.be.rejectedWith('Cannot specify both')
+        await expect(ncu({ workspace: ['a'], deep: true })).rejects.toThrow('Cannot specify both')
       })
 
       it('update single workspace with --workspace', async () => {
@@ -276,9 +269,9 @@ describe('workspaces', () => {
         try {
           const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
-          output.should.have.property('packages/a/package.json')
-          output.should.not.have.property('packages/b/package.json')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).not.toHaveProperty('packages/b/package.json')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
         } finally {
           await removeDir(tempDir)
         }
@@ -296,10 +289,10 @@ describe('workspaces', () => {
             },
           )
           const output = JSON.parse(stdout)
-          output.should.have.property('packages/a/package.json')
-          output.should.have.property('packages/b/package.json')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
-          output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).toHaveProperty('packages/b/package.json')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
+          expect(output['packages/b/package.json'].dependencies).toHaveProperty('ncu-test-return-version')
         } finally {
           await removeDir(tempDir)
         }
@@ -318,9 +311,9 @@ describe('workspaces', () => {
             },
           )
           const output = JSON.parse(stdout)
-          output.should.have.property('packages/a/package.json')
-          output.should.not.have.property('packages/b/package.json')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).not.toHaveProperty('packages/b/package.json')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
         } finally {
           await removeDir(tempDir)
         }
@@ -339,7 +332,7 @@ describe('workspaces', () => {
             },
           )
           const upgrades = JSON.parse(stdout)
-          upgrades.should.deep.equal({
+          expect(upgrades).toStrictEqual({
             'package.json': {},
             'packages/bar/package.json': {
               'ncu-test-v2': '2.0.0',
@@ -351,20 +344,18 @@ describe('workspaces', () => {
       })
     })
 
-    describe('--root/--no-root', function () {
-      this.timeout(60000)
-
+    describe('--root/--no-root', () => {
       it('update root project by default', async () => {
         const tempDir = await setup()
         try {
           const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces', '--root'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
-          output.should.have.property('package.json')
-          output.should.have.property('packages/a/package.json')
-          output.should.have.property('packages/b/package.json')
-          output['package.json'].dependencies.should.have.property('ncu-test-v2')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
-          output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+          expect(output).toHaveProperty('package.json')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).toHaveProperty('packages/b/package.json')
+          expect(output['package.json'].dependencies).toHaveProperty('ncu-test-v2')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
+          expect(output['packages/b/package.json'].dependencies).toHaveProperty('ncu-test-return-version')
         } finally {
           await removeDir(tempDir)
         }
@@ -375,11 +366,11 @@ describe('workspaces', () => {
         try {
           const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces', '--no-root'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
-          output.should.not.have.property('package.json')
-          output.should.have.property('packages/a/package.json')
-          output.should.have.property('packages/b/package.json')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
-          output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+          expect(output).not.toHaveProperty('package.json')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).toHaveProperty('packages/b/package.json')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
+          expect(output['packages/b/package.json'].dependencies).toHaveProperty('ncu-test-return-version')
         } finally {
           await removeDir(tempDir)
         }
@@ -388,26 +379,28 @@ describe('workspaces', () => {
       it('update root project and workspaces if errorLevel=2', async () => {
         const tempDir = await setup()
         try {
-          await spawn(
-            'node',
-            [bin, '--upgrade', '--workspaces', '--errorLevel', '2'],
-            {},
-            {
-              cwd: tempDir,
-            },
-          ).should.eventually.be.rejectedWith('Dependencies not up-to-date')
+          await expect(
+            spawn(
+              'node',
+              [bin, '--upgrade', '--workspaces', '--errorLevel', '2'],
+              {},
+              {
+                cwd: tempDir,
+              },
+            ),
+          ).rejects.toThrow('Dependencies not up-to-date')
           const upgradedPkg = JSON.parse(await fs.readFile(path.join(tempDir, 'package.json'), 'utf-8'))
-          upgradedPkg.should.have.property('dependencies')
-          upgradedPkg.dependencies.should.have.property('ncu-test-v2')
-          upgradedPkg.dependencies['ncu-test-v2'].should.not.equal('1.0.0')
+          expect(upgradedPkg).toHaveProperty('dependencies')
+          expect(upgradedPkg.dependencies).toHaveProperty('ncu-test-v2')
+          expect(upgradedPkg.dependencies['ncu-test-v2']).not.toBe('1.0.0')
           const upgradedPkgA = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/a/package.json'), 'utf-8'))
-          upgradedPkgA.should.have.property('dependencies')
-          upgradedPkgA.dependencies.should.have.property('ncu-test-tag')
-          upgradedPkgA.dependencies['ncu-test-tag'].should.not.equal('1.0.0')
+          expect(upgradedPkgA).toHaveProperty('dependencies')
+          expect(upgradedPkgA.dependencies).toHaveProperty('ncu-test-tag')
+          expect(upgradedPkgA.dependencies['ncu-test-tag']).not.toBe('1.0.0')
           const upgradedPkgB = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/b/package.json'), 'utf-8'))
-          upgradedPkgB.should.have.property('dependencies')
-          upgradedPkgB.dependencies.should.have.property('ncu-test-return-version')
-          upgradedPkgB.dependencies['ncu-test-return-version'].should.not.equal('1.0.0')
+          expect(upgradedPkgB).toHaveProperty('dependencies')
+          expect(upgradedPkgB.dependencies).toHaveProperty('ncu-test-return-version')
+          expect(upgradedPkgB.dependencies['ncu-test-return-version']).not.toBe('1.0.0')
         } finally {
           await removeDir(tempDir)
         }
@@ -429,32 +422,30 @@ describe('workspaces', () => {
         try {
           const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
-          output.should.have.property('package.json')
-          output.should.have.property('packages/a/package.json')
-          output.should.have.property('packages/b/package.json')
-          output.should.not.have.property('other/package.json')
-          output['package.json'].dependencies.should.have.property('ncu-test-v2')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
-          output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+          expect(output).toHaveProperty('package.json')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).toHaveProperty('packages/b/package.json')
+          expect(output).not.toHaveProperty('other/package.json')
+          expect(output['package.json'].dependencies).toHaveProperty('ncu-test-v2')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
+          expect(output['packages/b/package.json'].dependencies).toHaveProperty('ncu-test-return-version')
         } finally {
           await removeDir(tempDir)
         }
       })
     })
 
-    describe('--workspace should include --root by default', function () {
-      this.timeout(60000)
-
+    describe('--workspace should include --root by default', () => {
       it('update root project and single workspace', async () => {
         const tempDir = await setup()
         try {
           const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspace', 'a'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
-          output.should.have.property('package.json')
-          output.should.have.property('packages/a/package.json')
-          output.should.not.have.property('packages/b/package.json')
-          output['package.json'].dependencies.should.have.property('ncu-test-v2')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
+          expect(output).toHaveProperty('package.json')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).not.toHaveProperty('packages/b/package.json')
+          expect(output['package.json'].dependencies).toHaveProperty('ncu-test-v2')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
         } finally {
           await removeDir(tempDir)
         }
@@ -472,12 +463,12 @@ describe('workspaces', () => {
             },
           )
           const output = JSON.parse(stdout)
-          output.should.have.property('package.json')
-          output.should.have.property('packages/a/package.json')
-          output.should.have.property('packages/b/package.json')
-          output['package.json'].dependencies.should.have.property('ncu-test-v2')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
-          output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+          expect(output).toHaveProperty('package.json')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).toHaveProperty('packages/b/package.json')
+          expect(output['package.json'].dependencies).toHaveProperty('ncu-test-v2')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
+          expect(output['packages/b/package.json'].dependencies).toHaveProperty('ncu-test-return-version')
         } finally {
           await removeDir(tempDir)
         }
@@ -490,10 +481,10 @@ describe('workspaces', () => {
         try {
           const { stdout } = await spawn('node', [bin, '--jsonAll', '--workspaces'], {}, { cwd: tempDir })
           const output = JSON.parse(stdout)
-          output.should.have.property('packages/a/package.json')
-          output.should.have.property('packages/b/package.json')
-          output['packages/a/package.json'].dependencies.should.have.property('ncu-test-tag')
-          output['packages/b/package.json'].dependencies.should.have.property('ncu-test-return-version')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).toHaveProperty('packages/b/package.json')
+          expect(output['packages/a/package.json'].dependencies).toHaveProperty('ncu-test-tag')
+          expect(output['packages/b/package.json'].dependencies).toHaveProperty('ncu-test-return-version')
         } finally {
           await removeDir(tempDir)
         }
@@ -543,13 +534,13 @@ catalogs:
           )
 
           // Assert no errors and valid output
-          stderr.should.be.empty
-          stdout.should.not.be.empty
+          expect(stderr).toBe('')
+          expect(stdout).not.toBe('')
 
           const output = JSON.parse(stdout)
 
           // Should include catalog updates
-          output.should.deep.equal({
+          expect(output).toStrictEqual({
             'pnpm-workspace.yaml': {
               packages: ['packages/**'],
               catalogs: { default: { 'ncu-test-v2': '2.0.0' }, test: { 'ncu-test-tag': '1.1.0' } },
@@ -604,13 +595,13 @@ catalog:
           )
 
           // Assert no errors and valid output
-          stderr.should.be.empty
-          stdout.should.not.be.empty
+          expect(stderr).toBe('')
+          expect(stdout).not.toBe('')
 
           const output = JSON.parse(stdout)
 
           // Should include catalog updates
-          output.should.deep.equal({
+          expect(output).toStrictEqual({
             'pnpm-workspace.yaml': {
               packages: ['packages/**'],
               catalog: { 'ncu-test-v2': '2.0.0', 'ncu-test-tag': '1.1.0' },
@@ -655,13 +646,13 @@ catalog:
             { cwd: tempDir },
           )
 
-          stderr.should.not.match(/Invalid comparator/)
-          stdout.should.not.match(/Invalid comparator/)
+          expect(stderr).not.toMatch(/Invalid comparator/)
+          expect(stdout).not.toMatch(/Invalid comparator/)
 
           // Workspace package.json should be left untouched because its dependencies
           // are all package-manager protocol refs.
           const output = JSON.parse(stdout)
-          output['packages/a/package.json'].dependencies.should.deep.equal({
+          expect(output['packages/a/package.json'].dependencies).toStrictEqual({
             'ncu-test-tag': 'catalog:',
             'ncu-test-v2': 'workspace:^',
             'some-link': 'link:../local-pkg',
@@ -713,7 +704,7 @@ catalogs:
           await spawn('node', [bin, '-u', '--workspaces'], { rejectOnError: false }, { cwd: tempDir })
 
           const updatedConfig = await fs.readFile(path.join(tempDir, 'pnpm-workspace.yaml'), 'utf-8')
-          updatedConfig.should.be.equal(`packages:
+          expect(updatedConfig).toBe(`packages:
   - 'packages/**'
 
 catalog:
@@ -766,7 +757,7 @@ catalogs:
           await spawn('node', [bin, '-u', '--workspaces'], { rejectOnError: false }, { cwd: tempDir })
 
           const updatedConfig = await fs.readFile(path.join(tempDir, 'pnpm-workspace.yaml'), 'utf-8')
-          updatedConfig.should.be.equal(`workspaces:
+          expect(updatedConfig).toBe(`workspaces:
   packages:
     - 'packages/**'
   catalog:
@@ -833,19 +824,19 @@ catalog:
           )
 
           // Assert no errors and valid output
-          stderr.should.be.empty
-          stdout.should.not.be.empty
+          expect(stderr).toBe('')
+          expect(stdout).not.toBe('')
 
           const output = JSON.parse(stdout)
 
           // Should include catalog updates even when using --workspace (not --workspaces)
-          output.should.have.property('pnpm-workspace.yaml')
-          output['pnpm-workspace.yaml'].should.deep.equal({
+          expect(output).toHaveProperty('pnpm-workspace.yaml')
+          expect(output['pnpm-workspace.yaml']).toStrictEqual({
             packages: ['packages/*'],
             catalog: { 'ncu-test-v2': '2.0.0' },
           })
-          output.should.have.property('packages/a/package.json')
-          output['packages/a/package.json'].should.deep.equal({
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output['packages/a/package.json']).toStrictEqual({
             name: 'a',
             dependencies: { 'ncu-test-v2': 'catalog:' },
           })
@@ -899,13 +890,13 @@ catalogs:
           )
 
           // Assert no errors and valid output
-          stderr.should.be.empty
-          stdout.should.not.be.empty
+          expect(stderr).toBe('')
+          expect(stdout).not.toBe('')
 
           const output = JSON.parse(stdout)
 
           // Should include catalog updates
-          output.should.deep.equal({
+          expect(output).toStrictEqual({
             '.yarnrc.yml': {
               catalogs: { default: { 'ncu-test-v2': '2.0.0' }, test: { 'ncu-test-tag': '1.1.0' } },
             },
@@ -958,13 +949,13 @@ catalog:
           )
 
           // Assert no errors and valid output
-          stderr.should.be.empty
-          stdout.should.not.be.empty
+          expect(stderr).toBe('')
+          expect(stdout).not.toBe('')
 
           const output = JSON.parse(stdout)
 
           // Should include catalog updates
-          output.should.deep.equal({
+          expect(output).toStrictEqual({
             '.yarnrc.yml': {
               catalog: { 'ncu-test-v2': '2.0.0', 'ncu-test-tag': '1.1.0' },
             },
@@ -1019,10 +1010,10 @@ catalogs:
             { cwd: tempDir },
           )
 
-          stdout.should.not.be.empty
+          expect(stdout).not.toBe('')
 
           const updatedConfig = await fs.readFile(path.join(tempDir, '.yarnrc.yml'), 'utf-8')
-          updatedConfig.should.equal(`catalog:
+          expect(updatedConfig).toBe(`catalog:
   ncu-test-v2: '2.0.0'
   ncu-test-tag: '1.1.0'
 
@@ -1072,13 +1063,13 @@ catalogs:
           )
 
           // Assert no errors and valid output
-          stderr.should.be.empty
-          stdout.should.not.be.empty
+          expect(stderr).toBe('')
+          expect(stdout).not.toBe('')
 
           const output = JSON.parse(stdout)
 
           // Should include catalog updates in package.json
-          output.should.deep.equal({
+          expect(output).toStrictEqual({
             'package.json': {
               workspaces: ['packages/**'],
               catalog: { 'ncu-test-v2': '2.0.0' },
@@ -1132,13 +1123,13 @@ catalogs:
           )
 
           // Assert no errors and valid output
-          stderr.should.be.empty
-          stdout.should.not.be.empty
+          expect(stderr).toBe('')
+          expect(stdout).not.toBe('')
 
           const output = JSON.parse(stdout)
 
           // Should include catalog updates in package.json
-          output.should.deep.equal({
+          expect(output).toStrictEqual({
             'package.json': {
               workspaces: {
                 packages: ['packages/**'],
@@ -1173,8 +1164,8 @@ catalogs:
             cwd: path.join(tempDir, 'packages/a'),
           },
         )
-        stdout.should.include(`npm config (workspace project):\n{ ncutest: 'root' }`)
-        stdout.should.include(`Using merged npm config:\n{\n  ncutest: 'a',`)
+        expect(stdout).toContain(`npm config (workspace project):\n{ ncutest: 'root' }`)
+        expect(stdout).toContain(`Using merged npm config:\n{\n  ncutest: 'a',`)
       } finally {
         await removeDir(tempDir)
       }

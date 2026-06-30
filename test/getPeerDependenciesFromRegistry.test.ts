@@ -1,16 +1,14 @@
+import { describe, expect, it } from 'vitest'
 import { chalkInit } from '../src/lib/chalk.ts'
 import getPeerDependenciesFromRegistry from '../src/lib/getPeerDependenciesFromRegistry.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import { silenceProgressBar } from './helpers/silenceProgressBar.ts'
 
-chaiSetup()
-
-describe('getPeerDependenciesFromRegistry', function () {
+describe('getPeerDependenciesFromRegistry', () => {
   it('single package', async () => {
     chalkInit()
     silenceProgressBar()
     const data = await getPeerDependenciesFromRegistry({ 'ncu-test-peer': '1.0' }, {})
-    data.should.deep.equal({
+    expect(data).toStrictEqual({
       'ncu-test-peer': {
         'ncu-test-return-version': '1.x',
       },
@@ -21,7 +19,7 @@ describe('getPeerDependenciesFromRegistry', function () {
     chalkInit()
     silenceProgressBar()
     const data = await getPeerDependenciesFromRegistry({ 'ncu-test-return-version': '1.0' }, {})
-    data.should.deep.equal({ 'ncu-test-return-version': {} })
+    expect(data).toStrictEqual({ 'ncu-test-return-version': {} })
   })
 
   it('multiple packages', async () => {
@@ -34,7 +32,7 @@ describe('getPeerDependenciesFromRegistry', function () {
       },
       {},
     )
-    data.should.deep.equal({
+    expect(data).toStrictEqual({
       'ncu-test-return-version': {},
       'ncu-test-peer': {
         'ncu-test-return-version': '1.x',

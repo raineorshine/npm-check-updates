@@ -1,14 +1,13 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
 import { type Packument } from '../src/types/Packument.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
-chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-describe('peer dependencies', function () {
+describe('peer dependencies', () => {
   it('peer dependencies are ignored by default', async () => {
     const upgrades = await ncu({
       packageData: {
@@ -18,7 +17,7 @@ describe('peer dependencies', function () {
         },
       },
     })
-    upgrades!.should.deep.equal({
+    expect(upgrades).toStrictEqual({
       'ncu-test-return-version': '2.0.0',
     })
   })
@@ -33,7 +32,7 @@ describe('peer dependencies', function () {
         },
       },
     })
-    upgrades!.should.deep.equal({
+    expect(upgrades).toStrictEqual({
       'ncu-test-return-version': '1.1.0',
     })
   })
@@ -48,7 +47,7 @@ describe('peer dependencies', function () {
         },
       },
     })
-    upgrades!.should.deep.equal({
+    expect(upgrades).toStrictEqual({
       'ncu-test-return-version': '1.1.0',
       'ncu-test-peer-update': '1.1.0',
     })
@@ -64,7 +63,8 @@ describe('peer dependencies', function () {
         },
       },
     })
-    upgrades!.should.contain.keys('@vitest/ui', 'vitest')
+    expect(upgrades).toHaveProperty('@vitest/ui')
+    expect(upgrades).toHaveProperty('vitest')
   })
 
   // https://github.com/raineorshine/npm-check-updates/issues/1437
@@ -77,7 +77,7 @@ describe('peer dependencies', function () {
         },
       },
     })
-    upgrades!.should.deep.equal({})
+    expect(upgrades).toStrictEqual({})
   })
 
   it('ignores if post upgrade peers are unmet', async () => {
@@ -143,7 +143,7 @@ describe('peer dependencies', function () {
         return packageName === 'eslint-plugin-unused-imports' ? 'greatest' : 'minor'
       },
     })
-    upgrades!.should.have.all.keys('@vitest/ui', 'vitest')
+    expect(Object.keys(upgrades!).sort()).toStrictEqual(['@vitest/ui', 'vitest'])
     stub.restore()
   })
 
@@ -188,7 +188,7 @@ describe('peer dependencies', function () {
         return packageName === 'eslint-plugin-unused-imports' ? 'greatest' : 'minor'
       },
     })
-    upgrades!.should.deep.equal({})
+    expect(upgrades).toStrictEqual({})
     stub.restore()
   })
 
@@ -211,6 +211,6 @@ describe('peer dependencies', function () {
     })
     // Should complete without throwing; ncu-test-return-version at 'catalog:' is treated as
     // compatible (non-semver) so peer constraint is not considered violated.
-    upgrades!.should.be.an('object')
+    expect(upgrades).toBeTypeOf('object')
   })
 })

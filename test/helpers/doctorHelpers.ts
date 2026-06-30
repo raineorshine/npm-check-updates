@@ -3,6 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
+import { expect, it } from 'vitest'
 import { type PackageManagerName } from '../../src/types/PackageManagerName.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -40,7 +41,7 @@ export function createNcuRegExp(input: string): RegExp {
 
 /** Assertions for npm or yarn when tests pass. */
 export const testPass = ({ packageManager }: { packageManager: PackageManagerName }) => {
-  it('upgrade dependencies when tests pass', async function () {
+  it('upgrade dependencies when tests pass', async () => {
     const cwd = path.join(doctorTests, 'pass')
     const pkgPath = path.join(cwd, 'package.json')
     const nodeModulesPath = path.join(cwd, 'node_modules')
@@ -95,11 +96,11 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
 
     // bun prints the run header to stderr instead of stdout
     if (packageManager === 'bun') {
-      stripAnsi(stderr).should.equal('$ echo Success\n\n$ echo Success\n\n')
+      expect(stripAnsi(stderr)).toBe('$ echo Success\n\n$ echo Success\n\n')
     } else {
       stderr = stripAnsi(stderr).trim()
       if (stderr !== '') {
-        stderr.should.equal(`> test
+        expect(stderr).toBe(`> test
 > echo Success
 
 
@@ -110,17 +111,17 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
     }
 
     // stdout should include normal output
-    stripAnsi(stdout).should.containIgnoreCase('Tests pass')
-    stripAnsi(stdout).should.containIgnoreCase('ncu-test-v2  ~1.0.0  →  ~2.0.0')
+    expect(stripAnsi(stdout).toLowerCase()).toContain('tests pass')
+    expect(stripAnsi(stdout).toLowerCase()).toContain('ncu-test-v2  ~1.0.0  →  ~2.0.0'.toLowerCase())
 
     // package file should include upgrades
-    pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
+    expect(pkgUpgraded.toLowerCase()).toContain('"ncu-test-v2": "~2.0.0"'.toLowerCase())
   })
 }
 
 /** Assertions for npm or yarn when tests fail. */
 export const testFail = ({ packageManager }: { packageManager: PackageManagerName }) => {
-  it('identify broken upgrade', async function () {
+  it('identify broken upgrade', async () => {
     const cwd = path.join(doctorTests, 'fail')
     const pkgPath = path.join(cwd, 'package.json')
     const nodeModulesPath = path.join(cwd, 'node_modules')
@@ -176,19 +177,19 @@ export const testFail = ({ packageManager }: { packageManager: PackageManagerNam
     const emitter = createNcuRegExp('emitter20 1.0.0 →')
 
     // stdout should include successful upgrades
-    stdout.should.match(testV2)
-    stdout.should.not.match(testVersion)
-    stdout.should.match(emitter)
+    expect(stdout).toMatch(testV2)
+    expect(stdout).not.toMatch(testVersion)
+    expect(stdout).toMatch(emitter)
 
     // stderr should include first failing upgrade
-    stderr.should.containIgnoreCase('Breaks with v2.x')
-    stderr.should.not.match(testV2)
-    stderr.should.match(testVersion)
-    stderr.should.not.match(emitter)
+    expect(stderr.toLowerCase()).toContain('Breaks with v2.x'.toLowerCase())
+    expect(stderr).not.toMatch(testV2)
+    expect(stderr).toMatch(testVersion)
+    expect(stderr).not.toMatch(emitter)
 
     // package file should only include successful upgrades
-    pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
-    pkgUpgraded.should.containIgnoreCase('"ncu-test-return-version": "~1.0.0"')
-    pkgUpgraded.should.not.include('"emitter20": "1.0.0"')
+    expect(pkgUpgraded.toLowerCase()).toContain('"ncu-test-v2": "~2.0.0"'.toLowerCase())
+    expect(pkgUpgraded.toLowerCase()).toContain('"ncu-test-return-version": "~1.0.0"'.toLowerCase())
+    expect(pkgUpgraded).not.toContain('"emitter20": "1.0.0"')
   })
 }
