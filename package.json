@@ -53,6 +53,7 @@
     "test": "tsc --noEmit && npm run test:unit && npm run test:e2e",
     "test:bun": "vitest run --config vitest.config.bun.js",
     "test:unit": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "bash ./test/e2e.sh",
     "ncu": "node build/cli.js"
   },
@@ -95,6 +96,7 @@
     "@types/update-notifier": "^6.0.8",
     "@typescript-eslint/eslint-plugin": "^8.62.0",
     "@typescript-eslint/parser": "^8.62.0",
+    "@vitest/coverage-v8": "^4.1.9",
     "camelcase": "^9.0.0",
     "chalk": "^5.6.2",
     "cli-table3": "^0.6.5",
