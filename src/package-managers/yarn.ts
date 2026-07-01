@@ -2,7 +2,6 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import memoize from 'fast-memoize'
-import jsonlines from 'jsonlines'
 import { parse as parseYaml } from 'yaml'
 import exists from '../lib/exists.ts'
 import findLockfile from '../lib/findLockfile.ts'
@@ -206,38 +205,30 @@ const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMini
  *
  * @param result    Output from `yarn list --json` to be parsed
  */
-function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep> }> {
-  return new Promise((resolve, reject) => {
-    const dependencies: Index<ParsedDep> = {}
+function parseJsonLines(result: string): { dependencies: Index<ParsedDep> } {
+  const dependencies: Index<ParsedDep> = {}
 
-    const parser = jsonlines.parse()
+  for (const line of result.split('\n')) {
+    if (!line.trim()) continue
 
-    parser.on('data', d => {
-      // only parse info data
-      // ignore error info, e.g. "Visit https://yarnpkg.com/en/docs/cli/list for documentation about this command."
-      if (d.type === 'info' && !d.data.match(/^Visit/)) {
-        // parse package name and version number from info data, e.g. "nodemon@2.0.4" has binaries
-        const [, pkgName, pkgVersion] = d.data.match(/"(@?.*)@(.*)"/) || []
+    const d = JSON.parse(line)
 
-        dependencies[pkgName] = {
-          version: pkgVersion,
-          from: pkgName,
-        }
-      } else if (d.type === 'error') {
-        reject(new Error(d.data))
+    // only parse info data
+    // ignore error info, e.g. "Visit https://yarnpkg.com/en/docs/cli/list for documentation about this command."
+    if (d.type === 'info' && !d.data.match(/^Visit/)) {
+      // parse package name and version number from info data, e.g. "nodemon@2.0.4" has binaries
+      const [, pkgName, pkgVersion] = d.data.match(/"(@?.*)@(.*)"/) || []
+
+      dependencies[pkgName] = {
+        version: pkgVersion,
+        from: pkgName,
       }
-    })
+    } else if (d.type === 'error') {
+      throw new Error(d.data)
+    }
+  }
 
-    parser.on('end', () => {
-      resolve({ dependencies })
-    })
-
-    parser.on('error', reject)
-
-    parser.write(result)
-
-    parser.end()
-  })
+  return { dependencies }
 }
 
 /**
@@ -245,23 +236,13 @@ function parseJsonLines(result: string): Promise<{ dependencies: Index<ParsedDep
  *
  * @param result    Output from yarn command to be parsed
  */
-function extractFirstJsonLine(result: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const parser = jsonlines.parse()
-    let firstFound = false
+function extractFirstJsonLine(result: string): string {
+  for (const line of result.split('\n')) {
+    if (!line.trim()) continue
+    return JSON.stringify(JSON.parse(line))
+  }
 
-    parser.on('data', value => {
-      if (!firstFound) {
-        firstFound = true
-        resolve(JSON.stringify(value))
-      }
-    })
-    parser.on('error', reject)
-
-    parser.write(result)
-
-    parser.end()
-  })
+  throw new Error('No JSON line found')
 }
 
 /**
@@ -349,7 +330,7 @@ export const list = async (options: Options = {}, spawnOptions?: SpawnOptions): 
       ...spawnOptions,
     },
   )
-  const json: { dependencies: Index<ParsedDep> } = await parseJsonLines(jsonLines)
+  const json: { dependencies: Index<ParsedDep> } = parseJsonLines(jsonLines)
   const keyValues: Index<string | undefined> = keyValueBy<ParsedDep, string | undefined>(
     json.dependencies,
     (name, info): { [key: string]: string | undefined } => ({
@@ -412,7 +393,7 @@ export const getPeerDependencies = async (
 {"type":"error","name":35,"displayName":"YN0035","indent":"","data":"  \u001b[96mRequest URL\u001b[39m: \u001b[95mhttps://registry.yarnpkg.com/fffffffffffff\u001b[39m"}
        */
       try {
-        const firstObj = await extractFirstJsonLine(stdout)
+        const firstObj = extractFirstJsonLine(stdout)
         if (firstObj) {
           return (
             npm.parseJson<{ peerDependencies?: Index<Version> }>(firstObj, { command: args.join(' ') })
