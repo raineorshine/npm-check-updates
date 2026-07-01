@@ -158,6 +158,9 @@ export function isWildPart(versionPartValue: Maybe<string>) {
   return versionPartValue === '*' || versionPartValue === 'x'
 }
 
+/** Strips semver range prefixes (^, ~, >=, <=, >, <) from a version string. */
+export const stripRange = (version: string): string => version.replace(/^[~^<>=]+/, '')
+
 /**
  * Determines the part of a version string that has changed when comparing two versions. Assumes that the two version strings are in the same format. Returns null if no parts have changed.
  *
@@ -167,11 +170,12 @@ export function isWildPart(versionPartValue: Maybe<string>) {
 export function partChanged(from: string, to: string): UpgradeGroup {
   if (from === to) return 'none'
 
-  // separate out leading ^ or ~
-  if (/^[~^]/.test(to) && to[0] === from[0]) {
-    to = to.slice(1)
-    from = from.slice(1)
-  }
+  // Strip any leading range operator (^, ~, <, <=, >, >=) from from and to independently,
+  // since an upgrade commonly changes the operator, e.g. "<1.2.3" -> "^1.2.9". Comparing the
+  // raw strings would leave the operator glued to the first numeric part and throw off the
+  // positional diff below.
+  to = stripRange(to)
+  from = stripRange(from)
 
   // split into parts
   const partsTo = to.split('.')
@@ -247,24 +251,29 @@ export function getDependencyGroups(
 export function colorizeDiff(from: string, to: string) {
   let leadingWildcard = ''
 
-  // separate out leading ^ or ~
-  if (/^[~^]/.test(to) && to[0] === from[0]) {
+  // separate out leading ^ or ~ so it can be re-attached uncolored in front of the result
+  if (/^[~^]/.test(to)) {
     leadingWildcard = to[0]
     to = to.slice(1)
-    from = from.slice(1)
   }
 
-  // split into parts
+  // split into parts for the displayed portion of `to`
   const partsToColor = to.split('.')
-  const partsToCompare = from.split('.')
 
-  let i = partsToColor.findIndex((part, i) => part !== partsToCompare[i])
-  i = i >= 0 ? i : partsToColor.length
+  // Determine the position of the diff using fully range-stripped copies of `from` and `to`.
+  // `from` is never part of the output, and an upgrade commonly changes the leading range
+  // operator entirely, e.g. "<1.2.3" -> "^1.2.9", which would otherwise leave the operator
+  // glued to the first numeric part and throw off the positional diff below.
+  const partsFromCompare = stripRange(from).split('.')
+  const partsToCompare = stripRange(to).split('.')
+
+  let i = partsToCompare.findIndex((part, i) => part !== partsFromCompare[i])
+  i = i >= 0 ? i : partsToCompare.length
 
   // major = red (or any change before 1.0.0)
   // minor = cyan
   // patch = green
-  const color = i === 0 || partsToColor[0] === '0' ? 'red' : i === 1 ? 'cyan' : 'green'
+  const color = i === 0 || partsToCompare[0] === '0' ? 'red' : i === 1 ? 'cyan' : 'green'
 
   // if we are colorizing only part of the word, add a dot in the middle
   const middot = i > 0 && i < partsToColor.length ? '.' : ''
@@ -571,6 +580,3 @@ export const upgradeGitHubUrl = (declaration: string, upgraded: string) => {
   const tag = decodeURIComponent(parsedUrl.branch).replace(/^semver:/, '')
   return declaration.replace(tag, upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgradedNormalized)))
 }
-
-/** Strips semver range prefixes (^, ~, >=, <=, >, <) from a version string. */
-export const stripRange = (version: string): string => version.replace(/^[~^<>=]+/, '')
