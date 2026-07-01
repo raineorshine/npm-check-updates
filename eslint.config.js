@@ -36,7 +36,6 @@ export default [
       sourceType: 'module',
       globals: {
         ...globals.browser,
-        ...globals.mocha,
         ...globals.node,
         ...globals.es2024,
         ...raineConfig.globals,

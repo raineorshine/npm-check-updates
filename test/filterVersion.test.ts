@@ -1,11 +1,10 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
-chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -13,13 +12,13 @@ const bin = path.join(__dirname, '../build/cli.js')
 describe('filterVersion', () => {
   describe('module', () => {
     let stub: { restore: () => void }
-    before(() => {
+    beforeAll(() => {
       stub = stubVersions({
         'ncu-test-v2': '2.0.0',
         'ncu-test-return-version': '2.0.0',
       })
     })
-    after(() => {
+    afterAll(() => {
       stub.restore()
     })
 
@@ -36,8 +35,8 @@ describe('filterVersion', () => {
         filterVersion: '1.0.0',
       })
 
-      upgraded!.should.have.property('ncu-test-v2')
-      upgraded!.should.not.have.property('ncu-test-return-version')
+      expect(upgraded).toHaveProperty('ncu-test-v2')
+      expect(upgraded).not.toHaveProperty('ncu-test-return-version')
 
       stub.restore()
     })
@@ -56,9 +55,9 @@ describe('filterVersion', () => {
         filterVersion: '1.0.0 0.1.0',
       })
 
-      upgraded!.should.have.property('ncu-test-v2')
-      upgraded!.should.not.have.property('ncu-test-return-version')
-      upgraded!.should.have.property('fp-and-or')
+      expect(upgraded).toHaveProperty('ncu-test-v2')
+      expect(upgraded).not.toHaveProperty('ncu-test-return-version')
+      expect(upgraded).toHaveProperty('fp-and-or')
     })
 
     it('filter by package version with comma-delimited list of strings', async () => {
@@ -75,9 +74,9 @@ describe('filterVersion', () => {
         filterVersion: '1.0.0,0.1.0',
       })
 
-      upgraded!.should.have.property('ncu-test-v2')
-      upgraded!.should.not.have.property('ncu-test-return-version')
-      upgraded!.should.have.property('fp-and-or')
+      expect(upgraded).toHaveProperty('ncu-test-v2')
+      expect(upgraded).not.toHaveProperty('ncu-test-return-version')
+      expect(upgraded).toHaveProperty('fp-and-or')
     })
 
     it('filter by package version with RegExp', async () => {
@@ -94,9 +93,9 @@ describe('filterVersion', () => {
         filterVersion: /^1/,
       })
 
-      upgraded!.should.have.property('ncu-test-v2')
-      upgraded!.should.have.property('ncu-test-return-version')
-      upgraded!.should.not.have.property('fp-and-or')
+      expect(upgraded).toHaveProperty('ncu-test-v2')
+      expect(upgraded).toHaveProperty('ncu-test-return-version')
+      expect(upgraded).not.toHaveProperty('fp-and-or')
     })
 
     it('filter by package version with RegExp string', async () => {
@@ -113,9 +112,9 @@ describe('filterVersion', () => {
         filterVersion: '/^1/',
       })
 
-      upgraded!.should.have.property('ncu-test-v2')
-      upgraded!.should.have.property('ncu-test-return-version')
-      upgraded!.should.not.have.property('fp-and-or')
+      expect(upgraded).toHaveProperty('ncu-test-v2')
+      expect(upgraded).toHaveProperty('ncu-test-return-version')
+      expect(upgraded).not.toHaveProperty('fp-and-or')
     })
   })
 
@@ -135,8 +134,8 @@ describe('filterVersion', () => {
         { stdin: JSON.stringify(pkgData) },
       )
       const upgraded = JSON.parse(stdout)
-      upgraded.should.have.property('ncu-test-v2')
-      upgraded.should.have.property('ncu-test-10')
+      expect(upgraded).toHaveProperty('ncu-test-v2')
+      expect(upgraded).toHaveProperty('ncu-test-10')
       stub.restore()
     })
   })
@@ -159,8 +158,8 @@ describe('rejectVersion', () => {
         { stdin: JSON.stringify(pkgData) },
       )
       const upgraded = JSON.parse(stdout)
-      upgraded.should.not.have.property('ncu-test-v2')
-      upgraded.should.not.have.property('ncu-test-10')
+      expect(upgraded).not.toHaveProperty('ncu-test-v2')
+      expect(upgraded).not.toHaveProperty('ncu-test-10')
       stub.restore()
     })
   })

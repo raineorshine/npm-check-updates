@@ -1,12 +1,10 @@
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
+import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
-
-chaiSetup()
 
 const packageData = JSON.stringify({
   dependencies: {
@@ -26,9 +24,9 @@ describe('--dep', () => {
 
     const upgraded = await ncu({ packageData })
 
-    upgraded!.should.have.property('ncu-test-v2')
-    upgraded!.should.have.property('ncu-test-tag')
-    upgraded!.should.not.have.property('ncu-test-10')
+    expect(upgraded).toHaveProperty('ncu-test-v2')
+    expect(upgraded).toHaveProperty('ncu-test-tag')
+    expect(upgraded).not.toHaveProperty('ncu-test-10')
 
     stub.restore()
   })
@@ -38,9 +36,9 @@ describe('--dep', () => {
 
     const upgraded = await ncu({ packageData, dep: 'dev' })
 
-    upgraded!.should.not.have.property('ncu-test-v2')
-    upgraded!.should.have.property('ncu-test-tag')
-    upgraded!.should.not.have.property('ncu-test-10')
+    expect(upgraded).not.toHaveProperty('ncu-test-v2')
+    expect(upgraded).toHaveProperty('ncu-test-tag')
+    expect(upgraded).not.toHaveProperty('ncu-test-10')
 
     stub.restore()
   })
@@ -49,9 +47,9 @@ describe('--dep', () => {
     const stub = stubVersions('99.9.9')
     const upgraded = await ncu({ packageData, dep: 'dev,peer' })
 
-    upgraded!.should.not.have.property('ncu-test-v2')
-    upgraded!.should.have.property('ncu-test-tag')
-    upgraded!.should.have.property('ncu-test-10')
+    expect(upgraded).not.toHaveProperty('ncu-test-v2')
+    expect(upgraded).toHaveProperty('ncu-test-tag')
+    expect(upgraded).toHaveProperty('ncu-test-10')
 
     stub.restore()
   })
@@ -84,7 +82,7 @@ describe('--dep', () => {
         })
         const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
 
-        pkgNew.should.deep.equal({
+        expect(pkgNew).toStrictEqual({
           // unspecified dep sections are ignored
           dependencies: {
             'ncu-test-v2': '0.1.0',
@@ -131,7 +129,7 @@ describe('--dep', () => {
         })
         const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
 
-        pkgNew.should.deep.equal({
+        expect(pkgNew).toStrictEqual({
           // unspecified dep sections are ignored
           dependencies: {
             'ncu-test-v2': '0.1.0',
@@ -178,7 +176,7 @@ describe('--dep', () => {
         })
         const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
 
-        pkgNew.should.deep.equal({
+        expect(pkgNew).toStrictEqual({
           // specified dep sections are upgraded
           dependencies: {
             'ncu-test-tag': '99.9.9',
@@ -229,7 +227,7 @@ describe('--dep', () => {
         const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
         const pkgNew = JSON.parse(pkgDataNew)
 
-        pkgNew.should.deep.equal({
+        expect(pkgNew).toStrictEqual({
           packageManager: 'npm@9.0.0',
           dependencies: {
             'ncu-test-tag': '1.0.0',
@@ -271,7 +269,7 @@ describe('--dep', () => {
         const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
         const pkgNew = JSON.parse(pkgDataNew)
 
-        pkgNew.should.deep.equal({
+        expect(pkgNew).toStrictEqual({
           packageManager: 'npm@6.0.0',
           dependencies: {
             'ncu-test-tag': '1.0.0',
@@ -311,7 +309,7 @@ describe('--dep', () => {
         const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
         const pkgNew = JSON.parse(pkgDataNew)
 
-        pkgNew.should.deep.equal({
+        expect(pkgNew).toStrictEqual({
           dependencies: {
             'ncu-test-tag': '1.0.0',
           },
@@ -352,7 +350,7 @@ describe('--dep', () => {
         const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
         const pkgNew = JSON.parse(pkgDataNew)
 
-        pkgNew.should.deep.equal({
+        expect(pkgNew).toStrictEqual({
           packageManager: 'npm@9.0.0',
           dependencies: {
             'ncu-test-tag': '1.0.0',
@@ -393,7 +391,7 @@ describe('--dep', () => {
         const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
         const pkgNew = JSON.parse(pkgDataNew)
 
-        pkgNew.should.deep.equal({
+        expect(pkgNew).toStrictEqual({
           packageManager: 'npm@9.0.0',
           dependencies: {
             'ncu-test-tag': '1.0.0',

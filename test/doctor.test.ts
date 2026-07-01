@@ -4,14 +4,13 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { cliOptionsMap } from '../src/cli-options.ts'
 import { chalkInit } from '../src/lib/chalk.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
-chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -34,20 +33,18 @@ const ncu = async (
   return stdout
 }
 
-describe('doctor', function () {
-  // 3 min timeout
-  this.timeout(3 * 60 * 1000)
-
+// 3 min timeout
+describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
   let stub: { restore: () => void }
-  before(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
-  after(() => stub.restore())
+  beforeAll(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
+  afterAll(() => stub.restore())
 
   describe('npm', () => {
     it('print instructions when -u is not specified', async () => {
       chalkInit()
       const cwd = path.join(doctorTests, 'nopackagefile')
       const output = await ncu(['--doctor'], {}, { cwd })
-      return stripAnsi(output).should.equal(
+      expect(stripAnsi(output)).toBe(
         `Usage: ncu --doctor\n\n${stripAnsi(
           (cliOptionsMap.doctor.help as (options: { markdown: boolean }) => string)({ markdown: false }),
         )}\n`,
@@ -56,20 +53,20 @@ describe('doctor', function () {
 
     it('throw an error if there is no package file', async () => {
       const cwd = path.join(doctorTests, 'nopackagefile')
-      return ncu(['--doctor', '-u'], {}, { cwd }).should.eventually.be.rejectedWith('Missing or invalid package.json')
+      await expect(ncu(['--doctor', '-u'], {}, { cwd })).rejects.toThrow('Missing or invalid package.json')
     })
 
     it('throw an error if there is no test script', async () => {
       const cwd = path.join(doctorTests, 'notestscript')
-      return ncu(['--doctor', '-u'], {}, { cwd }).should.eventually.be.rejectedWith('No npm "test" script')
+      await expect(ncu(['--doctor', '-u'], {}, { cwd })).rejects.toThrow('No npm "test" script')
     })
 
     it('throw an error if --packageData or --packageFile are supplied', async () => {
-      return Promise.all([
-        ncu(['--doctor', '-u', '--packageFile', 'package.json']).should.eventually.be.rejectedWith(
+      await Promise.all([
+        expect(ncu(['--doctor', '-u', '--packageFile', 'package.json'])).rejects.toThrow(
           '--packageData and --packageFile are not allowed with --doctor',
         ),
-        ncu(['--doctor', '-u', '--packageData', '{}']).should.eventually.be.rejectedWith(
+        expect(ncu(['--doctor', '-u', '--packageData', '{}'])).rejects.toThrow(
           '--packageData and --packageFile are not allowed with --doctor',
         ),
       ])
@@ -78,7 +75,7 @@ describe('doctor', function () {
     testPass({ packageManager: 'npm' })
     testFail({ packageManager: 'npm' })
 
-    it('pass through options', async function () {
+    it('pass through options', async () => {
       const cwd = path.join(doctorTests, 'options')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -113,7 +110,7 @@ describe('doctor', function () {
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
       if (stderr !== '') {
-        stderr.should.equal(`> test
+        expect(stderr).toBe(`> test
 > node test.js
 
 
@@ -123,14 +120,14 @@ describe('doctor', function () {
       }
 
       // stdout should include normal output
-      stripAnsi(stdout).should.containIgnoreCase('Tests pass')
-      stripAnsi(stdout).should.containIgnoreCase('ncu-test-v2  ~1.0.0  →  ~2.0.0')
+      expect(stripAnsi(stdout).toLowerCase()).toContain('Tests pass'.toLowerCase())
+      expect(stripAnsi(stdout).toLowerCase()).toContain('ncu-test-v2  ~1.0.0  →  ~2.0.0'.toLowerCase())
 
       // package file should include upgrades
-      pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
+      expect(pkgUpgraded.toLowerCase()).toContain('"ncu-test-v2": "~2.0.0"'.toLowerCase())
     })
 
-    it('custom install script with --doctorInstall', async function () {
+    it('custom install script with --doctorInstall', async () => {
       const cwd = path.join(doctorTests, 'custominstall')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -165,7 +162,7 @@ describe('doctor', function () {
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
       if (stderr !== '') {
-        stripAnsi(stderr).should.equal(`> test
+        expect(stripAnsi(stderr)).toBe(`> test
 > echo 'Test Success'
 
 
@@ -175,13 +172,13 @@ describe('doctor', function () {
       }
 
       // stdout should include normal output
-      stripAnsi(stdout).should.containIgnoreCase('Tests pass')
+      expect(stripAnsi(stdout).toLowerCase()).toContain('Tests pass'.toLowerCase())
 
       // package file should include upgrades
-      pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
+      expect(pkgUpgraded.toLowerCase()).toContain('"ncu-test-v2": "~2.0.0"'.toLowerCase())
     })
 
-    it('custom test script with --doctorTest', async function () {
+    it('custom test script with --doctorTest', async () => {
       const cwd = path.join(doctorTests, 'customtest')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -216,7 +213,7 @@ describe('doctor', function () {
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
       if (stderr !== '') {
-        stderr.should.equal(`> mytest
+        expect(stderr).toBe(`> mytest
 > echo Success
 
 
@@ -226,13 +223,13 @@ describe('doctor', function () {
       }
 
       // stdout should include normal output
-      stripAnsi(stdout).should.containIgnoreCase('Tests pass')
+      expect(stripAnsi(stdout).toLowerCase()).toContain('Tests pass'.toLowerCase())
 
       // package file should include upgrades
-      pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
+      expect(pkgUpgraded.toLowerCase()).toContain('"ncu-test-v2": "~2.0.0"'.toLowerCase())
     })
 
-    it('custom test script with --doctorTest command that includes spaced words wrapped in quotes', async function () {
+    it('custom test script with --doctorTest command that includes spaced words wrapped in quotes', async () => {
       const cwd = path.join(doctorTests, 'customtest2')
       const pkgPath = path.join(cwd, 'package.json')
       const lockfilePath = path.join(cwd, 'package-lock.json')
@@ -265,13 +262,13 @@ describe('doctor', function () {
       await fs.rm(nodeModulesPath, { recursive: true, force: true })
 
       // stderr should be empty
-      stderr.should.equal('')
+      expect(stderr).toBe('')
 
       // stdout should include expected output
-      stripAnsi(stdout).should.contain("'123 456'")
+      expect(stripAnsi(stdout)).toContain("'123 456'")
 
       // package file should include upgrades
-      pkgUpgraded.should.containIgnoreCase('"ncu-test-v2": "~2.0.0"')
+      expect(pkgUpgraded.toLowerCase()).toContain('"ncu-test-v2": "~2.0.0"'.toLowerCase())
     })
 
     it('handle failed prepare script', async () => {
@@ -344,16 +341,16 @@ else {
       const testV2 = createNcuRegExp('ncu-test-v2 1.0.0 →')
 
       // stdout should include successful upgrades
-      stdout.should.match(testTag)
-      stdout.should.not.match(testV2)
+      expect(stdout).toMatch(testTag)
+      expect(stdout).not.toMatch(testV2)
 
       // stderr should include failed prepare script
-      stderr.should.containIgnoreCase('failed')
-      stderr.should.match(testV2)
-      stderr.should.not.match(testTag)
+      expect(stderr.toLowerCase()).toContain('failed'.toLowerCase())
+      expect(stderr).toMatch(testV2)
+      expect(stderr).not.toMatch(testTag)
 
       // package file should only include successful upgrades
-      pkgUpgraded.dependencies.should.deep.equal({
+      expect(pkgUpgraded.dependencies).toStrictEqual({
         'ncu-test-v2': '1.0.0',
         'ncu-test-tag': '1.1.0',
       })
@@ -364,12 +361,12 @@ else {
     // yarn classic drops yarn--<timestamp> proxy-script dirs in the temp dir and does not reliably clean them up
     let preexistingYarnTmp: Set<string>
 
-    before(async () => {
+    beforeAll(async () => {
       const entries = await fs.readdir(os.tmpdir())
       preexistingYarnTmp = new Set(entries.filter(entry => entry.startsWith('yarn--')))
     })
 
-    after(async () => {
+    afterAll(async () => {
       const entries = await fs.readdir(os.tmpdir())
       await Promise.all(
         entries
