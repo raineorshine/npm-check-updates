@@ -1,12 +1,12 @@
 import semver from 'semver'
 import parseCooldown from '../lib/parseCooldown.ts'
 import * as versionUtil from '../lib/version-util.ts'
-import type { CooldownFunction } from '../types/CooldownFunction.ts'
-import type { Index } from '../types/IndexType.ts'
-import type { Maybe } from '../types/Maybe.ts'
-import type { Options } from '../types/Options.ts'
-import type { Packument } from '../types/Packument.ts'
-import type { Version } from '../types/Version.ts'
+import { type CooldownFunction } from '../types/CooldownFunction.ts'
+import { type Index } from '../types/IndexType.ts'
+import { type Maybe } from '../types/Maybe.ts'
+import { type Options } from '../types/Options.ts'
+import { type Packument } from '../types/Packument.ts'
+import { type Version } from '../types/Version.ts'
 
 /**
  * @param versionResult  Available version

@@ -1,4 +1,4 @@
-import type { Packument } from '../../src/types/Packument.ts'
+import { type Packument } from '../../src/types/Packument.ts'
 
 interface CreateMockParams {
   name: string

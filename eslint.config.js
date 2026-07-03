@@ -94,6 +94,14 @@ export default [
           selector: 'ImportDeclaration[source.value=/\\.json$/]:not(:has(ImportAttribute))',
           message: "JSON imports require an import attribute: with { type: 'json' }",
         },
+        // Enforce inline type imports (import { type X }) over the prefix form (import type { X }),
+        // matching consistent-type-imports' inline fixStyle. The rule above accepts both forms.
+        // Only named imports have an inline form, so default/namespace type imports are left alone.
+        {
+          selector:
+            "ImportDeclaration[importKind='type']:has(ImportSpecifier):not(:has(ImportDefaultSpecifier)):not(:has(ImportNamespaceSpecifier))",
+          message: 'Use an inline type import: import { type X } instead of import type { X }.',
+        },
         // Enforce prefix type exports (export type { X }) over the inline form (export { type X }),
         // the inverse of the import convention. consistent-type-exports accepts both forms.
         {
