@@ -206,6 +206,21 @@ describe('yarn', () => {
           '//npm.fontawesome.com/:_authToken': 'FALLBACK-TOKEN',
         })
       })
+
+      it('interpolates multiple variables in one token', () => {
+        process.env[ENV_VAR] = 'FIRST'
+        process.env[`${ENV_VAR}_2`] = 'SECOND'
+        const authToken = yarn.npmAuthTokenKeyValue({})('fortawesome', {
+          npmAlwaysAuth: true,
+          npmAuthToken: `\${${ENV_VAR}}-\${${ENV_VAR}_2}`,
+          npmRegistryServer: 'https://npm.fontawesome.com/',
+        })
+        delete process.env[`${ENV_VAR}_2`]
+
+        expect(authToken).toStrictEqual({
+          '//npm.fontawesome.com/:_authToken': 'FIRST-SECOND',
+        })
+      })
     })
   })
 
