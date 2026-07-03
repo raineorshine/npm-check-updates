@@ -33,7 +33,7 @@ cleanup() {
   # WARNING: The original authToken cannot be restored because it is protected and cannot be read with 'npm config get'.
   npm config delete "//${registry_addr}/:_authToken" || true
 
-  # return to working directory before removing temp dir
+  # return to working directory
   cd "${cwd}" || true
 
   # remove temp directory
