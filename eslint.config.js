@@ -94,6 +94,12 @@ export default [
           selector: 'ImportDeclaration[source.value=/\\.json$/]:not(:has(ImportAttribute))',
           message: "JSON imports require an import attribute: with { type: 'json' }",
         },
+        // Enforce prefix type exports (export type { X }) over the inline form (export { type X }),
+        // the inverse of the import convention. consistent-type-exports accepts both forms.
+        {
+          selector: "ExportSpecifier[exportKind='type']",
+          message: 'Use a prefix type export: export type { X } instead of export { type X }.',
+        },
       ],
     },
   },
@@ -143,6 +149,13 @@ export default [
         {
           prefer: 'type-imports',
           fixStyle: 'inline-type-imports',
+        },
+      ],
+      '@typescript-eslint/consistent-type-exports': [
+        'error',
+        {
+          // prefer separate `export type { X }` statements, not inline specifiers
+          fixMixedExportsWithInlineTypeSpecifier: false,
         },
       ],
 

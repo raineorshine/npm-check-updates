@@ -24,8 +24,6 @@ import { type PackageInfo } from './types/PackageInfo.ts'
 import { type RunOptions } from './types/RunOptions.ts'
 import { type VersionSpec } from './types/VersionSpec.ts'
 
-export type { RcOptions } from './types/RcOptions.ts'
-
 /** Tracks the (first) unhandled rejection so the process can exit with an error code at the end. This allows other errors to be logged before the process exits. */
 let unhandledRejectionError = false
 
@@ -446,6 +444,7 @@ ncu.run = ncu
 ncu.defineConfig = defineConfig
 
 export default ncu
-
-export { ncu as run, defineConfig }
-export type { RunOptions }
+export { ncu as run }
+export { default as defineConfig } from './lib/defineConfig.ts'
+export type { RcOptions } from './types/RcOptions.ts'
+export type { RunOptions } from './types/RunOptions.ts'
