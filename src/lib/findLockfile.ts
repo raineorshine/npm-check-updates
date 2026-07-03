@@ -45,14 +45,8 @@ export default async function findLockfile(
       }
 
       const pathParent = path.resolve(currentPath, '..')
-      if (
-        // Stop if we have reached the root of the file system.
-        pathParent === currentPath ||
-        // Stop if we have reached the root of a user's home directory.
-        pathParent === homeDir ||
-        // Stop if we have reached the root of the temporary directory.
-        pathParent === tempDir
-      ) {
+      // Stop at the root of the file system, the user's home directory, or the temporary directory.
+      if ([currentPath, homeDir, tempDir].includes(pathParent)) {
         break
       }
 
