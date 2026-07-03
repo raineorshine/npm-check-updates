@@ -18,6 +18,9 @@ import upgradePackageData from './upgradePackageData.ts'
 
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
 
+// package managers that install a single dependency with `add` instead of `install --no-save`
+const ADD_PACKAGE_MANAGERS = new Set(['yarn', 'pnpm', 'bun'])
+
 /** Run npm, yarn, pnpm, or bun. */
 const npm = (
   args: string[],
@@ -273,11 +276,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         // install single dependency
         await npm(
           [
-            ...(options.packageManager === 'yarn' ||
-            options.packageManager === 'pnpm' ||
-            options.packageManager === 'bun'
-              ? ['add']
-              : ['install', '--no-save']),
+            ...(ADD_PACKAGE_MANAGERS.has(options.packageManager ?? '') ? ['add'] : ['install', '--no-save']),
             `${name}@${version}`,
           ],
           { packageManager: options.packageManager },
@@ -318,11 +317,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         await fs.writeFile(lockFileName, lockFile)
 
         // restore package.json since yarn and pnpm do not have the --no-save option
-        if (
-          options.packageManager === 'yarn' ||
-          options.packageManager === 'pnpm' ||
-          options.packageManager === 'bun'
-        ) {
+        if (ADD_PACKAGE_MANAGERS.has(options.packageManager ?? '')) {
           await fs.writeFile('package.json', lastPkgFile)
         }
       }
