@@ -9,12 +9,10 @@ import { chalkInit, getChalk } from '../lib/chalk.ts'
 // async global contexts are only available in esm modules -> function
 import getNcuRc from '../lib/getNcuRc.ts'
 import { pickBy } from '../lib/pick.ts'
+import uncode from '../lib/uncode.ts'
 import { type RunOptions } from '../types/RunOptions.ts'
 
 const optionVersionDescription = 'Output the version number of npm-check-updates.'
-
-/** Removes inline code ticks. */
-const uncode = (s: string) => s.replace(/`/g, '')
 
 ;(async () => {
   // check if a new version of ncu is available and print an update notification
