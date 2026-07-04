@@ -1,45 +1,47 @@
 #!/usr/bin/env bash
 
-# Enable strict mode: 
+# Enable strict mode:
 # -E: inherit ERR traps in functions/subshells
 # -e: exit on any command failure
 # -u: error on unset variables
 # -o pipefail: fail pipelines if any command fails
 set -Eeuo pipefail
 
-SHORT_SHA=$(git rev-parse HEAD)
+SHORT_SHA=$(git rev-parse --short HEAD)
 LINT_LOG="${TMPDIR:-/tmp}/lint.${SHORT_SHA}.log"
 
-# strip color
+# Strip color
 strip() {
   sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2};?)?)?[mGK]//g"
 }
 
-# display a notification
+# Display a notification
 notify() {
-  # if osascript is not supported, do nothing
-  if [[ -f /usr/bin/osascript ]]; then
-    # read back in the lint errors
-    local ERRORS
-    ERRORS=$(sed 1,4d "${LINT_LOG}")
+  # read back in the lint errors
+  local ERRORS
+  ERRORS=$(sed 1,4d "${LINT_LOG}")
 
-    # Trigger apple- or OSA-script on supported platforms
+  # macOS via osascript, Linux via notify-send; do nothing if neither exists
+  if [[ -x /usr/bin/osascript ]]; then
     /usr/bin/osascript -e "display notification \"${ERRORS}\" with title \"$*\""
+  elif command -v notify-send >/dev/null; then
+    notify-send "$*" "${ERRORS}"
   fi
 }
 
-# Do NOT run this when rebasing or we can't get the branch
-branch=$(git branch --show-current)
-if [[ -z "${branch}" ]]; then
+# Do not proceed if node_modules folder is missing
+if [[ ! -d node_modules ]]; then
+  echo "post-commit: node_modules not found, skipping lint" >&2
   exit 0
 fi
 
-if [[ ! -d node_modules ]]; then
-  echo "post-commit: node_modules not found, skipping lint" >&2
+# Do not run this when rebasing or we can't get the branch
+branch=$(git branch --show-current)
+if [[ -z "${branch}" ]]; then
   exit 0
 fi
 
 # Lint in the background, not blocking the terminal and piping all output to a file.
 # If the lint fails, trigger a notification (on supported platforms) with at least the first error shown.
 # We pipe output so that the terminal (tmux, vim, emacs etc.) isn't borked by stray output.
-(npm run lint:src | strip &>"${LINT_LOG}" || notify "Lint Error"; rm -f -- "${LINT_LOG}") &
+(npm run lint:src 2>&1 | strip >"${LINT_LOG}" 2>&1 || notify "Lint Error"; rm -f -- "${LINT_LOG}") &
