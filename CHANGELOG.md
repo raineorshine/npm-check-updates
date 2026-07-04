@@ -461,8 +461,7 @@ If you are not using `--semverLevel`, NO CHANGE! 😅
 
 ### Breaking
 
-~node >= 8~
-node >= 10.17
+~~node >= 8~~ node >= 10.17
 
 Bump minimum node version to `v10.17.0` due to `move-file` #651
 
