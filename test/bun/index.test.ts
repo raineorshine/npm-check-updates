@@ -46,6 +46,26 @@ describe('bun', () => {
     expect(version).toBe('2.0.0')
   })
 
+  it('packageAuthorChanged', async () => {
+    await expect(bun.packageAuthorChanged('mocha', '^7.1.0', '8.0.1', { cwd: __dirname })).resolves.toBe(true)
+    await expect(bun.packageAuthorChanged('htmlparser2', '^3.10.1', '^4.0.0', { cwd: __dirname })).resolves.toBe(false)
+    await expect(bun.packageAuthorChanged('ncu-test-v2', '^1.0.0', '2.2.0', { cwd: __dirname })).resolves.toBe(false)
+  })
+
+  it('getPeerDependencies', async () => {
+    const spawnOptions = { cwd: __dirname }
+    await expect(bun.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions)).resolves.toStrictEqual({})
+    await expect(bun.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions)).resolves.toStrictEqual({
+      'ncu-test-return-version': '1.x',
+    })
+  })
+
+  it('getEngines', async () => {
+    await expect(bun.getEngines('del', '2.0.0', { cwd: __dirname })).resolves.toStrictEqual({ node: '>=0.10.0' })
+    await expect(bun.getEngines('ncu-test-return-version', '1.0.0', { cwd: __dirname })).resolves.toStrictEqual({})
+    await expect(bun.getEngines('ncu-test-return-version', '9999.0.0', { cwd: __dirname })).rejects.toThrow()
+  })
+
   describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
     let stub: { restore: () => void }
     beforeAll(() => (stub = stubVersions(mockNpmVersions, { spawn: true })))
