@@ -1,13 +1,10 @@
 import fs from 'node:fs/promises'
-import { expect } from 'chai'
+import { beforeAll, describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
 import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache.ts'
 import { CURRENT_CACHE_SCHEMA, type CacheData } from '../src/types/Cacher.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import createMockVersion from './helpers/createMockVersion.ts'
 import stubVersions from './helpers/stubVersions.ts'
-
-chaiSetup()
 
 const DAY = 24 * 60 * 60 * 1000
 const NOW = Date.now()
@@ -18,7 +15,7 @@ const NOW = Date.now()
 const getTime = (daysAgo: number) => new Date(NOW - daysAgo * DAY).toISOString()
 
 describe('cache', () => {
-  before(async () => {
+  beforeAll(async () => {
     await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
   })
 
@@ -41,13 +38,13 @@ describe('cache', () => {
 
       const cacheData: CacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
 
-      expect(cacheData.timestamp).lessThanOrEqual(Date.now())
-      expect(cacheData.packages).deep.eq({
+      expect(cacheData.timestamp).toBeLessThanOrEqual(Date.now())
+      expect(cacheData.packages).toStrictEqual({
         [`ncu-test-v2${CACHE_DELIMITER}latest`]: { version: '2.0.0', time: getTime(10) },
         [`ncu-test-tag${CACHE_DELIMITER}latest`]: { version: '1.1.0', time: getTime(20) },
         [`ncu-test-alpha${CACHE_DELIMITER}latest`]: { version: '1.0.0', time: getTime(30) },
       })
-      expect(cacheData.peers).deep.eq({
+      expect(cacheData.peers).toStrictEqual({
         [`ncu-test-alpha${CACHE_DELIMITER}1.0.0`]: {},
         [`ncu-test-tag${CACHE_DELIMITER}1.0.0`]: {},
         [`ncu-test-tag${CACHE_DELIMITER}1.1.0`]: {},
@@ -92,16 +89,16 @@ describe('cache', () => {
 
       const cacheData1: CacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
 
-      expect(cacheData1.packages).deep.eq({
+      expect(cacheData1.packages).toStrictEqual({
         [`ncu-test-v2${CACHE_DELIMITER}latest`]: { version: '2.0.0', time: getTime(10) },
         [`ncu-test-tag${CACHE_DELIMITER}latest`]: { version: '1.1.0', time: getTime(20) },
         [`ncu-test-alpha${CACHE_DELIMITER}latest`]: { version: '1.0.0', time: getTime(30) },
       })
-      expect(cacheData1.peers).deep.eq({})
+      expect(cacheData1.peers).toStrictEqual({})
 
       // second run has a different target so should not use the cache
       const result2 = await ncu({ packageData, cache: true, target: 'greatest' })
-      expect(result2).deep.eq({
+      expect(result2).toStrictEqual({
         'ncu-test-v2': '^2.0.0',
         'ncu-test-tag': '1.2.0-dev.0',
         'ncu-test-alpha': '2.0.0-alpha.2',
@@ -109,7 +106,7 @@ describe('cache', () => {
 
       const cacheData2: CacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
 
-      expect(cacheData2.packages).deep.eq({
+      expect(cacheData2.packages).toStrictEqual({
         [`ncu-test-v2${CACHE_DELIMITER}latest`]: { version: '2.0.0', time: getTime(10) },
         [`ncu-test-tag${CACHE_DELIMITER}latest`]: { version: '1.1.0', time: getTime(20) },
         [`ncu-test-alpha${CACHE_DELIMITER}latest`]: { version: '1.0.0', time: getTime(30) },
@@ -142,7 +139,7 @@ describe('cache', () => {
     } catch (error) {
       noCacheFile = true
     }
-    expect(noCacheFile).eq(true)
+    expect(noCacheFile).toBe(true)
     stub.restore()
   })
 
@@ -166,8 +163,8 @@ describe('cache', () => {
 
       // 3. Verify the cache was overwritten with the new schema (v1)
       const newCache = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
-      expect(newCache.schema).eq(CURRENT_CACHE_SCHEMA)
-      expect(newCache.packages[`ncu-test-v2${CACHE_DELIMITER}latest`].version).eq('2.0.0')
+      expect(newCache.schema).toBe(CURRENT_CACHE_SCHEMA)
+      expect(newCache.packages[`ncu-test-v2${CACHE_DELIMITER}latest`].version).toBe('2.0.0')
     } finally {
       await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
       stub.restore()
@@ -193,7 +190,7 @@ describe('cache', () => {
 
       // 3. Verify it refreshed
       const cacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
-      expect(cacheData.packages[`ncu-test-v2${CACHE_DELIMITER}latest`].version).eq('2.0.0')
+      expect(cacheData.packages[`ncu-test-v2${CACHE_DELIMITER}latest`].version).toBe('2.0.0')
     } finally {
       await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
       stub.restore()

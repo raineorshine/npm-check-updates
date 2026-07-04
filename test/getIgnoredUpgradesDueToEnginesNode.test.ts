@@ -1,13 +1,11 @@
+import { describe, expect, it } from 'vitest'
 import getIgnoredUpgradesDueToEnginesNode from '../src/lib/getIgnoredUpgradesDueToEnginesNode.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 
 const MOCK_ESLINT_VERSION = '999.0.0'
 const MOCK_DEL_VERSION = '999.0.1'
 
-chaiSetup()
-
 /* This test needs to be rewritten because it is run against live data that affects the outcome of the test. The eslint and del versions were mocked in order to prevent this, but now the latest del.enginesNode is >=18 which fails the test. This data should either be mocked or the target packages should be entirely replaced by packages under our control. */
-describe.skip('getIgnoredUpgradesDueToEnginesNode', function () {
+describe.skip('getIgnoredUpgradesDueToEnginesNode', () => {
   it('ncu-test-peer-update', async () => {
     const data = await getIgnoredUpgradesDueToEnginesNode(
       {
@@ -32,7 +30,7 @@ describe.skip('getIgnoredUpgradesDueToEnginesNode', function () {
     data['@typescript-eslint/eslint-plugin'].to = MOCK_ESLINT_VERSION
     data.del.to = MOCK_DEL_VERSION
 
-    data.should.deep.equal({
+    expect(data).toStrictEqual({
       '@typescript-eslint/eslint-plugin': {
         enginesNode: '^18.18.0 || ^20.9.0 || >=21.1.0',
         from: '^7.18.0',

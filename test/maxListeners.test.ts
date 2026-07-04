@@ -1,14 +1,12 @@
+import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import stubVersions from './helpers/stubVersions.ts'
-
-chaiSetup()
 
 const packageData = JSON.stringify({
   dependencies: { express: '1.0.0' },
 })
 
-describe('max listeners', function () {
+describe('max listeners', () => {
   it('does not accumulate exit listeners across repeated ncu.run() calls', async () => {
     const stub = stubVersions('99.9.9')
     const beforeCount = process.listenerCount('exit')
@@ -21,6 +19,6 @@ describe('max listeners', function () {
 
     stub.restore()
 
-    afterCount.should.equal(beforeCount)
+    expect(afterCount).toBe(beforeCount)
   })
 })

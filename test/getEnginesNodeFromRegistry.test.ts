@@ -1,16 +1,14 @@
+import { describe, expect, it } from 'vitest'
 import { chalkInit } from '../src/lib/chalk.ts'
 import getEnginesNodeFromRegistry from '../src/lib/getEnginesNodeFromRegistry.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import { silenceProgressBar } from './helpers/silenceProgressBar.ts'
 
-chaiSetup()
-
-describe('getEnginesNodeFromRegistry', function () {
+describe('getEnginesNodeFromRegistry', () => {
   it('single package', async () => {
     chalkInit()
     silenceProgressBar()
     const data = await getEnginesNodeFromRegistry({ del: '2.0.0' }, {})
-    data.should.deep.equal({
+    expect(data).toStrictEqual({
       del: '>=0.10.0',
     })
   })
@@ -19,7 +17,7 @@ describe('getEnginesNodeFromRegistry', function () {
     chalkInit()
     silenceProgressBar()
     const data = await getEnginesNodeFromRegistry({ 'ncu-test-return-version': '1.0.0' }, {})
-    data.should.deep.equal({ 'ncu-test-return-version': undefined })
+    expect(data).toStrictEqual({ 'ncu-test-return-version': undefined })
   })
 
   it('multiple packages', async () => {
@@ -33,7 +31,7 @@ describe('getEnginesNodeFromRegistry', function () {
       },
       {},
     )
-    data.should.deep.equal({
+    expect(data).toStrictEqual({
       'ncu-test-return-version': undefined,
       'ncu-test-peer': undefined,
       del: '>=0.10.0',

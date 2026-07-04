@@ -1,7 +1,5 @@
+import { describe, expect, it } from 'vitest'
 import determinePackageManager from '../src/lib/determinePackageManager.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
-
-chaiSetup()
 
 const isWindows = process.platform === 'win32'
 
@@ -24,7 +22,7 @@ describe('determinePackageManager', () => {
       },
       readdirMock,
     )
-    packageManager.should.equal('bun')
+    expect(packageManager).toBe('bun')
   })
 
   it('returns bun if bun.lock exists in cwd', async () => {
@@ -45,7 +43,7 @@ describe('determinePackageManager', () => {
       },
       readdirMock,
     )
-    packageManager.should.equal('bun')
+    expect(packageManager).toBe('bun')
   })
 
   it('returns bun if bun.lockb exists in an ancestor directory', async () => {
@@ -72,7 +70,7 @@ describe('determinePackageManager', () => {
       },
       readdirMock,
     )
-    packageManager.should.equal('bun')
+    expect(packageManager).toBe('bun')
   })
 
   it('returns yarn if yarn.lock exists in cwd', async () => {
@@ -93,7 +91,7 @@ describe('determinePackageManager', () => {
       },
       readdirMock,
     )
-    packageManager.should.equal('yarn')
+    expect(packageManager).toBe('yarn')
   })
 
   it('returns yarn if yarn.lock exists in an ancestor directory', async () => {
@@ -120,7 +118,7 @@ describe('determinePackageManager', () => {
       },
       readdirMock,
     )
-    packageManager.should.equal('yarn')
+    expect(packageManager).toBe('yarn')
   })
 
   it('returns npm if package-lock.json found before yarn.lock', async () => {
@@ -147,7 +145,7 @@ describe('determinePackageManager', () => {
       },
       readdirMock,
     )
-    packageManager.should.equal('npm')
+    expect(packageManager).toBe('npm')
   })
 
   it('does not loop infinitely if no lockfile found', async () => {
@@ -162,7 +160,7 @@ describe('determinePackageManager', () => {
       },
       readdirMock,
     )
-    packageManager.should.equal('npm')
+    expect(packageManager).toBe('npm')
   })
 
   describe('global', () => {
@@ -177,7 +175,7 @@ describe('determinePackageManager', () => {
       const packageManager = await determinePackageManager({
         global: true,
       })
-      packageManager.should.equal('bun')
+      expect(packageManager).toBe('bun')
 
       process.env.npm_config_user_agent = oldUserAgent
       process.env.npm_execpath = oldExecpath
@@ -194,7 +192,7 @@ describe('determinePackageManager', () => {
       const packageManager = await determinePackageManager({
         global: true,
       })
-      packageManager.should.equal('yarn')
+      expect(packageManager).toBe('yarn')
 
       process.env.npm_config_user_agent = oldUserAgent
       process.env.npm_execpath = oldExecpath
@@ -210,7 +208,7 @@ describe('determinePackageManager', () => {
       const packageManager = await determinePackageManager({
         global: true,
       })
-      packageManager.should.equal('pnpm')
+      expect(packageManager).toBe('pnpm')
 
       process.env.npm_config_user_agent = oldUserAgent
       process.env.npm_execpath = oldExecpath
@@ -226,7 +224,7 @@ describe('determinePackageManager', () => {
       const packageManager = await determinePackageManager({
         global: true,
       })
-      packageManager.should.equal('npm')
+      expect(packageManager).toBe('npm')
 
       process.env.npm_config_user_agent = oldUserAgent
       process.env.npm_execpath = oldExecpath

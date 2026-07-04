@@ -1,12 +1,10 @@
+import { describe, expect, it } from 'vitest'
 import parseJson from '../src/lib/utils/parseJson.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 
-chaiSetup()
-
-describe('parseJson', async function () {
-  it('handles valid json strings', async () => {
-    parseJson('{}').should.deep.equal({})
-    parseJson('{"name": "John", "age": 30, "city": "New York"}').should.deep.equal({
+describe('parseJson', () => {
+  it('handles valid json strings', () => {
+    expect(parseJson('{}')).toStrictEqual({})
+    expect(parseJson('{"name": "John", "age": 30, "city": "New York"}')).toStrictEqual({
       name: 'John',
       age: 30,
       city: 'New York',
@@ -30,14 +28,13 @@ describe('parseJson', async function () {
         "c": ["d", "e", "f"]
     }
     `
-    parseJson(string1).should.deep.equal({ name: 'John', age: 30 })
-    parseJson(string2).should.deep.equal({ a: 'b', c: ['d', 'e', 'f'] })
+    expect(parseJson(string1)).toStrictEqual({ name: 'John', age: 30 })
+    expect(parseJson(string2)).toStrictEqual({ a: 'b', c: ['d', 'e', 'f'] })
   })
 
   it('shows descriptive and helpful error messages', () => {
-    ;(() => parseJson('{"name": "John", "age": 30, "city": "New York"')).should.throw(SyntaxError)
-    ;(() => parseJson('{"name": "John", "age": 30, "city": "New York"')).should.throw(
-      SyntaxError,
+    expect(() => parseJson('{"name": "John", "age": 30, "city": "New York"')).toThrow(SyntaxError)
+    expect(() => parseJson('{"name": "John", "age": 30, "city": "New York"')).toThrow(
       'Error at line 1, column 47: CloseBraceExpected\n{"name": "John", "age": 30, "city": "New York"\n                                              ^\n\n',
     )
   })
@@ -48,8 +45,7 @@ describe('parseJson', async function () {
           "a": test
         }
   }`
-    ;(() => parseJson(string)).should.throw(
-      SyntaxError,
+    expect(() => parseJson(string)).toThrow(
       `Error at line 3, column 16: InvalidSymbol
 {
       "test": {
@@ -77,8 +73,7 @@ Error at line 4, column 9: ValueExpected
           "a": 5
         }
 `
-    ;(() => parseJson(string)).should.throw(
-      SyntaxError,
+    expect(() => parseJson(string)).toThrow(
       `Error at line 5, column 1: CloseBraceExpected
           "a": 5
         }

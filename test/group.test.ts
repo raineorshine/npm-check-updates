@@ -4,12 +4,11 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
+import { describe, expect, it } from 'vitest'
 import { type GroupFunction } from '../src/types/GroupFunction.ts'
-import chaiSetup from './helpers/chaiSetup.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
-chaiSetup()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../build/cli.js')
@@ -51,7 +50,7 @@ async function groupTestScaffold(
         cwd: tempDir,
       },
     )
-    stripAnsi(stdout).should.containIgnoreCase(expectedOutput)
+    expect(stripAnsi(stdout).toLowerCase()).toContain(expectedOutput.toLowerCase())
   } finally {
     await removeDir(tempDir)
     stub.restore()
