@@ -31,6 +31,9 @@ export default [
 
   // --- 3. GLOBAL SETUP & SETTINGS ---
   {
+    linterOptions: {
+      reportUnusedDisableDirectives: 'error',
+    },
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
