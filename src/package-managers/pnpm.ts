@@ -148,23 +148,6 @@ const getPnpmMajorVersion = async (): Promise<number | null> => {
   }
 }
 
-/** Reads the pnpm global minimumReleaseAge layer for the current pnpm major version. */
-const readPnpmGlobalMinimumReleaseAgeLayer = async (
-  globalConfigDir: string,
-  pnpmMajorVersion: number | null,
-): Promise<MinimumReleaseAgeLayer | null> => {
-  if (pnpmMajorVersion != null) {
-    return pnpmMajorVersion >= 11
-      ? readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'config.yaml'), 'yaml')
-      : readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'rc'), 'ini')
-  }
-
-  return (
-    (await readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'config.yaml'), 'yaml')) ??
-    (await readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'rc'), 'ini'))
-  )
-}
-
 /**
  * Reads minimumReleaseAge settings from pnpm's config, falling back through pnpm's config layers.
  *
@@ -179,14 +162,20 @@ const getPnpmWorkspaceMinimumReleaseAge = async (
 
   const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
   const majorVersion = pnpmMajorVersion === undefined ? await getPnpmMajorVersion() : pnpmMajorVersion
-  const globalConfig = await readPnpmGlobalMinimumReleaseAgeLayer(globalConfigDir, majorVersion)
 
   // Ordered from highest to lowest precedence. Each entry resolves to a config layer (or null if absent).
   const layers = await Promise.all([
     // workspace / project config
     pnpmWorkspacePath ? readMinimumReleaseAgeLayer(pnpmWorkspacePath, 'yaml') : Promise.resolve(null),
     // pnpm global config for the current major version
-    Promise.resolve(globalConfig),
+    majorVersion === null
+      ? (async () =>
+          (await readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'config.yaml'), 'yaml')) ??
+          readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'rc'), 'ini'))()
+      : readMinimumReleaseAgeLayer(
+          path.join(globalConfigDir, majorVersion >= 11 ? 'config.yaml' : 'rc'),
+          majorVersion >= 11 ? 'yaml' : 'ini',
+        ),
   ])
 
   // Use the minimumReleaseAge from the highest-precedence layer that defines it.
