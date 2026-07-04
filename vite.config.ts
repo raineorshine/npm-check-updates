@@ -22,10 +22,8 @@ function buildOptionsPlugin(): Plugin {
 function chmodBinPlugin(): Plugin {
   return {
     name: 'chmod-bin',
-    writeBundle(options) {
-      // only the ES round; the cjs round emits cli.cjs.
+    writeBundle() {
       // chmodSync will throw if cli.js is missing so that we notice.
-      if (options.format !== 'es') return
       fs.chmodSync('build/cli.js', 0o755)
       // drop the empty `export {}` cli.d.ts dts emits for the export-less cli entry
       fs.rmSync('build/cli.d.ts', { force: true })
@@ -106,6 +104,7 @@ export default defineConfig(({ mode }) => ({
         index: 'src/index.ts',
         cli: 'src/bin/cli.ts',
       },
+      formats: ['es'],
     },
     target: 'node22',
     outDir: 'build',
@@ -115,26 +114,11 @@ export default defineConfig(({ mode }) => ({
       checks: {
         pluginTimings: false,
       },
-      output: [
-        {
-          format: 'es',
-          entryFileNames: '[name].js',
-          chunkFileNames: 'chunks/[name]-[hash].js',
-          exports: 'named',
-        },
-        {
-          format: 'cjs',
-          entryFileNames: '[name].cjs',
-          // keep CJS chunks as .cjs so that require() works
-          chunkFileNames: 'chunks/[name]-[hash].cjs',
-          exports: 'named',
-          // make require() return the callable run function, keeping .run/.defineConfig/.default
-          // as properties. Skip chunks without a run export (e.g. cli.cjs).
-          footer: chunk => {
-            return chunk.exports.includes('run') ? 'module.exports = Object.assign(exports.run, exports)' : ''
-          },
-        },
-      ],
+      output: {
+        entryFileNames: '[name].js',
+        chunkFileNames: 'chunks/[name]-[hash].js',
+        exports: 'named',
+      },
     },
   },
 }))

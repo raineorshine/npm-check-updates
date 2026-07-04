@@ -21,9 +21,6 @@
     "npm": ">=10.0.0"
   },
   "type": "module",
-  "main": "build/index.cjs",
-  "module": "build/index.js",
-  "types": "build/index.d.ts",
   "bin": {
     "npm-check-updates": "build/cli.js",
     "ncu": "build/cli.js"
@@ -31,8 +28,7 @@
   "exports": {
     ".": {
       "types": "./build/index.d.ts",
-      "import": "./build/index.js",
-      "require": "./build/index.cjs"
+      "default": "./build/index.js"
     },
     "./package.json": "./package.json"
   },
