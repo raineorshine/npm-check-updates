@@ -399,13 +399,13 @@ describe('version-util', () => {
       // upgradeDependencyDeclaration converts a "<" or "<=" declaration into a "^" range,
       // e.g. "<1.2.3" -> "^1.2.9". from and to no longer share the same leading character,
       // which used to prevent the operator from being stripped before comparing parts.
-      versionUtil.partChanged('<1.2.3', '^1.2.9')!.should.equal('patch')
-      versionUtil.partChanged('<1.2.3', '^1.3.0')!.should.equal('minor')
-      versionUtil.partChanged('<1.2.3', '^2.0.0')!.should.equal('major')
-      versionUtil.partChanged('<=1.2.3', '^1.2.9')!.should.equal('patch')
+      expect(versionUtil.partChanged('<1.2.3', '^1.2.9')).toBe('patch')
+      expect(versionUtil.partChanged('<1.2.3', '^1.3.0')).toBe('minor')
+      expect(versionUtil.partChanged('<1.2.3', '^2.0.0')).toBe('major')
+      expect(versionUtil.partChanged('<=1.2.3', '^1.2.9')).toBe('patch')
       // a bare "from" that gains a wildcard in "to" hits the same code path
-      versionUtil.partChanged('1.2.3', '^1.2.9')!.should.equal('patch')
-      versionUtil.partChanged('1.2.3', '^1.3.0')!.should.equal('minor')
+      expect(versionUtil.partChanged('1.2.3', '^1.2.9')).toBe('patch')
+      expect(versionUtil.partChanged('1.2.3', '^1.3.0')).toBe('minor')
     })
   })
 
@@ -438,9 +438,9 @@ describe('version-util', () => {
     it('handle a leading range operator that differs between from and to', () => {
       // "<1.2.3" -> "^1.2.9" used to color the entire string red since the leading "<" on
       // `from` blocked the "^" from being stripped off `to` before the parts were compared.
-      versionUtil.colorizeDiff('<1.2.3', '^1.2.9').should.equal(`^1.2.${chalk.green('9')}`)
-      versionUtil.colorizeDiff('<1.2.3', '^1.3.0').should.equal(`^1.${chalk.cyan('3.0')}`)
-      versionUtil.colorizeDiff('1.2.3', '^1.2.9').should.equal(`^1.2.${chalk.green('9')}`)
+      expect(versionUtil.colorizeDiff('<1.2.3', '^1.2.9')).toBe(`^1.2.${chalk.green('9')}`)
+      expect(versionUtil.colorizeDiff('<1.2.3', '^1.3.0')).toBe(`^1.${chalk.cyan('3.0')}`)
+      expect(versionUtil.colorizeDiff('1.2.3', '^1.2.9')).toBe(`^1.2.${chalk.green('9')}`)
     })
   })
 
