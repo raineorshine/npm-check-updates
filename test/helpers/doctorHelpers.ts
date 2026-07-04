@@ -1,15 +1,27 @@
 import fs from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
 import { expect, it } from 'vitest'
 import { type PackageManagerName } from '../../src/types/PackageManagerName.ts'
+import removeDir from './removeDir.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const bin = path.join(__dirname, '../../build/cli.js')
 const doctorTests = path.join(__dirname, '../test-data/doctor')
+
+/**
+ * Copy a doctor test fixture into a fresh temp dir so tests never mutate git-tracked files.
+ * Returns the temp dir path; the caller is responsible for removing it.
+ */
+export const copyFixture = async (name: string): Promise<string> => {
+  const dest = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+  await fs.cp(path.join(doctorTests, name), dest, { recursive: true })
+  return dest
+}
 
 /** Run the ncu CLI. */
 const ncu = async (
@@ -42,9 +54,8 @@ export function createNcuRegExp(input: string): RegExp {
 /** Assertions for npm or yarn when tests pass. */
 export const testPass = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('upgrade dependencies when tests pass', async () => {
-    const cwd = path.join(doctorTests, 'pass')
+    const cwd = await copyFixture('pass')
     const pkgPath = path.join(cwd, 'package.json')
-    const nodeModulesPath = path.join(cwd, 'node_modules')
     const lockfilePath = path.join(
       cwd,
       packageManager === 'yarn'
@@ -55,43 +66,36 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
             ? 'bun.lockb'
             : 'package-lock.json',
     )
-    const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
     let stderr = ''
-
-    // touch yarn.lock
-    // yarn.lock is necessary otherwise yarn sees the package.json in the npm-check-updates directory and throws an error.
-    if (packageManager === 'yarn' || packageManager === 'bun') {
-      await fs.writeFile(lockfilePath, '')
-    }
+    let pkgUpgraded
 
     try {
-      // explicitly set packageManager to avoid auto yarn detection
-      await ncu(
-        ['--doctor', '-u', '-p', packageManager],
-        {
-          stdout: function (data: string) {
-            stdout += data
+      // touch yarn.lock
+      // yarn.lock is necessary otherwise yarn sees the package.json in the npm-check-updates directory and throws an error.
+      if (packageManager === 'yarn' || packageManager === 'bun') {
+        await fs.writeFile(lockfilePath, '')
+      }
+
+      try {
+        // explicitly set packageManager to avoid auto yarn detection
+        await ncu(
+          ['--doctor', '-u', '-p', packageManager],
+          {
+            stdout: function (data: string) {
+              stdout += data
+            },
+            stderr: function (data: string) {
+              stderr += data
+            },
           },
-          stderr: function (data: string) {
-            stderr += data
-          },
-        },
-        { cwd },
-      )
-    } catch (e) {}
+          { cwd },
+        )
+      } catch (e) {}
 
-    const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-
-    // cleanup before assertions in case they fail
-    await fs.writeFile(pkgPath, pkgOriginal)
-    await fs.rm(nodeModulesPath, { recursive: true, force: true })
-    await fs.rm(lockfilePath, { recursive: true, force: true })
-
-    // delete yarn cache
-    if (packageManager === 'yarn') {
-      await fs.rm(path.join(cwd, '.yarn'), { recursive: true, force: true })
-      await fs.rm(path.join(cwd, '.pnp.js'), { recursive: true, force: true })
+      pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
+    } finally {
+      await removeDir(cwd)
     }
 
     // bun prints the run header to stderr instead of stdout
@@ -122,9 +126,8 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
 /** Assertions for npm or yarn when tests fail. */
 export const testFail = ({ packageManager }: { packageManager: PackageManagerName }) => {
   it('identify broken upgrade', async () => {
-    const cwd = path.join(doctorTests, 'fail')
+    const cwd = await copyFixture('fail')
     const pkgPath = path.join(cwd, 'package.json')
-    const nodeModulesPath = path.join(cwd, 'node_modules')
     const lockfilePath = path.join(
       cwd,
       packageManager === 'yarn'
@@ -135,17 +138,16 @@ export const testFail = ({ packageManager }: { packageManager: PackageManagerNam
             ? 'bun.lockb'
             : 'package-lock.json',
     )
-    const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
     let stdout = ''
     let stderr = ''
     let pkgUpgraded
 
-    // touch yarn.lock (see fail/README)
-    if (packageManager === 'yarn') {
-      await fs.writeFile(lockfilePath, '')
-    }
-
     try {
+      // touch yarn.lock (see fail/README)
+      if (packageManager === 'yarn') {
+        await fs.writeFile(lockfilePath, '')
+      }
+
       // explicitly set packageManager to avoid auto yarn detection
       await ncu(
         ['--doctor', '-u', '-p', packageManager],
@@ -161,15 +163,7 @@ export const testFail = ({ packageManager }: { packageManager: PackageManagerNam
       )
     } finally {
       pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-
-      // delete yarn cache
-      if (packageManager === 'yarn') {
-        await fs.rm(path.join(cwd, '.yarn'), { recursive: true, force: true })
-        await fs.rm(path.join(cwd, '.pnp.js'), { recursive: true, force: true })
-      }
+      await removeDir(cwd)
     }
 
     const testVersion = createNcuRegExp('ncu-test-return-version ~1.0.0 →')
