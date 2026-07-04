@@ -17,7 +17,7 @@ When filing an issue, please include:
 
 ## Development
 
-This project is now **pure ESM** with support for both ESM and CJS via Vite. It requires Node.js `^20.19.0 || ^22.12.0 || >=24.0.0`.
+This project is **pure ESM**, built with Vite. CJS consumers can still load it via Node's `require(ESM)`.
 
 ### Running Tests
 
@@ -29,12 +29,10 @@ npx vitest run
 
 ## Executable Stack Trace
 
-The Vite Build bundles all dependencies for efficiency. Source maps are now generated for all build outputs:
+The Vite Build bundles all dependencies for efficiency. Source maps are generated for all build outputs:
 
-- `build/cli.cjs.map` - CommonJS CLI source map
-- `build/cli.js.map` - ESM CLI source map
-- `build/index.cjs.map` - CommonJS index source map
-- `build/index.js.map` - ESM index source map
+- `build/cli.js.map` - CLI source map
+- `build/index.js.map` - index source map
 - `build/chunks/*.map` - Chunk source maps
 
 To execute npm-check-updates with an accurate stack trace using the original TypeScript source code, run:

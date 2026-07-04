@@ -7,7 +7,7 @@ description: Upgrade package.json dependencies to the latest versions with npm-c
 
 `npm-check-updates` upgrades your `package.json` dependencies to the latest versions while preserving your existing version-range policy (`^17.0.2` → `^18.3.1`). It only modifies `package.json`; the user must run their package manager's install command (e.g. `npm install`) to update `package-lock.json` and `node_modules`.
 
-The CLI is exposed as `npm-check-updates` and the shorter `ncu`. The library is dual ESM/CJS, importable from Node.
+The CLI is exposed as `npm-check-updates` and the shorter `ncu`. The library is pure ESM, importable from Node (and loadable from CommonJS via `require()`).
 
 ## When to reach for this skill
 

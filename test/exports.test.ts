@@ -7,10 +7,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const require = createRequire(import.meta.url)
 
 const esm = await import(pathToFileURL(path.join(__dirname, '../build/index.js')).href)
-const cjs = require('../build/index.cjs')
+const cjs = require('../build/index.js')
 
 describe('package exports', () => {
-  it('ESM build: default export is callable and namespaced', () => {
+  it('ESM: default export is callable and namespaced', () => {
     expect(esm.default).toBeTypeOf('function')
     expect(esm.default.run).toBe(esm.default)
     expect(esm.default.defineConfig).toBeTypeOf('function')
@@ -18,9 +18,10 @@ describe('package exports', () => {
     expect(esm.defineConfig).toBeTypeOf('function')
   })
 
-  it('CJS build: require() returns the callable run function', () => {
-    expect(cjs).toBeTypeOf('function')
-    expect(cjs.run).toBe(cjs)
+  it('CJS: require(ESM) exposes the callable on .default plus named exports', () => {
+    expect(cjs.default).toBeTypeOf('function')
+    expect(cjs.default.run).toBe(cjs.default)
+    expect(cjs.run).toBeTypeOf('function')
     expect(cjs.defineConfig).toBeTypeOf('function')
   })
 })

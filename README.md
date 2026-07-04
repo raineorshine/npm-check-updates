@@ -10,7 +10,7 @@
 - sensible defaults, but highly customizable
 - compatible with npm, yarn, pnpm, deno, and bun
 - CLI and module usage
-- Pure ESM architecture with dual-build support (ESM/CJS)
+- Pure ESM, also usable from CommonJS via `require()`
 
 <img width="500" alt="ncu example output" src="https://github.com/user-attachments/assets/9e91d8bc-e1ba-4112-92f3-abb6c2170164" />
 
@@ -1065,7 +1065,7 @@ console.log(upgraded) // { "mypackage": "^2.0.0", ... }
 Use this for legacy projects using `"type": "commonjs"` or scripts using the `.cjs` extension.
 
 ```js
-const ncu = require('npm-check-updates')
+const { default: ncu } = require('npm-check-updates')
 
 // ncu() is an async function
 ncu({
