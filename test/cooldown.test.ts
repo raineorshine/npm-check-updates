@@ -1649,7 +1649,7 @@ describe('cooldown', () => {
         'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
 
       expect(result).to.deep.equal({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['react'] })
     })
@@ -1661,13 +1661,43 @@ describe('cooldown', () => {
         'minimumReleaseAge=10080\nminimumReleaseAgeExclude=["react"]\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(10)
 
       expect(result).to.deep.equal({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['react'] })
     })
 
+    it('ignores pnpm global rc when config.yaml exists for pnpm >= 11', async () => {
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
+      )
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'rc'),
+        'minimumReleaseAge=1440\nminimumReleaseAgeExclude=["lodash"]\n',
+      )
+
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
+
+      expect(result).to.deep.equal({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['react'] })
+    })
+
+    it('ignores pnpm global config.yaml when rc exists for pnpm <= 10', async () => {
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
+      )
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'rc'),
+        'minimumReleaseAge=1440\nminimumReleaseAgeExclude=["lodash"]\n',
+      )
+
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(10)
+
+      expect(result).to.deep.equal({ minimumReleaseAge: 1440, minimumReleaseAgeExclude: ['lodash'] })
+    })
+
     it('returns null when no config layer defines minimumReleaseAge', async () => {
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
       expect(result).to.equal(null)
     })
 
@@ -1681,7 +1711,7 @@ describe('cooldown', () => {
         'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
 
       // workspace minimumReleaseAge wins; excludes from both layers are merged
       expect(result).to.deep.equal({ minimumReleaseAge: 1440, minimumReleaseAgeExclude: ['@myorg/*', 'react'] })
@@ -1697,7 +1727,7 @@ describe('cooldown', () => {
         'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
 
       expect(result).to.deep.equal({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['@myorg/*', 'react'] })
     })
