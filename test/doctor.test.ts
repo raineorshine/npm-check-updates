@@ -7,7 +7,7 @@ import spawn from 'spawn-please'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { cliOptionsMap } from '../src/cli-options.ts'
 import { chalkInit } from '../src/lib/chalk.ts'
-import { createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers.ts'
+import { copyFixture, createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -76,13 +76,11 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
     testFail({ packageManager: 'npm' })
 
     it('pass through options', async () => {
-      const cwd = path.join(doctorTests, 'options')
+      const cwd = await copyFixture('options')
       const pkgPath = path.join(cwd, 'package.json')
-      const lockfilePath = path.join(cwd, 'package-lock.json')
-      const nodeModulesPath = path.join(cwd, 'node_modules')
-      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       let stdout = ''
       let stderr = ''
+      let pkgUpgraded
 
       try {
         // check only ncu-test-v2 (excluding ncu-return-version)
@@ -100,12 +98,11 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
         )
       } catch (e) {}
 
-      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-
-      // cleanup before assertions in case they fail
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
+      try {
+        pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
+      } finally {
+        await removeDir(cwd)
+      }
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -166,14 +163,12 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
     })
 
     it('custom install script with --doctorInstall', async () => {
-      const cwd = path.join(doctorTests, 'custominstall')
+      const cwd = await copyFixture('custominstall')
       const pkgPath = path.join(cwd, 'package.json')
-      const lockfilePath = path.join(cwd, 'package-lock.json')
-      const nodeModulesPath = path.join(cwd, 'node_modules')
-      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
       let stdout = ''
       let stderr = ''
+      let pkgUpgraded
 
       try {
         await ncu(
@@ -190,12 +185,11 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
         )
       } catch (e) {}
 
-      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-
-      // cleanup before assertions in case they fail
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
+      try {
+        pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
+      } finally {
+        await removeDir(cwd)
+      }
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -217,14 +211,12 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
     })
 
     it('custom test script with --doctorTest', async () => {
-      const cwd = path.join(doctorTests, 'customtest')
+      const cwd = await copyFixture('customtest')
       const pkgPath = path.join(cwd, 'package.json')
-      const lockfilePath = path.join(cwd, 'package-lock.json')
-      const nodeModulesPath = path.join(cwd, 'node_modules')
-      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
       let stdout = ''
       let stderr = ''
+      let pkgUpgraded
 
       try {
         await ncu(
@@ -241,12 +233,11 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
         )
       } catch (e) {}
 
-      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-
-      // cleanup before assertions in case they fail
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
+      try {
+        pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
+      } finally {
+        await removeDir(cwd)
+      }
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -268,14 +259,12 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
     })
 
     it('custom test script with --doctorTest command that includes spaced words wrapped in quotes', async () => {
-      const cwd = path.join(doctorTests, 'customtest2')
+      const cwd = await copyFixture('customtest2')
       const pkgPath = path.join(cwd, 'package.json')
-      const lockfilePath = path.join(cwd, 'package-lock.json')
-      const nodeModulesPath = path.join(cwd, 'node_modules')
       const echoPath = path.join(cwd, 'echo.js')
-      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       let stdout = ''
       let stderr = ''
+      let pkgUpgraded
 
       try {
         await ncu(
@@ -292,12 +281,11 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
         )
       } catch (e) {}
 
-      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-
-      // cleanup before assertions in case they fail
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
+      try {
+        pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
+      } finally {
+        await removeDir(cwd)
+      }
 
       // stderr should be empty
       expect(stderr).toBe('')
