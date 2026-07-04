@@ -15,7 +15,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const bin = path.join(__dirname, '../build/cli.js')
 
 /**
- * Sets up and tears down the temporary directories required to run each test
+ * Sets up and tears down the temporary directories required to run each test.
  */
 async function groupTestScaffold(
   dependencies: Record<string, string>,

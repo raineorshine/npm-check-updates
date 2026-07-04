@@ -448,7 +448,7 @@ interface NpmApi {
 }
 
 /**
- * ES Modules cannot be stubbed
+ * ES Modules cannot be stubbed.
  * To allow stubbing of npm functions in tests, we export the functions that
  * need to be stubbed as properties of an object (npmApi) that can be
  * imported and stubbed in tests without affecting the rest of the module.

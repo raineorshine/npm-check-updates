@@ -118,7 +118,7 @@ const generateRunOptionsJsonSchema = (): string => {
   return JSON.stringify(schema, null, 2)
 }
 
-/** generate and save README.md, RunOptions.ts, RunOptions.json */
+/** Generate and save README.md, RunOptions.ts, RunOptions.json. */
 export async function buildOptions(): Promise<void> {
   const chalk = getChalk(true)
   const logPrefix = chalk.cyan('[build-options]')
