@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { type Edit, applyEdits, findNodeAtLocation, parseTree } from 'jsonc-parser'
 import { parseDocument } from 'yaml'
 import { type CatalogsConfig, parseCatalogsConfig } from '../types/CatalogConfig.ts'
 import { type Index } from '../types/IndexType.ts'
@@ -7,7 +8,6 @@ import { type Options } from '../types/Options.ts'
 import { type PackageFile } from '../types/PackageFile.ts'
 import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
-import { escapeRegExp } from './escapeRegExp.ts'
 import { pickBy } from './pick.ts'
 import resolveDepSections from './resolveDepSections.ts'
 import upgradeDependencies from './upgradeDependencies.ts'
@@ -15,19 +15,40 @@ import { upgradeJsonCatalogDependencies } from './upgradeJsonCatalogDependencies
 import { updateYamlCatalogDependencies } from './upgradeYamlCatalogDependencies.ts'
 import parseJson from './utils/parseJson.ts'
 
-/** Replaces the upgraded dependency versions inside a single section body (the text between the section braces). */
-function replaceDepsInSection(body: string, current: Index<VersionSpec>, upgraded: Index<VersionSpec>): string {
-  return Object.entries(upgraded).reduce((updatedSection, [dep]) => {
-    const expression = `"${escapeRegExp(dep)}"\\s*:\\s*("|{\\s*"."\\s*:\\s*")(${escapeRegExp(current[dep])})"`
-    const regExp = new RegExp(expression, 'g')
-    return updatedSection.replace(regExp, (match, child) => `"${dep}${child ? `": ${child}` : ': '}${upgraded[dep]}"`)
-  }, body)
+/**
+ * Collects the version edits for a section by walking it recursively, so dependency keys nested to any
+ * depth (e.g. overrides) are found. A dep with a string value is replaced directly; a dep whose value
+ * is an override object has its self-reference ("." key) replaced.
+ */
+function collectSectionEdits(
+  node: unknown,
+  nodePath: (string | number)[],
+  current: Index<VersionSpec>,
+  upgraded: Index<VersionSpec>,
+): { path: (string | number)[]; value: VersionSpec }[] {
+  if (!node || typeof node !== 'object' || Array.isArray(node)) return []
+
+  const edits: { path: (string | number)[]; value: VersionSpec }[] = []
+
+  for (const [key, value] of Object.entries(node)) {
+    if (key in upgraded) {
+      if (typeof value === 'string' && value === current[key]) {
+        edits.push({ path: [...nodePath, key], value: upgraded[key] })
+      } else if (value && typeof value === 'object' && !Array.isArray(value) && value['.'] === current[key]) {
+        edits.push({ path: [...nodePath, key, '.'], value: upgraded[key] })
+      }
+    }
+
+    edits.push(...collectSectionEdits(value, [...nodePath, key], current, upgraded))
+  }
+
+  return edits
 }
 
 /**
  * Replaces upgraded dependency versions within the given sections of raw package.json text.
- * Each section body is delimited by a brace-balanced scan so nested objects (e.g. overrides) are
- * not truncated at the first closing brace.
+ * Edits are applied via jsonc-parser so the original formatting is preserved and nested objects
+ * (e.g. arbitrarily deep overrides) are handled by the parser rather than by regex.
  *
  * A package that appears in more than one section is collapsed to a single (lowest) spec in
  * current/upgraded, so when latest versions are available the upgrade is recomputed per section
@@ -41,7 +62,7 @@ function replaceDependencySections(
   options: Options,
   latest?: Index<Version>,
 ): string {
-  const parsed = latest ? parseJson<Record<string, unknown>>(pkgData) : undefined
+  const parsed = parseJson<Record<string, unknown>>(pkgData)
 
   /** Returns the current/upgraded spec maps to use for a given section. */
   const specsForSection = (sectionName: string): [Index<VersionSpec>, Index<VersionSpec>] => {
@@ -63,33 +84,27 @@ function replaceDependencySections(
     return [sectionCurrent, sectionUpgraded]
   }
 
-  const sectionHeaderRegExp = new RegExp(`"(${depSections.join(`|`)})"\\s*:\\s*\\{`, 'g')
-  let result = ''
-  let lastIndex = 0
-  let headerMatch: RegExpExecArray | null
+  // Resolve every edit against a single parse tree and apply them in one pass so the whole file is
+  // not re-parsed and rebuilt once per dependency.
+  const tree = parseTree(pkgData)
+  const edits: Edit[] = []
 
-  while ((headerMatch = sectionHeaderRegExp.exec(pkgData)) !== null) {
-    // scan from the opening brace to its matching close so nested objects (e.g. overrides) are
-    // not truncated at the first closing brace
-    const bodyStart = headerMatch.index + headerMatch[0].length
-    let depth = 1
-    let i = bodyStart
-    for (; i < pkgData.length && depth > 0; i++) {
-      if (pkgData[i] === '{') depth++
-      else if (pkgData[i] === '}') depth--
+  for (const section of depSections) {
+    const sectionObj = parsed?.[section]
+    if (!sectionObj || typeof sectionObj !== 'object' || Array.isArray(sectionObj)) continue
+
+    const [sectionCurrent, sectionUpgraded] = specsForSection(section)
+    const sectionEdits = collectSectionEdits(sectionObj, [section], sectionCurrent, sectionUpgraded)
+
+    for (const { path: leafPath, value } of sectionEdits) {
+      const node = tree && findNodeAtLocation(tree, leafPath)
+      if (node) {
+        edits.push({ offset: node.offset, length: node.length, content: JSON.stringify(value) })
+      }
     }
-
-    const bodyEnd = i - 1
-    const [sectionCurrent, sectionUpgraded] = specsForSection(headerMatch[1])
-    result +=
-      pkgData.slice(lastIndex, bodyStart) +
-      replaceDepsInSection(pkgData.slice(bodyStart, bodyEnd), sectionCurrent, sectionUpgraded)
-    lastIndex = bodyEnd
-    sectionHeaderRegExp.lastIndex = bodyEnd
   }
 
-  result += pkgData.slice(lastIndex)
-  return result
+  return applyEdits(pkgData, edits)
 }
 
 /**
