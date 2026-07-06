@@ -4,7 +4,7 @@
  * performs a stable sort, that is, it preserves the original sort order of
  * equal elements. The iteratees are invoked with one argument: (value).
  */
-export function sortBy<T>(collection: T[] | null | undefined, selector: (item: T) => any): T[] {
+export function sortBy<T>(collection: T[] | null | undefined, selector: (item: T) => number | string): T[] {
   if (!collection) return []
   return collection
     .map(item => ({ item, key: selector(item) }))
