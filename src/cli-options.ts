@@ -833,7 +833,7 @@ const cliOptions: CLIOption[] = [
     description:
       'Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown.',
     parse: value => (typeof value === 'string' ? value.split(/,|\s/) : value),
-    default: [],
+    default: ['group'],
     type: 'readonly string[]',
     choices: [
       'dep',

@@ -268,7 +268,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#format">--format &lt;value&gt;</a></td>
-    <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. (default: [])</td>
+    <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. (default: ["group"])</td>
   </tr>
   <tr>
     <td>-g, --global</td>
@@ -676,6 +676,8 @@ filterVersion: (name, semver) => {
 Usage:
 
     ncu --format [value]
+
+Default: group
 
 Modify the output formatting or show additional information. Specify one or more comma-delimited values.
 
