@@ -299,7 +299,7 @@ export default async function runLocal(
     }
   }
 
-  const newPkgData = await upgradePackageData(pkgData, current, chosenUpgraded, options, pkgFile || undefined)
+  const newPkgData = await upgradePackageData(pkgData, current, chosenUpgraded, options, pkgFile || undefined, latest)
 
   const output: PackageFile | Index<VersionSpec> = options.jsonAll
     ? pkgFile?.endsWith('.yaml') || pkgFile?.endsWith('.yml')

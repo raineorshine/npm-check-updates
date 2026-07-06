@@ -293,9 +293,8 @@ describe('bin', () => {
     stub.restore()
   })
 
-  // TODO
   // https://github.com/raineorshine/npm-check-updates/issues/1594
-  it.skip('upgrade duplicate dependencies with different versions', async () => {
+  it('upgrade duplicate dependencies with different versions', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')
@@ -307,7 +306,6 @@ describe('bin', () => {
     try {
       await spawn('node', [bin, '-u', '--packageFile', pkgFile])
       const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-      console.log(upgradedPkg)
       expect(upgradedPkg.dependencies).toStrictEqual({ 'ncu-test-v2': '99.9.9' })
       expect(upgradedPkg.devDependencies).toStrictEqual({ 'ncu-test-v2': '99.9.9' })
     } finally {

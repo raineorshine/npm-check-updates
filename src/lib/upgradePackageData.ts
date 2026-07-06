@@ -5,9 +5,12 @@ import { type CatalogsConfig, parseCatalogsConfig } from '../types/CatalogConfig
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type PackageFile } from '../types/PackageFile.ts'
+import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import { escapeRegExp } from './escapeRegExp.ts'
+import { pickBy } from './pick.ts'
 import resolveDepSections from './resolveDepSections.ts'
+import upgradeDependencies from './upgradeDependencies.ts'
 import { upgradeJsonCatalogDependencies } from './upgradeJsonCatalogDependencies.ts'
 import { updateYamlCatalogDependencies } from './upgradeYamlCatalogDependencies.ts'
 import parseJson from './utils/parseJson.ts'
@@ -25,13 +28,41 @@ function replaceDepsInSection(body: string, current: Index<VersionSpec>, upgrade
  * Replaces upgraded dependency versions within the given sections of raw package.json text.
  * Each section body is delimited by a brace-balanced scan so nested objects (e.g. overrides) are
  * not truncated at the first closing brace.
+ *
+ * A package that appears in more than one section is collapsed to a single (lowest) spec in
+ * current/upgraded, so when latest versions are available the upgrade is recomputed per section
+ * from that section's own spec. https://github.com/raineorshine/npm-check-updates/issues/1594
  */
 function replaceDependencySections(
   pkgData: string,
   depSections: string[],
   current: Index<VersionSpec>,
   upgraded: Index<VersionSpec>,
+  options: Options,
+  latest?: Index<Version>,
 ): string {
+  const parsed = latest ? parseJson<Record<string, unknown>>(pkgData) : undefined
+
+  /** Returns the current/upgraded spec maps to use for a given section. */
+  const specsForSection = (sectionName: string): [Index<VersionSpec>, Index<VersionSpec>] => {
+    const sectionObj = parsed?.[sectionName]
+    // overrides/packageManager and non-plain-object sections keep the collapsed current/upgraded specs
+    const useSectionSpecs =
+      latest &&
+      sectionName !== 'overrides' &&
+      sectionName !== 'packageManager' &&
+      sectionObj &&
+      typeof sectionObj === 'object' &&
+      !Array.isArray(sectionObj) &&
+      Object.values(sectionObj).every(spec => typeof spec === 'string')
+    if (!useSectionSpecs) return [current, upgraded]
+    const sectionCurrent = sectionObj as Index<VersionSpec>
+    // recompute upgrades from this section's own specs, keeping only the chosen deps so filtered
+    // deps are never reintroduced (latest is not filtered by filterResults/minimal)
+    const sectionUpgraded = pickBy(upgradeDependencies(sectionCurrent, latest, options), (spec, dep) => dep in upgraded)
+    return [sectionCurrent, sectionUpgraded]
+  }
+
   const sectionHeaderRegExp = new RegExp(`"(${depSections.join(`|`)})"\\s*:\\s*\\{`, 'g')
   let result = ''
   let lastIndex = 0
@@ -49,8 +80,10 @@ function replaceDependencySections(
     }
 
     const bodyEnd = i - 1
+    const [sectionCurrent, sectionUpgraded] = specsForSection(headerMatch[1])
     result +=
-      pkgData.slice(lastIndex, bodyStart) + replaceDepsInSection(pkgData.slice(bodyStart, bodyEnd), current, upgraded)
+      pkgData.slice(lastIndex, bodyStart) +
+      replaceDepsInSection(pkgData.slice(bodyStart, bodyEnd), sectionCurrent, sectionUpgraded)
     lastIndex = bodyEnd
     sectionHeaderRegExp.lastIndex = bodyEnd
   }
@@ -67,6 +100,8 @@ function replaceDependencySections(
  * @param upgraded New dependencies {package: range}
  * @param options Options object
  * @param pkgFile Optional path to the package file
+ * @param latest Optional fetched latest versions {package: version}, used to upgrade a package that
+ * appears in multiple sections with different specs correctly per section
  * @returns The updated package data, as utf8 text
  * @description Side Effect: prompts
  */
@@ -76,6 +111,7 @@ async function upgradePackageData(
   upgraded: Index<VersionSpec>,
   options: Options,
   pkgFile?: string,
+  latest?: Index<Version>,
 ) {
   // Check if this is a catalog file (pnpm-workspace.yaml or package.json with catalogs)
   if (pkgFile) {
@@ -176,7 +212,7 @@ async function upgradePackageData(
   // https://github.com/raineorshine/npm-check-updates/issues/1332
   const depSections = [...resolveDepSections(options.dep), 'overrides']
 
-  let newPkgData = replaceDependencySections(pkgData, depSections, current, upgraded)
+  let newPkgData = replaceDependencySections(pkgData, depSections, current, upgraded, options, latest)
 
   if (depSections.includes('packageManager')) {
     const pkg = parseJson(pkgData) as PackageFile
