@@ -382,6 +382,62 @@ describe('target', () => {
         })
       })
     })
+
+    describe('bounded ^ and ~ ranges', () => {
+      it('upgrade within an explicit upper bound', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '^1.0.0 <2',
+            },
+          },
+          target: 'semver',
+        })
+
+        expect(data).toStrictEqual({
+          dependencies: {
+            'ncu-test-semver': '^1.2.0 <2',
+          },
+        })
+      })
+
+      it('do not exceed an upper bound tighter than the caret range', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '^1.0.0 <1.2',
+            },
+          },
+          target: 'semver',
+        })
+
+        expect(data).toStrictEqual({
+          dependencies: {
+            'ncu-test-semver': '^1.1.1 <1.2',
+          },
+        })
+      })
+
+      it('upgrade a tilde range within an explicit upper bound', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '~1.1.0 <1.2',
+            },
+          },
+          target: 'semver',
+        })
+
+        expect(data).toStrictEqual({
+          dependencies: {
+            'ncu-test-semver': '~1.1.1 <1.2',
+          },
+        })
+      })
+    })
   })
 
   describe('custom', () => {

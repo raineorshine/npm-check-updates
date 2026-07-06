@@ -46,6 +46,12 @@ const isExplicitRange = (spec: VersionSpec) => {
   return range.some(parsed => EXPLICIT_RANGE_OPS.has(parsed.operator || ''))
 }
 
+/** Returns true if the spec has a caret or tilde bound (e.g. `^9.5.0 <10`, `~5.0.4`). */
+const hasCaretOrTilde = (spec: VersionSpec) => {
+  const range = parseRange(spec)
+  return range.some(parsed => parsed.operator === '^' || parsed.operator === '~')
+}
+
 /** Returns true if the version is sa valid, exact version. */
 const isExactVersion = (version: Version) =>
   version && (!nodeSemver.validRange(version) || versionUtil.isWildCard(version))
@@ -1236,8 +1242,10 @@ export const semver: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  // ignore explicit version ranges
-  if (isExplicitRange(currentVersion)) return { version: null }
+  // ignore explicit version ranges (e.g. `>1`, `1 || 2`, `1.0.0 - 1.3.0`) since there is no clear
+  // upgrade target, but still upgrade caret/tilde ranges that carry an explicit upper bound
+  // (e.g. `^9.5.0 <10`), staying within the declared range
+  if (isExplicitRange(currentVersion) && !hasCaretOrTilde(currentVersion)) return { version: null }
 
   const fields: (keyof Packument)[] = ['versions']
 

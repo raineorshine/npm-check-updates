@@ -160,6 +160,8 @@ Advanced filters: [filter](https://github.com/raineorshine/npm-check-updates#fil
 - Choose what level to upgrade to:
   - With `--target semver`, update according to your specified [semver](https://semver.org/) version ranges:
     - `^1.1.0` → `^1.9.99`
+    - An explicit upper bound is respected and preserved, so the upgrade never exceeds it:
+      - `^9.5.0 <10` → `^9.7.0 <10`
   - With `--target minor`, strictly update the patch and minor versions (including major version zero):
     - `0.1.0` → `0.2.1`
   - With `--target patch`, strictly update the patch version (including major version zero):
