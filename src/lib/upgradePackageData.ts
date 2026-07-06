@@ -130,7 +130,7 @@ async function upgradePackageData(
   const depSections = [...resolveDepSections(options.dep), 'overrides']
 
   // iterate through each dependency section
-  const sectionRegExp = new RegExp(`"(${depSections.join(`|`)})"s*:[^}]*`, 'g')
+  const sectionRegExp = new RegExp(`"(${depSections.join(`|`)})"\\s*:[^}]*`, 'g')
   let newPkgData = pkgData.replace(sectionRegExp, section => {
     // replace each upgraded dependency in the section
     return Object.entries(upgraded).reduce((updatedSection, [dep]) => {
