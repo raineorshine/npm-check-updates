@@ -12,6 +12,53 @@ import { upgradeJsonCatalogDependencies } from './upgradeJsonCatalogDependencies
 import { updateYamlCatalogDependencies } from './upgradeYamlCatalogDependencies.ts'
 import parseJson from './utils/parseJson.ts'
 
+/** Replaces the upgraded dependency versions inside a single section body (the text between the section braces). */
+function replaceDepsInSection(body: string, current: Index<VersionSpec>, upgraded: Index<VersionSpec>): string {
+  return Object.entries(upgraded).reduce((updatedSection, [dep]) => {
+    const expression = `"${escapeRegExp(dep)}"\\s*:\\s*("|{\\s*"."\\s*:\\s*")(${escapeRegExp(current[dep])})"`
+    const regExp = new RegExp(expression, 'g')
+    return updatedSection.replace(regExp, (match, child) => `"${dep}${child ? `": ${child}` : ': '}${upgraded[dep]}"`)
+  }, body)
+}
+
+/**
+ * Replaces upgraded dependency versions within the given sections of raw package.json text.
+ * Each section body is delimited by a brace-balanced scan so nested objects (e.g. overrides) are
+ * not truncated at the first closing brace.
+ */
+function replaceDependencySections(
+  pkgData: string,
+  depSections: string[],
+  current: Index<VersionSpec>,
+  upgraded: Index<VersionSpec>,
+): string {
+  const sectionHeaderRegExp = new RegExp(`"(${depSections.join(`|`)})"\\s*:\\s*\\{`, 'g')
+  let result = ''
+  let lastIndex = 0
+  let headerMatch: RegExpExecArray | null
+
+  while ((headerMatch = sectionHeaderRegExp.exec(pkgData)) !== null) {
+    // scan from the opening brace to its matching close so nested objects (e.g. overrides) are
+    // not truncated at the first closing brace
+    const bodyStart = headerMatch.index + headerMatch[0].length
+    let depth = 1
+    let i = bodyStart
+    for (; i < pkgData.length && depth > 0; i++) {
+      if (pkgData[i] === '{') depth++
+      else if (pkgData[i] === '}') depth--
+    }
+
+    const bodyEnd = i - 1
+    result +=
+      pkgData.slice(lastIndex, bodyStart) + replaceDepsInSection(pkgData.slice(bodyStart, bodyEnd), current, upgraded)
+    lastIndex = bodyEnd
+    sectionHeaderRegExp.lastIndex = bodyEnd
+  }
+
+  result += pkgData.slice(lastIndex)
+  return result
+}
+
 /**
  * Upgrade the dependency declarations in the package data.
  *
@@ -129,17 +176,7 @@ async function upgradePackageData(
   // https://github.com/raineorshine/npm-check-updates/issues/1332
   const depSections = [...resolveDepSections(options.dep), 'overrides']
 
-  // iterate through each dependency section
-  const sectionRegExp = new RegExp(`"(${depSections.join(`|`)})"\\s*:[^}]*`, 'g')
-  let newPkgData = pkgData.replace(sectionRegExp, section => {
-    // replace each upgraded dependency in the section
-    return Object.entries(upgraded).reduce((updatedSection, [dep]) => {
-      // const expression = `"${dep}"\\s*:\\s*"(${escapeRegExp(current[dep])})"`
-      const expression = `"${escapeRegExp(dep)}"\\s*:\\s*("|{\\s*"."\\s*:\\s*")(${escapeRegExp(current[dep])})"`
-      const regExp = new RegExp(expression, 'g')
-      return updatedSection.replace(regExp, (match, child) => `"${dep}${child ? `": ${child}` : ': '}${upgraded[dep]}"`)
-    }, section)
-  })
+  let newPkgData = replaceDependencySections(pkgData, depSections, current, upgraded)
 
   if (depSections.includes('packageManager')) {
     const pkg = parseJson(pkgData) as PackageFile

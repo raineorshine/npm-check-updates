@@ -465,6 +465,53 @@ describe('run', () => {
         stub.restore()
       }
     })
+
+    it('upgrade an override that follows a nested override object', async () => {
+      const stub = stubVersions('99.9.9')
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const packageFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        packageFile,
+        JSON.stringify(
+          {
+            dependencies: {
+              'ncu-test-v2': '^1.0.0',
+              'ncu-test-tag': '^1.0.0',
+            },
+            overrides: {
+              'ncu-test-tag': {
+                '.': '^1.0.0',
+              },
+              'ncu-test-v2': '^1.0.0',
+            },
+          },
+          null,
+          2,
+        ),
+        'utf-8',
+      )
+
+      try {
+        await ncu({ packageFile, upgrade: true })
+
+        const upgradedPkg = JSON.parse(await fs.readFile(packageFile, 'utf-8'))
+        expect(upgradedPkg).toStrictEqual({
+          dependencies: {
+            'ncu-test-v2': '^99.9.9',
+            'ncu-test-tag': '^99.9.9',
+          },
+          overrides: {
+            'ncu-test-tag': {
+              '.': '^99.9.9',
+            },
+            'ncu-test-v2': '^99.9.9',
+          },
+        })
+      } finally {
+        await removeDir(tempDir)
+        stub.restore()
+      }
+    })
   })
 
   it('does not throw when run from a subdirectory without a package.json (find-up behavior)', async () => {
