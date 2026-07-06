@@ -59,7 +59,7 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
   if (!packageManager.getPeerDependencies) return {}
 
   const numItems = Object.keys(packageMap).length
-  let bar: ProgressBar
+  let bar: ProgressBar | undefined
   if (shouldShowProgressBar(options, numItems)) {
     bar = new ProgressBar('[:bar] :current/:total :percent', { total: numItems, width: 20 })
     bar.render()
