@@ -194,10 +194,7 @@ async function upgradePackageData(
     if (pkg.packageManager) {
       const [name] = pkg.packageManager.split('@')
       if (upgraded[name]) {
-        newPkgData = newPkgData.replace(
-          /"packageManager"\s*:\s*".*?@[^"]*"/,
-          `"packageManager": "${name}@${upgraded[name]}"`,
-        )
+        newPkgData = applyJsonValueEdits(newPkgData, [{ path: ['packageManager'], value: `${name}@${upgraded[name]}` }])
       }
     }
   }
