@@ -42,4 +42,20 @@ describe('npm', () => {
       '404 Not Found - GET https://registry.npmjs.org/ncu-test-return-version/1.0',
     )
   })
+
+  it('interpolate every env var reference in a config value, not just the first', () => {
+    process.env.NCU_TEST_ENV_A = 'aaa'
+    process.env.NCU_TEST_ENV_B = 'bbb'
+
+    try {
+      const result = npm.normalizeNpmConfig({
+        // eslint-disable-next-line no-template-curly-in-string
+        '//registry.example.com/:_authToken': '${NCU_TEST_ENV_A}-${NCU_TEST_ENV_B}',
+      })
+      expect(result['//registry.example.com/:_authToken']).toBe('aaa-bbb')
+    } finally {
+      delete process.env.NCU_TEST_ENV_A
+      delete process.env.NCU_TEST_ENV_B
+    }
+  })
 })

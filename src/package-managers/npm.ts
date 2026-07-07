@@ -426,7 +426,7 @@ export const normalizeNpmConfig = (
           ? stringToBoolean(value)
           : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
             ? stringToNumber(value)
-            : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
+            : value.replace(/\${([^}]+)}/g, (_, envVar) => process.env[envVar] as string)
 
     // normalize the key for pacote
     const { [key]: pacoteKey }: Index<NpmConfig[keyof NpmConfig]> = npmConfigToPacoteMap
