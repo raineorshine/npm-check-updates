@@ -514,7 +514,7 @@ export function parseJson<R>(result: string, data: { command?: string; packageNa
       { cause: err },
     )
   }
-  return json as R
+  return json
 }
 
 /**
@@ -707,7 +707,7 @@ async function fetchUpgradedPackument(
   }
 
   if (isExactVersion(currentVersion)) {
-    return {} as Index<Packument>
+    return {}
   }
 
   // fields may already include time

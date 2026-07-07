@@ -503,7 +503,7 @@ export function upgradeDependencyDeclaration(
   const parsedRange = sortBy(
     semverutils.parseRange(declaration).filter(range => range.operator !== '||' && range.operator !== '-'),
     s => numParts(stringify(s)),
-  ) as SemVer[]
+  )
 
   const [declaredSemver] = parsedRange
 
