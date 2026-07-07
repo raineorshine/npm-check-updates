@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { type Edit, applyEdits, findNodeAtLocation, parseTree } from 'jsonc-parser'
 import { parseDocument } from 'yaml'
 import { type CatalogsConfig, parseCatalogsConfig } from '../types/CatalogConfig.ts'
 import { type Index } from '../types/IndexType.ts'
@@ -13,37 +12,9 @@ import resolveDepSections from './resolveDepSections.ts'
 import upgradeDependencies from './upgradeDependencies.ts'
 import { upgradeJsonCatalogDependencies } from './upgradeJsonCatalogDependencies.ts'
 import { updateYamlCatalogDependencies } from './upgradeYamlCatalogDependencies.ts'
+import applyJsonValueEdits, { type JsonValueEdit } from './utils/applyJsonValueEdits.ts'
+import collectVersionEdits from './utils/collectVersionEdits.ts'
 import parseJson from './utils/parseJson.ts'
-
-/**
- * Collects the version edits for a section by walking it recursively, so dependency keys nested to any
- * depth (e.g. overrides) are found. A dep with a string value is replaced directly; a dep whose value
- * is an override object has its self-reference ("." key) replaced.
- */
-function collectSectionEdits(
-  node: unknown,
-  nodePath: (string | number)[],
-  current: Index<VersionSpec>,
-  upgraded: Index<VersionSpec>,
-): { path: (string | number)[]; value: VersionSpec }[] {
-  if (!node || typeof node !== 'object' || Array.isArray(node)) return []
-
-  const edits: { path: (string | number)[]; value: VersionSpec }[] = []
-
-  for (const [key, value] of Object.entries(node)) {
-    if (key in upgraded) {
-      if (typeof value === 'string' && value === current[key]) {
-        edits.push({ path: [...nodePath, key], value: upgraded[key] })
-      } else if (value && typeof value === 'object' && !Array.isArray(value) && value['.'] === current[key]) {
-        edits.push({ path: [...nodePath, key, '.'], value: upgraded[key] })
-      }
-    }
-
-    edits.push(...collectSectionEdits(value, [...nodePath, key], current, upgraded))
-  }
-
-  return edits
-}
 
 /**
  * Replaces upgraded dependency versions within the given sections of raw package.json text.
@@ -84,27 +55,16 @@ function replaceDependencySections(
     return [sectionCurrent, sectionUpgraded]
   }
 
-  // Resolve every edit against a single parse tree and apply them in one pass so the whole file is
-  // not re-parsed and rebuilt once per dependency.
-  const tree = parseTree(pkgData)
-  const edits: Edit[] = []
-
+  const edits: JsonValueEdit[] = []
   for (const section of depSections) {
     const sectionObj = parsed?.[section]
     if (!sectionObj || typeof sectionObj !== 'object' || Array.isArray(sectionObj)) continue
 
     const [sectionCurrent, sectionUpgraded] = specsForSection(section)
-    const sectionEdits = collectSectionEdits(sectionObj, [section], sectionCurrent, sectionUpgraded)
-
-    for (const { path: leafPath, value } of sectionEdits) {
-      const node = tree && findNodeAtLocation(tree, leafPath)
-      if (node) {
-        edits.push({ offset: node.offset, length: node.length, content: JSON.stringify(value) })
-      }
-    }
+    edits.push(...collectVersionEdits(sectionObj, [section], sectionCurrent, sectionUpgraded))
   }
 
-  return applyEdits(pkgData, edits)
+  return applyJsonValueEdits(pkgData, edits)
 }
 
 /**
