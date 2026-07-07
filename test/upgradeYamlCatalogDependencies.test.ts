@@ -106,6 +106,48 @@ catalog:
 `)
   })
 
+  it('preserves leading blank lines', () => {
+    const yaml = `
+
+packages:
+  - 'packages/**'
+
+catalog:
+  react: 18.3.1
+`
+
+    const updated = updateYamlCatalogDependencies({
+      fileContent: yaml,
+      upgrade: { path: ['catalog', 'react'], newValue: '19.0.0' },
+    })
+
+    expect(updated).toBe(`
+
+packages:
+  - 'packages/**'
+
+catalog:
+  react: 19.0.0
+`)
+  })
+
+  it('preserves a leading top-of-file comment', () => {
+    const yaml = `# pnpm workspace config
+catalog:
+  react: 18.3.1
+`
+
+    const updated = updateYamlCatalogDependencies({
+      fileContent: yaml,
+      upgrade: { path: ['catalog', 'react'], newValue: '19.0.0' },
+    })
+
+    expect(updated).toBe(`# pnpm workspace config
+catalog:
+  react: 19.0.0
+`)
+  })
+
   it('throws on invalid yaml syntax', () => {
     const yaml = `catalog:
   react: [18.3.1
