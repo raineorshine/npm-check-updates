@@ -1,0 +1,7 @@
+packages:
+  - 'pkg/sub'
+catalog:
+  chalk: ^5.0.0
+catalogs:
+  react18:
+    react: ^18.0.0

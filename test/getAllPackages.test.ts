@@ -202,6 +202,22 @@ describe('getAllPackages', () => {
     })
   })
 
+  describe('catalog dependencies', () => {
+    it('includes a synthetic catalog package aggregating pnpm-workspace.yaml catalog and catalogs', async () => {
+      const [pkgInfos]: [PackageInfo[], string[]] = await getAllPackages({
+        cwd: path.join(__dirname, 'test-data/workspace-catalog').replace(/\\/g, '/'),
+        workspaces: true,
+        packageManager: 'pnpm',
+        loglevel: 'silent',
+      })
+
+      const catalogInfo = pkgInfos.find((info: PackageInfo) => info.name === 'catalogs')
+      expect(catalogInfo).toBeDefined()
+      expect(catalogInfo!.pkg.dependencies).toStrictEqual({ chalk: '^5.0.0', react: '^18.0.0' })
+      expect(catalogInfo!.filepath.endsWith('pnpm-workspace.yaml')).toBe(true)
+    })
+  })
+
   describe('.pnpm-store', () => {
     it('ignores .pnpm-store directory during --deep traversal', async () => {
       const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
