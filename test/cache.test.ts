@@ -1,9 +1,12 @@
 import fs from 'node:fs/promises'
-import { beforeAll, describe, expect, it } from 'vitest'
+import os from 'node:os'
+import path from 'node:path'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import ncu from '../src/index.ts'
-import { CACHE_DELIMITER, resolvedDefaultCacheFile } from '../src/lib/cache.ts'
+import cacher, { CACHE_DELIMITER, cacheClear, resolvedDefaultCacheFile } from '../src/lib/cache.ts'
 import { CURRENT_CACHE_SCHEMA, type CacheData } from '../src/types/Cacher.ts'
 import createMockVersion from './helpers/createMockVersion.ts'
+import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
 const DAY = 24 * 60 * 60 * 1000
@@ -195,6 +198,57 @@ describe('cache', () => {
       await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
       stub.restore()
     }
+  })
+
+  describe('cacher', () => {
+    let tempDir: string
+    let cacheFile: string
+
+    beforeEach(async () => {
+      tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-cacher-'))
+      cacheFile = path.join(tempDir, '.ncu-cache.json')
+    })
+
+    afterEach(async () => {
+      await removeDir(tempDir)
+    })
+
+    it('returns undefined when caching is disabled', async () => {
+      expect(await cacher({ cache: false, cacheFile })).toBeUndefined()
+    })
+
+    it('stores and retrieves versions and peers, persisting across instances', async () => {
+      const cache = await cacher({ cache: true, cacheFile })
+      expect(cache).toBeDefined()
+
+      cache!.set('foo', 'latest', '1.2.3', '2020-01-01')
+      expect(cache!.get('foo', 'latest')).toStrictEqual({ version: '1.2.3', time: '2020-01-01' })
+      expect(cache!.get('missing', 'latest')).toBeUndefined()
+
+      cache!.setPeers('foo', '1.2.3', { bar: '^1.0.0' })
+      expect(cache!.getPeers('foo', '1.2.3')).toStrictEqual({ bar: '^1.0.0' })
+      expect(cache!.getPeers('missing', '1.0.0')).toBeUndefined()
+
+      await cache!.save()
+
+      // a fresh cacher instance reads the persisted data
+      const reloaded = await cacher({ cache: true, cacheFile })
+      expect(reloaded!.get('foo', 'latest')).toStrictEqual({ version: '1.2.3', time: '2020-01-01' })
+    })
+
+    it('logs the number of cache hits', async () => {
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      const cache = await cacher({ cache: true, cacheFile })
+      cache!.set('foo', 'latest', '1.2.3')
+      cache!.get('foo', 'latest')
+      cache!.log()
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('1 cached package version'))
+      logSpy.mockRestore()
+    })
+
+    it('cacheClear is a no-op when no cacheFile is set', async () => {
+      await expect(cacheClear({})).resolves.toBeUndefined()
+    })
   })
 
   describe('cooldown', () => {
