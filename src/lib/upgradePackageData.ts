@@ -10,6 +10,7 @@ import { escapeRegExp } from './escapeRegExp.ts'
 import resolveDepSections from './resolveDepSections.ts'
 import { upgradeJsonCatalogDependencies } from './upgradeJsonCatalogDependencies.ts'
 import { updateYamlCatalogDependencies } from './upgradeYamlCatalogDependencies.ts'
+import parseJson from './utils/parseJson.ts'
 
 /**
  * Upgrade the dependency declarations in the package data.
@@ -141,7 +142,7 @@ async function upgradePackageData(
   })
 
   if (depSections.includes('packageManager')) {
-    const pkg = JSON.parse(pkgData) as PackageFile
+    const pkg = parseJson(pkgData) as PackageFile
     if (pkg.packageManager) {
       const [name] = pkg.packageManager.split('@')
       if (upgraded[name]) {
