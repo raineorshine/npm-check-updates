@@ -2298,6 +2298,41 @@ describe('cooldown', () => {
       stub.restore()
     })
 
+    it('does not label a version as cooldown-skipped when it satisfies cooldown but is filtered out for another reason', async () => {
+      // Given: @latest is prerelease 2.0.0-beta.1 published 15 days ago (satisfies cooldown, but excluded without --pre)
+      // stable 1.5.0 published 15 days ago also satisfies cooldown
+      const packageData: PackageFile = {
+        dependencies: {
+          'test-package': '1.0.0',
+        },
+      }
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '2.0.0-beta.1': new Date(NOW - 15 * DAY).toISOString(),
+            '1.5.0': new Date(NOW - 15 * DAY).toISOString(),
+          },
+          distTags: {
+            latest: '2.0.0-beta.1',
+          },
+        }),
+      )
+
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      silenceProgressBar()
+
+      await ncu({ ...options, packageData, target: 'latest' })
+
+      const allMessages = getNormalizedLogs(logSpy)
+      expect(allMessages.some(msg => msg.includes('Skipped due to'))).toBe(false)
+      expect(allMessages.join('\n')).not.toContain('[cooldown]')
+      expect(allMessages.some(msg => msg.includes('test-package 1.0.0 → 1.5.0'))).toBe(true)
+
+      logSpy.mockRestore()
+      stub.restore()
+    })
+
     it('skip by cooldown downgrades from prerelease to older stable version when target @latest is within cooldown', async () => {
       // Given: test-package@2.0.0-beta.1 (prerelease) installed
       // @latest is 1.5.0 released 5 days ago (within cooldown)
