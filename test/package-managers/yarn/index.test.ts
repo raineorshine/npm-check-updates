@@ -224,7 +224,25 @@ describe('yarn', () => {
     })
   })
 
+  describe('defaultPrefix', () => {
+    it('returns options.prefix when set', async () => {
+      const result = await yarn.defaultPrefix({ prefix: '/custom/prefix' })
+      expect(result).toBe('/custom/prefix')
+    })
+  })
+
   describe('getPathToLookForLocalYarnrc', () => {
+    it('returns undefined when global', async () => {
+      expect(await yarn.getPathToLookForYarnrc({ global: true })).toBeUndefined()
+    })
+
+    it('returns undefined when no lockfile is found', async () => {
+      const result = await yarn.getPathToLookForYarnrc({ cwd: isWindows ? 'C:\\no\\lockfile' : '/no/lockfile' }, () =>
+        Promise.resolve([]),
+      )
+      expect(result).toBeUndefined()
+    })
+
     it('returns the correct path when using Yarn workspaces', async () => {
       /** Mock for filesystem calls. */
       function readdirMock(path: string): Promise<string[]> {
@@ -310,6 +328,51 @@ describe('yarn', () => {
       try {
         const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
         expect(result).toBeNull()
+      } finally {
+        await cleanup()
+      }
+    })
+
+    it('returns null for a non-positive numeric npmMinimalAgeGate', async () => {
+      const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: -5\n')
+      try {
+        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+        expect(result).toBeNull()
+      } finally {
+        await cleanup()
+      }
+    })
+
+    it('returns null for a zero-duration string ("0d")', async () => {
+      const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: "0d"\n')
+      try {
+        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+        expect(result).toBeNull()
+      } finally {
+        await cleanup()
+      }
+    })
+
+    it('returns null when npmMinimalAgeGate is neither a number nor a string', async () => {
+      const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: true\n')
+      try {
+        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+        expect(result).toBeNull()
+      } finally {
+        await cleanup()
+      }
+    })
+
+    it('ignores non-string entries in npmPreapprovedPackages', async () => {
+      const { tempDir, cleanup } = await createTempYarnrc(`npmMinimalAgeGate: 1440
+npmPreapprovedPackages:
+  - "@my-org/*"
+  - 123
+`)
+      try {
+        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+        expect(result).not.toBeNull()
+        expect(result!.npmPreapprovedPackages).toStrictEqual(['@my-org/*'])
       } finally {
         await cleanup()
       }

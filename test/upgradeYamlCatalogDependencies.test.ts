@@ -160,4 +160,56 @@ catalog:
       }),
     ).toThrow('Invalid YAML syntax')
   })
+
+  it('reports invalid yaml syntax via programError when options are provided', () => {
+    const yaml = `catalog:
+  react: [18.3.1
+`
+
+    expect(() =>
+      updateYamlCatalogDependencies({
+        fileContent: yaml,
+        upgrade: { path: ['catalog', 'react'], newValue: '19.0.0' },
+        options: {},
+      }),
+    ).toThrow('Invalid YAML syntax')
+  })
+
+  it('returns null when the upgrade path is not a catalog', () => {
+    const yaml = `catalog:
+  react: 18.3.1
+`
+
+    const updated = updateYamlCatalogDependencies({
+      fileContent: yaml,
+      upgrade: { path: ['dependencies'], newValue: '19.0.0' },
+    })
+
+    expect(updated).toBeNull()
+  })
+
+  it('returns null when the dependency key is missing from an existing catalog', () => {
+    const yaml = `catalog:
+  react: 18.3.1
+`
+
+    const updated = updateYamlCatalogDependencies({
+      fileContent: yaml,
+      upgrade: { path: ['catalog', 'vue'], newValue: '3.0.0' },
+    })
+
+    expect(updated).toBeNull()
+  })
+
+  it('returns null when the catalog fails schema validation', () => {
+    const yaml = `catalog: not-a-map
+`
+
+    const updated = updateYamlCatalogDependencies({
+      fileContent: yaml,
+      upgrade: { path: ['catalog', 'react'], newValue: '19.0.0' },
+    })
+
+    expect(updated).toBeNull()
+  })
 })

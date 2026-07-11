@@ -66,6 +66,22 @@ describe('queryVersions', () => {
     await expect(a).rejects.toThrow()
   })
 
+  it('returns a cached version without fetching', async () => {
+    // the fetch would return 1.0.0, but the cache holds 88.0.0
+    const stub = stubVersions('1.0.0')
+    const cacher = {
+      get: () => ({ version: '88.0.0' }),
+      set: () => {},
+      getPeers: () => undefined,
+      setPeers: () => {},
+      save: async () => {},
+      log: () => {},
+    }
+    const result = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent', cacher })
+    expect(result).toStrictEqual({ async: { version: '88.0.0' } })
+    stub.restore()
+  })
+
   it('npm aliases should upgrade the installed package', async () => {
     const result = await queryVersions(
       {

@@ -297,6 +297,11 @@ describe('version-util', () => {
       expect(versionUtil.precisionAdd('release', -2)).toBe('minor')
       expect(versionUtil.precisionAdd('release', -3)).toBe('major')
     })
+
+    it('throws when the resulting precision is out of range', () => {
+      expect(() => versionUtil.precisionAdd('major', -1)).toThrow('Invalid precision')
+      expect(() => versionUtil.precisionAdd('build', 2)).toThrow('Invalid precision')
+    })
   })
 
   describe('addWildCard', () => {
@@ -444,6 +449,34 @@ describe('version-util', () => {
     })
   })
 
+  describe('getDependencyGroups', () => {
+    chalkInit()
+
+    it('groups upgrades by patch/minor/major in order', () => {
+      const groups = versionUtil.getDependencyGroups(
+        { a: '2.0.0', b: '1.1.0', c: '1.0.1' },
+        { a: '1.0.0', b: '1.0.0', c: '1.0.0' },
+        {},
+      )
+      expect(groups.map(g => ({ groupName: g.groupName, packages: g.packages }))).toStrictEqual([
+        { groupName: 'patch', packages: { c: '1.0.1' } },
+        { groupName: 'minor', packages: { b: '1.1.0' } },
+        { groupName: 'major', packages: { a: '2.0.0' } },
+      ])
+    })
+
+    it('honors a custom groupFunction, excluding groups named "none"', () => {
+      const groups = versionUtil.getDependencyGroups(
+        { a: '2.0.0', b: '1.1.0' },
+        { a: '1.0.0', b: '1.0.0' },
+        { groupFunction: dep => (dep === 'a' ? 'none' : 'my-group') },
+      )
+      expect(groups.map(g => ({ groupName: g.groupName, packages: g.packages }))).toStrictEqual([
+        { groupName: 'my-group', packages: { b: '1.1.0' } },
+      ])
+    })
+  })
+
   describe('filterByLevel', () => {
     it('only return true for versions at the given semantic versioning level', () => {
       const minor = versionUtil.filterByLevel('1.0.0', 'minor')
@@ -468,6 +501,14 @@ describe('version-util', () => {
 
       const file = versionUtil.filterByLevel('file:./local.tgz', 'patch')
       expect(file('1.0.0')).toBe(false)
+    })
+  })
+
+  describe('filterBySatisfying', () => {
+    it('returns true only for versions that satisfy the range', () => {
+      const inRange = versionUtil.filterBySatisfying('^1.0.0')
+      expect(inRange('1.5.0')).toBe(true)
+      expect(inRange('2.0.0')).toBe(false)
     })
   })
 
