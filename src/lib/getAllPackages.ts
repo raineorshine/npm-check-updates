@@ -37,7 +37,7 @@ const readPnpmWorkspaces = async (pkgPath: string): Promise<PnpmWorkspaces | nul
   } catch {
     return null
   }
-  return parseYaml(pnpmWorkspaceFile) as PnpmWorkspaces
+  return parseYaml(pnpmWorkspaceFile)
 }
 
 /** Reads, parses, and resolves catalog information from the yarn config file at the same path as the package file. */
@@ -49,7 +49,7 @@ const readYarnConfig = async (pkgPath: string): Promise<YarnConfig | null> => {
   } catch {
     return null
   }
-  return parseYaml(yarnConfig) as YarnConfig
+  return parseYaml(yarnConfig)
 }
 
 /** Gets catalog dependencies from both pnpm-workspace.yaml and package.json files. */
