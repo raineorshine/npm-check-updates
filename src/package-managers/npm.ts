@@ -71,21 +71,9 @@ const fetchPartialPackument = async (
     ...opts.headers,
   }
   const url = new URL(
-    // since the registry API expects /package or /package/version encoding
-    // scoped packages is needed as to not treat the package scope as the full
-    // package name and the actual package name as the version/dist-tag
-    encodeURIComponent(name),
-    // the WhatWG URL standard, when given a base URL to place the first
-    // parameter relative to, will find the dirname of the base, treating the
-    // last segment as a file name and not a directory name if it isn't
-    // terminated by a / and thus remove it before adding the first argument
-    // to the URL.
-    // this is undesirable for registries configured without a trailing slash
-    // in the npm config since, for example looking up the package @foo/bar
-    // will give the following results given these configured registry URL:s
-    //    https://example.com/npm  => https://example.com/%40foo%2fbar
-    //    https://example.com/npm/ => https://example.com/npm/%40foo%2fbar
-    // however, like npm itself does there should be leniency allowed in this.
+    // Encode package name but preserve leading @ to avoid 404 errors
+    encodeURIComponent(name).replace(/^%40/, '@'),
+    // Ensure registry URL has trailing slash (URL constructor removes last segment)
     registry.endsWith('/') ? registry : `${registry}/`,
   )
   if (version) {
@@ -426,7 +414,7 @@ export const normalizeNpmConfig = (
           ? stringToBoolean(value)
           : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
             ? stringToNumber(value)
-            : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
+            : value.replace(/\${([^}]+)}/g, (_, envVar) => process.env[envVar] as string)
 
     // normalize the key for pacote
     const { [key]: pacoteKey }: Index<NpmConfig[keyof NpmConfig]> = npmConfigToPacoteMap
@@ -514,7 +502,7 @@ export function parseJson<R>(result: string, data: { command?: string; packageNa
       { cause: err },
     )
   }
-  return json as R
+  return json
 }
 
 /** Returns true if an object is a Packument. */
@@ -707,7 +695,7 @@ async function fetchUpgradedPackument(
   }
 
   if (isExactVersion(currentVersion)) {
-    return {} as Index<Packument>
+    return {}
   }
 
   // fields may already include time

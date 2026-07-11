@@ -185,7 +185,7 @@ export default async function runLocal(
     if (!pkgData) {
       programError(options, 'Missing package data')
     } else {
-      pkg = parseJson(pkgData)
+      pkg = parseJson<PackageFile>(pkgData)
     }
   } catch (e: any) {
     programError(
@@ -200,7 +200,7 @@ export default async function runLocal(
   print(options, current, 'verbose')
 
   if (options.enginesNode) {
-    options.nodeEngineVersion = pkg?.engines?.node
+    options.nodeEngineVersion = pkg.engines?.node
   }
 
   if (options.peer) {
@@ -304,9 +304,9 @@ export default async function runLocal(
   const output: PackageFile | Index<VersionSpec> = options.jsonAll
     ? pkgFile?.endsWith('.yaml') || pkgFile?.endsWith('.yml')
       ? parseDocument(newPkgData).toJSON()
-      : (parseJson(newPkgData) as PackageFile)
+      : parseJson<PackageFile>(newPkgData)
     : options.jsonDeps && pkgFile?.endsWith('.json')
-      ? pick(parseJson(newPkgData) as PackageFile, resolveDepSections(options.dep))
+      ? pick(parseJson<PackageFile>(newPkgData), resolveDepSections(options.dep))
       : chosenUpgraded
 
   // will be overwritten with the result of fs.writeFile so that the return promise waits for the package file to be written
