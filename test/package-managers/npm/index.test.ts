@@ -43,6 +43,14 @@ describe('npm', () => {
     )
   })
 
+  // the leading @ must not be encoded to %40, which some registries reject with a 404
+  // https://github.com/raineorshine/npm-check-updates/issues/1330
+  it('does not percent-encode the @ of a scoped package name', async () => {
+    await expect(npm.getEngines('@angular/core', '0.0.0-nonexistent')).rejects.toThrow(
+      '404 Not Found - GET https://registry.npmjs.org/@angular%2Fcore/0.0.0-nonexistent',
+    )
+  })
+
   it('interpolate every env var reference in a config value, not just the first', () => {
     process.env.NCU_TEST_ENV_A = 'aaa'
     process.env.NCU_TEST_ENV_B = 'bbb'
