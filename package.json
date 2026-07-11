@@ -145,6 +145,7 @@
   ],
   "allowScripts": {
     "yarn@1.22.22": true,
-    "unrs-resolver@1.12.2": true
+    "unrs-resolver@1.12.2": true,
+    "fsevents@2.3.3": true
   }
 }
