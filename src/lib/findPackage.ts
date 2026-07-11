@@ -76,14 +76,16 @@ async function findPackage(options: Options): Promise<{
     pkgData = data || getPackageDataFromFile(pkgFile, pkgPath)
   } else {
     // find the closest package starting from the current working directory and going up to the root
-    pkgFile = pkgPath
-      ? await findUp(
-          !options.packageFile && options.packageManager === 'deno' ? ['deno.json', 'deno.jsonc'] : pkgPath,
-          {
-            cwd: options.cwd || process.cwd(),
-          },
-        )
-      : null
+    const cwd = options.cwd || process.cwd()
+    if (!pkgPath) {
+      pkgFile = null
+    } else if (!options.packageFile && options.packageManager === 'deno') {
+      // Deno 2.0 also supports managing dependencies in package.json,
+      // so fall back to it when no deno.json/deno.jsonc is found.
+      pkgFile = (await findUp(['deno.json', 'deno.jsonc'], { cwd })) || (await findUp(pkgPath, { cwd }))
+    } else {
+      pkgFile = await findUp(pkgPath, { cwd })
+    }
     pkgData = getPackageDataFromFile(pkgFile, pkgPath)
   }
 
