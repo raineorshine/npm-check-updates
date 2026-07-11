@@ -1013,7 +1013,8 @@ catalogs:
           expect(stdout).not.toBe('')
 
           const updatedConfig = await fs.readFile(path.join(tempDir, '.yarnrc.yml'), 'utf-8')
-          expect(updatedConfig).toBe(`catalog:
+          expect(updatedConfig).toBe(`
+catalog:
   ncu-test-v2: '2.0.0'
   ncu-test-tag: '1.1.0'
 

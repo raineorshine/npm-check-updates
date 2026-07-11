@@ -1,4 +1,4 @@
-import { CST, type Document, isCollection, isPair, isScalar, parseDocument } from 'yaml'
+import { CST, Composer, type Document, Parser, isCollection, isPair, isScalar } from 'yaml'
 import { type CatalogsConfig, parseCatalogsConfig } from '../types/CatalogConfig.ts'
 import type { Options } from '../types/Options.ts'
 import programError from './programError.ts'
@@ -104,19 +104,23 @@ export function updateYamlCatalogDependencies({
 
   const { newValue } = upgrade
 
-  let document: ReturnType<typeof parseDocument>
+  let tokens: CST.Token[]
+  let document: Document | undefined
   let parsedContents: CatalogsConfig
 
   try {
-    // In order to preserve the original formatting as much as possible, we want
-    // manipulate the CST directly. Using the AST (the result of parseDocument)
-    // does not guarantee that formatting would be the same after
-    // stringification. However, the CST is more annoying to query for certain
-    // values. Thus, we use both an annotated AST and a JS representation; the
-    // former for manipulation, and the latter for querying/validation.
-    document = parseDocument(fileContent, { keepSourceTokens: true })
+    // Parse to CST tokens and compose the AST from those same tokens (keepSourceTokens), so the AST
+    // nodes reference the original CST tokens. We manipulate via the AST for convenience, then
+    // stringify the whole token stream. Stringifying document.contents alone would drop everything
+    // outside the top-level map (leading blank lines, directives, pre-document comments).
+    tokens = [...new Parser().parse(fileContent)]
+    document = [...new Composer({ keepSourceTokens: true }).compose(tokens)][0]
   } catch (err) {
     throwYamlSyntaxError(err, { options, filePath })
+  }
+
+  if (!document) {
+    throwYamlSyntaxError(new Error('No YAML document found.'), { options, filePath })
   }
 
   if (document.errors.length > 0) {
@@ -158,5 +162,5 @@ export function updateYamlCatalogDependencies({
     return null
   }
 
-  return CST.stringify(document.contents!.srcToken!)
+  return tokens.map(token => CST.stringify(token)).join('')
 }
