@@ -1,7 +1,10 @@
+import fs from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import * as npm from '../../../src/package-managers/npm.ts'
+import removeDir from '../../helpers/removeDir.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -41,6 +44,25 @@ describe('npm', () => {
     await expect(npm.getEngines('ncu-test-return-version', '1.0')).rejects.toThrow(
       '404 Not Found - GET https://registry.npmjs.org/ncu-test-return-version/1.0',
     )
+  })
+
+  // getEngines must respect a scoped registry from the project .npmrc, not default to npmjs
+  // https://github.com/raineorshine/npm-check-updates/issues/1506
+  it('getEngines uses a scoped registry configured in the project .npmrc', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    await fs.writeFile(
+      path.join(tempDir, '.npmrc'),
+      '@enginestest:registry=https://registry.npmjs.org/ncu-1506-probe/\n',
+    )
+
+    try {
+      // 404 confirms the request went to the configured registry path rather than the default
+      await expect(npm.getEngines('@enginestest/foo', '1.0.0', { cwd: tempDir })).rejects.toThrow(
+        'https://registry.npmjs.org/ncu-1506-probe/',
+      )
+    } finally {
+      await removeDir(tempDir)
+    }
   })
 
   // the leading @ must not be encoded to %40, which some registries reject with a 404

@@ -505,42 +505,6 @@ export function parseJson<R>(result: string, data: { command?: string; packageNa
   return json
 }
 
-/**
- * Check if package author changed between current and upgraded version.
- *
- * @param packageName Name of the package
- * @param currentVersion Current version declaration (may be range)
- * @param upgradedVersion Upgraded version declaration (may be range)
- * @param npmConfigLocal Additional npm config variables that are merged into the system npm config
- * @returns A promise that fulfills with boolean value.
- */
-export async function packageAuthorChanged(
-  packageName: string,
-  currentVersion: VersionSpec,
-  upgradedVersion: VersionSpec,
-  options: Options = {},
-  npmConfigLocal?: NpmConfig,
-): Promise<boolean> {
-  const result = await fetchPartialPackument(packageName, ['versions'], null, {
-    ...npmConfigLocal,
-    ...npmApi.findNpmConfig(),
-    fullMetadata: true,
-    ...(options.registry ? { registry: options.registry, silent: true } : null),
-  })
-  if (result.versions) {
-    const pkgVersions = Object.keys(result.versions)
-    const current = nodeSemver.minSatisfying(pkgVersions, currentVersion)
-    const upgraded = nodeSemver.maxSatisfying(pkgVersions, upgradedVersion)
-    if (current && upgraded && result.versions[current]._npmUser && result.versions[upgraded]._npmUser) {
-      const currentAuthor = result.versions[current]._npmUser?.name
-      const latestAuthor = result.versions[upgraded]._npmUser?.name
-      return currentAuthor !== latestAuthor
-    }
-  }
-
-  return false
-}
-
 /** Returns true if an object is a Packument. */
 const isPackument = (o: any): o is Partial<Packument> => !!(o && (o.name || o.engines || o.version || o.versions))
 
@@ -669,6 +633,42 @@ const mergeNpmConfigs = memoize(
     return npmConfigMerged
   },
 )
+
+/**
+ * Check if package author changed between current and upgraded version.
+ *
+ * @param packageName Name of the package
+ * @param currentVersion Current version declaration (may be range)
+ * @param upgradedVersion Upgraded version declaration (may be range)
+ * @param npmConfigLocal Additional npm config variables that are merged into the system npm config
+ * @returns A promise that fulfills with boolean value.
+ */
+export async function packageAuthorChanged(
+  packageName: string,
+  currentVersion: VersionSpec,
+  upgradedVersion: VersionSpec,
+  options: Options = {},
+  npmConfigLocal?: NpmConfig,
+): Promise<boolean> {
+  // merge the project/cwd .npmrc so a scoped private registry is respected, like the main fetch path
+  const npmConfigMerged = mergeNpmConfigs(
+    { npmConfigUser: { ...npmApi.findNpmConfig(), fullMetadata: true }, npmConfigLocal },
+    options,
+  )
+  const result = await fetchPartialPackument(packageName, ['versions'], null, npmConfigMerged)
+  if (result.versions) {
+    const pkgVersions = Object.keys(result.versions)
+    const current = nodeSemver.minSatisfying(pkgVersions, currentVersion)
+    const upgraded = nodeSemver.maxSatisfying(pkgVersions, upgradedVersion)
+    if (current && upgraded && result.versions[current]._npmUser && result.versions[upgraded]._npmUser) {
+      const currentAuthor = result.versions[current]._npmUser?.name
+      const latestAuthor = result.versions[upgraded]._npmUser?.name
+      return currentAuthor !== latestAuthor
+    }
+  }
+
+  return false
+}
 
 /**
  * Returns an object of specified values retrieved by npm view.
@@ -915,17 +915,9 @@ export const getEngines = async (
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<Index<VersionSpec | undefined>> => {
-  const result = await fetchPartialPackument(
-    packageName,
-    [`engines`],
-    null,
-    {
-      ...npmConfigLocal,
-      ...npmApi.findNpmConfig(),
-      ...(options.registry ? { registry: options.registry, silent: true } : null),
-    },
-    version,
-  )
+  // merge the project/cwd .npmrc so a scoped private registry is respected, like the main fetch path
+  const npmConfigMerged = mergeNpmConfigs({ npmConfigUser: { ...npmApi.findNpmConfig() }, npmConfigLocal }, options)
+  const result = await fetchPartialPackument(packageName, [`engines`], null, npmConfigMerged, version)
   return result.engines || {}
 }
 
