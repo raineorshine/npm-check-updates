@@ -414,7 +414,7 @@ export const normalizeNpmConfig = (
           ? stringToBoolean(value)
           : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
             ? stringToNumber(value)
-            : value.replace(/\${([^}]+)}/, (_, envVar) => process.env[envVar] as string)
+            : value.replace(/\${([^}]+)}/g, (_, envVar) => process.env[envVar] as string)
 
     // normalize the key for pacote
     const { [key]: pacoteKey }: Index<NpmConfig[keyof NpmConfig]> = npmConfigToPacoteMap
@@ -502,7 +502,7 @@ export function parseJson<R>(result: string, data: { command?: string; packageNa
       { cause: err },
     )
   }
-  return json as R
+  return json
 }
 
 /**
@@ -695,7 +695,7 @@ async function fetchUpgradedPackument(
   }
 
   if (isExactVersion(currentVersion)) {
-    return {} as Index<Packument>
+    return {}
   }
 
   // fields may already include time

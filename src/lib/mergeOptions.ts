@@ -3,7 +3,7 @@ import { type Options } from '../types/Options.ts'
 type OptionKey = keyof Options
 
 /** Merges two arrays into one, removing duplicates. */
-function mergeArrays(arr1: any[], arr2: any[]) {
+function mergeArrays<T>(arr1: T[], arr2: T[]): T[] {
   return Array.from(new Set([...(arr1 || []), ...(arr2 || [])]))
 }
 
@@ -18,7 +18,7 @@ function mergeOptions(rawOptions1: Options | null, rawOptions2: Options | null) 
 
   for (const key of Object.keys(result) as OptionKey[]) {
     if (Array.isArray(options1[key]) && Array.isArray(options2[key])) {
-      result[key] = mergeArrays(options1[key] as any[], options2[key] as any[]) as any
+      ;(result as Record<OptionKey, unknown>)[key] = mergeArrays(options1[key] as unknown[], options2[key] as unknown[])
     }
   }
   return result

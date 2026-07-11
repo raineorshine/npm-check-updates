@@ -100,7 +100,7 @@ async function bunInfo<R>(
     const parsed = JSON.parse(stripAnsi(stdout))
     // bun --json reports a missing field/version as { error, ... } rather than empty output
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && 'error' in parsed) return null
-    return parsed as R
+    return parsed
   } catch {
     return null
   }

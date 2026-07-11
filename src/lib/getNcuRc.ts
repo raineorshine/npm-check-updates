@@ -4,7 +4,6 @@ import { type Loader, lilconfig } from 'lilconfig'
 import { parse as parseYaml } from 'yaml'
 import { cliOptionsMap } from '../cli-options.ts'
 import { type Options } from '../types/Options.ts'
-import { type RcOptions } from '../types/RcOptions.ts'
 import { getChalk } from './chalk.ts'
 import programError from './programError.ts'
 
@@ -125,7 +124,7 @@ async function getNcuRc({
 
   // convert the config to valid options by removing $schema and parsing format
   const { $schema: _, ...rawConfig } = rawResult?.config || {}
-  const config: Options = (rawConfig as RcOptions) || {}
+  const config: Options = rawConfig || {}
   if (typeof config.format === 'string') config.format = cliOptionsMap.format.parse!(config.format)
 
   // validate arguments here to provide a better error message

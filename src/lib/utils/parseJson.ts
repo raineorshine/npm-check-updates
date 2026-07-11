@@ -55,7 +55,7 @@ function showSnippet(lines: string[], errorLine: number, columnNumber: number): 
  * @param jsonString - target json string.
  * @returns the parsed json object.
  */
-export default function parseJson(jsonString: string) {
+export default function parseJson<T = unknown>(jsonString: string): T {
   jsonString = stripComments(jsonString)
   try {
     return JSON.parse(jsonString)
