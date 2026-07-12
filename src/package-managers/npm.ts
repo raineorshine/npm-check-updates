@@ -1021,9 +1021,10 @@ export const distTag: GetVersion = async (
     }
   }
 
-  // if version from dist-tag does not meet cooldown requirement skip finding other versions
-  if (options.cooldown) {
-    if (version && tagPackument && !isSatisfiesCooldown) {
+  // only report cooldown when the version is actually within it; a version rejected by another
+  // filter (pre, deprecated, engines, peer) falls through to greatest instead
+  if (options.cooldown && !isSatisfiesCooldown) {
+    if (version && tagPackument) {
       print(
         options,
         `Skipping ${packageName}@${version} due to cooldown${publishTime ? ` (published ${publishTime})` : ''}.`,
