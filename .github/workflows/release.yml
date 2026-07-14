@@ -5,14 +5,16 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: write # create the GitHub release
+permissions: {}
 
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
+    permissions:
+      contents: write # create the GitHub release
 
     steps:
       - name: Checkout
