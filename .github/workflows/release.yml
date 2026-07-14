@@ -12,6 +12,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    if: github.repository == 'raineorshine/npm-check-updates'
 
     permissions:
       contents: write # create the GitHub release
