@@ -15,7 +15,6 @@ import { type VersionSpec } from '../types/VersionSpec.ts'
 import chalk from './chalk.ts'
 import filterObject from './filterObject.ts'
 import getPackageJson from './getPackageJson.ts'
-import getPackageVersion from './getPackageVersion.ts'
 import getRepoUrl from './getRepoUrl.ts'
 import isFetchable from './isFetchable.ts'
 import { COOLDOWN_PATTERN } from './parseCooldown.ts'
@@ -191,10 +190,12 @@ export async function toDependencyTable({
       Object.keys(toDeps)
         .sort()
         .map(async dep => {
-          const from =
-            (format?.includes('installedVersion')
-              ? await getPackageVersion(dep, undefined, { pkgFile })
-              : fromDeps[dep]) || ''
+          // load once and share between installedVersion, homepage, and repo to avoid reading the same package.json multiple times
+          const packageJson =
+            format?.includes('installedVersion') || format?.includes('homepage') || format?.includes('repo')
+              ? await getPackageJson(dep, { pkgFile })
+              : null
+          const from = (format?.includes('installedVersion') ? packageJson?.version : fromDeps[dep]) || ''
           const depType =
             dep in (pkg?.devDependencies ?? {})
               ? 'dev'
@@ -213,10 +214,10 @@ export async function toDependencyTable({
               : '*unknown*'
             : ''
           const toColorized = colorizeDiff(getVersion(from), to)
-          const homepageUrl = format?.includes('homepage')
-            ? (await getPackageJson(dep, { pkgFile }))?.homepage || ''
+          const homepageUrl = format?.includes('homepage') ? packageJson?.homepage || '' : ''
+          const repoUrl = format?.includes('repo')
+            ? (await getRepoUrl(dep, packageJson ?? undefined, { pkgFile })) || ''
             : ''
-          const repoUrl = format?.includes('repo') ? (await getRepoUrl(dep, undefined, { pkgFile })) || '' : ''
           const diffUrl = format?.includes('diff')
             ? `${process.env.NCU_DIFF || 'https://npmdiff.dev'}/${encodeURIComponent(dep)}/${from.replace(/^\W+/, '')}/${to.replace(/^\W+/, '')}`
             : ''
