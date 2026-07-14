@@ -55,7 +55,7 @@ describe('findNpmConfig', () => {
 
     try {
       const findNpmConfig = await loadFindNpmConfig()
-      const config = await findNpmConfig()
+      const config = findNpmConfig()
 
       // npm_config_ prefix stripped, then camelCased by normalizeNpmConfig
       expect(config.fooBar).toBe('baz')
@@ -79,7 +79,7 @@ describe('findNpmConfig', () => {
     process.env.npm_config_save_exact = 'true'
 
     const findNpmConfig = await loadFindNpmConfig()
-    const config = await findNpmConfig()
+    const config = findNpmConfig()
 
     // leading underscore is kept and the key is not camelCased
     expect(config._auth).toBe('token')
@@ -100,7 +100,7 @@ describe('findNpmConfig', () => {
 
     try {
       const findNpmConfig = await loadFindNpmConfig()
-      const config = await findNpmConfig()
+      const config = findNpmConfig()
       expect(config['@home:registry']).toBe('https://home.example.com/')
     } finally {
       if (savedHome === undefined) delete process.env.HOME
@@ -115,9 +115,9 @@ describe('findNpmConfig', () => {
     const repoNpmrc = path.resolve(process.cwd(), '.npmrc')
     process.env.npm_config_userconfig = repoNpmrc
 
-    const readFileSpy = vi.spyOn(fs.promises, 'readFile')
+    const readFileSpy = vi.spyOn(fs, 'readFileSync')
     const findNpmConfig = await loadFindNpmConfig()
-    const config = await findNpmConfig()
+    const config = findNpmConfig()
 
     // the repo .npmrc sets engine-strict=true
     expect(config.engineStrict).toBe(true)
@@ -128,13 +128,13 @@ describe('findNpmConfig', () => {
 
   it('propagates a non-ENOENT error when reading the user .npmrc', async () => {
     clearNpmEnv()
-    // a directory cannot be read as a file, so readFile rejects with EISDIR
+    // a directory cannot be read as a file, so readFileSync throws EISDIR
     const dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'ncu-baduser-'))
     process.env.npm_config_userconfig = dir
 
     try {
       const findNpmConfig = await loadFindNpmConfig()
-      await expect(findNpmConfig()).rejects.toThrow()
+      expect(() => findNpmConfig()).toThrow()
     } finally {
       await removeDir(dir)
     }
@@ -143,10 +143,10 @@ describe('findNpmConfig', () => {
   it('derives the global npmrc from the node binary path on Windows', async () => {
     clearNpmEnv()
     Object.defineProperty(process, 'platform', { value: 'win32', configurable: true })
-    const readFileSpy = vi.spyOn(fs.promises, 'readFile')
+    const readFileSpy = vi.spyOn(fs, 'readFileSync')
 
     const findNpmConfig = await loadFindNpmConfig()
-    await findNpmConfig()
+    findNpmConfig()
 
     const expected = path.join(path.dirname(process.execPath), 'etc', 'npmrc')
     expect(readFileSpy).toHaveBeenCalledWith(expected, 'utf-8')
@@ -155,10 +155,10 @@ describe('findNpmConfig', () => {
   it('derives the global npmrc from the node binary path on non-Windows', async () => {
     clearNpmEnv()
     Object.defineProperty(process, 'platform', { value: 'linux', configurable: true })
-    const readFileSpy = vi.spyOn(fs.promises, 'readFile')
+    const readFileSpy = vi.spyOn(fs, 'readFileSync')
 
     const findNpmConfig = await loadFindNpmConfig()
-    await findNpmConfig()
+    findNpmConfig()
 
     const expected = path.join(path.dirname(path.dirname(process.execPath)), 'etc', 'npmrc')
     expect(readFileSpy).toHaveBeenCalledWith(expected, 'utf-8')
@@ -169,11 +169,11 @@ describe('findNpmConfig', () => {
     Object.defineProperty(process, 'platform', { value: 'linux', configurable: true })
     const destdir = await fsp.mkdtemp(path.join(os.tmpdir(), 'ncu-destdir-'))
     process.env.DESTDIR = destdir
-    const readFileSpy = vi.spyOn(fs.promises, 'readFile')
+    const readFileSpy = vi.spyOn(fs, 'readFileSync')
 
     try {
       const findNpmConfig = await loadFindNpmConfig()
-      await findNpmConfig()
+      findNpmConfig()
 
       const prefix = path.dirname(path.dirname(process.execPath))
       const expected = path.join(destdir, prefix, 'etc', 'npmrc')
@@ -187,11 +187,11 @@ describe('findNpmConfig', () => {
     clearNpmEnv()
     const prefixDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'ncu-prefixenv-'))
     process.env.PREFIX = prefixDir
-    const readFileSpy = vi.spyOn(fs.promises, 'readFile')
+    const readFileSpy = vi.spyOn(fs, 'readFileSync')
 
     try {
       const findNpmConfig = await loadFindNpmConfig()
-      await findNpmConfig()
+      findNpmConfig()
 
       const expected = path.join(prefixDir, 'etc', 'npmrc')
       expect(readFileSpy).toHaveBeenCalledWith(expected, 'utf-8')

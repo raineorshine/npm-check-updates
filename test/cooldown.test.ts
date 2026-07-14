@@ -254,7 +254,7 @@ describe('cooldown', () => {
       }),
     )
 
-    const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({})
+    const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({})
 
     // When: running ncu without cooldown
     const result = await ncu({ packageData })
@@ -1067,7 +1067,7 @@ describe('cooldown', () => {
       )
 
       // Stub findNpmConfig to return a config with minReleaseAge: '7'
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({ minReleaseAge: '7' })
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '7' })
 
       // When: ncu is run without explicit cooldown option
       const result = await ncu({ packageData })
@@ -1099,7 +1099,7 @@ describe('cooldown', () => {
       )
 
       // Stub findNpmConfig to return a config with minReleaseAge: '7'
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({ minReleaseAge: '7' })
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '7' })
 
       // When: ncu is run with explicit cooldown=0 (overrides min-release-age)
       const result = await ncu({ packageData, cooldown: 0 })
@@ -1131,7 +1131,7 @@ describe('cooldown', () => {
       )
 
       // Stub findNpmConfig to return a config with minReleaseAge: '7'
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({ minReleaseAge: '7' })
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '7' })
 
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
@@ -1173,7 +1173,7 @@ describe('cooldown', () => {
 
       // Stub findNpmConfig to return a config with minReleaseAge: '7' and @myorg/* excluded
       // (repeated min-release-age-exclude[] entries in .npmrc parse as an array)
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['@myorg/*'],
       })
@@ -1211,7 +1211,7 @@ describe('cooldown', () => {
         }),
       })
 
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAge: '7',
         minReleaseAgeExclude: 'excluded-package',
       })
@@ -1252,7 +1252,7 @@ describe('cooldown', () => {
           distTags: { latest: '3.0.0' },
         }),
       })
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['react, @myorg/*', 'react'],
       })
@@ -1295,7 +1295,7 @@ describe('cooldown', () => {
           distTags: { latest: '5.0.0' },
         }),
       })
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['!react', '#lodash', '@(react|vue)'],
       })
@@ -1330,7 +1330,7 @@ describe('cooldown', () => {
         }),
       })
 
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['react'],
       })
@@ -1365,7 +1365,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAgeExclude: ['react'],
       })
 
@@ -1398,7 +1398,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({
         minReleaseAge: '7',
         minReleaseAgeExclude: ['test-package'],
       })
@@ -1436,7 +1436,7 @@ describe('cooldown', () => {
       )
 
       // Prevent user's .npmrc min-release-age from taking precedence over pnpm/yarn config in tests
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({})
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({})
 
       // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with minimumReleaseAge: 1440 minutes
       const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue({
@@ -1477,7 +1477,7 @@ describe('cooldown', () => {
         }),
       })
 
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({})
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({})
 
       // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with 7 days cooldown and @myorg/* excluded
       const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue({
@@ -1553,7 +1553,7 @@ describe('cooldown', () => {
       )
 
       // Stub npm config with min-release-age=2 (should NOT be consulted for pnpm projects)
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({ minReleaseAge: '2' })
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '2' })
       // Stub pnpm workspace with 7-day cooldown
       const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue({
         minimumReleaseAge: 10080,
@@ -1593,7 +1593,7 @@ describe('cooldown', () => {
       )
 
       // Stub npm config with min-release-age=7 (should NOT be consulted for pnpm projects)
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({ minReleaseAge: '7' })
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '7' })
       // Stub pnpm workspace returning null (no pnpm config)
       const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue(null)
 
@@ -1720,7 +1720,7 @@ describe('cooldown', () => {
       )
 
       // Prevent the user's .npmrc min-release-age from taking precedence over pnpm config in tests
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({})
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({})
 
       // When: ncu is run without explicit cooldown option
       const result = await ncu({ packageData, packageManager: 'pnpm' })
@@ -1754,7 +1754,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({})
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({})
 
       // Stub getYarnMinimalAgeGate to return a config with npmMinimalAgeGate: 1440 minutes (1 day)
       const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
@@ -1793,7 +1793,7 @@ describe('cooldown', () => {
         }),
       )
 
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({})
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({})
 
       const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
         npmMinimalAgeGate: 1440,
@@ -1833,7 +1833,7 @@ describe('cooldown', () => {
         }),
       })
 
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({})
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({})
 
       // Stub getYarnMinimalAgeGate to return a 7-day cooldown with @myorg/pkg pre-approved
       const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
@@ -1909,7 +1909,7 @@ describe('cooldown', () => {
       )
 
       // Stub npm config with min-release-age=2 (should NOT be consulted for yarn projects)
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({ minReleaseAge: '2' })
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '2' })
       const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
         npmMinimalAgeGate: 10080,
         npmPreapprovedPackages: [],
@@ -1949,7 +1949,7 @@ describe('cooldown', () => {
       )
 
       // Stub npm config with min-release-age=7 (should NOT be consulted for yarn projects)
-      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockResolvedValue({ minReleaseAge: '7' })
+      const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '7' })
       // Stub yarn returning null (no yarn config)
       const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue(null)
 

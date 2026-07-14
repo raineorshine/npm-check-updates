@@ -4,7 +4,7 @@ import path from 'node:path'
 import { JSONParser } from '@streamparser/json'
 import camelCase from 'camelcase'
 import memoize from 'fast-memoize'
-import { findUp } from 'find-up'
+import { findUpSync } from 'find-up'
 import ini from 'ini'
 import type npmRegistryFetch from 'npm-registry-fetch'
 import nodeSemver from 'semver'
@@ -449,7 +449,7 @@ interface NpmApi {
     npmConfigLocal?: NpmConfig,
     npmConfigWorkspaceProject?: NpmConfig,
   ) => Promise<Partial<Packument> | undefined>
-  findNpmConfig: () => Promise<NpmConfig>
+  findNpmConfig: () => NpmConfig
   mockFetchUpgradedPackument: (mockReturnedVersions: MockedVersions) => typeof fetchUpgradedPackument
 }
 
@@ -479,9 +479,9 @@ const parseNpmrc = memoize((configPath: string): NpmConfig | null => {
 })
 
 /** Reads and parses an .npmrc file, returning {} if it does not exist. */
-const readNpmrc = async (file: string): Promise<NpmConfig> => {
+const readNpmrc = (file: string): NpmConfig => {
   try {
-    return ini.parse(await fs.promises.readFile(file, 'utf-8'))
+    return ini.parse(fs.readFileSync(file, 'utf-8'))
   } catch (err: any) {
     if (err.code === 'ENOENT') return {}
     throw err
@@ -499,7 +499,7 @@ const getGlobalPrefix = (): string => {
 }
 
 /** Reads and merges the global, user, and project .npmrc files plus npm_config_* env vars. Memoized so it loads once. */
-npmApi.findNpmConfig = memoize(async (): Promise<NpmConfig> => {
+npmApi.findNpmConfig = memoize((): NpmConfig => {
   const envPrefix = /^npm_config_/i
   const env: NpmConfig = {}
 
@@ -518,12 +518,10 @@ npmApi.findNpmConfig = memoize(async (): Promise<NpmConfig> => {
     process.env.NPM_CONFIG_USERCONFIG ||
     path.join(process.env.HOME || os.homedir(), '.npmrc')
   const globalconfig = path.join(getGlobalPrefix(), 'etc', 'npmrc')
-  const [global, user, projectConfigPath] = await Promise.all([
-    readNpmrc(globalconfig),
-    readNpmrc(userconfig),
-    findUp(['npmrc', '.npmrc']),
-  ])
-  const project = projectConfigPath && projectConfigPath !== userconfig ? await readNpmrc(projectConfigPath) : {}
+  const global = readNpmrc(globalconfig)
+  const user = readNpmrc(userconfig)
+  const projectConfigPath = findUpSync(['npmrc', '.npmrc'])
+  const project = projectConfigPath && projectConfigPath !== userconfig ? readNpmrc(projectConfigPath) : {}
 
   // precedence (low to high): global < user < project < env
   return normalizeNpmConfig({ ...global, ...user, ...project, ...env, cache: false })
@@ -696,7 +694,7 @@ export async function packageAuthorChanged(
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<boolean> {
-  const npmConfig = await npmApi.findNpmConfig()
+  const npmConfig = npmApi.findNpmConfig()
   // merge the project/cwd .npmrc so a scoped private registry is respected, like the main fetch path
   const npmConfigMerged = mergeNpmConfigs(
     { npmConfigUser: { ...npmConfig, fullMetadata: true }, npmConfigLocal },
@@ -750,7 +748,7 @@ async function fetchUpgradedPackument(
     options.format?.includes('time') && !fields.includes('time') ? [...fields, 'time'] : fields
   const fullMetadata = fieldsExtended.includes('time')
 
-  const npmConfig = await npmApi.findNpmConfig()
+  const npmConfig = npmApi.findNpmConfig()
   const npmConfigMerged = mergeNpmConfigs(
     {
       npmConfigUser: { ...npmConfig, fullMetadata },
@@ -963,7 +961,7 @@ export const getEngines = async (
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<Index<VersionSpec | undefined>> => {
-  const npmConfig = await npmApi.findNpmConfig()
+  const npmConfig = npmApi.findNpmConfig()
   // merge the project/cwd .npmrc so a scoped private registry is respected, like the main fetch path
   const npmConfigMerged = mergeNpmConfigs({ npmConfigUser: { ...npmConfig }, npmConfigLocal }, options)
   const result = await fetchPartialPackument(packageName, [`engines`], null, npmConfigMerged, version)
