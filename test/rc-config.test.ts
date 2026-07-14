@@ -501,7 +501,7 @@ describe('rc-config', () => {
       }
     })
 
-    it('filterVersion function', async () => {
+    it('error on filterVersion function', async () => {
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const configFile = path.join(tempDir, '.ncurc.js')
       const pkgFile = path.join(tempDir, 'package.json')
@@ -519,10 +519,8 @@ describe('rc-config', () => {
       )
       try {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-        const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
-        const pkgData = JSON.parse(stdout)
-        expect(pkgData).toHaveProperty('ncu-test-v2')
-        expect(pkgData).not.toHaveProperty('ncu-test-tag')
+        const result = spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
+        await expect(result).rejects.toThrow('do not support predicate functions')
       } finally {
         await removeDir(tempDir)
       }
@@ -582,7 +580,7 @@ describe('rc-config', () => {
       }
     })
 
-    it('rejectVersion function', async () => {
+    it('error on rejectVersion function', async () => {
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const configFile = path.join(tempDir, '.ncurc.js')
       const pkgFile = path.join(tempDir, 'package.json')
@@ -600,10 +598,8 @@ describe('rc-config', () => {
       )
       try {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-        const { stdout } = await spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
-        const pkgData = JSON.parse(stdout)
-        expect(pkgData).not.toHaveProperty('ncu-test-v2')
-        expect(pkgData).toHaveProperty('ncu-test-tag')
+        const result = spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
+        await expect(result).rejects.toThrow('do not support predicate functions')
       } finally {
         await removeDir(tempDir)
       }

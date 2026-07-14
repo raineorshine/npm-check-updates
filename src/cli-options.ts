@@ -264,34 +264,13 @@ const extendedHelpFilterVersionFunction: ExtendedHelp = ({ markdown }) => {
   /** If markdown, surround inline code with backticks. */
   const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
 
-  return `Include only versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+  return `Include only versions matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
 
 ${codeInline('--filterVersion')} runs _before_ new versions are fetched, in contrast to ${codeInline(
     '--filterResults',
   )} which runs _after_.
 
-You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
-
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions. This function is an alias for the ${codeInline('filter')} option function.
-
-${codeBlock(
-  `${chalk.gray(`/**
-  @param name     The name of the dependency.
-  @param semver   A parsed Semver array of the current version.
-    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
-  @returns        True if the package should be included, false if it should be excluded.
-*/`)}
-${chalk.green('filterVersion')}: (name, semver) ${chalk.cyan('=>')} {
-  ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)}) ${chalk.red(
-    '&&',
-  )} parseInt(semver[0]?.major) ${chalk.cyan('>')} ${chalk.cyan(`5`)}) {
-    ${chalk.red('return')} ${chalk.cyan('false')}
-  }
-  ${chalk.red('return')} ${chalk.cyan('true')}
-}`,
-  { markdown },
-)}
-
+To filter with a predicate function, use ${codeInline('filter')} instead. It receives the package name and the parsed current version, so it can match on both name and version.
 `
 }
 
@@ -340,33 +319,13 @@ const extendedHelpRejectVersionFunction: ExtendedHelp = ({ markdown }) => {
 
   return `The inverse of ${codeInline(
     '--filterVersion',
-  )}. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+  )}. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
 
 ${codeInline('--rejectVersion')} runs _before_ new versions are fetched, in contrast to ${codeInline(
     '--filterResults',
   )} which runs _after_.
 
-You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
-
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions. This function is an alias for the reject option function.
-
-${codeBlock(
-  `${chalk.gray(`/**
-  @param name     The name of the dependency.
-  @param semver   A parsed Semver array of the current version.
-    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
-  @returns        True if the package should be excluded, false if it should be included.
-*/`)}
-${chalk.green('rejectVersion')}: (name, semver) ${chalk.cyan('=>')} {
-  ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)}) ${chalk.red(
-    '&&',
-  )} parseInt(semver[0]?.major) ${chalk.cyan('>')} ${chalk.cyan(`5`)}) {
-    ${chalk.red('return')} ${chalk.cyan('true')}
-  }
-  ${chalk.red('return')} ${chalk.cyan('false')}
-}`,
-  { markdown },
-)}
+To reject with a predicate function, use ${codeInline('reject')} instead. It receives the package name and the parsed current version, so it can match on both name and version.
 
 `
 }
@@ -822,8 +781,8 @@ const cliOptions: CLIOption[] = [
   {
     long: 'filterVersion',
     arg: 'p',
-    description: 'Filter on package version using comma-or-space-delimited list, /regex/, or predicate function.',
-    type: 'string | RegExp | readonly (string | RegExp)[] | FilterFunction',
+    description: 'Filter on package version using comma-or-space-delimited list or /regex/.',
+    type: 'string | RegExp | readonly (string | RegExp)[]',
     parse: (value, accum) => [...(accum || []), value],
     help: extendedHelpFilterVersionFunction,
   },
@@ -991,8 +950,8 @@ const cliOptions: CLIOption[] = [
   {
     long: 'rejectVersion',
     arg: 'p',
-    description: 'Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function.',
-    type: 'string | RegExp | readonly (string | RegExp)[] | FilterFunction',
+    description: 'Exclude package.json versions using comma-or-space-delimited list or /regex/.',
+    type: 'string | RegExp | readonly (string | RegExp)[]',
     parse: (value, accum) => [...(accum || []), value],
     help: extendedHelpRejectVersionFunction,
   },

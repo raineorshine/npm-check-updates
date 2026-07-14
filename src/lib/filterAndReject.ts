@@ -13,7 +13,10 @@ import { type VersionSpec } from '../types/VersionSpec.ts'
  * @param [filterPattern]
  * @returns
  */
-function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec?: string) => boolean {
+function composeFilter(
+  filterPattern: FilterPattern,
+  { allowFunction = true }: { allowFunction?: boolean } = {},
+): (name: string, versionSpec?: string) => boolean {
   let predicate: (name: string, versionSpec?: string) => boolean
 
   // no filter
@@ -48,7 +51,7 @@ function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec
   // array
   else if (Array.isArray(filterPattern)) {
     predicate = (dependencyName: string, versionSpec?: string) =>
-      filterPattern.some(subpattern => composeFilter(subpattern)(dependencyName, versionSpec))
+      filterPattern.some(subpattern => composeFilter(subpattern, { allowFunction })(dependencyName, versionSpec))
   }
   // raw RegExp
   else if (filterPattern instanceof RegExp) {
@@ -56,6 +59,11 @@ function composeFilter(filterPattern: FilterPattern): (name: string, versionSpec
   }
   // function
   else if (typeof filterPattern === 'function') {
+    if (!allowFunction) {
+      throw new TypeError(
+        'filterVersion and rejectVersion do not support predicate functions. Use filter or reject instead, which receive the package name and parsed current version.',
+      )
+    }
     predicate = (dependencyName: string, versionSpec?: string) =>
       filterPattern(dependencyName, parseRange(versionSpec ?? dependencyName))
   } else {
@@ -90,8 +98,8 @@ function filterAndReject(
     // filter version
     (dependencyName: VersionSpec, version: string) =>
       and(
-        filterVersion ? composeFilter(filterVersion) : true,
-        rejectVersion ? (...args) => !composeFilter(rejectVersion)(...args) : true,
+        filterVersion ? composeFilter(filterVersion, { allowFunction: false }) : true,
+        rejectVersion ? (...args) => !composeFilter(rejectVersion, { allowFunction: false })(...args) : true,
       )(version),
   )
 }

@@ -264,7 +264,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#filterversion">--filterVersion &lt;p&gt;</a></td>
-    <td>Filter on package version using comma-or-space-delimited list, /regex/, or predicate function.</td>
+    <td>Filter on package version using comma-or-space-delimited list or /regex/.</td>
   </tr>
   <tr>
     <td><a href="#format">--format &lt;value&gt;</a></td>
@@ -348,7 +348,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#rejectversion">--rejectVersion &lt;p&gt;</a></td>
-    <td>Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function.</td>
+    <td>Exclude package.json versions using comma-or-space-delimited list or /regex/.</td>
   </tr>
   <tr>
     <td>--removeRange</td>
@@ -648,28 +648,11 @@ Usage:
 
     ncu --filterVersion [p]
 
-Include only versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+Include only versions matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
 
 `--filterVersion` runs _before_ new versions are fetched, in contrast to `--filterResults` which runs _after_.
 
-You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
-
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions. This function is an alias for the `filter` option function.
-
-```js
-/**
-  @param name     The name of the dependency.
-  @param semver   A parsed Semver array of the current version.
-    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
-  @returns        True if the package should be included, false if it should be excluded.
-*/
-filterVersion: (name, semver) => {
-  if (name.startsWith('@myorg/') && parseInt(semver[0]?.major) > 5) {
-    return false
-  }
-  return true
-}
-```
+To filter with a predicate function, use `filter` instead. It receives the package name and the parsed current version, so it can match on both name and version.
 
 ## format
 
@@ -862,28 +845,11 @@ Usage:
 
     ncu --rejectVersion [p]
 
-The inverse of `--filterVersion`. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.
+The inverse of `--filterVersion`. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
 
 `--rejectVersion` runs _before_ new versions are fetched, in contrast to `--filterResults` which runs _after_.
 
-You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
-
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions. This function is an alias for the reject option function.
-
-```js
-/**
-  @param name     The name of the dependency.
-  @param semver   A parsed Semver array of the current version.
-    (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
-  @returns        True if the package should be excluded, false if it should be included.
-*/
-rejectVersion: (name, semver) => {
-  if (name.startsWith('@myorg/') && parseInt(semver[0]?.major) > 5) {
-    return true
-  }
-  return false
-}
-```
+To reject with a predicate function, use `reject` instead. It receives the package name and the parsed current version, so it can match on both name and version.
 
 ## target
 

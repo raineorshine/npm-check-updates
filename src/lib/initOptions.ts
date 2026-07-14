@@ -329,7 +329,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     ...(packageManager === 'deno' ? { dep: ['imports', 'prod', 'dev', 'optional', 'packageManager'] } : null),
     ...(options.format && options.format.length > 0 ? { format: options.format } : null),
     filter: args || filter,
-    filterVersion,
+    filterVersion: filterVersion as Options['filterVersion'],
     // add shortcut for any keys that start with 'json'
     json,
     loglevel,
@@ -338,7 +338,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     // this is overridden on a per-dependency basis in queryVersions to allow prereleases to be upgraded to newer prereleases
     ...(options.pre != null || autoPre ? { pre: options.pre != null ? !!options.pre : autoPre } : null),
     reject,
-    rejectVersion,
+    rejectVersion: rejectVersion as Options['rejectVersion'],
     target,
     // imply upgrade in interactive mode when json is not specified as the output
     ...(options.interactive && options.upgrade === undefined ? { upgrade: !json } : null),
