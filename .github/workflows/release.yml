@@ -5,14 +5,17 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: write # create the GitHub release
+permissions: {}
 
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    if: github.repository == 'raineorshine/npm-check-updates'
+
+    permissions:
+      contents: write # create the GitHub release
 
     steps:
       - name: Checkout
@@ -21,6 +24,6 @@ jobs:
           persist-credentials: false
 
       - name: Release
-        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
-        with:
-          generate_release_notes: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes

@@ -12,7 +12,7 @@ jobs:
     name: Delete caches for the closed PR
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: github.repository == 'raineorshine/npm-check-updates' && github.event.pull_request.head.repo.full_name == github.repository
 
     permissions:
       actions: write # delete the PR branch caches
