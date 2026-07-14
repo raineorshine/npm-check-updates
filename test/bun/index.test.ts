@@ -18,7 +18,7 @@ const mockNpmVersions = {
 describe('bun', () => {
   // Use a synchronous check to fail the suite immediately if bun is missing
   beforeAll(() => {
-    const result = spawnSync('bun', ['--version'], {
+    const result = spawnSync('bun --version', {
       shell: true,
       encoding: 'utf8',
     })
