@@ -23,6 +23,6 @@ jobs:
           persist-credentials: false
 
       - name: Release
-        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
-        with:
-          generate_release_notes: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes
