@@ -110,6 +110,45 @@ describe('--interactive', () => {
     }
   })
 
+  it('with --format no-group', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(
+      pkgFile,
+      JSON.stringify({
+        dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-return-version': '1.0.0', 'ncu-test-tag': '1.0.0' },
+      }),
+      'utf-8',
+    )
+    try {
+      await spawn(
+        'node',
+        [bin, '--interactive', '--format', 'no-group'],
+        {},
+        {
+          cwd: tempDir,
+          env: {
+            ...process.env,
+            INJECT_PROMPTS: JSON.stringify([['ncu-test-v2', 'ncu-test-return-version'], true]),
+          },
+        },
+      )
+
+      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+      expect(upgradedPkg.dependencies).toStrictEqual({
+        // upgraded
+        'ncu-test-v2': '2.0.0',
+        'ncu-test-return-version': '2.0.0',
+        // no upgraded
+        'ncu-test-tag': '1.0.0',
+      })
+
+      // prompts does not print during injection, so we cannot assert the output in interactive mode
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
   it('with --format group and custom group function', async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
     const pkgFile = path.join(tempDir, 'package.json')

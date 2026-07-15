@@ -89,7 +89,7 @@ export interface RunOptions {
   /** Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. Run "ncu --help --filterVersion" for details. */
   filterVersion?: string | RegExp | readonly (string | RegExp)[] | FilterFunction
 
-  /** Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. Run "ncu --help --format" for details.
+  /** Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. `group` is the only value included by default; use `--format no-group` to disable it. Run "ncu --help --format" for details.
    *
    * @default ["group"]
    */

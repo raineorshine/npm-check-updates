@@ -73,6 +73,26 @@ describe('bin', () => {
     stub.restore()
   })
 
+  it('--format no-group disables the default grouping', async () => {
+    const stub = stubVersions('99.9.9', { spawn: true })
+    const { stdout } = await spawn('node', [bin, '--format', 'no-group', '--stdin'], {
+      stdin: JSON.stringify({ dependencies: { express: '1.0.0' } }),
+    })
+    expect(stripAnsi(stdout)).not.toContain('Major   Potentially breaking API changes')
+    stub.restore()
+  })
+
+  it('--format no-group,dep combines negation with another format value', async () => {
+    const stub = stubVersions('99.9.9', { spawn: true })
+    const { stdout } = await spawn('node', [bin, '--format', 'no-group,dep', '--stdin'], {
+      stdin: JSON.stringify({ dependencies: { express: '1.0.0' } }),
+    })
+    const stripped = stripAnsi(stdout)
+    expect(stripped).not.toContain('Major   Potentially breaking API changes')
+    expect(stripped).toContain('express')
+    stub.restore()
+  })
+
   it('reject out-of-date stdin with errorLevel 2', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
     await expect(
