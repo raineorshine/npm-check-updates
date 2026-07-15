@@ -89,4 +89,93 @@ workspaces:
     const result = await upgradePackageData(pkgData, { foo: '1.0.0' }, { foo: '2.0.0' }, {} as Options)
     expect(JSON.parse(result).dependencies.foo).toBe('2.0.0')
   })
+
+  describe('overrides', () => {
+    it('upgrade overrides', async () => {
+      const pkgData = JSON.stringify({
+        dependencies: { foo: '^1.0.0' },
+        overrides: { foo: '^1.0.0' },
+      })
+      const result = await upgradePackageData(pkgData, { foo: '^1.0.0' }, { foo: '^2.0.0' }, {} as Options)
+      const parsed = JSON.parse(result)
+      expect(parsed.dependencies.foo).toBe('^2.0.0')
+      expect(parsed.overrides.foo).toBe('^2.0.0')
+    })
+
+    // https://github.com/raineorshine/npm-check-updates/issues/1477
+    it('preserve $ override references', async () => {
+      const pkgData = JSON.stringify({
+        dependencies: { foo: '^1.0.0' },
+        overrides: { foo: '$foo' },
+      })
+      const result = await upgradePackageData(pkgData, { foo: '^1.0.0' }, { foo: '^2.0.0' }, {} as Options)
+      const parsed = JSON.parse(result)
+      expect(parsed.dependencies.foo).toBe('^2.0.0')
+      expect(parsed.overrides.foo).toBe('$foo')
+    })
+
+    it('upgrade self override', async () => {
+      const pkgData = JSON.stringify({
+        dependencies: { foo: '^1.0.0' },
+        overrides: { foo: { '.': '^1.0.0', bar: '^1.0.0' } },
+      })
+      const result = await upgradePackageData(pkgData, { foo: '^1.0.0' }, { foo: '^2.0.0' }, {} as Options)
+      const parsed = JSON.parse(result)
+      expect(parsed.dependencies.foo).toBe('^2.0.0')
+      expect(parsed.overrides.foo['.']).toBe('^2.0.0')
+      // sibling override target is a distinct package, so it must be left untouched
+      expect(parsed.overrides.foo.bar).toBe('^1.0.0')
+    })
+
+    it('upgrade child override', async () => {
+      const pkgData = JSON.stringify({
+        dependencies: { foo: '^1.0.0' },
+        overrides: { bar: { foo: '^1.0.0' } },
+      })
+      const result = await upgradePackageData(pkgData, { foo: '^1.0.0' }, { foo: '^2.0.0' }, {} as Options)
+      const parsed = JSON.parse(result)
+      expect(parsed.dependencies.foo).toBe('^2.0.0')
+      expect(parsed.overrides.bar.foo).toBe('^2.0.0')
+    })
+
+    it('upgrade nested override', async () => {
+      const pkgData = JSON.stringify({
+        dependencies: { foo: '^1.0.0' },
+        overrides: { bar: { baz: { foo: '^1.0.0' } } },
+      })
+      const result = await upgradePackageData(pkgData, { foo: '^1.0.0' }, { foo: '^2.0.0' }, {} as Options)
+      const parsed = JSON.parse(result)
+      expect(parsed.dependencies.foo).toBe('^2.0.0')
+      expect(parsed.overrides.bar.baz.foo).toBe('^2.0.0')
+    })
+
+    it('upgrade an override that follows a nested override object', async () => {
+      const pkgData = JSON.stringify({
+        dependencies: { foo: '^1.0.0', tag: '^1.0.0' },
+        overrides: { tag: { '.': '^1.0.0' }, foo: '^1.0.0' },
+      })
+      const result = await upgradePackageData(
+        pkgData,
+        { foo: '^1.0.0', tag: '^1.0.0' },
+        { foo: '^2.0.0', tag: '^2.0.0' },
+        {} as Options,
+      )
+      const parsed = JSON.parse(result)
+      expect(parsed.dependencies.foo).toBe('^2.0.0')
+      expect(parsed.dependencies.tag).toBe('^2.0.0')
+      expect(parsed.overrides.tag['.']).toBe('^2.0.0')
+      expect(parsed.overrides.foo).toBe('^2.0.0')
+    })
+
+    it('upgrade a deeply nested override object', async () => {
+      const pkgData = JSON.stringify({
+        dependencies: { foo: '^1.0.0' },
+        overrides: { bar: { baz: { foo: { '.': '^1.0.0' } } } },
+      })
+      const result = await upgradePackageData(pkgData, { foo: '^1.0.0' }, { foo: '^2.0.0' }, {} as Options)
+      const parsed = JSON.parse(result)
+      expect(parsed.dependencies.foo).toBe('^2.0.0')
+      expect(parsed.overrides.bar.baz.foo['.']).toBe('^2.0.0')
+    })
+  })
 })
