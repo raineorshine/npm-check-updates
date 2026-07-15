@@ -127,6 +127,18 @@ workspaces:
       expect(parsed.overrides.foo.bar).toBe('^1.0.0')
     })
 
+    it('do not rewrite a single-character override key that is not "."', async () => {
+      const pkgData = JSON.stringify({
+        dependencies: { foo: '1.0.0' },
+        overrides: { foo: { y: '1.0.0' } },
+      })
+      const result = await upgradePackageData(pkgData, { foo: '1.0.0' }, { foo: '2.0.0' }, {} as Options)
+      const parsed = JSON.parse(result)
+      expect(parsed.dependencies.foo).toBe('2.0.0')
+      // "y" is a distinct nested override target, not foo itself, so it must be left untouched
+      expect(parsed.overrides.foo.y).toBe('1.0.0')
+    })
+
     it('upgrade child override', async () => {
       const pkgData = JSON.stringify({
         dependencies: { foo: '^1.0.0' },
