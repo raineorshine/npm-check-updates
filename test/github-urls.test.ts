@@ -54,7 +54,7 @@ describe('github urls', () => {
     })
   })
 
-  // does not work in GitHub actions for some reason
+  // needs a GitHub SSH key for `git ls-remote`, which CI lacks, so it resolves to no upgrade
   it.skip('upgrade github git+ssh urls with semver', async () => {
     const upgrades = await ncu({
       packageData: {

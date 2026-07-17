@@ -232,41 +232,28 @@ describe('getAllPackages', () => {
   })
 
   describe('sub-package-names', () => {
-    // TODO
-    it.skip('--workspaces should return all packages not just ones that dir-names-match', async () => {
+    // workspace globs match directories, not package names (like npm)
+    it('--workspaces resolves each workspace directory and falls back to the directory name', async () => {
       const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
         'test-data/workspace-sub-package-names/',
         { workspaces: true },
       )
 
       expect(pkgs).toStrictEqual(['pkg/dirname-matches-name/package.json', 'pkg/dirname-will-become-name/package.json'])
-      expect(workspacePackages).toStrictEqual([
-        'dirname-matches-name',
-        'dirname-will-become-name', // should use the directory name
-        'dirname-does-not-match-name', // TODO: this should be returned too
-      ])
+      expect(workspacePackages).toStrictEqual(['dirname-matches-name', 'dirname-will-become-name'])
     })
 
-    // TODO
-    it.skip('--workspace should return all named packages not just ones that dir-names-match', async () => {
+    it('--workspace selects packages by name', async () => {
       const [pkgs, workspacePackages]: [string[], string[]] = await getAllPackagesForTest(
         'test-data/workspace-sub-package-names/',
         {
           workspaces: false,
-          workspace: [
-            'dirname-matches-name',
-            'dirname-will-become-name',
-            // 'dirname-does-not-match-name',  TODO: this should be returned too
-          ],
+          workspace: ['dirname-matches-name', 'dirname-will-become-name'],
         },
       )
 
       expect(pkgs).toStrictEqual(['pkg/dirname-matches-name/package.json', 'pkg/dirname-will-become-name/package.json'])
-      expect(workspacePackages).toStrictEqual([
-        'dirname-matches-name',
-        'dirname-will-become-name',
-        'dirname-does-not-match-name', // TODO: this should be returned too
-      ])
+      expect(workspacePackages).toStrictEqual(['dirname-matches-name', 'dirname-will-become-name'])
     })
   })
 })

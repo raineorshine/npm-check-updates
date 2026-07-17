@@ -194,8 +194,8 @@ describe('target', () => {
         })
       })
 
-      // TODO: Why doesn't this work?
-      it.skip('alpha', async () => {
+      // a stable release in range wins over prereleases even with --pre: 1.0.0 satisfies ^1.0.0-alpha.1
+      it('prerelease range upgrades to the highest satisfying stable version', async () => {
         const data = await ncu({
           jsonAll: true,
           packageData: {
@@ -209,7 +209,7 @@ describe('target', () => {
 
         expect(data).toStrictEqual({
           dependencies: {
-            'ncu-test-alpha': '^1.0.0-alpha.2',
+            'ncu-test-alpha': '^1.0.0',
           },
         })
       })
