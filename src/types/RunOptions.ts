@@ -86,8 +86,8 @@ export interface RunOptions {
   /** Filters results based on a user provided predicate function after fetching new versions. Run "ncu --help --filterResults" for details. */
   filterResults?: FilterResultsFunction
 
-  /** Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. Run "ncu --help --filterVersion" for details. */
-  filterVersion?: string | RegExp | readonly (string | RegExp)[] | FilterFunction
+  /** Filter on package version using comma-or-space-delimited list or /regex/. Run "ncu --help --filterVersion" for details. */
+  filterVersion?: string | RegExp | readonly (string | RegExp)[]
 
   /** Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. Run "ncu --help --format" for details. */
   format?: readonly string[]
@@ -155,8 +155,8 @@ export interface RunOptions {
   /** Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Run "ncu --help --reject" for details. */
   reject?: string | RegExp | readonly (string | RegExp)[] | FilterFunction
 
-  /** Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function. Run "ncu --help --rejectVersion" for details. */
-  rejectVersion?: string | RegExp | readonly (string | RegExp)[] | FilterFunction
+  /** Exclude package.json versions using comma-or-space-delimited list or /regex/. Run "ncu --help --rejectVersion" for details. */
+  rejectVersion?: string | RegExp | readonly (string | RegExp)[]
 
   /** Remove version ranges from the final package version. */
   removeRange?: boolean

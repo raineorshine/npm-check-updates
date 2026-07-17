@@ -158,12 +158,9 @@
                   }
                 ]
               }
-            },
-            {
-              "$ref": "#/definitions/FilterFunction"
             }
           ],
-          "description": "Filter on package version using comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --filterVersion\" for details."
+          "description": "Filter on package version using comma-or-space-delimited list or /regex/. Run \"ncu --help --filterVersion\" for details."
         },
         "format": {
           "type": "array",
@@ -307,12 +304,9 @@
                   }
                 ]
               }
-            },
-            {
-              "$ref": "#/definitions/FilterFunction"
             }
           ],
-          "description": "Exclude package.json versions using comma-or-space-delimited list, /regex/, or predicate function. Run \"ncu --help --rejectVersion\" for details."
+          "description": "Exclude package.json versions using comma-or-space-delimited list or /regex/. Run \"ncu --help --rejectVersion\" for details."
         },
         "removeRange": {
           "type": "boolean",

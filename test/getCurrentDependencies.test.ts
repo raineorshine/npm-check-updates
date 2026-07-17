@@ -195,17 +195,12 @@ describe('getCurrentDependencies', () => {
       })
     })
 
-    it('filter dependencies by version spec with a filterVersion function', () => {
-      expect(
+    it('throw on a filterVersion function', () => {
+      expect(() =>
         getCurrentDependencies(deps, {
-          filterVersion: (name: string, versionSpec: SemVer[]) => versionSpec[0].major === '1',
+          filterVersion: ((name: string, versionSpec: SemVer[]) => versionSpec[0].major === '1') as never,
         }),
-      ).toStrictEqual({
-        mocha: '1.2',
-        moment: '^1.0.0',
-        chalk: '^1.1.0',
-        bluebird: '^1.0.0',
-      })
+      ).toThrow('do not support predicate functions')
     })
   })
 
@@ -313,13 +308,10 @@ describe('getCurrentDependencies', () => {
       })
     })
 
-    it('reject dependency versions by function', () => {
-      expect(getCurrentDependencies(deps, { rejectVersion: (s: string) => s.startsWith('^3') })).toStrictEqual({
-        mocha: '1.2',
-        moment: '^1.0.0',
-        chalk: '^1.1.0',
-        bluebird: '^1.0.0',
-      })
+    it('throw on a rejectVersion function', () => {
+      expect(() =>
+        getCurrentDependencies(deps, { rejectVersion: ((s: string) => s.startsWith('^3')) as never }),
+      ).toThrow('do not support predicate functions')
     })
   })
 })
