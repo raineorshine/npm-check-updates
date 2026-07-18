@@ -65,11 +65,48 @@ describe('npm', () => {
     }
   })
 
-  // the leading @ must not be encoded to %40, which some registries reject with a 404
-  // https://github.com/raineorshine/npm-check-updates/issues/1330
-  it('does not percent-encode the @ of a scoped package name', async () => {
+  // end-to-end check that the escaped name reaches the registry as npm would send it
+  // https://github.com/raineorshine/npm-check-updates/issues/1456
+  it('requests a scoped package the same way npm does', async () => {
     await expect(npm.getEngines('@angular/core', '0.0.0-nonexistent')).rejects.toThrow(
-      '404 Not Found - GET https://registry.npmjs.org/@angular%2Fcore/0.0.0-nonexistent',
+      '404 Not Found - GET https://registry.npmjs.org/@angular%2fcore/0.0.0-nonexistent',
+    )
+  })
+
+  describe('escapePackageName', () => {
+    // an encoded @ (%40) or uppercase %2F is rejected by some registries and proxies that
+    // let npm's own requests through
+    // https://github.com/raineorshine/npm-check-updates/issues/1330
+    it('leaves an unscoped name untouched', () => {
+      expect(npm.escapePackageName('lodash')).toBe('lodash')
+    })
+
+    it('preserves the leading @ and lowercases the scope slash', () => {
+      expect(npm.escapePackageName('@angular/core')).toBe('@angular%2fcore')
+    })
+
+    it('does not encode dots, dashes, underscores, or tildes', () => {
+      expect(npm.escapePackageName('@foo-bar/baz.qux_1~2')).toBe('@foo-bar%2fbaz.qux_1~2')
+    })
+
+    // only the leading @ marks a scope; any other @ must stay encoded
+    it('encodes an @ that is not the scope prefix', () => {
+      expect(npm.escapePackageName('foo@bar')).toBe('foo%40bar')
+    })
+
+    // a literal %2f in the name must not survive as a decodable slash
+    it('double-encodes a percent already present in the name', () => {
+      expect(npm.escapePackageName('foo%2fbar')).toBe('foo%252fbar')
+    })
+
+    // a crafted name must not be able to steer the request off the registry origin
+    it.each(['//evil.com/x', '\\\\evil.com\\x', '../../etc/passwd', 'foo?x=1', 'foo#bar'])(
+      'keeps %j on the registry origin',
+      name => {
+        expect(new URL(npm.escapePackageName(name), 'https://registry.npmjs.org/').origin).toBe(
+          'https://registry.npmjs.org',
+        )
+      },
     )
   })
 
