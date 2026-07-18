@@ -477,7 +477,7 @@ export function upgradeDependencyDeclaration(
   declaration: string,
   latestVersion: string | null,
   options: UpgradeOptions = {},
-) {
+): string {
   options.wildcard = options.wildcard || DEFAULT_WILDCARD
 
   if (!latestVersion) {
@@ -506,6 +506,16 @@ export function upgradeDependencyDeclaration(
   )
 
   const [declaredSemver] = parsedRange
+
+  // Preserve an explicit upper bound (e.g. the "<10" in "^9.5.0 <10") when the upgraded version
+  // still falls within it, so an upgrade never exceeds a declared ceiling. Only the caret/tilde
+  // lower bound is bumped; the upper bound is kept verbatim.
+  const upperBound = parsedRange.find(range => range.operator === '<' || range.operator === '<=')
+  const lowerBound = parsedRange.find(range => range.operator === '^' || range.operator === '~')
+  if (upperBound && lowerBound && semver.valid(latestVersion) && semver.satisfies(latestVersion, declaration)) {
+    const upgradedLower = upgradeDependencyDeclaration(lowerBound.semver!, latestVersion, options)
+    return `${upgradedLower} ${upperBound.semver}`
+  }
 
   /**
    * Chooses version parts between the declared version and the latest.

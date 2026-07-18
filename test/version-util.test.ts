@@ -55,6 +55,18 @@ describe('version-util', () => {
       expect(versionUtil.upgradeDependencyDeclaration('^0.15.7', '0.16.0-beta.3')).toBe('^0.16.0-beta.3')
     })
 
+    it('preserve an explicit upper bound when the new version stays within it', () => {
+      expect(versionUtil.upgradeDependencyDeclaration('^9.5.0 <10', '9.7.0')).toBe('^9.7.0 <10')
+      expect(versionUtil.upgradeDependencyDeclaration('~5.0.4 <5.1', '5.0.9')).toBe('~5.0.9 <5.1')
+      expect(versionUtil.upgradeDependencyDeclaration('^1.0.0 <1.2', '1.1.1')).toBe('^1.1.1 <1.2')
+      expect(versionUtil.upgradeDependencyDeclaration('^3.1.8 <4', '3.9.9')).toBe('^3.9.9 <4')
+    })
+
+    it('drop the upper bound when the new version exceeds it (e.g. --target latest)', () => {
+      expect(versionUtil.upgradeDependencyDeclaration('^9.5.0 <10', '12.0.0')).toBe('^12')
+      expect(versionUtil.upgradeDependencyDeclaration('~5.0.4 <5.1', '6.0.0')).toBe('^6.0')
+    })
+
     it('replace multiple ranges with ^', () => {
       expect(versionUtil.upgradeDependencyDeclaration('>1.0 >2.0 < 3.0', '3.1.0')).toBe('^3.1')
     })
