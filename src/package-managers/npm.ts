@@ -1268,8 +1268,6 @@ export const semver: GetVersion = async (
 
   const versionResult = findTargetAndFallback({
     ...packageInfo,
-    // TODO: Upgrading within a prerelease does not seem to work.
-    // { includePrerelease: true } does not help.
     filter: versionUtil.filterBySatisfying(currentVersion),
   })
 

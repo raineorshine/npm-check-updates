@@ -2,6 +2,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
@@ -1149,10 +1150,7 @@ catalogs:
 
   // cannot be stubbed because npm config printing occurs in viewMany
   describe('not stubbed', () => {
-    // This test fails on Node v20.3.1 on GitHub Actions (only).
-    // The stdout fails to match the expected value: "npm config (workspace project):\n{ncutest: 'root' }"
-    // Strangely, it matches up to the single quote: "npm config (workspace project):\n{ncutest: "
-    it.skip('merge local npm config with pnpm workspace npm config', async () => {
+    it('merge local npm config with pnpm workspace npm config', async () => {
       const tempDir = await setup(['packages/**'], { pnpm: true })
       try {
         await fs.writeFile(path.join(tempDir, '.npmrc'), 'ncutest=root')
@@ -1165,8 +1163,11 @@ catalogs:
             cwd: path.join(tempDir, 'packages/a'),
           },
         )
-        expect(stdout).toContain(`npm config (workspace project):\n{ ncutest: 'root' }`)
-        expect(stdout).toContain(`Using merged npm config:\n{\n  ncutest: 'a',`)
+        const output = stripAnsi(stdout)
+        expect(output).toContain(`npm config (workspace project):\n{ ncutest: 'root' }`)
+        // local .npmrc (ncutest=a) overrides the pnpm workspace .npmrc (ncutest=root)
+        expect(output).toContain(`merged npm config:`)
+        expect(output).toContain(`ncutest: 'a'`)
       } finally {
         await removeDir(tempDir)
       }

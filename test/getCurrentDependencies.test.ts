@@ -128,7 +128,14 @@ describe('getCurrentDependencies', () => {
       })
     })
 
-    it.skip('should filter org dependencies by regex', () => {
+    it('filter org dependencies by regex', () => {
+      const deps = {
+        dependencies: {
+          '@ngrx/store': '4.0.0',
+          mocha: '1.0.0',
+        },
+      }
+
       expect(getCurrentDependencies(deps, { filter: /store/ })).toStrictEqual({
         '@ngrx/store': '4.0.0',
       })
