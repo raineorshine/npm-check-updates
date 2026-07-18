@@ -357,11 +357,11 @@ export async function printUpgradesTable(
   if (options.format?.includes('group')) {
     const groups = getDependencyGroups(upgraded, current, options)
 
-    for (const { heading, packages } of groups) {
-      print(options, '\n' + heading)
-      print(
-        options,
-        await toDependencyTable({
+    // build the tables in parallel so per-group disk reads (e.g. --format repo) overlap, then print in order
+    const rendered = await Promise.all(
+      groups.map(async ({ heading, packages }) => ({
+        heading,
+        table: await toDependencyTable({
           from: current,
           to: packages,
           skippedByCooldown,
@@ -370,7 +370,12 @@ export async function printUpgradesTable(
           pkgFile,
           time,
         }),
-      )
+      })),
+    )
+
+    for (const { heading, table } of rendered) {
+      print(options, '\n' + heading)
+      print(options, table)
     }
   } else {
     if (options.format?.includes('lines')) {

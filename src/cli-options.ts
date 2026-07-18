@@ -200,6 +200,7 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
   })
 
   return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+\`group\` is the only value included by default. Prefix it with "no-" to remove it instead of replacing the entire list, e.g. \`--format no-group\` to disable the default grouping.
 `
 }
 
@@ -640,6 +641,9 @@ ${codeBlock(
 `
 }
 
+// the default value of --format, shared with its parse function so that "no-" prefixed values can negate it
+const FORMAT_DEFAULT = ['group']
+
 // store CLI options separately from bin file so that they can be used to build type definitions
 const cliOptions: CLIOption[] = [
   {
@@ -790,9 +794,16 @@ const cliOptions: CLIOption[] = [
     long: 'format',
     arg: 'value',
     description:
-      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown.',
-    parse: value => (typeof value === 'string' ? value.split(/,|\s/) : value),
-    default: [],
+      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. `group` is the only value included by default; use `--format no-group` to disable it.',
+    parse: value => {
+      if (typeof value !== 'string') return value
+      const values = value.split(/,|\s/).filter(Boolean)
+      const negated = values.filter(v => v.startsWith('no-')).map(v => v.slice(3))
+      if (negated.length === 0) return values
+      const positive = values.filter(v => !v.startsWith('no-'))
+      return [...new Set([...FORMAT_DEFAULT.filter(v => !negated.includes(v)), ...positive])]
+    },
+    default: FORMAT_DEFAULT,
     type: 'readonly string[]',
     choices: [
       'dep',
