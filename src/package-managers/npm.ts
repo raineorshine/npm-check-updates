@@ -57,6 +57,15 @@ const hasCaretOrTilde = (spec: VersionSpec) => {
 const isExactVersion = (version: Version) =>
   version && (!nodeSemver.validRange(version) || versionUtil.isWildcard(version))
 
+/**
+ * Escapes a package name for a registry URL path segment the way npm does: literal leading @ and a
+ * lowercase %2f. Encoding the whole name first keeps a crafted name on the registry origin.
+ * https://github.com/raineorshine/npm-check-updates/issues/1330
+ * https://github.com/raineorshine/npm-check-updates/issues/1456
+ */
+export const escapePackageName = (name: string): string =>
+  encodeURIComponent(name).replace(/^%40/, '@').replace(/%2F/g, '%2f')
+
 /** Fetches a packument or dist-tag from the npm registry. */
 const fetchPartialPackument = async (
   name: string,
@@ -78,8 +87,7 @@ const fetchPartialPackument = async (
     ...opts.headers,
   }
   const url = new URL(
-    // Encode package name but preserve leading @ to avoid 404 errors
-    encodeURIComponent(name).replace(/^%40/, '@'),
+    escapePackageName(name),
     // Ensure registry URL has trailing slash (URL constructor removes last segment)
     registry.endsWith('/') ? registry : `${registry}/`,
   )
