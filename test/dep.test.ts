@@ -197,6 +197,75 @@ describe('--dep', () => {
     })
   })
 
+  // https://github.com/raineorshine/npm-check-updates/issues/1594
+  describe('duplicate dependencies in different sections', () => {
+    it('upgrade a package in multiple selected sections with different versions', async () => {
+      const stub = stubVersions('99.9.9')
+      const packageData = JSON.stringify({
+        dependencies: {
+          'ncu-test-v2': '^1.0.0',
+        },
+        peerDependencies: {
+          'ncu-test-v2': '^1.1.0',
+        },
+      })
+
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, packageData)
+
+      try {
+        await ncu({ packageFile: pkgFile, jsonUpgraded: false, upgrade: true, dep: 'prod,peer' })
+        const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+
+        expect(pkgNew).toStrictEqual({
+          dependencies: {
+            'ncu-test-v2': '^99.9.9',
+          },
+          peerDependencies: {
+            'ncu-test-v2': '^99.9.9',
+          },
+        })
+      } finally {
+        await removeDir(tempDir)
+        stub.restore()
+      }
+    })
+
+    it('preserve each section declaration style when upgrading', async () => {
+      const stub = stubVersions('99.9.9')
+      const packageData = JSON.stringify({
+        dependencies: {
+          'ncu-test-v2': '~1.0.0',
+        },
+        devDependencies: {
+          'ncu-test-v2': '^1.1.0',
+        },
+      })
+
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, packageData)
+
+      try {
+        await ncu({ packageFile: pkgFile, jsonUpgraded: false, upgrade: true })
+        const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+
+        expect(pkgNew).toStrictEqual({
+          dependencies: {
+            'ncu-test-v2': '~99.9.9',
+          },
+          devDependencies: {
+            'ncu-test-v2': '^99.9.9',
+          },
+        })
+      } finally {
+        await removeDir(tempDir)
+        stub.restore()
+      }
+    })
+  })
+
   describe('packageManager field', () => {
     it('upgrade packageManager field by default', async () => {
       const stub = stubVersions({

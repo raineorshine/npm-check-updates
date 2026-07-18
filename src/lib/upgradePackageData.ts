@@ -5,12 +5,67 @@ import { type CatalogsConfig, parseCatalogsConfig } from '../types/CatalogConfig
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type PackageFile } from '../types/PackageFile.ts'
+import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
-import { escapeRegExp } from './escapeRegExp.ts'
+import { pickBy } from './pick.ts'
 import resolveDepSections from './resolveDepSections.ts'
+import upgradeDependencies from './upgradeDependencies.ts'
 import { upgradeJsonCatalogDependencies } from './upgradeJsonCatalogDependencies.ts'
 import { updateYamlCatalogDependencies } from './upgradeYamlCatalogDependencies.ts'
+import applyJsonValueEdits, { type JsonValueEdit } from './utils/applyJsonValueEdits.ts'
+import collectVersionEdits from './utils/collectVersionEdits.ts'
 import parseJson from './utils/parseJson.ts'
+
+/**
+ * Replaces upgraded dependency versions within the given sections of raw package.json text.
+ * Edits are applied via jsonc-parser so the original formatting is preserved and nested objects
+ * (e.g. arbitrarily deep overrides) are handled by the parser rather than by regex.
+ *
+ * A package that appears in more than one section is collapsed to a single (lowest) spec in
+ * current/upgraded, so when latest versions are available the upgrade is recomputed per section
+ * from that section's own spec. https://github.com/raineorshine/npm-check-updates/issues/1594
+ */
+function replaceDependencySections(
+  pkgData: string,
+  depSections: string[],
+  current: Index<VersionSpec>,
+  upgraded: Index<VersionSpec>,
+  options: Options,
+  latest?: Index<Version>,
+): string {
+  const parsed = parseJson<Record<string, unknown>>(pkgData)
+
+  /** Returns the current/upgraded spec maps to use for a given section. */
+  const specsForSection = (sectionName: string): [Index<VersionSpec>, Index<VersionSpec>] => {
+    const sectionObj = parsed?.[sectionName]
+    // overrides/packageManager and non-plain-object sections keep the collapsed current/upgraded specs
+    const useSectionSpecs =
+      latest &&
+      sectionName !== 'overrides' &&
+      sectionName !== 'packageManager' &&
+      sectionObj &&
+      typeof sectionObj === 'object' &&
+      !Array.isArray(sectionObj) &&
+      Object.values(sectionObj).every(spec => typeof spec === 'string')
+    if (!useSectionSpecs) return [current, upgraded]
+    const sectionCurrent = sectionObj as Index<VersionSpec>
+    // recompute upgrades from this section's own specs, keeping only the chosen deps so filtered
+    // deps are never reintroduced (latest is not filtered by filterResults/minimal)
+    const sectionUpgraded = pickBy(upgradeDependencies(sectionCurrent, latest, options), (spec, dep) => dep in upgraded)
+    return [sectionCurrent, sectionUpgraded]
+  }
+
+  const edits: JsonValueEdit[] = []
+  for (const section of depSections) {
+    const sectionObj = parsed?.[section]
+    if (!sectionObj || typeof sectionObj !== 'object' || Array.isArray(sectionObj)) continue
+
+    const [sectionCurrent, sectionUpgraded] = specsForSection(section)
+    edits.push(...collectVersionEdits(sectionObj, [section], sectionCurrent, sectionUpgraded))
+  }
+
+  return applyJsonValueEdits(pkgData, edits)
+}
 
 /**
  * Upgrade the dependency declarations in the package data.
@@ -20,6 +75,8 @@ import parseJson from './utils/parseJson.ts'
  * @param upgraded New dependencies {package: range}
  * @param options Options object
  * @param pkgFile Optional path to the package file
+ * @param latest Optional fetched latest versions {package: version}, used to upgrade a package that
+ * appears in multiple sections with different specs correctly per section
  * @returns The updated package data, as utf8 text
  * @description Side Effect: prompts
  */
@@ -29,6 +86,7 @@ async function upgradePackageData(
   upgraded: Index<VersionSpec>,
   options: Options,
   pkgFile?: string,
+  latest?: Index<Version>,
 ) {
   // Check if this is a catalog file (pnpm-workspace.yaml or package.json with catalogs)
   if (pkgFile) {
@@ -129,27 +187,14 @@ async function upgradePackageData(
   // https://github.com/raineorshine/npm-check-updates/issues/1332
   const depSections = [...resolveDepSections(options.dep), 'overrides']
 
-  // iterate through each dependency section
-  const sectionRegExp = new RegExp(`"(${depSections.join(`|`)})"s*:[^}]*`, 'g')
-  let newPkgData = pkgData.replace(sectionRegExp, section => {
-    // replace each upgraded dependency in the section
-    return Object.entries(upgraded).reduce((updatedSection, [dep]) => {
-      // const expression = `"${dep}"\\s*:\\s*"(${escapeRegExp(current[dep])})"`
-      const expression = `"${escapeRegExp(dep)}"\\s*:\\s*("|{\\s*"."\\s*:\\s*")(${escapeRegExp(current[dep])})"`
-      const regExp = new RegExp(expression, 'g')
-      return updatedSection.replace(regExp, (match, child) => `"${dep}${child ? `": ${child}` : ': '}${upgraded[dep]}"`)
-    }, section)
-  })
+  let newPkgData = replaceDependencySections(pkgData, depSections, current, upgraded, options, latest)
 
   if (depSections.includes('packageManager')) {
     const pkg = parseJson(pkgData) as PackageFile
     if (pkg.packageManager) {
       const [name] = pkg.packageManager.split('@')
       if (upgraded[name]) {
-        newPkgData = newPkgData.replace(
-          /"packageManager"\s*:\s*".*?@[^"]*"/,
-          `"packageManager": "${name}@${upgraded[name]}"`,
-        )
+        newPkgData = applyJsonValueEdits(newPkgData, [{ path: ['packageManager'], value: `${name}@${upgraded[name]}` }])
       }
     }
   }
