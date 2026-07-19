@@ -279,6 +279,19 @@ describe('cache', () => {
       }
     })
 
+    it('does not write peers to the cache when cooldown is active', async () => {
+      const stub = stubVersions(mockVersions)
+      try {
+        await ncu({ packageData, cache: true, cooldown: 7, peer: true })
+
+        const cacheData: CacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
+        expect(cacheData.peers).deep.eq({})
+      } finally {
+        await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
+        stub.restore()
+      }
+    })
+
     it('does not poison the cache for a later non-cooldown run', async () => {
       const stub = stubVersions(mockVersions)
       try {
