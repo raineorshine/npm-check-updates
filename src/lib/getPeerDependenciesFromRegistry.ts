@@ -58,7 +58,7 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
   if (!packageManager.getPeerDependencies) return {}
 
   const numItems = Object.keys(packageMap).length
-  let bar: ProgressBar
+  let bar: ProgressBar | undefined
   if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && numItems > 0) {
     bar = new ProgressBar('[:bar] :current/:total :percent', { total: numItems, width: 20 })
     bar.render()
@@ -77,12 +77,14 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
     dependencies: Index<string>
   }> => {
     let dependencies: Index<string>
-    const cached = options.cacher?.getPeers(pkg, version)
+    const cached = !options.cooldown ? options.cacher?.getPeers(pkg, version) : undefined
     if (cached) {
       dependencies = cached
     } else {
       dependencies = await packageManager.getPeerDependencies!(pkg, version, { cwd: options.cwd })
-      options.cacher?.setPeers(pkg, version, dependencies)
+      if (!options.cooldown) {
+        options.cacher?.setPeers(pkg, version, dependencies)
+      }
     }
     if (bar) {
       bar.tick()
