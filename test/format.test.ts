@@ -3,8 +3,8 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import { format as timeAgoFormat } from 'timeago.js'
 import { describe, expect, it } from 'vitest'
+import formatTimeAgo from '../src/lib/formatTimeAgo.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -114,7 +114,7 @@ describe('format', () => {
       },
     }
     const { stdout } = await spawn('node', [bin, '--format', 'time', '--stdin'], { stdin: JSON.stringify(packageData) })
-    const expectedString = timeAgoFormat(timestamp, 'en_US')
+    const expectedString = formatTimeAgo(timestamp)
     expect(stdout).toContain(expectedString)
   })
 
