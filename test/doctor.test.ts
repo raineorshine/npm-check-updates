@@ -126,35 +126,32 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
 
     // https://github.com/raineorshine/npm-check-updates/issues/1441
     it('upgrade dependencies with --errorLevel 2', async () => {
-      const cwd = path.join(doctorTests, 'options')
+      const cwd = await copyFixture('options')
       const pkgPath = path.join(cwd, 'package.json')
-      const lockfilePath = path.join(cwd, 'package-lock.json')
-      const nodeModulesPath = path.join(cwd, 'node_modules')
-      const pkgOriginal = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8')
       let stdout = ''
       let stderr = ''
+      let pkgUpgraded
 
       try {
-        await ncu(
-          ['--doctor', '-u', '--errorLevel', '2', '--filter', 'ncu-test-v2'],
-          {
-            stdout: function (data: string) {
-              stdout += data
+        try {
+          await ncu(
+            ['--doctor', '-u', '--errorLevel', '2', '--filter', 'ncu-test-v2'],
+            {
+              stdout: function (data: string) {
+                stdout += data
+              },
+              stderr: function (data: string) {
+                stderr += data
+              },
             },
-            stderr: function (data: string) {
-              stderr += data
-            },
-          },
-          { cwd },
-        )
-      } catch {}
+            { cwd },
+          )
+        } catch {}
 
-      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-
-      // cleanup before assertions in case they fail
-      await fs.writeFile(pkgPath, pkgOriginal)
-      await fs.rm(lockfilePath, { recursive: true, force: true })
-      await fs.rm(nodeModulesPath, { recursive: true, force: true })
+        pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
+      } finally {
+        await removeDir(cwd)
+      }
 
       // errorLevel 2 must not abort the internal upgrade run
       expect(stripAnsi(stderr)).not.toContain('Dependencies not up-to-date')
