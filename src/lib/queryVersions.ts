@@ -56,18 +56,6 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       ? ['distTag', targetString.slice(1)]
       : [targetString, 'latest']
 
-    // Skip the cache if cooldown is active since current cache does not store
-    // timestamp constraints; otherwise, validate based on version and time presence.
-    if (!options.cooldown) {
-      const cached = options.cacher?.get(name, target)
-      const isValidCache = cached?.version && (cached?.time || !options.format?.includes('time'))
-      if (isValidCache) {
-        bar?.tick()
-
-        return cached
-      }
-    }
-
     let versionResult: VersionResult
     const isGitHubDependency = isGitHubUrl(packageMap[dep])
 
@@ -141,11 +129,6 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
     }
 
     bar?.tick()
-
-    // don't cache the cooldown fallback under the plain key (see the skipped read above)
-    if (versionResult.version && !options.cooldown) {
-      options.cacher?.set(name, target, versionResult.version, versionResult.time)
-    }
 
     return versionResult
   }

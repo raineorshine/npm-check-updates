@@ -42,11 +42,8 @@ describe('cache', () => {
       const cacheData: CacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
 
       expect(cacheData.timestamp).toBeLessThanOrEqual(Date.now())
-      expect(cacheData.packages).toStrictEqual({
-        [`ncu-test-v2${CACHE_DELIMITER}latest`]: { version: '2.0.0', time: getTime(10) },
-        [`ncu-test-tag${CACHE_DELIMITER}latest`]: { version: '1.1.0', time: getTime(20) },
-        [`ncu-test-alpha${CACHE_DELIMITER}latest`]: { version: '1.0.0', time: getTime(30) },
-      })
+      expect(Object.keys(cacheData.packuments).sort()).toStrictEqual(['ncu-test-alpha', 'ncu-test-tag', 'ncu-test-v2'])
+      expect(cacheData.packuments['ncu-test-v2']['dist-tags']).toStrictEqual({ latest: '2.0.0' })
       expect(cacheData.peers).toStrictEqual({
         [`ncu-test-alpha${CACHE_DELIMITER}1.0.0`]: {},
         [`ncu-test-tag${CACHE_DELIMITER}1.0.0`]: {},
@@ -60,63 +57,68 @@ describe('cache', () => {
     }
   })
 
-  it('use different cache key for different target', async () => {
-    const latest = {
-      'ncu-test-v2': { version: '2.0.0', time: { '2.0.0': getTime(10) } },
-      'ncu-test-tag': { version: '1.1.0', time: { '1.1.0': getTime(20) } },
-      'ncu-test-alpha': { version: '1.0.0', time: { '1.0.0': getTime(30) } },
-    }
+  it('resolves different targets from a single cached packument', async () => {
+    // latest is tagged 1.1.0 while 2.0.0 is the greatest stable, so both targets resolve from the same packument
+    const packument = createMockVersion({
+      name: 'ncu-test-v2',
+      versions: { '1.0.0': getTime(30), '1.1.0': getTime(20), '2.0.0': getTime(10) },
+      distTags: { latest: '1.1.0' },
+    })
+    await fs.writeFile(
+      resolvedDefaultCacheFile,
+      JSON.stringify({
+        schema: CURRENT_CACHE_SCHEMA,
+        timestamp: Date.now(),
+        packuments: { 'ncu-test-v2': packument },
+        peers: {},
+      }),
+    )
 
-    const greatest = {
-      'ncu-test-v2': { version: '2.0.0', time: { '2.0.0': getTime(10) } },
-      'ncu-test-tag': { version: '1.2.0-dev.0', time: { '1.2.0-dev.0': getTime(5) } },
-      'ncu-test-alpha': { version: '2.0.0-alpha.2', time: { '2.0.0-alpha.2': getTime(15) } },
-    }
-
-    const stub = stubVersions(options => {
-      if (options.target === 'latest') return latest
-      if (options.target === 'greatest') return greatest
-      return null
+    // the stub throws if a fetch is attempted, proving results come from the cached packument
+    const stub = stubVersions(() => {
+      throw new Error('unexpected fetch')
     })
     try {
-      const packageData = {
-        dependencies: {
-          'ncu-test-v2': '^1.0.0',
-          'ncu-test-tag': '1.0.0',
-          'ncu-test-alpha': '1.0.0',
-        },
-      }
+      const packageData = { dependencies: { 'ncu-test-v2': '^1.0.0' } }
 
-      // first run caches latest
-      await ncu({ packageData, cache: true })
+      const latestResult = await ncu({ packageData, cache: true })
+      expect(latestResult).toStrictEqual({ 'ncu-test-v2': '^1.1.0' })
 
-      const cacheData1: CacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
+      const greatestResult = await ncu({ packageData, cache: true, target: 'greatest' })
+      expect(greatestResult).toStrictEqual({ 'ncu-test-v2': '^2.0.0' })
+    } finally {
+      await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
+      stub.restore()
+    }
+  })
 
-      expect(cacheData1.packages).toStrictEqual({
-        [`ncu-test-v2${CACHE_DELIMITER}latest`]: { version: '2.0.0', time: getTime(10) },
-        [`ncu-test-tag${CACHE_DELIMITER}latest`]: { version: '1.1.0', time: getTime(20) },
-        [`ncu-test-alpha${CACHE_DELIMITER}latest`]: { version: '1.0.0', time: getTime(30) },
+  it('refetches when the cached packument lacks fields the target needs', async () => {
+    // a latest run caches only dist-tags; greatest needs the version list, so it must refetch instead of
+    // resolving from the versions-less cache
+    await fs.writeFile(
+      resolvedDefaultCacheFile,
+      JSON.stringify({
+        schema: CURRENT_CACHE_SCHEMA,
+        timestamp: Date.now(),
+        packuments: { 'ncu-test-v2': { name: 'ncu-test-v2', 'dist-tags': { latest: '1.0.0' } } },
+        peers: {},
+      }),
+    )
+
+    const stub = stubVersions({
+      'ncu-test-v2': createMockVersion({
+        name: 'ncu-test-v2',
+        versions: { '1.0.0': getTime(30), '2.0.0': getTime(10) },
+        distTags: { latest: '1.0.0' },
+      }),
+    })
+    try {
+      const result = await ncu({
+        packageData: { dependencies: { 'ncu-test-v2': '^1.0.0' } },
+        cache: true,
+        target: 'greatest',
       })
-      expect(cacheData1.peers).toStrictEqual({})
-
-      // second run has a different target so should not use the cache
-      const result2 = await ncu({ packageData, cache: true, target: 'greatest' })
-      expect(result2).toStrictEqual({
-        'ncu-test-v2': '^2.0.0',
-        'ncu-test-tag': '1.2.0-dev.0',
-        'ncu-test-alpha': '2.0.0-alpha.2',
-      })
-
-      const cacheData2: CacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
-
-      expect(cacheData2.packages).toStrictEqual({
-        [`ncu-test-v2${CACHE_DELIMITER}latest`]: { version: '2.0.0', time: getTime(10) },
-        [`ncu-test-tag${CACHE_DELIMITER}latest`]: { version: '1.1.0', time: getTime(20) },
-        [`ncu-test-alpha${CACHE_DELIMITER}latest`]: { version: '1.0.0', time: getTime(30) },
-        [`ncu-test-v2${CACHE_DELIMITER}greatest`]: { version: '2.0.0', time: getTime(10) },
-        [`ncu-test-tag${CACHE_DELIMITER}greatest`]: { version: '1.2.0-dev.0', time: getTime(5) },
-        [`ncu-test-alpha${CACHE_DELIMITER}greatest`]: { version: '2.0.0-alpha.2', time: getTime(15) },
-      })
+      expect(result).toStrictEqual({ 'ncu-test-v2': '^2.0.0' })
     } finally {
       await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
       stub.restore()
@@ -164,10 +166,10 @@ describe('cache', () => {
       // 2. Run ncu - it should detect mismatch and refresh (calling the stub)
       await ncu({ packageData, cache: true })
 
-      // 3. Verify the cache was overwritten with the new schema (v1)
+      // 3. Verify the cache was overwritten with the new schema
       const newCache = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
       expect(newCache.schema).toBe(CURRENT_CACHE_SCHEMA)
-      expect(newCache.packages[`ncu-test-v2${CACHE_DELIMITER}latest`].version).toBe('2.0.0')
+      expect(newCache.packuments['ncu-test-v2']['dist-tags'].latest).toBe('2.0.0')
     } finally {
       await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
       stub.restore()
@@ -193,7 +195,7 @@ describe('cache', () => {
 
       // 3. Verify it refreshed
       const cacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
-      expect(cacheData.packages[`ncu-test-v2${CACHE_DELIMITER}latest`].version).toBe('2.0.0')
+      expect(cacheData.packuments['ncu-test-v2']['dist-tags'].latest).toBe('2.0.0')
     } finally {
       await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
       stub.restore()
@@ -217,13 +219,14 @@ describe('cache', () => {
       expect(await cacher({ cache: false, cacheFile })).toBeUndefined()
     })
 
-    it('stores and retrieves versions and peers, persisting across instances', async () => {
+    it('stores and retrieves packuments and peers, persisting across instances', async () => {
       const cache = await cacher({ cache: true, cacheFile })
       expect(cache).toBeDefined()
 
-      cache!.set('foo', 'latest', '1.2.3', '2020-01-01')
-      expect(cache!.get('foo', 'latest')).toStrictEqual({ version: '1.2.3', time: '2020-01-01' })
-      expect(cache!.get('missing', 'latest')).toBeUndefined()
+      const packument = createMockVersion({ name: 'foo', versions: { '1.2.3': '' }, distTags: { latest: '1.2.3' } })
+      cache!.setPackument('foo', packument)
+      expect(cache!.getPackument('foo')).toStrictEqual(packument)
+      expect(cache!.getPackument('missing')).toBeUndefined()
 
       cache!.setPeers('foo', '1.2.3', { bar: '^1.0.0' })
       expect(cache!.getPeers('foo', '1.2.3')).toStrictEqual({ bar: '^1.0.0' })
@@ -233,14 +236,14 @@ describe('cache', () => {
 
       // a fresh cacher instance reads the persisted data
       const reloaded = await cacher({ cache: true, cacheFile })
-      expect(reloaded!.get('foo', 'latest')).toStrictEqual({ version: '1.2.3', time: '2020-01-01' })
+      expect(reloaded!.getPackument('foo')).toStrictEqual(packument)
     })
 
     it('logs the number of cache hits', async () => {
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
       const cache = await cacher({ cache: true, cacheFile })
-      cache!.set('foo', 'latest', '1.2.3')
-      cache!.get('foo', 'latest')
+      cache!.setPackument('foo', createMockVersion({ name: 'foo', versions: { '1.2.3': '' } }))
+      cache!.getPackument('foo')
       cache!.log()
       expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('1 cached package version'))
       logSpy.mockRestore()
@@ -266,13 +269,15 @@ describe('cache', () => {
     }
     const packageData = { dependencies: { 'ncu-test-v2': '^1.0.0' } }
 
-    it('does not write to the cache when cooldown is active', async () => {
+    it('caches the full packument when cooldown is active', async () => {
       const stub = stubVersions(mockVersions)
       try {
         await ncu({ packageData, cache: true, cooldown: 7 })
 
+        // the raw packument is cached (with every version + time), not the resolved fallback
         const cacheData: CacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
-        expect(cacheData.packages).deep.eq({})
+        expect(cacheData.packuments['ncu-test-v2']['dist-tags']).toStrictEqual({ latest: '2.0.0' })
+        expect(Object.keys(cacheData.packuments['ncu-test-v2'].time!).sort()).toStrictEqual(['1.0.0', '1.5.0', '2.0.0'])
       } finally {
         await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
         stub.restore()
@@ -284,7 +289,7 @@ describe('cache', () => {
       try {
         await ncu({ packageData, cache: true, cooldown: 7 })
 
-        // a subsequent non-cooldown run must report the real latest, not the cached fallback
+        // a subsequent non-cooldown run resolves the real latest from the cached packument, not the fallback
         const result = await ncu({ packageData, cache: true })
         expect(result).deep.eq({ 'ncu-test-v2': '^2.0.0' })
       } finally {

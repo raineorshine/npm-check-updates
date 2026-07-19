@@ -514,10 +514,39 @@ export function parseJson<R>(result: string, data: { command?: string; packageNa
 /** Returns true if an object is a Packument. */
 const isPackument = (o: any): o is Partial<Packument> => !!(o && (o.name || o.engines || o.version || o.versions))
 
+/**
+ * Keeps only the fields the resolvers read. A full packument carries every version's manifest, which bloats
+ * the cache. The version string is dropped since it duplicates the key (rehydrated in cacher.getPackument).
+ * ownerChanged and peers fetch separately, so they are unaffected.
+ */
+const slimPackument = (packument: Partial<Packument>): Partial<Packument> => ({
+  ...(packument.name ? { name: packument.name } : null),
+  ...(packument['dist-tags'] ? { 'dist-tags': packument['dist-tags'] } : null),
+  ...(packument.time ? { time: packument.time } : null),
+  ...(packument.versions
+    ? {
+        versions: keyValueBy(packument.versions, (version, data) => ({
+          [version]: {
+            ...(data.deprecated !== undefined ? { deprecated: data.deprecated } : null),
+            ...(data.engines ? { engines: data.engines } : null),
+          },
+        })) as Packument['versions'],
+      }
+    : null),
+})
+
 /** Creates a function with the same signature as fetchUpgradedPackument that always returns the given versions. */
 npmApi.mockFetchUpgradedPackument =
   (mockReturnedVersions: MockedVersions): typeof fetchUpgradedPackument =>
   (name: string, fields: (keyof Packument)[], currentVersion: Version, options: Options) => {
+    // mirror the real fetch's cache read (and its field validation) so stubbed tests exercise the same path
+    const needsTime = fields.includes('time') || !!options.format?.includes('time')
+    const needsVersions = fields.includes('versions')
+    const cached = options.cacher?.getPackument(name)
+    if (cached && (!needsVersions || cached.versions) && (!needsTime || cached.time)) {
+      return Promise.resolve(cached)
+    }
+
     // a partial Packument
     const partialPackument =
       typeof mockReturnedVersions === 'function'
@@ -555,14 +584,20 @@ npmApi.mockFetchUpgradedPackument =
 
     const { versions: _, ...packumentWithoutVersions } = packument
 
-    return Promise.resolve({
+    const result = {
       ...packument,
       versions: {
         ...((isPackument(partialPackument) && partialPackument.versions) || {
           [version]: packumentWithoutVersions,
         }),
       },
-    })
+    }
+
+    if (options.cacher) {
+      options.cacher.setPackument(name, slimPackument(result))
+    }
+
+    return Promise.resolve(result)
   }
 
 /** Merges the workspace, global, user, local, project, and cwd npm configs (in that order). */
@@ -707,7 +742,16 @@ async function fetchUpgradedPackument(
   // fields may already include time
   const fieldsExtended: (keyof Packument)[] =
     options.format?.includes('time') && !fields.includes('time') ? [...fields, 'time'] : fields
+  // time is only needed for cooldown and --format time, and only then is the full packument fetched
   const fullMetadata = fieldsExtended.includes('time')
+  const needsVersions = fields.includes('versions')
+
+  // reuse the cached packument only if it has the fields this target needs: the version list for
+  // greatest/minor/patch/newest, and the time map for cooldown and --format time
+  const cached = options.cacher?.getPackument(packageName)
+  if (cached && (!needsVersions || cached.versions) && (!fullMetadata || cached.time)) {
+    return cached
+  }
 
   const npmConfigMerged = mergeNpmConfigs(
     {
@@ -740,6 +784,10 @@ async function fetchUpgradedPackument(
     }
 
     throw err
+  }
+
+  if (result && options.cacher) {
+    options.cacher.setPackument(packageName, slimPackument(result))
   }
 
   return result

@@ -4,7 +4,9 @@ import path from 'node:path'
 import { CURRENT_CACHE_SCHEMA, type CacheData, type Cacher } from '../types/Cacher.ts'
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
+import { type Packument } from '../types/Packument.ts'
 import { type Version } from '../types/Version.ts'
+import { keyValueBy } from './keyValueBy.ts'
 import { print } from './logging.ts'
 
 export const CACHE_DELIMITER = '___'
@@ -65,7 +67,7 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
   let cacheData: CacheData = {
     schema: CURRENT_CACHE_SCHEMA,
     timestamp: Date.now(),
-    packages: {},
+    packuments: {},
     peers: {},
   }
 
@@ -75,8 +77,8 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
 
     // Validate schema before assigning
     if (!checkCacheExpiration(parsed, options.cacheExpiration)) {
-      const { schema, timestamp, packages = {}, peers = {} } = parsed
-      cacheData = { schema, timestamp, packages, peers }
+      const { schema, timestamp, packuments = {}, peers = {} } = parsed
+      cacheData = { schema, timestamp, packuments, peers }
     } else {
       // reset cache
       await fs.rm(cacheFile, { force: true })
@@ -86,17 +88,23 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
   }
 
   return {
-    get: (name: string, target: string) => {
-      const key = `${name}${CACHE_DELIMITER}${target}`
-      const cached = cacheData.packages[key]
-      if (cached) {
-        cacheHits.add(name)
+    getPackument: (name: string) => {
+      const cached = cacheData.packuments[name]
+      if (!cached) return
+
+      cacheHits.add(name)
+      if (!cached.versions) return cached
+
+      // rehydrate the version field that slimPackument dropped (it duplicates the key)
+      return {
+        ...cached,
+        versions: keyValueBy(Object.keys(cached.versions), version => ({
+          [version]: { ...cached.versions![version], version },
+        })) as Packument['versions'],
       }
-      return cached
     },
-    set: (name: string, target: string, version: string, time?: string) => {
-      const key = `${name}${CACHE_DELIMITER}${target}`
-      cacheData.packages[key] = { version, time }
+    setPackument: (name: string, packument: Partial<Packument>) => {
+      cacheData.packuments[name] = packument
     },
     getPeers: (name: string, version: Version) => {
       if (!cacheData.peers) return
