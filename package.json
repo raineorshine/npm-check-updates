@@ -128,7 +128,7 @@
     "spawn-please": "^3.0.0",
     "timeago.js": "^4.0.2",
     "ts-json-schema-generator": "^2.9.0",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "unplugin-dts": "^1.0.3",
     "untildify": "^6.0.0",
     "update-notifier": "^7.3.1",
