@@ -10,6 +10,12 @@ updates:
       github-actions:
         patterns:
           - '*'
+  - package-ecosystem: 'docker'
+    directory: '/'
+    cooldown:
+      default-days: 7
+    schedule:
+      interval: 'weekly'
   - package-ecosystem: 'npm'
     directory: '/'
     cooldown:
