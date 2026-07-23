@@ -1,0 +1,44 @@
+name: zizmor
+
+on:
+  push:
+    branches:
+      - '**'
+      - '!dependabot/**'
+    paths:
+      - '.github/**'
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - '.github/**'
+  schedule:
+    - cron: '30 5 * * 1'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  zizmor:
+    name: Run zizmor
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name != 'pull_request' || github.event.pull_request.changed_files > 0
+
+    permissions:
+      security-events: write # upload SARIF to code scanning
+      contents: read
+      actions: read
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@6599ee8b7a49aef6a770f63d261d214911a7ce02 # v0.6.0

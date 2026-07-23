@@ -45,7 +45,7 @@ jobs:
       # --force is needed to overwrite the runner's preinstalled global yarn.
       - name: Install corepack
         shell: bash
-        run: |
+        run: | # zizmor: ignore[adhoc-packages] corepack is a build tool, not a project dependency
           if [[ "$(node -p 'process.versions.node.split(".")[0]')" -ge 25 ]]; then
             npm install -g --force corepack
           fi
