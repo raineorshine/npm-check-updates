@@ -1093,3 +1093,7 @@ Contributions are happily accepted. I respond to all PR's and can offer guidance
 ## Problems?
 
 [File an issue](https://github.com/raineorshine/npm-check-updates/issues). Please [search existing issues](https://github.com/raineorshine/npm-check-updates/issues?utf8=%E2%9C%93&q=is%3Aissue) first.
+
+## License
+
+[Apache-2.0](LICENSE)
