@@ -4,7 +4,6 @@
 import fs from 'node:fs/promises'
 import Table from 'cli-table3'
 import semver from 'semver'
-import { format as timeAgoFormat } from 'timeago.js'
 import { type CooldownFunction } from '../types/CooldownFunction.ts'
 import { type IgnoredUpgradeDueToEnginesNode } from '../types/IgnoredUpgradeDueToEnginesNode.ts'
 import { type IgnoredUpgradeDueToPeerDeps } from '../types/IgnoredUpgradeDueToPeerDeps.ts'
@@ -14,6 +13,7 @@ import { type CooldownInfo, type VersionResult } from '../types/VersionResult.ts
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import chalk from './chalk.ts'
 import filterObject from './filterObject.ts'
+import formatTimeAgo from './formatTimeAgo.ts'
 import getPackageJson from './getPackageJson.ts'
 import getRepoUrl from './getRepoUrl.ts'
 import isFetchable from './isFetchable.ts'
@@ -227,11 +227,7 @@ export async function toDependencyTable({
           // show '[missing time]' in publishTime column or cooldown column
           const missingTime = (showTime || showCoolDown) && !time?.[dep] ? '[missing time]' : ''
           const timestamp = showTime && time?.[dep] ? time[dep] : null
-          const publishTime = timestamp
-            ? timeAgoFormat(timestamp, 'en_US')
-            : showTime || !showCooldownCol
-              ? missingTime
-              : ''
+          const publishTime = timestamp ? formatTimeAgo(timestamp) : showTime || !showCooldownCol ? missingTime : ''
 
           const cooldownVersion = skippedByCooldown?.[dep]?.version
           let cooldown = ''
