@@ -73,16 +73,10 @@ export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?:
   }
 
   if (option.help) {
-    const helpText =
-      typeof option.help === 'function'
-        ? markdown
-          ? option.help({ markdown })
-          : uncode(option.help({ markdown }))
-        : option.help
-    output += `\n${helpText.trim()}\n\n`
+    const helpText = typeof option.help === 'function' ? option.help({ markdown }) : option.help
+    output += `\n${(markdown ? helpText : uncode(helpText)).trim()}\n\n`
   } else if (option.description) {
-    const description = markdown ? option.description : uncode(option.description)
-    output += `\n${uncode(description)}\n`
+    output += `\n${markdown ? option.description : uncode(option.description)}\n`
   }
 
   return output.trim()
