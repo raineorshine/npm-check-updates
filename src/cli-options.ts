@@ -216,6 +216,7 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
   })
 
   return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+
 \`group\` is the only value included by default. Prefix it with "no-" to remove it instead of replacing the entire list, e.g. \`--format no-group\` to disable the default grouping.
 `
 }

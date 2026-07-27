@@ -693,6 +693,7 @@ Modify the output formatting or show additional information. Specify one or more
   <tr><td>time</td><td>Shows the publish time of each upgrade.</td></tr>
   <tr><td>cooldown</td><td>Shows a list of packages that were skipped due to the --cooldown threshold.</td></tr>
 </table>
+
 `group` is the only value included by default. Prefix it with "no-" to remove it instead of replacing the entire list, e.g. `--format no-group` to disable the default grouping.
 
 ## groupFunction
