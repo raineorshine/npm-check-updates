@@ -408,6 +408,15 @@ export const getPeerDependencies = async (
 }
 
 /**
+ * Fetches all dist-tags published for a package.
+ *
+ * @param packageName
+ * @returns Promised {tag: version} collection
+ */
+export const getDistTags = async (packageName: string, options: Options = {}): Promise<Index<Version>> =>
+  npm.getDistTags(packageName, options, await npmConfigFromYarn(options))
+
+/**
  * Fetches the engines list from the registry for a specific package version.
  *
  * @param packageName

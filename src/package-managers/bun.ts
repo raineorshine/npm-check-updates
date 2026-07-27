@@ -182,6 +182,6 @@ export const getEngines = async (
   return manifest?.engines || {}
 }
 
-export { distTag, greatest, latest, minor, newest, patch, semver } from './npm.ts'
+export { distTag, getDistTags, greatest, latest, minor, newest, patch, semver } from './npm.ts'
 
 export default spawnBun

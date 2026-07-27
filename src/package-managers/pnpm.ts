@@ -237,7 +237,7 @@ async function spawnPnpm(
   return stdout
 }
 
-export { defaultPrefix, getPeerDependencies, getEngines, packageAuthorChanged } from './npm.ts'
+export { defaultPrefix, getDistTags, getPeerDependencies, getEngines, packageAuthorChanged } from './npm.ts'
 
 export default spawnPnpm
 

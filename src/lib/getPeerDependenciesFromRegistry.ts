@@ -4,6 +4,7 @@ import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
 import getPackageManager from './getPackageManager.ts'
+import resolveDistTagsInPeerDependencies from './resolveDistTagsInPeerDependencies.ts'
 
 type CircularData =
   | {
@@ -104,7 +105,8 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
   await options.cacher?.save()
   options.cacher?.log(true)
 
-  return peerDepsMap
+  // outside the cache so dist-tags are re-resolved every run
+  return resolveDistTagsInPeerDependencies(peerDepsMap, options)
 }
 
 export default getPeerDependenciesFromRegistry
