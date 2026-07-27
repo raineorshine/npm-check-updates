@@ -161,6 +161,12 @@ export function isWildPart(versionPartValue: Maybe<string>) {
 /** Strips semver range prefixes (^, ~, >=, <=, >, <) from a version string. */
 export const stripRange = (version: string): string => version.replace(/^[~^<>=]+/, '')
 
+/** Matches build metadata longer than 20 characters, capturing the part that fits. Anchored to the end of the string so that a multi-part range is left alone. */
+const LONG_BUILD_METADATA_REGEX = /(\+\S{20})\S+$/
+
+/** Truncates build metadata that is too long to display, e.g. the integrity hash pnpm writes into packageManager: 10.14.0+sha512.ad27a79641b49c... */
+export const shortenBuildMetadata = (version: string): string => version.replace(LONG_BUILD_METADATA_REGEX, '$1...')
+
 /**
  * Determines the part of a version string that has changed when comparing two versions. Assumes that the two version strings are in the same format. Returns null if no parts have changed.
  *

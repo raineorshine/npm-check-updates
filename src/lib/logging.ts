@@ -26,6 +26,7 @@ import {
   isGitHubUrl,
   isNpmAlias,
   parseNpmAlias,
+  shortenBuildMetadata,
   stripRange,
 } from './version-util.ts'
 
@@ -213,7 +214,7 @@ export async function toDependencyTable({
                 : ''
               : '*unknown*'
             : ''
-          const toColorized = colorizeDiff(getVersion(from), to)
+          const toColorized = colorizeDiff(getVersion(from), shortenBuildMetadata(to))
           const homepageUrl = format?.includes('homepage') ? packageJson?.homepage || '' : ''
           const repoUrl = format?.includes('repo')
             ? (await getRepoUrl(dep, packageJson ?? undefined, { pkgFile })) || ''
@@ -247,7 +248,7 @@ export async function toDependencyTable({
           return [
             dep,
             ...(format?.includes('dep') ? [depType ? chalk.gray(depType) : ''] : []),
-            from,
+            shortenBuildMetadata(from),
             '→',
             toColorized,
             ...(showCooldownCol ? [cooldown] : []),
