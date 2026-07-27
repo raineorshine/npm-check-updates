@@ -20,8 +20,12 @@ const padLeft = (s: string, n: number) =>
     .join('\n')
 
 /** Formats a code block for CLI or markdown. */
-const codeBlock = (code: string, { markdown }: { markdown?: boolean } = {}) =>
-  `${markdown ? '```js\n' : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
+const codeBlock = (code: string, { markdown, lang = 'js' }: { markdown?: boolean; lang?: string } = {}) =>
+  `${markdown ? '```' + lang + '\n' : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
+
+/** Links to a README section, as a relative anchor in markdown or a full URL on the CLI. */
+const readmeLink = (text: string, anchor: string, { markdown }: { markdown?: boolean } = {}) =>
+  markdown ? `[${text}](#${anchor})` : `https://github.com/raineorshine/npm-check-updates#${anchor}`
 
 /** Parses a number from a string or number input. Throws if the value is not a number. */
 const parseNumberOption =
@@ -42,34 +46,37 @@ const parseNumberOption =
 /** Renders the extended help for an option with usage information. */
 export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?: boolean } = {}) => {
   let output = ''
+  const usageLines: string[] = []
+
   if (option.cli !== false) {
     // add -u to doctor option
-    output = `Usage:
+    usageLines.push(
+      `ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}${option.long === 'doctor' ? ' -u' : ''}`,
+    )
+  }
 
-    ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}${option.long === 'doctor' ? ' -u' : ''}\n`
-  }
   if (option.type === 'boolean') {
-    output += `    ncu --no-${option.long}\n`
+    usageLines.push(`ncu --no-${option.long}`)
   }
+
   if (option.short) {
     // add -u to doctor option
-    output += `    ncu -${option.short}${option.arg ? ` [${option.arg}]` : ''}${option.long === 'doctor' ? 'u' : ''}\n`
+    usageLines.push(`ncu -${option.short}${option.arg ? ` [${option.arg}]` : ''}${option.long === 'doctor' ? 'u' : ''}`)
+  }
+
+  if (usageLines.length > 0) {
+    output = `Usage:\n\n${codeBlock(usageLines.join('\n'), { markdown, lang: 'sh' })}\n`
   }
 
   if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
     output += `\nDefault: ${option.default}\n`
   }
+
   if (option.help) {
-    const helpText =
-      typeof option.help === 'function'
-        ? markdown
-          ? option.help({ markdown })
-          : uncode(option.help({ markdown }))
-        : option.help
-    output += `\n${helpText.trim()}\n\n`
+    const helpText = typeof option.help === 'function' ? option.help({ markdown }) : option.help
+    output += `\n${(markdown ? helpText : uncode(helpText)).trim()}\n\n`
   } else if (option.description) {
-    const description = markdown ? option.description : uncode(option.description)
-    output += `\n${uncode(description)}\n`
+    output += `\n${markdown ? option.description : uncode(option.description)}\n`
   }
 
   return output.trim()
@@ -104,50 +111,44 @@ ${table({
 
 Example:
 
-    $ ncu --doctor -u
-    Running tests before upgrading
-    npm install
-    npm run test
-    Upgrading all dependencies and re-running tests
-    ncu -u
-    npm install
-    npm run test
-    Tests failed
-    Identifying broken dependencies
-    npm install
-    npm install --no-save react@16.0.0
-    npm run test
-      ✓ react 15.0.0 → 16.0.0
-    npm install --no-save react-redux@7.0.0
-    npm run test
-      ✗ react-redux 6.0.0 → 7.0.0
+${codeBlock(
+  `$ ncu --doctor -u
+Running tests before upgrading
+npm install
+npm run test
+Upgrading all dependencies and re-running tests
+ncu -u
+npm install
+npm run test
+Tests failed
+Identifying broken dependencies
+npm install
+npm install --no-save react@16.0.0
+npm run test
+  ✓ react 15.0.0 → 16.0.0
+npm install --no-save react-redux@7.0.0
+npm run test
+  ✗ react-redux 6.0.0 → 7.0.0
 
-    /projects/myproject/test.js:13
-      throw new Error('Test failed!')
-      ^
+/projects/myproject/test.js:13
+  throw new Error('Test failed!')
+  ^
 
-    npm install --no-save react-dnd@11.1.3
-    npm run test
-      ✓ react-dnd 10.0.0 → 11.1.3
-    Saving partially upgraded package.json
+npm install --no-save react-dnd@11.1.3
+npm run test
+  ✓ react-dnd 10.0.0 → 11.1.3
+Saving partially upgraded package.json`,
+  { markdown, lang: 'console' },
+)}
 `
 
 /** Extended help for the filterResults option. */
 const extendedHelpFilterResults: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
   return `Filters results based on a user provided predicate function after fetching new versions.
 
-${codeInline('filterResults')} runs _after_ new versions are fetched, in contrast to ${codeInline(
-    'filter',
-  )}, ${codeInline('reject')}, ${codeInline('filterVersion')}, and ${codeInline(
-    'rejectVersion',
-  )}, which run _before_. This allows you to exclude upgrades with ${codeInline(
-    'filterResults',
-  )} based on how the version has changed (e.g. a major version change).
+\`filterResults\` runs _after_ new versions are fetched, in contrast to \`filter\`, \`reject\`, \`filterVersion\`, and \`rejectVersion\`, which run _before_. This allows you to exclude upgrades with \`filterResults\` based on how the version has changed (e.g. a major version change).
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> ⚠️ The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', { markdown })}.
 
 ${codeBlock(
   `${chalk.gray(`/** Exclude major version updates. Note this could also be achieved with --target semver.
@@ -200,6 +201,7 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
   })
 
   return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+
 \`group\` is the only value included by default. Prefix it with "no-" to remove it instead of replacing the entire list, e.g. \`--format no-group\` to disable the default grouping.
 `
 }
@@ -226,20 +228,13 @@ const extendedHelpInstall: ExtendedHelp = ({ markdown }) => {
 
 /** Extended help for the --filter option. */
 const extendedHelpFilterFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+  return `Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Only included packages will be checked with \`--peer\`.
 
-  return `Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Only included packages will be checked with ${codeInline(
-    '--peer',
-  )}.
-
-${codeInline('--filter')} runs _before_ new versions are fetched, in contrast to ${codeInline(
-    '--filterResults',
-  )} which runs _after_.
+\`--filter\` runs _before_ new versions are fetched, in contrast to \`--filterResults\` which runs _after_.
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> ⚠️ The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', { markdown })}.
 
 ${codeBlock(
   `${chalk.gray(`/**
@@ -261,38 +256,24 @@ ${chalk.green('filter')}: (name, semver) ${chalk.cyan('=>')} {
 }
 
 /** Extended help for the --filterVersion option. */
-const extendedHelpFilterVersionFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
+const extendedHelpFilterVersionFunction: ExtendedHelp = () => {
   return `Include only versions matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
 
-${codeInline('--filterVersion')} runs _before_ new versions are fetched, in contrast to ${codeInline(
-    '--filterResults',
-  )} which runs _after_.
+\`--filterVersion\` runs _before_ new versions are fetched, in contrast to \`--filterResults\` which runs _after_.
 
-To filter with a predicate function, use ${codeInline('filter')} instead. It receives the package name and the parsed current version, so it can match on both name and version.
+To filter with a predicate function, use \`filter\` instead. It receives the package name and the parsed current version, so it can match on both name and version.
 `
 }
 
 /** Extended help for the --reject option. */
 const extendedHelpRejectFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+  return `The inverse of \`--filter\`. Exclude package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. This will also exclude them from the \`--peer\` check.
 
-  return `The inverse of ${codeInline(
-    '--filter',
-  )}. Exclude package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. This will also exclude them from the ${codeInline(
-    '--peer',
-  )} check.
-
-${codeInline('--reject')} runs _before_ new versions are fetched, in contrast to ${codeInline(
-    '--filterResults',
-  )} which runs _after_.
+\`--reject\` runs _before_ new versions are fetched, in contrast to \`--filterResults\` which runs _after_.
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> ⚠️ The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', { markdown })}.
 
 ${codeBlock(
   `${chalk.gray(`/**
@@ -314,19 +295,12 @@ ${chalk.green('reject')}: (name, semver) ${chalk.cyan('=>')} {
 }
 
 /** Extended help for the --rejectVersion option. */
-const extendedHelpRejectVersionFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+const extendedHelpRejectVersionFunction: ExtendedHelp = () => {
+  return `The inverse of \`--filterVersion\`. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
 
-  return `The inverse of ${codeInline(
-    '--filterVersion',
-  )}. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
+\`--rejectVersion\` runs _before_ new versions are fetched, in contrast to \`--filterResults\` which runs _after_.
 
-${codeInline('--rejectVersion')} runs _before_ new versions are fetched, in contrast to ${codeInline(
-    '--filterResults',
-  )} which runs _after_.
-
-To reject with a predicate function, use ${codeInline('reject')} instead. It receives the package name and the parsed current version, so it can match on both name and version.
+To reject with a predicate function, use \`reject\` instead. It receives the package name and the parsed current version, so it can match on both name and version.
 
 `
 }
@@ -335,7 +309,7 @@ To reject with a predicate function, use ${codeInline('reject')} instead. It rec
 const extendedHelpGroupFunction: ExtendedHelp = ({ markdown }) => {
   return `Customize how packages are divided into groups when using \`--format group\`.
 
-Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', { markdown })}.
 
 ${codeBlock(
   `${chalk.gray(`/**
@@ -395,11 +369,11 @@ ${padLeft(tableString, markdown ? 0 : 4)}
 
 e.g.
 
-${codeBlock(`ncu --target semver`)}
+${codeBlock(`ncu --target semver`, { markdown, lang: 'sh' })}
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> ⚠️ The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', { markdown })}.
 
 ${codeBlock(
   `${chalk.gray(`/** Upgrade major version zero to the next minor version, and everything else to latest.
@@ -439,10 +413,7 @@ const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
 
 /** Extended help for the --registryType option. */
 const extendedHelpRegistryType: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
-  const header = `Specify whether ${codeInline('--registry')} refers to a full npm registry or a simple JSON file.`
+  const header = 'Specify whether `--registry` refers to a full npm registry or a simple JSON file.'
   const tableString = table({
     colAligns: ['right', 'left'],
     markdown,
@@ -450,42 +421,44 @@ const extendedHelpRegistryType: ExtendedHelp = ({ markdown }) => {
       ['npm', `Default npm registry`],
       [
         'json',
-        `Checks versions from a file or url to a simple JSON registry. Must include the ${chalk.cyan(
-          '`--registry`',
-        )} option.
-
-Example:
-
-    ${chalk.gray('// local file')}
-    ${chalk.cyan('$')} ncu --registryType json --registry ./registry.json
-
-    ${chalk.gray('// url')}
-    ${chalk.cyan('$')} ncu --registryType json --registry https://api.mydomain/registry.json
-
-    ${chalk.gray('// you can omit --registryType when the registry ends in .json')}
-    ${chalk.cyan('$')} ncu --registry ./registry.json
-    ${chalk.cyan('$')} ncu --registry https://api.mydomain/registry.json
-
-registry.json:
-
-    {
-      "prettier": "2.7.1",
-      "typescript": "4.7.4"
-    }
-
-`,
+        `Checks versions from a file or url to a simple JSON registry. Must include the ${chalk.cyan('`--registry`')} option.`,
       ],
     ],
   })
 
-  return `${header}\n\n${padLeft(tableString, markdown ? 0 : 4)}
+  return `${header}
+
+${padLeft(tableString, markdown ? 0 : 4)}
+
+Example:
+
+${codeBlock(
+  `${chalk.gray('# local file')}
+ncu --registryType json --registry ./registry.json
+
+${chalk.gray('# url')}
+ncu --registryType json --registry https://api.mydomain/registry.json
+
+${chalk.gray('# you can omit --registryType when the registry ends in .json')}
+ncu --registry ./registry.json
+ncu --registry https://api.mydomain/registry.json`,
+  { markdown, lang: 'sh' },
+)}
+
+registry.json:
+
+${codeBlock(
+  `{
+  "prettier": "2.7.1",
+  "typescript": "4.7.4"
+}`,
+  { markdown, lang: 'json' },
+)}
 `
 }
 
 /** Extended help for the --peer option. */
 const extendedHelpPeer: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
   return `Check peer dependencies of installed packages and filter updates to compatible versions.
 
 ${chalk.bold('Example')}:
@@ -494,32 +467,44 @@ The following example demonstrates how \`--peer\` works, and how it uses peer de
 
 The package ${chalk.bold('ncu-test-peer-update')} has two versions published:
 
-- 1.0.0 has peer dependency ${codeInline('"ncu-test-return-version": "1.0.x"')}
-- 1.1.0 has peer dependency ${codeInline('"ncu-test-return-version": "1.1.x"')}
+- 1.0.0 has peer dependency \`"ncu-test-return-version": "1.0.x"\`
+- 1.1.0 has peer dependency \`"ncu-test-return-version": "1.1.x"\`
 
 Our test app has the following dependencies:
 
-    "ncu-test-peer-update": "1.0.0",
-    "ncu-test-return-version": "1.0.0"
+${codeBlock(
+  `"ncu-test-peer-update": "1.0.0",
+"ncu-test-return-version": "1.0.0"`,
+  { markdown, lang: 'json' },
+)}
 
 The latest versions of these packages are:
 
-    "ncu-test-peer-update": "1.1.0",
-    "ncu-test-return-version": "2.0.0"
+${codeBlock(
+  `"ncu-test-peer-update": "1.1.0",
+"ncu-test-return-version": "2.0.0"`,
+  { markdown, lang: 'json' },
+)}
 
 ${chalk.bold('With `--peer`')}:
 
 ncu upgrades packages to the highest version that still adheres to the peer dependency constraints:
 
-    ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
-    ncu-test-return-version  1.0.0  →  1.${chalk.cyan('1.0')}
+${codeBlock(
+  `ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
+ncu-test-return-version  1.0.0  →  1.${chalk.cyan('1.0')}`,
+  { markdown, lang: 'text' },
+)}
 
 ${chalk.bold('Without `--peer`')}:
 
 As a comparison: without using the \`--peer\` option, ncu will suggest the latest versions, ignoring peer dependencies:
 
-    ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
-    ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}
+${codeBlock(
+  `ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
+ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}`,
+  { markdown, lang: 'text' },
+)}
 `
 }
 
@@ -529,10 +514,13 @@ const extendedHelpCooldown: ExtendedHelp = ({ markdown }) => {
 
 The value can be a plain number (days) or a string with a unit suffix:
 
-    --cooldown 7       7 days
-    --cooldown 7d      7 days (same as above)
-    --cooldown 12h     12 hours
-    --cooldown 30m     30 minutes
+${codeBlock(
+  `--cooldown 7       7 days
+--cooldown 7d      7 days (same as above)
+--cooldown 12h     12 hours
+--cooldown 30m     30 minutes`,
+  { markdown, lang: 'text' },
+)}
 
 With the default \`--target latest\`, if the latest dist-tag version is within the cooldown window, ncu falls back to the greatest version that passes the cooldown threshold. To instead skip the package entirely (strict behaviour), use \`--target "@latest"\`.
 
@@ -540,19 +528,22 @@ ${chalk.bold('Example')}:
 
 Let's examine how cooldown works with a package that has these versions available:
 
-    1.0.0          Released 7 days ago    (initial version)
-    1.1.0          Released 6 days ago    (minor update)
-    1.1.1          Released 5 days ago    (patch update)
-    1.2.0          Released 5 days ago    (minor update)
-    2.0.0-beta.1   Released 5 days ago    (beta release)
-    1.2.1          Released 4 days ago    (patch update)
-    1.3.0          Released 4 days ago    (minor update) [latest]
-    2.0.0-beta.2   Released 3 days ago    (beta release)
-    2.0.0-beta.3   Released 2 days ago    (beta release) [beta]
+${codeBlock(
+  `1.0.0          Released 7 days ago    (initial version)
+1.1.0          Released 6 days ago    (minor update)
+1.1.1          Released 5 days ago    (patch update)
+1.2.0          Released 5 days ago    (minor update)
+2.0.0-beta.1   Released 5 days ago    (beta release)
+1.2.1          Released 4 days ago    (patch update)
+1.3.0          Released 4 days ago    (minor update) [latest]
+2.0.0-beta.2   Released 3 days ago    (beta release)
+2.0.0-beta.3   Released 2 days ago    (beta release) [beta]`,
+  { markdown, lang: 'text' },
+)}
 
 ${chalk.bold('With default target (latest)')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5`, { markdown })}
+${codeBlock(`ncu --cooldown 5`, { markdown, lang: 'sh' })}
 
 Falls back to 1.2.0 because:
 
@@ -561,7 +552,7 @@ Falls back to 1.2.0 because:
 
 ${chalk.bold('With `@latest` strict target')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5 --target @latest`, { markdown })}
+${codeBlock(`ncu --cooldown 5 --target @latest`, { markdown, lang: 'sh' })}
 
 No update will be suggested because:
 
@@ -571,7 +562,7 @@ No update will be suggested because:
 
 ${chalk.bold('With `@beta`/`@tag` target')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 3 --target @beta`, { markdown })}
+${codeBlock(`ncu --cooldown 3 --target @beta`, { markdown, lang: 'sh' })}
 
 No update will be suggested because:
 
@@ -581,18 +572,21 @@ No update will be suggested because:
 
 ${chalk.bold('With other targets')}:
 
-${codeBlock(`${chalk.cyan('$')} ncu --cooldown 5 --target greatest|newest|minor|patch|semver`, { markdown })}
+${codeBlock(`ncu --cooldown 5 --target greatest|newest|minor|patch|semver`, { markdown, lang: 'sh' })}
 
 Each target will select the best version that is at least 5 days old:
 
-    greatest → 1.2.0        (highest version number outside cooldown)
-    newest   → 2.0.0-beta.1 (most recently published version outside cooldown)
-    minor    → 1.2.0        (highest minor version outside cooldown)
-    patch    → 1.1.1        (highest patch version outside cooldown)
+${codeBlock(
+  `greatest → 1.2.0        (highest version number outside cooldown)
+newest   → 2.0.0-beta.1 (most recently published version outside cooldown)
+minor    → 1.2.0        (highest minor version outside cooldown)
+patch    → 1.1.1        (highest patch version outside cooldown)`,
+  { markdown, lang: 'text' },
+)}
 
 You can also provide a custom function in your .ncurc.js file or when importing npm-check-updates as a module.
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> ⚠️ The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', { markdown })}.
 
 ${codeBlock(
   `${chalk.gray(`/** Set cooldown to 3 days but skip it for \`@my-company\` packages.
@@ -629,14 +623,12 @@ When using \`--format cooldown\` alongside the \`--cooldown\` option, \`ncu\` wi
 
 Example:
 
-${codeBlock(`ncu --format cooldown --cooldown 7`, { markdown })}
-
-Output:
-
 ${codeBlock(
-  `Skipped due to 7-day cooldown
+  `$ ncu --format cooldown --cooldown 7
+Skipped due to 7-day cooldown
  @typescript-eslint/parser  ^8.50.0  →  ^8.59.1      5 days ago
  eslint                     ^10.0.1  →  ^10.3.0      1 day ago`,
+  { markdown, lang: 'console' },
 )}
 `
 }
