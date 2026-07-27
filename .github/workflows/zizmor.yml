@@ -3,7 +3,7 @@ name: zizmor
 on:
   push:
     branches:
-      - '**'
+      - main
       - '!dependabot/**'
     paths:
       - '.github/**'
