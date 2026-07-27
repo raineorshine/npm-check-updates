@@ -23,6 +23,10 @@ const padLeft = (s: string, n: number) =>
 const codeBlock = (code: string, { markdown, lang = 'js' }: { markdown?: boolean; lang?: string } = {}) =>
   `${markdown ? `\`\`\`${lang}\n` : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
 
+/** Links to a README section, as a relative anchor in markdown or a full URL on the CLI. */
+const readmeLink = (text: string, anchor: string, markdown?: boolean) =>
+  markdown ? `[${text}](#${anchor})` : `https://github.com/raineorshine/npm-check-updates#${anchor}`
+
 /** Parses a number from a string or number input. Throws if the value is not a number. */
 const parseNumberOption =
   (optionName: string) =>
@@ -159,7 +163,7 @@ ${codeInline('filterResults')} runs _after_ new versions are fetched, in contras
     'filterResults',
   )} based on how the version has changed (e.g. a major version change).
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', markdown)}.
 
 ${codeBlock(
   `${chalk.gray(`/** Exclude major version updates. Note this could also be achieved with --target semver.
@@ -251,7 +255,7 @@ ${codeInline('--filter')} runs _before_ new versions are fetched, in contrast to
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', markdown)}.
 
 ${codeBlock(
   `${chalk.gray(`/**
@@ -304,7 +308,7 @@ ${codeInline('--reject')} runs _before_ new versions are fetched, in contrast to
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', markdown)}.
 
 ${codeBlock(
   `${chalk.gray(`/**
@@ -347,7 +351,7 @@ To reject with a predicate function, use ${codeInline('reject')} instead. It rec
 const extendedHelpGroupFunction: ExtendedHelp = ({ markdown }) => {
   return `Customize how packages are divided into groups when using \`--format group\`.
 
-Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', markdown)}.
 
 ${codeBlock(
   `${chalk.gray(`/**
@@ -411,7 +415,7 @@ ${codeBlock(`ncu --target semver`, { markdown, lang: 'sh' })}
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', markdown)}.
 
 ${codeBlock(
   `${chalk.gray(`/** Upgrade major version zero to the next minor version, and everything else to latest.
@@ -629,7 +633,7 @@ patch    → 1.1.1        (highest patch version outside cooldown)`,
 
 You can also provide a custom function in your .ncurc.js file or when importing npm-check-updates as a module.
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', markdown)}.
 
 ${codeBlock(
   `${chalk.gray(`/** Set cooldown to 3 days but skip it for \`@my-company\` packages.

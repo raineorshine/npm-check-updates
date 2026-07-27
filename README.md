@@ -138,7 +138,7 @@ ncu '/^(?!react-).*$/' # mac/linux
 ncu "/^(?!react-).*$/" # windows
 ```
 
-Advanced filters: [filter](https://github.com/raineorshine/npm-check-updates#filter), [filterResults](https://github.com/raineorshine/npm-check-updates#filterresults), [filterVersion](https://github.com/raineorshine/npm-check-updates#filterversion)
+Advanced filters: [filter](#filter), [filterResults](#filterresults), [filterVersion](#filterversion)
 
 ## How dependency updates are determined
 
@@ -499,7 +499,7 @@ patch    → 1.1.1        (highest patch version outside cooldown)
 
 You can also provide a custom function in your .ncurc.js file or when importing npm-check-updates as a module.
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at [Config Functions](#config-functions).
 
 ```js
 /** Set cooldown to 3 days but skip it for `@my-company` packages.
@@ -609,7 +609,7 @@ Include only package names matching the given string, wildcard, glob, comma-or-s
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at [Config Functions](#config-functions).
 
 ```js
 /**
@@ -632,7 +632,7 @@ Filters results based on a user provided predicate function after fetching new v
 
 `filterResults` runs _after_ new versions are fetched, in contrast to `filter`, `reject`, `filterVersion`, and `rejectVersion`, which run _before_. This allows you to exclude upgrades with `filterResults` based on how the version has changed (e.g. a major version change).
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at [Config Functions](#config-functions).
 
 ```js
 /** Exclude major version updates. Note this could also be achieved with --target semver.
@@ -699,7 +699,7 @@ Modify the output formatting or show additional information. Specify one or more
 
 Customize how packages are divided into groups when using `--format group`.
 
-Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at [Config Functions](#config-functions).
 
 ```js
 /**
@@ -862,7 +862,7 @@ The inverse of `--filter`. Exclude package names matching the given string, wild
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at [Config Functions](#config-functions).
 
 ```js
 /**
@@ -922,7 +922,7 @@ ncu --target semver
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 
-> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at https://github.com/raineorshine/npm-check-updates#config-functions.
+> :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at [Config Functions](#config-functions).
 
 ```js
 /** Upgrade major version zero to the next minor version, and everything else to latest.
@@ -976,7 +976,7 @@ You can also specify a custom config file name or path using the `--configFileNa
 
 ### Config Functions
 
-Some options offer more advanced configuration using a function definition. These include [filter](https://github.com/raineorshine/npm-check-updates#filter), [filterVersion](https://github.com/raineorshine/npm-check-updates#filterversion), [filterResults](https://github.com/raineorshine/npm-check-updates#filterresults), [reject](https://github.com/raineorshine/npm-check-updates#reject), [rejectVersion](https://github.com/raineorshine/npm-check-updates#rejectversion), and [groupFunction](https://github.com/raineorshine/npm-check-updates#groupfunction). To define these, use a JavaScript-based configuration file.
+Some options offer more advanced configuration using a function definition. These include [filter](#filter), [filterVersion](#filterversion), [filterResults](#filterresults), [reject](#reject), [rejectVersion](#rejectversion), and [groupFunction](#groupfunction). To define these, use a JavaScript-based configuration file.
 
 #### ESM (Recommended)
 
@@ -1036,18 +1036,13 @@ e.g. for VS Code:
 {
   "json.schemas": [
     {
-      "fileMatch": [
-        ".ncurc",
-        ".ncurc.json"
-      ],
-      "url": "https://raw.githubusercontent.com/raineorshine/npm-check-updates/main/src/types/RunOptions.json"
-    }
+      "fileMatch": [".ncurc", ".ncurc.json"],
+      "url": "https://raw.githubusercontent.com/raineorshine/npm-check-updates/main/src/types/RunOptions.json",
+    },
   ],
   "yaml.schemas": {
-    "https://raw.githubusercontent.com/raineorshine/npm-check-updates/main/src/types/RunOptions.json": [
-      ".ncurc.yml"
-    ]
-  }
+    "https://raw.githubusercontent.com/raineorshine/npm-check-updates/main/src/types/RunOptions.json": [".ncurc.yml"],
+  },
 }
 ```
 
