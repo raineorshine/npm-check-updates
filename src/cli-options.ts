@@ -21,11 +21,14 @@ const padLeft = (s: string, n: number) =>
 
 /** Formats a code block for CLI or markdown. */
 const codeBlock = (code: string, { markdown, lang = 'js' }: { markdown?: boolean; lang?: string } = {}) =>
-  `${markdown ? `\`\`\`${lang}\n` : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
+  `${markdown ? '```' + lang + '\n' : ''}${padLeft(code, markdown ? 0 : 4)}${markdown ? '\n```' : ''}`
 
 /** Links to a README section, as a relative anchor in markdown or a full URL on the CLI. */
 const readmeLink = (text: string, anchor: string, markdown?: boolean) =>
   markdown ? `[${text}](#${anchor})` : `https://github.com/raineorshine/npm-check-updates#${anchor}`
+
+/** Wraps code in backticks for markdown; leaves it plain for the CLI. */
+const codeInline = (code: string, markdown?: boolean) => (markdown ? '`' + code + '`' : code)
 
 /** Parses a number from a string or number input. Throws if the value is not a number. */
 const parseNumberOption =
@@ -150,18 +153,9 @@ Saving partially upgraded package.json`,
 
 /** Extended help for the filterResults option. */
 const extendedHelpFilterResults: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
   return `Filters results based on a user provided predicate function after fetching new versions.
 
-${codeInline('filterResults')} runs _after_ new versions are fetched, in contrast to ${codeInline(
-    'filter',
-  )}, ${codeInline('reject')}, ${codeInline('filterVersion')}, and ${codeInline(
-    'rejectVersion',
-  )}, which run _before_. This allows you to exclude upgrades with ${codeInline(
-    'filterResults',
-  )} based on how the version has changed (e.g. a major version change).
+${codeInline('filterResults', markdown)} runs _after_ new versions are fetched, in contrast to ${codeInline('filter', markdown)}, ${codeInline('reject', markdown)}, ${codeInline('filterVersion', markdown)}, and ${codeInline('rejectVersion', markdown)}, which run _before_. This allows you to exclude upgrades with ${codeInline('filterResults', markdown)} based on how the version has changed (e.g. a major version change).
 
 > :warning: The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', markdown)}.
 
@@ -243,16 +237,9 @@ const extendedHelpInstall: ExtendedHelp = ({ markdown }) => {
 
 /** Extended help for the --filter option. */
 const extendedHelpFilterFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+  return `Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Only included packages will be checked with ${codeInline('--peer', markdown)}.
 
-  return `Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Only included packages will be checked with ${codeInline(
-    '--peer',
-  )}.
-
-${codeInline('--filter')} runs _before_ new versions are fetched, in contrast to ${codeInline(
-    '--filterResults',
-  )} which runs _after_.
+${codeInline('--filter', markdown)} runs _before_ new versions are fetched, in contrast to ${codeInline('--filterResults', markdown)} which runs _after_.
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 
@@ -279,33 +266,19 @@ ${chalk.green('filter')}: (name, semver) ${chalk.cyan('=>')} {
 
 /** Extended help for the --filterVersion option. */
 const extendedHelpFilterVersionFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
   return `Include only versions matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
 
-${codeInline('--filterVersion')} runs _before_ new versions are fetched, in contrast to ${codeInline(
-    '--filterResults',
-  )} which runs _after_.
+${codeInline('--filterVersion', markdown)} runs _before_ new versions are fetched, in contrast to ${codeInline('--filterResults', markdown)} which runs _after_.
 
-To filter with a predicate function, use ${codeInline('filter')} instead. It receives the package name and the parsed current version, so it can match on both name and version.
+To filter with a predicate function, use ${codeInline('filter', markdown)} instead. It receives the package name and the parsed current version, so it can match on both name and version.
 `
 }
 
 /** Extended help for the --reject option. */
 const extendedHelpRejectFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+  return `The inverse of ${codeInline('--filter', markdown)}. Exclude package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. This will also exclude them from the ${codeInline('--peer', markdown)} check.
 
-  return `The inverse of ${codeInline(
-    '--filter',
-  )}. Exclude package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. This will also exclude them from the ${codeInline(
-    '--peer',
-  )} check.
-
-${codeInline('--reject')} runs _before_ new versions are fetched, in contrast to ${codeInline(
-    '--filterResults',
-  )} which runs _after_.
+${codeInline('--reject', markdown)} runs _before_ new versions are fetched, in contrast to ${codeInline('--filterResults', markdown)} which runs _after_.
 
 You can also specify a custom function in your .ncurc.js file, or when importing npm-check-updates as a module.
 
@@ -332,18 +305,11 @@ ${chalk.green('reject')}: (name, semver) ${chalk.cyan('=>')} {
 
 /** Extended help for the --rejectVersion option. */
 const extendedHelpRejectVersionFunction: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
+  return `The inverse of ${codeInline('--filterVersion', markdown)}. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
 
-  return `The inverse of ${codeInline(
-    '--filterVersion',
-  )}. Exclude versions matching the given string, wildcard, glob, comma-or-space-delimited list, or /regex/.
+${codeInline('--rejectVersion', markdown)} runs _before_ new versions are fetched, in contrast to ${codeInline('--filterResults', markdown)} which runs _after_.
 
-${codeInline('--rejectVersion')} runs _before_ new versions are fetched, in contrast to ${codeInline(
-    '--filterResults',
-  )} which runs _after_.
-
-To reject with a predicate function, use ${codeInline('reject')} instead. It receives the package name and the parsed current version, so it can match on both name and version.
+To reject with a predicate function, use ${codeInline('reject', markdown)} instead. It receives the package name and the parsed current version, so it can match on both name and version.
 
 `
 }
@@ -456,10 +422,7 @@ const extendedHelpPackageManager: ExtendedHelp = ({ markdown }) => {
 
 /** Extended help for the --registryType option. */
 const extendedHelpRegistryType: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
-
-  const header = `Specify whether ${codeInline('--registry')} refers to a full npm registry or a simple JSON file.`
+  const header = `Specify whether ${codeInline('--registry', markdown)} refers to a full npm registry or a simple JSON file.`
   const tableString = table({
     colAligns: ['right', 'left'],
     markdown,
@@ -505,8 +468,6 @@ ${codeBlock(
 
 /** Extended help for the --peer option. */
 const extendedHelpPeer: ExtendedHelp = ({ markdown }) => {
-  /** If markdown, surround inline code with backticks. */
-  const codeInline = (code: string) => (markdown ? `\`${code}\`` : code)
   return `Check peer dependencies of installed packages and filter updates to compatible versions.
 
 ${chalk.bold('Example')}:
@@ -515,8 +476,8 @@ The following example demonstrates how \`--peer\` works, and how it uses peer de
 
 The package ${chalk.bold('ncu-test-peer-update')} has two versions published:
 
-- 1.0.0 has peer dependency ${codeInline('"ncu-test-return-version": "1.0.x"')}
-- 1.1.0 has peer dependency ${codeInline('"ncu-test-return-version": "1.1.x"')}
+- 1.0.0 has peer dependency ${codeInline('"ncu-test-return-version": "1.0.x"', markdown)}
+- 1.1.0 has peer dependency ${codeInline('"ncu-test-return-version": "1.1.x"', markdown)}
 
 Our test app has the following dependencies:
 
