@@ -18,9 +18,10 @@ async function spawnCommand(
 ) {
   const commands = getSpawnCommands(command)
 
-  for (const [index, command] of commands.entries()) {
+  for (const [index, resolvedCommand] of commands.entries()) {
     try {
-      return await spawn(command, args, spawnPleaseOptions, spawnOptions)
+      const result = await spawn(resolvedCommand, args, spawnPleaseOptions, spawnOptions)
+      return { ...result, command: resolvedCommand }
     } catch (e) {
       if ((e as NodeJS.ErrnoException).code !== 'ENOENT' || index === commands.length - 1) {
         throw e
