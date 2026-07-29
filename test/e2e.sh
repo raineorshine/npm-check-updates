@@ -113,7 +113,8 @@ package_version="$(node -p "require('./package.json').version")"
 echo "Waiting for npm-check-updates@${package_version} in local registry"
 
 if ! retry npm view "npm-check-updates@${package_version}" version --registry "${registry_local}" >/dev/null 2>&1; then
-  echo "Warning: npm-check-updates@${package_version} not visible in local registry after retry window"
+  echo "npm-check-updates@${package_version} not visible in local registry after retry window" >&2
+  exit 1
 fi
 
 # Test: ncu -v
