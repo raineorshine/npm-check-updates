@@ -16,6 +16,11 @@ registry_local="http://${registry_addr}"
 registry_log="${temp_dir}/verdaccio.log"
 verdaccio_config="${temp_dir}/verdaccio-config.yaml"
 
+# Keep npm config and cache in the temp dir so the run never touches the user's,
+# and so npx cannot reuse a stale tarball of the same version from a previous run
+export NPM_CONFIG_USERCONFIG="${temp_dir}/npmrc"
+export NPM_CONFIG_CACHE="${temp_dir}/npm-cache"
+
 verdaccio_pid=""
 
 # Cleanup on exit
@@ -28,10 +33,6 @@ cleanup() {
     kill -9 "${verdaccio_pid}" 2>/dev/null || true
     wait "${verdaccio_pid}" 2>/dev/null || true
   fi
-
-  # Delete authToken
-  # WARNING: The original authToken cannot be restored because it is protected and cannot be read with 'npm config get'.
-  npm config delete "//${registry_addr}/:_authToken" || true
 
   # Return to working directory
   cd "${cwd}" || true
