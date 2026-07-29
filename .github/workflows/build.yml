@@ -42,10 +42,11 @@ jobs:
       - run: npm pack --dry-run
 
       - name: Check for uncommitted changes
+        shell: bash
         run: |
-          changed=$(git diff --name-only)
-          if [ -n "$changed" ]; then
-            files=$(echo "$changed" | tr '\n' ' ' | sed 's/ $//')
-            echo "Uncommitted changes detected in $files. Did you forget to run \`npm run build\`?"
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "::error::Uncommitted changes detected. Did you forget to run \`npm run build\`?"
+            git status --short
+            git diff
             exit 1
           fi
