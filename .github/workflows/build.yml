@@ -2,12 +2,10 @@ name: Build
 
 on:
   push:
+    # main only; everything else, dependabot included, is covered by pull_request
     branches:
       - main
-      - '!dependabot/**'
   pull_request:
-    branches:
-      - '**'
   workflow_dispatch:
 
 env:
