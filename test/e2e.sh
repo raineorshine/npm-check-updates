@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# These can be set once the fnm permission errors are figured out
-# See: https://github.com/Schniz/fnm
-# set -e
-# set -o pipefail
-# When set -e is enabled, we can drop `|| exit (1)?` from commands that are expected to fail
+# Enable strict mode:
+# -E: inherit ERR traps in functions/subshells
+# -e: exit on any command failure
+# -u: error on unset variables
+# -o pipefail: fail pipelines if any command fails
+set -Eeuo pipefail
 
 cwd="$(pwd)"
 e2e_dir="$(dirname "$(readlink -f "$0")")"
@@ -146,20 +147,20 @@ cp -r "${e2e_dir}/e2e" "${temp_dir}"
 
 # Test: cjs
 echo Test: cjs
-cd "${temp_dir}/e2e/cjs" || exit
+cd "${temp_dir}/e2e/cjs"
 
 echo Installing
 npm i npm-check-updates@latest --registry "${registry_local}"
 
 echo Running test
-REGISTRY="${registry_local}" node "${temp_dir}/e2e/cjs/index.js" || exit 1
+REGISTRY="${registry_local}" node "${temp_dir}/e2e/cjs/index.js"
 
 # Test: esm
 echo Test: esm
-cd "${temp_dir}/e2e/esm" || exit
+cd "${temp_dir}/e2e/esm"
 
 echo Installing
 npm i npm-check-updates@latest --registry "${registry_local}"
 
 echo Running test
-REGISTRY="${registry_local}" node "${temp_dir}/e2e/esm/index.js" || exit 1
+REGISTRY="${registry_local}" node "${temp_dir}/e2e/esm/index.js"
