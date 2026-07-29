@@ -18,25 +18,25 @@ verdaccio_config="${temp_dir}/verdaccio-config.yaml"
 
 verdaccio_pid=""
 
-# cleanup on exit
+# Cleanup on exit
 cleanup() {
   local exit_status=$?
 
-  # shut down verdaccio
+  # Shut down Verdaccio
   if [[ -n "${verdaccio_pid}" ]]; then
-    echo Shutting down verdaccio
+    echo Shutting down Verdaccio
     kill -9 "${verdaccio_pid}" 2>/dev/null || true
     wait "${verdaccio_pid}" 2>/dev/null || true
   fi
 
-  # delete authToken
+  # Delete authToken
   # WARNING: The original authToken cannot be restored because it is protected and cannot be read with 'npm config get'.
   npm config delete "//${registry_addr}/:_authToken" || true
 
-  # return to working directory
+  # Return to working directory
   cd "${cwd}" || true
 
-  # remove temp directory
+  # Remove temp directory
   rm -rf -- "${temp_dir}"
 
   if [[ "${exit_status}" -ne 0 ]]; then
@@ -48,7 +48,26 @@ cleanup() {
 
 trap 'cleanup' EXIT
 
-# create verdaccio config
+# Used instead of `timeout`, which is not available on macOS
+retry() {
+  local attempts=20
+  local arg="${1-}"
+  local i
+
+  if [[ "${arg}" =~ ^[0-9]+$ ]]; then
+    attempts="${arg}"
+    shift
+  fi
+
+  for ((i = 0; i < attempts; i++)); do
+    "$@" && return 0
+    sleep 1
+  done
+
+  return 1
+}
+
+# Create Verdaccio config
 #   - store packages in temp directory so they are deleted on exit
 #   - allow anyone to publish to avoid npm login
 #   - increase body size to accommodate current package tarball size
@@ -67,41 +86,32 @@ uplinks:
     url: https://registry.npmjs.org/
 EOF
 
-# start verdaccio and wait for it to boot
+# Start Verdaccio and wait for it to boot
 echo Starting local registry
 nohup verdaccio -l "${registry_addr}" -c "${verdaccio_config}" >"${registry_log}" 2>&1 &
 verdaccio_pid=$!
 
-if ! timeout 30 grep -q 'http address' <(tail -f "${registry_log}"); then
-  echo "verdaccio did not start within 30s" >&2
+if ! retry 30 grep -q 'http address' "${registry_log}"; then
+  echo "Verdaccio did not start within 30s" >&2
   cat "${registry_log}" >&2
   exit 1
 fi
 
-# set dummy authToken which is required to publish
+# Set dummy authToken which is required to publish
 # https://github.com/verdaccio/verdaccio/issues/212#issuecomment-308578500
 npm config set "//${registry_addr}/:_authToken=e2e_dummy"
 
-# publish to local registry
+# Publish to local registry
 echo Publishing to local registry
 npm publish --registry "${registry_local}"
 
-# wait for published version to become visible in verdaccio.
-# verdaccio can accept npm publish before npm view/npx can resolve the package metadata.
-# without this retry loop, e2e can fail intermittently with "no such package available".
+# Wait for published version to become visible in Verdaccio.
+# Verdaccio can accept npm publish before npm view/npx can resolve the package metadata.
+# Without this retry loop, e2e can fail intermittently with "no such package available".
 package_version="$(node -p "require('./package.json').version")"
 echo "Waiting for npm-check-updates@${package_version} in local registry"
 
-publish_visible=false
-for _ in {1..20}; do
-  if npm view "npm-check-updates@${package_version}" version --registry "${registry_local}" >/dev/null 2>&1; then
-    publish_visible=true
-    break
-  fi
-  sleep 1
-done
-
-if [[ "${publish_visible}" == false ]]; then
+if ! retry npm view "npm-check-updates@${package_version}" version --registry "${registry_local}" >/dev/null 2>&1; then
   echo "Warning: npm-check-updates@${package_version} not visible in local registry after retry window"
 fi
 
