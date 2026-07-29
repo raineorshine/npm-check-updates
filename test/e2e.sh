@@ -118,7 +118,7 @@ fi
 
 # Test: ncu -v
 echo ncu -v
-npx --registry "${registry_local}" npm-check-updates -v
+npx --yes --registry "${registry_local}" npm-check-updates -v
 
 # Test: cli
 # Create a package.json file with a dependency on npm-check-updates since it is already published to the local registry
@@ -134,7 +134,7 @@ EOF
 # --configFilePath to avoid reading the repo .ncurc
 # --cwd to point to the temp package file
 # --pre 1 to ensure that an upgrade is always suggested even if npm-check-updates is on a prerelease version
-npx --registry "${registry_local}" npm-check-updates \
+npx --yes --registry "${registry_local}" npm-check-updates \
   --configFilePath "${temp_dir}" \
   --cwd "${temp_dir}" \
   --pre 1 \
