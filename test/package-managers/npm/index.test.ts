@@ -65,6 +65,19 @@ describe('npm', () => {
     }
   })
 
+  // a project .npmrc that cannot be read (e.g. it is a directory) should surface the error, not be silently ignored
+  it('propagates a non-ENOENT error when reading the project .npmrc', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    // create a directory named .npmrc so reading it fails with EISDIR rather than ENOENT
+    await fs.mkdir(path.join(tempDir, '.npmrc'))
+
+    try {
+      await expect(npm.getEngines('ncu-test-return-version', '1.0.0', { cwd: tempDir })).rejects.toThrow()
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
   // the leading @ must not be encoded to %40, which some registries reject with a 404
   // https://github.com/raineorshine/npm-check-updates/issues/1330
   it('does not percent-encode the @ of a scoped package name', async () => {
