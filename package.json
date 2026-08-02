@@ -67,8 +67,15 @@
       "eslint-plugin-n": "$eslint-plugin-n",
       "eslint-plugin-promise": "$eslint-plugin-promise"
     },
-    "@cypress/request": {
-      "uuid": "^14.0.0"
+    "@verdaccio/middleware": {
+      "express": {
+        "qs": "^6.15.2"
+      }
+    },
+    "verdaccio-audit": {
+      "express": {
+        "qs": "^6.15.2"
+      }
     }
   },
   "devDependencies": {
