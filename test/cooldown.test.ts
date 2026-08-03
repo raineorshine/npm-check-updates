@@ -1699,8 +1699,14 @@ describe('cooldown', () => {
     })
 
     it('uses only config.yaml when both global files exist and pnpm is 11', async () => {
-      await fs.writeFile(path.join(xdgDir, 'pnpm', 'config.yaml'), 'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n')
-      await fs.writeFile(path.join(xdgDir, 'pnpm', 'rc'), 'minimumReleaseAge=60\nminimumReleaseAgeExclude=["left-pad"]\n')
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
+      )
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'rc'),
+        'minimumReleaseAge=60\nminimumReleaseAgeExclude=["left-pad"]\n',
+      )
 
       const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
 
@@ -1708,8 +1714,14 @@ describe('cooldown', () => {
     })
 
     it('uses only rc when both global files exist and pnpm is 10', async () => {
-      await fs.writeFile(path.join(xdgDir, 'pnpm', 'config.yaml'), 'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n')
-      await fs.writeFile(path.join(xdgDir, 'pnpm', 'rc'), 'minimumReleaseAge=60\nminimumReleaseAgeExclude=["left-pad"]\n')
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
+      )
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'rc'),
+        'minimumReleaseAge=60\nminimumReleaseAgeExclude=["left-pad"]\n',
+      )
 
       const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(10)
 
@@ -1717,8 +1729,14 @@ describe('cooldown', () => {
     })
 
     it('falls back to reading both global files when pnpm major version is undetectable', async () => {
-      await fs.writeFile(path.join(xdgDir, 'pnpm', 'config.yaml'), 'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n')
-      await fs.writeFile(path.join(xdgDir, 'pnpm', 'rc'), 'minimumReleaseAge=60\nminimumReleaseAgeExclude=["react","left-pad"]\n')
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
+      )
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'rc'),
+        'minimumReleaseAge=60\nminimumReleaseAgeExclude=["react","left-pad"]\n',
+      )
 
       const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(null)
 
