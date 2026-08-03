@@ -6,6 +6,25 @@ import { pnpmApi } from '../../src/package-managers/pnpm.ts'
 import removeDir from '../helpers/removeDir.ts'
 
 describe('pnpm', () => {
+  let tempDir: string
+  let originalCwd: string
+
+  beforeEach(async () => {
+    originalCwd = process.cwd()
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-pnpm-'))
+  })
+
+  afterEach(async () => {
+    process.chdir(originalCwd)
+    await removeDir(tempDir)
+  })
+
+  /** Writes a pnpm-workspace.yaml into the temp dir and switches cwd to it. */
+  async function writeWorkspace(content: string): Promise<void> {
+    await fs.writeFile(path.join(tempDir, 'pnpm-workspace.yaml'), content)
+    process.chdir(tempDir)
+  }
+
   describe('parseList', () => {
     const command = 'pnpm ls -g --json'
 
@@ -173,6 +192,130 @@ minimumReleaseAgeExclude:
       expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()).toStrictEqual({
         minimumReleaseAge: 60,
         minimumReleaseAgeExclude: ['react', 'vue'],
+      })
+    })
+  })
+
+  describe('getPnpmWorkspaceRegistries', () => {
+    it('returns no registries when pnpm-workspace.yaml does not define any', async () => {
+      await writeWorkspace('packages:\n  - "packages/*"\n')
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({ default: undefined, scoped: {} })
+    })
+
+    it('reads the default registry from pnpm-workspace.yaml', async () => {
+      await writeWorkspace('registries:\n  default: https://registry.example.com/\n')
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+        default: 'https://registry.example.com/',
+        scoped: {},
+      })
+    })
+
+    it('reads scoped registries from pnpm-workspace.yaml', async () => {
+      await writeWorkspace(`registries:
+  default: https://registry.example.com/
+  "@myorg": https://myorg.example.com/
+  "@internal": https://internal.example.com/
+`)
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+        default: 'https://registry.example.com/',
+        scoped: {
+          '@myorg': 'https://myorg.example.com/',
+          '@internal': 'https://internal.example.com/',
+        },
+      })
+    })
+
+    it('ignores non-string and empty registry values', async () => {
+      await writeWorkspace(`registries:
+  default: ""
+  "@myorg": 42
+  "@internal": https://internal.example.com/
+`)
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+        default: undefined,
+        scoped: { '@internal': 'https://internal.example.com/' },
+      })
+    })
+
+    it('ignores a registries value that is not a map', async () => {
+      await writeWorkspace('registries: https://registry.example.com/\n')
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({ default: undefined, scoped: {} })
+    })
+  })
+
+  describe('pnpm global registries config fallback', () => {
+    let originalCwd: string
+    let originalXdg: string | undefined
+    let projectDir: string
+    let xdgDir: string
+
+    beforeEach(async () => {
+      originalCwd = process.cwd()
+      originalXdg = process.env.XDG_CONFIG_HOME
+      // A project directory without a pnpm-workspace.yaml so the workspace layer is absent.
+      projectDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-pnpm-registries-project-'))
+      // An isolated XDG_CONFIG_HOME so pnpm's global config resolves to a temp directory.
+      xdgDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-pnpm-registries-xdg-'))
+      await fs.mkdir(path.join(xdgDir, 'pnpm'), { recursive: true })
+      process.env.XDG_CONFIG_HOME = xdgDir
+      process.chdir(projectDir)
+    })
+
+    afterEach(async () => {
+      process.chdir(originalCwd)
+      if (originalXdg === undefined) {
+        delete process.env.XDG_CONFIG_HOME
+      } else {
+        process.env.XDG_CONFIG_HOME = originalXdg
+      }
+      await removeDir(projectDir)
+      await removeDir(xdgDir)
+    })
+
+    it('reads registries from pnpm global config.yaml when pnpm-workspace.yaml is absent', async () => {
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'registries:\n  default: https://global.example.com/\n  "@myorg": https://global-myorg.example.com/\n',
+      )
+
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+        default: 'https://global.example.com/',
+        scoped: { '@myorg': 'https://global-myorg.example.com/' },
+      })
+    })
+
+    it('prefers pnpm-workspace.yaml over the global config, merging scoped entries per scope', async () => {
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'registries:\n  default: https://global.example.com/\n  "@myorg": https://global-myorg.example.com/\n  "@global-only": https://global-only.example.com/\n',
+      )
+      await fs.writeFile(
+        path.join(projectDir, 'pnpm-workspace.yaml'),
+        'registries:\n  default: https://workspace.example.com/\n  "@myorg": https://workspace-myorg.example.com/\n',
+      )
+
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+        default: 'https://workspace.example.com/',
+        scoped: {
+          '@myorg': 'https://workspace-myorg.example.com/',
+          '@global-only': 'https://global-only.example.com/',
+        },
+      })
+    })
+
+    it('falls back to the global default when pnpm-workspace.yaml omits it', async () => {
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'registries:\n  default: https://global.example.com/\n',
+      )
+      await fs.writeFile(
+        path.join(projectDir, 'pnpm-workspace.yaml'),
+        'registries:\n  "@myorg": https://workspace-myorg.example.com/\n',
+      )
+
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+        default: 'https://global.example.com/',
+        scoped: { '@myorg': 'https://workspace-myorg.example.com/' },
       })
     })
   })
