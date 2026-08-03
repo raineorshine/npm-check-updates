@@ -47,7 +47,7 @@ function isCircularPeer(peerDependencies: Index<Index<string>>, packageName: str
 }
 
 /**
- * Get the latest or greatest versions from the NPM repository based on the version target.
+ * Get the latest or greatest versions from the npm repository based on the version target.
  *
  * @param packageMap   An object whose keys are package name and values are version
  * @param [options={}] Options.

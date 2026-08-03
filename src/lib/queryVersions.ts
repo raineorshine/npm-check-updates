@@ -16,7 +16,7 @@ import programError from './programError.ts'
 import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-util.ts'
 
 /**
- * Get the latest or greatest versions from the NPM repository based on the version target.
+ * Get the latest or greatest versions from the npm repository based on the version target.
  *
  * @param packageMap   An object whose keys are package name and values are current versions. May include npm aliases, i.e. { "package": "npm:other-package@1.0.0" }
  * @param [options={}] Options. Default: { target: 'latest' }.

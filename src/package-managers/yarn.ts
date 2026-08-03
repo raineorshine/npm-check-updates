@@ -200,7 +200,7 @@ const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMini
 /**
  * Parse JSON lines and throw an informative error on failure.
  *
- * Note: although this is similar to the NPM parseJson() function we always return the
+ * Note: although this is similar to the npm parseJson() function we always return the
  * same concrete-type here, for now.
  *
  * @param result    Output from `yarn list --json` to be parsed
