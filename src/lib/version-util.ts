@@ -134,7 +134,7 @@ export function setPrecision(version: string, precision: VersionPart) {
  * @param wildcard
  * @returns
  */
-export function addWildCard(version: string, wildcard: string) {
+export function addWildcard(version: string, wildcard: string) {
   return wildcard === '^' || wildcard === '~' ? wildcard + version : setPrecision(version, 'major') + wildcard
 }
 
@@ -144,7 +144,7 @@ export function addWildCard(version: string, wildcard: string) {
  * @param version
  * @returns
  */
-export function isWildCard(version: string) {
+export function isWildcard(version: string) {
   return WILDCARD_PURE_REGEX.test(version)
 }
 
@@ -494,7 +494,7 @@ export function upgradeDependencyDeclaration(
   // return global wildcards immediately
   if (options.removeRange) {
     return latestVersion
-  } else if (isWildCard(declaration)) {
+  } else if (isWildcard(declaration)) {
     return declaration
   }
 
@@ -555,7 +555,7 @@ export function upgradeDependencyDeclaration(
   // convert versions with </<= or mixed operators into the preferred wildcard
   // only do so if the new version does not already contain a wildcard
   return !hasWildCard && (isLessThanOrEqual || isMixed)
-    ? addWildCard(version, options.wildcard)
+    ? addWildcard(version, options.wildcard)
     : // convert > to >= since there are likely no available versions > latest
       // https://github.com/raineorshine/npm-check-updates/issues/957
       (isGreaterThan ? '>=' : operator) + version

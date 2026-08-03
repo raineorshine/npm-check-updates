@@ -55,7 +55,7 @@ const hasCaretOrTilde = (spec: VersionSpec) => {
 
 /** Returns true if the version is sa valid, exact version. */
 const isExactVersion = (version: Version) =>
-  version && (!nodeSemver.validRange(version) || versionUtil.isWildCard(version))
+  version && (!nodeSemver.validRange(version) || versionUtil.isWildcard(version))
 
 /** Fetches a packument or dist-tag from the npm registry. */
 const fetchPartialPackument = async (
