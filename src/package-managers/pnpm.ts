@@ -171,8 +171,8 @@ const getPnpmWorkspaceMinimumReleaseAge = async (): Promise<PnpmWorkspaceMinimum
 }
 
 /** Parses the output of `pnpm ls -g --json` into a { name: version } index. */
-const parseList = (stdout: string, command: string): Index<string | undefined> => {
-  const result = npm.parseJson<PnpmList>(stdout, { command })
+const parseList = (stdout: string, command: string, stderr?: string): Index<string | undefined> => {
+  const result = npm.parseJson<PnpmList>(stdout, { command, stderr })
   // pnpm omits the project entry when there is no global root, and dependencies when nothing is installed
   return keyValueBy(result[0]?.dependencies || {}, (name, { version }) => ({
     [name]: version,
@@ -186,17 +186,16 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   if (!options.global) return npm.list(options)
 
   const args = ['ls', '-g', '--json']
-  const command = `pnpm ${args.join(' ')}`
-  const { stdout } = await spawnCommand('pnpm', args).catch((err: unknown) => {
+  const { stdout, stderr, command } = await spawnCommand('pnpm', args).catch((err: unknown) => {
     // spawn-please rejects with stderr as a bare string on a non-zero exit code, which loses err.message downstream
     if (err instanceof Error) {
       throw err
     }
 
-    throw new Error(`Error executing "${command}". ${String(err).trim() || 'No error output.'}`)
+    throw new Error(`Error executing "pnpm ${args.join(' ')}". ${String(err).trim() || 'No error output.'}`)
   })
 
-  return parseList(stdout, command)
+  return parseList(stdout, command, stderr)
 }
 
 /** Wraps a GetVersion function and passes the npmrc located next to the pnpm-workspace.yaml if it exists. */

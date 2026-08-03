@@ -39,6 +39,12 @@ describe('pnpm', () => {
         'Expected JSON from "pnpm ls -g --json". Instead received: ERR_PNPM_NO_GLOBAL_DIR',
       )
     })
+
+    it('appends stderr to the error', () => {
+      expect(() => pnpmApi.parseList('', command, 'ERR_PNPM_NO_GLOBAL_DIR')).toThrow(
+        'Expected JSON from "pnpm ls -g --json". Received empty response.\n\nERR_PNPM_NO_GLOBAL_DIR',
+      )
+    })
   })
 
   describe('getPnpmWorkspaceMinimumReleaseAge', () => {
