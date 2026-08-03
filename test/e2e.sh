@@ -107,16 +107,8 @@ npm config set "//${registry_addr}/:_authToken=e2e_dummy"
 echo Publishing to local registry
 npm publish --registry "${registry_local}"
 
-# Wait for published version to become visible in Verdaccio.
-# Verdaccio can accept npm publish before npm view/npx can resolve the package metadata.
-# Without this retry loop, e2e can fail intermittently with "no such package available".
 package_version="$(node -p "require('./package.json').version")"
-echo "Waiting for npm-check-updates@${package_version} in local registry"
-
-if ! retry npm view "npm-check-updates@${package_version}" version --registry "${registry_local}" >/dev/null 2>&1; then
-  echo "npm-check-updates@${package_version} not visible in local registry after retry window" >&2
-  exit 1
-fi
+npm view "npm-check-updates@${package_version}" version --registry "${registry_local}" >/dev/null
 
 # Test: ncu -v
 echo ncu -v
