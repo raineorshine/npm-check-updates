@@ -1,20 +1,10 @@
 import os from 'node:os'
 import path from 'node:path'
-import { type Loader, lilconfig } from 'lilconfig'
-import { parse as parseYaml } from 'yaml'
+import { cosmiconfig } from 'cosmiconfig'
 import { cliOptionsMap } from '../cli-options.ts'
 import { type Options } from '../types/Options.ts'
 import { getChalk } from './chalk.ts'
 import programError from './programError.ts'
-
-/** Parses YAML config since lilconfig has no YAML loader; matches cosmiconfig's "YAML Error in <path>" message. */
-const loadYaml: Loader = (filepath, content) => {
-  try {
-    return parseYaml(content)
-  } catch (err: any) {
-    throw new Error(`YAML Error in ${filepath}:\n${err.message}`, { cause: err })
-  }
-}
 
 /**
  * Detects module system mismatches and returns a helpful error message.
@@ -80,13 +70,11 @@ async function getNcuRc({
 }) {
   const chalk = getChalk(options?.color)
 
-  const explorer = lilconfig('ncu', {
+  const explorer = cosmiconfig('ncu', {
     searchPlaces: ['.ncurc', '.ncurc.json', '.ncurc.yaml', '.ncurc.yml', '.ncurc.mjs', '.ncurc.cjs', '.ncurc.js'],
-    loaders: {
-      noExt: loadYaml,
-      '.yaml': loadYaml,
-      '.yml': loadYaml,
-    },
+    // Preserve historical ncu behavior from rc-config-loader: start from cwd and
+    // walk up parent directories so child packages can inherit a parent .ncurc.
+    searchStrategy: 'global',
   })
 
   // Determine the base directory for searching or resolving
