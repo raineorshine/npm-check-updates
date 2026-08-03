@@ -16,6 +16,7 @@ import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
 import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
+import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import * as npm from './npm.ts'
@@ -259,7 +260,7 @@ async function spawnYarn(
   yarnOptions: NpmOptions = {},
   spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: SpawnOptions = {},
-): Promise<string> {
+): Promise<SpawnResult> {
   const fullArgs = [
     ...(yarnOptions.global ? ['global'] : []),
     ...(yarnOptions.prefix ? [`--prefix=${yarnOptions.prefix}`] : []),
@@ -271,9 +272,7 @@ async function spawnYarn(
     ...(Array.isArray(args) ? args : [args]),
   ]
 
-  const { stdout } = await spawnCommand('yarn', fullArgs, spawnPleaseOptions, spawnOptions)
-
-  return stdout
+  return spawnCommand('yarn', fullArgs, spawnPleaseOptions, spawnOptions)
 }
 
 /**
@@ -322,7 +321,7 @@ export async function defaultPrefix(options: Options): Promise<string | null> {
  * @returns
  */
 export const list = async (options: Options = {}, spawnOptions?: SpawnOptions): Promise<Index<string | undefined>> => {
-  const jsonLines: string = await spawnYarn(
+  const { stdout: jsonLines } = await spawnYarn(
     'list',
     options as NpmOptions,
     {},

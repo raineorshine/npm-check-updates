@@ -11,6 +11,7 @@ import { type PackageFile } from '../types/PackageFile.ts'
 import { type PackageInfo } from '../types/PackageInfo.ts'
 import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
+import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import chalk, { chalkInit } from './chalk.ts'
 import loadPackageInfoFromFile from './loadPackageInfoFromFile.ts'
@@ -27,7 +28,7 @@ const npm = (
   options: Options,
   print?: boolean,
   { spawnOptions, spawnPleaseOptions }: { spawnOptions?: SpawnOptions; spawnPleaseOptions?: SpawnPleaseOptions } = {},
-): Promise<unknown> => {
+): Promise<SpawnResult> => {
   if (print) {
     console.log(chalk.blue([options.packageManager, ...args].join(' ')))
   }

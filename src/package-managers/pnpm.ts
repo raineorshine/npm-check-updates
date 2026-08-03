@@ -15,6 +15,7 @@ import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
 import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
+import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type Version } from '../types/Version.ts'
 import * as npm from './npm.ts'
 
@@ -223,18 +224,16 @@ export const semver = withNpmWorkspaceConfig(npm.semver)
 async function spawnPnpm(
   args: string | string[],
   npmOptions: NpmOptions = {},
-  spawnOptions?: SpawnOptions,
   spawnPleaseOptions?: SpawnPleaseOptions,
-): Promise<string> {
+  spawnOptions?: SpawnOptions,
+): Promise<SpawnResult> {
   const fullArgs = [
     ...(npmOptions.global ? 'global' : []),
     ...(Array.isArray(args) ? args : [args]),
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
   ]
 
-  const { stdout } = await spawnCommand('pnpm', fullArgs, spawnPleaseOptions, spawnOptions)
-
-  return stdout
+  return spawnCommand('pnpm', fullArgs, spawnPleaseOptions, spawnOptions)
 }
 
 export { defaultPrefix, getPeerDependencies, getEngines, packageAuthorChanged } from './npm.ts'
