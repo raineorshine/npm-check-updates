@@ -169,18 +169,33 @@ const getPnpmWorkspaceMinimumReleaseAge = async (): Promise<PnpmWorkspaceMinimum
   return { minimumReleaseAge, minimumReleaseAgeExclude }
 }
 
+/** Parses the output of `pnpm ls -g --json` into a { name: version } index. */
+const parseList = (stdout: string, command: string): Index<string | undefined> => {
+  const result = npm.parseJson<PnpmList>(stdout, { command })
+  // pnpm omits the project entry when there is no global root, and dependencies when nothing is installed
+  return keyValueBy(result[0]?.dependencies || {}, (name, { version }) => ({
+    [name]: version,
+  }))
+}
+
 /** Fetches the list of all installed packages. */
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
   // use npm for local ls for completeness
   // this should never happen since list is only called in runGlobal -> getInstalledPackages
   if (!options.global) return npm.list(options)
 
-  const { stdout } = await spawnCommand('pnpm', ['ls', '-g', '--json'])
-  const result = JSON.parse(stdout) as PnpmList
-  const list = keyValueBy(result[0].dependencies || {}, (name, { version }) => ({
-    [name]: version,
-  }))
-  return list
+  const args = ['ls', '-g', '--json']
+  const command = `pnpm ${args.join(' ')}`
+  const { stdout } = await spawnCommand('pnpm', args).catch((err: unknown) => {
+    // spawn-please rejects with stderr as a bare string on a non-zero exit code, which loses err.message downstream
+    if (err instanceof Error) {
+      throw err
+    }
+
+    throw new Error(`Error executing "${command}". ${String(err).trim() || 'No error output.'}`)
+  })
+
+  return parseList(stdout, command)
 }
 
 /** Wraps a GetVersion function and passes the npmrc located next to the pnpm-workspace.yaml if it exists. */
@@ -228,4 +243,5 @@ export default spawnPnpm
 
 export const pnpmApi = {
   getPnpmWorkspaceMinimumReleaseAge,
+  parseList,
 }
