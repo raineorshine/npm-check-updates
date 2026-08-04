@@ -547,14 +547,14 @@ export function upgradeDependencyDeclaration(
   const uniqueOperators = Array.from(new Set(parsedRange.map(range => range.operator)))
   const operator = uniqueOperators[0] || ''
 
-  const hasWildCard = WILDCARDS.some(wildcard => newSemverString.includes(wildcard))
+  const hasWildcard = WILDCARDS.some(wildcard => newSemverString.includes(wildcard))
   const isLessThanOrEqual = uniqueOperators[0] === '<' || uniqueOperators[0] === '<='
   const isGreaterThan = uniqueOperators[0] === '>'
   const isMixed = uniqueOperators.length > 1
 
   // convert versions with </<= or mixed operators into the preferred wildcard
   // only do so if the new version does not already contain a wildcard
-  return !hasWildCard && (isLessThanOrEqual || isMixed)
+  return !hasWildcard && (isLessThanOrEqual || isMixed)
     ? addWildcard(version, options.wildcard)
     : // convert > to >= since there are likely no available versions > latest
       // https://github.com/raineorshine/npm-check-updates/issues/957
