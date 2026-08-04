@@ -217,7 +217,8 @@ function parseJsonLines(result: string): { dependencies: Index<ParsedDep> } {
     // ignore error info, e.g. "Visit https://yarnpkg.com/en/docs/cli/list for documentation about this command."
     if (d.type === 'info' && !d.data.match(/^Visit/)) {
       // parse package name and version number from info data, e.g. "nodemon@2.0.4" has binaries
-      const [, pkgName, pkgVersion] = d.data.match(/"(@?.*)@(.*)"/) || []
+      const [, pkgName, pkgVersion] = d.data.match(/"(@?[^@]*)@([^"]*)"/) || []
+      if (!pkgName) continue
 
       dependencies[pkgName] = {
         version: pkgVersion,
