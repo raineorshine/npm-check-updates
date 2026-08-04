@@ -534,15 +534,16 @@ npmApi.findNpmConfig = memoize((): NpmConfig => {
  * @param data
  * @returns
  */
-export function parseJson<R>(result: string, data: { command?: string; packageName?: string }): R {
+export function parseJson<R>(result: string, data: { command?: string; packageName?: string; stderr?: string }): R {
   let json
   try {
     json = JSON.parse(result)
   } catch (err) {
+    const stderr = data.stderr?.trim()
     throw new Error(
       `Expected JSON from "${data.command}".${
         data.packageName ? ` There could be problems with the ${data.packageName} package.` : ''
-      } ${result ? 'Instead received: ' + result : 'Received empty response.'}`,
+      } ${result ? 'Instead received: ' + result : 'Received empty response.'}${stderr ? `\n\n${stderr}` : ''}`,
       { cause: err },
     )
   }
@@ -827,15 +828,15 @@ async function spawnNpm(
   npmOptions: NpmOptions = {},
   spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: Index<any> = {},
-): Promise<any> {
+): Promise<{ stdout: string; stderr: string; command: string }> {
   const fullArgs = [
     ...(npmOptions.global ? [`--global`] : []),
     ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
     '--json',
     ...(Array.isArray(args) ? args : [args]),
   ]
-  const { stdout } = await spawnCommand('npm', fullArgs, spawnPleaseOptions, spawnOptions)
-  return stdout
+  const { stdout, stderr, command } = await spawnCommand('npm', fullArgs, spawnPleaseOptions, spawnOptions)
+  return { stdout, stderr, command: [command, ...fullArgs].join(' ') }
 }
 
 /**
@@ -944,8 +945,8 @@ export const getPeerDependencies = async (
   spawnOptions: SpawnOptions,
 ): Promise<Index<Version>> => {
   const args = ['view', `${packageName}@${version}`, 'peerDependencies']
-  const result = await spawnNpm(args, {}, { rejectOnError: false }, spawnOptions)
-  return result ? parseJson(result, { command: [...args, '--json'].join(' ') }) : {}
+  const { stdout, stderr, command } = await spawnNpm(args, {}, { rejectOnError: false }, spawnOptions)
+  return stdout ? parseJson(stdout, { command, stderr }) : {}
 }
 
 /**
@@ -978,7 +979,8 @@ export const getEngines = async (
  * @returns
  */
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
-  const result = await spawnNpm(
+  // npm ls exits non-zero on tree problems (e.g. unmet peers) but still prints usable JSON
+  const { stdout, stderr, command } = await spawnNpm(
     ['ls', '--depth=0'],
     {
       ...(options.global ? { global: true } : null),
@@ -993,9 +995,7 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   )
   const dependencies = parseJson<{
     dependencies: Index<{ version?: Version; required?: { version: Version } }>
-  }>(result, {
-    command: `npm${process.platform === 'win32' ? '.cmd' : ''} ls --json${options.global ? ' --global' : ''}`,
-  }).dependencies
+  }>(stdout, { command, stderr }).dependencies
 
   return keyValueBy(dependencies, (name, info) => ({
     // unmet peer dependencies have a different structure

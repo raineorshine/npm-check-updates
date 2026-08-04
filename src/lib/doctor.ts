@@ -27,7 +27,7 @@ const npm = (
   options: Options,
   print?: boolean,
   { spawnOptions, spawnPleaseOptions }: { spawnOptions?: SpawnOptions; spawnPleaseOptions?: SpawnPleaseOptions } = {},
-): Promise<string> => {
+): Promise<unknown> => {
   if (print) {
     console.log(chalk.blue([options.packageManager, ...args].join(' ')))
   }
