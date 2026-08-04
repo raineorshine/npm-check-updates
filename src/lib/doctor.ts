@@ -38,7 +38,8 @@ const npm = (
       ...process.env,
       // TODO: Why does CI break pnpm install?
       ...(options.packageManager !== 'pnpm' ? { CI: '1' } : null),
-      FORCE_COLOR: '1',
+      // the output is piped, so color has to be forced; setting it over NO_COLOR makes node warn
+      ...(options.color !== false && !process.env.NO_COLOR ? { FORCE_COLOR: '1' } : null),
       ...spawnOptions?.env,
     },
     ...spawnOptions,
