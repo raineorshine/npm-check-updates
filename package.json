@@ -36,7 +36,7 @@
     "build": "vite build",
     "build:options": "node scripts/build-options.ts",
     "build:analyze": "cross-env ANALYZER=true vite build",
-    "lint": "cross-env FORCE_COLOR=1 npm-run-all --parallel --continue-on-error --aggregate-output lint:*",
+    "lint": "npm-run-all --parallel --continue-on-error --aggregate-output lint:*",
     "lint:lockfile": "lockfile-lint",
     "lint:types": "tsc --noEmit",
     "lint:markdown": "markdownlint-cli2 \"**/*.md\" \"!**/node_modules/**/*.md\" \"!build/**/*.md\"",
