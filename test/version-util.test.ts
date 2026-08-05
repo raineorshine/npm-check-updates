@@ -426,6 +426,27 @@ describe('version-util', () => {
     })
   })
 
+  describe('shortenBuildMetadata', () => {
+    it('truncate long build metadata', () => {
+      expect(
+        versionUtil.shortenBuildMetadata(
+          '10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748',
+        ),
+      ).toBe('10.14.0+sha512.ad27a79641b49...')
+    })
+    it('keep short build metadata', () => {
+      expect(versionUtil.shortenBuildMetadata('1.0.0+20130313144700')).toBe('1.0.0+20130313144700')
+      expect(versionUtil.shortenBuildMetadata('1.0.0+exp.sha.5114f85')).toBe('1.0.0+exp.sha.5114f85')
+    })
+    it('keep versions without build metadata', () => {
+      expect(versionUtil.shortenBuildMetadata('1.0.0')).toBe('1.0.0')
+      expect(versionUtil.shortenBuildMetadata('^1.0.0-alpha.1')).toBe('^1.0.0-alpha.1')
+    })
+    it('leave a multi-part range alone', () => {
+      expect(versionUtil.shortenBuildMetadata('>=1.0.0+20130313144700 <2.0.0')).toBe('>=1.0.0+20130313144700 <2.0.0')
+    })
+  })
+
   describe('colorizeDiff', () => {
     chalkInit()
     it('do not colorize unchanged versions', () => {
