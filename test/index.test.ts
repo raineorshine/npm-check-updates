@@ -172,6 +172,48 @@ describe('run', () => {
       })
       expect(upgrades).toStrictEqual({})
     })
+
+    it('non-deprecated latest upgraded with --no-deprecated', async () => {
+      const upgrades = await ncu({
+        deprecated: false,
+        packageData: {
+          dependencies: {
+            'ncu-test-v2': '1.0.0',
+          },
+        },
+      })
+      expect(upgrades).toStrictEqual({
+        'ncu-test-v2': '2.0.0',
+      })
+    })
+
+    it('custom dist-tag upgraded with --no-deprecated', async () => {
+      const upgrades = await ncu({
+        deprecated: false,
+        target: '@next',
+        packageData: {
+          dependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+        },
+      })
+      expect(upgrades).toStrictEqual({
+        'ncu-test-tag': '1.0.0-1',
+      })
+    })
+
+    it('unknown dist-tag skipped with --no-deprecated', async () => {
+      const upgrades = await ncu({
+        deprecated: false,
+        target: '@nonexistent',
+        packageData: {
+          dependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+        },
+      })
+      expect(upgrades).toStrictEqual({})
+    })
   })
 
   it('ignore non-string versions (sometimes used as comments)', async () => {
