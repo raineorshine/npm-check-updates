@@ -24,6 +24,16 @@ describe('npm', () => {
     expect(version).toBe('2.0.0-beta')
   })
 
+  // the single-tag manifest only knows about one tag, so it must not be used here
+  it('getDistTags returns every tag even when a distTag is being upgraded to', async () => {
+    const distTags = await npm.getDistTags('ncu-test-tag', { cwd: __dirname, distTag: 'latest' })
+    expect(distTags).toMatchObject({
+      latest: '1.1.0',
+      next: '1.0.0-1',
+      dev: '1.2.0-dev.0',
+    })
+  })
+
   it('ownerChanged', async () => {
     await expect(npm.packageAuthorChanged('mocha', '^7.1.0', '8.0.1')).resolves.toBe(true)
     await expect(npm.packageAuthorChanged('htmlparser2', '^3.10.1', '^4.0.0')).resolves.toBe(false)
