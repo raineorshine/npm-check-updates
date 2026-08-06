@@ -4,6 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
+import { type Packument } from '../src/types/Packument.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -198,6 +199,34 @@ describe('run', () => {
       expect(upgrades).toStrictEqual({
         'ncu-test-tag': '1.0.0-1',
       })
+    })
+
+    it('deprecation message treated as deprecated', async () => {
+      const stub = stubVersions({
+        'ncu-test-deprecated': {
+          name: 'ncu-test-deprecated',
+          'dist-tags': { latest: '2.0.0' },
+          version: '2.0.0',
+          versions: {
+            '1.0.0': { version: '1.0.0' } as Packument,
+            '1.5.0': { version: '1.5.0' } as Packument,
+            '2.0.0': { version: '2.0.0', deprecated: 'use 1.5.0 instead' } as Packument,
+          },
+        },
+      })
+
+      const upgrades = await ncu({
+        packageData: {
+          dependencies: {
+            'ncu-test-deprecated': '1.0.0',
+          },
+        },
+      })
+      expect(upgrades).toStrictEqual({
+        'ncu-test-deprecated': '1.5.0',
+      })
+
+      stub.restore()
     })
 
     it('unknown dist-tag skipped with --no-deprecated', async () => {
