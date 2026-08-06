@@ -56,10 +56,7 @@ export interface RunOptions {
    */
   dep?: string | readonly string[]
 
-  /** Include deprecated packages. Use `--no-deprecated` to exclude deprecated packages.
-   *
-   * @default true
-   */
+  /** Include deprecated packages. (default: false) */
   deprecated?: boolean
 
   /** Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires `-u` to execute. Run "ncu --help --doctor" for details. */
