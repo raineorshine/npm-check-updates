@@ -809,8 +809,8 @@ async function fetchUpgradedPackument(
         new Set([
           'dist-tags',
           ...fields,
-          ...(!options.deprecated ? (['deprecated', 'versions'] as const) : []),
-          ...(options.enginesNode ? (['engines', 'versions'] as const) : []),
+          // deprecated and engines are only set on entries of versions, not on the packument itself
+          ...(!options.deprecated || options.enginesNode ? (['versions'] as const) : []),
         ]),
       ),
       fullMetadata ? null : tag,
