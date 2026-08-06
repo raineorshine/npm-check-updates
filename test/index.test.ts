@@ -134,7 +134,7 @@ describe('run', () => {
   })
 
   describe('deprecated', () => {
-    it('deprecated included by default', async () => {
+    it('deprecated excluded by default', async () => {
       const upgrades = await ncu({
         packageData: {
           dependencies: {
@@ -142,9 +142,7 @@ describe('run', () => {
           },
         },
       })
-      expect(upgrades).toStrictEqual({
-        'ncu-test-deprecated': '2.0.0',
-      })
+      expect(upgrades).toStrictEqual({})
     })
 
     it('deprecated included with --deprecated', async () => {
