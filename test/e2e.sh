@@ -30,7 +30,7 @@ cleanup() {
 
   # Shut down Verdaccio
   if [[ -n "${verdaccio_pid}" ]]; then
-    echo Shutting down Verdaccio
+    echo "Shutting down Verdaccio"
     kill -9 "${verdaccio_pid}" 2>/dev/null || true
     wait "${verdaccio_pid}" 2>/dev/null || true
   fi
@@ -42,9 +42,9 @@ cleanup() {
   rm -rf -- "${temp_dir}"
 
   if [[ "${exit_status}" -ne 0 ]]; then
-    echo Error
+    echo "Error"
   else
-    echo Done
+    echo "Done"
   fi
 }
 
@@ -89,7 +89,7 @@ uplinks:
 EOF
 
 # Start Verdaccio and wait for it to boot
-echo Starting local registry
+echo "Starting local registry"
 nohup verdaccio -l "${registry_addr}" -c "${verdaccio_config}" >"${registry_log}" 2>&1 &
 verdaccio_pid=$!
 
@@ -104,19 +104,19 @@ fi
 npm config set "//${registry_addr}/:_authToken=e2e_dummy"
 
 # Publish to local registry
-echo Publishing to local registry
+echo "Publishing to local registry"
 npm publish --registry "${registry_local}"
 
 package_version="$(node -p "require('./package.json').version")"
 npm view "npm-check-updates@${package_version}" version --registry "${registry_local}" >/dev/null
 
-# Test: ncu -v
-echo ncu -v
+# npm-check-updates -v
+echo "npm-check-updates -v"
 npx --yes --registry "${registry_local}" npm-check-updates -v
 
-# Test: cli
+# CLI
 # Create a package.json file with a dependency on npm-check-updates since it is already published to the local registry
-echo Test: cli
+echo "Test: CLI"
 cat <<'EOF' > "${temp_dir}/package.json"
 {
   "dependencies": {
@@ -135,24 +135,15 @@ npx --yes --registry "${registry_local}" npm-check-updates \
   --registry "${registry_local}"
 
 rm -f -- "${temp_dir}/package.json"
-cp -r "${e2e_dir}/e2e" "${temp_dir}"
+cp -a "${e2e_dir}/e2e" "${temp_dir}"
 
-# Test: cjs
-echo Test: cjs
-cd "${temp_dir}/e2e/cjs"
+for variant in cjs esm; do
+  echo "Test: ${variant}"
+  cd "${temp_dir}/e2e/${variant}"
 
-echo Installing
-npm i npm-check-updates@latest --registry "${registry_local}"
+  echo "Installing"
+  npm i npm-check-updates@latest --registry "${registry_local}"
 
-echo Running test
-REGISTRY="${registry_local}" node "${temp_dir}/e2e/cjs/index.js"
-
-# Test: esm
-echo Test: esm
-cd "${temp_dir}/e2e/esm"
-
-echo Installing
-npm i npm-check-updates@latest --registry "${registry_local}"
-
-echo Running test
-REGISTRY="${registry_local}" node "${temp_dir}/e2e/esm/index.js"
+  echo "Running test"
+  REGISTRY="${registry_local}" node index.js
+done
