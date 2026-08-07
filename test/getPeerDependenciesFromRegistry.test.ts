@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { chalkInit } from '../src/lib/chalk.ts'
 import getPeerDependenciesFromRegistry from '../src/lib/getPeerDependenciesFromRegistry.ts'
 import { silenceProgressBar } from './helpers/silenceProgressBar.ts'
@@ -38,5 +38,22 @@ describe('getPeerDependenciesFromRegistry', () => {
         'ncu-test-return-version': '1.x',
       },
     })
+  })
+
+  it('warns when peer dependencies cannot be fetched instead of reporting none', async () => {
+    chalkInit()
+    silenceProgressBar()
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    const data = await getPeerDependenciesFromRegistry({ 'ncu-test-return-version': '99.99.99' }, {})
+
+    expect(data).toStrictEqual({ 'ncu-test-return-version': {} })
+    const warnings = logSpy.mock.calls
+      .flat()
+      .filter(arg => typeof arg === 'string' && arg.includes('Could not determine the peer dependencies'))
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('ncu-test-return-version')
+
+    logSpy.mockRestore()
   })
 })
