@@ -2,12 +2,10 @@ name: E2E Tests
 
 on:
   push:
+    # main only; everything else, dependabot included, is covered by pull_request
     branches:
       - main
-      - '!dependabot/**'
   pull_request:
-    branches:
-      - '**'
   workflow_dispatch:
 
 env:
@@ -19,9 +17,14 @@ permissions:
 
 jobs:
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     if: github.event_name != 'pull_request' || github.event.pull_request.changed_files > 0
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
 
     steps:
       - name: Clone repository
