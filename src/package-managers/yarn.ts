@@ -450,4 +450,6 @@ export default spawnYarn
 
 export const yarnApi = {
   getYarnMinimalAgeGate,
+  parseJsonLines,
+  extractFirstJsonLine,
 }
