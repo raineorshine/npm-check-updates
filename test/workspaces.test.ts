@@ -377,6 +377,25 @@ describe('workspaces', () => {
         }
       })
 
+      it('do not update the root project with root: false in the rc config', async () => {
+        const tempDir = await setup()
+        try {
+          await fs.writeFile(path.join(tempDir, '.ncurc.json'), JSON.stringify({ root: false }), 'utf-8')
+          const { stdout } = await spawn(
+            'node',
+            [bin, '--jsonAll', '--workspaces', '--configFilePath', tempDir],
+            {},
+            { cwd: tempDir },
+          )
+          const output = JSON.parse(stdout)
+          expect(output).not.toHaveProperty('package.json')
+          expect(output).toHaveProperty('packages/a/package.json')
+          expect(output).toHaveProperty('packages/b/package.json')
+        } finally {
+          await removeDir(tempDir)
+        }
+      })
+
       it('update root project and workspaces if errorLevel=2', async () => {
         const tempDir = await setup()
         try {

@@ -29,8 +29,25 @@ describe('getNcuRc', () => {
     expect(config).toStrictEqual({ upgrade: true, target: 'minor', reject: ['foo'] })
   })
 
-  it('omits boolean options that are false', async () => {
+  it('negates boolean options that are false', async () => {
     await fs.writeFile(path.join(tempDir, '.ncurc.json'), JSON.stringify({ upgrade: false, target: 'latest' }))
+
+    const { args } = await getNcuRc({ configFilePath: tempDir, options: {} })
+
+    expect(args).toStrictEqual(['--no-upgrade', '--target', 'latest'])
+  })
+
+  it('negates boolean options that default to true', async () => {
+    await fs.writeFile(path.join(tempDir, '.ncurc.json'), JSON.stringify({ root: false, deprecated: false }))
+
+    const { args } = await getNcuRc({ configFilePath: tempDir, options: {} })
+
+    expect(args).toStrictEqual(['--no-root', '--no-deprecated'])
+  })
+
+  it('omits false values for options that are not declared boolean', async () => {
+    // stdin is declared as a string option, so commander has no --no-stdin to negate it
+    await fs.writeFile(path.join(tempDir, '.ncurc.json'), JSON.stringify({ stdin: false, target: 'latest' }))
 
     const { args } = await getNcuRc({ configFilePath: tempDir, options: {} })
 
