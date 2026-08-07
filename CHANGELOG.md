@@ -1,6 +1,8 @@
 # Changelog
 
-This file only documents **major version** releases. For smaller releases, you're stuck reading the [commit history](https://github.com/raineorshine/npm-check-updates/commits/main).
+**This file is no longer maintained.** Release notes are published on the [GitHub releases page](https://github.com/raineorshine/npm-check-updates/releases).
+
+---
 
 ## [22.0.0] - 2026-04-25
 
