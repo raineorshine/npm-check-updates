@@ -778,7 +778,15 @@ async function fetchUpgradedPackument(
     )
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
-      return fetchUpgradedPackument(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
+      return fetchUpgradedPackument(
+        packageName,
+        fieldsExtended,
+        currentVersion,
+        options,
+        retried,
+        npmConfigLocal,
+        npmConfigWorkspaceProject,
+      )
     }
 
     throw err
