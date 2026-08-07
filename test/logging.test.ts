@@ -1,7 +1,22 @@
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { chalkInit } from '../src/lib/chalk.ts'
-import { toDependencyTable } from '../src/lib/logging.ts'
+import {
+  printIgnoredUpdatesDueToEnginesNode,
+  printIgnoredUpdatesDueToPeerDeps,
+  toDependencyTable,
+} from '../src/lib/logging.ts'
+
+/** Captures everything printed to the console during fn. */
+const captureOutput = (fn: () => void): string => {
+  const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+  try {
+    fn()
+    return stripAnsi(logSpy.mock.calls.flat().join('\n'))
+  } finally {
+    logSpy.mockRestore()
+  }
+}
 
 describe('toDependencyTable', () => {
   chalkInit(false)
@@ -47,5 +62,40 @@ describe('toDependencyTable', () => {
       skippedByCooldown: { x: { name: 'x', currentVersion: '1.0.0', version: '2.0.0' } },
     })
     expect(table).toContain('[cooldown]')
+  })
+})
+
+describe('printIgnoredUpdatesDueToPeerDeps', () => {
+  chalkInit(false)
+
+  it('prints the peer dependency requirements that blocked each upgrade', () => {
+    const output = captureOutput(() =>
+      printIgnoredUpdatesDueToPeerDeps(
+        {},
+        {
+          'ncu-test-return-version': {
+            from: '1.0.0',
+            to: '2.0.0',
+            reason: { 'ncu-test-peer': '1.1.x', 'ncu-test-peer-2': '1.0.x' },
+          },
+        },
+      ),
+    )
+    expect(output).toContain('Ignored incompatible updates (peer dependencies)')
+    expect(output).toContain('ncu-test-return-version')
+    expect(output).toContain('reason: ncu-test-peer requires 1.1.x, ncu-test-peer-2 requires 1.0.x')
+  })
+})
+
+describe('printIgnoredUpdatesDueToEnginesNode', () => {
+  chalkInit(false)
+
+  it('prints the required node version that blocked each upgrade', () => {
+    const output = captureOutput(() =>
+      printIgnoredUpdatesDueToEnginesNode({}, { 'ncu-test-v2': { from: '1.0.0', to: '2.0.0', enginesNode: '>=18' } }),
+    )
+    expect(output).toContain('Ignored incompatible updates (engines node)')
+    expect(output).toContain('ncu-test-v2')
+    expect(output).toContain('reason: requires node >=18')
   })
 })

@@ -50,14 +50,23 @@ describe('pnpm', () => {
   describe('getPnpmWorkspaceMinimumReleaseAge', () => {
     let tempDir: string
     let originalCwd: string
+    let originalXdgConfigHome: string | undefined
 
     beforeEach(async () => {
       originalCwd = process.cwd()
+      originalXdgConfigHome = process.env.XDG_CONFIG_HOME
       tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-pnpm-'))
+      // isolate the global config layers from the machine running the tests
+      process.env.XDG_CONFIG_HOME = path.join(tempDir, 'xdg')
     })
 
     afterEach(async () => {
       process.chdir(originalCwd)
+      if (originalXdgConfigHome === undefined) {
+        delete process.env.XDG_CONFIG_HOME
+      } else {
+        process.env.XDG_CONFIG_HOME = originalXdgConfigHome
+      }
       await removeDir(tempDir)
     })
 
@@ -65,6 +74,13 @@ describe('pnpm', () => {
     async function writeWorkspace(content: string): Promise<void> {
       await fs.writeFile(path.join(tempDir, 'pnpm-workspace.yaml'), content)
       process.chdir(tempDir)
+    }
+
+    /** Writes a file into the pnpm global config directory. */
+    async function writeGlobalConfig(filename: string, content: string): Promise<void> {
+      const globalConfigDir = path.join(tempDir, 'xdg', 'pnpm')
+      await fs.mkdir(globalConfigDir, { recursive: true })
+      await fs.writeFile(path.join(globalConfigDir, filename), content)
     }
 
     it('returns null when no config defines minimumReleaseAge', async () => {
@@ -105,6 +121,49 @@ minimumReleaseAgeExclude:
       await writeWorkspace('minimumReleaseAge: 60\nminimumReleaseAgeExclude: "react"\n')
       const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
       expect(result?.minimumReleaseAgeExclude).toStrictEqual(['react'])
+    })
+
+    it('ignores a pnpm-workspace.yaml that is not valid yaml', async () => {
+      await writeWorkspace('minimumReleaseAge: 60\n  minimumReleaseAgeExclude: [\n')
+      expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()).toBeNull()
+    })
+
+    // pnpm >= 11
+    it('reads minimumReleaseAge from the global config.yaml', async () => {
+      await writeGlobalConfig('config.yaml', 'minimumReleaseAge: 2880\nminimumReleaseAgeExclude:\n  - "vue"\n')
+      process.chdir(tempDir)
+      expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()).toStrictEqual({
+        minimumReleaseAge: 2880,
+        minimumReleaseAgeExclude: ['vue'],
+      })
+    })
+
+    // pnpm <= 10 stores arrays in the ini-formatted rc file as JSON, and uses kebab-case keys
+    it('reads minimumReleaseAge from the global rc file', async () => {
+      await writeGlobalConfig('rc', 'minimum-release-age=4320\nminimum-release-age-exclude=["vue"]\n')
+      process.chdir(tempDir)
+      expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()).toStrictEqual({
+        minimumReleaseAge: 4320,
+        minimumReleaseAgeExclude: ['vue'],
+      })
+    })
+
+    it('falls back to the platform-specific global config directory when XDG_CONFIG_HOME is unset', async () => {
+      delete process.env.XDG_CONFIG_HOME
+      await writeWorkspace('minimumReleaseAge: 90\n')
+      // only assert the workspace value, since the global layers are the machine's real pnpm config here
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+      expect(result?.minimumReleaseAge).toBe(90)
+    })
+
+    it('prefers the workspace minimumReleaseAge and merges excludes across layers', async () => {
+      await writeGlobalConfig('config.yaml', 'minimumReleaseAge: 2880\nminimumReleaseAgeExclude:\n  - "vue"\n')
+      await writeGlobalConfig('rc', 'minimum-release-age=4320\nminimum-release-age-exclude=["svelte"]\n')
+      await writeWorkspace('minimumReleaseAge: 60\nminimumReleaseAgeExclude:\n  - "react"\n')
+      expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()).toStrictEqual({
+        minimumReleaseAge: 60,
+        minimumReleaseAgeExclude: ['react', 'vue', 'svelte'],
+      })
     })
   })
 })

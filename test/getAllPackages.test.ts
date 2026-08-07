@@ -1,3 +1,5 @@
+import fs from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -215,6 +217,64 @@ describe('getAllPackages', () => {
       expect(catalogInfo).toBeDefined()
       expect(catalogInfo!.pkg.dependencies).toStrictEqual({ chalk: '^5.0.0', react: '^18.0.0' })
       expect(catalogInfo!.filepath.endsWith('pnpm-workspace.yaml')).toBe(true)
+    })
+
+    it('reads the nested workspaces.catalog and workspaces.catalogs format from pnpm-workspace.yaml', async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-catalog-nested-'))
+      try {
+        await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({ workspaces: ['pkg/*'] }), 'utf-8')
+        await fs.writeFile(
+          path.join(tempDir, 'pnpm-workspace.yaml'),
+          `workspaces:
+  packages:
+    - 'pkg/*'
+  catalog:
+    chalk: ^5.0.0
+  catalogs:
+    react18:
+      react: ^18.0.0
+`,
+          'utf-8',
+        )
+
+        const [pkgInfo]: [PackageInfo[], string[]] = await getAllPackages({
+          cwd: tempDir.replace(/\\/g, '/'),
+          workspaces: true,
+          packageManager: 'pnpm',
+          loglevel: 'silent',
+        })
+
+        const catalogInfo = pkgInfo.find((info: PackageInfo) => info.name === 'catalogs')
+        expect(catalogInfo).toBeDefined()
+        expect(catalogInfo!.pkg.dependencies).toStrictEqual({ chalk: '^5.0.0', react: '^18.0.0' })
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true })
+      }
+    })
+
+    it('reads catalog and catalogs from .yarnrc.yml', async () => {
+      const [pkgInfo]: [PackageInfo[], string[]] = await getAllPackages({
+        cwd: path.join(__dirname, 'test-data/workspace-catalog-yarn').replace(/\\/g, '/'),
+        workspaces: true,
+        packageManager: 'yarn',
+        loglevel: 'silent',
+      })
+
+      const catalogInfo = pkgInfo.find((info: PackageInfo) => info.name === 'catalogs')
+      expect(catalogInfo).toBeDefined()
+      expect(catalogInfo!.pkg.dependencies).toStrictEqual({ chalk: '^5.0.0', react: '^18.0.0' })
+      expect(catalogInfo!.filepath.endsWith('.yarnrc.yml')).toBe(true)
+    })
+
+    it('returns no catalog package when there is no .yarnrc.yml', async () => {
+      const [pkgInfo]: [PackageInfo[], string[]] = await getAllPackages({
+        cwd: path.join(__dirname, 'test-data/workspace-basic').replace(/\\/g, '/'),
+        workspaces: true,
+        packageManager: 'yarn',
+        loglevel: 'silent',
+      })
+
+      expect(pkgInfo.find((info: PackageInfo) => info.name === 'catalogs')).toBeUndefined()
     })
   })
 
