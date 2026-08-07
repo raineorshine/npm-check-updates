@@ -16,6 +16,7 @@ import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
 import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
+import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import * as npm from './npm.ts'
@@ -200,7 +201,7 @@ const getYarnMinimalAgeGate = memoize(async (options: Options): Promise<YarnMini
 /**
  * Parse JSON lines and throw an informative error on failure.
  *
- * Note: although this is similar to the NPM parseJson() function we always return the
+ * Note: although this is similar to the npm parseJson() function we always return the
  * same concrete-type here, for now.
  *
  * @param result    Output from `yarn list --json` to be parsed
@@ -217,7 +218,8 @@ function parseJsonLines(result: string): { dependencies: Index<ParsedDep> } {
     // ignore error info, e.g. "Visit https://yarnpkg.com/en/docs/cli/list for documentation about this command."
     if (d.type === 'info' && !d.data.match(/^Visit/)) {
       // parse package name and version number from info data, e.g. "nodemon@2.0.4" has binaries
-      const [, pkgName, pkgVersion] = d.data.match(/"(@?.*)@(.*)"/) || []
+      const [, pkgName, pkgVersion] = d.data.match(/"(@?[^@]*)@([^"]*)"/) || []
+      if (!pkgName) continue
 
       dependencies[pkgName] = {
         version: pkgVersion,
@@ -258,7 +260,7 @@ async function spawnYarn(
   yarnOptions: NpmOptions = {},
   spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: SpawnOptions = {},
-): Promise<string> {
+): Promise<SpawnResult> {
   const fullArgs = [
     ...(yarnOptions.global ? ['global'] : []),
     ...(yarnOptions.prefix ? [`--prefix=${yarnOptions.prefix}`] : []),
@@ -270,9 +272,7 @@ async function spawnYarn(
     ...(Array.isArray(args) ? args : [args]),
   ]
 
-  const { stdout } = await spawnCommand('yarn', fullArgs, spawnPleaseOptions, spawnOptions)
-
-  return stdout
+  return spawnCommand('yarn', fullArgs, spawnPleaseOptions, spawnOptions)
 }
 
 /**
@@ -321,7 +321,7 @@ export async function defaultPrefix(options: Options): Promise<string | null> {
  * @returns
  */
 export const list = async (options: Options = {}, spawnOptions?: SpawnOptions): Promise<Index<string | undefined>> => {
-  const jsonLines: string = await spawnYarn(
+  const { stdout: jsonLines } = await spawnYarn(
     'list',
     options as NpmOptions,
     {},
@@ -407,6 +407,15 @@ export const getPeerDependencies = async (
 }
 
 /**
+ * Fetches all dist-tags published for a package.
+ *
+ * @param packageName
+ * @returns Promised {tag: version} collection
+ */
+export const getDistTags = async (packageName: string, options: Options = {}): Promise<Index<Version>> =>
+  npm.getDistTags(packageName, options, await npmConfigFromYarn(options))
+
+/**
  * Fetches the engines list from the registry for a specific package version.
  *
  * @param packageName
@@ -441,4 +450,6 @@ export default spawnYarn
 
 export const yarnApi = {
   getYarnMinimalAgeGate,
+  parseJsonLines,
+  extractFirstJsonLine,
 }

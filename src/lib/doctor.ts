@@ -11,6 +11,7 @@ import { type PackageFile } from '../types/PackageFile.ts'
 import { type PackageInfo } from '../types/PackageInfo.ts'
 import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
+import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import chalk, { chalkInit } from './chalk.ts'
 import loadPackageInfoFromFile from './loadPackageInfoFromFile.ts'
@@ -27,7 +28,7 @@ const npm = (
   options: Options,
   print?: boolean,
   { spawnOptions, spawnPleaseOptions }: { spawnOptions?: SpawnOptions; spawnPleaseOptions?: SpawnPleaseOptions } = {},
-): Promise<string> => {
+): Promise<SpawnResult> => {
   if (print) {
     console.log(chalk.blue([options.packageManager, ...args].join(' ')))
   }
@@ -38,7 +39,8 @@ const npm = (
       ...process.env,
       // TODO: Why does CI break pnpm install?
       ...(options.packageManager !== 'pnpm' ? { CI: '1' } : null),
-      FORCE_COLOR: '1',
+      // the output is piped, so color has to be forced; setting it over NO_COLOR makes node warn
+      ...(options.color !== false && !process.env.NO_COLOR ? { FORCE_COLOR: '1' } : null),
       ...spawnOptions?.env,
     },
     ...spawnOptions,

@@ -2,14 +2,12 @@ name: zizmor
 
 on:
   push:
+    # main only; everything else, dependabot included, is covered by pull_request
     branches:
       - main
-      - '!dependabot/**'
     paths:
       - '.github/**'
   pull_request:
-    branches:
-      - '**'
     paths:
       - '.github/**'
   schedule:

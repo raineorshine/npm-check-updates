@@ -4,6 +4,7 @@ import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
 import getPackageManager from './getPackageManager.ts'
+import resolveDistTagsInPeerDependencies from './resolveDistTagsInPeerDependencies.ts'
 
 type CircularData =
   | {
@@ -47,7 +48,7 @@ function isCircularPeer(peerDependencies: Index<Index<string>>, packageName: str
 }
 
 /**
- * Get the latest or greatest versions from the NPM repository based on the version target.
+ * Get the latest or greatest versions from the npm repository based on the version target.
  *
  * @param packageMap   An object whose keys are package name and values are version
  * @param [options={}] Options.
@@ -104,7 +105,8 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
   await options.cacher?.save()
   options.cacher?.log(true)
 
-  return peerDepsMap
+  // outside the cache so dist-tags are re-resolved every run
+  return resolveDistTagsInPeerDependencies(peerDepsMap, options)
 }
 
 export default getPeerDependenciesFromRegistry

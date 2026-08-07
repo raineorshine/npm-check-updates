@@ -6,7 +6,7 @@ import { type VersionSpec } from '../types/VersionSpec.ts'
 import getPackageManager from './getPackageManager.ts'
 
 /**
- * Get the engines.node versions from the NPM repository based on the version target.
+ * Get the engines.node versions from the npm repository based on the version target.
  *
  * @param packageMap   An object whose keys are package name and values are version
  * @param [options={}] Options.

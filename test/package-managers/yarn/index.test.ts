@@ -231,6 +231,52 @@ describe('yarn', () => {
     })
   })
 
+  describe('parseJsonLines', () => {
+    it('parses name and version out of info lines', () => {
+      const output = [
+        '{"type":"info","data":"\\"ncu-test-v2@1.0.0\\" has binaries"}',
+        '{"type":"info","data":"\\"@ncu/scoped@2.1.0\\" has binaries"}',
+      ].join('\n')
+      expect(yarn.yarnApi.parseJsonLines(output)).toStrictEqual({
+        dependencies: {
+          'ncu-test-v2': { version: '1.0.0', from: 'ncu-test-v2' },
+          '@ncu/scoped': { version: '2.1.0', from: '@ncu/scoped' },
+        },
+      })
+    })
+
+    it('ignores blank lines, documentation links, and unparseable info data', () => {
+      const output = [
+        '',
+        '{"type":"info","data":"Visit https://yarnpkg.com/en/docs/cli/list for documentation about this command."}',
+        '{"type":"info","data":"no package spec here"}',
+        '{"type":"tree","data":{"type":"list"}}',
+        '   ',
+      ].join('\n')
+      expect(yarn.yarnApi.parseJsonLines(output)).toStrictEqual({ dependencies: {} })
+    })
+
+    it('throws the error data on an error line', () => {
+      const output = '{"type":"error","data":"No lockfile in this directory. Run `yarn install` to generate one."}'
+      expect(() => yarn.yarnApi.parseJsonLines(output)).toThrow(
+        'No lockfile in this directory. Run `yarn install` to generate one.',
+      )
+    })
+  })
+
+  describe('extractFirstJsonLine', () => {
+    it('returns the first json line of a multi-line response', () => {
+      const output = ['', '{"type":"error","name":35,"data":"Package not found"}', '{"type":"error","name":35}'].join(
+        '\n',
+      )
+      expect(yarn.yarnApi.extractFirstJsonLine(output)).toBe('{"type":"error","name":35,"data":"Package not found"}')
+    })
+
+    it('throws when there is no json line', () => {
+      expect(() => yarn.yarnApi.extractFirstJsonLine('   \n\n')).toThrow('No JSON line found')
+    })
+  })
+
   describe('getPathToLookForLocalYarnrc', () => {
     it('returns undefined when global', async () => {
       expect(await yarn.getPathToLookForYarnrc({ global: true })).toBeUndefined()

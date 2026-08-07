@@ -38,6 +38,25 @@ describe('npm', () => {
     })
   })
 
+  // npm prints its diagnostics to stderr when it outputs no JSON
+  describe('parseJson', () => {
+    it('appends stderr to the error', () => {
+      expect(() =>
+        npm.parseJson('', { command: 'npm --json ls --depth=0', stderr: 'npm does not support Node.js v18.20.4\n' }),
+      ).toThrow(
+        new Error(
+          'Expected JSON from "npm --json ls --depth=0". Received empty response.\n\nnpm does not support Node.js v18.20.4',
+        ),
+      )
+    })
+
+    it('omits stderr when it is empty', () => {
+      expect(() => npm.parseJson('not json', { command: 'npm --json ls --depth=0', stderr: '  ' })).toThrow(
+        new Error('Expected JSON from "npm --json ls --depth=0". Instead received: not json'),
+      )
+    })
+  })
+
   it('getEngines', async () => {
     await expect(npm.getEngines('del', '2.0.0')).resolves.toStrictEqual({ node: '>=0.10.0' })
     await expect(npm.getEngines('ncu-test-return-version', '1.0.0')).resolves.toStrictEqual({})

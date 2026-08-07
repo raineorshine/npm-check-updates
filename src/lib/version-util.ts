@@ -134,7 +134,7 @@ export function setPrecision(version: string, precision: VersionPart) {
  * @param wildcard
  * @returns
  */
-export function addWildCard(version: string, wildcard: string) {
+export function addWildcard(version: string, wildcard: string) {
   return wildcard === '^' || wildcard === '~' ? wildcard + version : setPrecision(version, 'major') + wildcard
 }
 
@@ -144,7 +144,7 @@ export function addWildCard(version: string, wildcard: string) {
  * @param version
  * @returns
  */
-export function isWildCard(version: string) {
+export function isWildcard(version: string) {
   return WILDCARD_PURE_REGEX.test(version)
 }
 
@@ -160,6 +160,16 @@ export function isWildPart(versionPartValue: Maybe<string>) {
 
 /** Strips semver range prefixes (^, ~, >=, <=, >, <) from a version string. */
 export const stripRange = (version: string): string => version.replace(/^[~^<>=]+/, '')
+
+/** Number of build metadata characters to keep, not counting the leading +. */
+const MAX_BUILD_METADATA_LENGTH = 20
+
+/** Truncates long build metadata, e.g. the pnpm packageManager hash 10.14.0+sha512.ad27a79641b49... Only matches at the end of the string, so multi-part ranges are left alone. */
+export const shortenBuildMetadata = (version: string): string => {
+  const metadata = version.match(/\+(\S+)$/)?.[1]
+  if (!metadata || metadata.length <= MAX_BUILD_METADATA_LENGTH) return version
+  return version.slice(0, version.length - metadata.length) + metadata.slice(0, MAX_BUILD_METADATA_LENGTH) + '...'
+}
 
 /**
  * Determines the part of a version string that has changed when comparing two versions. Assumes that the two version strings are in the same format. Returns null if no parts have changed.
@@ -494,7 +504,7 @@ export function upgradeDependencyDeclaration(
   // return global wildcards immediately
   if (options.removeRange) {
     return latestVersion
-  } else if (isWildCard(declaration)) {
+  } else if (isWildcard(declaration)) {
     return declaration
   }
 
@@ -547,15 +557,15 @@ export function upgradeDependencyDeclaration(
   const uniqueOperators = Array.from(new Set(parsedRange.map(range => range.operator)))
   const operator = uniqueOperators[0] || ''
 
-  const hasWildCard = WILDCARDS.some(wildcard => newSemverString.includes(wildcard))
+  const hasWildcard = WILDCARDS.some(wildcard => newSemverString.includes(wildcard))
   const isLessThanOrEqual = uniqueOperators[0] === '<' || uniqueOperators[0] === '<='
   const isGreaterThan = uniqueOperators[0] === '>'
   const isMixed = uniqueOperators.length > 1
 
   // convert versions with </<= or mixed operators into the preferred wildcard
   // only do so if the new version does not already contain a wildcard
-  return !hasWildCard && (isLessThanOrEqual || isMixed)
-    ? addWildCard(version, options.wildcard)
+  return !hasWildcard && (isLessThanOrEqual || isMixed)
+    ? addWildcard(version, options.wildcard)
     : // convert > to >= since there are likely no available versions > latest
       // https://github.com/raineorshine/npm-check-updates/issues/957
       (isGreaterThan ? '>=' : operator) + version

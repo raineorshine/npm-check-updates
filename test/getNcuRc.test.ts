@@ -64,4 +64,34 @@ describe('getNcuRc', () => {
       'Config file nope.json not found',
     )
   })
+
+  it('throws a YAML error that names the config file', async () => {
+    await fs.writeFile(path.join(tempDir, '.ncurc.yaml'), 'upgrade: true\n  target: [\n')
+
+    await expect(getNcuRc({ configFilePath: tempDir, options: {} })).rejects.toThrow('YAML Error in')
+  })
+
+  it('suggests ESM syntax when a .ncurc.js uses CommonJS in a "type": "module" project', async () => {
+    await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({ type: 'module' }))
+    await fs.writeFile(path.join(tempDir, '.ncurc.js'), 'module.exports = { upgrade: true }\n')
+
+    await expect(getNcuRc({ configFilePath: tempDir, options: {} })).rejects.toThrow(
+      '.ncurc.js uses CommonJS syntax (require/module.exports) but your package.json has "type": "module".',
+    )
+  })
+
+  it('suggests adding "type": "module" when a .ncurc.js uses ESM in a CommonJS project', async () => {
+    await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({ type: 'commonjs' }))
+    await fs.writeFile(path.join(tempDir, '.ncurc.js'), 'export default { upgrade: true }\n')
+
+    await expect(getNcuRc({ configFilePath: tempDir, options: {} })).rejects.toThrow(
+      '.ncurc.js uses ESM syntax (import/export) but your package.json has "type": "commonjs".',
+    )
+  })
+
+  it('reports a generic config file error for a .cjs that is not a module mismatch', async () => {
+    await fs.writeFile(path.join(tempDir, '.ncurc.cjs'), 'throw new Error("boom")\n')
+
+    await expect(getNcuRc({ configFilePath: tempDir, options: {} })).rejects.toThrow('Config file error: boom')
+  })
 })

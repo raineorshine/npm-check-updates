@@ -15,6 +15,7 @@ import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
 import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
+import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type Version } from '../types/Version.ts'
 import * as npm from './npm.ts'
 
@@ -192,18 +193,32 @@ const getPnpmWorkspaceMinimumReleaseAge = async (
   return { minimumReleaseAge, minimumReleaseAgeExclude }
 }
 
+/** Parses the output of `pnpm ls -g --json` into a { name: version } index. */
+const parseList = (stdout: string, command: string, stderr?: string): Index<string | undefined> => {
+  const result = npm.parseJson<PnpmList>(stdout, { command, stderr })
+  // pnpm omits the project entry when there is no global root, and dependencies when nothing is installed
+  return keyValueBy(result[0]?.dependencies || {}, (name, { version }) => ({
+    [name]: version,
+  }))
+}
+
 /** Fetches the list of all installed packages. */
 export const list = async (options: Options = {}): Promise<Index<string | undefined>> => {
   // use npm for local ls for completeness
   // this should never happen since list is only called in runGlobal -> getInstalledPackages
   if (!options.global) return npm.list(options)
 
-  const { stdout } = await spawnCommand('pnpm', ['ls', '-g', '--json'])
-  const result = JSON.parse(stdout) as PnpmList
-  const list = keyValueBy(result[0].dependencies || {}, (name, { version }) => ({
-    [name]: version,
-  }))
-  return list
+  const args = ['ls', '-g', '--json']
+  const { stdout, stderr, command } = await spawnCommand('pnpm', args).catch((err: unknown) => {
+    // spawn-please rejects with stderr as a bare string on a non-zero exit code, which loses err.message downstream
+    if (err instanceof Error) {
+      throw err
+    }
+
+    throw new Error(`Error executing "pnpm ${args.join(' ')}". ${String(err).trim() || 'No error output.'}`)
+  })
+
+  return parseList(stdout, command, stderr)
 }
 
 /** Wraps a GetVersion function and passes the npmrc located next to the pnpm-workspace.yaml if it exists. */
@@ -231,24 +246,23 @@ export const semver = withNpmWorkspaceConfig(npm.semver)
 async function spawnPnpm(
   args: string | string[],
   npmOptions: NpmOptions = {},
-  spawnOptions?: SpawnOptions,
   spawnPleaseOptions?: SpawnPleaseOptions,
-): Promise<string> {
+  spawnOptions?: SpawnOptions,
+): Promise<SpawnResult> {
   const fullArgs = [
     ...(npmOptions.global ? 'global' : []),
     ...(Array.isArray(args) ? args : [args]),
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
   ]
 
-  const { stdout } = await spawnCommand('pnpm', fullArgs, spawnPleaseOptions, spawnOptions)
-
-  return stdout
+  return spawnCommand('pnpm', fullArgs, spawnPleaseOptions, spawnOptions)
 }
 
-export { defaultPrefix, getPeerDependencies, getEngines, packageAuthorChanged } from './npm.ts'
+export { defaultPrefix, getDistTags, getPeerDependencies, getEngines, packageAuthorChanged } from './npm.ts'
 
 export default spawnPnpm
 
 export const pnpmApi = {
   getPnpmWorkspaceMinimumReleaseAge,
+  parseList,
 }

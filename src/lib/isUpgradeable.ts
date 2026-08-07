@@ -2,7 +2,7 @@ import semver from 'semver'
 import semverutils from 'semver-utils'
 import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
-import { fixPseudoVersion, isComparable, isWildCard, stringify } from './version-util.ts'
+import { fixPseudoVersion, isComparable, isWildcard, stringify } from './version-util.ts'
 
 /**
  * Check if a version satisfies the latest, and is not beyond the latest). Ignores `v` prefix.
@@ -15,7 +15,7 @@ import { fixPseudoVersion, isComparable, isWildCard, stringify } from './version
 function isUpgradeable(current: VersionSpec, latest: Version, { downgrade }: { downgrade?: boolean } = {}): boolean {
   // do not upgrade non-npm version declarations (such as git tags)
   // do not upgrade wildcards
-  if (!semver.validRange(current) || isWildCard(current)) {
+  if (!semver.validRange(current) || isWildcard(current)) {
     return false
   }
 

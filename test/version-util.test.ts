@@ -316,62 +316,62 @@ describe('version-util', () => {
     })
   })
 
-  describe('addWildCard', () => {
+  describe('addWildcard', () => {
     it('add ~', () => {
-      expect(versionUtil.addWildCard('1', '~')).toBe('~1')
-      expect(versionUtil.addWildCard('1.2', '~')).toBe('~1.2')
-      expect(versionUtil.addWildCard('1.2.3', '~')).toBe('~1.2.3')
-      expect(versionUtil.addWildCard('1.2.3-alpha.1', '~')).toBe('~1.2.3-alpha.1')
-      expect(versionUtil.addWildCard('1.2.3+build12345', '~')).toBe('~1.2.3+build12345')
+      expect(versionUtil.addWildcard('1', '~')).toBe('~1')
+      expect(versionUtil.addWildcard('1.2', '~')).toBe('~1.2')
+      expect(versionUtil.addWildcard('1.2.3', '~')).toBe('~1.2.3')
+      expect(versionUtil.addWildcard('1.2.3-alpha.1', '~')).toBe('~1.2.3-alpha.1')
+      expect(versionUtil.addWildcard('1.2.3+build12345', '~')).toBe('~1.2.3+build12345')
     })
     it('add ^', () => {
-      expect(versionUtil.addWildCard('1', '^')).toBe('^1')
-      expect(versionUtil.addWildCard('1.2', '^')).toBe('^1.2')
-      expect(versionUtil.addWildCard('1.2.3', '^')).toBe('^1.2.3')
-      expect(versionUtil.addWildCard('1.2.3-alpha.1', '^')).toBe('^1.2.3-alpha.1')
-      expect(versionUtil.addWildCard('1.2.3+build12345', '^')).toBe('^1.2.3+build12345')
+      expect(versionUtil.addWildcard('1', '^')).toBe('^1')
+      expect(versionUtil.addWildcard('1.2', '^')).toBe('^1.2')
+      expect(versionUtil.addWildcard('1.2.3', '^')).toBe('^1.2.3')
+      expect(versionUtil.addWildcard('1.2.3-alpha.1', '^')).toBe('^1.2.3-alpha.1')
+      expect(versionUtil.addWildcard('1.2.3+build12345', '^')).toBe('^1.2.3+build12345')
     })
     it('add .*', () => {
-      expect(versionUtil.addWildCard('1', '.*')).toBe('1.*')
-      expect(versionUtil.addWildCard('1.2', '.*')).toBe('1.*')
-      expect(versionUtil.addWildCard('1.2.3', '.*')).toBe('1.*')
-      expect(versionUtil.addWildCard('1.2.3-alpha.1', '.*')).toBe('1.*')
-      expect(versionUtil.addWildCard('1.2.3+build12345', '.*')).toBe('1.*')
+      expect(versionUtil.addWildcard('1', '.*')).toBe('1.*')
+      expect(versionUtil.addWildcard('1.2', '.*')).toBe('1.*')
+      expect(versionUtil.addWildcard('1.2.3', '.*')).toBe('1.*')
+      expect(versionUtil.addWildcard('1.2.3-alpha.1', '.*')).toBe('1.*')
+      expect(versionUtil.addWildcard('1.2.3+build12345', '.*')).toBe('1.*')
     })
     it('add .x', () => {
-      expect(versionUtil.addWildCard('1', '.x')).toBe('1.x')
-      expect(versionUtil.addWildCard('1.2', '.x')).toBe('1.x')
-      expect(versionUtil.addWildCard('1.2.3', '.x')).toBe('1.x')
-      expect(versionUtil.addWildCard('1.2.3-alpha.1', '.x')).toBe('1.x')
-      expect(versionUtil.addWildCard('1.2.3+build12345', '.x')).toBe('1.x')
+      expect(versionUtil.addWildcard('1', '.x')).toBe('1.x')
+      expect(versionUtil.addWildcard('1.2', '.x')).toBe('1.x')
+      expect(versionUtil.addWildcard('1.2.3', '.x')).toBe('1.x')
+      expect(versionUtil.addWildcard('1.2.3-alpha.1', '.x')).toBe('1.x')
+      expect(versionUtil.addWildcard('1.2.3+build12345', '.x')).toBe('1.x')
     })
   })
 
-  describe('isWildCard', () => {
+  describe('isWildcard', () => {
     it('return true for ~', () => {
-      expect(versionUtil.isWildCard('~')).toBe(true)
+      expect(versionUtil.isWildcard('~')).toBe(true)
     })
     it('return true for ^', () => {
-      expect(versionUtil.isWildCard('^')).toBe(true)
+      expect(versionUtil.isWildcard('^')).toBe(true)
     })
     it('return true for ^*', () => {
-      expect(versionUtil.isWildCard('^*')).toBe(true)
+      expect(versionUtil.isWildcard('^*')).toBe(true)
     })
     it('return true for *', () => {
-      expect(versionUtil.isWildCard('*')).toBe(true)
+      expect(versionUtil.isWildcard('*')).toBe(true)
     })
     it('return true for x', () => {
-      expect(versionUtil.isWildCard('x')).toBe(true)
+      expect(versionUtil.isWildcard('x')).toBe(true)
     })
     it('return true for x.x', () => {
-      expect(versionUtil.isWildCard('x.x')).toBe(true)
+      expect(versionUtil.isWildcard('x.x')).toBe(true)
     })
     it('return true for x.x.x', () => {
-      expect(versionUtil.isWildCard('x.x.x')).toBe(true)
+      expect(versionUtil.isWildcard('x.x.x')).toBe(true)
     })
     it('return false for strings that more than a wildcard', () => {
-      expect(versionUtil.isWildCard('^0.15.0')).toBe(false)
-      expect(versionUtil.isWildCard('1.*')).toBe(false)
+      expect(versionUtil.isWildcard('^0.15.0')).toBe(false)
+      expect(versionUtil.isWildcard('1.*')).toBe(false)
     })
   })
 
@@ -423,6 +423,27 @@ describe('version-util', () => {
       // a bare "from" that gains a wildcard in "to" hits the same code path
       expect(versionUtil.partChanged('1.2.3', '^1.2.9')).toBe('patch')
       expect(versionUtil.partChanged('1.2.3', '^1.3.0')).toBe('minor')
+    })
+  })
+
+  describe('shortenBuildMetadata', () => {
+    it('truncate long build metadata', () => {
+      expect(
+        versionUtil.shortenBuildMetadata(
+          '10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748',
+        ),
+      ).toBe('10.14.0+sha512.ad27a79641b49...')
+    })
+    it('keep short build metadata', () => {
+      expect(versionUtil.shortenBuildMetadata('1.0.0+20130313144700')).toBe('1.0.0+20130313144700')
+      expect(versionUtil.shortenBuildMetadata('1.0.0+exp.sha.5114f85')).toBe('1.0.0+exp.sha.5114f85')
+    })
+    it('keep versions without build metadata', () => {
+      expect(versionUtil.shortenBuildMetadata('1.0.0')).toBe('1.0.0')
+      expect(versionUtil.shortenBuildMetadata('^1.0.0-alpha.1')).toBe('^1.0.0-alpha.1')
+    })
+    it('leave a multi-part range alone', () => {
+      expect(versionUtil.shortenBuildMetadata('>=1.0.0+20130313144700 <2.0.0')).toBe('>=1.0.0+20130313144700 <2.0.0')
     })
   })
 

@@ -10,7 +10,10 @@ const DIVISIONS: { amount: number; unit: Intl.RelativeTimeFormatUnit }[] = [
   { amount: 12, unit: 'month' },
 ]
 
-const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'always' })
+let rtf: Intl.RelativeTimeFormat | undefined
+
+/** Lazily constructs the formatter so importing ncu does not eagerly pay the ICU init cost. */
+const getRtf = () => (rtf ??= new Intl.RelativeTimeFormat('en', { numeric: 'always' }))
 
 /** Formats a timestamp as a relative time string, e.g. "3 days ago". */
 function formatTimeAgo(date: string | number | Date): string {
@@ -21,15 +24,17 @@ function formatTimeAgo(date: string | number | Date): string {
     return 'just now'
   }
 
-  // truncate rather than round so the elapsed time is never overstated (e.g. 1.9 days -> "1 day ago")
-  for (const { amount, unit } of DIVISIONS) {
-    if (Math.abs(duration) < amount) {
-      return rtf.format(Math.trunc(duration), unit)
+  let unit: Intl.RelativeTimeFormatUnit = 'year'
+  for (const division of DIVISIONS) {
+    if (Math.abs(duration) < division.amount) {
+      unit = division.unit
+      break
     }
-    duration /= amount
+    duration /= division.amount
   }
 
-  return rtf.format(Math.trunc(duration), 'year')
+  // truncate rather than round so the elapsed time is never overstated (e.g. 1.9 days -> "1 day ago")
+  return getRtf().format(Math.trunc(duration), unit)
 }
 
 export default formatTimeAgo
