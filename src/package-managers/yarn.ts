@@ -142,7 +142,7 @@ const npmConfigFromYarn = memoize(async (options: Options): Promise<NpmConfig> =
     print(options, yarnConfigUser, 'verbose')
   }
 
-  if (Object.keys(npmConfig)) {
+  if (Object.keys(npmConfig).length > 0) {
     print(options, '\nMerged yarn config in npm format:', 'verbose')
     print(options, npmConfig, 'verbose')
   }
