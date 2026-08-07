@@ -4,8 +4,10 @@ import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
 import getPackageManager from './getPackageManager.ts'
+import isPackageManagerProtocol from './isPackageManagerProtocol.ts'
 import { print } from './logging.ts'
 import resolveDistTagsInPeerDependencies from './resolveDistTagsInPeerDependencies.ts'
+import { isGitHubUrl, isWildcard } from './version-util.ts'
 
 type CircularData =
   | {
@@ -83,6 +85,9 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
     const cached = options.cacher?.getPeers(pkg, version)
     if (cached) {
       dependencies = cached
+    } else if (!version || isPackageManagerProtocol(version) || isGitHubUrl(version) || isWildcard(version)) {
+      // the registry has nothing to look up for these, so do not report them as unfetchable
+      dependencies = {}
     } else {
       try {
         dependencies = await packageManager.getPeerDependencies!(pkg, version, { cwd: options.cwd })

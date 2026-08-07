@@ -56,4 +56,33 @@ describe('getPeerDependenciesFromRegistry', () => {
 
     logSpy.mockRestore()
   })
+
+  it('does not warn about specs the registry cannot resolve', async () => {
+    chalkInit()
+    silenceProgressBar()
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    const data = await getPeerDependenciesFromRegistry(
+      {
+        'ncu-test-peer': 'workspace:*',
+        'ncu-test-return-version': 'github:user/repo#1.0.0',
+        'ncu-test-v2': '*',
+        'ncu-test-tag': '',
+      },
+      {},
+    )
+
+    expect(data).toStrictEqual({
+      'ncu-test-peer': {},
+      'ncu-test-return-version': {},
+      'ncu-test-v2': {},
+      'ncu-test-tag': {},
+    })
+    const warnings = logSpy.mock.calls
+      .flat()
+      .filter(arg => typeof arg === 'string' && arg.includes('Could not determine the peer dependencies'))
+    expect(warnings).toHaveLength(0)
+
+    logSpy.mockRestore()
+  })
 })
