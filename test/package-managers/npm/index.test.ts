@@ -24,6 +24,24 @@ describe('npm', () => {
     expect(version).toBe('2.0.0-beta')
   })
 
+  // some registry mirrors serve a dist-tag that is missing from versions
+  it('distTag falls back to the tagged version when it is missing from versions', async () => {
+    const original = npm.npmApi.fetchUpgradedPackumentMemo
+    npm.npmApi.fetchUpgradedPackumentMemo = async () => ({
+      name: 'ncu-test-v2',
+      'dist-tags': { latest: '2.0.0' },
+      versions: { '1.0.0': { name: 'ncu-test-v2', version: '1.0.0' } } as any,
+    })
+
+    try {
+      await expect(npm.distTag('ncu-test-v2', '1.0.0', { distTag: 'latest' })).resolves.toStrictEqual({
+        version: '2.0.0',
+      })
+    } finally {
+      npm.npmApi.fetchUpgradedPackumentMemo = original
+    }
+  })
+
   it('ownerChanged', async () => {
     await expect(npm.packageAuthorChanged('mocha', '^7.1.0', '8.0.1')).resolves.toBe(true)
     await expect(npm.packageAuthorChanged('htmlparser2', '^3.10.1', '^4.0.0')).resolves.toBe(false)
