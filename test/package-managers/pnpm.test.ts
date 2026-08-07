@@ -156,13 +156,23 @@ minimumReleaseAgeExclude:
       expect(result?.minimumReleaseAge).toBe(90)
     })
 
-    it('prefers the workspace minimumReleaseAge and merges excludes across layers', async () => {
+    // the global rc file is only read when config.yaml is absent, matching pnpm which reads a single global config
+    it('ignores the global rc file when the global config.yaml exists', async () => {
       await writeGlobalConfig('config.yaml', 'minimumReleaseAge: 2880\nminimumReleaseAgeExclude:\n  - "vue"\n')
       await writeGlobalConfig('rc', 'minimum-release-age=4320\nminimum-release-age-exclude=["svelte"]\n')
+      process.chdir(tempDir)
+      expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()).toStrictEqual({
+        minimumReleaseAge: 2880,
+        minimumReleaseAgeExclude: ['vue'],
+      })
+    })
+
+    it('prefers the workspace minimumReleaseAge and merges excludes across layers', async () => {
+      await writeGlobalConfig('config.yaml', 'minimumReleaseAge: 2880\nminimumReleaseAgeExclude:\n  - "vue"\n')
       await writeWorkspace('minimumReleaseAge: 60\nminimumReleaseAgeExclude:\n  - "react"\n')
       expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()).toStrictEqual({
         minimumReleaseAge: 60,
-        minimumReleaseAgeExclude: ['react', 'vue', 'svelte'],
+        minimumReleaseAgeExclude: ['react', 'vue'],
       })
     })
   })

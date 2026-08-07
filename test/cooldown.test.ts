@@ -1645,7 +1645,7 @@ describe('cooldown', () => {
         'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
 
       expect(result).toStrictEqual({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['react'] })
     })
@@ -1657,13 +1657,13 @@ describe('cooldown', () => {
         'minimumReleaseAge=10080\nminimumReleaseAgeExclude=["react"]\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(10)
 
       expect(result).toStrictEqual({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['react'] })
     })
 
     it('returns null when no config layer defines minimumReleaseAge', async () => {
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
       expect(result).toBeNull()
     })
 
@@ -1677,7 +1677,7 @@ describe('cooldown', () => {
         'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
 
       // workspace minimumReleaseAge wins; excludes from both layers are merged
       expect(result).toStrictEqual({ minimumReleaseAge: 1440, minimumReleaseAgeExclude: ['@myorg/*', 'react'] })
@@ -1693,14 +1693,61 @@ describe('cooldown', () => {
         'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
 
       expect(result).toStrictEqual({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['@myorg/*', 'react'] })
     })
 
+    it('uses only config.yaml when both global files exist and pnpm is 11', async () => {
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
+      )
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'rc'),
+        'minimumReleaseAge=60\nminimumReleaseAgeExclude=["left-pad"]\n',
+      )
+
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
+
+      expect(result).toStrictEqual({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['react'] })
+    })
+
+    it('uses only rc when both global files exist and pnpm is 10', async () => {
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
+      )
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'rc'),
+        'minimumReleaseAge=60\nminimumReleaseAgeExclude=["left-pad"]\n',
+      )
+
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(10)
+
+      expect(result).toStrictEqual({ minimumReleaseAge: 60, minimumReleaseAgeExclude: ['left-pad'] })
+    })
+
+    it('falls back to reading both global files when pnpm major version is undetectable', async () => {
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'config.yaml'),
+        'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
+      )
+      await fs.writeFile(
+        path.join(xdgDir, 'pnpm', 'rc'),
+        'minimumReleaseAge=60\nminimumReleaseAgeExclude=["react","left-pad"]\n',
+      )
+
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(null)
+
+      expect(result).toStrictEqual({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['react', 'left-pad'] })
+    })
+
     it('applies the cooldown from pnpm global config when pnpm-workspace.yaml does not define minimumReleaseAge', async () => {
-      // Given: only pnpm global config defines minimumReleaseAge=1440 (1 day); latest released 12 hours ago (within cooldown)
+      // Given: pnpm global config defines minimumReleaseAge=1440 (1 day); latest released 12 hours ago (within cooldown)
       await fs.writeFile(path.join(xdgDir, 'pnpm', 'config.yaml'), 'minimumReleaseAge: 1440\n')
+      // Keep this test independent of the locally installed pnpm major version.
+      await fs.writeFile(path.join(xdgDir, 'pnpm', 'rc'), 'minimumReleaseAge=1440\n')
 
       const packageData: PackageFile = {
         dependencies: {
