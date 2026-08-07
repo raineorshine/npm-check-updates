@@ -96,6 +96,16 @@ export function printSorted<T extends { [key: string]: any }>(options: Options, 
 }
 
 /** Create a table with the appropriate columns and alignment to render dependency upgrades. */
+/**
+ * Strips control characters (e.g. terminal escape sequences) from text that
+ * originates from an unvalidated package.json field (homepage, repository),
+ * which has no character restrictions, before it is written to the terminal.
+ */
+function sanitizeForDisplay(s: string): string {
+  // eslint-disable-next-line no-control-regex
+  return s.replace(/[\u0000-\u001f\u007f]/g, '')
+}
+
 function renderDependencyTable(rows: string[][]) {
   const table = new Table({
     colAligns: ['left', 'right', 'right', 'right', 'left', 'left'],
@@ -215,9 +225,11 @@ export async function toDependencyTable({
               : '*unknown*'
             : ''
           const toColorized = colorizeDiff(getVersion(from), shortenBuildMetadata(to))
-          const homepageUrl = format?.includes('homepage') ? packageJson?.homepage || '' : ''
+          const homepageUrl = format?.includes('homepage')
+            ? sanitizeForDisplay(packageJson?.homepage || '')
+            : ''
           const repoUrl = format?.includes('repo')
-            ? (await getRepoUrl(dep, packageJson ?? undefined, { pkgFile })) || ''
+            ? sanitizeForDisplay((await getRepoUrl(dep, packageJson ?? undefined, { pkgFile })) || '')
             : ''
           const diffUrl = format?.includes('diff')
             ? `${process.env.NCU_DIFF || 'https://npmdiff.dev'}/${encodeURIComponent(dep)}/${from.replace(/^\W+/, '')}/${to.replace(/^\W+/, '')}`
