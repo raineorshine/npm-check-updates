@@ -64,7 +64,7 @@ function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}
       ),
     )
   } catch (err: any) {
-    programError(options, 'Invalid filter: ' + err.message || err)
+    programError(options, 'Invalid filter: ' + (err.message || err))
   }
 
   return filteredDependencies

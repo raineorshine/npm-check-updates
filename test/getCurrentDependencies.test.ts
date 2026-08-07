@@ -160,6 +160,17 @@ describe('getCurrentDependencies', () => {
         bluebird: '^1.0.0',
       })
     })
+
+    it('report a filter function that throws a non-Error', () => {
+      expect(() =>
+        getCurrentDependencies(deps, {
+          filter: (() => {
+            // eslint-disable-next-line no-throw-literal
+            throw 'boom'
+          }) as never,
+        }),
+      ).toThrow('Invalid filter: boom')
+    })
   })
 
   describe('filterVersion', () => {
