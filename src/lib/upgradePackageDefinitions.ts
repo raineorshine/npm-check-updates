@@ -59,6 +59,15 @@ const checkIfInPeerViolation = (
   }
 }
 
+/**
+ * Merges a peer recursion pass into the previous one. The recursion requeries at the already
+ * upgraded spec, so a result with no version means nothing more to upgrade to.
+ */
+const mergeVersionResults = (previous: Index<VersionResult>, next: Index<VersionResult>): Index<VersionResult> =>
+  keyValueBy({ ...previous, ...next }, (dep, result) => ({
+    [dep]: !result.version && !result.error && previous[dep]?.version ? previous[dep] : result,
+  }))
+
 export type UpgradePackageDefinitionsResult = [
   upgradedDependencies: Index<VersionSpec>,
   latestVersionResults: Index<VersionResult>,
@@ -156,7 +165,7 @@ export async function upgradePackageDefinitions(
       )
       result = [
         { ...checkPeerViolationResult.filteredUpgradedDependencies, ...newUpgradedDependencies },
-        { ...latestVersionResults, ...newLatestVersions },
+        mergeVersionResults(latestVersionResults, newLatestVersions),
         newPeerDependencies,
       ]
       checkPeerViolationResult = checkIfInPeerViolation(currentDependencies, result[0], result[2]!)
