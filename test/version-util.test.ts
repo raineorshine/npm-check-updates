@@ -660,6 +660,12 @@ describe('version-util', () => {
           'https://github.com/raineorshine/ncu-test-v2#2.0.0',
         )
       })
+
+      it('replace the version in the fragment, not an earlier match in the path', () => {
+        expect(versionUtil.upgradeGitHubUrl('https://github.com/raineorshine/1.0.0#1.0.0', '2.0.0')).toBe(
+          'https://github.com/raineorshine/1.0.0#2.0.0',
+        )
+      })
     })
   })
 })
