@@ -27,16 +27,16 @@ async function stripDir(dirPath: string, paths: [string[], string[]]): Promise<[
 async function getAllPackagesForTest(testPath: string, options: Options): Promise<[string[], string[]]> {
   const testCwd = path.join(__dirname, testPath).replaceAll('\\', '/')
   const optionsWithTestCwd: Options = { cwd: testCwd, ...options }
-  const [pkgInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages(optionsWithTestCwd)
-  const packagePaths: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
+  const [pkgInfo, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages(optionsWithTestCwd)
+  const packagePaths: string[] = pkgInfo.map((packageInfo: PackageInfo) => packageInfo.filepath)
   const [pkgs, workspacePackages]: [string[], string[]] = await stripDir(testCwd, [packagePaths, workspacePackageNames])
   return [pkgs, workspacePackages]
 }
 
 describe('getAllPackages', () => {
   it('returns default package without cwd', async () => {
-    const [pkgInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages({})
-    const packagePaths: string[] = pkgInfos.map((packageInfo: PackageInfo) => packageInfo.filepath)
+    const [pkgInfo, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages({})
+    const packagePaths: string[] = pkgInfo.map((packageInfo: PackageInfo) => packageInfo.filepath)
     expect(packagePaths).toStrictEqual(['package.json'])
     // expect(allPackageInfos[0].name).toBeUndefined()
     expect(workspacePackageNames).toStrictEqual([])
@@ -89,11 +89,11 @@ describe('getAllPackages', () => {
 
     it('handles simple workspace with --workspaces and --packageFile pointing outside cwd', async () => {
       const workspaceRoot = path.join(__dirname, 'test-data/workspace-basic')
-      const [pkgInfos, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages({
+      const [pkgInfo, workspacePackageNames]: [PackageInfo[], string[]] = await getAllPackages({
         packageFile: path.join(workspaceRoot, 'package.json'),
         workspaces: true,
       })
-      const packagePaths = pkgInfos.map((info: PackageInfo) =>
+      const packagePaths = pkgInfo.map((info: PackageInfo) =>
         asPosixPath(info.filepath).replace(asPosixPath(workspaceRoot) + '/', ''),
       )
       expect(packagePaths).toStrictEqual(['pkg/sub/package.json'])
@@ -206,14 +206,14 @@ describe('getAllPackages', () => {
 
   describe('catalog dependencies', () => {
     it('includes a synthetic catalog package aggregating pnpm-workspace.yaml catalog and catalogs', async () => {
-      const [pkgInfos]: [PackageInfo[], string[]] = await getAllPackages({
+      const [pkgInfo]: [PackageInfo[], string[]] = await getAllPackages({
         cwd: path.join(__dirname, 'test-data/workspace-catalog').replaceAll('\\', '/'),
         workspaces: true,
         packageManager: 'pnpm',
         loglevel: 'silent',
       })
 
-      const catalogInfo = pkgInfos.find((info: PackageInfo) => info.name === 'catalogs')
+      const catalogInfo = pkgInfo.find((info: PackageInfo) => info.name === 'catalogs')
       expect(catalogInfo).toBeDefined()
       expect(catalogInfo!.pkg.dependencies).toStrictEqual({ chalk: '^5.0.0', react: '^18.0.0' })
       expect(catalogInfo!.filepath.endsWith('pnpm-workspace.yaml')).toBe(true)
