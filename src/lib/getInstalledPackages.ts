@@ -37,7 +37,7 @@ async function getInstalledPackages(options: Options = {}) {
       (dep: VersionSpec, version: Version) => !!version && !isWildPart(version) && filterFunction(dep, version),
     )
   } catch (err: any) {
-    programError(options, 'Invalid filter: ' + err.message || err)
+    programError(options, 'Invalid filter: ' + (err.message || err))
   }
 
   return filteredPackages
