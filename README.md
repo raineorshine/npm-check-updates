@@ -516,7 +516,7 @@ If `--cooldown` is not set explicitly, `ncu` automatically reads the cooldown co
 <table>
   <tr><td>npm</td><td>Reads <code>min-release-age</code> from <code>.npmrc</code>, excluding packages matched by <code>min-release-age-exclude</code>.</td></tr>
   <tr><td>yarn</td><td>Reads <code>npmMinimalAgeGate</code> from <code>.yarnrc.yml</code>, excluding packages matched by <code>npmPreapprovedPackages</code>.</td></tr>
-  <tr><td>pnpm</td><td>Reads <code>minimumReleaseAge</code> from <code>pnpm-workspace.yaml</code>, excluding packages matched by <code>minimumReleaseAgeExclude</code>.</td></tr>
+  <tr><td>pnpm</td><td>Reads <code>minimumReleaseAge</code> from <code>pnpm-workspace.yaml</code> and falls back to global pnpm config (<code>config.yaml</code>, or <code>rc</code> if <code>config.yaml</code> is absent), excluding packages matched by <code>minimumReleaseAgeExclude</code>.</td></tr>
 </table>
 
 ### Cooldown Formatting

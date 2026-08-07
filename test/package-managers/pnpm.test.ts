@@ -8,16 +8,27 @@ import removeDir from '../helpers/removeDir.ts'
 describe('pnpm', () => {
   describe('getPnpmWorkspaceMinimumReleaseAge', () => {
     let tempDir: string
+    let xdgDir: string
     let originalCwd: string
+    const originalXdgConfigHome = process.env.XDG_CONFIG_HOME
 
     beforeEach(async () => {
       originalCwd = process.cwd()
       tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-pnpm-'))
+      xdgDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-pnpm-xdg-'))
+      await fs.mkdir(path.join(xdgDir, 'pnpm'), { recursive: true })
+      process.env.XDG_CONFIG_HOME = xdgDir
     })
 
     afterEach(async () => {
       process.chdir(originalCwd)
       await removeDir(tempDir)
+      await removeDir(xdgDir)
+      if (originalXdgConfigHome === undefined) {
+        delete process.env.XDG_CONFIG_HOME
+      } else {
+        process.env.XDG_CONFIG_HOME = originalXdgConfigHome
+      }
     })
 
     /** Writes a pnpm-workspace.yaml into the temp dir and switches cwd to it. */

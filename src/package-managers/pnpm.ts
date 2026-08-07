@@ -137,46 +137,50 @@ const readMinimumReleaseAgeLayer = async (
   return parseMinimumReleaseAgeLayer(parsed)
 }
 
-/** Returns the installed pnpm major version, or null if pnpm is unavailable or the output is unparsable. */
-const getPnpmMajorVersion = async (): Promise<number | null> => {
-  try {
-    const { stdout } = await spawnCommand('pnpm', ['--version'])
-    const match = stdout.trim().match(/^(\d+)(?:\.|$)/)
-    return match ? Number(match[1]) : null
-  } catch {
-    return null
-  }
-}
+/** Returns true if a path exists. */
+const pathExists = async (path: string): Promise<boolean> =>
+  fs
+    .access(path)
+    .then(() => true)
+    .catch(() => false)
 
 /**
  * Reads minimumReleaseAge settings from pnpm's config, falling back through pnpm's config layers.
  *
  * pnpm-workspace.yaml takes precedence over pnpm's global config for minimumReleaseAge.
- * Uses config.yaml for pnpm >= 11 and rc for pnpm <= 10. If the pnpm major version cannot be determined,
- * both global files are considered (config.yaml before rc). minimumReleaseAgeExclude patterns are merged
- * across all considered layers, matching pnpm's config resolution. Returns null if no layer defines a
- * minimumReleaseAge.
+ * By default, prefers global config.yaml if present, otherwise falls back to global rc.
+ * minimumReleaseAgeExclude patterns are merged across all considered layers. Returns null if no
+ * layer defines a minimumReleaseAge.
+ *
+ * @param pnpmMajorVersion Optional override for deterministic tests and compatibility.
+ * undefined prefers config.yaml if present, otherwise rc. null reads both globals.
+ * A number uses pnpm version-aware selection (config.yaml for >= 11, rc for <= 10).
  */
 const getPnpmWorkspaceMinimumReleaseAge = async (
   pnpmMajorVersion?: number | null,
 ): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
   const globalConfigDir = getPnpmGlobalConfigDir()
-  const majorVersion = pnpmMajorVersion === undefined ? await getPnpmMajorVersion() : pnpmMajorVersion
   const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
+  const globalConfigYamlPath = path.join(globalConfigDir, 'config.yaml')
+  const globalRcPath = path.join(globalConfigDir, 'rc')
+
+  const globalLayers =
+    pnpmMajorVersion === undefined
+      ? (await pathExists(globalConfigYamlPath))
+        ? [await readMinimumReleaseAgeLayer(globalConfigYamlPath, 'yaml')]
+        : [await readMinimumReleaseAgeLayer(globalRcPath, 'ini')]
+      : await Promise.all([
+          pnpmMajorVersion == null || pnpmMajorVersion >= 11
+            ? readMinimumReleaseAgeLayer(globalConfigYamlPath, 'yaml')
+            : null,
+          pnpmMajorVersion == null || pnpmMajorVersion <= 10 ? readMinimumReleaseAgeLayer(globalRcPath, 'ini') : null,
+        ])
 
   // Ordered from highest to lowest precedence. Each entry resolves to a config layer (or null if absent).
-  const layers = await Promise.all([
-    // workspace / project config
-    pnpmWorkspacePath ? readMinimumReleaseAgeLayer(pnpmWorkspacePath, 'yaml') : null,
-    // pnpm >= 11 global config
-    majorVersion == null || majorVersion >= 11
-      ? readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'config.yaml'), 'yaml')
-      : null,
-    // pnpm <= 10 global config
-    majorVersion == null || majorVersion <= 10
-      ? readMinimumReleaseAgeLayer(path.join(globalConfigDir, 'rc'), 'ini')
-      : null,
-  ])
+  const layers = [
+    pnpmWorkspacePath ? await readMinimumReleaseAgeLayer(pnpmWorkspacePath, 'yaml') : null,
+    ...globalLayers,
+  ]
 
   // Use the minimumReleaseAge from the highest-precedence layer that defines it.
   const minimumReleaseAge = layers.find(layer => layer?.minimumReleaseAge != null)?.minimumReleaseAge
