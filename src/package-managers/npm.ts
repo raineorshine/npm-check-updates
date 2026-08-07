@@ -24,6 +24,7 @@ import { type Options } from '../types/Options.ts'
 import { type Packument } from '../types/Packument.ts'
 import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
+import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type Version } from '../types/Version.ts'
 import { type CooldownInfo, type VersionResult } from '../types/VersionResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
@@ -828,15 +829,15 @@ async function spawnNpm(
   npmOptions: NpmOptions = {},
   spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: Index<any> = {},
-): Promise<{ stdout: string; stderr: string; command: string }> {
+): Promise<SpawnResult> {
   const fullArgs = [
     ...(npmOptions.global ? [`--global`] : []),
     ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
     '--json',
     ...(Array.isArray(args) ? args : [args]),
   ]
-  const { stdout, stderr, command } = await spawnCommand('npm', fullArgs, spawnPleaseOptions, spawnOptions)
-  return { stdout, stderr, command: [command, ...fullArgs].join(' ') }
+
+  return spawnCommand('npm', fullArgs, spawnPleaseOptions, spawnOptions)
 }
 
 /**

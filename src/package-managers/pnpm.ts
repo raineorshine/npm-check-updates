@@ -15,6 +15,7 @@ import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
 import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
+import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type Version } from '../types/Version.ts'
 import * as npm from './npm.ts'
 
@@ -170,8 +171,8 @@ const getPnpmWorkspaceMinimumReleaseAge = async (): Promise<PnpmWorkspaceMinimum
 }
 
 /** Parses the output of `pnpm ls -g --json` into a { name: version } index. */
-const parseList = (stdout: string, command: string): Index<string | undefined> => {
-  const result = npm.parseJson<PnpmList>(stdout, { command })
+const parseList = (stdout: string, command: string, stderr?: string): Index<string | undefined> => {
+  const result = npm.parseJson<PnpmList>(stdout, { command, stderr })
   // pnpm omits the project entry when there is no global root, and dependencies when nothing is installed
   return keyValueBy(result[0]?.dependencies || {}, (name, { version }) => ({
     [name]: version,
@@ -185,17 +186,16 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   if (!options.global) return npm.list(options)
 
   const args = ['ls', '-g', '--json']
-  const command = `pnpm ${args.join(' ')}`
-  const { stdout } = await spawnCommand('pnpm', args).catch((err: unknown) => {
+  const { stdout, stderr, command } = await spawnCommand('pnpm', args).catch((err: unknown) => {
     // spawn-please rejects with stderr as a bare string on a non-zero exit code, which loses err.message downstream
     if (err instanceof Error) {
       throw err
     }
 
-    throw new Error(`Error executing "${command}". ${String(err).trim() || 'No error output.'}`)
+    throw new Error(`Error executing "pnpm ${args.join(' ')}". ${String(err).trim() || 'No error output.'}`)
   })
 
-  return parseList(stdout, command)
+  return parseList(stdout, command, stderr)
 }
 
 /** Wraps a GetVersion function and passes the npmrc located next to the pnpm-workspace.yaml if it exists. */
@@ -223,18 +223,16 @@ export const semver = withNpmWorkspaceConfig(npm.semver)
 async function spawnPnpm(
   args: string | string[],
   npmOptions: NpmOptions = {},
-  spawnOptions?: SpawnOptions,
   spawnPleaseOptions?: SpawnPleaseOptions,
-): Promise<string> {
+  spawnOptions?: SpawnOptions,
+): Promise<SpawnResult> {
   const fullArgs = [
     ...(npmOptions.global ? 'global' : []),
     ...(Array.isArray(args) ? args : [args]),
     ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
   ]
 
-  const { stdout } = await spawnCommand('pnpm', fullArgs, spawnPleaseOptions, spawnOptions)
-
-  return stdout
+  return spawnCommand('pnpm', fullArgs, spawnPleaseOptions, spawnOptions)
 }
 
 export { defaultPrefix, getPeerDependencies, getEngines, packageAuthorChanged } from './npm.ts'

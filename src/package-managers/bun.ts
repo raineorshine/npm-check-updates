@@ -3,11 +3,13 @@ import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import nodeSemver from 'semver'
 import spawn from 'spawn-please'
 import keyValueBy from '../lib/keyValueBy.ts'
+import spawnCommand from '../lib/spawnCommand.ts'
 import { type Index } from '../types/IndexType.ts'
 import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
 import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
+import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 
@@ -17,14 +19,14 @@ async function spawnBun(
   npmOptions: NpmOptions = {},
   spawnPleaseOptions: SpawnPleaseOptions = {},
   spawnOptions: Index<any> = {},
-): Promise<{ stdout: string; stderr: string }> {
+): Promise<SpawnResult> {
   const fullArgs = [
     ...(npmOptions.global ? ['--global'] : []),
     ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
     ...(Array.isArray(args) ? args : [args]),
   ]
 
-  return spawn('bun', fullArgs, spawnPleaseOptions, spawnOptions)
+  return spawnCommand('bun', fullArgs, spawnPleaseOptions, spawnOptions)
 }
 
 /** Returns the global directory of bun. */
