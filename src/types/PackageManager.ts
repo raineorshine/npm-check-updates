@@ -23,6 +23,7 @@ export interface PackageManager {
     options?: Options,
   ) => Promise<boolean>
   getPeerDependencies?: (packageName: string, version: Version, spawnOptions: SpawnOptions) => Promise<Index<Version>>
+  getDistTags?: (packageName: string, options: Options, npmConfigLocal?: NpmConfig) => Promise<Index<Version>>
   getEngines?: (
     packageName: string,
     version: Version,
