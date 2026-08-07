@@ -6,6 +6,20 @@ import { pnpmApi } from '../../src/package-managers/pnpm.ts'
 import removeDir from '../helpers/removeDir.ts'
 
 describe('pnpm', () => {
+  describe('buildArgs', () => {
+    it('accepts a single arg', () => {
+      expect(pnpmApi.buildArgs('ls', {})).toStrictEqual(['ls'])
+    })
+
+    it('prepends global and appends prefix', () => {
+      expect(pnpmApi.buildArgs(['install'], { global: true, prefix: '/usr/local' })).toStrictEqual([
+        'global',
+        'install',
+        '--prefix=/usr/local',
+      ])
+    })
+  })
+
   describe('parseList', () => {
     const command = 'pnpm ls -g --json'
 
