@@ -89,39 +89,30 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       )
     }
 
-    try {
-      try {
-        versionResult = await getPackageVersion(name, version, {
-          ...options,
-          distTag,
-          // upgrade prereleases to newer prereleases by default
-          // allow downgrading when explicit tag is used
-          pre: options.pre != null ? options.pre : targetString.startsWith('@') || isPre(version),
-          retry: options.retry ?? 2,
-        })
-      } catch (reason: any) {
-        // This might happen if a (private) package cannot be accessed due to a missing or invalid token.
-        versionResult = { error: reason?.body?.error || reason.toString() }
-      }
+    // report the same count that was actually passed to the package manager
+    const retry = options.retry ?? 2
 
-      versionResult.version =
-        !isGitHubDependency && npmAlias && versionResult?.version
-          ? createNpmAlias(name, versionResult.version)
-          : (versionResult?.version ?? null)
+    try {
+      versionResult = await getPackageVersion(name, version, {
+        ...options,
+        distTag,
+        // upgrade prereleases to newer prereleases by default
+        // allow downgrading when explicit tag is used
+        pre: options.pre != null ? options.pre : targetString.startsWith('@') || isPre(version),
+        retry,
+      })
     } catch (err: any) {
       const errorMessage = err ? (err.message || err).toString() : ''
       if (errorMessage.match(/E504|Gateway Timeout/i)) {
-        return {
-          error: `${errorMessage}. All ${options.retry} retry attempts failed.`,
+        versionResult = {
+          error: `${errorMessage}. All ${retry} retry attempts failed.`,
         }
       } else if (errorMessage.match(/E400|E404|ENOTFOUND|404 Not Found|400 Bad Request/i)) {
-        return {
-          error: `${errorMessage.replace(/ - Not found$/i, '')}. All ${
-            options.retry
-          } retry attempts failed. Either your internet connection is down, the registry is inaccessible, the authentication credentials are invalid, or the package does not exist.`,
+        versionResult = {
+          error: `${errorMessage.replace(/ - Not found$/i, '')}. All ${retry} retry attempts failed. Either your internet connection is down, the registry is inaccessible, the authentication credentials are invalid, or the package does not exist.`,
         }
-      } else if (err.code === 'ERR_INVALID_URL') {
-        return {
+      } else if (err?.code === 'ERR_INVALID_URL') {
+        versionResult = {
           error: errorMessage || 'Invalid URL',
         }
       } else {
@@ -136,9 +127,15 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
           )
         }
 
-        throw err
+        // This might happen if a (private) package cannot be accessed due to a missing or invalid token.
+        versionResult = { error: err?.body?.error || String(err) }
       }
     }
+
+    versionResult.version =
+      !isGitHubDependency && npmAlias && versionResult?.version
+        ? createNpmAlias(name, versionResult.version)
+        : (versionResult?.version ?? null)
 
     bar?.tick()
 

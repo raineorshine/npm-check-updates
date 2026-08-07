@@ -39,6 +39,78 @@ describe('queryVersions', () => {
     stub.restore()
   })
 
+  it('gateway timeouts report the number of retry attempts', async () => {
+    const stub = stubVersions(() => {
+      throw new Error('E504 Gateway Timeout')
+    })
+
+    const result = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent', retry: 3 })
+    expect(result).toStrictEqual({
+      async: {
+        error: 'E504 Gateway Timeout. All 3 retry attempts failed.',
+        version: null,
+      },
+    })
+
+    stub.restore()
+  })
+
+  it('report the default retry count when retry is not set', async () => {
+    const stub = stubVersions(() => {
+      throw new Error('E504 Gateway Timeout')
+    })
+
+    const result = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })
+    expect(result.async.error).toBe('E504 Gateway Timeout. All 2 retry attempts failed.')
+
+    stub.restore()
+  })
+
+  it('not found errors explain the possible causes', async () => {
+    const stub = stubVersions(() => {
+      throw new Error('404 Not Found - GET https://registry.npmjs.org/foo - Not found')
+    })
+
+    const result = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent', retry: 2 })
+    expect(result.async.error).toBe(
+      '404 Not Found - GET https://registry.npmjs.org/foo. All 2 retry attempts failed. Either your internet connection is down, the registry is inaccessible, the authentication credentials are invalid, or the package does not exist.',
+    )
+
+    stub.restore()
+  })
+
+  it('invalid urls are reported without the retry hint', async () => {
+    const stub = stubVersions(() => {
+      throw Object.assign(new TypeError('Invalid URL'), { code: 'ERR_INVALID_URL' })
+    })
+
+    const result = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })
+    expect(result).toStrictEqual({
+      async: {
+        error: 'Invalid URL',
+        version: null,
+      },
+    })
+
+    stub.restore()
+  })
+
+  it('inaccessible packages report the registry error body', async () => {
+    const stub = stubVersions(() => {
+      throw Object.assign(new Error('Unauthorized'), { body: { error: 'no_perms Private mode enabled' } })
+    })
+
+    const result = await queryVersions({ async: '1.5.1' }, { loglevel: 'silent' })
+    expect(result).toStrictEqual({
+      async: {
+        error: 'no_perms Private mode enabled',
+        version: null,
+      },
+    })
+
+    stub.restore()
+  })
+
   it('local file urls should be ignored', async () => {
     const result = await queryVersions(
       { 'eslint-plugin-internal': 'file:devtools/eslint-rules' },
