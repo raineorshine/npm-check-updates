@@ -63,7 +63,9 @@ retry() {
 
   for ((i = 0; i < attempts; i++)); do
     "$@" && return 0
-    sleep 1
+    if ((i < attempts - 1)); then
+      sleep 1
+    fi
   done
 
   return 1
