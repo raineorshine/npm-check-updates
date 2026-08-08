@@ -372,7 +372,10 @@ export const getPeerDependencies = async (
   if (yarnVersion.startsWith('1')) {
     const args = ['--json', 'info', `${packageName}@${version}`, 'peerDependencies']
     const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, spawnOptions)
-    return stdout ? npm.parseJson<{ data?: Index<Version> }>(stdout, { command: args.join(' ') }).data || {} : {}
+    // yarn exits 0 and prints nothing when the package or version cannot be resolved, while a
+    // package with no peer dependencies still prints an inspect line
+    if (!stdout) throw new Error(`No response from "yarn ${args.join(' ')}"`)
+    return npm.parseJson<{ data?: Index<Version> }>(stdout, { command: args.join(' ') }).data || {}
   } else {
     const args = ['--json', 'npm', 'info', `${packageName}@${version}`, '--fields', 'peerDependencies']
     const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, spawnOptions)
@@ -392,16 +395,17 @@ export const getPeerDependencies = async (
 {"type":"error","name":35,"displayName":"YN0035","indent":"","data":"  \u001b[96mRequest Method\u001b[39m: GET"}
 {"type":"error","name":35,"displayName":"YN0035","indent":"","data":"  \u001b[96mRequest URL\u001b[39m: \u001b[95mhttps://registry.yarnpkg.com/fffffffffffff\u001b[39m"}
        */
+      let first: { type?: string; data?: string; peerDependencies?: Index<Version> } | undefined
       try {
-        const firstObj = extractFirstJsonLine(stdout)
-        if (firstObj) {
-          return (
-            npm.parseJson<{ peerDependencies?: Index<Version> }>(firstObj, { command: args.join(' ') })
-              .peerDependencies || {}
-          )
-        }
+        first = npm.parseJson(extractFirstJsonLine(stdout), { command: args.join(' ') })
       } catch {}
-      throw parseError
+
+      if (!first) throw parseError
+      // report the lookup as failed rather than as a package with no peer dependencies
+      if (first.type === 'error') {
+        throw new Error(`yarn ${args.join(' ')}: ${first.data ?? 'lookup failed'}`, { cause: parseError })
+      }
+      return first.peerDependencies || {}
     }
   }
 }
