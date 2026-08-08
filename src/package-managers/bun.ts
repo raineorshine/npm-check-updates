@@ -160,7 +160,9 @@ export const getPeerDependencies = async (
   const manifest = await bunInfo<{ peerDependencies?: Index<Version> }>(`${packageName}@${version}`, undefined, {
     cwd: spawnOptions.cwd,
   })
-  return manifest?.peerDependencies || {}
+  // bunInfo resolves to null when the lookup fails, which is not the same as having no peer dependencies
+  if (!manifest) throw new Error(`Could not read the manifest of ${packageName}@${version} from bun`)
+  return manifest.peerDependencies || {}
 }
 
 /**

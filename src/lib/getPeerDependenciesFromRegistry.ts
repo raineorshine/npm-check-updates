@@ -4,7 +4,10 @@ import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
 import getPackageManager from './getPackageManager.ts'
+import isPackageManagerProtocol from './isPackageManagerProtocol.ts'
+import { print } from './logging.ts'
 import resolveDistTagsInPeerDependencies from './resolveDistTagsInPeerDependencies.ts'
+import { isGitHubUrl, isWildcard } from './version-util.ts'
 
 type CircularData =
   | {
@@ -66,6 +69,7 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
   }
 
   const packageEntries = Object.entries(packageMap)
+  const failed: string[] = []
 
   /**
    * Fetches peer dependencies for a package.
@@ -81,9 +85,23 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
     const cached = options.cacher?.getPeers(pkg, version)
     if (cached) {
       dependencies = cached
+    } else if (!version || isPackageManagerProtocol(version) || isGitHubUrl(version) || isWildcard(version)) {
+      // the registry has nothing to look up for these, so do not report them as unfetchable
+      dependencies = {}
     } else {
-      dependencies = await packageManager.getPeerDependencies!(pkg, version, { cwd: options.cwd })
-      options.cacher?.setPeers(pkg, version, dependencies)
+      try {
+        dependencies = await packageManager.getPeerDependencies!(pkg, version, { cwd: options.cwd })
+        options.cacher?.setPeers(pkg, version, dependencies)
+      } catch (err) {
+        // one unreachable package should not abort the run
+        failed.push(pkg)
+        print(
+          options,
+          `\nFailed to get the peer dependencies of ${pkg}@${version}:\n${err instanceof Error ? err.message : err}`,
+          'verbose',
+        )
+        dependencies = {}
+      }
     }
     if (bar) {
       bar.tick()
@@ -100,6 +118,22 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
     if (circularData.isCircular) {
       delete peerDepsMap[pkg][circularData.offendingPackage]
     }
+  }
+
+  // peer deps are fetched several times per run, so only report each package once
+  const reported = (options.peerDependenciesFailed ??= new Set())
+  const unreported = failed.filter(pkg => !reported.has(pkg))
+  if (unreported.length > 0) {
+    for (const pkg of unreported) {
+      reported.add(pkg)
+    }
+    const preview = unreported.slice(0, 5).join(', ')
+    const more = unreported.length > 5 ? ` (and ${unreported.length - 5} more)` : ''
+    print(
+      options,
+      `\nCould not determine the peer dependencies of ${preview}${more}. Incompatible updates of these packages will not be ignored. Run with --verbose for details.`,
+      'warn',
+    )
   }
 
   await options.cacher?.save()

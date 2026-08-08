@@ -6,6 +6,7 @@ import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry.ts'
 import upgradePackageDefinitions from './upgradePackageDefinitions.ts'
+import { isWildcard } from './version-util.ts'
 
 /** Get all upgrades that are ignored due to incompatible peer dependencies. */
 export async function getIgnoredUpgradesDueToPeerDeps(
@@ -31,7 +32,10 @@ export async function getIgnoredUpgradesDueToPeerDeps(
           packageName,
           // git urls and other non-semver versions are ignored.
           // Make sure versionSpec is a valid semver range; otherwise, minVersion will throw.
-          semver.validRange(versionSpec) ? (semver.minVersion(versionSpec)?.version ?? versionSpec) : versionSpec,
+          // Wildcards and empty specs are left alone since minVersion resolves them to 0.0.0
+          versionSpec && !isWildcard(versionSpec) && semver.validRange(versionSpec)
+            ? (semver.minVersion(versionSpec)?.version ?? versionSpec)
+            : versionSpec,
         ]
       }),
     ),
