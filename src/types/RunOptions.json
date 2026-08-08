@@ -5,6 +5,10 @@
     "RunOptions": {
       "type": "object",
       "properties": {
+        "batch": {
+          "type": "boolean",
+          "description": "Fetch versions for multiple packages per npm registry request. Ignored unless the target is `greatest`, `minor`, `patch`, or `semver` and `--no-deprecated` is set, since the endpoint reports neither deprecated nor prerelease versions."
+        },
         "cache": {
           "type": "boolean",
           "description": "Cache versions to a local cache file. Default `--cacheFile` is ~/.ncu-cache.json and default `--cacheExpiration` is 10 minutes."

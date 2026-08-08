@@ -639,6 +639,12 @@ const FORMAT_DEFAULT = ['group']
 // store CLI options separately from bin file so that they can be used to build type definitions
 const cliOptions: CLIOption[] = [
   {
+    long: 'batch',
+    description:
+      'Fetch versions for multiple packages per npm registry request. Ignored unless the target is `greatest`, `minor`, `patch`, or `semver` and `--no-deprecated` is set, since the endpoint reports neither deprecated nor prerelease versions.',
+    type: 'boolean',
+  },
+  {
     long: 'cache',
     description: `Cache versions to a local cache file. Default \`--cacheFile\` is ${defaultCacheFile} and default \`--cacheExpiration\` is 10 minutes.`,
     type: 'boolean',

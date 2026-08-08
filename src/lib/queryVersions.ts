@@ -1,7 +1,7 @@
 import pMap from 'p-map'
 import ProgressBar from 'progress'
-import { parseRange } from 'semver-utils'
 import packageManagers from '../package-managers/index.ts'
+import { isBulkTarget, prefetchBulkVersions } from '../package-managers/npm.ts'
 import { type GetVersion } from '../types/GetVersion.ts'
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
@@ -13,6 +13,7 @@ import getPackageManager from './getPackageManager.ts'
 import isPackageManagerProtocol from './isPackageManagerProtocol.ts'
 import keyValueBy from './keyValueBy.ts'
 import programError from './programError.ts'
+import resolveTarget from './resolveTarget.ts'
 import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-util.ts'
 
 /**
@@ -50,11 +51,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       return { version: null }
     }
 
-    const targetOption = options.target || 'latest'
-    const targetString = typeof targetOption === 'string' ? targetOption : targetOption(name, parseRange(version))
-    const [target, distTag] = targetString.startsWith('@')
-      ? ['distTag', targetString.slice(1)]
-      : [targetString, 'latest']
+    const [target, distTag] = resolveTarget(name, version, options)
 
     // Skip the cache if cooldown is active since current cache does not store
     // timestamp constraints; otherwise, validate based on version and time presence.
@@ -98,7 +95,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
         distTag,
         // upgrade prereleases to newer prereleases by default
         // allow downgrading when explicit tag is used
-        pre: options.pre != null ? options.pre : targetString.startsWith('@') || isPre(version),
+        pre: options.pre != null ? options.pre : target === 'distTag' || isPre(version),
         retry,
       })
     } catch (err: any) {
@@ -146,6 +143,15 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
 
     return versionResult
   }
+
+  // the bulk endpoint only reports non-deprecated, non-prerelease versions, so restrict it to
+  // registry dependencies whose target reads nothing else
+  const bulkPackageMap = keyValueBy(packageList, dep => {
+    const [name, version] = parseNpmAlias(packageMap[dep]) || [dep, packageMap[dep]]
+    if (isPackageManagerProtocol(version) || isGitHubUrl(packageMap[dep]) || isPre(version)) return null
+    return isBulkTarget(resolveTarget(name, version, options)[0]) ? { [name]: version } : null
+  })
+  await prefetchBulkVersions(bulkPackageMap, options)
 
   const versionResultList = await pMap(packageList, getPackageVersionProtected, { concurrency: options.concurrency })
 

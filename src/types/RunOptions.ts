@@ -8,6 +8,9 @@ import { type TargetFunction } from './TargetFunction.ts'
 
 /** Options that can be given on the CLI or passed to the ncu module to control all behavior. */
 export interface RunOptions {
+  /** Fetch versions for multiple packages per npm registry request. Ignored unless the target is `greatest`, `minor`, `patch`, or `semver` and `--no-deprecated` is set, since the endpoint reports neither deprecated nor prerelease versions. */
+  batch?: boolean
+
   /** Cache versions to a local cache file. Default `--cacheFile` is ~/.ncu-cache.json and default `--cacheExpiration` is 10 minutes. */
   cache?: boolean
 

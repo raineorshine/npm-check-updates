@@ -7,12 +7,14 @@ import memoize from 'fast-memoize'
 import { findUpSync } from 'find-up'
 import ini from 'ini'
 import type npmRegistryFetch from 'npm-registry-fetch'
+import pMap from 'p-map'
 import nodeSemver from 'semver'
 import { parseRange } from 'semver-utils'
 import untildify from 'untildify'
 import pkg from '../../package.json' with { type: 'json' }
 import { keyValueBy } from '../lib/keyValueBy.ts'
 import { print, printSorted } from '../lib/logging.ts'
+import resolveTarget from '../lib/resolveTarget.ts'
 import spawnCommand from '../lib/spawnCommand.ts'
 import * as versionUtil from '../lib/version-util.ts'
 import { type GetVersion } from '../types/GetVersion.ts'
@@ -139,6 +141,116 @@ const fetchPartialPackument = async (
 
     // possible that corgis are not supported by this registry
     return fetchPartialPackument(name, fields, tag, { ...opts, fullMetadata: true }, version)
+  }
+}
+
+/** The only registry that serves the bulk dependencies endpoint. */
+const NPM_REGISTRY = 'https://registry.npmjs.org'
+
+/**
+ * Packages per bulk request. The endpoint is not CDN cached and its latency grows with the number
+ * of packages, so small batches that run concurrently beat one large request.
+ */
+const BULK_SIZE = 5
+
+/** Targets that never upgrade below the current version and need no per-version metadata. */
+const BULK_TARGETS = new Set(['greatest', 'minor', 'patch', 'semver'])
+
+interface BulkSpec {
+  name: string
+  range: string
+}
+
+/** Version lists already fetched in bulk. */
+const bulkVersionsCache = new Map<string, Version[]>()
+
+/** Cache key. The range is part of it since a higher lower bound returns fewer versions. */
+const bulkKey = ({ name, range }: BulkSpec) => `${name}@${range}`
+
+/** Returns true if the target can be resolved from a bulk version list. */
+export const isBulkTarget = (target: string) => BULK_TARGETS.has(target)
+
+/**
+ * The range to request for a target. Bounded above wherever the target allows, since the endpoint is
+ * not CDN cached and its cost grows with the versions returned. Null for specs with no lower bound,
+ * such as `workspace:*`, and for wildcards, which never upgrade.
+ */
+const bulkRange = (target: string, currentVersion: VersionSpec): string | null => {
+  if (isExactVersion(currentVersion) || !nodeSemver.validRange(currentVersion)) return null
+  const min = nodeSemver.minVersion(currentVersion)
+  if (!min) return null
+
+  // findTargetAndFallback seeds with the current version, so nothing below it can win
+  return target === 'semver'
+    ? currentVersion
+    : target === 'minor'
+      ? `>=${min.version} <${min.major + 1}.0.0`
+      : target === 'patch'
+        ? `>=${min.version} <${min.major}.${min.minor + 1}.0`
+        : `>=${min.version}`
+}
+
+/**
+ * Returns true if the bulk endpoint can answer the request. Its response omits deprecated and
+ * prerelease versions and has no engines, deprecation, or publish time.
+ */
+const isBulkEligible = (options: Options): boolean =>
+  !!options.batch &&
+  !options.deprecated &&
+  !options.pre &&
+  !options.enginesNode &&
+  !options.cooldown &&
+  !options.format?.includes('time') &&
+  options.packageManager === 'npm'
+
+/** Fetches version lists for several packages in one request. Packages the registry does not resolve are omitted. */
+const fetchBulkVersions = async (
+  specs: BulkSpec[],
+  opts: npmRegistryFetch.FetchOptions = {},
+): Promise<Index<Version[]>> => {
+  const npmRegistryFetch = await loadRegistryFetch()
+  const path = specs.map(({ name, range }) => `${encodeURIComponent(name)}@${encodeURIComponent(range)}`).join(';')
+  const result = (await npmRegistryFetch.json(`${NPM_REGISTRY}/-/npm/v1/dependencies/${path}`, {
+    ...opts,
+    headers: {
+      'user-agent': opts.userAgent || `npm-check-updates/${pkg.version} node/${process.version}`,
+      'ncu-version': pkg.version,
+      accept: 'application/json',
+      ...opts.headers,
+    },
+    spec: specs[0].name,
+  })) as Index<{ versions?: Version[] }>
+
+  return keyValueBy(specs, ({ name }) => {
+    const versions = result[name]?.versions
+    return versions?.length ? { [name]: versions } : null
+  })
+}
+
+/**
+ * Builds a packument from a prefetched bulk version list. Returns null when the request is not
+ * eligible or was not prefetched, so the caller falls back to a packument request. Only name and
+ * version are known, which is all the bulk targets read.
+ */
+const bulkPackument = (
+  packageName: string,
+  currentVersion: Version,
+  fields: (keyof Packument)[],
+  options: Options,
+): Partial<Packument> | null => {
+  // greatest, minor, patch, and semver are the only resolvers that request versions alone
+  if (!isBulkEligible(options) || fields.length !== 1 || fields[0] !== 'versions') return null
+
+  const [target] = resolveTarget(packageName, currentVersion, options)
+  const range = bulkRange(target, currentVersion)
+  const versions = range && bulkVersionsCache.get(bulkKey({ name: packageName, range }))
+  if (!versions) return null
+
+  return {
+    name: packageName,
+    versions: keyValueBy(versions, version => ({
+      [version]: { name: packageName, version } as Packument['versions'][string],
+    })),
   }
 }
 
@@ -787,6 +899,65 @@ async function fetchUpgradedPackument(
   return result
 }
 
+/**
+ * Fetches the versions a bulk target may upgrade to. Kept out of fetchUpgradedPackumentMemo since
+ * that memoizes on the package name but not the range the bulk list was fetched for.
+ */
+const fetchVersions = async (
+  packageName: string,
+  fields: (keyof Packument)[],
+  currentVersion: Version,
+  options: Options,
+  npmConfig?: NpmConfig,
+  npmConfigProject?: NpmConfig,
+): Promise<Partial<Packument> | undefined> =>
+  bulkPackument(packageName, currentVersion, fields, options) ??
+  npmApi.fetchUpgradedPackumentMemo(packageName, fields, currentVersion, options, 0, npmConfig, npmConfigProject)
+
+/**
+ * Fetches version lists for every eligible package in batches, so the resolvers below answer from
+ * one request per BULK_SIZE packages instead of a packument each. Anything skipped here, and any
+ * batch that fails, falls back to the packument path.
+ */
+export const prefetchBulkVersions = async (packageMap: Index<VersionSpec>, options: Options): Promise<void> => {
+  if (!isBulkEligible(options)) return
+
+  const npmRegistryFetch = await loadRegistryFetch()
+  const npmConfigMerged = mergeNpmConfigs({ npmConfigUser: { ...npmApi.findNpmConfig() } }, options)
+
+  const specs: BulkSpec[] = []
+  for (const [name, versionSpec] of Object.entries(packageMap)) {
+    const range = bulkRange(resolveTarget(name, versionSpec, options)[0], versionSpec)
+    // never send a package name to npmjs.org when it resolves to a different registry
+    if (!range || npmRegistryFetch.pickRegistry(name, npmConfigMerged).replace(/\/+$/, '') !== NPM_REGISTRY) continue
+    if (!bulkVersionsCache.has(bulkKey({ name, range }))) specs.push({ name, range })
+  }
+
+  const batches: BulkSpec[][] = []
+  for (let i = 0; i < specs.length; i += BULK_SIZE) {
+    batches.push(specs.slice(i, i + BULK_SIZE))
+  }
+
+  await pMap(
+    batches,
+    async batch => {
+      let versions: Index<Version[]>
+      try {
+        versions = await fetchBulkVersions(batch, npmConfigMerged)
+      } catch (err: any) {
+        // the endpoint is not part of the documented registry API, so any failure is just a miss
+        print(options, `Bulk version fetch failed, falling back to packuments: ${err}`, 'verbose', 'warn')
+        return
+      }
+
+      for (const spec of batch) {
+        if (versions[spec.name]) bulkVersionsCache.set(bulkKey(spec), versions[spec.name])
+      }
+    },
+    { concurrency: options.concurrency },
+  )
+}
+
 /** Memoize fetchUpgradedPackument for --deep and --workspaces performance. */
 // must be exported to stub
 npmApi.fetchUpgradedPackumentMemo = memoize(fetchUpgradedPackument, {
@@ -906,15 +1077,7 @@ export const greatest: GetVersion = async (
     fields.push('time')
   }
 
-  const packument = await npmApi.fetchUpgradedPackumentMemo(
-    packageName,
-    fields,
-    currentVersion,
-    options,
-    0,
-    npmConfig,
-    npmConfigProject,
-  )
+  const packument = await fetchVersions(packageName, fields, currentVersion, options, npmConfig, npmConfigProject)
 
   const versions = Object.values(packument?.versions ?? {})
   const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }
@@ -1225,15 +1388,7 @@ export const minor: GetVersion = async (
     fields.push('time')
   }
 
-  const packument = await npmApi.fetchUpgradedPackumentMemo(
-    packageName,
-    fields,
-    currentVersion,
-    options,
-    0,
-    npmConfig,
-    npmConfigProject,
-  )
+  const packument = await fetchVersions(packageName, fields, currentVersion, options, npmConfig, npmConfigProject)
 
   const versions = Object.values(packument?.versions ?? {})
   const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }
@@ -1267,15 +1422,7 @@ export const patch: GetVersion = async (
     fields.push('time')
   }
 
-  const packument = await npmApi.fetchUpgradedPackumentMemo(
-    packageName,
-    fields,
-    currentVersion,
-    options,
-    0,
-    npmConfig,
-    npmConfigProject,
-  )
+  const packument = await fetchVersions(packageName, fields, currentVersion, options, npmConfig, npmConfigProject)
 
   const versions = Object.values(packument?.versions ?? {})
   const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }
@@ -1314,15 +1461,7 @@ export const semver: GetVersion = async (
     fields.push('time')
   }
 
-  const packument = await npmApi.fetchUpgradedPackumentMemo(
-    packageName,
-    fields,
-    currentVersion,
-    options,
-    0,
-    npmConfig,
-    npmConfigProject,
-  )
+  const packument = await fetchVersions(packageName, fields, currentVersion, options, npmConfig, npmConfigProject)
 
   const versions = Object.values(packument?.versions ?? {})
   const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }

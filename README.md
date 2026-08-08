@@ -185,6 +185,10 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
 
 <table>
   <tr>
+    <td>--batch</td>
+    <td>Fetch versions for multiple packages per npm registry request. Ignored unless the target is <code>greatest</code>, <code>minor</code>, <code>patch</code>, or <code>semver</code> and <code>--no-deprecated</code> is set, since the endpoint reports neither deprecated nor prerelease versions.</td>
+  </tr>
+  <tr>
     <td>--cache</td>
     <td>Cache versions to a local cache file. Default <code>--cacheFile</code> is ~/.ncu-cache.json and default <code>--cacheExpiration</code> is 10 minutes.</td>
   </tr>
