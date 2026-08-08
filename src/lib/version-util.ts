@@ -597,5 +597,10 @@ export const upgradeGitHubUrl = (declaration: string, upgraded: string) => {
   const parsedUrl = parseGitHubUrl(declaration)
   if (!parsedUrl) return declaration
   const tag = decodeURIComponent(parsedUrl.branch).replace(/^semver:/, '')
-  return declaration.replace(tag, upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgradedNormalized)))
+  const upgradedTag = upgradeDependencyDeclaration(tag, revertPseudoVersion(tag, upgradedNormalized))
+  // the tag lives in the fragment, so replace only there
+  const hashIndex = declaration.indexOf('#')
+  return hashIndex === -1
+    ? declaration.replace(tag, upgradedTag)
+    : declaration.slice(0, hashIndex) + declaration.slice(hashIndex).replace(tag, upgradedTag)
 }

@@ -129,8 +129,12 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     if (values.length === 0) continue
     // make sure the option value is valid
     // if an array of values is given, make sure each one is a valid choice
-    if (values.every(value => !choices.includes(value))) {
-      programError(options, `Invalid option value: --${long} ${value}. Valid values are: ${choices.join(', ')}.`)
+    const invalid = values.filter(value => !choices.includes(value))
+    if (invalid.length > 0) {
+      programError(
+        options,
+        `Invalid option value: --${long} ${invalid.join(',')}. Valid values are: ${choices.join(', ')}.`,
+      )
     }
   }
 

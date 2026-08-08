@@ -19,7 +19,6 @@ import getRepoUrl from './getRepoUrl.ts'
 import isFetchable from './isFetchable.ts'
 import { COOLDOWN_PATTERN } from './parseCooldown.ts'
 import {
-  WILDCARDS,
   colorizeDiff,
   getDependencyGroups,
   getGitHubUrlTag,
@@ -31,6 +30,9 @@ import {
 } from './version-util.ts'
 
 type LogLevel = 'silent' | 'error' | 'warn' | 'info' | 'verbose' | 'silly' | null
+
+/** Returns the leading ^ or ~ of a version spec, or an empty string. */
+const leadingWildcard = (spec: string) => (spec[0] === '^' || spec[0] === '~' ? spec[0] : '')
 
 // maps string levels to numeric levels
 const logLevels = {
@@ -233,7 +235,7 @@ export async function toDependencyTable({
           const cooldownVersion = skippedByCooldown?.[dep]?.version
           let cooldown = ''
           if (cooldownVersion) {
-            const wildcard = WILDCARDS.includes(to[0]) ? to[0] : ''
+            const wildcard = leadingWildcard(to)
             const coerced = semver.coerce(cooldownVersion)
             // Truncate long versions for single-line terminal display.
             // e.g., 1.2.3-alpha.20260503T1728 -> 1.2.3-+
@@ -291,7 +293,7 @@ async function printSkippedByCooldownTable({
     const { name, version, currentVersion, fallbackVersion, time: versionTime } = params
     if (!isFetchable(currentVersion) || !version) continue
 
-    const wildcard = WILDCARDS.includes(currentVersion[0]) ? currentVersion[0] : ''
+    const wildcard = leadingWildcard(currentVersion)
     const caf = wildcard + stripRange(fallbackVersion ?? currentVersion)
     const target = wildcard + stripRange(version)
 

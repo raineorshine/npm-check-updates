@@ -143,9 +143,11 @@ async function getNcuRc({
     // render boolean options as a single parameter
     // an option is considered boolean if its type is explicitly set to boolean, or if it is has a proper JavaScript boolean value
     if (typeof value === 'boolean' || cliOptionsMap[name]?.type === 'boolean') {
-      // if the boolean option is true, include only the nullary option --${name}; otherwise, exclude it
-      return value ? [`--${name}`] : []
+      if (value) return [`--${name}`]
+      // cli.ts only registers --no- for options declared as boolean
+      return cliOptionsMap[name]?.type === 'boolean' ? [`--no-${name}`] : []
     }
+
     // otherwise render as a 2-tuple with name and value
     return [`--${name}`, value]
   })

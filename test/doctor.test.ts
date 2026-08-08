@@ -378,6 +378,42 @@ else {
         'ncu-test-tag': '1.1.0',
       })
     })
+
+    describe('color', () => {
+      /** Runs doctor on the color fixture, which prints FORCE_COLOR and then fails. */
+      const runColorFixture = async (args: string[]) => {
+        const cwd = await copyFixture('color')
+        // inherited values would mask what doctor sets
+        const env = { ...process.env }
+        delete env.FORCE_COLOR
+        delete env.NO_COLOR
+        let stdout = ''
+        try {
+          await expect(
+            ncu(
+              ['--doctor', '-u', '-p', 'npm', ...args],
+              {
+                stdout: (data: string) => {
+                  stdout += data
+                },
+              },
+              { cwd, env },
+            ),
+          ).rejects.toThrow()
+        } finally {
+          await removeDir(cwd)
+        }
+        return stdout
+      }
+
+      it('force color by default', async () => {
+        expect(await runColorFixture([])).toContain('FORCE_COLOR=1')
+      })
+
+      it('do not force color with --no-color', async () => {
+        expect(await runColorFixture(['--no-color'])).toContain('FORCE_COLOR=<unset>')
+      })
+    })
   })
 
   describe('yarn', () => {

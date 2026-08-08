@@ -70,7 +70,6 @@ function composeFilter(
     throw new TypeError('Invalid filter. Must be a RegExp, array, or comma-or-space-delimited list.')
   }
 
-  // limit the arity to 1 to avoid passing the value
   return predicate
 }
 

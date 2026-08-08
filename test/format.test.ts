@@ -4,6 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
 import { describe, expect, it } from 'vitest'
+import ncu from '../src/index.ts'
 import formatTimeAgo from '../src/lib/formatTimeAgo.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
@@ -298,5 +299,11 @@ describe('format', () => {
       await removeDir(tempDir)
       stub.restore()
     }
+  })
+
+  it('disallow an invalid value mixed with valid values', async () => {
+    await expect(ncu({ format: ['group', 'bogus'] })).rejects.toThrow(
+      'Invalid option value: --format bogus. Valid values are:',
+    )
   })
 })
