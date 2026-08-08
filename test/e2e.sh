@@ -24,21 +24,16 @@ export NPM_CONFIG_CACHE="${temp_dir}/npm-cache"
 
 verdaccio_pid=""
 
-# Cleanup on exit
 cleanup() {
   local exit_status=$?
 
-  # Shut down Verdaccio
   if [[ -n "${verdaccio_pid}" ]]; then
     echo "Shutting down Verdaccio"
     kill -9 "${verdaccio_pid}" 2>/dev/null || true
     wait "${verdaccio_pid}" 2>/dev/null || true
   fi
 
-  # Return to working directory
   cd "${cwd}" || true
-
-  # Remove temp directory
   rm -rf -- "${temp_dir}"
 
   if [[ "${exit_status}" -ne 0 ]]; then
@@ -110,18 +105,15 @@ fi
 # https://github.com/verdaccio/verdaccio/issues/212#issuecomment-308578500
 npm config set "//${registry_addr}/:_authToken=e2e_dummy"
 
-# Publish to local registry
 echo "Publishing to local registry"
 npm publish --registry "${registry_local}"
 
 package_version="$(node -p "require('./package.json').version")"
 npm view "npm-check-updates@${package_version}" version --registry "${registry_local}" >/dev/null
 
-# npm-check-updates -v
 echo "npm-check-updates -v"
 npx --yes --registry "${registry_local}" npm-check-updates -v
 
-# CLI
 # Create a package.json file with a dependency on npm-check-updates since it is already published to the local registry
 echo "Test: CLI"
 cat <<'EOF' > "${temp_dir}/package.json"
