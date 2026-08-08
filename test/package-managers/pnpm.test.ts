@@ -156,14 +156,38 @@ minimumReleaseAgeExclude:
       expect(result?.minimumReleaseAge).toBe(90)
     })
 
-    // the global rc file is only read when config.yaml is absent, matching pnpm which reads a single global config
-    it('ignores the global rc file when the global config.yaml exists', async () => {
-      await writeGlobalConfig('config.yaml', 'minimumReleaseAge: 2880\nminimumReleaseAgeExclude:\n  - "vue"\n')
-      await writeGlobalConfig('rc', 'minimum-release-age=4320\nminimum-release-age-exclude=["svelte"]\n')
+    // pnpm reads a single global config, so when both exist the installed major version decides
+    describe('both global config files exist', () => {
+      beforeEach(async () => {
+        await writeGlobalConfig('config.yaml', 'minimumReleaseAge: 2880\nminimumReleaseAgeExclude:\n  - "vue"\n')
+        await writeGlobalConfig('rc', 'minimum-release-age=4320\nminimum-release-age-exclude=["svelte"]\n')
+        process.chdir(tempDir)
+      })
+
+      it('reads config.yaml on pnpm >= 11', async () => {
+        expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)).toStrictEqual({
+          minimumReleaseAge: 2880,
+          minimumReleaseAgeExclude: ['vue'],
+        })
+      })
+
+      it('reads rc on pnpm <= 10', async () => {
+        expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(10)).toStrictEqual({
+          minimumReleaseAge: 4320,
+          minimumReleaseAgeExclude: ['svelte'],
+        })
+      })
+    })
+
+    // a global config that defines no minimumReleaseAge must not hide one that does
+    it('falls through to the global rc file when config.yaml defines no minimumReleaseAge', async () => {
+      await writeGlobalConfig('config.yaml', 'storeDir: /tmp/store\n')
+      await writeGlobalConfig('rc', 'minimum-release-age=4320\n')
       process.chdir(tempDir)
-      expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()).toStrictEqual({
-        minimumReleaseAge: 2880,
-        minimumReleaseAgeExclude: ['vue'],
+      // null reads both globals, the fallback when the installed pnpm version cannot be determined
+      expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(null)).toStrictEqual({
+        minimumReleaseAge: 4320,
+        minimumReleaseAgeExclude: [],
       })
     })
 
