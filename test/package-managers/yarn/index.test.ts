@@ -79,7 +79,8 @@ describe('yarn', () => {
     await expect(yarn.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions)).resolves.toStrictEqual({
       'ncu-test-return-version': '1.x',
     })
-    await expect(yarn.getPeerDependencies('fffffffffffff', '1.0.0', spawnOptions)).resolves.toStrictEqual({})
+    // an unresolvable package must be reported as a failed lookup, not as having no peer dependencies
+    await expect(yarn.getPeerDependencies('fffffffffffff', '1.0.0', spawnOptions)).rejects.toThrow()
   })
 
   itWithSystemYarn('getPeerDependencies v4', async () => {
@@ -89,7 +90,8 @@ describe('yarn', () => {
     await expect(yarn.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions)).resolves.toStrictEqual({
       'ncu-test-return-version': '1.x',
     })
-    await expect(yarn.getPeerDependencies('fffffffffffff', '1.0.0', spawnOptions)).resolves.toStrictEqual({})
+    // an unresolvable package must be reported as a failed lookup, not as having no peer dependencies
+    await expect(yarn.getPeerDependencies('fffffffffffff', '1.0.0', spawnOptions)).rejects.toThrow()
   })
 
   describe('npmAuthTokenKeyValue', () => {

@@ -32,7 +32,7 @@ import resolveDepSections from './resolveDepSections.ts'
 import upgradePackageData from './upgradePackageData.ts'
 import upgradePackageDefinitions from './upgradePackageDefinitions.ts'
 import parseJson from './utils/parseJson.ts'
-import { getDependencyGroups } from './version-util.ts'
+import { getDependencyGroups, isWildcard } from './version-util.ts'
 
 const INTERACTIVE_HINT = `
   ↑/↓: Select a package
@@ -211,7 +211,10 @@ export default async function runLocal(
             packageName,
             // git urls and other non-semver versions are ignored.
             // Make sure versionSpec is a valid semver range; otherwise, minVersion will throw.
-            semver.validRange(versionSpec) ? (semver.minVersion(versionSpec)?.version ?? versionSpec) : versionSpec,
+            // Wildcards and empty specs are left alone since minVersion resolves them to 0.0.0
+            versionSpec && !isWildcard(versionSpec) && semver.validRange(versionSpec)
+              ? (semver.minVersion(versionSpec)?.version ?? versionSpec)
+              : versionSpec,
           ]
         }),
       ),

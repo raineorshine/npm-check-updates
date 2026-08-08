@@ -946,7 +946,8 @@ export const getPeerDependencies = async (
   spawnOptions: SpawnOptions,
 ): Promise<Index<Version>> => {
   const args = ['view', `${packageName}@${version}`, 'peerDependencies']
-  const { stdout, stderr, command } = await spawnNpm(args, {}, { rejectOnError: false }, spawnOptions)
+  // reject on error so a failed lookup is not mistaken for a package with no peer dependencies
+  const { stdout, stderr, command } = await spawnNpm(args, {}, { rejectOnError: true }, spawnOptions)
   if (!stdout) return {}
   const peerDependencies = parseJson<Index<Version> | Index<Version>[]>(stdout, { command, stderr })
   // npm 12 always wraps the field in an array, npm 11 only for multi-version specs. Last is highest.
