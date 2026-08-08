@@ -2,6 +2,7 @@
  * Logging functions.
  */
 import fs from 'node:fs/promises'
+import { stripVTControlCharacters } from 'node:util'
 import Table from 'cli-table3'
 import semver from 'semver'
 import { type CooldownFunction } from '../types/CooldownFunction.ts'
@@ -93,6 +94,13 @@ export function printSorted<T extends { [key: string]: any }>(options: Options, 
     return accum
   }, {} as T)
   print(options, objSorted, loglevel)
+}
+
+/** Strips escape sequences and control characters from package- and registry-supplied text. */
+function sanitizeForDisplay(str: string): string {
+  // stripVTControlCharacters leaves bare control characters like CR, which can overwrite a rendered line
+  // eslint-disable-next-line no-control-regex
+  return stripVTControlCharacters(str).replace(/[\u0000-\u001f\u007f-\u009f]/g, '')
 }
 
 /** Create a table with the appropriate columns and alignment to render dependency upgrades. */
@@ -215,9 +223,9 @@ export async function toDependencyTable({
               : '*unknown*'
             : ''
           const toColorized = colorizeDiff(getVersion(from), shortenBuildMetadata(to))
-          const homepageUrl = format?.includes('homepage') ? packageJson?.homepage || '' : ''
+          const homepageUrl = format?.includes('homepage') ? sanitizeForDisplay(packageJson?.homepage || '') : ''
           const repoUrl = format?.includes('repo')
-            ? (await getRepoUrl(dep, packageJson ?? undefined, { pkgFile })) || ''
+            ? sanitizeForDisplay((await getRepoUrl(dep, packageJson ?? undefined, { pkgFile })) || '')
             : ''
           const diffUrl = format?.includes('diff')
             ? `${process.env.NCU_DIFF || 'https://npmdiff.dev'}/${encodeURIComponent(dep)}/${from.replace(/^\W+/, '')}/${to.replace(/^\W+/, '')}`
@@ -419,7 +427,7 @@ function printErrors(options: Options, errors?: Index<string>) {
       },
     })
 
-    errorTable.push(...Object.entries(errors).map(([dep, error]) => [dep, chalk.yellow(error)]))
+    errorTable.push(...Object.entries(errors).map(([dep, error]) => [dep, chalk.yellow(sanitizeForDisplay(error))]))
 
     print(options, '\n' + errorTable.toString())
   }
@@ -538,11 +546,12 @@ export function printIgnoredUpdatesDueToPeerDeps(options: Options, ignoredUpdate
   print(options, `\nIgnored incompatible updates (peer dependencies):\n`)
   const table = renderDependencyTable(
     Object.entries(ignoredUpdates).map(([pkgName, { from, to, reason }]) => {
-      const strReason =
+      const strReason = sanitizeForDisplay(
         'reason: ' +
-        Object.entries(reason)
-          .map(([pkgReason, requirement]) => pkgReason + ' requires ' + requirement)
-          .join(', ')
+          Object.entries(reason)
+            .map(([pkgReason, requirement]) => pkgReason + ' requires ' + requirement)
+            .join(', '),
+      )
       return [pkgName, from, '→', colorizeDiff(from, to), strReason]
     }),
   )
@@ -561,7 +570,7 @@ export function printIgnoredUpdatesDueToEnginesNode(
       from,
       '→',
       colorizeDiff(from, to),
-      `reason: requires node ${enginesNode}`,
+      `reason: requires node ${sanitizeForDisplay(enginesNode)}`,
     ]),
   )
   print(options, table)
