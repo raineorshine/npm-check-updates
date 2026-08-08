@@ -88,6 +88,11 @@ uplinks:
     url: https://registry.npmjs.org/
 EOF
 
+if ! command -v verdaccio >/dev/null; then
+  echo "Verdaccio not found; install it before running the e2e tests" >&2
+  exit 1
+fi
+
 # Start Verdaccio and wait for it to boot
 echo "Starting local registry"
 nohup verdaccio -l "${registry_addr}" -c "${verdaccio_config}" >"${registry_log}" 2>&1 &
