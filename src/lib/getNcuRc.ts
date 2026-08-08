@@ -20,7 +20,7 @@ const loadYaml: Loader = (filepath, content) => {
  * Detects module system mismatches and returns a helpful error message.
  * Returns null if it's not a known module mismatch (generic error).
  */
-function getModuleMismatchError(errorMessage: string, filename: string): string | null {
+export function getModuleMismatchError(errorMessage: string, filename: string): string | null {
   const basename = path.basename(filename)
 
   // Detect CommonJS syntax in ESM project (type: "module")
@@ -40,7 +40,7 @@ function getModuleMismatchError(errorMessage: string, filename: string): string 
     (errorMessage.includes('SyntaxError') && errorMessage.includes('import'))
 
   // Only provide specific guidance for .js files, not .cjs/.mjs
-  const isJsFile = filename.endsWith('.js') && !filename.endsWith('.cjs') && !filename.endsWith('.mjs')
+  const isJsFile = filename.endsWith('.js')
 
   if (isCjsInEsm && isJsFile) {
     return (
