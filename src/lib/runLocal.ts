@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises'
+import pMap from 'p-map'
 import prompts from 'prompts-ncu'
 import semver from 'semver'
 import { parseDocument } from 'yaml'
@@ -62,13 +63,17 @@ function getOptionsPerPage(showHint: boolean, groups?: DependencyGroup[]): numbe
  */
 async function getOwnerPerDependency(fromVersion: Index<Version>, toVersion: Index<Version>, options: Options) {
   const packageManager = getPackageManager(options, options.packageManager)
-  const result: Index<boolean> = {}
-  for (const dep of Object.keys(toVersion)) {
-    const from = fromVersion[dep] || null
-    const to = toVersion[dep] || null
-    result[dep] = await packageManager.packageAuthorChanged!(dep, from!, to!, options)
-  }
-  return result
+  const deps = Object.keys(toVersion)
+  const changed = await pMap(
+    deps,
+    dep => {
+      const from = fromVersion[dep] || null
+      const to = toVersion[dep] || null
+      return packageManager.packageAuthorChanged!(dep, from!, to!, options)
+    },
+    { concurrency: options.concurrency },
+  )
+  return keyValueBy(deps, (dep, i) => ({ [dep]: changed[i] }))
 }
 
 /** Prompts the user to choose which upgrades to upgrade. */

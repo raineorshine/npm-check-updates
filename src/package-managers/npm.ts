@@ -698,23 +698,27 @@ export async function packageAuthorChanged(
 ): Promise<boolean> {
   const npmConfig = npmApi.findNpmConfig()
   // merge the project/cwd .npmrc so a scoped private registry is respected, like the main fetch path
-  const npmConfigMerged = mergeNpmConfigs(
-    { npmConfigUser: { ...npmConfig, fullMetadata: true }, npmConfigLocal },
-    options,
-  )
+  const npmConfigMerged = mergeNpmConfigs({ npmConfigUser: { ...npmConfig }, npmConfigLocal }, options)
   const result = await fetchPartialPackument(packageName, ['versions'], null, npmConfigMerged)
-  if (result.versions) {
-    const pkgVersions = Object.keys(result.versions)
-    const current = nodeSemver.minSatisfying(pkgVersions, currentVersion)
-    const upgraded = nodeSemver.maxSatisfying(pkgVersions, upgradedVersion)
-    if (current && upgraded && result.versions[current]._npmUser && result.versions[upgraded]._npmUser) {
-      const currentAuthor = result.versions[current]._npmUser?.name
-      const latestAuthor = result.versions[upgraded]._npmUser?.name
-      return currentAuthor !== latestAuthor
-    }
-  }
+  if (!result.versions) return false
 
-  return false
+  const pkgVersions = Object.keys(result.versions)
+  const current = nodeSemver.minSatisfying(pkgVersions, currentVersion)
+  const upgraded = nodeSemver.maxSatisfying(pkgVersions, upgradedVersion)
+  if (!current || !upgraded) return false
+
+  // the abbreviated packument has the version list but not _npmUser, so read the publisher from the
+  // two version manifests instead of pulling the full packument
+  const [currentManifest, upgradedManifest] = await Promise.all([
+    fetchPartialPackument(packageName, ['_npmUser'], null, npmConfigMerged, current),
+    fetchPartialPackument(packageName, ['_npmUser'], null, npmConfigMerged, upgraded),
+  ])
+
+  const currentAuthor = currentManifest._npmUser?.name
+  const upgradedAuthor = upgradedManifest._npmUser?.name
+  if (!currentAuthor || !upgradedAuthor) return false
+
+  return currentAuthor !== upgradedAuthor
 }
 
 /**
