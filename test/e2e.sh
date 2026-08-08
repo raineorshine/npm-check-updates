@@ -147,7 +147,7 @@ for variant in cjs esm; do
   cd "${temp_dir}/e2e/${variant}"
 
   echo "Installing"
-  npm i npm-check-updates@latest --registry "${registry_local}"
+  npm i "npm-check-updates@${package_version}" --registry "${registry_local}"
 
   echo "Running test"
   REGISTRY="${registry_local}" node index.js
