@@ -23,7 +23,7 @@ const injectReadme = async () => {
     <td>${option.help ? `<a href="#${option.long.toLowerCase()}">` : ''}${option.short ? `-${option.short}, ` : ''}${
       option.cli !== false ? '--' : ''
     }${option.long}${option.arg ? ` &lt;${option.arg}&gt;` : ''}${option.help ? '</a>' : ''}</td>
-    <td>${codeHtml(option.description)}${option.default ? ` (default: ${JSON.stringify(option.default)})` : ''}</td>
+    <td>${codeHtml(option.description)}${option.default ? ` (default: <code>${JSON.stringify(option.default)}</code>)` : ''}</td>
   </tr>`
     })
     .join('\n')

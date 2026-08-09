@@ -186,7 +186,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
 <table>
   <tr>
     <td>--cache</td>
-    <td>Cache versions to a local cache file. Default <code>--cacheFile</code> is ~/.ncu-cache.json and default <code>--cacheExpiration</code> is 10 minutes.</td>
+    <td>Cache versions to a local cache file. Default <code>--cacheFile</code> is <code>~/.ncu-cache.json</code> and default <code>--cacheExpiration</code> is 10 minutes.</td>
   </tr>
   <tr>
     <td>--cacheClear</td>
@@ -194,11 +194,11 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--cacheExpiration &lt;min&gt;</td>
-    <td>Cache expiration in minutes. Only works with <code>--cache</code>. (default: 10)</td>
+    <td>Cache expiration in minutes. Only works with <code>--cache</code>. (default: <code>10</code>)</td>
   </tr>
   <tr>
     <td>--cacheFile &lt;path&gt;</td>
-    <td>Filepath for the cache file. Only works with <code>--cache</code>. (default: "~/.ncu-cache.json")</td>
+    <td>Filepath for the cache file. Only works with <code>--cache</code>. (default: <code>"~/.ncu-cache.json"</code>)</td>
   </tr>
   <tr>
     <td>--color</td>
@@ -206,7 +206,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--concurrency &lt;n&gt;</td>
-    <td>Max number of concurrent HTTP requests to registry. (default: 8)</td>
+    <td>Max number of concurrent HTTP requests to registry. (default: <code>8</code>)</td>
   </tr>
   <tr>
     <td>--configFileName &lt;s&gt;</td>
@@ -230,11 +230,11 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--dep &lt;value&gt;</td>
-    <td>Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited). (default: ["prod","dev","optional","packageManager"])</td>
+    <td>Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited). (default: <code>["prod","dev","optional","packageManager"]</code>)</td>
   </tr>
   <tr>
     <td>--deprecated</td>
-    <td>Include deprecated packages. Use <code>--no-deprecated</code> to exclude deprecated packages (20–25% slower). (default: true)</td>
+    <td>Include deprecated packages. Use <code>--no-deprecated</code> to exclude deprecated packages (20–25% slower). (default: <code>true</code>)</td>
   </tr>
   <tr>
     <td><a href="#doctor">-d, --doctor</a></td>
@@ -254,7 +254,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>-e, --errorLevel &lt;n&gt;</td>
-    <td>Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). (default: 1)</td>
+    <td>Set the error level. 1: exits with error code 0 if no errors occur. 2: exits with error code 0 if no packages need updating (useful for continuous integration). (default: <code>1</code>)</td>
   </tr>
   <tr>
     <td><a href="#filter">-f, --filter &lt;p&gt;</a></td>
@@ -270,7 +270,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#format">--format &lt;value&gt;</a></td>
-    <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. <code>group</code> is the only value included by default; use <code>--format no-group</code> to disable it. (default: ["group"])</td>
+    <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. <code>group</code> is the only value included by default; use <code>--format no-group</code> to disable it. (default: <code>["group"]</code>)</td>
   </tr>
   <tr>
     <td>-g, --global</td>
@@ -282,7 +282,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#install">--install &lt;value&gt;</a></td>
-    <td>Control the auto-install behavior: always, never, prompt. (default: "prompt")</td>
+    <td>Control the auto-install behavior: always, never, prompt. (default: <code>"prompt"</code>)</td>
   </tr>
   <tr>
     <td>-i, --interactive</td>
@@ -302,7 +302,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>-l, --loglevel &lt;n&gt;</td>
-    <td>Amount to log: silent, error, minimal, warn, info, verbose, silly. (default: "warn")</td>
+    <td>Amount to log: silent, error, minimal, warn, info, verbose, silly. (default: <code>"warn"</code>)</td>
   </tr>
   <tr>
     <td>--mergeConfig</td>
@@ -358,11 +358,11 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--retry &lt;n&gt;</td>
-    <td>Number of times to retry failed requests for package info. (default: 3)</td>
+    <td>Number of times to retry failed requests for package info. (default: <code>3</code>)</td>
   </tr>
   <tr>
     <td>--root</td>
-    <td>Runs updates on the root project in addition to specified workspaces. Only allowed with <code>--workspace</code> or <code>--workspaces</code>. (default: true)</td>
+    <td>Runs updates on the root project in addition to specified workspaces. Only allowed with <code>--workspace</code> or <code>--workspaces</code>. (default: <code>true</code>)</td>
   </tr>
   <tr>
     <td>-s, --silent</td>
@@ -390,7 +390,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--workspace &lt;s&gt;</td>
-    <td>Run on one or more specified workspaces. Add <code>--no-root</code> to exclude the root project. (default: [])</td>
+    <td>Run on one or more specified workspaces. Add <code>--no-root</code> to exclude the root project. (default: <code>[]</code>)</td>
   </tr>
   <tr>
     <td>-w, --workspaces</td>

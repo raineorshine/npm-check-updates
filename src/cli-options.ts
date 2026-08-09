@@ -640,7 +640,7 @@ const FORMAT_DEFAULT = ['group']
 const cliOptions: CLIOption[] = [
   {
     long: 'cache',
-    description: `Cache versions to a local cache file. Default \`--cacheFile\` is ${defaultCacheFile} and default \`--cacheExpiration\` is 10 minutes.`,
+    description: `Cache versions to a local cache file. Default \`--cacheFile\` is \`${defaultCacheFile}\` and default \`--cacheExpiration\` is 10 minutes.`,
     type: 'boolean',
   },
   {
