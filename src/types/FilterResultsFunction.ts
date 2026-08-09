@@ -1,4 +1,4 @@
-import { type SemVer } from 'semver-utils'
+import { type SemVer } from './SemVer.ts'
 import { type Version } from './Version.ts'
 import { type VersionSpec } from './VersionSpec.ts'
 
