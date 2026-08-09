@@ -17,7 +17,7 @@ When filing an issue, please include:
 
 ## Development
 
-This project is **pure ESM**, built with Vite. CJS consumers can still load it via Node's `require(ESM)`.
+This project is **pure ESM**. `npm run build` compiles `src/` to `build/` with `tsc`, one output file per source file, and dependencies are resolved from `node_modules` at runtime. CJS consumers can still load it via Node's `require(ESM)`.
 
 ### Running Tests
 
@@ -29,17 +29,13 @@ npx vitest run
 
 ## Executable Stack Trace
 
-The Vite Build bundles all dependencies for efficiency. Source maps are generated for all build outputs:
+Every build output gets a `.js.map` next to it, with the TypeScript source embedded, so stack traces from an installed copy point at the original source.
 
-- `build/cli.js.map` - CLI source map
-- `build/index.js.map` - index source map
-- `build/chunks/*.map` - Chunk source maps
-
-To execute npm-check-updates with an accurate stack trace using the original TypeScript source code, run:
+To execute npm-check-updates directly from the TypeScript source, run:
 
 ```sh
 git clone https://github.com/raineorshine/npm-check-updates /MY_PROJECTS
-node /MY_PROJECTS/npm-check-updates/src/bin/cli.ts
+node /MY_PROJECTS/npm-check-updates/src/cli.ts
 ```
 
 ## Design Guidelines

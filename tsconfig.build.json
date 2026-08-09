@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/"],
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "build",
+    "noEmit": false,
+    "declaration": true,
+    "sourceMap": true,
+    // src is not published, so embed it in the maps to keep stack traces readable
+    "inlineSources": true,
+    "rewriteRelativeImportExtensions": true,
+    // build wipes the outDir, so a stale tsbuildinfo would skip the emit
+    "incremental": false
+  }
+}
