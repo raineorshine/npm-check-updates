@@ -1,4 +1,4 @@
-import { type SemVer } from 'semver-utils'
+import { type SemVer } from './SemVer.ts'
 import { type UpgradeGroup } from './UpgradeGroup.ts'
 
 /** Customize how packages are divided into groups when using `--format group`. Run "ncu --help --groupFunction" for details. */
