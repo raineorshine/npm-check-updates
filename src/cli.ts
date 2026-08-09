@@ -2,15 +2,15 @@
 import { Help, Option, program } from 'commander'
 import semver from 'semver'
 import updateNotifier from 'update-notifier'
-import pkg from '../../package.json' with { type: 'json' }
-import cliOptions, { cliOptionsMap, renderExtendedHelp } from '../cli-options.ts'
-import ncu from '../index.ts'
-import { chalkInit, getChalk } from '../lib/chalk.ts'
+import pkg from '../package.json' with { type: 'json' }
+import cliOptions, { cliOptionsMap, renderExtendedHelp } from './cli-options.ts'
+import ncu from './index.ts'
+import { chalkInit, getChalk } from './lib/chalk.ts'
 // async global contexts are only available in esm modules -> function
-import getNcuRc from '../lib/getNcuRc.ts'
-import { pickBy } from '../lib/pick.ts'
-import uncode from '../lib/uncode.ts'
-import { type RunOptions } from '../types/RunOptions.ts'
+import getNcuRc from './lib/getNcuRc.ts'
+import { pickBy } from './lib/pick.ts'
+import uncode from './lib/uncode.ts'
+import { type RunOptions } from './types/RunOptions.ts'
 
 const optionVersionDescription = 'Output the version number of npm-check-updates.'
 
