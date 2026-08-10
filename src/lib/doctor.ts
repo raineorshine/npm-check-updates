@@ -95,7 +95,10 @@ const loadPackageFileForDoctor = async (options: Options): Promise<PackageInfo> 
 /** Iteratively installs upgrades and runs tests to identify breaking upgrades. */
 // we have to pass run directly since it would be a circular require if doctor included this file
 const doctor = async (run: Run, options: Options): Promise<void> => {
-  chalkInit()
+  chalkInit(options.color)
+
+  // color has to be carried through, otherwise the package manager is always spawned with FORCE_COLOR
+  const pmOptions: Options = { packageManager: options.packageManager, color: options.color }
 
   // bun lockFileName defaults to bun.lock but will be overwritten to bun.lockb if detected at the readFile step below
   let lockFileName: 'package-lock.json' | 'yarn.lock' | 'pnpm-lock.yaml' | 'bun.lock' | 'bun.lockb' =
@@ -122,7 +125,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
       console.log(chalk.blue(options.doctorInstall))
       await spawn(installCommand, testArgs)
     } else {
-      await npm(['install'], { packageManager: options.packageManager }, true)
+      await npm(['install'], pmOptions, true)
     }
   }
 
@@ -150,14 +153,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
       console.log(chalk.blue(options.doctorTest))
       await spawn(testCommand, testArgs, spawnPleaseOptions)
     } else {
-      await npm(
-        ['run', 'test'],
-        {
-          packageManager: options.packageManager,
-        },
-        true,
-        { spawnPleaseOptions },
-      )
+      await npm(['run', 'test'], pmOptions, true, { spawnPleaseOptions })
     }
   }
 
@@ -283,7 +279,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
             ...(ADD_PACKAGE_MANAGERS.has(options.packageManager ?? '') ? ['add'] : ['install', '--no-save']),
             `${name}@${version}`,
           ],
-          { packageManager: options.packageManager },
+          pmOptions,
           true,
         )
 
@@ -291,7 +287,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         // https://github.com/raineorshine/npm-check-updates/issues/1170
         if (pkg.scripts?.prepare) {
           try {
-            await npm(['run', 'prepare'], { packageManager: options.packageManager }, true)
+            await npm(['run', 'prepare'], pmOptions, true)
           } catch (e) {
             console.error(chalk.red('Prepare script failed'))
             throw e
