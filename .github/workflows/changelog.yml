@@ -18,12 +18,14 @@ jobs:
     if: github.repository == 'raineorshine/npm-check-updates'
 
     permissions:
-      contents: write
+      contents: read
 
     steps:
       - name: Clone repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: main
+          token: ${{ secrets.CHANGELOG_TOKEN }}
           persist-credentials: true
 
       - name: Generate CHANGELOG.md from releases
@@ -70,4 +72,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add CHANGELOG.md
           git commit -m 'docs: update CHANGELOG.md from releases [skip ci]'
+          git pull --rebase origin main
           git push origin HEAD:main
