@@ -43,6 +43,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_ACTION: ${{ github.event.action }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: node scripts/build-changelog.ts
 
       - name: Show CHANGELOG.md diff
