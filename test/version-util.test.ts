@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import chalk, { chalkInit } from '../src/lib/chalk.ts'
+import style, { styleInit } from '../src/lib/style.ts'
 import * as versionUtil from '../src/lib/version-util.ts'
 
 describe('version-util', () => {
@@ -448,42 +448,42 @@ describe('version-util', () => {
   })
 
   describe('colorizeDiff', () => {
-    chalkInit()
+    styleInit()
     it('do not colorize unchanged versions', () => {
       expect(versionUtil.colorizeDiff('1.0.0', '1.0.0')).toBe('1.0.0')
     })
     it('colorize changed patch versions', () => {
-      expect(versionUtil.colorizeDiff('1.0.0', '1.0.1')).toBe(`1.0.${chalk.green('1')}`)
+      expect(versionUtil.colorizeDiff('1.0.0', '1.0.1')).toBe(`1.0.${style.green('1')}`)
     })
     it('colorize changed minor versions', () => {
-      expect(versionUtil.colorizeDiff('1.0.0', '1.1.0')).toBe(`1.${chalk.cyan('1.0')}`)
+      expect(versionUtil.colorizeDiff('1.0.0', '1.1.0')).toBe(`1.${style.cyan('1.0')}`)
     })
     it('colorize changed major versions', () => {
-      expect(versionUtil.colorizeDiff('1.0.0', '2.0.0')).toBe(chalk.red('2.0.0'))
+      expect(versionUtil.colorizeDiff('1.0.0', '2.0.0')).toBe(style.red('2.0.0'))
     })
     it('colorize whole parts', () => {
-      expect(versionUtil.colorizeDiff('1.0.10', '1.0.11')).toBe(`1.0.${chalk.green('11')}`)
+      expect(versionUtil.colorizeDiff('1.0.10', '1.0.11')).toBe(`1.0.${style.green('11')}`)
     })
     it('do not include the leading ^ or ~ if the same', () => {
-      expect(versionUtil.colorizeDiff('^1.0.0', '^2.0.0')).toBe(`^${chalk.red('2.0.0')}`)
-      expect(versionUtil.colorizeDiff('~1.0.0', '~2.0.0')).toBe(`~${chalk.red('2.0.0')}`)
+      expect(versionUtil.colorizeDiff('^1.0.0', '^2.0.0')).toBe(`^${style.red('2.0.0')}`)
+      expect(versionUtil.colorizeDiff('~1.0.0', '~2.0.0')).toBe(`~${style.red('2.0.0')}`)
     })
     it('colorize changed versions before 1.0.0 as breaking', () => {
-      expect(versionUtil.colorizeDiff('0.1.0', '0.2.0')).toBe(`0.${chalk.red('2.0')}`)
-      expect(versionUtil.colorizeDiff('0.1.0', '0.1.1')).toBe(`0.1.${chalk.red('1')}`)
-      expect(versionUtil.colorizeDiff('~0.1.0', '~0.1.1')).toBe(`~0.1.${chalk.red('1')}`)
+      expect(versionUtil.colorizeDiff('0.1.0', '0.2.0')).toBe(`0.${style.red('2.0')}`)
+      expect(versionUtil.colorizeDiff('0.1.0', '0.1.1')).toBe(`0.1.${style.red('1')}`)
+      expect(versionUtil.colorizeDiff('~0.1.0', '~0.1.1')).toBe(`~0.1.${style.red('1')}`)
     })
     it('handle a leading range operator that differs between from and to', () => {
       // "<1.2.3" -> "^1.2.9" used to color the entire string red since the leading "<" on
       // `from` blocked the "^" from being stripped off `to` before the parts were compared.
-      expect(versionUtil.colorizeDiff('<1.2.3', '^1.2.9')).toBe(`^1.2.${chalk.green('9')}`)
-      expect(versionUtil.colorizeDiff('<1.2.3', '^1.3.0')).toBe(`^1.${chalk.cyan('3.0')}`)
-      expect(versionUtil.colorizeDiff('1.2.3', '^1.2.9')).toBe(`^1.2.${chalk.green('9')}`)
+      expect(versionUtil.colorizeDiff('<1.2.3', '^1.2.9')).toBe(`^1.2.${style.green('9')}`)
+      expect(versionUtil.colorizeDiff('<1.2.3', '^1.3.0')).toBe(`^1.${style.cyan('3.0')}`)
+      expect(versionUtil.colorizeDiff('1.2.3', '^1.2.9')).toBe(`^1.2.${style.green('9')}`)
     })
   })
 
   describe('getDependencyGroups', () => {
-    chalkInit()
+    styleInit()
 
     it('groups upgrades by patch/minor/major in order', () => {
       const groups = versionUtil.getDependencyGroups(

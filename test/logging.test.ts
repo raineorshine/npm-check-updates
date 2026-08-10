@@ -3,13 +3,13 @@ import os from 'node:os'
 import path from 'node:path'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import { describe, expect, it, vi } from 'vitest'
-import { chalkInit } from '../src/lib/chalk.ts'
 import {
   printIgnoredUpdatesDueToEnginesNode,
   printIgnoredUpdatesDueToPeerDeps,
   printUpgrades,
   toDependencyTable,
 } from '../src/lib/logging.ts'
+import { styleInit } from '../src/lib/style.ts'
 import removeDir from './helpers/removeDir.ts'
 
 const ESC = String.fromCharCode(0x1b)
@@ -34,7 +34,7 @@ const captureRaw = async (fn: () => unknown): Promise<string> => {
 const captureOutput = async (fn: () => unknown): Promise<string> => stripAnsi(await captureRaw(fn))
 
 describe('toDependencyTable', () => {
-  chalkInit(false)
+  styleInit(false)
 
   it('renders a from → to row for each dependency', async () => {
     const table = await toDependencyTable({ from: { a: '1.0.0' }, to: { a: '2.0.0' } })
@@ -117,7 +117,7 @@ describe('toDependencyTable', () => {
 })
 
 describe('printIgnoredUpdatesDueToPeerDeps', () => {
-  chalkInit(false)
+  styleInit(false)
 
   it('prints the peer dependency requirements that blocked each upgrade', async () => {
     const output = await captureOutput(() =>
@@ -156,7 +156,7 @@ describe('printIgnoredUpdatesDueToPeerDeps', () => {
 })
 
 describe('printIgnoredUpdatesDueToEnginesNode', () => {
-  chalkInit(false)
+  styleInit(false)
 
   it('prints the required node version that blocked each upgrade', async () => {
     const output = await captureOutput(() =>
@@ -180,7 +180,7 @@ describe('printIgnoredUpdatesDueToEnginesNode', () => {
 })
 
 describe('printUpgrades', () => {
-  chalkInit(false)
+  styleInit(false)
 
   it('strips terminal escape sequences from registry errors', async () => {
     const output = await captureRaw(() =>

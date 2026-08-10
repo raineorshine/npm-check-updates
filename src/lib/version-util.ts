@@ -8,10 +8,10 @@ import { type Maybe } from '../types/Maybe.ts'
 import { type Options } from '../types/Options.ts'
 import { type UpgradeGroup } from '../types/UpgradeGroup.ts'
 import { type VersionLevel } from '../types/VersionLevel.ts'
-import chalk from './chalk.ts'
 import { escapeRegExp } from './escapeRegExp.ts'
 import { keyValueBy } from './keyValueBy.ts'
 import { sortBy } from './sortBy.ts'
+import style from './style.ts'
 
 type VersionPart = keyof SemVer
 
@@ -229,10 +229,10 @@ export function getDependencyGroups(
 
   // get the text for the default group headings
   const headings = {
-    patch: chalk.green(chalk.bold('Patch') + '   Backwards-compatible bug fixes'),
-    minor: chalk.cyan(chalk.bold('Minor') + '   Backwards-compatible features'),
-    major: chalk.red(chalk.bold('Major') + '   Potentially breaking API changes'),
-    majorVersionZero: chalk.magenta(chalk.bold('Major version zero') + '   Anything may change'),
+    patch: style.green(style.bold('Patch') + '   Backwards-compatible bug fixes'),
+    minor: style.cyan(style.bold('Minor') + '   Backwards-compatible features'),
+    major: style.red(style.bold('Major') + '   Potentially breaking API changes'),
+    majorVersionZero: style.magenta(style.bold('Major version zero') + '   Anything may change'),
   }
 
   const groupOrder = Array.from(new Set(['patch', 'minor', 'major', 'majorVersionZero', ...Object.keys(groups).sort()]))
@@ -288,7 +288,7 @@ export function colorizeDiff(from: string, to: string) {
   // if we are colorizing only part of the word, add a dot in the middle
   const middot = i > 0 && i < partsToColor.length ? '.' : ''
 
-  return leadingWildcard + partsToColor.slice(0, i).join('.') + middot + chalk[color](partsToColor.slice(i).join('.'))
+  return leadingWildcard + partsToColor.slice(0, i).join('.') + middot + style[color](partsToColor.slice(i).join('.'))
 }
 
 /**
