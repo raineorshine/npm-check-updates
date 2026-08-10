@@ -66,17 +66,41 @@ const fetchReleases = async (): Promise<Release[]> => {
   return releases
 }
 
-/** Fetches a single release by tag from the GitHub API. */
-const fetchReleaseByTag = async (tag: string): Promise<Release> => {
-  const res = await fetch(`https://api.github.com/repos/${REPO}/releases/tags/${encodeURIComponent(tag)}`, {
-    headers: getHeaders(),
+/** Matches an atx heading. Indented code blocks are excluded for free, as they are indented by at least four spaces. */
+const HEADING_RE = /^(#{1,6})(?=\s)/
+
+/** Matches the start or end of a fenced code block. */
+const FENCE_RE = /^ {0,3}(`{3,}|~{3,})/
+
+/**
+ * Splits a release body into lines, marking which lines are headings. Lines inside a fenced code block are never
+ * headings, otherwise a shell snippet like `# install dependencies` would be rewritten as one.
+ */
+const parseLines = (body: string): { text: string; level: number }[] => {
+  let fence: string | null = null
+
+  return body.split('\n').map(text => {
+    const fenceMatch = text.match(FENCE_RE)
+
+    if (fence) {
+      // a fence is closed by a run of the same character that is at least as long, with nothing after it
+      if (
+        fenceMatch?.[1].startsWith(fence[0]) &&
+        fenceMatch[1].length >= fence.length &&
+        !text.slice(fenceMatch[0].length).trim()
+      ) {
+        fence = null
+      }
+      return { text, level: 0 }
+    }
+
+    if (fenceMatch) {
+      fence = fenceMatch[1]
+      return { text, level: 0 }
+    }
+
+    return { text, level: text.match(HEADING_RE)?.[1].length ?? 0 }
   })
-
-  if (!res.ok) {
-    throw new Error(`GitHub API request failed: ${res.status} ${res.statusText}`)
-  }
-
-  return (await res.json()) as Release
 }
 
 /**
@@ -85,19 +109,22 @@ const fetchReleaseByTag = async (tag: string): Promise<Release> => {
  * markdownlint's heading-increment rule, which has no automatic fix.
  */
 const shiftHeadings = (body: string): string => {
-  const normalized = body.replace(/\r\n/g, '\n')
-  const levels = [...normalized.matchAll(/^(#{1,6})(?=\s)/gm)].map(match => match[1].length)
-  if (levels.length === 0) return normalized
+  const lines = parseLines(body.replace(/\r\n/g, '\n'))
+  const levels = lines.filter(line => line.level > 0).map(line => line.level)
+  if (levels.length === 0) return lines.map(line => line.text).join('\n')
 
   const shift = 3 - Math.min(...levels)
   // the version heading is an h2, so the first body heading may be at most an h3
   let previous = 2
 
-  return normalized.replace(/^(#{1,6})(?=\s)/gm, hashes => {
-    const level = Math.min(Math.max(hashes.length + shift, 3), previous + 1, 6)
-    previous = level
-    return '#'.repeat(level)
-  })
+  return lines
+    .map(line => {
+      if (line.level === 0) return line.text
+      const level = Math.min(Math.max(line.level + shift, 3), previous + 1, 6)
+      previous = level
+      return line.text.replace(HEADING_RE, '#'.repeat(level))
+    })
+    .join('\n')
 }
 
 /** Renders a single release as a markdown section. */
@@ -159,72 +186,16 @@ export async function formatChangelog(content: string): Promise<string> {
   throw new Error(`markdownlint fixes did not converge after ${MAX_FIX_PASSES} passes`)
 }
 
-/** Extracts the date from the first release section heading in CHANGELOG.md. */
-const extractFirstSectionDate = (changelog: string): string | null => {
-  const match = changelog.match(/^## \[[^\]]+\] - (\d{4}-\d{2}-\d{2})$/m)
-  return match ? match[1] : null
-}
-
-/** Attempts to generate a one-release prepend for the common release:published event. */
-const tryRenderFastPath = async (): Promise<string | null> => {
-  if (process.env.GITHUB_EVENT_NAME !== 'release' || process.env.GITHUB_EVENT_ACTION !== 'published') {
-    return null
-  }
-
-  const releaseTag = process.env.RELEASE_TAG
-  if (!releaseTag) {
-    return null
-  }
-
-  let existing: string
-  try {
-    existing = await fs.readFile('CHANGELOG.md', 'utf8')
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return null
-    }
-    throw error
-  }
-
-  if (!existing.startsWith(HEADER_PREFIX)) {
-    return null
-  }
-
-  const version = releaseTag.replace(/^v/, '')
-  if (existing.includes(`## [${version}] - `)) {
-    return null
-  }
-
-  const firstSectionDate = extractFirstSectionDate(existing)
-  if (!firstSectionDate) {
-    return null
-  }
-
-  const release = await fetchReleaseByTag(releaseTag)
-  if (!isPublished(release)) {
-    return null
-  }
-
-  if (new Date(release.published_at).getTime() <= new Date(`${firstSectionDate}T00:00:00.000Z`).getTime()) {
-    return null
-  }
-
-  const existingSections = existing.slice(HEADER_PREFIX.length)
-  return `${HEADER_PREFIX}${renderRelease(release)}\n\n${existingSections}`
-}
-
-/** Generates and writes CHANGELOG.md. */
+/**
+ * Generates and writes CHANGELOG.md.
+ *
+ * Every run rebuilds the file from the complete list of releases. Prepending only the release that triggered the run
+ * would be unsafe: concurrency replaces a pending run when a newer one is queued, so a release whose run was dropped
+ * would never make it into the changelog. A rebuild is a single request until the repo has more than 100 releases, so
+ * there is nothing to gain from the shortcut either.
+ */
 export async function buildChangelog(): Promise<void> {
-  const fastPathChangelog = await tryRenderFastPath()
-
-  if (fastPathChangelog !== null) {
-    console.log(`[build-changelog] Fast path: prepending ${process.env.RELEASE_TAG}`)
-    await fs.writeFile('CHANGELOG.md', await formatChangelog(fastPathChangelog))
-    console.log('[build-changelog] Wrote CHANGELOG.md')
-    return
-  }
-
-  console.log('[build-changelog] Full rebuild: fetching all releases...')
+  console.log('[build-changelog] Fetching all releases...')
   const changelog = await renderChangelog()
   await fs.writeFile('CHANGELOG.md', await formatChangelog(changelog))
   console.log('[build-changelog] Wrote CHANGELOG.md')

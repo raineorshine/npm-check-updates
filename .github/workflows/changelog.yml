@@ -31,8 +31,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: main
-          token: ${{ secrets.CHANGELOG_TOKEN }}
-          persist-credentials: true
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -47,8 +46,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_EVENT_ACTION: ${{ github.event.action }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: node scripts/build-changelog.ts
 
       - name: Show CHANGELOG.md diff
@@ -68,8 +65,12 @@ jobs:
             git --no-pager diff -- CHANGELOG.md
           fi
 
+      # CHANGELOG_TOKEN bypasses branch protection on main, so it is exposed to this step only, and never written to
+      # the git config where it would be readable by every later command
       - name: Commit and push if changed
         if: inputs.dry-run != true
+        env:
+          CHANGELOG_TOKEN: ${{ secrets.CHANGELOG_TOKEN }}
         run: |
           if git diff --quiet -- CHANGELOG.md; then
             echo 'CHANGELOG.md is already up to date.'
@@ -80,5 +81,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add CHANGELOG.md
           git commit -m 'docs: update CHANGELOG.md from releases [skip ci]'
-          git pull --rebase origin main
-          git push origin HEAD:main
+
+          remote="https://x-access-token:${CHANGELOG_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git pull --rebase "$remote" main
+          git push "$remote" HEAD:main
