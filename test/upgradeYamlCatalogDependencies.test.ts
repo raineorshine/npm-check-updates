@@ -188,6 +188,19 @@ catalog:
     expect(updated).toBeNull()
   })
 
+  it('returns null for a non-catalog section that exists in the document', () => {
+    const yaml = `dependencies:
+  react: 18.3.1
+`
+
+    const updated = updateYamlCatalogDependencies({
+      fileContent: yaml,
+      upgrade: { path: ['dependencies', 'react'], newValue: '19.0.0' },
+    })
+
+    expect(updated).toBeNull()
+  })
+
   it('returns null when the dependency key is missing from an existing catalog', () => {
     const yaml = `catalog:
   react: 18.3.1

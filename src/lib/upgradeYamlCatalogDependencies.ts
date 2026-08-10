@@ -98,7 +98,8 @@ export function updateYamlCatalogDependencies({
 }: UpdateYamlCatalogDependenciesArgs): string | null {
   const { path } = upgrade
 
-  if (!(path.length > 1) && path[0] !== 'catalog' && path[0] !== 'catalogs') {
+  // only catalog paths are supported, e.g. ['catalog', dep] or ['workspaces', 'catalogs', name, dep]
+  if (path.length < 2 || (path[0] !== 'catalog' && path[0] !== 'catalogs' && path[0] !== 'workspaces')) {
     return null
   }
 
