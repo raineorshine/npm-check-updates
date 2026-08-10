@@ -34,7 +34,7 @@ const chalkMethods = {
   yellow: true,
 }
 
-// A chalk instance that passes strings through as-is, without color. Used with color: null. */
+// A chalk instance that passes strings through as-is, without color. Used with color: null or false. */
 const chalkNoop = keyValueBy(chalkMethods, name => ({
   [name]: Object.assign((s: any) => s.toString(), {
     bold: (s: any) => s.toString(),
@@ -45,9 +45,9 @@ const chalkNoop = keyValueBy(chalkMethods, name => ({
 // a global instance of a chalk instance that can optionally force or ignore color
 let chalkInstance: Record<keyof typeof chalkMethods, any>
 
-/** Returns a chalk instance based on the provided color option. */
+/** Returns a chalk instance based on the provided color option. Only undefined auto-detects. */
 export const getChalk = (color?: boolean | null) => {
-  return color === true ? new Chalk({ level: 1 }) : color === null ? chalkNoop : chalkDefault
+  return color === true ? new Chalk({ level: 1 }) : color === undefined ? chalkDefault : chalkNoop
 }
 
 /** Initializes the global chalk instance with an optional flag for forced color. Idempotent. */
