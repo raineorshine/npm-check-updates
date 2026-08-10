@@ -54,8 +54,8 @@ const hasCaretOrTilde = (spec: VersionSpec) => {
   return range.some(parsed => parsed.operator === '^' || parsed.operator === '~')
 }
 
-/** Returns true if the version is sa valid, exact version. */
-const isExactVersion = (version: Version) =>
+/** Returns true if there is no registry version to fetch for the spec: a non-semver spec (e.g. a git url) or a pure wildcard. */
+const isUnfetchable = (version: Version) =>
   version && (!nodeSemver.validRange(version) || versionUtil.isWildcard(version))
 
 /** Fetches a packument or dist-tag from the npm registry. */
@@ -97,7 +97,6 @@ const fetchPartialPackument = async (
     if (opts.fullMetadata) {
       return npmRegistryFetch.json(url.href, fetchOptions)
     } else {
-      tag = tag || 'latest'
       const controller = new AbortController()
       const response = await npmRegistryFetch(url.href, { ...fetchOptions, signal: controller.signal })
       const parser = new JSONParser({ paths: ['$.*'], keepStack: false })
@@ -741,7 +740,7 @@ async function fetchUpgradedPackument(
     return npmApi.mockFetchUpgradedPackument(mockReturnedVersions)(packageName, fields, currentVersion, options)
   }
 
-  if (isExactVersion(currentVersion)) {
+  if (isUnfetchable(currentVersion)) {
     return {}
   }
 
@@ -805,8 +804,8 @@ npmApi.fetchUpgradedPackumentMemo = memoize(fetchUpgradedPackument, {
     return JSON.stringify([
       packageName,
       fields,
-      // currentVersion does not change the behavior of fetchUpgradedPackument unless it is an invalid/inexact version which causes it to short circuit
-      isExactVersion(currentVersion),
+      // currentVersion only changes the behavior of fetchUpgradedPackument when it short circuits
+      isUnfetchable(currentVersion),
       optionsWithoutPackageFile,
       // make sure retries do not get memoized
       retried,
@@ -965,7 +964,7 @@ export const getDistTags = async (
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<Index<Version>> => {
-  // currentVersion is only used to short circuit exact versions, which does not apply here
+  // currentVersion is only used to short circuit unfetchable specs, which does not apply here
   const packument = await npmApi.fetchUpgradedPackumentMemo(packageName, ['dist-tags'], '', options, 0, npmConfigLocal)
   return packument?.['dist-tags'] || {}
 }
