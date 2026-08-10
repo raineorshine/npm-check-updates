@@ -8,6 +8,11 @@ describe('chalk', () => {
       expect(getChalk(null).red.bold('x')).toBe('x')
     })
 
+    it('returns a no-op passthrough when color is false', () => {
+      expect(getChalk(false).red('x')).toBe('x')
+      expect(getChalk(false).red.bold('x')).toBe('x')
+    })
+
     it('forces color when color is true', () => {
       const colored = getChalk(true).red('x')
       expect(colored).not.toBe('x')
