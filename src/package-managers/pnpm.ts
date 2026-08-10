@@ -5,6 +5,7 @@ import memoize from 'fast-memoize'
 import { findUp } from 'find-up'
 import ini from 'ini'
 import { parse as parseYaml } from 'yaml'
+import interpolate from '../lib/interpolate.ts'
 import keyValueBy from '../lib/keyValueBy.ts'
 import { print } from '../lib/logging.ts'
 import spawnCommand from '../lib/spawnCommand.ts'
@@ -199,7 +200,7 @@ const getPnpmWorkspaceMinimumReleaseAge = async (
   return { minimumReleaseAge, minimumReleaseAgeExclude }
 }
 
-/** Shape of the pnpm-workspace.yaml registries setting. */
+/** The registries resolved from pnpm's `registries` and `registry` settings. */
 export interface PnpmWorkspaceRegistries {
   /** Registry used for packages that do not match a scoped entry. */
   default?: string
@@ -207,14 +208,35 @@ export interface PnpmWorkspaceRegistries {
   scoped: Index<string>
 }
 
-/** Extracts the string-valued registries from an already-parsed config object, keyed by `default` or by scope. */
-const parseRegistries = (parsed: Record<string, unknown> | null): Index<string> => {
-  const registries = parsed?.registries
-  if (typeof registries !== 'object' || registries === null || Array.isArray(registries)) return {}
+/** Matches an environment variable placeholder that interpolate did not resolve, e.g. `${MY_REGISTRY}`. */
+const envPlaceholder = /\$\{[^}]*\}/
 
-  return keyValueBy(registries as Index<unknown>, (scope, registry) =>
-    typeof registry === 'string' && registry.trim() !== '' ? { [scope]: registry } : null,
-  )
+/**
+ * Extracts the string-valued registries from an already-parsed config object, keyed by `default` or by scope.
+ *
+ * pnpm accepts both the `registries` map and the plain `registry` setting, which the docs describe as equivalent to
+ * `registries.default`. The more specific `registries.default` wins when a single layer defines both.
+ *
+ * @param expandEnv Whether to expand `${VAR}` placeholders in the registry URLs. pnpm only expands them in
+ * trusted locations, i.e. its global config. Since pnpm 11.5.3 a registry URL containing a placeholder in
+ * pnpm-workspace.yaml is ignored instead, since that file is committed and could otherwise be used to leak
+ * environment secrets to an attacker-controlled registry (GHSA-3qhv-2rgh-x77r).
+ */
+const parseRegistries = (parsed: Record<string, unknown> | null, expandEnv: boolean): Index<string> => {
+  const registries = parsed?.registries
+  const scopes: Index<unknown> =
+    typeof registries === 'object' && registries !== null && !Array.isArray(registries)
+      ? (registries as Index<unknown>)
+      : {}
+
+  return keyValueBy({ default: parsed?.registry, ...scopes }, (scope, registry) => {
+    if (typeof registry !== 'string') return null
+
+    const value = expandEnv ? interpolate(registry, process.env) : registry
+    // an empty value, or one left over from an unexpanded or unset placeholder, would produce a bogus URL,
+    // so drop the registry rather than request it
+    return value.trim() === '' || envPlaceholder.test(value) ? null : { [scope]: value }
+  })
 }
 
 /**
@@ -230,8 +252,8 @@ const resolvePnpmRegistries = async (pnpmWorkspacePath?: string): Promise<PnpmWo
   ])
 
   const { default: defaultRegistry, ...scoped } = {
-    ...parseRegistries(globalConfig),
-    ...parseRegistries(workspaceConfig),
+    ...parseRegistries(globalConfig, true),
+    ...parseRegistries(workspaceConfig, false),
   }
 
   return { default: defaultRegistry, scoped }
@@ -280,37 +302,53 @@ const npmConfigFromWorkspaceNpmrc = async (options: Options, pnpmWorkspaceDir: s
   return npm.normalizeNpmConfig(ini.parse(contents), pnpmWorkspaceDir)
 }
 
+/** pnpm's config split by the npm config layer each part belongs to, since they rank differently. */
+interface PnpmNpmConfig {
+  /**
+   * pnpm's own registries/registry settings, merged as npmConfigLocal so they outrank the ambient npm config.
+   * Otherwise the `registry=` that `npm config set registry` leaves in the user .npmrc would silently win over
+   * pnpm-workspace.yaml, which is the very thing these settings are read to fix.
+   */
+  registries: NpmConfig
+  /**
+   * The npmrc next to pnpm-workspace.yaml, merged as npmConfigWorkspaceProject so the local npm config still
+   * overrides it, as decided in #1285.
+   */
+  workspaceNpmrc: NpmConfig
+}
+
 // Read the npmrc next to pnpm-workspace.yaml, plus pnpm's own registries setting, and convert them to npm config variables.
 // Defined as a memoized function to read the config files only once, and only if pnpm is being used.
-const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<NpmConfig> => {
+const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<PnpmNpmConfig> => {
   const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml', { cwd: options.cwd })
   const pnpmWorkspaceDir = pnpmWorkspacePath ? path.dirname(pnpmWorkspacePath) : undefined
 
-  const [npmrcConfig, { default: defaultRegistry, scoped }] = await Promise.all([
+  const [workspaceNpmrc, { default: defaultRegistry, scoped }] = await Promise.all([
     pnpmWorkspaceDir ? npmConfigFromWorkspaceNpmrc(options, pnpmWorkspaceDir) : {},
     resolvePnpmRegistries(pnpmWorkspacePath),
   ])
 
-  // pnpm's registries take precedence over the .npmrc that sits next to pnpm-workspace.yaml
-  const config: NpmConfig = {
-    ...npmrcConfig,
+  const registries: NpmConfig = {
     ...keyValueBy(scoped, (scope, registry) => ({ [`${scope}:registry`]: registry })),
     ...(defaultRegistry ? { registry: defaultRegistry } : null),
   }
 
-  // a pnpm project with no workspace config at all resolves to an empty config, which is not worth printing
-  if (Object.keys(config).length > 0) {
-    print(options, config, 'verbose')
+  // a pnpm project that configures no registries resolves to an empty config, which is not worth printing
+  if (Object.keys(registries).length > 0) {
+    print(options, '\npnpm registries in npm format:', 'verbose')
+    print(options, registries, 'verbose')
   }
 
-  return config
+  return { registries, workspaceNpmrc }
 })
 
-/** Wraps a GetVersion function and passes the npmrc located next to the pnpm-workspace.yaml if it exists. */
+/** Wraps a GetVersion function and passes pnpm's registries plus the npmrc located next to the pnpm-workspace.yaml if it exists. */
 const withNpmWorkspaceConfig =
   (getVersion: GetVersion): GetVersion =>
-  async (packageName, currentVersion, options = {}) =>
-    getVersion(packageName, currentVersion, options, {}, await npmConfigFromPnpmWorkspace(options))
+  async (packageName, currentVersion, options = {}) => {
+    const { registries, workspaceNpmrc } = await npmConfigFromPnpmWorkspace(options)
+    return getVersion(packageName, currentVersion, options, registries, workspaceNpmrc)
+  }
 
 export const distTag = withNpmWorkspaceConfig(npm.distTag)
 export const greatest = withNpmWorkspaceConfig(npm.greatest)
@@ -346,9 +384,8 @@ async function spawnPnpm(
 
 export { defaultPrefix, getPeerDependencies } from './npm.ts'
 
-// The wrappers below pass the pnpm config as npmConfigWorkspaceProject, the same layer withNpmWorkspaceConfig
-// uses, so that every code path resolves the same registry. Passing it as npmConfigLocal would rank it above the
-// ambient npm config and make these lookups disagree with the version lookups.
+// The wrappers below split the pnpm config across the same two layers withNpmWorkspaceConfig uses, so that every
+// code path resolves the same registry. Otherwise a project resolves versions and engines from two different ones.
 
 /**
  * Fetches all dist-tags published for a package.
@@ -356,8 +393,10 @@ export { defaultPrefix, getPeerDependencies } from './npm.ts'
  * @param packageName
  * @returns Promised {tag: version} collection
  */
-export const getDistTags = async (packageName: string, options: Options = {}): Promise<Index<Version>> =>
-  npm.getDistTags(packageName, options, undefined, await npmConfigFromPnpmWorkspace(options))
+export const getDistTags = async (packageName: string, options: Options = {}): Promise<Index<Version>> => {
+  const { registries, workspaceNpmrc } = await npmConfigFromPnpmWorkspace(options)
+  return npm.getDistTags(packageName, options, registries, workspaceNpmrc)
+}
 
 /**
  * Fetches the engines list from the registry for a specific package version.
@@ -370,8 +409,10 @@ export const getEngines = async (
   packageName: string,
   version: Version,
   options: Options = {},
-): Promise<Index<VersionSpec | undefined>> =>
-  npm.getEngines(packageName, version, options, undefined, await npmConfigFromPnpmWorkspace(options))
+): Promise<Index<VersionSpec | undefined>> => {
+  const { registries, workspaceNpmrc } = await npmConfigFromPnpmWorkspace(options)
+  return npm.getEngines(packageName, version, options, registries, workspaceNpmrc)
+}
 
 /**
  * Check if package author changed between current and upgraded version.
@@ -386,15 +427,10 @@ export const packageAuthorChanged = async (
   currentVersion: VersionSpec,
   upgradedVersion: VersionSpec,
   options: Options = {},
-): Promise<boolean> =>
-  npm.packageAuthorChanged(
-    packageName,
-    currentVersion,
-    upgradedVersion,
-    options,
-    undefined,
-    await npmConfigFromPnpmWorkspace(options),
-  )
+): Promise<boolean> => {
+  const { registries, workspaceNpmrc } = await npmConfigFromPnpmWorkspace(options)
+  return npm.packageAuthorChanged(packageName, currentVersion, upgradedVersion, options, registries, workspaceNpmrc)
+}
 
 export default spawnPnpm
 

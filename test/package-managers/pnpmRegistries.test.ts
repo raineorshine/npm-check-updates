@@ -45,13 +45,25 @@ describe('pnpm registries', () => {
     )
   })
 
-  // pnpm resolves registries above .npmrc, but ncu merges the workspace config below the npmrc layers
-  it('is overridden by the registry in .npmrc', async () => {
+  // pnpm resolves registries above every .npmrc, but ncu keeps the project/cwd .npmrc on top, as it does for yarn
+  it('is overridden by the registry in the .npmrc in the cwd', async () => {
     await dirs.writeWorkspace('registries:\n  default: https://default-registry.invalid/\n')
     await fs.writeFile(path.join(dirs.projectDir, '.npmrc'), 'registry=https://npmrc-registry.invalid/\n')
 
     await expect(pnpm.latest('ncu-test-v2', '1.0.0', { cwd: dirs.projectDir, retry: 0 })).rejects.toThrow(
       /npmrc-registry\.invalid/,
+    )
+  })
+
+  // the .npmrc next to pnpm-workspace.yaml is merged below the registries setting, matching pnpm
+  it('overrides the registry in the .npmrc next to pnpm-workspace.yaml', async () => {
+    await dirs.writeWorkspace('registries:\n  default: https://default-registry.invalid/\n')
+    await fs.writeFile(path.join(dirs.projectDir, '.npmrc'), 'registry=https://npmrc-registry.invalid/\n')
+    const nested = path.join(dirs.projectDir, 'packages', 'sub')
+    await fs.mkdir(nested, { recursive: true })
+
+    await expect(pnpm.latest('ncu-test-v2', '1.0.0', { cwd: nested, retry: 0 })).rejects.toThrow(
+      /default-registry\.invalid/,
     )
   })
 
@@ -99,22 +111,31 @@ describe('pnpm registries', () => {
     )
   })
 
-  // The pnpm config is merged as npmConfigWorkspaceProject, which sits below the ambient npm config. Every code
-  // path must agree on that, otherwise a project resolves versions and engines from two different registries.
+  // The registries setting is merged as npmConfigLocal, which sits above the ambient npm config. Every code path
+  // must agree on that, otherwise a project resolves versions and engines from two different registries.
   describe('with an ambient npm registry', () => {
     beforeEach(() => {
       vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ registry: 'https://npm-config-registry.invalid/' })
     })
 
-    it('resolves versions, dist-tags, engines and authors from the same registry', async () => {
+    it('resolves versions, dist-tags, engines and authors from the pnpm registry', async () => {
       await dirs.writeWorkspace('registries:\n  default: https://pnpm-registry.invalid/\n')
       const options = { cwd: dirs.projectDir, retry: 0 }
 
-      await expect(pnpm.latest('ncu-test-v2', '1.0.0', options)).rejects.toThrow(/npm-config-registry\.invalid/)
-      await expect(pnpm.getDistTags('ncu-test-v2', options)).rejects.toThrow(/npm-config-registry\.invalid/)
-      await expect(pnpm.getEngines('ncu-test-v2', '1.0.0', options)).rejects.toThrow(/npm-config-registry\.invalid/)
+      await expect(pnpm.latest('ncu-test-v2', '1.0.0', options)).rejects.toThrow(/pnpm-registry\.invalid/)
+      await expect(pnpm.getDistTags('ncu-test-v2', options)).rejects.toThrow(/pnpm-registry\.invalid/)
+      await expect(pnpm.getEngines('ncu-test-v2', '1.0.0', options)).rejects.toThrow(/pnpm-registry\.invalid/)
       await expect(pnpm.packageAuthorChanged('ncu-test-v2', '1.0.0', '2.0.0', options)).rejects.toThrow(
-        /npm-config-registry\.invalid/,
+        /pnpm-registry\.invalid/,
+      )
+    })
+
+    // npm config set registry leaves a registry= in the user .npmrc, which used to silently win over pnpm's own config
+    it('resolves the plain registry setting above the ambient npm config', async () => {
+      await dirs.writeWorkspace('registry: https://pnpm-registry.invalid/\n')
+
+      await expect(pnpm.latest('ncu-test-v2', '1.0.0', { cwd: dirs.projectDir, retry: 0 })).rejects.toThrow(
+        /pnpm-registry\.invalid/,
       )
     })
   })
