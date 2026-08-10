@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import { chalkInit } from '../src/lib/chalk.ts'
 import getPeerDependenciesFromRegistry from '../src/lib/getPeerDependenciesFromRegistry.ts'
+import { styleInit } from '../src/lib/style.ts'
 import { silenceProgressBar } from './helpers/silenceProgressBar.ts'
 
 describe('getPeerDependenciesFromRegistry', () => {
   it('single package', async () => {
-    chalkInit()
+    styleInit()
     silenceProgressBar()
     const data = await getPeerDependenciesFromRegistry({ 'ncu-test-peer': '1.0' }, {})
     expect(data).toStrictEqual({
@@ -16,14 +16,14 @@ describe('getPeerDependenciesFromRegistry', () => {
   })
 
   it('single package empty', async () => {
-    chalkInit()
+    styleInit()
     silenceProgressBar()
     const data = await getPeerDependenciesFromRegistry({ 'ncu-test-return-version': '1.0' }, {})
     expect(data).toStrictEqual({ 'ncu-test-return-version': {} })
   })
 
   it('multiple packages', async () => {
-    chalkInit()
+    styleInit()
     silenceProgressBar()
     const data = await getPeerDependenciesFromRegistry(
       {
@@ -41,7 +41,7 @@ describe('getPeerDependenciesFromRegistry', () => {
   })
 
   it('warns when peer dependencies cannot be fetched instead of reporting none', async () => {
-    chalkInit()
+    styleInit()
     silenceProgressBar()
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
@@ -58,7 +58,7 @@ describe('getPeerDependenciesFromRegistry', () => {
   })
 
   it('does not warn about specs the registry cannot resolve', async () => {
-    chalkInit()
+    styleInit()
     silenceProgressBar()
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 

@@ -1,11 +1,11 @@
 import { print, printJson, printSorted, printUpgrades } from '../lib/logging.ts'
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
-import chalk from './chalk.ts'
 import getCooldownInfo from './getCooldownInfo.ts'
 import getInstalledPackages from './getInstalledPackages.ts'
 import programError from './programError.ts'
 import quoteGlobalPackageSpec from './quoteGlobalPackageSpec.ts'
+import style from './style.ts'
 import upgradePackageDefinitions from './upgradePackageDefinitions.ts'
 
 /** Checks global dependencies for upgrades. */
@@ -74,9 +74,9 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
     print(
       options,
       '\n' +
-        chalk.cyan('ncu') +
+        style.cyan('ncu') +
         ' itself cannot upgrade global packages. Run the following to upgrade all global packages: \n\n' +
-        chalk.cyan(`${upgradeCmd} ` + instruction) +
+        style.cyan(`${upgradeCmd} ` + instruction) +
         '\n',
     )
   }

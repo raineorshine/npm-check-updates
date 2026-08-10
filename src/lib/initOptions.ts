@@ -11,12 +11,12 @@ import { type Options } from '../types/Options.ts'
 import { type RunOptions } from '../types/RunOptions.ts'
 import { type Target } from '../types/Target.ts'
 import cacher from './cache.ts'
-import { getChalk } from './chalk.ts'
 import determinePackageManager from './determinePackageManager.ts'
 import exists from './exists.ts'
 import keyValueBy from './keyValueBy.ts'
 import parseCooldown from './parseCooldown.ts'
 import programError from './programError.ts'
+import { getStyle } from './style.ts'
 
 function parseFilterExpression(filterExpression: string[] | undefined): string[] | undefined
 function parseFilterExpression(filterExpression: FilterPattern | undefined): FilterPattern | undefined
@@ -78,7 +78,7 @@ const nativeCooldown = (
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
 async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Promise<Options> {
-  const chalk = getChalk(runOptions.color)
+  const style = getStyle(runOptions.color)
 
   let raw: RunOptions | undefined
   // long names of options passed to the ncu module, used to keep them ahead of per-package
@@ -140,7 +140,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
         long === 'packageManager'
           ? '--packageManager staticRegistry is deprecated. Use --registryType json.'
           : `--${long}: ${description}`
-      print(options, chalk.yellow(deprecationMessage), 'warn')
+      print(options, style.yellow(deprecationMessage), 'warn')
     }
     print(options, '', 'warn')
   }

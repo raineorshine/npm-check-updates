@@ -4,8 +4,8 @@ import { type Loader, lilconfig } from 'lilconfig'
 import { parse as parseYaml } from 'yaml'
 import { cliOptionsMap } from '../cli-options.ts'
 import { type Options } from '../types/Options.ts'
-import { getChalk } from './chalk.ts'
 import programError from './programError.ts'
+import { getStyle } from './style.ts'
 
 /** Parses YAML config since lilconfig has no YAML loader; matches cosmiconfig's "YAML Error in <path>" message. */
 const loadYaml: Loader = (filepath, content) => {
@@ -78,7 +78,7 @@ async function getNcuRc({
   packageFile?: string
   options: Options
 }) {
-  const chalk = getChalk(options?.color)
+  const style = getStyle(options?.color)
 
   const explorer = lilconfig('ncu', {
     searchPlaces: ['.ncurc', '.ncurc.json', '.ncurc.yaml', '.ncurc.yml', '.ncurc.mjs', '.ncurc.cjs', '.ncurc.js'],
@@ -131,11 +131,11 @@ async function getNcuRc({
   const unknownOptions = Object.keys(config).filter(arg => !cliOptionsMap[arg])
   if (unknownOptions.length > 0) {
     console.error(
-      chalk.red(`Unknown option${unknownOptions.length === 1 ? '' : 's'} found in config file:`),
-      chalk.gray(unknownOptions.join(', ')),
+      style.red(`Unknown option${unknownOptions.length === 1 ? '' : 's'} found in config file:`),
+      style.gray(unknownOptions.join(', ')),
     )
     console.info('Using config file ' + filePath)
-    console.info(`You can change the config file path with ${chalk.blue('--configFilePath')}`)
+    console.info(`You can change the config file path with ${style.blue('--configFilePath')}`)
   }
 
   // flatten config object into command line arguments to be read by commander
