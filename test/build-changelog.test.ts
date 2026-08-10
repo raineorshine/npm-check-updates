@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { buildChangelog } from '../scripts/build-changelog.ts'
+import { buildChangelog, formatChangelog } from '../scripts/build-changelog.ts'
 
 const ORIGINAL_CWD = process.cwd()
 const ORIGINAL_ENV = { ...process.env }
@@ -110,5 +110,44 @@ describe('build-changelog', () => {
     const changelog = await fs.readFile('CHANGELOG.md', 'utf8')
     expect(changelog).toBe(`${PREFIX}## [1.0.0] - 2024-03-01\n\nexisting release\n\n## [2.0.0] - 2024-02-01\n`)
     expect(fetchMock.mock.calls.some(([input]) => String(input).includes('/releases?per_page=100&page=1'))).toBe(true)
+  })
+
+  it('nests release body headings and formats them for prettier and markdownlint', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-build-changelog-'))
+    process.chdir(dir)
+
+    // a hand-written release body: headings that would collide with the version heading, and lists that neither
+    // prettier nor markdownlint would accept as-is
+    const body = ['# What’s Changed', '* a fix   ', '### Details', '#### Deeper', '```js', 'ncu()', '```'].join('\n')
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify([{ tag_name: 'v1.0.0', body, draft: false, published_at: '2024-01-01T00:00:00.000Z' }]),
+            { status: 200 },
+          ),
+      ),
+    )
+
+    await buildChangelog()
+
+    expect(await fs.readFile('CHANGELOG.md', 'utf8')).toBe(
+      `${PREFIX}## [1.0.0] - 2024-01-01\n\n### What’s Changed\n\n- a fix\n\n#### Details\n\n##### Deeper\n\n\`\`\`js\nncu()\n\`\`\`\n`,
+    )
+  })
+
+  it('disables rules that markdownlint cannot fix, without duplicating the comment on the next build', async () => {
+    // a code fence with no language violates MD040, which has no automatic fix
+    const changelog = `${PREFIX}## [1.0.0] - 2024-01-01\n\n\`\`\`\nncu\n\`\`\`\n`
+
+    const disabled = await formatChangelog(changelog)
+    expect(disabled).toBe(
+      `${PREFIX}<!-- markdownlint-disable MD040 -->\n\n## [1.0.0] - 2024-01-01\n\n\`\`\`\nncu\n\`\`\`\n`,
+    )
+
+    // rebuilding an already generated changelog is a no-op
+    expect(await formatChangelog(disabled)).toBe(disabled)
   })
 })
