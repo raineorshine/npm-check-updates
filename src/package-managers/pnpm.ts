@@ -254,6 +254,13 @@ export const newest = withNpmWorkspaceConfig(npm.newest)
 export const patch = withNpmWorkspaceConfig(npm.patch)
 export const semver = withNpmWorkspaceConfig(npm.semver)
 
+/** Builds the pnpm argv from the given args and npm options. */
+const buildArgs = (args: string | string[], npmOptions: NpmOptions): string[] => [
+  ...(npmOptions.global ? ['global'] : []),
+  ...(Array.isArray(args) ? args : [args]),
+  ...(npmOptions.prefix ? [`--prefix=${npmOptions.prefix}`] : []),
+]
+
 /**
  * Spawn pnpm.
  *
@@ -268,13 +275,7 @@ async function spawnPnpm(
   spawnPleaseOptions?: SpawnPleaseOptions,
   spawnOptions?: SpawnOptions,
 ): Promise<SpawnResult> {
-  const fullArgs = [
-    ...(npmOptions.global ? 'global' : []),
-    ...(Array.isArray(args) ? args : [args]),
-    ...(npmOptions.prefix ? `--prefix=${npmOptions.prefix}` : []),
-  ]
-
-  return spawnCommand('pnpm', fullArgs, spawnPleaseOptions, spawnOptions)
+  return spawnCommand('pnpm', buildArgs(args, npmOptions), spawnPleaseOptions, spawnOptions)
 }
 
 export { defaultPrefix, getDistTags, getPeerDependencies, getEngines, packageAuthorChanged } from './npm.ts'
@@ -282,6 +283,7 @@ export { defaultPrefix, getDistTags, getPeerDependencies, getEngines, packageAut
 export default spawnPnpm
 
 export const pnpmApi = {
+  buildArgs,
   getPnpmWorkspaceMinimumReleaseAge,
   parseList,
 }
