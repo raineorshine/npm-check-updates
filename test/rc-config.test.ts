@@ -519,8 +519,8 @@ describe('rc-config', () => {
       )
       try {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-        const result = spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
-        await expect(result).rejects.toThrow('do not support predicate functions')
+        const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
+        expect(stderr).toContain('filterVersion and rejectVersion do not support predicate functions')
       } finally {
         await removeDir(tempDir)
       }
@@ -598,8 +598,8 @@ describe('rc-config', () => {
       )
       try {
         // awkwardly, we have to set mergeConfig to enable autodetecting the rcconfig because otherwise it is explicitly disabled for tests
-        const result = spawn('node', [bin, '--mergeConfig', '--jsonUpgraded'], {}, { cwd: tempDir })
-        await expect(result).rejects.toThrow('do not support predicate functions')
+        const { stderr } = await spawn('node', [bin, '--mergeConfig'], { rejectOnError: false }, { cwd: tempDir })
+        expect(stderr).toContain('filterVersion and rejectVersion do not support predicate functions')
       } finally {
         await removeDir(tempDir)
       }
