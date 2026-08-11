@@ -1060,12 +1060,18 @@ export const distTag: GetVersion = async (
     return {}
   }
 
+  const versionPackument = packument?.versions?.[version]
+
   // fall back to a minimal packument when versions was not fetched, or when the registry does not
   // list the version that dist-tags points to
-  const tagPackument = packument?.versions?.[version] ?? {
+  const tagPackument = versionPackument ?? {
     name: packageName,
     version,
   }
+
+  // the deprecated and engines filters read fields that only exist on the real version object, so a
+  // fallback packument would pass them unchecked. fall through to greatest instead.
+  const isUnfilterable = !versionPackument && (!options.deprecated || options.enginesNode)
 
   const publishTime = packument?.time?.[version!]
   const maybeTime = publishTime ? { time: publishTime } : null
@@ -1080,7 +1086,7 @@ export const distTag: GetVersion = async (
   // if latest exists and latest is a prerelease version and --pre is specified, return it
   // if latest exists and latest not satisfies min version of engines.node
   // if latest exists and cooldown is specified and latest is within cooldown period, return it
-  if (isSatisfiesCooldown && filterPredicate(options)(tagPackument)) {
+  if (isSatisfiesCooldown && !isUnfilterable && filterPredicate(options)(tagPackument)) {
     return {
       version: tagPackument.version,
       ...maybeTime,
