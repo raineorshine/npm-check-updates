@@ -6,7 +6,7 @@ vi.mock('../../../src/lib/spawnCommand.ts', () => ({ default: vi.fn() }))
 
 /** Makes the next npm view return the given stdout. */
 const stubNpmView = (stdout: string) =>
-  vi.mocked(spawnCommand).mockResolvedValue({ stdout, stderr: '', command: 'npm' })
+  vi.mocked(spawnCommand).mockResolvedValue({ stdout, stderr: '', code: 0, command: 'npm' })
 
 describe('getPeerDependencies output shapes', () => {
   beforeEach(() => {
