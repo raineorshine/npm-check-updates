@@ -467,8 +467,7 @@
           "type": "string"
         }
       },
-      "additionalProperties": false,
-      "description": "A version or version range component parsed by semver-utils."
+      "additionalProperties": false
     },
     "FilterResultsFunction": {
       "$comment": "(\n  packageName: string,\n  versioningMetadata: {\n    currentVersion: VersionSpec\n    currentVersionSemver: SemVer[]\n    upgradedVersion: Version\n    upgradedVersionSemver: SemVer\n  }) => boolean",
