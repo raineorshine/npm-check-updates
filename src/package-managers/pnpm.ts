@@ -148,12 +148,7 @@ const pathExists = async (path: string): Promise<boolean> => {
   }
 }
 
-/**
- * Returns the major version of the installed pnpm, or null if it cannot be determined.
- *
- * Does not pass rejectOnError, since spawn-please emits an unhandled error event instead of
- * rejecting when it is false, which would leave this promise pending when pnpm is not installed.
- */
+/** Returns the major version of the installed pnpm, or null if it cannot be determined. */
 const getPnpmMajorVersion = async (): Promise<number | null> => {
   try {
     const { stdout } = await spawnCommand('pnpm', ['--version'])
@@ -227,15 +222,7 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   // this should never happen since list is only called in runGlobal -> getInstalledPackages
   if (!options.global) return npm.list(options)
 
-  const args = ['ls', '-g', '--json']
-  const { stdout, stderr, command } = await spawnCommand('pnpm', args).catch((err: unknown) => {
-    // spawn-please rejects with stderr as a bare string on a non-zero exit code, which loses err.message downstream
-    if (err instanceof Error) {
-      throw err
-    }
-
-    throw new Error(`Error executing "pnpm ${args.join(' ')}". ${String(err).trim() || 'No error output.'}`)
-  })
+  const { stdout, stderr, command } = await spawnCommand('pnpm', ['ls', '-g', '--json'])
 
   return parseList(stdout, command, stderr)
 }

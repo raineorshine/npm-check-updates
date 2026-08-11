@@ -1,5 +1,6 @@
 import path from 'node:path'
 import prompts from 'prompts-ncu'
+import { SpawnError } from 'spawn-please'
 import pkg from '../package.json' with { type: 'json' }
 import { cliOptionsMap } from './cli-options.ts'
 import { cacheClear } from './lib/cache.ts'
@@ -209,10 +210,11 @@ const install = async (
         )
         print(options, stdout)
         print(options, 'Done')
-      } catch (err: any) {
+      } catch (err) {
         // sometimes packages print errors to stdout instead of stderr
-        // if there is nothing on stderr, reject with stdout
-        console.error(err?.message || err || stdout)
+        // if there is nothing on stderr, print stdout
+        const message = err instanceof Error ? err.message : String(err)
+        console.error(err instanceof SpawnError && !err.stderr.trim() && stdout ? stdout : message)
 
         // use a program error to exit with a non-zero code rather than throwing a new Error and allowing it to bubble up to the "this is a bug and should be reported message".
         programError(
