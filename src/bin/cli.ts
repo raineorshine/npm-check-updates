@@ -6,7 +6,7 @@ import ncu from '../index.ts'
 import { chalkInit } from '../lib/chalk.ts'
 // async global contexts are only available in esm modules -> function
 import getNcuRc from '../lib/getNcuRc.ts'
-import notifyUpdate from '../lib/notifyUpdate.ts'
+import notifyUpdate, { runUpdateCheck } from '../lib/notifyUpdate.ts'
 import { pickBy } from '../lib/pick.ts'
 import uncode from '../lib/uncode.ts'
 import { type RunOptions } from '../types/RunOptions.ts'
@@ -14,7 +14,16 @@ import { type RunOptions } from '../types/RunOptions.ts'
 const optionVersionDescription = 'Output the version number of npm-check-updates.'
 
 ;(async () => {
-  notifyUpdate()
+  // the detached process spawned by notifyUpdate only refreshes the update check cache
+  if (process.env.NCU_UPDATE_CHECK) {
+    // bail out when offline
+    const timeout = setTimeout(() => process.exit(1), 1000 * 30)
+    await runUpdateCheck()
+    clearTimeout(timeout)
+    return
+  }
+
+  await notifyUpdate()
 
   // manually detect option-specific help
   // https://github.com/raineorshine/npm-check-updates/issues/787
