@@ -50,9 +50,9 @@ export interface RunOptions {
   /** Run recursively in current working directory. Alias of (`--packageFile '**\/package.json'`). */
   deep?: boolean
 
-  /** Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited).
+  /** Check one or more sections of dependencies only: dev, optional, peer, prod, packageManager, or devEngines (comma-delimited).
    *
-   * @default ["prod","dev","optional","packageManager"]
+   * @default ["prod","dev","optional","packageManager","devEngines"]
    */
   dep?: string | readonly string[]
 

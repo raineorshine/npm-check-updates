@@ -331,7 +331,9 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     ...(options.deep ? { packageFile: '**/package.json' } : null),
     // deno reads its import map from `imports`, but Deno 2.0 can also use package.json,
     // so keep the standard sections too for the package.json fallback
-    ...(packageManager === 'deno' ? { dep: ['imports', 'prod', 'dev', 'optional', 'packageManager'] } : null),
+    ...(packageManager === 'deno'
+      ? { dep: ['imports', 'prod', 'dev', 'optional', 'packageManager', 'devEngines'] }
+      : null),
     ...(options.format && options.format.length > 0 ? { format: options.format } : null),
     filter: args || filter,
     filterVersion: filterVersion as Options['filterVersion'],
