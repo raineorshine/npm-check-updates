@@ -12,7 +12,7 @@ import { parseRange } from 'semver-utils'
 import untildify from 'untildify'
 import pkg from '../../package.json' with { type: 'json' }
 import { keyValueBy } from '../lib/keyValueBy.ts'
-import { print, printSorted } from '../lib/logging.ts'
+import { print, printSorted, sanitizeForDisplay } from '../lib/logging.ts'
 import spawnCommand from '../lib/spawnCommand.ts'
 import * as versionUtil from '../lib/version-util.ts'
 import { type GetVersion } from '../types/GetVersion.ts'
@@ -1178,7 +1178,9 @@ export const distTag: GetVersion = async (
   if (options.cooldown && !isSatisfiesCooldown) {
     print(
       options,
-      `Skipping ${packageName}@${version} due to cooldown${publishTime ? ` (published ${publishTime})` : ''}.`,
+      `Skipping ${packageName}@${version} due to cooldown${
+        publishTime ? ` (published ${sanitizeForDisplay(publishTime)})` : ''
+      }.`,
       'verbose',
     )
 

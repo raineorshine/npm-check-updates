@@ -5,7 +5,7 @@ import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
 import getPackageManager from './getPackageManager.ts'
 import isPackageManagerProtocol from './isPackageManagerProtocol.ts'
-import { print } from './logging.ts'
+import { errorText, print } from './logging.ts'
 import resolveDistTagsInPeerDependencies from './resolveDistTagsInPeerDependencies.ts'
 import { isGitHubUrl, isWildcard } from './version-util.ts'
 
@@ -95,11 +95,7 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
       } catch (err) {
         // one unreachable package should not abort the run
         failed.push(pkg)
-        print(
-          options,
-          `\nFailed to get the peer dependencies of ${pkg}@${version}:\n${err instanceof Error ? err.message : err}`,
-          'verbose',
-        )
+        print(options, `\nFailed to get the peer dependencies of ${pkg}@${version}:\n${errorText(err)}`, 'verbose')
         dependencies = {}
       }
     }
