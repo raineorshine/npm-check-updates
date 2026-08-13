@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'
 import spawn from 'spawn-please'
-import { printUpgrades } from '../lib/logging.ts'
+import { printError, printUpgrades } from '../lib/logging.ts'
 import spawnBun from '../package-managers/bun.ts'
 import spawnNpm from '../package-managers/npm.ts'
 import spawnPnpm from '../package-managers/pnpm.ts'
@@ -311,7 +311,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
       } catch (e) {
         // print failing package
         console.error(`  ${chalk.red('✗')} ${name} ${allDependencies[name]} → ${version}\n`)
-        console.error(chalk.red(e))
+        printError(e, { color: true })
 
         // restore last good lock file
         await fs.writeFile(lockFileName, lockFile)

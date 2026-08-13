@@ -72,6 +72,29 @@ export function print(
   }
 }
 
+/** Strips escape sequences and control characters from package- and registry-supplied text. Wrap the untrusted substring, not a finished message, since chalk styling uses escape sequences too. */
+export function sanitizeForDisplay(str: string): string {
+  // stripVTControlCharacters leaves bare control characters like CR, which can overwrite a rendered line
+  // eslint-disable-next-line no-control-regex
+  return stripVTControlCharacters(str).replace(/[\u0000-\u001f\u007f-\u009f]/g, '')
+}
+
+/** Converts a caught value to displayable text. */
+function errorText(err: unknown): string {
+  return err instanceof Error ? (err.stack ?? err.message) : String(err)
+}
+
+/** Prints an error to stderr. Strips escape sequences, since error text usually comes from a registry or package manager. */
+export function printError(err: unknown, { color = false }: { color?: boolean } = {}) {
+  const message = sanitizeForDisplay(errorText(err))
+  console.error(color ? chalk.red(message) : message)
+}
+
+/** Prints a caught error under a description of what failed, at the verbose loglevel. */
+export function printErrorVerbose(options: Options, context: string, err: unknown) {
+  print(options, `\n${context}:\n${sanitizeForDisplay(errorText(err))}`, 'verbose')
+}
+
 /** Pretty print a JSON object. */
 export function printJson(options: Options, object: any) {
   if (options.loglevel !== 'silent') {
@@ -96,13 +119,6 @@ export function printSorted<T extends { [key: string]: any }>(options: Options, 
     return accum
   }, {} as T)
   print(options, objSorted, loglevel)
-}
-
-/** Strips escape sequences and control characters from package- and registry-supplied text. */
-function sanitizeForDisplay(str: string): string {
-  // stripVTControlCharacters leaves bare control characters like CR, which can overwrite a rendered line
-  // eslint-disable-next-line no-control-regex
-  return stripVTControlCharacters(str).replace(/[\u0000-\u001f\u007f-\u009f]/g, '')
 }
 
 /** Create a table with the appropriate columns and alignment to render dependency upgrades. */
