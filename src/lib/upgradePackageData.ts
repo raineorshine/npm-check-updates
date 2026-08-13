@@ -3,10 +3,12 @@ import path from 'node:path'
 import { parseDocument } from 'yaml'
 import { type CatalogsConfig, parseCatalogsConfig } from '../types/CatalogConfig.ts'
 import { type Index } from '../types/IndexType.ts'
+import { type Maybe } from '../types/Maybe.ts'
 import { type Options } from '../types/Options.ts'
 import { type PackageFile } from '../types/PackageFile.ts'
 import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
+import getDevEnginesPackageManagers from './getDevEnginesPackageManagers.ts'
 import { pickBy } from './pick.ts'
 import resolveDepSections from './resolveDepSections.ts'
 import upgradeDependencies from './upgradeDependencies.ts'
@@ -57,6 +59,9 @@ function replaceDependencySections(
 
   const edits: JsonValueEdit[] = []
   for (const section of depSections) {
+    // devEngines is not a { name: spec } map; it is handled in upgradePackageData
+    if (section === 'devEngines') continue
+
     const sectionObj = parsed?.[section]
     if (!sectionObj || typeof sectionObj !== 'object' || Array.isArray(sectionObj)) continue
 
@@ -189,14 +194,40 @@ async function upgradePackageData(
 
   let newPkgData = replaceDependencySections(pkgData, depSections, current, upgraded, options, latest)
 
-  if (depSections.includes('packageManager')) {
-    const pkg = parseJson(pkgData) as PackageFile
-    if (pkg.packageManager) {
-      const [name] = pkg.packageManager.split('@')
-      if (upgraded[name]) {
-        newPkgData = applyJsonValueEdits(newPkgData, [{ path: ['packageManager'], value: `${name}@${upgraded[name]}` }])
+  /**
+   * Upgrades a single declaration outside of a { name: spec } section. current/upgraded are collapsed to
+   * one spec per package across all sections, so the upgrade is recomputed from the declaration's own spec.
+   */
+  const upgradeDeclaration = (name: string, spec: VersionSpec): Maybe<VersionSpec> => {
+    if (!upgraded[name]) return null
+    if (latest?.[name]) return upgradeDependencies({ [name]: spec }, { [name]: latest[name] }, options)[name]
+    // without a fetched version, only upgrade a declaration that matches the collapsed spec
+    return current[name] === spec ? upgraded[name] : null
+  }
+
+  const edits: JsonValueEdit[] = []
+  const pkg = parseJson<PackageFile>(pkgData)
+
+  if (depSections.includes('packageManager') && pkg.packageManager) {
+    const [name, spec] = pkg.packageManager.split('@')
+    // spec is an exact version, so the upgrade stays exact as the field requires
+    const version = upgradeDeclaration(name, spec)
+    if (version) {
+      edits.push({ path: ['packageManager'], value: `${name}@${version}` })
+    }
+  }
+
+  if (depSections.includes('devEngines')) {
+    for (const { entry, path } of getDevEnginesPackageManagers(pkg)) {
+      const version = upgradeDeclaration(entry.name, entry.version!)
+      if (version) {
+        edits.push({ path: [...path, 'version'], value: version })
       }
     }
+  }
+
+  if (edits.length > 0) {
+    newPkgData = applyJsonValueEdits(newPkgData, edits)
   }
 
   return newPkgData
