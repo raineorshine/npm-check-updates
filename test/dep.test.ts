@@ -453,7 +453,12 @@ describe('--dep', () => {
       await fs.writeFile(pkgFile, packageData)
 
       try {
-        await ncu({ packageFile: pkgFile, jsonUpgraded: false, upgrade: true })
+        await ncu({
+          packageFile: pkgFile,
+          jsonUpgraded: false,
+          upgrade: true,
+          dep: ['packageManager', 'devEngines'],
+        })
         const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
 
         expect(pkgNew).toStrictEqual({
@@ -516,20 +521,20 @@ describe('--dep', () => {
 
   // https://github.com/raineorshine/npm-check-updates/issues/1504
   describe('devEngines field', () => {
-    /** Runs ncu -u on a package file and returns the parsed result. */
+    /** Runs ncu -u with --dep devEngines on a package file and returns the parsed result. */
     const upgrade = async (pkg: unknown, options?: Parameters<typeof ncu>[0]) => {
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkg, null, 2))
       try {
-        await ncu({ packageFile: pkgFile, jsonUpgraded: false, upgrade: true, ...options })
+        await ncu({ packageFile: pkgFile, jsonUpgraded: false, upgrade: true, dep: ['devEngines'], ...options })
         return JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
       } finally {
         await removeDir(tempDir)
       }
     }
 
-    it('upgrade devEngines.packageManager by default, preserving the range', async () => {
+    it('upgrade devEngines.packageManager with --dep devEngines, preserving the range', async () => {
       const stub = stubVersions({ pnpm: '11.9.9' })
 
       try {
@@ -575,7 +580,7 @@ describe('--dep', () => {
       }
     })
 
-    it('do not upgrade devEngines if missing from --dep', async () => {
+    it('do not upgrade devEngines by default', async () => {
       const stub = stubVersions({ pnpm: '11.9.9', 'ncu-test-v2': '1.0.0' })
 
       try {
@@ -587,7 +592,7 @@ describe('--dep', () => {
                 packageManager: { name: 'pnpm', version: '^11.3.0' },
               },
             },
-            { dep: ['prod'] },
+            { dep: undefined },
           ),
         ).toStrictEqual({
           dependencies: { 'ncu-test-v2': '1.0.0' },
