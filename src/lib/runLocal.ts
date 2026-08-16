@@ -12,6 +12,7 @@ import { type Version } from '../types/Version.ts'
 import { type CooldownInfo } from '../types/VersionResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import chalk from './chalk.ts'
+import getCooldownInfo from './getCooldownInfo.ts'
 import getCurrentDependencies from './getCurrentDependencies.ts'
 import { getIgnoredUpgradesDueToEnginesNode } from './getIgnoredUpgradesDueToEnginesNode.ts'
 import getIgnoredUpgradesDueToPeerDeps from './getIgnoredUpgradesDueToPeerDeps.ts'
@@ -230,14 +231,7 @@ export default async function runLocal(
   const [upgraded, latestResults, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)
   const latest = keyValueBy(latestResults, (key, result) => (result.version ? { [key]: result.version } : null))
   const errors = keyValueBy(latestResults, (key, result) => (result.error ? { [key]: result.error } : null))
-  const time = keyValueBy(latestResults, (key, result) => {
-    const time = result.time ?? result.cooldownInfo?.currentVersionTime
-    return time ? { [key]: time } : null
-  })
-  const skippedByCooldown = keyValueBy(latestResults, (key, result) =>
-    result.cooldownInfo ? { [key]: result.cooldownInfo } : null,
-  )
-  const numCooldown = Object.values(skippedByCooldown).length
+  const { time, skippedByCooldown, numCooldown } = getCooldownInfo(latestResults)
 
   if (options.peer) {
     print(options, '\nupgradedPeerDependencies:', 'verbose')

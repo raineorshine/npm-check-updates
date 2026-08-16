@@ -2,8 +2,8 @@ import { print, printJson, printSorted, printUpgrades } from '../lib/logging.ts'
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import chalk from './chalk.ts'
+import getCooldownInfo from './getCooldownInfo.ts'
 import getInstalledPackages from './getInstalledPackages.ts'
-import { keyValueBy } from './keyValueBy.ts'
 import programError from './programError.ts'
 import quoteGlobalPackageSpec from './quoteGlobalPackageSpec.ts'
 import upgradePackageDefinitions from './upgradePackageDefinitions.ts'
@@ -41,14 +41,7 @@ async function runGlobal(options: Options): Promise<Index<string> | void> {
   const [upgraded, latest] = await upgradePackageDefinitions(globalPackages, options)
   print(options, latest, 'verbose')
 
-  const time = keyValueBy(latest, (key, result) => {
-    const time = result.time ?? result.cooldownInfo?.currentVersionTime
-    return time ? { [key]: time } : null
-  })
-  const skippedByCooldown = keyValueBy(latest, (key, result) =>
-    result.cooldownInfo ? { [key]: result.cooldownInfo } : null,
-  )
-  const numCooldown = Object.values(skippedByCooldown).length
+  const { time, skippedByCooldown, numCooldown } = getCooldownInfo(latest)
 
   const upgradedPackageNames = Object.keys(upgraded)
   await printUpgrades(options, {
