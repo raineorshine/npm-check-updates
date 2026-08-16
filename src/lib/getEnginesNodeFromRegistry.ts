@@ -1,3 +1,4 @@
+import pMap from 'p-map'
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
@@ -18,13 +19,17 @@ async function getEnginesNodeFromRegistry(packageMap: Index<Version>, options: O
 
   const bar = createProgressBar(options, Object.keys(packageMap).length)
 
-  const result: Index<VersionSpec | undefined> = {}
-  for (const [pkg, version] of Object.entries(packageMap)) {
-    const enginesNode = (await packageManager.getEngines!(pkg, version, options)).node
-    if (bar) bar.tick()
-    result[pkg] = enginesNode
-  }
-  return result
+  const entries = await pMap(
+    Object.entries(packageMap),
+    async ([pkg, version]): Promise<[string, VersionSpec | undefined]> => {
+      const enginesNode = (await packageManager.getEngines!(pkg, version, options)).node
+      bar?.tick()
+      return [pkg, enginesNode]
+    },
+    { concurrency: options.concurrency },
+  )
+
+  return Object.fromEntries(entries) as Index<VersionSpec | undefined>
 }
 
 export default getEnginesNodeFromRegistry
