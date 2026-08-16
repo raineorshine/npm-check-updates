@@ -110,44 +110,31 @@ async function upgradePackageData(
       const yamlContent = await fs.readFile(pkgFile, 'utf-8')
       const catalogData: CatalogsConfig = parseCatalogsConfig(parseDocument(yamlContent).toJSON())
 
+      // every place a catalog can live, as the path prefix it is written back to
+      const workspacesData = catalogData.workspaces
+      const catalogSources: [string[], Index<VersionSpec> | undefined][] = [
+        ...Object.entries(catalogData.catalogs ?? {}).map(([name, catalog]): [string[], Index<VersionSpec>] => [
+          ['catalogs', name],
+          catalog,
+        ]),
+        [['catalog'], catalogData.catalog],
+        ...(workspacesData && !Array.isArray(workspacesData)
+          ? ([
+              ...Object.entries(workspacesData.catalogs ?? {}).map(
+                ([name, catalog]): [string[], Index<VersionSpec>] => [['workspaces', 'catalogs', name], catalog],
+              ),
+              [['workspaces', 'catalog'], workspacesData.catalog],
+            ] as [string[], Index<VersionSpec> | undefined][])
+          : []),
+      ]
+
       // Reconstruct the list of updates to apply unfortunately we lost the path information during extraction before
       const reconstructedUpdates: { path: string[]; newValue: string }[] = []
-
-      if (catalogData.catalogs) {
-        for (const [catalogName, catalog] of Object.entries(catalogData.catalogs)) {
-          for (const [dep, version] of Object.entries(upgraded)) {
-            if (catalog[dep]) {
-              reconstructedUpdates.push({ path: ['catalogs', catalogName, dep], newValue: version })
-            }
-          }
-        }
-      }
-
-      if (catalogData.catalog) {
+      for (const [pathPrefix, catalog] of catalogSources) {
+        if (!catalog) continue
         for (const [dep, version] of Object.entries(upgraded)) {
-          if (catalogData.catalog?.[dep]) {
-            reconstructedUpdates.push({ path: ['catalog', dep], newValue: version })
-          }
-        }
-      }
-
-      // Handle nested workspaces.catalog and workspaces.catalogs format
-      const workspacesData = catalogData.workspaces
-      if (workspacesData && !Array.isArray(workspacesData)) {
-        if (workspacesData.catalogs) {
-          for (const [catalogName, catalog] of Object.entries(workspacesData.catalogs)) {
-            for (const [dep, version] of Object.entries(upgraded)) {
-              if (catalog[dep]) {
-                reconstructedUpdates.push({ path: ['workspaces', 'catalogs', catalogName, dep], newValue: version })
-              }
-            }
-          }
-        }
-        if (workspacesData.catalog) {
-          for (const [dep, version] of Object.entries(upgraded)) {
-            if (workspacesData.catalog?.[dep]) {
-              reconstructedUpdates.push({ path: ['workspaces', 'catalog', dep], newValue: version })
-            }
+          if (catalog[dep]) {
+            reconstructedUpdates.push({ path: [...pathPrefix, dep], newValue: version })
           }
         }
       }
