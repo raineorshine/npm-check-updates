@@ -394,6 +394,10 @@ export const getDistTags = withPnpmConfig(npm.getDistTags)
 export const getEngines = withPnpmConfig(npm.getEngines)
 export const packageAuthorChanged = withPnpmConfig(npm.packageAuthorChanged)
 
+export const usesAddCommand = true
+
+export { spawnPnpm as spawn }
+
 export default spawnPnpm
 
 export const pnpmApi = {
