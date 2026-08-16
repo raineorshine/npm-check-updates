@@ -1,11 +1,10 @@
 import pMap from 'p-map'
-import ProgressBar from 'progress'
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
 import getPackageManager from './getPackageManager.ts'
 import isPackageManagerProtocol from './isPackageManagerProtocol.ts'
-import { print } from './logging.ts'
+import { createProgressBar, print } from './logging.ts'
 import resolveDistTagsInPeerDependencies from './resolveDistTagsInPeerDependencies.ts'
 import { isGitHubUrl, isWildcard } from './version-util.ts'
 
@@ -61,12 +60,7 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
   const packageManager = getPackageManager(options, options.packageManager)
   if (!packageManager.getPeerDependencies) return {}
 
-  const numItems = Object.keys(packageMap).length
-  let bar: ProgressBar
-  if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && numItems > 0) {
-    bar = new ProgressBar('[:bar] :current/:total :percent', { total: numItems, width: 20 })
-    bar.render()
-  }
+  const bar = createProgressBar(options, Object.keys(packageMap).length)
 
   const packageEntries = Object.entries(packageMap)
   const failed: string[] = []
