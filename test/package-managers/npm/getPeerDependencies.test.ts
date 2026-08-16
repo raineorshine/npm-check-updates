@@ -1,39 +1,25 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import spawnCommand from '../../../src/lib/spawnCommand.ts'
+import { describe, expect, it } from 'vitest'
 import * as npm from '../../../src/package-managers/npm.ts'
 
-vi.mock('../../../src/lib/spawnCommand.ts', () => ({ default: vi.fn() }))
-
-/** Makes the next npm view return the given stdout. */
-const stubNpmView = (stdout: string) =>
-  vi.mocked(spawnCommand).mockResolvedValue({ stdout, stderr: '', command: 'npm' })
-
-describe('getPeerDependencies output shapes', () => {
-  beforeEach(() => {
-    vi.mocked(spawnCommand).mockReset()
+describe('getPeerDependencies', () => {
+  it('reads the peer dependencies of an exact version', async () => {
+    await expect(npm.getPeerDependencies('ncu-test-peer', '1.0.0')).resolves.toStrictEqual({
+      'ncu-test-return-version': '1.x',
+    })
   })
 
-  // npm 11 prints the field value directly when the spec matches a single version
-  it('reads a bare object', async () => {
-    stubNpmView('{ "eslint": "^9.7" }')
-    await expect(npm.getPeerDependencies('p', '1.0.0', {})).resolves.toStrictEqual({ eslint: '^9.7' })
-  })
-
-  // npm 12 always wraps the field value in an array
-  // https://github.com/raineorshine/npm-check-updates/issues/1981
-  it('reads a single element array', async () => {
-    stubNpmView('[{ "eslint": "^9.7" }]')
-    await expect(npm.getPeerDependencies('p', '1.0.0', {})).resolves.toStrictEqual({ eslint: '^9.7' })
-  })
-
-  // both npm 11 and 12 emit one entry per matched version, ordered by version
-  it('takes the last entry when the spec matches several versions', async () => {
-    stubNpmView('[{ "eslint": "^8" }, { "eslint": "^9.7" }]')
-    await expect(npm.getPeerDependencies('p', '^1.0.0', {})).resolves.toStrictEqual({ eslint: '^9.7' })
+  // the highest matching version wins, the same as `npm view pkg@range peerDependencies`
+  it('resolves a range to the highest matching version', async () => {
+    await expect(npm.getPeerDependencies('ncu-test-peer', '^1.0.0')).resolves.toStrictEqual({
+      'ncu-test-return-version': '1.x',
+    })
   })
 
   it('returns {} when the package has no peer dependencies', async () => {
-    stubNpmView('')
-    await expect(npm.getPeerDependencies('p', '1.0.0', {})).resolves.toStrictEqual({})
+    await expect(npm.getPeerDependencies('ncu-test-return-version', '1.0.0')).resolves.toStrictEqual({})
+  })
+
+  it('rejects when the package does not exist', async () => {
+    await expect(npm.getPeerDependencies('fffffffffffff', '1.0.0')).rejects.toThrow()
   })
 })

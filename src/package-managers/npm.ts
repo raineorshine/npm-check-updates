@@ -25,7 +25,6 @@ import { type NpmConfig } from '../types/NpmConfig.ts'
 import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
 import { type Packument } from '../types/Packument.ts'
-import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
 import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type Version } from '../types/Version.ts'
@@ -934,22 +933,30 @@ export const greatest: GetVersion = async (
  * Fetches the list of peer dependencies for a specific package version.
  *
  * @param packageName
- * @param version
- * @param spawnOptions
+ * @param version   An exact version or a range, in which case the highest matching version is used.
+ * @param options
  * @returns Promised {packageName: version} collection
  */
 export const getPeerDependencies = async (
   packageName: string,
   version: Version,
-  spawnOptions: SpawnOptions,
+  options: Options = {},
+  npmConfigLocal?: NpmConfig,
 ): Promise<Index<Version>> => {
-  const args = ['view', `${packageName}@${version}`, 'peerDependencies']
-  // reject on error so a failed lookup is not mistaken for a package with no peer dependencies
-  const { stdout, stderr, command } = await spawnNpm(args, {}, { rejectOnError: true }, spawnOptions)
-  if (!stdout) return {}
-  const peerDependencies = parseJson<Index<Version> | Index<Version>[]>(stdout, { command, stderr })
-  // npm 12 always wraps the field in an array, npm 11 only for multi-version specs. Last is highest.
-  return Array.isArray(peerDependencies) ? (peerDependencies.at(-1) ?? {}) : peerDependencies
+  const npmConfig = npmApi.findNpmConfig()
+  // merge the project/cwd .npmrc so a scoped private registry is respected, like the main fetch path
+  const npmConfigMerged = mergeNpmConfigs({ npmConfigUser: { ...npmConfig }, npmConfigLocal }, options)
+
+  // an exact version can be read straight from the version manifest
+  if (nodeSemver.valid(version)) {
+    const manifest = await fetchPartialPackument(packageName, ['peerDependencies'], null, npmConfigMerged, version)
+    return manifest.peerDependencies || {}
+  }
+
+  // a range needs the version list to resolve the highest match, matching `npm view pkg@range`
+  const packument = await fetchPartialPackument(packageName, ['versions'], null, npmConfigMerged)
+  const resolved = nodeSemver.maxSatisfying(Object.keys(packument.versions ?? {}), version)
+  return (resolved && packument.versions?.[resolved]?.peerDependencies) || {}
 }
 
 /**
