@@ -228,17 +228,15 @@ ${chalk.dim.underline(
   // See defaultOptionValues comment above
   ;(program as any)._optionValues = defaultOptionValues
   program.parse(combinedArguments)
-  const combinedProgramOpts = program.opts()
 
   // filter out undefined program options and combine cli options with config file options
   const options = {
     ...(rcResult && Object.keys(rcResult.config).length > 0 ? { rcConfigPath: rcResult.filePath } : null),
-    ...pickBy(program.opts(), (value: unknown) => value !== undefined),
+    // commander's opts are untyped, so assert the shape after dropping unset options
+    ...(pickBy(program.opts(), (value: unknown) => value !== undefined) as Partial<RunOptions>),
     args: program.args,
     raw,
     cliKeys,
-    ...(combinedProgramOpts.filter ? { filter: combinedProgramOpts.filter } : null),
-    ...(combinedProgramOpts.reject ? { reject: combinedProgramOpts.reject } : null),
   }
 
   // NOTE: Options handling and defaults go in initOptions in index.js
