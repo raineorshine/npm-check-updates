@@ -281,20 +281,16 @@ async function runUpgrades(
       pkgOptions.packageFile = packageInfo.filepath
       pkgOptions.workspacePackages = workspacePackages
 
-      // For virtual catalog files (like package.json#catalog), use the PackageInfo data directly
-      // since the virtual file doesn't exist on disk
+      // A catalog entry holds the extracted catalog dependencies rather than the contents of
+      // filepath, so use the PackageInfo data instead of reading from disk.
       let pkgData: string | null
       let pkgFile: string
       let indexKey: string
 
-      if (packageInfo.filepath.includes('#') || packageInfo.name === 'catalogs') {
-        // Virtual catalog file or catalog package - use PackageInfo data
+      if (packageInfo.catalog) {
         pkgData = packageInfo.pkgFile
         pkgFile = packageInfo.filepath
-        // For synthetic catalog files, use the actual underlying file path as the index key
-        indexKey = packageInfo.filepath.includes('#catalog')
-          ? packageInfo.filepath.replace('#catalog', '')
-          : packageInfo.filepath
+        indexKey = packageInfo.filepath
 
         // Print the same message as findPackage for consistency
         const relPathToPackage = path.resolve(indexKey)
@@ -319,7 +315,7 @@ async function runUpgrades(
             // convert Windows path to *nix path for consistency
             .replace(/\\/g, '/')
         : indexKey
-      packages[key] = await runLocal(pkgOptions, pkgData, pkgFile)
+      packages[key] = await runLocal(pkgOptions, pkgData, pkgFile, packageInfo.catalog)
     }
     analysis = packages
     if (options.json) {
