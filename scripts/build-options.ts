@@ -66,8 +66,7 @@ const renderOption = (option: CLIOption<unknown>) => {
   // escape any */ in the description; otherwise, it will break the block comment
   const description = option.description.replace(/\*\//g, '*\\/')
 
-  // pre must be internally typed as number and externally typed as boolean to maintain compatibility with the CLI option and the RunOption
-  const type = option.long === 'pre' ? 'boolean' : option.type
+  const type = option.typePublic ?? option.type
 
   const defaults =
     // do not render default empty arrays

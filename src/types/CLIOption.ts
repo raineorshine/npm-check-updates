@@ -14,6 +14,8 @@ export interface CLIOption<T = any> {
   long: string
   short?: string
   type: string
+  /** The type used in the generated RunOptions, when it differs from the internal CLI type. */
+  typePublic?: string
 }
 
 export type { CLIOption as default }
