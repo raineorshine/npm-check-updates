@@ -1,5 +1,4 @@
 import pMap from 'p-map'
-import ProgressBar from 'progress'
 import { parseRange } from 'semver-utils'
 import packageManagers from '../package-managers/index.ts'
 import { type GetVersion } from '../types/GetVersion.ts'
@@ -12,6 +11,7 @@ import { getChalk } from './chalk.ts'
 import getPackageManager from './getPackageManager.ts'
 import isPackageManagerProtocol from './isPackageManagerProtocol.ts'
 import keyValueBy from './keyValueBy.ts'
+import { createProgressBar } from './logging.ts'
 import programError from './programError.ts'
 import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-util.ts'
 
@@ -27,11 +27,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   const packageList = Object.keys(packageMap)
   const globalPackageManager = getPackageManager(options, options.packageManager)
 
-  let bar: ProgressBar | undefined
-  if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && packageList.length > 0) {
-    bar = new ProgressBar('[:bar] :current/:total :percent', { total: packageList.length, width: 20 })
-    bar.render()
-  }
+  const bar = createProgressBar(options, packageList.length)
 
   /**
    * Ignore 404 errors from getPackageVersion by having them return `null`

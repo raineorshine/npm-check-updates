@@ -4,6 +4,7 @@
 import fs from 'node:fs/promises'
 import { stripVTControlCharacters } from 'node:util'
 import Table from 'cli-table3'
+import ProgressBar from 'progress'
 import semver from 'semver'
 import { type CooldownFunction } from '../types/CooldownFunction.ts'
 import { type IgnoredUpgradeDueToEnginesNode } from '../types/IgnoredUpgradeDueToEnginesNode.ts'
@@ -108,6 +109,14 @@ export function printSorted<T extends { [key: string]: any }>(options: Options, 
     return accum
   }, {} as T)
   print(options, objSorted, loglevel)
+}
+
+/** Creates and renders a progress bar, or returns undefined if progress should not be shown. */
+export function createProgressBar(options: Options, total: number): ProgressBar | undefined {
+  if (options.json || options.loglevel === 'silent' || options.loglevel === 'verbose' || total <= 0) return
+  const bar = new ProgressBar('[:bar] :current/:total :percent', { total, width: 20 })
+  bar.render()
+  return bar
 }
 
 /** Create a table with the appropriate columns and alignment to render dependency upgrades. */
