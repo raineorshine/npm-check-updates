@@ -1,11 +1,10 @@
 import fs from 'node:fs/promises'
 import spawn from 'spawn-please'
 import { printUpgrades } from '../lib/logging.ts'
-import spawnBun from '../package-managers/bun.ts'
+import packageManagers from '../package-managers/index.ts'
 import spawnNpm from '../package-managers/npm.ts'
-import spawnPnpm from '../package-managers/pnpm.ts'
-import spawnYarn from '../package-managers/yarn.ts'
 import { type Index } from '../types/IndexType.ts'
+import { type Maybe } from '../types/Maybe.ts'
 import { type Options } from '../types/Options.ts'
 import { type PackageFile } from '../types/PackageFile.ts'
 import { type PackageInfo } from '../types/PackageInfo.ts'
@@ -20,8 +19,8 @@ import upgradePackageData from './upgradePackageData.ts'
 
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
 
-// package managers that install a single dependency with `add` instead of `install --no-save`
-const ADD_PACKAGE_MANAGERS = new Set(['yarn', 'pnpm', 'bun'])
+/** Returns the adapter for the given package manager, falling back to npm. */
+const adapterFor = (packageManager: Maybe<string>) => packageManagers[packageManager ?? 'npm'] ?? packageManagers.npm
 
 /** Run npm, yarn, pnpm, or bun. */
 const npm = (
@@ -52,15 +51,8 @@ const npm = (
     ...(options.prefix ? { prefix: options.prefix } : null),
   }
 
-  return (
-    options.packageManager === 'pnpm'
-      ? spawnPnpm
-      : options.packageManager === 'yarn'
-        ? spawnYarn
-        : options.packageManager === 'bun'
-          ? spawnBun
-          : spawnNpm
-  )(args, npmOptions, spawnPleaseOptions, spawnOptionsMerged)
+  const spawn = adapterFor(options.packageManager).spawn ?? spawnNpm
+  return spawn(args, npmOptions, spawnPleaseOptions, spawnOptionsMerged)
 }
 
 /** Load and validate package file and tests. */
@@ -270,7 +262,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         // install single dependency
         await npm(
           [
-            ...(ADD_PACKAGE_MANAGERS.has(options.packageManager ?? '') ? ['add'] : ['install', '--no-save']),
+            ...(adapterFor(options.packageManager).usesAddCommand ? ['add'] : ['install', '--no-save']),
             `${name}@${version}`,
           ],
           pmOptions,
@@ -311,7 +303,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         await fs.writeFile(lockFileName, lockFile)
 
         // restore package.json since yarn and pnpm do not have the --no-save option
-        if (ADD_PACKAGE_MANAGERS.has(options.packageManager ?? '')) {
+        if (adapterFor(options.packageManager).usesAddCommand) {
           await fs.writeFile('package.json', lastPkgFile)
         }
       }

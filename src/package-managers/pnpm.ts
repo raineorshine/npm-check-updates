@@ -271,6 +271,10 @@ async function spawnPnpm(
 
 export { defaultPrefix, getDistTags, getPeerDependencies, getEngines, packageAuthorChanged } from './npm.ts'
 
+export const usesAddCommand = true
+
+export { spawnPnpm as spawn }
+
 export default spawnPnpm
 
 export const pnpmApi = {

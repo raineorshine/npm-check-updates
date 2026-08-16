@@ -456,6 +456,10 @@ export const packageAuthorChanged = async (
 ): Promise<boolean> =>
   npm.packageAuthorChanged(packageName, currentVersion, upgradedVersion, options, await npmConfigFromYarn(options))
 
+export const usesAddCommand = true
+
+export { spawnYarn as spawn }
+
 export default spawnYarn
 
 export const yarnApi = {

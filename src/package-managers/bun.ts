@@ -188,4 +188,8 @@ export const getEngines = async (
 
 export { distTag, getDistTags, greatest, latest, minor, newest, patch, semver } from './npm.ts'
 
+export const usesAddCommand = true
+
+export { spawnBun as spawn }
+
 export default spawnBun
