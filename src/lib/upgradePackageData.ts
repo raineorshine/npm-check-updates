@@ -92,23 +92,12 @@ async function upgradePackageData(
   options: Options,
   pkgFile?: string,
   latest?: Index<Version>,
+  catalog?: boolean,
 ) {
   // Check if this is a catalog file (pnpm-workspace.yaml or package.json with catalogs)
   if (pkgFile) {
     const fileName = path.basename(pkgFile)
     const fileExtension = path.extname(pkgFile)
-
-    // Handle synthetic catalog files (package.json#catalog format)
-    if (pkgFile.includes('#catalog')) {
-      // This is a synthetic catalog file, we need to read and update the actual file
-      const actualFilePath = pkgFile.replace('#catalog', '')
-      const actualFileExtension = path.extname(actualFilePath)
-
-      if (actualFileExtension === '.json') {
-        // Bun format: update package.json catalogs and return the updated content
-        return upgradeJsonCatalogDependencies(actualFilePath, current, upgraded)
-      }
-    }
 
     // Handle yaml catalog files
     if (fileName === 'pnpm-workspace.yaml' || fileName === '.yarnrc.yml') {
@@ -154,6 +143,11 @@ async function upgradePackageData(
 
     // Handle package.json catalog files (check if content contains catalog/catalogs at root level or in workspaces)
     if (fileExtension === '.json') {
+      // a catalog entry carries only the extracted catalog deps, so pkgData has no catalog sections to detect
+      if (catalog) {
+        return upgradeJsonCatalogDependencies(pkgFile, current, upgraded)
+      }
+
       const parsed = parseJson<{
         catalog?: unknown
         catalogs?: unknown
