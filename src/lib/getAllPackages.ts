@@ -28,28 +28,15 @@ const globOptions: GlobOptions = {
   ignore: ['**/node_modules/**', '**/.pnpm-store/**'],
 }
 
-/** Reads, parses, and resolves workspaces from a pnpm-workspace file at the same path as the package file. */
-const readPnpmWorkspaces = async (pkgPath: string): Promise<PnpmWorkspaces | null> => {
-  const pnpmWorkspacesPath = path.join(path.dirname(pkgPath), 'pnpm-workspace.yaml')
-  let pnpmWorkspaceFile: string
+/** Reads and parses a yaml file sitting next to the package file, or null if it does not exist. */
+const readYamlSibling = async <T>(pkgPath: string, filename: string): Promise<T | null> => {
+  let contents: string
   try {
-    pnpmWorkspaceFile = await fs.readFile(pnpmWorkspacesPath, 'utf-8')
+    contents = await fs.readFile(path.join(path.dirname(pkgPath), filename), 'utf-8')
   } catch {
     return null
   }
-  return parseYaml(pnpmWorkspaceFile)
-}
-
-/** Reads, parses, and resolves catalog information from the yarn config file at the same path as the package file. */
-const readYarnConfig = async (pkgPath: string): Promise<YarnConfig | null> => {
-  const yarnConfigPath = path.join(path.dirname(pkgPath), '.yarnrc.yml')
-  let yarnConfig: string
-  try {
-    yarnConfig = await fs.readFile(yarnConfigPath, 'utf-8')
-  } catch {
-    return null
-  }
-  return parseYaml(yarnConfig)
+  return parseYaml(contents)
 }
 
 /** Gets catalog dependencies from both pnpm-workspace.yaml and package.json files. */
@@ -58,7 +45,7 @@ const readCatalogDependencies = async (options: Options, pkgPath: string): Promi
 
   // Read from pnpm-workspace.yaml if the package manager is pnpm
   if (options.packageManager === 'pnpm') {
-    const pnpmWorkspaces = await readPnpmWorkspaces(pkgPath)
+    const pnpmWorkspaces = await readYamlSibling<PnpmWorkspaces>(pkgPath, 'pnpm-workspace.yaml')
     if (pnpmWorkspaces && !Array.isArray(pnpmWorkspaces)) {
       // Handle both singular 'catalog' and plural 'catalogs' (top-level format)
       if (pnpmWorkspaces.catalog) {
@@ -80,7 +67,7 @@ const readCatalogDependencies = async (options: Options, pkgPath: string): Promi
   }
 
   if (options.packageManager === 'yarn') {
-    const yarnConfig = await readYarnConfig(pkgPath)
+    const yarnConfig = await readYamlSibling<YarnConfig>(pkgPath, '.yarnrc.yml')
     if (yarnConfig) {
       if (yarnConfig.catalog) {
         Object.assign(catalogDependencies, yarnConfig.catalog)
@@ -129,7 +116,8 @@ async function getWorkspacePackageInfos(
   const { pkgData, pkgPath } = await findPackage({ ...options, packageFile: rootPackageFile, loglevel: 'silent' })
   const rootPkg: PackageFile = typeof pkgData === 'string' ? JSON.parse(pkgData) : pkgData
 
-  const workspacesObject = rootPkg.workspaces || (await readPnpmWorkspaces(pkgPath || ''))
+  const workspacesObject =
+    rootPkg.workspaces || (await readYamlSibling<PnpmWorkspaces>(pkgPath || '', 'pnpm-workspace.yaml'))
   const workspaces = Array.isArray(workspacesObject) ? workspacesObject : workspacesObject?.packages
 
   if (!workspaces) {
