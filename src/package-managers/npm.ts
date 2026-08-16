@@ -892,22 +892,14 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
       : undefined
 }
 
-/**
- * Fetches the highest version number, regardless of tag or publish time.
- *
- * @param packageName
- * @param currentVersion
- * @param options
- * @returns
- */
-export const greatest: GetVersion = async (
-  packageName,
-  currentVersion,
-  options = {},
+/** Fetches the packument versions and builds the info shared by every version target. */
+const fetchVersions = async (
+  packageName: string,
+  currentVersion: string,
+  options: Options,
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
-  caller?: 'distTag' | 'latest',
-): Promise<VersionResult> => {
+) => {
   const fields: (keyof Packument)[] = ['versions']
 
   if (options.cooldown) {
@@ -925,7 +917,32 @@ export const greatest: GetVersion = async (
   )
 
   const versions = Object.values(packument?.versions ?? {})
-  const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }
+  return { packument, packageInfo: { packageName, currentVersion, options, versions, time: packument?.time } }
+}
+
+/**
+ * Fetches the highest version number, regardless of tag or publish time.
+ *
+ * @param packageName
+ * @param currentVersion
+ * @param options
+ * @returns
+ */
+export const greatest: GetVersion = async (
+  packageName,
+  currentVersion,
+  options = {},
+  npmConfig?: NpmConfig,
+  npmConfigProject?: NpmConfig,
+  caller?: 'distTag' | 'latest',
+): Promise<VersionResult> => {
+  const { packument, packageInfo } = await fetchVersions(
+    packageName,
+    currentVersion,
+    options,
+    npmConfig,
+    npmConfigProject,
+  )
 
   const versionResult = findTargetAndFallback(packageInfo)
 
@@ -1244,24 +1261,7 @@ export const minor: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const fields: (keyof Packument)[] = ['versions']
-
-  if (options.cooldown) {
-    fields.push('time')
-  }
-
-  const packument = await npmApi.fetchUpgradedPackumentMemo(
-    packageName,
-    fields,
-    currentVersion,
-    options,
-    0,
-    npmConfig,
-    npmConfigProject,
-  )
-
-  const versions = Object.values(packument?.versions ?? {})
-  const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }
+  const { packageInfo } = await fetchVersions(packageName, currentVersion, options, npmConfig, npmConfigProject)
 
   const versionResult = findTargetAndFallback({
     ...packageInfo,
@@ -1286,24 +1286,7 @@ export const patch: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  const fields: (keyof Packument)[] = ['versions']
-
-  if (options.cooldown) {
-    fields.push('time')
-  }
-
-  const packument = await npmApi.fetchUpgradedPackumentMemo(
-    packageName,
-    fields,
-    currentVersion,
-    options,
-    0,
-    npmConfig,
-    npmConfigProject,
-  )
-
-  const versions = Object.values(packument?.versions ?? {})
-  const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }
+  const { packageInfo } = await fetchVersions(packageName, currentVersion, options, npmConfig, npmConfigProject)
 
   const versionResult = findTargetAndFallback({
     ...packageInfo,
@@ -1333,24 +1316,7 @@ export const semver: GetVersion = async (
   // (e.g. `^9.5.0 <10`), staying within the declared range
   if (isExplicitRange(currentVersion) && !hasCaretOrTilde(currentVersion)) return { version: null }
 
-  const fields: (keyof Packument)[] = ['versions']
-
-  if (options.cooldown) {
-    fields.push('time')
-  }
-
-  const packument = await npmApi.fetchUpgradedPackumentMemo(
-    packageName,
-    fields,
-    currentVersion,
-    options,
-    0,
-    npmConfig,
-    npmConfigProject,
-  )
-
-  const versions = Object.values(packument?.versions ?? {})
-  const packageInfo = { packageName, currentVersion, options, versions, time: packument?.time }
+  const { packageInfo } = await fetchVersions(packageName, currentVersion, options, npmConfig, npmConfigProject)
 
   const versionResult = findTargetAndFallback({
     ...packageInfo,
