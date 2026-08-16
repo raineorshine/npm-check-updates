@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
 import { expect, it } from 'vitest'
+import { escapeRegExp } from '../../src/lib/escapeRegExp.ts'
 import { type PackageManagerName } from '../../src/types/PackageManagerName.ts'
 import removeDir from './removeDir.ts'
 
@@ -24,7 +25,7 @@ export const copyFixture = async (name: string): Promise<string> => {
 }
 
 /** Run the ncu CLI. */
-const ncu = async (
+export const ncu = async (
   args: string[],
   spawnPleaseOptions?: Parameters<typeof spawn>[2],
   spawnOptions?: Parameters<typeof spawn>[3],
@@ -32,6 +33,16 @@ const ncu = async (
   const { stdout } = await spawn('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
   return stdout
 }
+
+/** Returns the lockfile name for a package manager. */
+const lockfileName = (packageManager: PackageManagerName): string =>
+  packageManager === 'yarn'
+    ? 'yarn.lock'
+    : packageManager === 'pnpm'
+      ? 'pnpm-lock.yaml'
+      : packageManager === 'bun'
+        ? 'bun.lockb'
+        : 'package-lock.json'
 
 /**
  * Windows terminal environments (like Git-Bash) often render different column padding
@@ -42,13 +53,8 @@ const ncu = async (
  * Escapes dots for literal matching and replaces spaces with \s+.
  */
 export function createNcuRegExp(input: string): RegExp {
-  // 1. Escape special regex characters (like dots in 1.0.0)
-  // 2. Replace spaces with \s+ for flexible matching
-  const pattern = input
-    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Standard escape for regex
-    .replace(/ /g, '\\s+') // Replace literal space with \s+
-
-  return new RegExp(pattern, 'i')
+  // replace literal spaces with \s+ for flexible matching
+  return new RegExp(escapeRegExp(input).replace(/ /g, '\\s+'), 'i')
 }
 
 /** Assertions for npm or yarn when tests pass. */
@@ -56,16 +62,7 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
   it('upgrade dependencies when tests pass', async () => {
     const cwd = await copyFixture('pass')
     const pkgPath = path.join(cwd, 'package.json')
-    const lockfilePath = path.join(
-      cwd,
-      packageManager === 'yarn'
-        ? 'yarn.lock'
-        : packageManager === 'pnpm'
-          ? 'pnpm-lock.yaml'
-          : packageManager === 'bun'
-            ? 'bun.lockb'
-            : 'package-lock.json',
-    )
+    const lockfilePath = path.join(cwd, lockfileName(packageManager))
     let stdout = ''
     let stderr = ''
     let pkgUpgraded
@@ -128,16 +125,7 @@ export const testFail = ({ packageManager }: { packageManager: PackageManagerNam
   it('identify broken upgrade', async () => {
     const cwd = await copyFixture('fail')
     const pkgPath = path.join(cwd, 'package.json')
-    const lockfilePath = path.join(
-      cwd,
-      packageManager === 'yarn'
-        ? 'yarn.lock'
-        : packageManager === 'pnpm'
-          ? 'pnpm-lock.yaml'
-          : packageManager === 'bun'
-            ? 'bun.lockb'
-            : 'package-lock.json',
-    )
+    const lockfilePath = path.join(cwd, lockfileName(packageManager))
     let stdout = ''
     let stderr = ''
     let pkgUpgraded

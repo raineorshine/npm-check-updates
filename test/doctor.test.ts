@@ -7,13 +7,12 @@ import spawn from 'spawn-please'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { cliOptionsMap } from '../src/cli-options.ts'
 import { chalkInit } from '../src/lib/chalk.ts'
-import { copyFixture, createNcuRegExp, testFail, testPass } from './helpers/doctorHelpers.ts'
+import { copyFixture, createNcuRegExp, ncu, testFail, testPass } from './helpers/doctorHelpers.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const bin = path.join(__dirname, '../build/cli.js')
 const doctorTests = path.join(__dirname, 'test-data/doctor')
 
 const mockNpmVersions = {
@@ -21,16 +20,6 @@ const mockNpmVersions = {
   'ncu-test-return-version': '2.0.0',
   'ncu-test-tag': '1.1.0',
   'ncu-test-v2': '2.0.0',
-}
-
-/** Run the ncu CLI. */
-const ncu = async (
-  args: string[],
-  spawnPleaseOptions?: Parameters<typeof spawn>[2],
-  spawnOptions?: Parameters<typeof spawn>[3],
-) => {
-  const { stdout } = await spawn('node', [bin, ...args], spawnPleaseOptions, spawnOptions)
-  return stdout
 }
 
 // 3 min timeout
