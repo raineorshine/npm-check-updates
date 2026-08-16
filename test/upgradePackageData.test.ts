@@ -73,12 +73,22 @@ workspaces:
       expect(parsed.catalogs.legacy.react).toBe('17.0.0')
     })
 
-    it('upgrades a synthetic bun catalog file (package.json#catalog)', async () => {
+    it('upgrades a bun catalog entry', async () => {
       const json = JSON.stringify({ name: 'x', workspaces: { catalog: { react: '18.0.0' } } }, null, 2)
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, json)
 
-      const result = await upgradePackageData(json, { react: '18.0.0' }, { react: '19.0.0' }, {}, `${pkgFile}#catalog`)
+      // a catalog entry passes the extracted catalog deps as pkgData, not the file contents
+      const catalogData = JSON.stringify({ name: 'catalog-dependencies', dependencies: { react: '18.0.0' } }, null, 2)
+      const result = await upgradePackageData(
+        catalogData,
+        { react: '18.0.0' },
+        { react: '19.0.0' },
+        {},
+        pkgFile,
+        undefined,
+        true,
+      )
 
       expect(JSON.parse(result).workspaces.catalog.react).toBe('19.0.0')
     })

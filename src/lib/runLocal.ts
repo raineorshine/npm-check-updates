@@ -163,6 +163,8 @@ export default async function runLocal(
   options: Options,
   pkgData?: Maybe<string>,
   pkgFile?: Maybe<string>,
+  /** True when pkgData holds catalog dependencies extracted from pkgFile rather than its contents. */
+  catalog?: boolean,
 ): Promise<PackageFile | Index<VersionSpec>> {
   print(options, '\nOptions:', 'verbose')
   printSorted(options, options, 'verbose')
@@ -283,7 +285,15 @@ export default async function runLocal(
     }
   }
 
-  const newPkgData = await upgradePackageData(pkgData, current, chosenUpgraded, options, pkgFile || undefined, latest)
+  const newPkgData = await upgradePackageData(
+    pkgData,
+    current,
+    chosenUpgraded,
+    options,
+    pkgFile || undefined,
+    latest,
+    catalog,
+  )
 
   const output: PackageFile | Index<VersionSpec> = options.jsonAll
     ? pkgFile?.endsWith('.yaml') || pkgFile?.endsWith('.yml')
@@ -306,7 +316,7 @@ export default async function runLocal(
     if (pkgFile) {
       if (options.upgrade) {
         // do not await until the end
-        writePromise = fs.writeFile(pkgFile.replace('#catalog', ''), newPkgData)
+        writePromise = fs.writeFile(pkgFile, newPkgData)
       } else {
         const ncuCmd = process.env.npm_lifecycle_event === 'npx' ? 'npx npm-check-updates' : 'ncu'
         // quote arguments with spaces

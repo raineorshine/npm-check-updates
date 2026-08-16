@@ -207,13 +207,13 @@ async function getCatalogPackageInfo(options: Options, pkgPath: string): Promise
   }
 
   // Determine the correct file path for catalogs. For pnpm, use pnpm-workspace.yaml.
-  // For Bun catalogs in package.json, use a virtual path to avoid conflicts with root package.
+  // For Bun catalogs, the catalogs live in the package.json itself.
   const catalogFilePath =
     options.packageManager === 'pnpm'
       ? path.join(path.dirname(pkgPath), 'pnpm-workspace.yaml')
       : options.packageManager === 'yarn'
         ? path.join(path.dirname(pkgPath), '.yarnrc.yml')
-        : `${pkgPath}#catalog`
+        : pkgPath
 
   // Create synthetic file content that matches the synthetic PackageFile
   const syntheticFileContent = JSON.stringify(catalogPackageFile, null, 2)
@@ -223,6 +223,7 @@ async function getCatalogPackageInfo(options: Options, pkgPath: string): Promise
     pkg: catalogPackageFile,
     pkgFile: syntheticFileContent,
     name: 'catalogs',
+    catalog: true,
   }
 
   return catalogPackageInfo
