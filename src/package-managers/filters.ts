@@ -27,6 +27,13 @@ export function allowPreOrIsNotPre(versionResult: Partial<Packument>, options: O
   return !versionResult.version || !versionUtil.isPre(versionResult.version)
 }
 
+/** Same as satisfiesNodeEngine, but takes the already resolved minimum node version. */
+const satisfiesMinNodeVersion = (versionResult: Partial<Packument>, minNodeVersion: Maybe<string>): boolean => {
+  if (!minNodeVersion) return true
+  const versionNodeEngine: string | undefined = versionResult?.engines?.node
+  return !versionNodeEngine || semver.satisfies(minNodeVersion, versionNodeEngine)
+}
+
 /**
  * Returns true if the node engine requirement is satisfied or not specified for a given package version.
  *
@@ -36,25 +43,7 @@ export function allowPreOrIsNotPre(versionResult: Partial<Packument>, options: O
  */
 export function satisfiesNodeEngine(versionResult: Partial<Packument>, nodeEngineVersion: Maybe<string>): boolean {
   if (!nodeEngineVersion) return true
-  const minVersion = semver.minVersion(nodeEngineVersion)?.version
-  if (!minVersion) return true
-  const versionNodeEngine: string | undefined = versionResult?.engines?.node
-  return !versionNodeEngine || semver.satisfies(minVersion, versionNodeEngine)
-}
-
-/**
- * Returns true if the peer dependencies requirement is satisfied or not specified for a given package version.
- *
- * @param versionResult     Version object returned by packument.
- * @param peerDependencies  The list of peer dependencies.
- * @returns                 True if the peer dependencies are satisfied or not specified.
- */
-export function satisfiesPeerDependencies(versionResult: Partial<Packument>, peerDependencies: Index<Index<Version>>) {
-  if (!peerDependencies) return true
-  return Object.values(peerDependencies).every(
-    peers =>
-      peers[versionResult.name!] === undefined || semver.satisfies(versionResult.version!, peers[versionResult.name!]),
-  )
+  return satisfiesMinNodeVersion(versionResult, semver.minVersion(nodeEngineVersion)?.version)
 }
 
 /**
@@ -96,11 +85,33 @@ export const satisfiesCooldownPeriod = (
  * Note: this function does not filter cooldown.
  */
 export function filterPredicate(options: Options) {
+  // resolve once, otherwise the range is reparsed for every candidate version
+  const minNodeVersion =
+    options.enginesNode && options.nodeEngineVersion ? semver.minVersion(options.nodeEngineVersion)?.version : null
+
+  // index the peer specs by package name so each candidate version is a single lookup instead of a full scan
+  const peerSpecs = new Map<string, Version[]>()
+  const peerDependencies: Index<Index<Version>> | undefined = options.peerDependencies
+  if (peerDependencies) {
+    for (const peers of Object.values(peerDependencies)) {
+      for (const [name, spec] of Object.entries(peers)) {
+        const specs = peerSpecs.get(name)
+        if (specs) {
+          specs.push(spec)
+        } else {
+          peerSpecs.set(name, [spec])
+        }
+      }
+    }
+  }
+
   const predicates: (((o: Partial<Packument>) => boolean) | null)[] = [
     o => allowDeprecatedOrIsNotDeprecated(o, options),
     o => allowPreOrIsNotPre(o, options),
-    options.enginesNode ? o => satisfiesNodeEngine(o, options.nodeEngineVersion) : null,
-    options.peerDependencies ? o => satisfiesPeerDependencies(o, options.peerDependencies!) : null,
+    options.enginesNode ? o => satisfiesMinNodeVersion(o, minNodeVersion) : null,
+    options.peerDependencies
+      ? o => (peerSpecs.get(o.name!) ?? []).every(spec => semver.satisfies(o.version!, spec))
+      : null,
   ]
 
   return (o: Partial<Packument>) => predicates.every(predicate => (predicate ? predicate(o) : true))
