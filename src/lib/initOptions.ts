@@ -63,12 +63,8 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     moduleCliKeys = Object.keys(runOptions)
 
     // set cli defaults since they are not set by commander in this case
-    const cliDefaults = cliOptions.reduce(
-      (acc, curr) => ({
-        ...acc,
-        ...(curr.default != null ? { [curr.long]: curr.default } : null),
-      }),
-      {},
+    const cliDefaults = keyValueBy(cliOptions, option =>
+      option.default != null ? { [option.long]: option.default } : null,
     )
 
     // set default options that are specific to module usage
