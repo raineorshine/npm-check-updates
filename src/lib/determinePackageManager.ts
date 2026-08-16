@@ -1,21 +1,12 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type PackageManagerName } from '../types/PackageManagerName.ts'
 import findLockfile from './findLockfile.ts'
+import { packageManagerForLockfile } from './lockfiles.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-// map lockfiles to package managers
-const packageManagerLockfileMap: Index<PackageManagerName> = {
-  'package-lock': 'npm',
-  yarn: 'yarn',
-  'pnpm-lock': 'pnpm',
-  deno: 'deno',
-  bun: 'bun',
-}
 
 /**
  * Get the package manager being used to run the command.
@@ -66,7 +57,7 @@ const determinePackageManager = async (
   else if (options.global) return getRunningPackageManager()
 
   const lockfileName = (await findLockfile(options, readdir))?.filename
-  return lockfileName ? packageManagerLockfileMap[lockfileName.split('.')[0]] : 'npm'
+  return (lockfileName && packageManagerForLockfile(lockfileName)) || 'npm'
 }
 
 export default determinePackageManager
