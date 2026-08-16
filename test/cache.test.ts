@@ -271,8 +271,12 @@ describe('cache', () => {
       try {
         await ncu({ packageData, cache: true, cooldown: 7 })
 
-        const cacheData: CacheData = JSON.parse(await fs.readFile(resolvedDefaultCacheFile, 'utf-8'))
-        expect(cacheData.packages).deep.eq({})
+        // nothing is cached, so the cache file is never written
+        const cacheData: CacheData | null = await fs
+          .readFile(resolvedDefaultCacheFile, 'utf-8')
+          .then(JSON.parse)
+          .catch(() => null)
+        expect(cacheData?.packages ?? {}).deep.eq({})
       } finally {
         await fs.rm(resolvedDefaultCacheFile, { recursive: true, force: true })
         stub.restore()
