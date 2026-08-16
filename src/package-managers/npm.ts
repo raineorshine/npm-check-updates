@@ -1354,4 +1354,6 @@ export const semver: GetVersion = async (
   return toVersionResult({ ...packageInfo, ...versionResult })
 }
 
+export { spawnNpm as spawn }
+
 export default spawnNpm
