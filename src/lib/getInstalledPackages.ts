@@ -29,9 +29,9 @@ async function getInstalledPackages(options: Options = {}) {
   }
 
   // filter out undefined packages or those with a wildcard
-  const filterFunction = filterAndReject(options.filter, options.reject, options.filterVersion, options.rejectVersion)
   let filteredPackages: Index<VersionSpec> = {}
   try {
+    const filterFunction = filterAndReject(options.filter, options.reject, options.filterVersion, options.rejectVersion)
     filteredPackages = filterObject(
       packages,
       (dep: VersionSpec, version: Version) => !!version && !isWildPart(version) && filterFunction(dep, version),
