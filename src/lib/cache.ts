@@ -61,6 +61,9 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
 
   const cacheFile = resolveCacheFile(options.cacheFile)
   const cacheHits = new Set<string>()
+  // save() is called after every batch, and in --deep/--workspaces mode once per package file. Only
+  // rewrite the file when something was actually added.
+  let dirty = false
 
   let cacheData: CacheData = {
     schema: CURRENT_CACHE_SCHEMA,
@@ -97,6 +100,7 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
     set: (name: string, target: string, version: string, time?: string) => {
       const key = `${name}${CACHE_DELIMITER}${target}`
       cacheData.packages[key] = { version, time }
+      dirty = true
     },
     getPeers: (name: string, version: Version) => {
       if (!cacheData.peers) return
@@ -111,9 +115,12 @@ export default async function cacher(options: Omit<Options, 'cacher'>): Promise<
       const key = `${name}${CACHE_DELIMITER}${version}`
       if (!cacheData.peers) return
       cacheData.peers[key] = peers
+      dirty = true
     },
     save: async () => {
+      if (!dirty) return
       await fs.writeFile(cacheFile, JSON.stringify(cacheData))
+      dirty = false
     },
     log: (peers?: boolean) => {
       const cacheCount = cacheHits.size
