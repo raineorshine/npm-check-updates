@@ -5,6 +5,7 @@ import memoize from 'fast-memoize'
 import { findUp } from 'find-up'
 import ini from 'ini'
 import { parse as parseYaml } from 'yaml'
+import exists from '../lib/exists.ts'
 import interpolate from '../lib/interpolate.ts'
 import keyValueBy from '../lib/keyValueBy.ts'
 import { print } from '../lib/logging.ts'
@@ -131,16 +132,6 @@ const readMinimumReleaseAgeLayer = async (
   return parsed ? parseMinimumReleaseAgeLayer(parsed) : null
 }
 
-/** Returns true if a path exists. */
-const pathExists = async (path: string): Promise<boolean> => {
-  try {
-    await fs.access(path)
-    return true
-  } catch {
-    return false
-  }
-}
-
 /**
  * Returns the major version of the installed pnpm, or null if it cannot be determined.
  *
@@ -181,7 +172,7 @@ const getPnpmWorkspaceMinimumReleaseAge = async (
 
   let major = pnpmMajorVersion
   if (major === undefined) {
-    const [hasConfigYaml, hasRc] = await Promise.all([pathExists(globalConfigYamlPath), pathExists(globalRcPath)])
+    const [hasConfigYaml, hasRc] = await Promise.all([exists(globalConfigYamlPath), exists(globalRcPath)])
     // which file pnpm reads only matters when both exist, so pay for the spawn just for that case
     major = hasConfigYaml && hasRc ? await getPnpmMajorVersion() : hasConfigYaml ? 11 : 10
   }
