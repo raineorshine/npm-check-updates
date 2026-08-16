@@ -348,6 +348,12 @@ export const newest = withNpmConfigFromYarn(npm.newest)
 export const patch = withNpmConfigFromYarn(npm.patch)
 export const semver = withNpmConfigFromYarn(npm.semver)
 
+// memoized since getPeerDependencies is called once per dependency and the yarn version cannot change mid-run
+const getYarnVersion = memoize(async (spawnOptions: SpawnOptions): Promise<string> => {
+  const { stdout } = await spawnCommand('yarn', ['--version'], { rejectOnError: false }, spawnOptions)
+  return stdout
+})
+
 /**
  * Fetches the list of peer dependencies for a specific package version.
  *
@@ -361,7 +367,7 @@ export const getPeerDependencies = async (
   version: Version,
   spawnOptions: SpawnOptions,
 ): Promise<Index<Version>> => {
-  const { stdout: yarnVersion } = await spawnCommand('yarn', ['--version'], { rejectOnError: false }, spawnOptions)
+  const yarnVersion = await getYarnVersion(spawnOptions)
   if (yarnVersion.startsWith('1')) {
     const args = ['--json', 'info', `${packageName}@${version}`, 'peerDependencies']
     const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, spawnOptions)
