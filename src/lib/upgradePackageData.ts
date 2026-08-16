@@ -3,6 +3,7 @@ import path from 'node:path'
 import { parseDocument } from 'yaml'
 import { type CatalogsConfig, parseCatalogsConfig } from '../types/CatalogConfig.ts'
 import { type Index } from '../types/IndexType.ts'
+import { type Maybe } from '../types/Maybe.ts'
 import { type Options } from '../types/Options.ts'
 import { type PackageFile } from '../types/PackageFile.ts'
 import { type Version } from '../types/Version.ts'
@@ -66,6 +67,14 @@ function replaceDependencySections(
   }
 
   return applyJsonValueEdits(pkgData, edits)
+}
+
+/**
+ * Parses the text returned by upgradePackageData back into an object, using the same format it wrote.
+ * Catalog files are written as yaml; everything else stays json.
+ */
+export function parseUpgradedPackageData(pkgFile: Maybe<string>, data: string): PackageFile {
+  return pkgFile && isCatalogFile(pkgFile) ? parseDocument(data).toJSON() : parseJson<PackageFile>(data)
 }
 
 /**
