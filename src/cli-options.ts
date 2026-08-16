@@ -956,6 +956,8 @@ const cliOptions: CLIOption[] = [
       }
     },
     type: 'number',
+    // must be internally typed as number and externally typed as boolean to maintain compatibility with the CLI option and the RunOption
+    typePublic: 'boolean',
   },
   {
     long: 'prefix',
