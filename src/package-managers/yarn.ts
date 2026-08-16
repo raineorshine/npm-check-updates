@@ -366,8 +366,9 @@ const getYarnVersion = memoize(async (spawnOptions: SpawnOptions): Promise<strin
 export const getPeerDependencies = async (
   packageName: string,
   version: Version,
-  spawnOptions: SpawnOptions,
+  options: Options = {},
 ): Promise<Index<Version>> => {
+  const spawnOptions: SpawnOptions = { cwd: options.cwd }
   const yarnVersion = await getYarnVersion(spawnOptions)
   if (yarnVersion.startsWith('1')) {
     const args = ['--json', 'info', `${packageName}@${version}`, 'peerDependencies']
