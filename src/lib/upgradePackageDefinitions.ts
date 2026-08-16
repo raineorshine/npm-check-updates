@@ -120,57 +120,57 @@ export async function upgradePackageDefinitions(
     return result
   }
 
-  if (options.peer && Object.keys(filteredLatestDependencies).length > 0) {
-    const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredLatestDependencies, options)
+  const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredLatestDependencies, options)
 
-    let checkPeerViolationResult: CheckIfInPeerViolationResult
+  let checkPeerViolationResult: CheckIfInPeerViolationResult
 
-    if (
-      isDeepStrictEqual(options.peerDependencies, {
-        ...options.peerDependencies,
-        ...upgradedPeerDependencies,
-      })
-    ) {
-      checkPeerViolationResult = checkIfInPeerViolation(
-        currentDependencies,
-        filteredUpgradedDependencies,
-        options.peerDependencies!,
-      )
-      if (!checkPeerViolationResult.violated) {
-        return result
-      }
-    } else {
-      checkPeerViolationResult = {
-        violated: false,
-        filteredUpgradedDependencies,
-        upgradedPeerDependencies,
-      }
+  if (
+    isDeepStrictEqual(options.peerDependencies, {
+      ...options.peerDependencies,
+      ...upgradedPeerDependencies,
+    })
+  ) {
+    checkPeerViolationResult = checkIfInPeerViolation(
+      currentDependencies,
+      filteredUpgradedDependencies,
+      options.peerDependencies!,
+    )
+    if (!checkPeerViolationResult.violated) {
+      return result
     }
-    let runCount = 0
-    do {
-      if (runCount++ > 6) {
-        throw new Error(`Stuck in a while loop. Please report an issue`)
-      }
-      const peerDependenciesAfterUpgrade = {
-        ...options.peerDependencies,
-        ...checkPeerViolationResult.upgradedPeerDependencies,
-      }
-      if (isDeepStrictEqual(options.peerDependencies, peerDependenciesAfterUpgrade)) {
-        // We can't find anything to do, will not upgrade anything
-        return [{}, latestVersionResults, options.peerDependencies]
-      }
-      const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
-        { ...currentDependencies, ...checkPeerViolationResult.filteredUpgradedDependencies },
-        { ...options, peerDependencies: peerDependenciesAfterUpgrade, loglevel: 'silent' },
-      )
-      result = [
-        { ...checkPeerViolationResult.filteredUpgradedDependencies, ...newUpgradedDependencies },
-        mergeVersionResults(latestVersionResults, newLatestVersions),
-        newPeerDependencies,
-      ]
-      checkPeerViolationResult = checkIfInPeerViolation(currentDependencies, result[0], result[2]!)
-    } while (checkPeerViolationResult.violated)
+  } else {
+    checkPeerViolationResult = {
+      violated: false,
+      filteredUpgradedDependencies,
+      upgradedPeerDependencies,
+    }
   }
+
+  let runCount = 0
+  do {
+    if (runCount++ > 6) {
+      throw new Error(`Stuck in a while loop. Please report an issue`)
+    }
+    const peerDependenciesAfterUpgrade = {
+      ...options.peerDependencies,
+      ...checkPeerViolationResult.upgradedPeerDependencies,
+    }
+    if (isDeepStrictEqual(options.peerDependencies, peerDependenciesAfterUpgrade)) {
+      // We can't find anything to do, will not upgrade anything
+      return [{}, latestVersionResults, options.peerDependencies]
+    }
+    const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
+      { ...currentDependencies, ...checkPeerViolationResult.filteredUpgradedDependencies },
+      { ...options, peerDependencies: peerDependenciesAfterUpgrade, loglevel: 'silent' },
+    )
+    result = [
+      { ...checkPeerViolationResult.filteredUpgradedDependencies, ...newUpgradedDependencies },
+      mergeVersionResults(latestVersionResults, newLatestVersions),
+      newPeerDependencies,
+    ]
+    checkPeerViolationResult = checkIfInPeerViolation(currentDependencies, result[0], result[2]!)
+  } while (checkPeerViolationResult.violated)
+
   return result
 }
 
