@@ -14,6 +14,7 @@ import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
 import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import loadPackageInfoFromFile from './loadPackageInfoFromFile.ts'
+import { defaultLockfile } from './lockfiles.ts'
 import style, { styleInit } from './style.ts'
 import upgradePackageData from './upgradePackageData.ts'
 
@@ -101,14 +102,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
   const pmOptions: Options = { packageManager: options.packageManager, color: options.color }
 
   // bun lockFileName defaults to bun.lock but will be overwritten to bun.lockb if detected at the readFile step below
-  let lockFileName: 'package-lock.json' | 'yarn.lock' | 'pnpm-lock.yaml' | 'bun.lock' | 'bun.lockb' =
-    options.packageManager === 'yarn'
-      ? 'yarn.lock'
-      : options.packageManager === 'pnpm'
-        ? 'pnpm-lock.yaml'
-        : options.packageManager === 'bun'
-          ? 'bun.lock'
-          : 'package-lock.json'
+  let lockFileName = defaultLockfile(options.packageManager)
   const { pkg, pkgFile }: PackageInfo = await loadPackageFileForDoctor(options)
 
   // flatten all deps into one so we can iterate over them

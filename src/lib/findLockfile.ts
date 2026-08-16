@@ -2,16 +2,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { type Options } from '../types/Options.ts'
-
-const lockFileNames = [
-  'package-lock.json',
-  'yarn.lock',
-  'pnpm-lock.yaml',
-  'deno.json',
-  'deno.jsonc',
-  'bun.lock',
-  'bun.lockb',
-]
+import { lockfileNames } from './lockfiles.ts'
 
 /**
  * Goes up the filesystem tree until it finds a lock file. (e.g. "package-lock.json", "yarn.lock", etc.)
@@ -38,7 +29,7 @@ export default async function findLockfile(
     while (true) {
       const files = await readdir(currentPath)
 
-      for (const filename of lockFileNames) {
+      for (const filename of lockfileNames) {
         if (files.includes(filename)) {
           return { directoryPath: currentPath, filename }
         }
