@@ -170,7 +170,11 @@ async function upgradePackageData(
 
     // Handle package.json catalog files (check if content contains catalog/catalogs at root level or in workspaces)
     if (fileExtension === '.json') {
-      const parsed = JSON.parse(pkgData)
+      const parsed = parseJson<{
+        catalog?: unknown
+        catalogs?: unknown
+        workspaces?: string[] | { catalog?: unknown; catalogs?: unknown }
+      }>(pkgData)
       const hasTopLevelCatalogs = parsed.catalog || parsed.catalogs
       const hasWorkspacesCatalogs =
         parsed.workspaces &&
