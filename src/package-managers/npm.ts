@@ -7,17 +7,20 @@ import memoize from 'fast-memoize'
 import { findUpSync } from 'find-up'
 import ini from 'ini'
 import type npmRegistryFetch from 'npm-registry-fetch'
+import picomatch from 'picomatch'
 import nodeSemver from 'semver'
 import { parseRange } from 'semver-utils'
 import untildify from 'untildify'
 import pkg from '../../package.json' with { type: 'json' }
 import { keyValueBy } from '../lib/keyValueBy.ts'
 import { print, printSorted } from '../lib/logging.ts'
+import parseCooldown from '../lib/parseCooldown.ts'
 import spawnCommand from '../lib/spawnCommand.ts'
 import * as versionUtil from '../lib/version-util.ts'
 import { type GetVersion } from '../types/GetVersion.ts'
 import { type Index } from '../types/IndexType.ts'
 import { type MockedVersions } from '../types/MockedVersions.ts'
+import { type NativeCooldown } from '../types/NativeCooldown.ts'
 import { type NpmConfig } from '../types/NpmConfig.ts'
 import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
@@ -1303,6 +1306,44 @@ export const semver: GetVersion = async (
   })
 
   return toVersionResult({ ...packageInfo, ...versionResult })
+}
+
+/** Reads npm's min-release-age config as a cooldown. Also used for package managers with no native setting. */
+export const getCooldown = async (): Promise<NativeCooldown | null> => {
+  const config = npmApi.findNpmConfig()
+  const minReleaseAge = config?.minReleaseAge
+  if (minReleaseAge == null) return null
+
+  const days =
+    typeof minReleaseAge === 'string'
+      ? (parseCooldown(minReleaseAge) ?? parseInt(minReleaseAge, 10))
+      : typeof minReleaseAge === 'number'
+        ? minReleaseAge
+        : null
+  if (days == null || isNaN(days)) return null
+
+  // npm's min-release-age-exclude is a list of package names or glob patterns that are exempt from min-release-age.
+  // a single .npmrc entry parses as a string; repeated entries (min-release-age-exclude[]=) parse as an array.
+  const excludeRaw = config?.minReleaseAgeExclude
+  const exclude = [
+    ...new Set(
+      (Array.isArray(excludeRaw) ? excludeRaw : typeof excludeRaw === 'string' ? [excludeRaw] : [])
+        .flatMap(pattern => pattern.split(','))
+        .map(pattern => pattern.trim())
+        .filter(pattern => pattern),
+    ),
+  ]
+
+  return {
+    days,
+    exclude,
+    source: 'min-release-age from .npmrc',
+    excludeLabel: 'excluded pattern',
+    createMatcher: pattern => {
+      const match = picomatch(pattern, { nonegate: true, noext: true })
+      return packageName => packageName === pattern || match(packageName)
+    },
+  }
 }
 
 export { spawnNpm as spawn }

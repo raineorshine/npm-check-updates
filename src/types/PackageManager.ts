@@ -1,5 +1,6 @@
 import { type GetVersion } from './GetVersion.ts'
 import { type Index } from './IndexType.ts'
+import { type NativeCooldown } from './NativeCooldown.ts'
 import { type NpmConfig } from './NpmConfig.ts'
 import { type NpmOptions } from './NpmOptions.ts'
 import { type Options } from './Options.ts'
@@ -23,6 +24,8 @@ export interface PackageManager {
    * `install --no-save`, which means the install also writes to the package file.
    */
   usesAddCommand?: boolean
+  /** Reads the package manager's own cooldown setting, used when --cooldown is not given. */
+  getCooldown?: (options: Options) => Promise<NativeCooldown | null>
   defaultPrefix?: (options: Options) => Promise<string | undefined>
   list?: (options: Options) => Promise<Index<Version>>
   latest: GetVersion

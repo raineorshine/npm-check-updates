@@ -12,6 +12,7 @@ import { print } from '../lib/logging.ts'
 import spawnCommand from '../lib/spawnCommand.ts'
 import { type GetVersion } from '../types/GetVersion.ts'
 import { type Index } from '../types/IndexType.ts'
+import { type NativeCooldown } from '../types/NativeCooldown.ts'
 import { type NpmConfig } from '../types/NpmConfig.ts'
 import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
@@ -418,4 +419,20 @@ export const pnpmApi = {
   getPnpmWorkspaceMinimumReleaseAge,
   getPnpmWorkspaceRegistries,
   parseList,
+}
+
+/**
+ * Reads pnpm's minimumReleaseAge as a cooldown.
+ * pnpm does not read .npmrc min-release-age; only its own native config is consulted.
+ */
+export const getCooldown = async (options: Options): Promise<NativeCooldown | null> => {
+  const config = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ cwd: options.cwd })
+  if (config == null) return null
+  return {
+    // pnpm's minimumReleaseAge is in minutes
+    days: config.minimumReleaseAge / (24 * 60),
+    exclude: config.minimumReleaseAgeExclude,
+    source: 'minimumReleaseAge from pnpm-workspace.yaml',
+    excludeLabel: 'excluded pattern',
+  }
 }

@@ -12,6 +12,7 @@ import parseCooldown from '../lib/parseCooldown.ts'
 import spawnCommand from '../lib/spawnCommand.ts'
 import { type GetVersion } from '../types/GetVersion.ts'
 import { type Index } from '../types/IndexType.ts'
+import { type NativeCooldown } from '../types/NativeCooldown.ts'
 import { type NpmConfig } from '../types/NpmConfig.ts'
 import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
@@ -459,4 +460,20 @@ export const yarnApi = {
   getYarnMinimalAgeGate,
   parseJsonLines,
   extractFirstJsonLine,
+}
+
+/**
+ * Reads yarn's npmMinimalAgeGate as a cooldown.
+ * yarn does not read .npmrc min-release-age; only its own native config is consulted.
+ */
+export const getCooldown = async (options: Options): Promise<NativeCooldown | null> => {
+  const config = await yarnApi.getYarnMinimalAgeGate(options)
+  if (config == null) return null
+  return {
+    // yarn's npmMinimalAgeGate is in minutes
+    days: config.npmMinimalAgeGate / (24 * 60),
+    exclude: config.npmPreapprovedPackages,
+    source: 'npmMinimalAgeGate from .yarnrc.yml',
+    excludeLabel: 'pre-approved package',
+  }
 }
