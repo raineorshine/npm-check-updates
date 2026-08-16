@@ -1,4 +1,4 @@
-import { and, or } from 'fp-and-or'
+import { and } from 'fp-and-or'
 import picomatch from 'picomatch'
 import { parseRange } from 'semver-utils'
 import { type FilterPattern } from '../types/FilterPattern.ts'
@@ -32,26 +32,26 @@ function composeFilter(
     }
     // glob string
     else {
-      const patterns = filterPattern.split(/[\s,]+/)
-      predicate = (dependencyName: string) => {
-        /** Returns true if the pattern matches an unscoped dependency name. */
-        const matchUnscoped = (pattern: string) => picomatch(pattern)(dependencyName)
-
-        /** Returns true if the pattern matches a scoped dependency name. */
-        const matchScoped = (pattern: string) =>
-          !pattern.includes('/') &&
-          dependencyName.includes('/') &&
-          picomatch(pattern)(dependencyName.replace(/\//g, '_'))
-
-        // return true if any of the provided patterns match the dependency name
-        return patterns.some(or(matchUnscoped, matchScoped))
-      }
+      // compile each glob once instead of once per dependency name
+      const matchers = filterPattern.split(/[\s,]+/).map(pattern => ({
+        isMatch: picomatch(pattern),
+        // a pattern without a slash may also match a scoped name with the slash replaced
+        unscoped: !pattern.includes('/'),
+      }))
+      // return true if any of the provided patterns match the dependency name
+      predicate = (dependencyName: string) =>
+        matchers.some(
+          ({ isMatch, unscoped }) =>
+            isMatch(dependencyName) ||
+            (unscoped && dependencyName.includes('/') && isMatch(dependencyName.replace(/\//g, '_'))),
+        )
     }
   }
   // array
   else if (Array.isArray(filterPattern)) {
+    const subpredicates = filterPattern.map(subpattern => composeFilter(subpattern, { allowFunction }))
     predicate = (dependencyName: string, versionSpec?: string) =>
-      filterPattern.some(subpattern => composeFilter(subpattern, { allowFunction })(dependencyName, versionSpec))
+      subpredicates.some(subpredicate => subpredicate(dependencyName, versionSpec))
   }
   // raw RegExp
   else if (filterPattern instanceof RegExp) {
@@ -87,19 +87,23 @@ function filterAndReject(
   filterVersion: Maybe<FilterPattern>,
   rejectVersion: Maybe<FilterPattern>,
 ) {
+  // compose the predicates up front, otherwise they are rebuilt for every dependency name
+  const rejectDep = reject ? composeFilter(reject) : null
+  const rejectVer = rejectVersion ? composeFilter(rejectVersion, { allowFunction: false }) : null
+  const filterDep = and(
+    filter ? composeFilter(filter) : true,
+    rejectDep ? (name: string, versionSpec?: string) => !rejectDep(name, versionSpec) : true,
+  )
+  const filterVer = and(
+    filterVersion ? composeFilter(filterVersion, { allowFunction: false }) : true,
+    rejectVer ? (name: string, versionSpec?: string) => !rejectVer(name, versionSpec) : true,
+  )
+
   return and(
     // filter dep
-    (dependencyName: VersionSpec, version: string) =>
-      and(filter ? composeFilter(filter) : true, reject ? (...args) => !composeFilter(reject)(...args) : true)(
-        dependencyName,
-        version,
-      ),
+    filterDep,
     // filter version
-    (dependencyName: VersionSpec, version: string) =>
-      and(
-        filterVersion ? composeFilter(filterVersion, { allowFunction: false }) : true,
-        rejectVersion ? (...args) => !composeFilter(rejectVersion, { allowFunction: false })(...args) : true,
-      )(version),
+    (dependencyName: VersionSpec, version: string) => filterVer(version),
   )
 }
 
