@@ -763,6 +763,7 @@ const cliOptions: CLIOption[] = [
     description:
       'Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | RegExp | readonly (string | RegExp)[] | FilterFunction',
+    accumulate: true,
     parse: (value, accum) => [...(accum || []), value],
     help: extendedHelpFilterFunction,
   },
@@ -779,6 +780,7 @@ const cliOptions: CLIOption[] = [
     arg: 'p',
     description: 'Filter on package version using comma-or-space-delimited list or /regex/.',
     type: 'string | RegExp | readonly (string | RegExp)[]',
+    accumulate: true,
     parse: (value, accum) => [...(accum || []), value],
     help: extendedHelpFilterVersionFunction,
   },
@@ -909,7 +911,9 @@ const cliOptions: CLIOption[] = [
     description:
       'Include prerelease versions, e.g. -alpha.0, -beta.5, -rc.2. Automatically set to 1 when `--target` is newest or greatest, or when the current version is a prerelease. (default: 0)',
     parse: (value: unknown): boolean => {
-      if (typeof value === 'number') {
+      if (typeof value === 'boolean') {
+        return value
+      } else if (typeof value === 'number') {
         return !!value
       } else if (typeof value === 'string') {
         return !!parseInt(value, 10)
@@ -949,6 +953,7 @@ const cliOptions: CLIOption[] = [
     description:
       'Exclude packages matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function.',
     type: 'string | RegExp | readonly (string | RegExp)[] | FilterFunction',
+    accumulate: true,
     parse: (value, accum) => [...(accum || []), value],
     help: extendedHelpRejectFunction,
   },
@@ -957,6 +962,7 @@ const cliOptions: CLIOption[] = [
     arg: 'p',
     description: 'Exclude package.json versions using comma-or-space-delimited list or /regex/.',
     type: 'string | RegExp | readonly (string | RegExp)[]',
+    accumulate: true,
     parse: (value, accum) => [...(accum || []), value],
     help: extendedHelpRejectVersionFunction,
   },
@@ -1021,6 +1027,7 @@ const cliOptions: CLIOption[] = [
   {
     long: 'workspace',
     arg: 's',
+    accumulate: true,
     parse: (value, accum) => [...accum, value],
     default: [],
     description: 'Run on one or more specified workspaces. Add `--no-root` to exclude the root project.',
