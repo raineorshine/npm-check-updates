@@ -3,12 +3,14 @@ import { type CatalogsConfig, parseCatalogsConfig } from '../types/CatalogConfig
 import { type Options } from '../types/Options.ts'
 import programError from './programError.ts'
 
+type YamlCatalogUpgrade = {
+  path: string[] // e.g., ['catalogs', 'my-catalog', 'my-dep'] or ['catalog', 'my-dep']
+  newValue: string // e.g., '^2.0.0'
+}
+
 type UpdateYamlCatalogDependenciesArgs = {
   fileContent: string
-  upgrade: {
-    path: string[] // e.g., ['catalogs', 'my-catalog', 'my-dep'] or ['catalog', 'my-dep']
-    newValue: string // e.g., '^2.0.0'
-  }
+  upgrade: YamlCatalogUpgrade
   options?: Options
   filePath?: string
 }
@@ -24,6 +26,57 @@ function throwYamlSyntaxError(error: unknown, { options, filePath }: { options?:
   }
 
   throw new Error(message)
+}
+
+/** Returns true if the path points into a catalog or catalogs section. */
+function isCatalogPath(path: string[]): boolean {
+  return path.length >= 2 && (path[0] === 'catalog' || path[0] === 'catalogs' || path[0] === 'workspaces')
+}
+
+/** Reads the version currently declared at a catalog path. */
+function getCatalogVersion(config: CatalogsConfig, path: string[]): string | undefined {
+  const nestedWorkspaces = config.workspaces && !Array.isArray(config.workspaces) ? config.workspaces : undefined
+
+  return path[0] === 'catalog'
+    ? config.catalog?.[path[1]]
+    : path[0] === 'catalogs'
+      ? config.catalogs?.[path[1]]?.[path[2]]
+      : path[0] === 'workspaces' && path[1] === 'catalog'
+        ? nestedWorkspaces?.catalog?.[path[2]]
+        : path[0] === 'workspaces' && path[1] === 'catalogs'
+          ? nestedWorkspaces?.catalogs?.[path[2]]?.[path[3]]
+          : undefined
+}
+
+/**
+ * Parses the YAML to CST tokens and composes the AST from those same tokens (keepSourceTokens), so the AST
+ * nodes reference the original CST tokens. We manipulate via the AST for convenience, then stringify the whole
+ * token stream. Stringifying document.contents alone would drop everything outside the top-level map (leading
+ * blank lines, directives, pre-document comments).
+ */
+function parseYamlDocument(
+  fileContent: string,
+  { options, filePath }: { options?: Options; filePath?: string },
+): { tokens: CST.Token[]; document: Document } {
+  let tokens: CST.Token[]
+  let document: Document | undefined
+
+  try {
+    tokens = [...new Parser().parse(fileContent)]
+    document = [...new Composer({ keepSourceTokens: true }).compose(tokens)][0]
+  } catch (err) {
+    throwYamlSyntaxError(err, { options, filePath })
+  }
+
+  if (!document) {
+    throwYamlSyntaxError(new Error('No YAML document found.'), { options, filePath })
+  }
+
+  if (document.errors.length > 0) {
+    throwYamlSyntaxError(document.errors[0], { options, filePath })
+  }
+
+  return { tokens, document }
 }
 
 /**
@@ -96,66 +149,27 @@ export function updateYamlCatalogDependencies({
   options,
   filePath,
 }: UpdateYamlCatalogDependenciesArgs): string | null {
-  const { path } = upgrade
+  const { path, newValue } = upgrade
 
   // only catalog paths are supported, e.g. ['catalog', dep] or ['workspaces', 'catalogs', name, dep]
-  if (path.length < 2 || (path[0] !== 'catalog' && path[0] !== 'catalogs' && path[0] !== 'workspaces')) {
+  if (!isCatalogPath(path)) {
     return null
   }
 
-  const { newValue } = upgrade
+  const { tokens, document } = parseYamlDocument(fileContent, { options, filePath })
 
-  let tokens: CST.Token[]
-  let document: Document | undefined
   let parsedContents: CatalogsConfig
-
-  try {
-    // Parse to CST tokens and compose the AST from those same tokens (keepSourceTokens), so the AST
-    // nodes reference the original CST tokens. We manipulate via the AST for convenience, then
-    // stringify the whole token stream. Stringifying document.contents alone would drop everything
-    // outside the top-level map (leading blank lines, directives, pre-document comments).
-    tokens = [...new Parser().parse(fileContent)]
-    document = [...new Composer({ keepSourceTokens: true }).compose(tokens)][0]
-  } catch (err) {
-    throwYamlSyntaxError(err, { options, filePath })
-  }
-
-  if (!document) {
-    throwYamlSyntaxError(new Error('No YAML document found.'), { options, filePath })
-  }
-
-  if (document.errors.length > 0) {
-    throwYamlSyntaxError(document.errors[0], { options, filePath })
-  }
-
   try {
     parsedContents = parseCatalogsConfig(document.toJSON())
   } catch {
     return null
   }
 
-  const nestedWorkspaces =
-    parsedContents.workspaces && !Array.isArray(parsedContents.workspaces) ? parsedContents.workspaces : undefined
-
-  const oldVersion =
-    path[0] === 'catalog'
-      ? parsedContents.catalog?.[path[1]]
-      : path[0] === 'catalogs'
-        ? parsedContents.catalogs?.[path[1]]?.[path[2]]
-        : path[0] === 'workspaces' && path[1] === 'catalog'
-          ? nestedWorkspaces?.catalog?.[path[2]]
-          : path[0] === 'workspaces' && path[1] === 'catalogs'
-            ? nestedWorkspaces?.catalogs?.[path[2]]?.[path[3]]
-            : undefined
-
-  if (oldVersion === newValue) {
+  if (getCatalogVersion(parsedContents, path) === newValue) {
     return fileContent
   }
 
-  const didModify = changeDependencyIn(document, path, {
-    newValue,
-    newName: upgrade.path.at(-1),
-  })
+  const didModify = changeDependencyIn(document, path, { newValue, newName: path.at(-1) })
 
   if (!didModify) {
     // Case where we are explicitly unable to substitute the key/value, for
@@ -164,4 +178,44 @@ export function updateYamlCatalogDependencies({
   }
 
   return tokens.map(token => CST.stringify(token)).join('')
+}
+
+/**
+ * Applies a batch of catalog upgrades to a YAML file, parsing and stringifying only once.
+ *
+ * Upgrades that cannot be applied (unsupported path, already at the target version, alias value)
+ * are skipped. Returns the original `fileContent` when nothing was applied.
+ */
+export function updateYamlCatalogDependenciesAll({
+  fileContent,
+  upgrades,
+  options,
+  filePath,
+}: {
+  fileContent: string
+  upgrades: YamlCatalogUpgrade[]
+  options?: Options
+  filePath?: string
+}): string {
+  if (upgrades.length === 0) return fileContent
+
+  const { tokens, document } = parseYamlDocument(fileContent, { options, filePath })
+
+  let parsedContents: CatalogsConfig
+  try {
+    parsedContents = parseCatalogsConfig(document.toJSON())
+  } catch {
+    return fileContent
+  }
+
+  let modified = false
+  for (const { path, newValue } of upgrades) {
+    if (!isCatalogPath(path)) continue
+    if (getCatalogVersion(parsedContents, path) === newValue) continue
+    if (changeDependencyIn(document, path, { newValue, newName: path.at(-1) })) {
+      modified = true
+    }
+  }
+
+  return modified ? tokens.map(token => CST.stringify(token)).join('') : fileContent
 }
