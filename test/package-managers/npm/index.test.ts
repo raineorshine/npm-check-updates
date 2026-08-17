@@ -24,6 +24,61 @@ describe('npm', () => {
     expect(version).toBe('2.0.0-beta')
   })
 
+  // some registry mirrors serve a dist-tag that is missing from versions
+  describe('distTag with a tagged version missing from versions', () => {
+    /** Stubs a packument whose dist-tag points to a version that versions does not list. */
+    const stubPackument = (distTags: Record<string, string>) => {
+      const original = npm.npmApi.fetchUpgradedPackumentMemo
+      npm.npmApi.fetchUpgradedPackumentMemo = async () => ({
+        name: 'ncu-test-v2',
+        'dist-tags': distTags,
+        versions: { '1.0.0': { name: 'ncu-test-v2', version: '1.0.0' } } as any,
+      })
+      return () => {
+        npm.npmApi.fetchUpgradedPackumentMemo = original
+      }
+    }
+
+    it('falls back to the tagged version', async () => {
+      const restore = stubPackument({ latest: '2.0.0' })
+      try {
+        await expect(
+          npm.distTag('ncu-test-v2', '1.0.0', { distTag: 'latest', deprecated: true }),
+        ).resolves.toStrictEqual({ version: '2.0.0' })
+      } finally {
+        restore()
+      }
+    })
+
+    // the fallback packument has no deprecated/engines fields, so it must not be accepted unchecked
+    it('does not accept the fallback with --no-deprecated', async () => {
+      const restore = stubPackument({ next: '2.0.0' })
+      try {
+        await expect(
+          npm.distTag('ncu-test-v2', '1.0.0', { distTag: 'next', deprecated: false }),
+        ).resolves.toStrictEqual({})
+      } finally {
+        restore()
+      }
+    })
+
+    it('does not accept the fallback with --engines-node', async () => {
+      const restore = stubPackument({ next: '2.0.0' })
+      try {
+        await expect(
+          npm.distTag('ncu-test-v2', '1.0.0', {
+            distTag: 'next',
+            deprecated: true,
+            enginesNode: true,
+            nodeEngineVersion: '>=18.0.0',
+          }),
+        ).resolves.toStrictEqual({})
+      } finally {
+        restore()
+      }
+    })
+  })
+
   it('ownerChanged', async () => {
     await expect(npm.packageAuthorChanged('mocha', '^7.1.0', '8.0.1')).resolves.toBe(true)
     await expect(npm.packageAuthorChanged('htmlparser2', '^3.10.1', '^4.0.0')).resolves.toBe(false)

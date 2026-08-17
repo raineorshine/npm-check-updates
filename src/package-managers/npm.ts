@@ -1060,13 +1060,18 @@ export const distTag: GetVersion = async (
     return {}
   }
 
-  // if the packument does not contain versions, we need to add a minimal versions property with the upgraded version
-  const tagPackument = packument?.versions
-    ? packument.versions?.[version!]
-    : {
-        name: packageName,
-        version,
-      }
+  const versionPackument = packument?.versions?.[version]
+
+  // fall back to a minimal packument when versions was not fetched, or when the registry does not
+  // list the version that dist-tags points to
+  const tagPackument = versionPackument ?? {
+    name: packageName,
+    version,
+  }
+
+  // the deprecated and engines filters read fields that only exist on the real version object, so a
+  // fallback packument would pass them unchecked. fall through to greatest instead.
+  const isUnfilterable = !versionPackument && (!options.deprecated || options.enginesNode)
 
   const publishTime = packument?.time?.[version!]
   const maybeTime = publishTime ? { time: publishTime } : null
@@ -1074,14 +1079,14 @@ export const distTag: GetVersion = async (
 
   const isSatisfiesCooldown =
     tagPackument.version === current ||
-    (tagPackument && satisfiesCooldownPeriod(packageName, tagPackument.version, publishTime, options.cooldown))
+    satisfiesCooldownPeriod(packageName, tagPackument.version, publishTime, options.cooldown)
 
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
   // if latest exists and latest is a prerelease version and --pre is specified, return it
   // if latest exists and latest not satisfies min version of engines.node
   // if latest exists and cooldown is specified and latest is within cooldown period, return it
-  if (isSatisfiesCooldown && filterPredicate(options)(tagPackument)) {
+  if (isSatisfiesCooldown && !isUnfilterable && filterPredicate(options)(tagPackument)) {
     return {
       version: tagPackument.version,
       ...maybeTime,
@@ -1091,13 +1096,11 @@ export const distTag: GetVersion = async (
   // only report cooldown when the version is actually within it; a version rejected by another
   // filter (pre, deprecated, engines, peer) falls through to greatest instead
   if (options.cooldown && !isSatisfiesCooldown) {
-    if (version && tagPackument) {
-      print(
-        options,
-        `Skipping ${packageName}@${version} due to cooldown${publishTime ? ` (published ${publishTime})` : ''}.`,
-        'verbose',
-      )
-    }
+    print(
+      options,
+      `Skipping ${packageName}@${version} due to cooldown${publishTime ? ` (published ${publishTime})` : ''}.`,
+      'verbose',
+    )
 
     return {
       cooldownInfo: {
