@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { cliOptionsMap } from '../src/cli-options.ts'
 import { styleInit } from '../src/lib/style.ts'
 import { copyFixture, createNcuRegExp, ncu, testFail, testPass } from './helpers/doctorHelpers.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -284,7 +285,7 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
     })
 
     it('handle failed prepare script', async () => {
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgPath = path.join(tempDir, 'package.json')
 
       // package.json

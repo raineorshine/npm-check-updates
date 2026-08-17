@@ -1,15 +1,15 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import getNcuRc, { getModuleMismatchError } from '../src/lib/getNcuRc.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 
 describe('getNcuRc', () => {
   let tempDir: string
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-rc-'))
+    tempDir = await makeTempDir('ncu-test-rc-')
   })
 
   afterEach(async () => {

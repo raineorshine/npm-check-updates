@@ -1,14 +1,14 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { upgradeJsonCatalogDependencies } from '../src/lib/upgradeJsonCatalogDependencies.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 
 describe('upgradeJsonCatalogDependencies', () => {
   let tempDir: string
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    tempDir = await makeTempDir()
   })
 
   afterEach(async () => {
