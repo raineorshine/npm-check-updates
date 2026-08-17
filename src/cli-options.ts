@@ -709,7 +709,7 @@ const cliOptions: CLIOption[] = [
     long: 'dep',
     arg: 'value',
     description:
-      'Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited).',
+      'Check one or more sections of dependencies only: dev, optional, peer, prod, packageManager, or devEngines (comma-delimited).',
     default: ['prod', 'dev', 'optional', 'packageManager'],
     parse: value => (typeof value === 'string' ? value.split(/,|\s/) : value),
     type: 'string | readonly string[]',

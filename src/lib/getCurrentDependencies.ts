@@ -5,6 +5,7 @@ import { type PackageFile } from '../types/PackageFile.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import filterAndReject from './filterAndReject.ts'
 import filterObject from './filterObject.ts'
+import getDevEnginesPackageManagers from './getDevEnginesPackageManagers.ts'
 import { keyValueBy } from './keyValueBy.ts'
 import programError from './programError.ts'
 import resolveDepSections from './resolveDepSections.ts'
@@ -23,6 +24,10 @@ const parsePackageManager = (pkgData: PackageFile) => {
   const [name, version] = pkgData.packageManager.split('@')
   return { [name]: version }
 }
+
+/** Parses the devEngines.packageManager field into a { [name]: version } collection. */
+const parseDevEngines = (pkgData: PackageFile) =>
+  keyValueBy(getDevEnginesPackageManagers(pkgData), ({ entry }) => ({ [entry.name]: entry.version! }))
 /**
  * Get the current dependencies from the package file.
  *
@@ -44,7 +49,7 @@ function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}
       ...(depSection === 'packageManager'
         ? parsePackageManager(pkgData)
         : filterObject(
-            (pkgData[depSection] as Index<string>) || {},
+            depSection === 'devEngines' ? parseDevEngines(pkgData) : (pkgData[depSection] as Index<string>) || {},
             (dep, spec) => !isGreaterThanSafe(spec, accum[dep]),
           )),
     }

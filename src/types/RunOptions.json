@@ -74,7 +74,7 @@
               }
             }
           ],
-          "description": "Check one or more sections of dependencies only: dev, optional, peer, prod, or packageManager (comma-delimited).",
+          "description": "Check one or more sections of dependencies only: dev, optional, peer, prod, packageManager, or devEngines (comma-delimited).",
           "default": ["prod", "dev", "optional", "packageManager"]
         },
         "deprecated": {
@@ -566,6 +566,9 @@
         "devDependencies": {
           "$ref": "#/definitions/Index%3CVersionSpec%3E"
         },
+        "devEngines": {
+          "$ref": "#/definitions/DevEngines"
+        },
         "imports": {
           "$ref": "#/definitions/Index%3CVersionSpec%3E"
         },
@@ -592,7 +595,7 @@
                 "$ref": "#/definitions/VersionSpec"
               },
               {
-                "$ref": "#/definitions/alias-698261804-167-249-698261804-0-868"
+                "$ref": "#/definitions/alias-698261804-167-249-698261804-0-1448"
               }
             ]
           }
@@ -650,7 +653,97 @@
       },
       "description": "A very generic object."
     },
-    "alias-698261804-167-249-698261804-0-868": {
+    "DevEngines": {
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DevEngineDependency"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DevEngineDependency"
+              }
+            }
+          ]
+        },
+        "libc": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DevEngineDependency"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DevEngineDependency"
+              }
+            }
+          ]
+        },
+        "os": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DevEngineDependency"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DevEngineDependency"
+              }
+            }
+          ]
+        },
+        "packageManager": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DevEngineDependency"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DevEngineDependency"
+              }
+            }
+          ]
+        },
+        "runtime": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DevEngineDependency"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DevEngineDependency"
+              }
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "description": "https://docs.npmjs.com/cli/configuring-npm/package-json#devengines"
+    },
+    "DevEngineDependency": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "$ref": "#/definitions/VersionSpec"
+        },
+        "onFail": {
+          "type": "string",
+          "enum": ["ignore", "warn", "error", "download"]
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false,
+      "description": "A single devEngines constraint."
+    },
+    "alias-698261804-167-249-698261804-0-1448": {
       "type": "object",
       "additionalProperties": {
         "anyOf": [
@@ -658,7 +751,7 @@
             "$ref": "#/definitions/VersionSpec"
           },
           {
-            "$ref": "#/definitions/alias-698261804-167-249-698261804-0-868"
+            "$ref": "#/definitions/alias-698261804-167-249-698261804-0-1448"
           }
         ]
       }

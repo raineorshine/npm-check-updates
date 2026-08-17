@@ -6,10 +6,27 @@ type NestedVersionSpecs = {
   [name: string]: VersionSpec | NestedVersionSpecs
 }
 
+/** A single devEngines constraint. */
+export interface DevEngineDependency {
+  name: string
+  version?: VersionSpec
+  onFail?: 'ignore' | 'warn' | 'error' | 'download'
+}
+
+/** https://docs.npmjs.com/cli/configuring-npm/package-json#devengines */
+export interface DevEngines {
+  cpu?: DevEngineDependency | DevEngineDependency[]
+  libc?: DevEngineDependency | DevEngineDependency[]
+  os?: DevEngineDependency | DevEngineDependency[]
+  packageManager?: DevEngineDependency | DevEngineDependency[]
+  runtime?: DevEngineDependency | DevEngineDependency[]
+}
+
 /** The relevant bits of a parsed package.json file. */
 export interface PackageFile {
   dependencies?: Index<VersionSpec>
   devDependencies?: Index<VersionSpec>
+  devEngines?: DevEngines
   // deno only
   imports?: Index<VersionSpec>
   engines?: Index<VersionSpec>
