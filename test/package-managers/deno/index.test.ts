@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished } from 'vitest'
 import parseJson from '../../../src/lib/utils/parseJson.ts'
 import makeTempDir from '../../helpers/makeTempDir.ts'
 import removeDir from '../../helpers/removeDir.ts'
@@ -21,20 +21,17 @@ describe('deno', () => {
       },
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
-    try {
-      const { stdout } = await spawn('node', [
-        bin,
-        '--jsonUpgraded',
-        '--packageManager',
-        'deno',
-        '--packageFile',
-        pkgFile,
-      ])
-      const pkg = parseJson(stdout)
-      expect(pkg).toHaveProperty('ncu-test-v2')
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    const { stdout } = await spawn('node', [
+      bin,
+      '--jsonUpgraded',
+      '--packageManager',
+      'deno',
+      '--packageFile',
+      pkgFile,
+    ])
+    const upgraded = parseJson(stdout)
+    expect(upgraded).toHaveProperty('ncu-test-v2')
   })
 
   it('auto detect deno.json', async () => {
@@ -46,15 +43,12 @@ describe('deno', () => {
       },
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
-    try {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
-        cwd: tempDir,
-      })
-      const pkg = parseJson(stdout)
-      expect(pkg).toHaveProperty('ncu-test-v2')
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    const { stdout } = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
+      cwd: tempDir,
+    })
+    const upgraded = parseJson(stdout)
+    expect(upgraded).toHaveProperty('ncu-test-v2')
   })
 
   it('rewrite deno.json', async () => {
@@ -66,18 +60,15 @@ describe('deno', () => {
       },
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
-    try {
-      await spawn('node', [bin, '-u'], undefined, { cwd: tempDir })
-      const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
-      const pkg = parseJson(pkgDataNew)
-      expect(pkg).toStrictEqual({
-        imports: {
-          'ncu-test-v2': 'npm:ncu-test-v2@2.0.0',
-        },
-      })
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    await spawn('node', [bin, '-u'], undefined, { cwd: tempDir })
+    const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+    const upgraded = parseJson(pkgDataNew)
+    expect(upgraded).toStrictEqual({
+      imports: {
+        'ncu-test-v2': 'npm:ncu-test-v2@2.0.0',
+      },
+    })
   })
 
   it('auto detect deno.jsonc', async () => {
@@ -90,15 +81,12 @@ describe('deno', () => {
   }
 }`
     await fs.writeFile(pkgFile, pkgString)
-    try {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
-        cwd: tempDir,
-      })
-      const pkg = parseJson(stdout)
-      expect(pkg).toHaveProperty('ncu-test-v2')
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    const { stdout } = await spawn('node', [bin, '--jsonUpgraded'], undefined, {
+      cwd: tempDir,
+    })
+    const upgraded = parseJson(stdout)
+    expect(upgraded).toHaveProperty('ncu-test-v2')
   })
 
   it('rewrite deno.jsonc', async () => {
@@ -110,18 +98,15 @@ describe('deno', () => {
       },
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
-    try {
-      await spawn('node', [bin, '-u'], undefined, { cwd: tempDir })
-      const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
-      const pkg = parseJson(pkgDataNew)
-      expect(pkg).toStrictEqual({
-        imports: {
-          'ncu-test-v2': 'npm:ncu-test-v2@2.0.0',
-        },
-      })
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    await spawn('node', [bin, '-u'], undefined, { cwd: tempDir })
+    const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+    const upgraded = parseJson(pkgDataNew)
+    expect(upgraded).toStrictEqual({
+      imports: {
+        'ncu-test-v2': 'npm:ncu-test-v2@2.0.0',
+      },
+    })
   })
 
   // Deno 2.0 can manage dependencies in package.json
@@ -133,16 +118,13 @@ describe('deno', () => {
       devDependencies: { 'ncu-test-tag': '0.1.0' },
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
-    try {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--packageManager', 'deno'], undefined, {
-        cwd: tempDir,
-      })
-      const upgraded = parseJson(stdout)
-      expect(upgraded).toHaveProperty('ncu-test-v2')
-      expect(upgraded).toHaveProperty('ncu-test-tag')
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--packageManager', 'deno'], undefined, {
+      cwd: tempDir,
+    })
+    const upgraded = parseJson(stdout)
+    expect(upgraded).toHaveProperty('ncu-test-v2')
+    expect(upgraded).toHaveProperty('ncu-test-tag')
   })
 
   it('rewrite package.json fallback', async () => {
@@ -152,15 +134,12 @@ describe('deno', () => {
       dependencies: { 'ncu-test-v2': '1.0.0' },
     }
     await fs.writeFile(pkgFile, JSON.stringify(pkg))
-    try {
-      await spawn('node', [bin, '-u', '--packageManager', 'deno'], undefined, { cwd: tempDir })
-      const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
-      expect(parseJson(pkgDataNew)).toStrictEqual({
-        dependencies: { 'ncu-test-v2': '2.0.0' },
-      })
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    await spawn('node', [bin, '-u', '--packageManager', 'deno'], undefined, { cwd: tempDir })
+    const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+    expect(parseJson(pkgDataNew)).toStrictEqual({
+      dependencies: { 'ncu-test-v2': '2.0.0' },
+    })
   })
 
   it('prefer deno.json over package.json when both exist', async () => {
@@ -173,15 +152,12 @@ describe('deno', () => {
       path.join(tempDir, 'package.json'),
       JSON.stringify({ dependencies: { 'ncu-test-tag': '0.1.0' } }),
     )
-    try {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--packageManager', 'deno'], undefined, {
-        cwd: tempDir,
-      })
-      const upgraded = parseJson(stdout)
-      expect(upgraded).toHaveProperty('ncu-test-v2')
-      expect(upgraded).not.toHaveProperty('ncu-test-tag')
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--packageManager', 'deno'], undefined, {
+      cwd: tempDir,
+    })
+    const upgraded = parseJson(stdout)
+    expect(upgraded).toHaveProperty('ncu-test-v2')
+    expect(upgraded).not.toHaveProperty('ncu-test-tag')
   })
 })

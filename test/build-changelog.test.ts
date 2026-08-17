@@ -1,7 +1,8 @@
 import fs from 'node:fs/promises'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { buildChangelog, formatChangelog } from '../scripts/build-changelog.ts'
 import makeTempDir from './helpers/makeTempDir.ts'
+import removeDir from './helpers/removeDir.ts'
 
 const ORIGINAL_CWD = process.cwd()
 const ORIGINAL_ENV = { ...process.env }
@@ -12,7 +13,13 @@ const PREFIX = `# Changelog\n\n${INTRO}\n\n`
 
 /** Switches to an empty working directory that the generated CHANGELOG.md is written to. */
 const chdirTemp = async (): Promise<void> => {
-  process.chdir(await makeTempDir('ncu-build-changelog-'))
+  const tempDir = await makeTempDir('ncu-build-changelog-')
+  // chdir back before removing, otherwise the cwd is still inside the directory being deleted
+  onTestFinished(async () => {
+    process.chdir(ORIGINAL_CWD)
+    await removeDir(tempDir)
+  })
+  process.chdir(tempDir)
 }
 
 /** Stubs the GitHub API with a single page of releases. */

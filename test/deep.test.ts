@@ -3,7 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, onTestFinished } from 'vitest'
 import ncu from '../src/index.ts'
 import mergeOptions from '../src/lib/mergeOptions.ts'
 import makeTempDir from './helpers/makeTempDir.ts'
@@ -75,68 +75,59 @@ describe('--deep', () => {
 
   it('output json with --jsonAll', async () => {
     const tempDir = await setupDeepTest()
-    try {
-      const { stdout } = await spawn('node', [bin, '--jsonAll', '--deep'], {}, { cwd: tempDir })
-      const deepJsonOut = JSON.parse(stdout)
-      expect(deepJsonOut).toHaveProperty('package.json')
-      expect(deepJsonOut).toHaveProperty('packages/sub1/package.json')
-      expect(deepJsonOut).toHaveProperty('packages/sub2/package.json')
-      expect(deepJsonOut['package.json'].dependencies).toHaveProperty('express')
-      expect(deepJsonOut['packages/sub1/package.json'].dependencies).toHaveProperty('express')
-      expect(deepJsonOut['packages/sub2/package.json'].dependencies).toHaveProperty('express')
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    const { stdout } = await spawn('node', [bin, '--jsonAll', '--deep'], {}, { cwd: tempDir })
+    const deepJsonOut = JSON.parse(stdout)
+    expect(deepJsonOut).toHaveProperty('package.json')
+    expect(deepJsonOut).toHaveProperty('packages/sub1/package.json')
+    expect(deepJsonOut).toHaveProperty('packages/sub2/package.json')
+    expect(deepJsonOut['package.json'].dependencies).toHaveProperty('express')
+    expect(deepJsonOut['packages/sub1/package.json'].dependencies).toHaveProperty('express')
+    expect(deepJsonOut['packages/sub2/package.json'].dependencies).toHaveProperty('express')
   })
 
   it('ignore stdin if --packageFile glob is specified', async () => {
     const tempDir = await setupDeepTest()
-    try {
-      await spawn(
-        'node',
-        [bin, '-u', '--packageFile', path.join(tempDir, '/**/package.json')],
-        { stdin: '{ "dependencies": {}}' },
-        {
-          cwd: tempDir,
-        },
-      )
-      const upgradedPkg = JSON.parse(await fs.readFile(path.join(tempDir, 'package.json'), 'utf-8'))
-      expect(upgradedPkg).toHaveProperty('dependencies')
-      expect(upgradedPkg.dependencies).toHaveProperty('express')
-      expect(upgradedPkg.dependencies.express).not.toBe('1')
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    await spawn(
+      'node',
+      [bin, '-u', '--packageFile', path.join(tempDir, '/**/package.json')],
+      { stdin: '{ "dependencies": {}}' },
+      {
+        cwd: tempDir,
+      },
+    )
+    const upgradedPkg = JSON.parse(await fs.readFile(path.join(tempDir, 'package.json'), 'utf-8'))
+    expect(upgradedPkg).toHaveProperty('dependencies')
+    expect(upgradedPkg.dependencies).toHaveProperty('express')
+    expect(upgradedPkg.dependencies.express).not.toBe('1')
   })
 
   it('update multiple packages', async () => {
     const tempDir = await setupDeepTest()
-    try {
-      const { stdout } = await spawn(
-        'node',
-        [bin, '-u', '--jsonUpgraded', '--packageFile', path.join(tempDir, '**/package.json')],
-        { stdin: '{ "dependencies": {}}' },
-        { cwd: tempDir },
-      )
+    onTestFinished(() => removeDir(tempDir))
+    const { stdout } = await spawn(
+      'node',
+      [bin, '-u', '--jsonUpgraded', '--packageFile', path.join(tempDir, '**/package.json')],
+      { stdin: '{ "dependencies": {}}' },
+      { cwd: tempDir },
+    )
 
-      const upgradedPkg1 = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/sub1/package.json'), 'utf-8'))
-      expect(upgradedPkg1).toHaveProperty('dependencies')
-      expect(upgradedPkg1.dependencies).toHaveProperty('express')
-      expect(upgradedPkg1.dependencies.express).not.toBe('1')
+    const upgradedPkg1 = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/sub1/package.json'), 'utf-8'))
+    expect(upgradedPkg1).toHaveProperty('dependencies')
+    expect(upgradedPkg1.dependencies).toHaveProperty('express')
+    expect(upgradedPkg1.dependencies.express).not.toBe('1')
 
-      const upgradedPkg2 = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/sub2/package.json'), 'utf-8'))
-      expect(upgradedPkg2).toHaveProperty('dependencies')
-      expect(upgradedPkg2.dependencies).toHaveProperty('express')
-      expect(upgradedPkg2.dependencies.express).not.toBe('1')
+    const upgradedPkg2 = JSON.parse(await fs.readFile(path.join(tempDir, 'packages/sub2/package.json'), 'utf-8'))
+    expect(upgradedPkg2).toHaveProperty('dependencies')
+    expect(upgradedPkg2.dependencies).toHaveProperty('express')
+    expect(upgradedPkg2.dependencies.express).not.toBe('1')
 
-      const json = JSON.parse(stdout)
-      // Make sure to fix windows paths with replace
-      expect(json).toHaveProperty(path.join(tempDir, 'packages/sub1/package.json').replace(/\\/g, '/'))
-      expect(json).toHaveProperty(path.join(tempDir, 'packages/sub2/package.json').replace(/\\/g, '/'))
-      expect(json).toHaveProperty(path.join(tempDir, 'package.json').replace(/\\/g, '/'))
-    } finally {
-      await removeDir(tempDir)
-    }
+    const json = JSON.parse(stdout)
+    // Make sure to fix windows paths with replace
+    expect(json).toHaveProperty(path.join(tempDir, 'packages/sub1/package.json').replace(/\\/g, '/'))
+    expect(json).toHaveProperty(path.join(tempDir, 'packages/sub2/package.json').replace(/\\/g, '/'))
+    expect(json).toHaveProperty(path.join(tempDir, 'package.json').replace(/\\/g, '/'))
   })
 
   it('--deep --errorLevel 2 should exit with code 0 when there are no upgrades', async () => {
@@ -150,37 +141,31 @@ describe('--deep', () => {
     // write root package file
     await fs.writeFile(path.join(tempDir, 'package.json'), pkgData, 'utf-8')
 
-    try {
-      await spawn(
-        'node',
-        [bin, '--deep', '--errorLevel', '2'],
-        {},
-        {
-          cwd: tempDir,
-        },
-      )
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    await spawn(
+      'node',
+      [bin, '--deep', '--errorLevel', '2'],
+      {},
+      {
+        cwd: tempDir,
+      },
+    )
   })
 
   it('formats package status output without extra blank lines in deep mode', async () => {
     const tempDir = await setupDeepStatusTest()
 
-    try {
-      const { stdout } = await spawn('node', [bin, '-u', '--deep'], {}, { cwd: tempDir })
-      const output = stripAnsi(stdout)
+    onTestFinished(() => removeDir(tempDir))
+    const { stdout } = await spawn('node', [bin, '-u', '--deep'], {}, { cwd: tempDir })
+    const output = stripAnsi(stdout)
 
-      // Use path-agnostic regexes since the absolute temp path printed by the CLI may differ from
-      // os.tmpdir() (e.g. /var vs /private/var on macOS, or short 8.3 paths on Windows).
-      expect(output).toMatch(/Upgrading .*package\.json\nAll dependencies match the latest package versions :\)/)
-      expect(output).toMatch(
-        /All dependencies match the latest package versions :\)\n\nUpgrading .*no-deps.*package\.json\nNo dependencies\./,
-      )
-      expect(output).not.toMatch(/Upgrading .*package\.json\n\nAll dependencies match the latest package versions :\)/)
-    } finally {
-      await removeDir(tempDir)
-    }
+    // Use path-agnostic regexes since the absolute temp path printed by the CLI may differ from
+    // os.tmpdir() (e.g. /var vs /private/var on macOS, or short 8.3 paths on Windows).
+    expect(output).toMatch(/Upgrading .*package\.json\nAll dependencies match the latest package versions :\)/)
+    expect(output).toMatch(
+      /All dependencies match the latest package versions :\)\n\nUpgrading .*no-deps.*package\.json\nNo dependencies\./,
+    )
+    expect(output).not.toMatch(/Upgrading .*package\.json\n\nAll dependencies match the latest package versions :\)/)
   })
 })
 
@@ -288,41 +273,32 @@ describe('--deep cli option precedence', () => {
   // See: https://github.com/raineorshine/npm-check-updates/issues/1355
   it('cli option overrides .ncurc in deep mode', async () => {
     const tempDir = await setup('module.exports = { target: "minor" }')
-    try {
-      const { stdout } = await spawn(
-        'node',
-        [bin, '--jsonUpgraded', '--deep', '--target', 'latest'],
-        {},
-        { cwd: tempDir },
-      )
-      const json = JSON.parse(stdout)
-      expect(json['package.json']['ncu-test-v2']).toBe('^2.0.0')
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    const { stdout } = await spawn(
+      'node',
+      [bin, '--jsonUpgraded', '--deep', '--target', 'latest'],
+      {},
+      { cwd: tempDir },
+    )
+    const json = JSON.parse(stdout)
+    expect(json['package.json']['ncu-test-v2']).toBe('^2.0.0')
   })
 
   // combined short options (e.g. -jt latest == -j -t latest) must still be tracked as cli options
   it('combined short cli option overrides .ncurc in deep mode', async () => {
     const tempDir = await setup('module.exports = { target: "minor" }')
-    try {
-      const { stdout } = await spawn('node', [bin, '--deep', '-jt', 'latest'], {}, { cwd: tempDir })
-      const json = JSON.parse(stdout)
-      expect(json['package.json'].dependencies['ncu-test-v2']).toBe('^2.0.0')
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    const { stdout } = await spawn('node', [bin, '--deep', '-jt', 'latest'], {}, { cwd: tempDir })
+    const json = JSON.parse(stdout)
+    expect(json['package.json'].dependencies['ncu-test-v2']).toBe('^2.0.0')
   })
 
   it('.ncurc still applies in deep mode when no overriding cli option is given', async () => {
     const tempDir = await setup('module.exports = { target: "minor" }')
-    try {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--deep'], {}, { cwd: tempDir })
-      const json = JSON.parse(stdout)
-      expect(json['package.json']).not.toHaveProperty('ncu-test-v2')
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--deep'], {}, { cwd: tempDir })
+    const json = JSON.parse(stdout)
+    expect(json['package.json']).not.toHaveProperty('ncu-test-v2')
   })
 })
 

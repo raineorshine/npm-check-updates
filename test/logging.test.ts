@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { chalkInit } from '../src/lib/chalk.ts'
 import {
   printIgnoredUpdatesDueToEnginesNode,
@@ -84,35 +84,32 @@ describe('toDependencyTable', () => {
     const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     const depDir = path.join(tempDir, 'node_modules', 'ncu-test-escape')
-    try {
-      await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { 'ncu-test-escape': '^1.0.0' } }), 'utf-8')
-      await fs.mkdir(depDir, { recursive: true })
-      await fs.writeFile(
-        path.join(depDir, 'package.json'),
-        JSON.stringify({
-          name: 'ncu-test-escape',
-          version: '1.0.0',
-          homepage: 'https://example.com/home' + OSC_TITLE,
-          // a bare CR is not an escape sequence, but it can overwrite the rendered line
-          repository: 'https://github.com/foo/bar' + CR + 'https://evil.example.com',
-        }),
-        'utf-8',
-      )
+    onTestFinished(() => removeDir(tempDir))
+    await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { 'ncu-test-escape': '^1.0.0' } }), 'utf-8')
+    await fs.mkdir(depDir, { recursive: true })
+    await fs.writeFile(
+      path.join(depDir, 'package.json'),
+      JSON.stringify({
+        name: 'ncu-test-escape',
+        version: '1.0.0',
+        homepage: 'https://example.com/home' + OSC_TITLE,
+        // a bare CR is not an escape sequence, but it can overwrite the rendered line
+        repository: 'https://github.com/foo/bar' + CR + 'https://evil.example.com',
+      }),
+      'utf-8',
+    )
 
-      const table = await toDependencyTable({
-        from: { 'ncu-test-escape': '1.0.0' },
-        to: { 'ncu-test-escape': '2.0.0' },
-        format: ['homepage', 'repo'],
-        pkgFile,
-      })
+    const table = await toDependencyTable({
+      from: { 'ncu-test-escape': '1.0.0' },
+      to: { 'ncu-test-escape': '2.0.0' },
+      format: ['homepage', 'repo'],
+      pkgFile,
+    })
 
-      expect(table).toContain('https://example.com/home')
-      expect(table).toContain('https://github.com/foo/bar')
-      expect(table).not.toContain('pwned')
-      expect(table).not.toContain(CR)
-    } finally {
-      await removeDir(tempDir)
-    }
+    expect(table).toContain('https://example.com/home')
+    expect(table).toContain('https://github.com/foo/bar')
+    expect(table).not.toContain('pwned')
+    expect(table).not.toContain(CR)
   })
 })
 

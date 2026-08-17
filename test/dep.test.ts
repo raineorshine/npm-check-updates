@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished } from 'vitest'
 import ncu from '../src/index.ts'
 import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
@@ -73,33 +73,30 @@ describe('--dep', () => {
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
-      try {
-        await ncu({
-          packageFile: pkgFile,
-          jsonUpgraded: false,
-          upgrade: true,
-          dep: 'dev',
-        })
-        const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+      onTestFinished(() => stub.restore())
+      onTestFinished(() => removeDir(tempDir))
+      await ncu({
+        packageFile: pkgFile,
+        jsonUpgraded: false,
+        upgrade: true,
+        dep: 'dev',
+      })
+      const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
 
-        expect(pkgNew).toStrictEqual({
-          // unspecified dep sections are ignored
-          dependencies: {
-            'ncu-test-v2': '0.1.0',
-          },
-          // specified dep sections are upgraded
-          devDependencies: {
-            'ncu-test-tag': '99.9.9',
-          },
-          // unspecified dep sections are ignored, even if they have a package upgraded in another section
-          peerDependencies: {
-            'ncu-test-tag': '0.1.0',
-          },
-        })
-      } finally {
-        await removeDir(tempDir)
-        stub.restore()
-      }
+      expect(pkgNew).toStrictEqual({
+        // unspecified dep sections are ignored
+        dependencies: {
+          'ncu-test-v2': '0.1.0',
+        },
+        // specified dep sections are upgraded
+        devDependencies: {
+          'ncu-test-tag': '99.9.9',
+        },
+        // unspecified dep sections are ignored, even if they have a package upgraded in another section
+        peerDependencies: {
+          'ncu-test-tag': '0.1.0',
+        },
+      })
     })
 
     it('do not overwrite the same package in devDependencies when upgrading peerDependencies', async () => {
@@ -120,33 +117,30 @@ describe('--dep', () => {
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
-      try {
-        await ncu({
-          packageFile: pkgFile,
-          jsonUpgraded: false,
-          upgrade: true,
-          dep: 'peer',
-        })
-        const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+      onTestFinished(() => stub.restore())
+      onTestFinished(() => removeDir(tempDir))
+      await ncu({
+        packageFile: pkgFile,
+        jsonUpgraded: false,
+        upgrade: true,
+        dep: 'peer',
+      })
+      const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
 
-        expect(pkgNew).toStrictEqual({
-          // unspecified dep sections are ignored
-          dependencies: {
-            'ncu-test-v2': '0.1.0',
-          },
-          // unspecified dep sections are ignored, even if they have a package upgraded in another section
-          devDependencies: {
-            'ncu-test-tag': '0.1.0',
-          },
-          // specified dep sections are upgraded
-          peerDependencies: {
-            'ncu-test-tag': '99.9.9',
-          },
-        })
-      } finally {
-        await removeDir(tempDir)
-        stub.restore()
-      }
+      expect(pkgNew).toStrictEqual({
+        // unspecified dep sections are ignored
+        dependencies: {
+          'ncu-test-v2': '0.1.0',
+        },
+        // unspecified dep sections are ignored, even if they have a package upgraded in another section
+        devDependencies: {
+          'ncu-test-tag': '0.1.0',
+        },
+        // specified dep sections are upgraded
+        peerDependencies: {
+          'ncu-test-tag': '99.9.9',
+        },
+      })
     })
 
     it('do not overwrite the same package in devDependencies when upgrading dependencies and peerDependencies', async () => {
@@ -167,33 +161,30 @@ describe('--dep', () => {
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
-      try {
-        await ncu({
-          packageFile: pkgFile,
-          jsonUpgraded: false,
-          upgrade: true,
-          dep: 'prod,peer',
-        })
-        const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+      onTestFinished(() => stub.restore())
+      onTestFinished(() => removeDir(tempDir))
+      await ncu({
+        packageFile: pkgFile,
+        jsonUpgraded: false,
+        upgrade: true,
+        dep: 'prod,peer',
+      })
+      const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
 
-        expect(pkgNew).toStrictEqual({
-          // specified dep sections are upgraded
-          dependencies: {
-            'ncu-test-tag': '99.9.9',
-          },
-          // unspecified dep sections are ignored, even if they have a package upgraded in another section
-          devDependencies: {
-            'ncu-test-tag': '0.1.0',
-          },
-          // specified dep sections are upgraded
-          peerDependencies: {
-            'ncu-test-tag': '99.9.9',
-          },
-        })
-      } finally {
-        await removeDir(tempDir)
-        stub.restore()
-      }
+      expect(pkgNew).toStrictEqual({
+        // specified dep sections are upgraded
+        dependencies: {
+          'ncu-test-tag': '99.9.9',
+        },
+        // unspecified dep sections are ignored, even if they have a package upgraded in another section
+        devDependencies: {
+          'ncu-test-tag': '0.1.0',
+        },
+        // specified dep sections are upgraded
+        peerDependencies: {
+          'ncu-test-tag': '99.9.9',
+        },
+      })
     })
   })
 
@@ -214,22 +205,19 @@ describe('--dep', () => {
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
-      try {
-        await ncu({ packageFile: pkgFile, jsonUpgraded: false, upgrade: true, dep: 'prod,peer' })
-        const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+      onTestFinished(() => stub.restore())
+      onTestFinished(() => removeDir(tempDir))
+      await ncu({ packageFile: pkgFile, jsonUpgraded: false, upgrade: true, dep: 'prod,peer' })
+      const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
 
-        expect(pkgNew).toStrictEqual({
-          dependencies: {
-            'ncu-test-v2': '^99.9.9',
-          },
-          peerDependencies: {
-            'ncu-test-v2': '^99.9.9',
-          },
-        })
-      } finally {
-        await removeDir(tempDir)
-        stub.restore()
-      }
+      expect(pkgNew).toStrictEqual({
+        dependencies: {
+          'ncu-test-v2': '^99.9.9',
+        },
+        peerDependencies: {
+          'ncu-test-v2': '^99.9.9',
+        },
+      })
     })
 
     it('preserve each section declaration style when upgrading', async () => {
@@ -247,22 +235,19 @@ describe('--dep', () => {
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
-      try {
-        await ncu({ packageFile: pkgFile, jsonUpgraded: false, upgrade: true })
-        const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+      onTestFinished(() => stub.restore())
+      onTestFinished(() => removeDir(tempDir))
+      await ncu({ packageFile: pkgFile, jsonUpgraded: false, upgrade: true })
+      const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
 
-        expect(pkgNew).toStrictEqual({
-          dependencies: {
-            'ncu-test-v2': '~99.9.9',
-          },
-          devDependencies: {
-            'ncu-test-v2': '^99.9.9',
-          },
-        })
-      } finally {
-        await removeDir(tempDir)
-        stub.restore()
-      }
+      expect(pkgNew).toStrictEqual({
+        dependencies: {
+          'ncu-test-v2': '~99.9.9',
+        },
+        devDependencies: {
+          'ncu-test-v2': '^99.9.9',
+        },
+      })
     })
   })
 
@@ -287,25 +272,22 @@ describe('--dep', () => {
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
-      try {
-        await ncu({
-          packageFile: pkgFile,
-          jsonUpgraded: false,
-          upgrade: true,
-        })
-        const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
-        const pkgNew = JSON.parse(pkgDataNew)
+      onTestFinished(() => stub.restore())
+      onTestFinished(() => removeDir(tempDir))
+      await ncu({
+        packageFile: pkgFile,
+        jsonUpgraded: false,
+        upgrade: true,
+      })
+      const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+      const pkgNew = JSON.parse(pkgDataNew)
 
-        expect(pkgNew).toStrictEqual({
-          packageManager: 'npm@9.0.0',
-          dependencies: {
-            'ncu-test-tag': '1.0.0',
-          },
-        })
-      } finally {
-        await removeDir(tempDir)
-        stub.restore()
-      }
+      expect(pkgNew).toStrictEqual({
+        packageManager: 'npm@9.0.0',
+        dependencies: {
+          'ncu-test-tag': '1.0.0',
+        },
+      })
     })
 
     it('do not upgrade packageManager field if missing from --dep', async () => {
@@ -328,26 +310,23 @@ describe('--dep', () => {
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
-      try {
-        await ncu({
-          packageFile: pkgFile,
-          jsonUpgraded: false,
-          upgrade: true,
-          dep: ['prod'],
-        })
-        const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
-        const pkgNew = JSON.parse(pkgDataNew)
+      onTestFinished(() => stub.restore())
+      onTestFinished(() => removeDir(tempDir))
+      await ncu({
+        packageFile: pkgFile,
+        jsonUpgraded: false,
+        upgrade: true,
+        dep: ['prod'],
+      })
+      const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+      const pkgNew = JSON.parse(pkgDataNew)
 
-        expect(pkgNew).toStrictEqual({
-          packageManager: 'npm@6.0.0',
-          dependencies: {
-            'ncu-test-tag': '1.0.0',
-          },
-        })
-      } finally {
-        await removeDir(tempDir)
-        stub.restore()
-      }
+      expect(pkgNew).toStrictEqual({
+        packageManager: 'npm@6.0.0',
+        dependencies: {
+          'ncu-test-tag': '1.0.0',
+        },
+      })
     })
 
     it('do nothing if no packageManager field is present', async () => {
@@ -369,24 +348,21 @@ describe('--dep', () => {
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
-      try {
-        await ncu({
-          packageFile: pkgFile,
-          jsonUpgraded: false,
-          upgrade: true,
-        })
-        const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
-        const pkgNew = JSON.parse(pkgDataNew)
+      onTestFinished(() => stub.restore())
+      onTestFinished(() => removeDir(tempDir))
+      await ncu({
+        packageFile: pkgFile,
+        jsonUpgraded: false,
+        upgrade: true,
+      })
+      const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+      const pkgNew = JSON.parse(pkgDataNew)
 
-        expect(pkgNew).toStrictEqual({
-          dependencies: {
-            'ncu-test-tag': '1.0.0',
-          },
-        })
-      } finally {
-        await removeDir(tempDir)
-        stub.restore()
-      }
+      expect(pkgNew).toStrictEqual({
+        dependencies: {
+          'ncu-test-tag': '1.0.0',
+        },
+      })
     })
 
     it('upgrade packageManager field if specified in --dep', async () => {
@@ -409,26 +385,23 @@ describe('--dep', () => {
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
-      try {
-        await ncu({
-          packageFile: pkgFile,
-          jsonUpgraded: false,
-          upgrade: true,
-          dep: ['prod', 'packageManager'],
-        })
-        const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
-        const pkgNew = JSON.parse(pkgDataNew)
+      onTestFinished(() => stub.restore())
+      onTestFinished(() => removeDir(tempDir))
+      await ncu({
+        packageFile: pkgFile,
+        jsonUpgraded: false,
+        upgrade: true,
+        dep: ['prod', 'packageManager'],
+      })
+      const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+      const pkgNew = JSON.parse(pkgDataNew)
 
-        expect(pkgNew).toStrictEqual({
-          packageManager: 'npm@9.0.0',
-          dependencies: {
-            'ncu-test-tag': '1.0.0',
-          },
-        })
-      } finally {
-        await removeDir(tempDir)
-        stub.restore()
-      }
+      expect(pkgNew).toStrictEqual({
+        packageManager: 'npm@9.0.0',
+        dependencies: {
+          'ncu-test-tag': '1.0.0',
+        },
+      })
     })
 
     it('do nothing if packageManager is up-to-date', async () => {
@@ -451,25 +424,22 @@ describe('--dep', () => {
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
-      try {
-        await ncu({
-          packageFile: pkgFile,
-          jsonUpgraded: false,
-          upgrade: true,
-        })
-        const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
-        const pkgNew = JSON.parse(pkgDataNew)
+      onTestFinished(() => stub.restore())
+      onTestFinished(() => removeDir(tempDir))
+      await ncu({
+        packageFile: pkgFile,
+        jsonUpgraded: false,
+        upgrade: true,
+      })
+      const pkgDataNew = await fs.readFile(pkgFile, 'utf-8')
+      const pkgNew = JSON.parse(pkgDataNew)
 
-        expect(pkgNew).toStrictEqual({
-          packageManager: 'npm@9.0.0',
-          dependencies: {
-            'ncu-test-tag': '1.0.0',
-          },
-        })
-      } finally {
-        await removeDir(tempDir)
-        stub.restore()
-      }
+      expect(pkgNew).toStrictEqual({
+        packageManager: 'npm@9.0.0',
+        dependencies: {
+          'ncu-test-tag': '1.0.0',
+        },
+      })
     })
   })
 })

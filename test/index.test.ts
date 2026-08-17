@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished } from 'vitest'
 import ncu from '../src/index.ts'
 import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
@@ -58,21 +58,18 @@ describe('run', () => {
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
 
-    try {
-      const result = await ncu({
-        packageFile: pkgFile,
-        jsonUpgraded: true,
-        upgrade: true,
-      })
-      expect(result).toHaveProperty('express')
+    onTestFinished(() => stub.restore())
+    onTestFinished(() => removeDir(tempDir))
+    const result = await ncu({
+      packageFile: pkgFile,
+      jsonUpgraded: true,
+      upgrade: true,
+    })
+    expect(result).toHaveProperty('express')
 
-      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-      expect(upgradedPkg).toHaveProperty('dependencies')
-      expect(upgradedPkg.dependencies).toHaveProperty('express')
-    } finally {
-      await removeDir(tempDir)
-      stub.restore()
-    }
+    const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+    expect(upgradedPkg).toHaveProperty('dependencies')
+    expect(upgradedPkg.dependencies).toHaveProperty('express')
   })
 
   it('exclude -alpha, -beta, -rc', async () => {
@@ -256,15 +253,12 @@ describe('run', () => {
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1.0.0" } }', 'utf-8')
     await fs.mkdir(subDir)
 
-    try {
-      // When running from a subdirectory without a package.json, ncu should use find-up to locate
-      // the parent's package.json and upgrade it without throwing:
-      // TypeError [ERR_INVALID_ARG_TYPE]: The "paths[0]" argument must be of type string. Received undefined
-      const result = await ncu({ cwd: subDir, upgrade: true })
-      expect(result).toHaveProperty('express')
-    } finally {
-      await removeDir(tempDir)
-      stub.restore()
-    }
+    onTestFinished(() => stub.restore())
+    onTestFinished(() => removeDir(tempDir))
+    // When running from a subdirectory without a package.json, ncu should use find-up to locate
+    // the parent's package.json and upgrade it without throwing:
+    // TypeError [ERR_INVALID_ARG_TYPE]: The "paths[0]" argument must be of type string. Received undefined
+    const result = await ncu({ cwd: subDir, upgrade: true })
+    expect(result).toHaveProperty('express')
   })
 })

@@ -3,7 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished } from 'vitest'
 import { type GroupFunction } from '../src/types/GroupFunction.ts'
 import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
@@ -41,20 +41,17 @@ async function groupTestScaffold(
   )
   const configFile = path.join(tempDir, '.ncurc.js')
   await fs.writeFile(configFile, `module.exports = { groupFunction: ${groupFn.toString()} }`, 'utf-8')
-  try {
-    const { stdout } = await spawn(
-      'node',
-      [bin, '--format', 'group', '--configFilePath', tempDir],
-      {},
-      {
-        cwd: tempDir,
-      },
-    )
-    expect(stripAnsi(stdout).toLowerCase()).toContain(expectedOutput.toLowerCase())
-  } finally {
-    await removeDir(tempDir)
-    stub.restore()
-  }
+  onTestFinished(() => stub.restore())
+  onTestFinished(() => removeDir(tempDir))
+  const { stdout } = await spawn(
+    'node',
+    [bin, '--format', 'group', '--configFilePath', tempDir],
+    {},
+    {
+      cwd: tempDir,
+    },
+  )
+  expect(stripAnsi(stdout).toLowerCase()).toContain(expectedOutput.toLowerCase())
 }
 
 describe('--format group', () => {
