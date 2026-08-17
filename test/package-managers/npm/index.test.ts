@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import * as npm from '../../../src/package-managers/npm.ts'
+import makeTempDir from '../../helpers/makeTempDir.ts'
 import removeDir from '../../helpers/removeDir.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -123,7 +123,7 @@ describe('npm', () => {
   // getEngines must respect a scoped registry from the project .npmrc, not default to npmjs
   // https://github.com/raineorshine/npm-check-updates/issues/1506
   it('getEngines uses a scoped registry configured in the project .npmrc', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     await fs.writeFile(
       path.join(tempDir, '.npmrc'),
       '@enginestest:registry=https://registry.npmjs.org/ncu-1506-probe/\n',
@@ -141,7 +141,7 @@ describe('npm', () => {
 
   // a project .npmrc that cannot be read (e.g. it is a directory) should surface the error, not be silently ignored
   it('propagates a non-ENOENT error when reading the project .npmrc', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     // create a directory named .npmrc so reading it fails with EISDIR rather than ENOENT
     await fs.mkdir(path.join(tempDir, '.npmrc'))
 

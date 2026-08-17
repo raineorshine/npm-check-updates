@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -30,7 +30,7 @@ describe('--interactive', () => {
   })
 
   it('prompt for each upgraded dependency', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
@@ -72,7 +72,7 @@ describe('--interactive', () => {
   })
 
   it('with --format group', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
@@ -111,7 +111,7 @@ describe('--interactive', () => {
   })
 
   it('with --format no-group', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
@@ -150,7 +150,7 @@ describe('--interactive', () => {
   })
 
   it('with --format group and custom group function', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
@@ -195,7 +195,7 @@ describe('--interactive', () => {
   })
 
   it('with --format repo', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,

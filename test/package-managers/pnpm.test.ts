@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { pnpmApi } from '../../src/package-managers/pnpm.ts'
+import makeTempDir from '../helpers/makeTempDir.ts'
 import removeDir from '../helpers/removeDir.ts'
 
 describe('pnpm', () => {
@@ -69,7 +69,7 @@ describe('pnpm', () => {
     beforeEach(async () => {
       originalCwd = process.cwd()
       originalXdgConfigHome = process.env.XDG_CONFIG_HOME
-      tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-pnpm-'))
+      tempDir = await makeTempDir('ncu-test-pnpm-')
       // isolate the global config layers from the machine running the tests
       process.env.XDG_CONFIG_HOME = path.join(tempDir, 'xdg')
     })

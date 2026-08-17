@@ -1,5 +1,4 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import { describe, expect, it, vi } from 'vitest'
@@ -10,6 +9,7 @@ import {
   printUpgrades,
   toDependencyTable,
 } from '../src/lib/logging.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 
 const ESC = String.fromCharCode(0x1b)
@@ -81,7 +81,7 @@ describe('toDependencyTable', () => {
 
   // https://github.com/raineorshine/npm-check-updates/issues/1988
   it('strips terminal escape sequences from homepage and repo', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     const depDir = path.join(tempDir, 'node_modules', 'ncu-test-escape')
     try {

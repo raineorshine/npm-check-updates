@@ -1,5 +1,4 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { stripVTControlCharacters } from 'node:util'
 import { type MockInstance, afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -9,6 +8,7 @@ import { pnpmApi } from '../src/package-managers/pnpm.ts'
 import { yarnApi } from '../src/package-managers/yarn.ts'
 import { type PackageFile } from '../src/types/PackageFile.ts'
 import createMockVersion from './helpers/createMockVersion.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import { silenceProgressBar } from './helpers/silenceProgressBar.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -1620,9 +1620,9 @@ describe('cooldown', () => {
       originalCwd = process.cwd()
       originalXdg = process.env.XDG_CONFIG_HOME
       // A project directory without a pnpm-workspace.yaml so the workspace layer is absent.
-      projectDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-pnpm-project-'))
+      projectDir = await makeTempDir('ncu-pnpm-project-')
       // An isolated XDG_CONFIG_HOME so pnpm's global config resolves to a temp directory.
-      xdgDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-pnpm-xdg-'))
+      xdgDir = await makeTempDir('ncu-pnpm-xdg-')
       await fs.mkdir(path.join(xdgDir, 'pnpm'), { recursive: true })
       process.env.XDG_CONFIG_HOME = xdgDir
       process.chdir(projectDir)

@@ -1,8 +1,7 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
-import path from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { buildChangelog, formatChangelog } from '../scripts/build-changelog.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 
 const ORIGINAL_CWD = process.cwd()
 const ORIGINAL_ENV = { ...process.env }
@@ -13,7 +12,7 @@ const PREFIX = `# Changelog\n\n${INTRO}\n\n`
 
 /** Switches to an empty working directory that the generated CHANGELOG.md is written to. */
 const chdirTemp = async (): Promise<void> => {
-  process.chdir(await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-build-changelog-')))
+  process.chdir(await makeTempDir('ncu-build-changelog-'))
 }
 
 /** Stubs the GitHub API with a single page of releases. */
