@@ -22,6 +22,9 @@ verdaccio_config="${temp_dir}/verdaccio-config.yaml"
 export NPM_CONFIG_USERCONFIG="${temp_dir}/npmrc"
 export NPM_CONFIG_CACHE="${temp_dir}/npm-cache"
 
+# min-release-age from the repo .npmrc would hide the version just published to the local registry
+export NPM_CONFIG_MIN_RELEASE_AGE=0
+
 verdaccio_pid=""
 
 cleanup() {
