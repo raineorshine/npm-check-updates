@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -54,7 +54,7 @@ describe('run', () => {
 
   it('write to --packageFile and output jsonUpgraded', async () => {
     const stub = stubVersions('99.9.9')
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1" } }', 'utf-8')
 
@@ -250,7 +250,7 @@ describe('run', () => {
 
   it('does not throw when run from a subdirectory without a package.json (find-up behavior)', async () => {
     const stub = stubVersions('99.9.9')
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     const subDir = path.join(tempDir, 'subdir')
     await fs.writeFile(pkgFile, '{ "dependencies": { "express": "1.0.0" } }', 'utf-8')

@@ -1,11 +1,11 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
 import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
 import formatTimeAgo from '../src/lib/formatTimeAgo.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -24,7 +24,7 @@ describe('format', () => {
       },
       { spawn: true },
     )
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
@@ -64,7 +64,7 @@ describe('format', () => {
 
   describe('diff', () => {
     it('basic', async () => {
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(
         pkgFile,
@@ -85,7 +85,7 @@ describe('format', () => {
 
     // https://github.com/raineorshine/npm-check-updates/pull/1603/changes/BASE..4ab36b01b5f90e8d2563361a3b18ed2b3f9d2280#r2865386584
     it('encodeURIComponent', async () => {
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(
         pkgFile,
@@ -120,7 +120,7 @@ describe('format', () => {
   })
 
   it('--format repo', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
@@ -141,7 +141,7 @@ describe('format', () => {
   })
 
   it('--format homepage', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
@@ -169,7 +169,7 @@ describe('format', () => {
       },
       { spawn: true },
     )
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
@@ -198,7 +198,7 @@ describe('format', () => {
       },
       { spawn: true },
     )
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
@@ -235,7 +235,7 @@ describe('format', () => {
       },
       { spawn: true },
     )
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
@@ -272,7 +272,7 @@ describe('format', () => {
       },
       { spawn: true },
     )
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,
