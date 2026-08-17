@@ -3,7 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
-import { expect, it } from 'vitest'
+import { expect, it, onTestFinished } from 'vitest'
 import { escapeRegExp } from '../../src/lib/escapeRegExp.ts'
 import { type PackageManagerName } from '../../src/types/PackageManagerName.ts'
 import makeTempDir from '../helpers/makeTempDir.ts'
@@ -65,35 +65,31 @@ export const testPass = ({ packageManager }: { packageManager: PackageManagerNam
     const lockfilePath = path.join(cwd, lockfileName(packageManager))
     let stdout = ''
     let stderr = ''
-    let pkgUpgraded
+
+    onTestFinished(() => removeDir(cwd))
+    // touch yarn.lock
+    // yarn.lock is necessary otherwise yarn sees the package.json in the npm-check-updates directory and throws an error.
+    if (packageManager === 'yarn' || packageManager === 'bun') {
+      await fs.writeFile(lockfilePath, '')
+    }
 
     try {
-      // touch yarn.lock
-      // yarn.lock is necessary otherwise yarn sees the package.json in the npm-check-updates directory and throws an error.
-      if (packageManager === 'yarn' || packageManager === 'bun') {
-        await fs.writeFile(lockfilePath, '')
-      }
-
-      try {
-        // explicitly set packageManager to avoid auto yarn detection
-        await ncu(
-          ['--doctor', '-u', '-p', packageManager],
-          {
-            stdout: function (data: string) {
-              stdout += data
-            },
-            stderr: function (data: string) {
-              stderr += data
-            },
+      // explicitly set packageManager to avoid auto yarn detection
+      await ncu(
+        ['--doctor', '-u', '-p', packageManager],
+        {
+          stdout: function (data: string) {
+            stdout += data
           },
-          { cwd },
-        )
-      } catch (e) {}
+          stderr: function (data: string) {
+            stderr += data
+          },
+        },
+        { cwd },
+      )
+    } catch (e) {}
 
-      pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-    } finally {
-      await removeDir(cwd)
-    }
+    const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
     // bun prints the run header to stderr instead of stdout
     if (packageManager === 'bun') {
@@ -128,8 +124,11 @@ export const testFail = ({ packageManager }: { packageManager: PackageManagerNam
     const lockfilePath = path.join(cwd, lockfileName(packageManager))
     let stdout = ''
     let stderr = ''
+
+    // ncu is expected to throw here, so the package file is read in a finally rather than after
     let pkgUpgraded
 
+    onTestFinished(() => removeDir(cwd))
     try {
       // touch yarn.lock (see fail/README)
       if (packageManager === 'yarn') {
@@ -151,7 +150,6 @@ export const testFail = ({ packageManager }: { packageManager: PackageManagerNam
       )
     } finally {
       pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-      await removeDir(cwd)
     }
 
     const testVersion = createNcuRegExp('ncu-test-return-version ~1.0.0 →')

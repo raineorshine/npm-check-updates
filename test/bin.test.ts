@@ -4,7 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished } from 'vitest'
 import { type Index } from '../src/types/IndexType.ts'
 import { type Version } from '../src/types/Version.ts'
 import makeTempDir from './helpers/makeTempDir.ts'
@@ -139,14 +139,11 @@ describe('bin', () => {
     const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
-    try {
-      const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--packageFile', pkgFile])
-      const pkgData = JSON.parse(stdout)
-      expect(pkgData).toHaveProperty('express')
-    } finally {
-      await removeDir(tempDir)
-      stub.restore()
-    }
+    onTestFinished(() => stub.restore())
+    onTestFinished(() => removeDir(tempDir))
+    const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--packageFile', pkgFile])
+    const pkgData = JSON.parse(stdout)
+    expect(pkgData).toHaveProperty('express')
   })
 
   it('write to --packageFile', async () => {
@@ -154,16 +151,13 @@ describe('bin', () => {
     const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
-    try {
-      await spawn('node', [bin, '-u', '--packageFile', pkgFile])
-      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-      expect(upgradedPkg).toHaveProperty('dependencies')
-      expect(upgradedPkg.dependencies).toHaveProperty('express')
-      expect(upgradedPkg.dependencies.express).not.toBe('1')
-    } finally {
-      await removeDir(tempDir)
-      stub.restore()
-    }
+    onTestFinished(() => stub.restore())
+    onTestFinished(() => removeDir(tempDir))
+    await spawn('node', [bin, '-u', '--packageFile', pkgFile])
+    const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+    expect(upgradedPkg).toHaveProperty('dependencies')
+    expect(upgradedPkg.dependencies).toHaveProperty('express')
+    expect(upgradedPkg.dependencies.express).not.toBe('1')
   })
 
   it('write to --packageFile if errorLevel=2 and upgrades', async () => {
@@ -172,18 +166,15 @@ describe('bin', () => {
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
 
-    try {
-      await expect(spawn('node', [bin, '-u', '--errorLevel', '2', '--packageFile', pkgFile])).rejects.toThrow(
-        'Dependencies not up-to-date',
-      )
-      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-      expect(upgradedPkg).toHaveProperty('dependencies')
-      expect(upgradedPkg.dependencies).toHaveProperty('express')
-      expect(upgradedPkg.dependencies.express).not.toBe('1')
-    } finally {
-      await removeDir(tempDir)
-      stub.restore()
-    }
+    onTestFinished(() => stub.restore())
+    onTestFinished(() => removeDir(tempDir))
+    await expect(spawn('node', [bin, '-u', '--errorLevel', '2', '--packageFile', pkgFile])).rejects.toThrow(
+      'Dependencies not up-to-date',
+    )
+    const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+    expect(upgradedPkg).toHaveProperty('dependencies')
+    expect(upgradedPkg.dependencies).toHaveProperty('express')
+    expect(upgradedPkg.dependencies.express).not.toBe('1')
   })
 
   it('write to --packageFile with jsonUpgraded flag', async () => {
@@ -191,16 +182,13 @@ describe('bin', () => {
     const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
-    try {
-      await spawn('node', [bin, '-u', '--jsonUpgraded', '--packageFile', pkgFile])
-      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-      expect(upgradedPkg).toHaveProperty('dependencies')
-      expect(upgradedPkg.dependencies).toHaveProperty('express')
-      expect(upgradedPkg.dependencies.express).not.toBe('1')
-    } finally {
-      await removeDir(tempDir)
-      stub.restore()
-    }
+    onTestFinished(() => stub.restore())
+    onTestFinished(() => removeDir(tempDir))
+    await spawn('node', [bin, '-u', '--jsonUpgraded', '--packageFile', pkgFile])
+    const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+    expect(upgradedPkg).toHaveProperty('dependencies')
+    expect(upgradedPkg.dependencies).toHaveProperty('express')
+    expect(upgradedPkg.dependencies.express).not.toBe('1')
   })
 
   it('ignore stdin if --packageFile is specified', async () => {
@@ -208,18 +196,15 @@ describe('bin', () => {
     const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
-    try {
-      await spawn('node', [bin, '-u', '--stdin', '--packageFile', pkgFile], {
-        stdin: JSON.stringify({ dependencies: {} }),
-      })
-      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-      expect(upgradedPkg).toHaveProperty('dependencies')
-      expect(upgradedPkg.dependencies).toHaveProperty('express')
-      expect(upgradedPkg.dependencies.express).not.toBe('1')
-    } finally {
-      await removeDir(tempDir)
-      stub.restore()
-    }
+    onTestFinished(() => stub.restore())
+    onTestFinished(() => removeDir(tempDir))
+    await spawn('node', [bin, '-u', '--stdin', '--packageFile', pkgFile], {
+      stdin: JSON.stringify({ dependencies: {} }),
+    })
+    const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+    expect(upgradedPkg).toHaveProperty('dependencies')
+    expect(upgradedPkg.dependencies).toHaveProperty('express')
+    expect(upgradedPkg.dependencies.express).not.toBe('1')
   })
 
   it('suppress stdout when --silent is provided', async () => {
@@ -242,13 +227,10 @@ describe('bin', () => {
     const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
-    try {
-      const { stdout } = await spawn('node', [bin, '--packageFile', pkgFile, '--filter', 'ncu-test-v2 ncu-test-tag'])
-      expect(stdout).toContain('"ncu-test-v2 ncu-test-tag"')
-    } finally {
-      await removeDir(tempDir)
-      stub.restore()
-    }
+    onTestFinished(() => stub.restore())
+    onTestFinished(() => removeDir(tempDir))
+    const { stdout } = await spawn('node', [bin, '--packageFile', pkgFile, '--filter', 'ncu-test-v2 ncu-test-tag'])
+    expect(stdout).toContain('"ncu-test-v2 ncu-test-tag"')
   })
 
   it('ignore file: and link: protocols', async () => {
@@ -304,15 +286,12 @@ describe('bin', () => {
       JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' }, devDependencies: { 'ncu-test-v2': '1.0.1' } }),
       'utf-8',
     )
-    try {
-      await spawn('node', [bin, '-u', '--packageFile', pkgFile])
-      const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
-      expect(upgradedPkg.dependencies).toStrictEqual({ 'ncu-test-v2': '99.9.9' })
-      expect(upgradedPkg.devDependencies).toStrictEqual({ 'ncu-test-v2': '99.9.9' })
-    } finally {
-      await removeDir(tempDir)
-      stub.restore()
-    }
+    onTestFinished(() => stub.restore())
+    onTestFinished(() => removeDir(tempDir))
+    await spawn('node', [bin, '-u', '--packageFile', pkgFile])
+    const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+    expect(upgradedPkg.dependencies).toStrictEqual({ 'ncu-test-v2': '99.9.9' })
+    expect(upgradedPkg.devDependencies).toStrictEqual({ 'ncu-test-v2': '99.9.9' })
   })
 
   describe('embedded versions', () => {
