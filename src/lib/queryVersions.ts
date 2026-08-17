@@ -8,11 +8,11 @@ import { type Options } from '../types/Options.ts'
 import { supportedVersionTargets } from '../types/Target.ts'
 import { type VersionResult } from '../types/VersionResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
-import { getChalk } from './chalk.ts'
 import getPackageManager from './getPackageManager.ts'
 import isPackageManagerProtocol from './isPackageManagerProtocol.ts'
 import keyValueBy from './keyValueBy.ts'
 import programError from './programError.ts'
+import { getStyle } from './style.ts'
 import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-util.ts'
 
 /**
@@ -23,7 +23,7 @@ import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-uti
  * @returns Promised {packageName: version} collection
  */
 async function queryVersions(packageMap: Index<VersionSpec>, options: Options = {}): Promise<Index<VersionResult>> {
-  const chalk = getChalk(options.color)
+  const style = getStyle(options.color)
   const packageList = Object.keys(packageMap)
   const globalPackageManager = getPackageManager(options, options.packageManager)
 
@@ -81,7 +81,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       const packageManagerSupportedVersionTargets = supportedVersionTargets.filter(t => t in packageManager)
       programError(
         options,
-        chalk.red(`\nUnsupported target "${target}" using ${packageManagerName}`) +
+        style.red(`\nUnsupported target "${target}" using ${packageManagerName}`) +
           `\nSupported version targets are: ` +
           packageManagerSupportedVersionTargets.join(', ') +
           (!isGitHubDependency ? ', and tags (e.g. @next)' : ''),
@@ -120,7 +120,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
         if (!process.env.NCU_TESTS && /(Response|network) timeout/i.test(errorMessage)) {
           console.error(
             '\n\n' +
-              chalk.red(
+              style.red(
                 'FetchError: Request Timeout. npm-registry-fetch defaults to 30000 (30 seconds). Try setting the --timeout option (in milliseconds) to override this.',
               ) +
               '\n',

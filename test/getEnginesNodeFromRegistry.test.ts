@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { chalkInit } from '../src/lib/chalk.ts'
 import getEnginesNodeFromRegistry from '../src/lib/getEnginesNodeFromRegistry.ts'
+import { styleInit } from '../src/lib/style.ts'
 import { silenceProgressBar } from './helpers/silenceProgressBar.ts'
 
 describe('getEnginesNodeFromRegistry', () => {
   it('single package', async () => {
-    chalkInit()
+    styleInit()
     silenceProgressBar()
     const data = await getEnginesNodeFromRegistry({ del: '2.0.0' }, {})
     expect(data).toStrictEqual({
@@ -14,14 +14,14 @@ describe('getEnginesNodeFromRegistry', () => {
   })
 
   it('single package empty', async () => {
-    chalkInit()
+    styleInit()
     silenceProgressBar()
     const data = await getEnginesNodeFromRegistry({ 'ncu-test-return-version': '1.0.0' }, {})
     expect(data).toStrictEqual({ 'ncu-test-return-version': undefined })
   })
 
   it('multiple packages', async () => {
-    chalkInit()
+    styleInit()
     silenceProgressBar()
     const data = await getEnginesNodeFromRegistry(
       {

@@ -4,8 +4,8 @@ import { text } from 'node:stream/consumers'
 import { findUp } from 'find-up'
 import { print } from '../lib/logging.ts'
 import { type Options } from '../types/Options.ts'
-import chalk from './chalk.ts'
 import programError from './programError.ts'
+import style from './style.ts'
 
 /**
  * Finds the package file and data.
@@ -35,11 +35,11 @@ async function findPackage(options: Options): Promise<{
     } else {
       programError(
         options,
-        `${chalk.red(
+        `${style.red(
           `No ${pkgFileName}`,
-        )}\n\nPlease add a ${pkgFileName} to the current directory, specify the ${chalk.cyan(
+        )}\n\nPlease add a ${pkgFileName} to the current directory, specify the ${style.cyan(
           '--packageFile',
-        )} or ${chalk.cyan('--packageData')} options, or pipe a ${pkgFileName} to stdin and specify ${chalk.cyan(
+        )} or ${style.cyan('--packageData')} options, or pipe a ${pkgFileName} to stdin and specify ${style.cyan(
           '--stdin',
         )}.`,
         { color: false },

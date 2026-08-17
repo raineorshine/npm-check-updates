@@ -5,10 +5,10 @@ import updateNotifier from 'update-notifier'
 import pkg from '../../package.json' with { type: 'json' }
 import cliOptions, { cliOptionsMap, renderExtendedHelp } from '../cli-options.ts'
 import ncu from '../index.ts'
-import { chalkInit, getChalk } from '../lib/chalk.ts'
 // async global contexts are only available in esm modules -> function
 import getNcuRc from '../lib/getNcuRc.ts'
 import { pickBy } from '../lib/pick.ts'
+import { getStyle, styleInit } from '../lib/style.ts'
 import uncode from '../lib/uncode.ts'
 import { type RunOptions } from '../types/RunOptions.ts'
 
@@ -29,7 +29,7 @@ const optionVersionDescription = 'Output the version number of npm-check-updates
 
   const notifier = updateNotifier({ pkg })
   if (notifier.update && notifier.update.latest !== pkg.version) {
-    const chalk = getChalk(true)
+    const style = getStyle(true)
 
     // generate release urls for all the major versions from the current version up to the latest
     const currentMajor = semver.parse(notifier.update.current)?.major
@@ -49,16 +49,16 @@ const optionVersionDescription = 'Output the version number of npm-check-updates
     notifier.notify({
       defer: false,
       isGlobal: true,
-      message: `Update available ${chalk.dim('{currentVersion}')}${chalk.reset(' → ')}${
+      message: `Update available ${style.dim('{currentVersion}')}${style.reset(' → ')}${
         notifier.update.type === 'major'
-          ? chalk.red('{latestVersion}')
+          ? style.red('{latestVersion}')
           : notifier.update.type === 'minor'
-            ? chalk.yellow('{latestVersion}')
-            : chalk.green('{latestVersion}')
+            ? style.yellow('{latestVersion}')
+            : style.green('{latestVersion}')
       }
-Run ${chalk.cyan('{updateCommand}')} to update
-${chalk.dim.underline(
-  notifier.update.type === 'major' ? releaseUrls.map(url => chalk.dim.underline(url)).join('\n') : compareUrl,
+Run ${style.cyan('{updateCommand}')} to update
+${style.dim.underline(
+  notifier.update.type === 'major' ? releaseUrls.map(url => style.dim.underline(url)).join('\n') : compareUrl,
 )}`,
     })
   }
@@ -72,7 +72,7 @@ ${chalk.dim.underline(
     if (helpOption === 'help' || helpOption === 'h') {
       console.info('Would you like some help with your help?')
     } else {
-      chalkInit()
+      styleInit()
       const nonHelpArgs = [...rawArgs.slice(0, indexHelp), ...rawArgs.slice(indexHelp + 1)]
       for (const arg of nonHelpArgs) {
         // match option by long or short
@@ -165,9 +165,9 @@ ${chalk.dim.underline(
 
   const { color, configFileName, configFilePath, global, packageFile, mergeConfig } = programOpts
 
-  // Force color on all chalk instances.
-  // See: /src/lib/chalk.ts
-  chalkInit(color)
+  // Force color on all style instances.
+  // See: /src/lib/style.ts
+  styleInit(color)
 
   // load .ncurc
   // Do not load when tests are running (can be overridden if configFilePath is set explicitly, or --mergeConfig option specified)
