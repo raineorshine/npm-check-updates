@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import fsp from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import makeTempDir from '../../helpers/makeTempDir.ts'
 import removeDir from '../../helpers/removeDir.ts'
 
@@ -54,23 +54,20 @@ describe('findNpmConfig', () => {
     process.env.npm_config_foo_bar = 'baz'
     process.env.NPM_CONFIG_SOME_KEY = 'qux'
 
-    try {
-      const findNpmConfig = await loadFindNpmConfig()
-      const config = findNpmConfig()
+    onTestFinished(() => removeDir(userDir))
+    onTestFinished(() => removeDir(prefixDir))
+    const findNpmConfig = await loadFindNpmConfig()
+    const config = findNpmConfig()
 
-      // npm_config_ prefix stripped, then camelCased by normalizeNpmConfig
-      expect(config.fooBar).toBe('baz')
-      expect(config.someKey).toBe('qux')
-      // user .npmrc wins over global
-      expect(config['@precedence:registry']).toBe('https://user.example.com/')
-      // global-only key survives the merge
-      expect(config['@global-only:registry']).toBe('https://globalonly.example.com/')
-      // findNpmConfig always disables the cache
-      expect(config.cache).toBe(false)
-    } finally {
-      await removeDir(prefixDir)
-      await removeDir(userDir)
-    }
+    // npm_config_ prefix stripped, then camelCased by normalizeNpmConfig
+    expect(config.fooBar).toBe('baz')
+    expect(config.someKey).toBe('qux')
+    // user .npmrc wins over global
+    expect(config['@precedence:registry']).toBe('https://user.example.com/')
+    // global-only key survives the merge
+    expect(config['@global-only:registry']).toBe('https://globalonly.example.com/')
+    // findNpmConfig always disables the cache
+    expect(config.cache).toBe(false)
   })
 
   it('normalizes npm_config_* keys, preserving a leading underscore', async () => {
@@ -99,15 +96,14 @@ describe('findNpmConfig', () => {
     delete process.env.HOME
     vi.spyOn(os, 'homedir').mockReturnValue(homeDir)
 
-    try {
-      const findNpmConfig = await loadFindNpmConfig()
-      const config = findNpmConfig()
-      expect(config['@home:registry']).toBe('https://home.example.com/')
-    } finally {
+    onTestFinished(() => removeDir(homeDir))
+    onTestFinished(() => {
       if (savedHome === undefined) delete process.env.HOME
       else process.env.HOME = savedHome
-      await removeDir(homeDir)
-    }
+    })
+    const findNpmConfig = await loadFindNpmConfig()
+    const config = findNpmConfig()
+    expect(config['@home:registry']).toBe('https://home.example.com/')
   })
 
   it('does not read the project .npmrc twice when it is also the user config', async () => {
@@ -133,12 +129,9 @@ describe('findNpmConfig', () => {
     const dir = await makeTempDir('ncu-baduser-')
     process.env.npm_config_userconfig = dir
 
-    try {
-      const findNpmConfig = await loadFindNpmConfig()
-      expect(() => findNpmConfig()).toThrow()
-    } finally {
-      await removeDir(dir)
-    }
+    onTestFinished(() => removeDir(dir))
+    const findNpmConfig = await loadFindNpmConfig()
+    expect(() => findNpmConfig()).toThrow()
   })
 
   it('derives the global npmrc from the node binary path on Windows', async () => {
@@ -172,16 +165,13 @@ describe('findNpmConfig', () => {
     process.env.DESTDIR = destdir
     const readFileSpy = vi.spyOn(fs, 'readFileSync')
 
-    try {
-      const findNpmConfig = await loadFindNpmConfig()
-      findNpmConfig()
+    onTestFinished(() => removeDir(destdir))
+    const findNpmConfig = await loadFindNpmConfig()
+    findNpmConfig()
 
-      const prefix = path.dirname(path.dirname(process.execPath))
-      const expected = path.join(destdir, prefix, 'etc', 'npmrc')
-      expect(readFileSpy).toHaveBeenCalledWith(expected, 'utf-8')
-    } finally {
-      await removeDir(destdir)
-    }
+    const prefix = path.dirname(path.dirname(process.execPath))
+    const expected = path.join(destdir, prefix, 'etc', 'npmrc')
+    expect(readFileSpy).toHaveBeenCalledWith(expected, 'utf-8')
   })
 
   it('honors the PREFIX environment variable when locating the global npmrc', async () => {
@@ -190,14 +180,11 @@ describe('findNpmConfig', () => {
     process.env.PREFIX = prefixDir
     const readFileSpy = vi.spyOn(fs, 'readFileSync')
 
-    try {
-      const findNpmConfig = await loadFindNpmConfig()
-      findNpmConfig()
+    onTestFinished(() => removeDir(prefixDir))
+    const findNpmConfig = await loadFindNpmConfig()
+    findNpmConfig()
 
-      const expected = path.join(prefixDir, 'etc', 'npmrc')
-      expect(readFileSpy).toHaveBeenCalledWith(expected, 'utf-8')
-    } finally {
-      await removeDir(prefixDir)
-    }
+    const expected = path.join(prefixDir, 'etc', 'npmrc')
+    expect(readFileSpy).toHaveBeenCalledWith(expected, 'utf-8')
   })
 })

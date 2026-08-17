@@ -1,11 +1,12 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished } from 'vitest'
 import getAllPackages from '../src/lib/getAllPackages.ts'
 import { type Options } from '../src/types/Options.ts'
 import { type PackageInfo } from '../src/types/PackageInfo.ts'
 import makeTempDir from './helpers/makeTempDir.ts'
+import removeDir from './helpers/removeDir.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -221,11 +222,11 @@ describe('getAllPackages', () => {
 
     it('reads the nested workspaces.catalog and workspaces.catalogs format from pnpm-workspace.yaml', async () => {
       const tempDir = await makeTempDir('ncu-test-catalog-nested-')
-      try {
-        await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({ workspaces: ['pkg/*'] }), 'utf-8')
-        await fs.writeFile(
-          path.join(tempDir, 'pnpm-workspace.yaml'),
-          `workspaces:
+      onTestFinished(() => removeDir(tempDir))
+      await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({ workspaces: ['pkg/*'] }), 'utf-8')
+      await fs.writeFile(
+        path.join(tempDir, 'pnpm-workspace.yaml'),
+        `workspaces:
   packages:
     - 'pkg/*'
   catalog:
@@ -234,22 +235,19 @@ describe('getAllPackages', () => {
     react18:
       react: ^18.0.0
 `,
-          'utf-8',
-        )
+        'utf-8',
+      )
 
-        const [pkgInfo]: [PackageInfo[], string[]] = await getAllPackages({
-          cwd: tempDir.replace(/\\/g, '/'),
-          workspaces: true,
-          packageManager: 'pnpm',
-          loglevel: 'silent',
-        })
+      const [pkgInfo]: [PackageInfo[], string[]] = await getAllPackages({
+        cwd: tempDir.replace(/\\/g, '/'),
+        workspaces: true,
+        packageManager: 'pnpm',
+        loglevel: 'silent',
+      })
 
-        const catalogInfo = pkgInfo.find((info: PackageInfo) => info.name === 'catalogs')
-        expect(catalogInfo).toBeDefined()
-        expect(catalogInfo!.pkg.dependencies).toStrictEqual({ chalk: '^5.0.0', react: '^18.0.0' })
-      } finally {
-        await fs.rm(tempDir, { recursive: true, force: true })
-      }
+      const catalogInfo = pkgInfo.find((info: PackageInfo) => info.name === 'catalogs')
+      expect(catalogInfo).toBeDefined()
+      expect(catalogInfo!.pkg.dependencies).toStrictEqual({ chalk: '^5.0.0', react: '^18.0.0' })
     })
 
     it('reads catalog and catalogs from .yarnrc.yml', async () => {

@@ -2,9 +2,10 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
 import * as yarn from '../../../src/package-managers/yarn.ts'
 import makeTempDir from '../../helpers/makeTempDir.ts'
+import removeDir from '../../helpers/removeDir.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -323,122 +324,82 @@ describe('yarn', () => {
 
   describe('getYarnMinimalAgeGate', () => {
     /** Creates a temp directory with a yarn.lock and a .yarnrc.yml for testing. */
-    async function createTempYarnrc(yarnrcContent: string): Promise<{ tempDir: string; cleanup: () => Promise<void> }> {
+    async function createTempYarnrc(yarnrcContent: string): Promise<string> {
       const tempDir = await makeTempDir('ncu-test-yarn-agegate-')
+      onTestFinished(() => removeDir(tempDir))
       await fs.writeFile(path.join(tempDir, 'yarn.lock'), '')
       await fs.writeFile(path.join(tempDir, '.yarnrc.yml'), yarnrcContent)
-      return {
-        tempDir,
-        cleanup: () => fs.rm(tempDir, { recursive: true, force: true }),
-      }
+      return tempDir
     }
 
     it('parses a numeric npmMinimalAgeGate (minutes) from .yarnrc.yml', async () => {
-      const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: 1440\n')
-      try {
-        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        expect(result).not.toBeNull()
-        expect(result!.npmMinimalAgeGate).toBe(1440)
-        expect(result!.npmPreapprovedPackages).toStrictEqual([])
-      } finally {
-        await cleanup()
-      }
+      const tempDir = await createTempYarnrc('npmMinimalAgeGate: 1440\n')
+      const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+      expect(result).not.toBeNull()
+      expect(result!.npmMinimalAgeGate).toBe(1440)
+      expect(result!.npmPreapprovedPackages).toStrictEqual([])
     })
 
     it('parses a duration string npmMinimalAgeGate ("3d") from .yarnrc.yml', async () => {
-      const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: "3d"\n')
-      try {
-        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        expect(result).not.toBeNull()
-        // "3d" → 3 days → 3 * 1440 = 4320 minutes
-        expect(result!.npmMinimalAgeGate).toBe(3 * 1440)
-        expect(result!.npmPreapprovedPackages).toStrictEqual([])
-      } finally {
-        await cleanup()
-      }
+      const tempDir = await createTempYarnrc('npmMinimalAgeGate: "3d"\n')
+      const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+      expect(result).not.toBeNull()
+      // "3d" → 3 days → 3 * 1440 = 4320 minutes
+      expect(result!.npmMinimalAgeGate).toBe(3 * 1440)
+      expect(result!.npmPreapprovedPackages).toStrictEqual([])
     })
 
     it('parses a duration string npmMinimalAgeGate ("12h") from .yarnrc.yml', async () => {
-      const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: "12h"\n')
-      try {
-        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        expect(result).not.toBeNull()
-        // "12h" → 12/24 days → 0.5 * 1440 = 720 minutes
-        expect(result!.npmMinimalAgeGate).toBe(720)
-        expect(result!.npmPreapprovedPackages).toStrictEqual([])
-      } finally {
-        await cleanup()
-      }
+      const tempDir = await createTempYarnrc('npmMinimalAgeGate: "12h"\n')
+      const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+      expect(result).not.toBeNull()
+      // "12h" → 12/24 days → 0.5 * 1440 = 720 minutes
+      expect(result!.npmMinimalAgeGate).toBe(720)
+      expect(result!.npmPreapprovedPackages).toStrictEqual([])
     })
 
     it('returns null for an invalid duration string from .yarnrc.yml', async () => {
-      const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: "invalid"\n')
-      try {
-        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        expect(result).toBeNull()
-      } finally {
-        await cleanup()
-      }
+      const tempDir = await createTempYarnrc('npmMinimalAgeGate: "invalid"\n')
+      const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+      expect(result).toBeNull()
     })
 
     it('returns null for a non-positive numeric npmMinimalAgeGate', async () => {
-      const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: -5\n')
-      try {
-        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        expect(result).toBeNull()
-      } finally {
-        await cleanup()
-      }
+      const tempDir = await createTempYarnrc('npmMinimalAgeGate: -5\n')
+      const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+      expect(result).toBeNull()
     })
 
     it('returns null for a zero-duration string ("0d")', async () => {
-      const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: "0d"\n')
-      try {
-        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        expect(result).toBeNull()
-      } finally {
-        await cleanup()
-      }
+      const tempDir = await createTempYarnrc('npmMinimalAgeGate: "0d"\n')
+      const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+      expect(result).toBeNull()
     })
 
     it('returns null when npmMinimalAgeGate is neither a number nor a string', async () => {
-      const { tempDir, cleanup } = await createTempYarnrc('npmMinimalAgeGate: true\n')
-      try {
-        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        expect(result).toBeNull()
-      } finally {
-        await cleanup()
-      }
+      const tempDir = await createTempYarnrc('npmMinimalAgeGate: true\n')
+      const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+      expect(result).toBeNull()
     })
 
     it('ignores non-string entries in npmPreapprovedPackages', async () => {
-      const { tempDir, cleanup } = await createTempYarnrc(`npmMinimalAgeGate: 1440
+      const tempDir = await createTempYarnrc(`npmMinimalAgeGate: 1440
 npmPreapprovedPackages:
   - "@my-org/*"
   - 123
 `)
-      try {
-        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        expect(result).not.toBeNull()
-        expect(result!.npmPreapprovedPackages).toStrictEqual(['@my-org/*'])
-      } finally {
-        await cleanup()
-      }
+      const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+      expect(result).not.toBeNull()
+      expect(result!.npmPreapprovedPackages).toStrictEqual(['@my-org/*'])
     })
 
     it('parses npmMinimalAgeGate with npmPreapprovedPackages from .yarnrc.yml', async () => {
-      const { tempDir, cleanup } = await createTempYarnrc(
-        'npmMinimalAgeGate: "7d"\nnpmPreapprovedPackages:\n  - "@my-org/*"\n',
-      )
-      try {
-        const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
-        expect(result).not.toBeNull()
-        // "7d" → 7 * 1440 = 10080 minutes
-        expect(result!.npmMinimalAgeGate).toBe(7 * 1440)
-        expect(result!.npmPreapprovedPackages).toStrictEqual(['@my-org/*'])
-      } finally {
-        await cleanup()
-      }
+      const tempDir = await createTempYarnrc('npmMinimalAgeGate: "7d"\nnpmPreapprovedPackages:\n  - "@my-org/*"\n')
+      const result = await yarn.yarnApi.getYarnMinimalAgeGate({ cwd: tempDir })
+      expect(result).not.toBeNull()
+      // "7d" → 7 * 1440 = 10080 minutes
+      expect(result!.npmMinimalAgeGate).toBe(7 * 1440)
+      expect(result!.npmPreapprovedPackages).toStrictEqual(['@my-org/*'])
     })
   })
 })

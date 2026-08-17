@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished } from 'vitest'
 import * as npm from '../../../src/package-managers/npm.ts'
 import makeTempDir from '../../helpers/makeTempDir.ts'
 import removeDir from '../../helpers/removeDir.ts'
@@ -180,14 +180,11 @@ describe('npm', () => {
       '@enginestest:registry=https://registry.npmjs.org/ncu-1506-probe/\n',
     )
 
-    try {
-      // 404 confirms the request went to the configured registry path rather than the default
-      await expect(npm.getEngines('@enginestest/foo', '1.0.0', { cwd: tempDir })).rejects.toThrow(
-        'https://registry.npmjs.org/ncu-1506-probe/',
-      )
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    // 404 confirms the request went to the configured registry path rather than the default
+    await expect(npm.getEngines('@enginestest/foo', '1.0.0', { cwd: tempDir })).rejects.toThrow(
+      'https://registry.npmjs.org/ncu-1506-probe/',
+    )
   })
 
   // a project .npmrc that cannot be read (e.g. it is a directory) should surface the error, not be silently ignored
@@ -196,11 +193,8 @@ describe('npm', () => {
     // create a directory named .npmrc so reading it fails with EISDIR rather than ENOENT
     await fs.mkdir(path.join(tempDir, '.npmrc'))
 
-    try {
-      await expect(npm.getEngines('ncu-test-return-version', '1.0.0', { cwd: tempDir })).rejects.toThrow()
-    } finally {
-      await removeDir(tempDir)
-    }
+    onTestFinished(() => removeDir(tempDir))
+    await expect(npm.getEngines('ncu-test-return-version', '1.0.0', { cwd: tempDir })).rejects.toThrow()
   })
 
   // the leading @ must not be encoded to %40, which some registries reject with a 404

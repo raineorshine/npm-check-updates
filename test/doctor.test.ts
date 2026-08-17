@@ -4,7 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, onTestFinished } from 'vitest'
 import { cliOptionsMap } from '../src/cli-options.ts'
 import { styleInit } from '../src/lib/style.ts'
 import { copyFixture, createNcuRegExp, ncu, testFail, testPass } from './helpers/doctorHelpers.ts'
@@ -70,7 +70,6 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
       const pkgPath = path.join(cwd, 'package.json')
       let stdout = ''
       let stderr = ''
-      let pkgUpgraded
 
       try {
         // check only ncu-test-v2 (excluding ncu-return-version)
@@ -88,11 +87,8 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
         )
       } catch (e) {}
 
-      try {
-        pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-      } finally {
-        await removeDir(cwd)
-      }
+      onTestFinished(() => removeDir(cwd))
+      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -120,28 +116,24 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
       const pkgPath = path.join(cwd, 'package.json')
       let stdout = ''
       let stderr = ''
-      let pkgUpgraded
 
+      onTestFinished(() => removeDir(cwd))
       try {
-        try {
-          await ncu(
-            ['--doctor', '-u', '--errorLevel', '2', '--filter', 'ncu-test-v2'],
-            {
-              stdout: function (data: string) {
-                stdout += data
-              },
-              stderr: function (data: string) {
-                stderr += data
-              },
+        await ncu(
+          ['--doctor', '-u', '--errorLevel', '2', '--filter', 'ncu-test-v2'],
+          {
+            stdout: function (data: string) {
+              stdout += data
             },
-            { cwd },
-          )
-        } catch {}
+            stderr: function (data: string) {
+              stderr += data
+            },
+          },
+          { cwd },
+        )
+      } catch {}
 
-        pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-      } finally {
-        await removeDir(cwd)
-      }
+      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // errorLevel 2 must not abort the internal upgrade run
       expect(stripAnsi(stderr)).not.toContain('Dependencies not up-to-date')
@@ -155,7 +147,6 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
       let stdout = ''
       let stderr = ''
-      let pkgUpgraded
 
       try {
         await ncu(
@@ -172,11 +163,8 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
         )
       } catch (e) {}
 
-      try {
-        pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-      } finally {
-        await removeDir(cwd)
-      }
+      onTestFinished(() => removeDir(cwd))
+      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -203,7 +191,6 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
       const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm'
       let stdout = ''
       let stderr = ''
-      let pkgUpgraded
 
       try {
         await ncu(
@@ -220,11 +207,8 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
         )
       } catch (e) {}
 
-      try {
-        pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-      } finally {
-        await removeDir(cwd)
-      }
+      onTestFinished(() => removeDir(cwd))
+      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // stderr should be empty or equal to the test script output (output varies by platform/node version)
       stderr = stripAnsi(stderr).trim()
@@ -251,7 +235,6 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
       const echoPath = path.join(cwd, 'echo.js')
       let stdout = ''
       let stderr = ''
-      let pkgUpgraded
 
       try {
         await ncu(
@@ -268,11 +251,8 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
         )
       } catch (e) {}
 
-      try {
-        pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
-      } finally {
-        await removeDir(cwd)
-      }
+      onTestFinished(() => removeDir(cwd))
+      const pkgUpgraded = await fs.readFile(pkgPath, 'utf-8')
 
       // stderr should be empty
       expect(stderr).toBe('')
@@ -326,29 +306,25 @@ else {
 
       let stdout = ''
       let stderr = ''
-      let pkgUpgraded
 
-      try {
-        // explicitly set packageManager to avoid auto yarn detection
-        await spawn('npm', ['install'], {}, { cwd: tempDir })
+      onTestFinished(() => removeDir(tempDir))
+      // explicitly set packageManager to avoid auto yarn detection
+      await spawn('npm', ['install'], {}, { cwd: tempDir })
 
-        await ncu(
-          ['--doctor', '-u', '-p', 'npm'],
-          {
-            stdout: function (data: string) {
-              stdout += data
-            },
-            stderr: function (data: string) {
-              stderr += data
-            },
+      await ncu(
+        ['--doctor', '-u', '-p', 'npm'],
+        {
+          stdout: function (data: string) {
+            stdout += data
           },
-          { cwd: tempDir },
-        )
+          stderr: function (data: string) {
+            stderr += data
+          },
+        },
+        { cwd: tempDir },
+      )
 
-        pkgUpgraded = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
-      } finally {
-        await removeDir(tempDir)
-      }
+      const pkgUpgraded = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
 
       const testTag = createNcuRegExp('ncu-test-tag 1.0.0 →')
       const testV2 = createNcuRegExp('ncu-test-v2 1.0.0 →')
@@ -378,21 +354,18 @@ else {
         delete env.FORCE_COLOR
         delete env.NO_COLOR
         let stdout = ''
-        try {
-          await expect(
-            ncu(
-              ['--doctor', '-u', '-p', 'npm', ...args],
-              {
-                stdout: (data: string) => {
-                  stdout += data
-                },
+        onTestFinished(() => removeDir(cwd))
+        await expect(
+          ncu(
+            ['--doctor', '-u', '-p', 'npm', ...args],
+            {
+              stdout: (data: string) => {
+                stdout += data
               },
-              { cwd, env },
-            ),
-          ).rejects.toThrow()
-        } finally {
-          await removeDir(cwd)
-        }
+            },
+            { cwd, env },
+          ),
+        ).rejects.toThrow()
         return stdout
       }
 
