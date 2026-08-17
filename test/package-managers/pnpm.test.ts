@@ -144,14 +144,14 @@ minimumReleaseAgeExclude:
       })
 
       it('reads config.yaml on pnpm >= 11', async () => {
-        expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)).toStrictEqual({
+        expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: 11 })).toStrictEqual({
           minimumReleaseAge: 2880,
           minimumReleaseAgeExclude: ['vue'],
         })
       })
 
       it('reads rc on pnpm <= 10', async () => {
-        expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(10)).toStrictEqual({
+        expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: 10 })).toStrictEqual({
           minimumReleaseAge: 4320,
           minimumReleaseAgeExclude: ['svelte'],
         })
@@ -163,7 +163,7 @@ minimumReleaseAgeExclude:
       await writeGlobalConfig('config.yaml', 'storeDir: /tmp/store\n')
       await writeGlobalConfig('rc', 'minimum-release-age=4320\n')
       // null reads both globals, the fallback when the installed pnpm version cannot be determined
-      expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(null)).toStrictEqual({
+      expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: null })).toStrictEqual({
         minimumReleaseAge: 4320,
         minimumReleaseAgeExclude: [],
       })
@@ -267,7 +267,7 @@ minimumReleaseAgeExclude:
       await fs.mkdir(nested, { recursive: true })
       process.chdir(os.tmpdir())
 
-      expect(await pnpmApi.getPnpmWorkspaceRegistries(nested)).toStrictEqual({
+      expect(await pnpmApi.getPnpmWorkspaceRegistries({ cwd: nested })).toStrictEqual({
         default: 'https://registry.example.com/',
         scoped: {},
       })

@@ -18,7 +18,6 @@ import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
 import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type Version } from '../types/Version.ts'
-import { type VersionSpec } from '../types/VersionSpec.ts'
 import * as npm from './npm.ts'
 
 // return type of pnpm ls --json
@@ -158,15 +157,15 @@ const getPnpmMajorVersion = async (): Promise<number | null> => {
  * minimumReleaseAgeExclude patterns are merged across all considered layers. Returns null if no
  * layer defines a minimumReleaseAge.
  *
- * @param pnpmMajorVersion Optional override, used by tests to avoid spawning pnpm.
+ * @param options.pnpmMajorVersion Optional override, used by tests to avoid spawning pnpm.
  * undefined resolves the major version from the installed pnpm. null reads both globals.
  * A number selects config.yaml for >= 11 and rc for <= 10.
- * @param cwd Directory to search upwards from for pnpm-workspace.yaml. Defaults to process.cwd().
+ * @param options.cwd Directory to search upwards from for pnpm-workspace.yaml. Defaults to process.cwd().
  */
 const getPnpmWorkspaceMinimumReleaseAge = async (
-  pnpmMajorVersion?: number | null,
-  cwd?: string,
+  options: { pnpmMajorVersion?: number | null; cwd?: string } = {},
 ): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
+  const { pnpmMajorVersion, cwd } = options
   const globalConfigDir = getPnpmGlobalConfigDir()
   const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml', { cwd })
   const globalConfigYamlPath = path.join(globalConfigDir, 'config.yaml')
@@ -259,9 +258,12 @@ const resolvePnpmRegistries = async (pnpmWorkspacePath?: string): Promise<PnpmWo
   return { default: defaultRegistry, scoped }
 }
 
-/** Reads registries settings from pnpm's config, searching upwards from cwd for pnpm-workspace.yaml. */
-const getPnpmWorkspaceRegistries = async (cwd?: string): Promise<PnpmWorkspaceRegistries> =>
-  resolvePnpmRegistries(await findUp('pnpm-workspace.yaml', { cwd }))
+/** Reads registries settings from pnpm's config, searching upwards from cwd for pnpm-workspace.yaml.
+ *
+ * @param options.cwd Directory to search upwards from for pnpm-workspace.yaml. Defaults to process.cwd().
+ */
+const getPnpmWorkspaceRegistries = async (options: { cwd?: string } = {}): Promise<PnpmWorkspaceRegistries> =>
+  resolvePnpmRegistries(await findUp('pnpm-workspace.yaml', { cwd: options.cwd }))
 
 /** Parses the output of `pnpm ls -g --json` into a { name: version } index. */
 const parseList = (stdout: string, command: string, stderr?: string): Index<string | undefined> => {
@@ -291,15 +293,24 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   return parseList(stdout, command, stderr)
 }
 
-/** Reads the npmrc that sits next to pnpm-workspace.yaml, or an empty config if it does not exist. */
-const npmConfigFromWorkspaceNpmrc = async (options: Options, pnpmWorkspaceDir: string): Promise<NpmConfig> => {
+/**
+ * Reads and parses the npmrc that sits next to pnpm-workspace.yaml, or null if it does not exist.
+ * Memoized on the directory, like readPnpmConfig, so a workspace with many packages reads and parses it once.
+ */
+const readWorkspaceNpmrc = memoize(async (pnpmWorkspaceDir: string): Promise<NpmConfig | null> => {
   const pnpmWorkspaceConfigPath = path.join(pnpmWorkspaceDir, '.npmrc')
   const contents = await fs.readFile(pnpmWorkspaceConfigPath, 'utf-8').catch(() => null)
-  if (contents == null) return {}
+  return contents == null ? null : npm.normalizeNpmConfig(ini.parse(contents), pnpmWorkspaceDir)
+})
 
-  print(options, `\nUsing pnpm workspace config at ${pnpmWorkspaceConfigPath}:`, 'verbose')
+/** Reads the npmrc that sits next to pnpm-workspace.yaml, or an empty config if it does not exist. */
+const npmConfigFromWorkspaceNpmrc = async (options: Options, pnpmWorkspaceDir: string): Promise<NpmConfig> => {
+  const config = await readWorkspaceNpmrc(pnpmWorkspaceDir)
+  if (config == null) return {}
 
-  return npm.normalizeNpmConfig(ini.parse(contents), pnpmWorkspaceDir)
+  print(options, `\nUsing pnpm workspace config at ${path.join(pnpmWorkspaceDir, '.npmrc')}:`, 'verbose')
+
+  return config
 }
 
 /** pnpm's config split by the npm config layer each part belongs to, since they rank differently. */
@@ -384,53 +395,28 @@ async function spawnPnpm(
 
 export { defaultPrefix, getPeerDependencies } from './npm.ts'
 
-// The wrappers below split the pnpm config across the same two layers withNpmWorkspaceConfig uses, so that every
-// code path resolves the same registry. Otherwise a project resolves versions and engines from two different ones.
-
 /**
- * Fetches all dist-tags published for a package.
- *
- * @param packageName
- * @returns Promised {tag: version} collection
+ * Wraps an npm function whose last three parameters are options plus the two npm config layers, supplying them
+ * from pnpm's config. This splits the pnpm config across the same two layers withNpmWorkspaceConfig uses, so
+ * that every code path resolves the same registry. Otherwise a project resolves versions and engines from two
+ * different ones.
  */
-export const getDistTags = async (packageName: string, options: Options = {}): Promise<Index<Version>> => {
-  const { registries, workspaceNpmrc } = await npmConfigFromPnpmWorkspace(options)
-  return npm.getDistTags(packageName, options, registries, workspaceNpmrc)
-}
+const withPnpmConfig =
+  <Args extends unknown[], Result>(
+    fn: (...args: [...Args, Options, NpmConfig, NpmConfig]) => Promise<Result>,
+  ): ((...args: [...Args, Options?]) => Promise<Result>) =>
+  async (...args) => {
+    // fn.length is the count of its params up to (excluding) the first with a default value, i.e. leading args
+    // before `options: Options = {}`.
+    const leading = args.slice(0, fn.length) as Args
+    const options = (args[fn.length] ?? {}) as Options
+    const { registries, workspaceNpmrc } = await npmConfigFromPnpmWorkspace(options)
+    return fn(...leading, options, registries, workspaceNpmrc)
+  }
 
-/**
- * Fetches the engines list from the registry for a specific package version.
- *
- * @param packageName
- * @param version
- * @returns Promised engines collection
- */
-export const getEngines = async (
-  packageName: string,
-  version: Version,
-  options: Options = {},
-): Promise<Index<VersionSpec | undefined>> => {
-  const { registries, workspaceNpmrc } = await npmConfigFromPnpmWorkspace(options)
-  return npm.getEngines(packageName, version, options, registries, workspaceNpmrc)
-}
-
-/**
- * Check if package author changed between current and upgraded version.
- *
- * @param packageName Name of the package
- * @param currentVersion Current version declaration (may be range)
- * @param upgradedVersion Upgraded version declaration (may be range)
- * @returns A promise that fulfills with boolean value.
- */
-export const packageAuthorChanged = async (
-  packageName: string,
-  currentVersion: VersionSpec,
-  upgradedVersion: VersionSpec,
-  options: Options = {},
-): Promise<boolean> => {
-  const { registries, workspaceNpmrc } = await npmConfigFromPnpmWorkspace(options)
-  return npm.packageAuthorChanged(packageName, currentVersion, upgradedVersion, options, registries, workspaceNpmrc)
-}
+export const getDistTags = withPnpmConfig(npm.getDistTags)
+export const getEngines = withPnpmConfig(npm.getEngines)
+export const packageAuthorChanged = withPnpmConfig(npm.packageAuthorChanged)
 
 export default spawnPnpm
 
