@@ -122,6 +122,47 @@ describe('npm', () => {
     })
   })
 
+  describe('malformed registry versions', () => {
+    const CR = String.fromCharCode(0x0d)
+
+    /** Stubs a packument with a CR-padded version. */
+    const stubPadded = () => {
+      const original = npm.npmApi.fetchUpgradedPackumentMemo
+      npm.npmApi.fetchUpgradedPackumentMemo = async () => ({
+        name: 'x',
+        'dist-tags': { latest: CR + '9.9.9' },
+        versions: {
+          '1.0.0': { name: 'x', version: '1.0.0' },
+          '2.0.0+build': { name: 'x', version: '2.0.0+build' },
+          [CR + '9.9.9']: { name: 'x', version: CR + '9.9.9' },
+        } as any,
+      })
+      return () => {
+        npm.npmApi.fetchUpgradedPackumentMemo = original
+      }
+    }
+
+    it('greatest skips it, and keeps a version with build metadata', async () => {
+      const restore = stubPadded()
+      try {
+        await expect(npm.greatest('x', '1.0.0', { deprecated: true })).resolves.toStrictEqual({
+          version: '2.0.0+build',
+        })
+      } finally {
+        restore()
+      }
+    })
+
+    it('distTag skips a dist-tag that points at it', async () => {
+      const restore = stubPadded()
+      try {
+        await expect(npm.distTag('x', '1.0.0', { distTag: 'latest', deprecated: true })).resolves.toStrictEqual({})
+      } finally {
+        restore()
+      }
+    })
+  })
+
   it('getEngines', async () => {
     await expect(npm.getEngines('del', '2.0.0')).resolves.toStrictEqual({ node: '>=0.10.0' })
     await expect(npm.getEngines('ncu-test-return-version', '1.0.0')).resolves.toStrictEqual({})
