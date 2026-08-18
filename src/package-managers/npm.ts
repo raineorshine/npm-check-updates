@@ -54,6 +54,10 @@ const hasCaretOrTilde = (spec: VersionSpec) => {
   return range.some(parsed => parsed.operator === '^' || parsed.operator === '~')
 }
 
+/** Returns true if the version is valid semver with no padding (semver.valid tolerates whitespace like CR). */
+const isCleanVersion = (version: Version | undefined): version is Version =>
+  !!version && version.trim() === version && !!nodeSemver.valid(version)
+
 /** Returns true if there is no registry version to fetch for the spec: a non-semver spec (e.g. a git url) or a pure wildcard. */
 const isUnfetchable = (version: Version) =>
   version && (!nodeSemver.validRange(version) || versionUtil.isWildcard(version))
@@ -186,7 +190,8 @@ const findTargetAndFallback = ({
   const result = versions.reduce(
     (acc, versionData) => {
       const version = versionData.version
-      if (!version) return acc
+      // a bad version would reach the report and the lexicographic fallback in compareVersions
+      if (!isCleanVersion(version)) return acc
 
       // candidate must beat current fallback.
       if (compare(version, acc.fallbackVersion) <= 0) return acc
@@ -1055,8 +1060,8 @@ export const distTag: GetVersion = async (
   )
 
   const version = packument?.['dist-tags']?.[options.distTag || 'latest']
-  if (!version) {
-    // Skip packages that don't have the specified dist-tag to prevent resolution errors
+  // skip packages with a missing or bogus dist-tag to prevent resolution errors
+  if (!isCleanVersion(version)) {
     return {}
   }
 
