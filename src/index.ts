@@ -11,7 +11,7 @@ import findPackage from './lib/findPackage.ts'
 import getAllPackages from './lib/getAllPackages.ts'
 import getNcuRc from './lib/getNcuRc.ts'
 import initOptions from './lib/initOptions.ts'
-import { print, printJson } from './lib/logging.ts'
+import { print, printError, printJson } from './lib/logging.ts'
 import mergeOptions from './lib/mergeOptions.ts'
 import programError from './lib/programError.ts'
 import runGlobal from './lib/runGlobal.ts'
@@ -45,7 +45,7 @@ function registerCliHandlers() {
   // See: https://nodejs.org/api/process.html#event-unhandledrejection
   process.on('unhandledRejection', (reason: string | Error) => {
     // do not rethrow, as there may be other errors to print out
-    console.error(reason)
+    printError(reason)
 
     // ensure the process exits with a non-zero code at the end
     unhandledRejectionError = true
@@ -212,7 +212,7 @@ const install = async (
       } catch (err: any) {
         // sometimes packages print errors to stdout instead of stderr
         // if there is nothing on stderr, reject with stdout
-        console.error(err?.message || err || stdout)
+        printError(err?.message || err || stdout)
 
         // use a program error to exit with a non-zero code rather than throwing a new Error and allowing it to bubble up to the "this is a bug and should be reported message".
         programError(
