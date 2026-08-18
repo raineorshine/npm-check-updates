@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { pnpmApi } from '../../src/package-managers/pnpm.ts'
-import removeDir from '../helpers/removeDir.ts'
+import usePnpmConfigDirs from '../helpers/pnpmConfigDirs.ts'
 
 describe('pnpm', () => {
   describe('buildArgs', () => {
@@ -62,40 +62,8 @@ describe('pnpm', () => {
   })
 
   describe('getPnpmWorkspaceMinimumReleaseAge', () => {
-    let tempDir: string
-    let originalCwd: string
-    let originalXdgConfigHome: string | undefined
-
-    beforeEach(async () => {
-      originalCwd = process.cwd()
-      originalXdgConfigHome = process.env.XDG_CONFIG_HOME
-      tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-pnpm-'))
-      // isolate the global config layers from the machine running the tests
-      process.env.XDG_CONFIG_HOME = path.join(tempDir, 'xdg')
-    })
-
-    afterEach(async () => {
-      process.chdir(originalCwd)
-      if (originalXdgConfigHome === undefined) {
-        delete process.env.XDG_CONFIG_HOME
-      } else {
-        process.env.XDG_CONFIG_HOME = originalXdgConfigHome
-      }
-      await removeDir(tempDir)
-    })
-
-    /** Writes a pnpm-workspace.yaml into the temp dir and switches cwd to it. */
-    async function writeWorkspace(content: string): Promise<void> {
-      await fs.writeFile(path.join(tempDir, 'pnpm-workspace.yaml'), content)
-      process.chdir(tempDir)
-    }
-
-    /** Writes a file into the pnpm global config directory. */
-    async function writeGlobalConfig(filename: string, content: string): Promise<void> {
-      const globalConfigDir = path.join(tempDir, 'xdg', 'pnpm')
-      await fs.mkdir(globalConfigDir, { recursive: true })
-      await fs.writeFile(path.join(globalConfigDir, filename), content)
-    }
+    // isolates cwd and XDG_CONFIG_HOME, so the machine's own pnpm config cannot leak into the assertions
+    const { writeWorkspace, writeGlobalConfig } = usePnpmConfigDirs()
 
     it('returns null when no config defines minimumReleaseAge', async () => {
       await writeWorkspace('packages:\n  - "packages/*"\n')
@@ -145,7 +113,6 @@ minimumReleaseAgeExclude:
     // pnpm >= 11
     it('reads minimumReleaseAge from the global config.yaml', async () => {
       await writeGlobalConfig('config.yaml', 'minimumReleaseAge: 2880\nminimumReleaseAgeExclude:\n  - "vue"\n')
-      process.chdir(tempDir)
       expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()).toStrictEqual({
         minimumReleaseAge: 2880,
         minimumReleaseAgeExclude: ['vue'],
@@ -155,7 +122,6 @@ minimumReleaseAgeExclude:
     // pnpm <= 10 stores arrays in the ini-formatted rc file as JSON, and uses kebab-case keys
     it('reads minimumReleaseAge from the global rc file', async () => {
       await writeGlobalConfig('rc', 'minimum-release-age=4320\nminimum-release-age-exclude=["vue"]\n')
-      process.chdir(tempDir)
       expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()).toStrictEqual({
         minimumReleaseAge: 4320,
         minimumReleaseAgeExclude: ['vue'],
@@ -175,18 +141,17 @@ minimumReleaseAgeExclude:
       beforeEach(async () => {
         await writeGlobalConfig('config.yaml', 'minimumReleaseAge: 2880\nminimumReleaseAgeExclude:\n  - "vue"\n')
         await writeGlobalConfig('rc', 'minimum-release-age=4320\nminimum-release-age-exclude=["svelte"]\n')
-        process.chdir(tempDir)
       })
 
       it('reads config.yaml on pnpm >= 11', async () => {
-        expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)).toStrictEqual({
+        expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: 11 })).toStrictEqual({
           minimumReleaseAge: 2880,
           minimumReleaseAgeExclude: ['vue'],
         })
       })
 
       it('reads rc on pnpm <= 10', async () => {
-        expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(10)).toStrictEqual({
+        expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: 10 })).toStrictEqual({
           minimumReleaseAge: 4320,
           minimumReleaseAgeExclude: ['svelte'],
         })
@@ -197,9 +162,8 @@ minimumReleaseAgeExclude:
     it('falls through to the global rc file when config.yaml defines no minimumReleaseAge', async () => {
       await writeGlobalConfig('config.yaml', 'storeDir: /tmp/store\n')
       await writeGlobalConfig('rc', 'minimum-release-age=4320\n')
-      process.chdir(tempDir)
       // null reads both globals, the fallback when the installed pnpm version cannot be determined
-      expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(null)).toStrictEqual({
+      expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: null })).toStrictEqual({
         minimumReleaseAge: 4320,
         minimumReleaseAgeExclude: [],
       })
@@ -211,6 +175,229 @@ minimumReleaseAgeExclude:
       expect(await pnpmApi.getPnpmWorkspaceMinimumReleaseAge()).toStrictEqual({
         minimumReleaseAge: 60,
         minimumReleaseAgeExclude: ['react', 'vue'],
+      })
+    })
+  })
+
+  describe('getPnpmWorkspaceRegistries', () => {
+    // isolates cwd and XDG_CONFIG_HOME, so the machine's own pnpm registries cannot leak into the assertions
+    const dirs = usePnpmConfigDirs()
+
+    it('returns no registries when pnpm-workspace.yaml does not define any', async () => {
+      await dirs.writeWorkspace('packages:\n  - "packages/*"\n')
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({ default: undefined, scoped: {} })
+    })
+
+    it('returns no registries when there is no pnpm-workspace.yaml at all', async () => {
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({ default: undefined, scoped: {} })
+    })
+
+    it('reads the default registry from pnpm-workspace.yaml', async () => {
+      await dirs.writeWorkspace('registries:\n  default: https://registry.example.com/\n')
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+        default: 'https://registry.example.com/',
+        scoped: {},
+      })
+    })
+
+    it('reads scoped registries from pnpm-workspace.yaml', async () => {
+      await dirs.writeWorkspace(`registries:
+  default: https://registry.example.com/
+  "@myorg": https://myorg.example.com/
+  "@internal": https://internal.example.com/
+`)
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+        default: 'https://registry.example.com/',
+        scoped: {
+          '@myorg': 'https://myorg.example.com/',
+          '@internal': 'https://internal.example.com/',
+        },
+      })
+    })
+
+    it('ignores non-string and empty registry values', async () => {
+      await dirs.writeWorkspace(`registries:
+  default: ""
+  "@myorg": 42
+  "@internal": https://internal.example.com/
+`)
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+        default: undefined,
+        scoped: { '@internal': 'https://internal.example.com/' },
+      })
+    })
+
+    it('ignores a registries value that is not a map', async () => {
+      await dirs.writeWorkspace('registries: https://registry.example.com/\n')
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({ default: undefined, scoped: {} })
+    })
+
+    // pnpm accepts the plain registry setting in pnpm-workspace.yaml, and documents registries.default as equivalent
+    it('reads the plain registry setting as the default registry', async () => {
+      await dirs.writeWorkspace('registry: https://registry.example.com/\n')
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+        default: 'https://registry.example.com/',
+        scoped: {},
+      })
+    })
+
+    it('prefers registries.default over the plain registry setting', async () => {
+      await dirs.writeWorkspace(
+        'registry: https://plain.example.com/\nregistries:\n  default: https://map.example.com/\n',
+      )
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+        default: 'https://map.example.com/',
+        scoped: {},
+      })
+    })
+
+    it('falls back to the plain registry setting when registries omits default', async () => {
+      await dirs.writeWorkspace(
+        'registry: https://plain.example.com/\nregistries:\n  "@myorg": https://myorg.example.com/\n',
+      )
+      expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+        default: 'https://plain.example.com/',
+        scoped: { '@myorg': 'https://myorg.example.com/' },
+      })
+    })
+
+    it('searches upwards from an explicit cwd', async () => {
+      await dirs.writeWorkspace('registries:\n  default: https://registry.example.com/\n')
+      const nested = path.join(dirs.projectDir, 'packages', 'sub')
+      await fs.mkdir(nested, { recursive: true })
+      process.chdir(os.tmpdir())
+
+      expect(await pnpmApi.getPnpmWorkspaceRegistries({ cwd: nested })).toStrictEqual({
+        default: 'https://registry.example.com/',
+        scoped: {},
+      })
+    })
+
+    // pnpm reads registries from its global config.yaml since 11.11
+    describe('global config.yaml fallback', () => {
+      it('reads registries from the global config.yaml when pnpm-workspace.yaml is absent', async () => {
+        await dirs.writeGlobalConfig(
+          'config.yaml',
+          'registries:\n  default: https://global.example.com/\n  "@myorg": https://global-myorg.example.com/\n',
+        )
+
+        expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+          default: 'https://global.example.com/',
+          scoped: { '@myorg': 'https://global-myorg.example.com/' },
+        })
+      })
+
+      it('prefers pnpm-workspace.yaml over the global config, merging scoped entries per scope', async () => {
+        await dirs.writeGlobalConfig(
+          'config.yaml',
+          'registries:\n  default: https://global.example.com/\n  "@myorg": https://global-myorg.example.com/\n  "@global-only": https://global-only.example.com/\n',
+        )
+        await dirs.writeWorkspace(
+          'registries:\n  default: https://workspace.example.com/\n  "@myorg": https://workspace-myorg.example.com/\n',
+        )
+
+        expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+          default: 'https://workspace.example.com/',
+          scoped: {
+            '@myorg': 'https://workspace-myorg.example.com/',
+            '@global-only': 'https://global-only.example.com/',
+          },
+        })
+      })
+
+      it('falls back to the global default when pnpm-workspace.yaml omits it', async () => {
+        await dirs.writeGlobalConfig('config.yaml', 'registries:\n  default: https://global.example.com/\n')
+        await dirs.writeWorkspace('registries:\n  "@myorg": https://workspace-myorg.example.com/\n')
+
+        expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+          default: 'https://global.example.com/',
+          scoped: { '@myorg': 'https://workspace-myorg.example.com/' },
+        })
+      })
+
+      // registries requires pnpm >= 11, which does not read the rc file
+      it('does not read registries from the global rc file', async () => {
+        await dirs.writeGlobalConfig('rc', 'registries[default]=https://rc.example.com/\n')
+        expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({ default: undefined, scoped: {} })
+      })
+    })
+
+    // Since pnpm 11.5.3, env vars are only expanded in registry URLs in trusted locations, i.e. the global config.
+    // pnpm-workspace.yaml is committed, so expanding there could leak env secrets to an attacker-controlled registry.
+    describe('environment variable interpolation', () => {
+      const ENV_VAR = 'NCU_TEST_PNPM_REGISTRY'
+
+      beforeEach(() => {
+        process.env[ENV_VAR] = 'https://from-env.example.com/'
+      })
+
+      afterEach(() => {
+        delete process.env[ENV_VAR]
+      })
+
+      it('expands environment variables in the global config.yaml', async () => {
+        await dirs.writeGlobalConfig(
+          'config.yaml',
+          `registries:\n  default: \${${ENV_VAR}}\n  "@myorg": \${${ENV_VAR}}myorg/\n`,
+        )
+
+        expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+          default: 'https://from-env.example.com/',
+          scoped: { '@myorg': 'https://from-env.example.com/myorg/' },
+        })
+      })
+
+      it('expands environment variables in the plain registry setting in the global config.yaml', async () => {
+        await dirs.writeGlobalConfig('config.yaml', `registry: \${${ENV_VAR}}\n`)
+
+        expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+          default: 'https://from-env.example.com/',
+          scoped: {},
+        })
+      })
+
+      it('ignores a global registry whose environment variable is unset', async () => {
+        delete process.env[ENV_VAR]
+        await dirs.writeGlobalConfig('config.yaml', `registries:\n  default: \${${ENV_VAR}}\n`)
+
+        expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({ default: undefined, scoped: {} })
+      })
+
+      // the dash fallback resolves to a usable URL, so the registry must be kept rather than dropped as a placeholder
+      it('uses the fallback of an unset environment variable in the global config.yaml', async () => {
+        delete process.env[ENV_VAR]
+        await dirs.writeGlobalConfig(
+          'config.yaml',
+          `registries:\n  default: \${${ENV_VAR}:-https://fallback.example.com/}\n`,
+        )
+
+        expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+          default: 'https://fallback.example.com/',
+          scoped: {},
+        })
+      })
+
+      // pnpm-workspace.yaml is not interpolated at all, so even a placeholder with a usable fallback is ignored
+      it('ignores a fallback placeholder in pnpm-workspace.yaml', async () => {
+        await dirs.writeWorkspace(`registries:\n  default: \${${ENV_VAR}:-https://fallback.example.com/}\n`)
+
+        expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({ default: undefined, scoped: {} })
+      })
+
+      it('ignores a registry with an environment variable placeholder in pnpm-workspace.yaml', async () => {
+        await dirs.writeWorkspace(`registries:\n  default: \${${ENV_VAR}}\n  "@myorg": \${${ENV_VAR}}myorg/\n`)
+
+        expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({ default: undefined, scoped: {} })
+      })
+
+      it('falls back to the global default when pnpm-workspace.yaml uses a placeholder', async () => {
+        await dirs.writeGlobalConfig('config.yaml', 'registries:\n  default: https://global.example.com/\n')
+        await dirs.writeWorkspace(`registries:\n  default: \${${ENV_VAR}}\n`)
+
+        expect(await pnpmApi.getPnpmWorkspaceRegistries()).toStrictEqual({
+          default: 'https://global.example.com/',
+          scoped: {},
+        })
       })
     })
   })
