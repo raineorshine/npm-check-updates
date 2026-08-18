@@ -18,6 +18,7 @@ describe('bun', () => {
 ├── @angular/cli@17.0.0
 └── react@18.2.0`,
         stderr: '',
+        code: 0,
       })
 
       const result = await bun.list({})
@@ -56,7 +57,7 @@ describe('bun', () => {
 
     it('falls back to the bun global bin directory when global with no prefix or BUN_INSTALL', async () => {
       delete process.env.BUN_INSTALL
-      spawnMock.mockResolvedValue({ stdout: '/usr/local/bin', stderr: '' })
+      spawnMock.mockResolvedValue({ stdout: '/usr/local/bin', stderr: '', code: 0 })
       expect(await bun.defaultPrefix({ global: true })).toBe(path.dirname('/usr/local/bin'))
     })
   })

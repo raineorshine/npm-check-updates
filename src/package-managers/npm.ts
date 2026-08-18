@@ -859,12 +859,11 @@ export async function defaultPrefix(options: Options): Promise<string | undefine
   try {
     const { stdout } = await spawnCommand('npm', ['config', 'get', 'prefix'])
     prefix = stdout
-  } catch (e: any) {
-    const message = (e.message || e || '').toString()
+  } catch (e) {
     print(
       options,
       'Error executing `npm config get prefix`. Caught and ignored. Unsolved: https://github.com/raineorshine/npm-check-updates/issues/703. ERROR: ' +
-        message,
+        (e instanceof Error ? e.message : String(e)),
       'verbose',
       'error',
     )
