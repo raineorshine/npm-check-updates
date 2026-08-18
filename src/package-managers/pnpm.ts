@@ -32,7 +32,7 @@ type PnpmList = {
 }[]
 
 /** Shape of the pnpm-workspace.yaml minimumReleaseAge settings. */
-export interface PnpmWorkspaceMinimumReleaseAge {
+interface PnpmWorkspaceMinimumReleaseAge {
   /** Minimum release age in minutes (pnpm's native unit). */
   minimumReleaseAge: number
   /** List of package name glob patterns excluded from the minimum release age constraint. */
@@ -43,6 +43,14 @@ export interface PnpmWorkspaceMinimumReleaseAge {
 interface MinimumReleaseAgeLayer {
   minimumReleaseAge?: number
   minimumReleaseAgeExclude: string[]
+}
+
+/** The registries resolved from pnpm's `registries` and `registry` settings. */
+interface PnpmWorkspaceRegistries {
+  /** Registry used for packages that do not match a scoped entry. */
+  default?: string
+  /** Registries keyed by package scope, e.g. `{ '@myorg': 'https://registry.example.com/' }`. */
+  scoped: Index<string>
 }
 
 /** Coerces an arbitrary config value into a non-negative minimumReleaseAge number (in minutes), or undefined if invalid. */
@@ -199,14 +207,6 @@ const getPnpmWorkspaceMinimumReleaseAge = async (
   return { minimumReleaseAge, minimumReleaseAgeExclude }
 }
 
-/** The registries resolved from pnpm's `registries` and `registry` settings. */
-export interface PnpmWorkspaceRegistries {
-  /** Registry used for packages that do not match a scoped entry. */
-  default?: string
-  /** Registries keyed by package scope, e.g. `{ '@myorg': 'https://registry.example.com/' }`. */
-  scoped: Index<string>
-}
-
 /** Matches an environment variable placeholder that interpolate did not resolve, e.g. `${MY_REGISTRY}`. */
 const envPlaceholder = /\$\{[^}]*\}/
 
@@ -361,14 +361,6 @@ const withNpmWorkspaceConfig =
     return getVersion(packageName, currentVersion, options, registries, workspaceNpmrc)
   }
 
-export const distTag = withNpmWorkspaceConfig(npm.distTag)
-export const greatest = withNpmWorkspaceConfig(npm.greatest)
-export const latest = withNpmWorkspaceConfig(npm.latest)
-export const minor = withNpmWorkspaceConfig(npm.minor)
-export const newest = withNpmWorkspaceConfig(npm.newest)
-export const patch = withNpmWorkspaceConfig(npm.patch)
-export const semver = withNpmWorkspaceConfig(npm.semver)
-
 /** Builds the pnpm argv from the given args and npm options. */
 const buildArgs = (args: string | string[], npmOptions: NpmOptions): string[] => [
   ...(npmOptions.global ? ['global'] : []),
@@ -393,8 +385,6 @@ async function spawnPnpm(
   return spawnCommand('pnpm', buildArgs(args, npmOptions), spawnPleaseOptions, spawnOptions)
 }
 
-export { defaultPrefix, getPeerDependencies } from './npm.ts'
-
 /**
  * Wraps an npm function whose last three parameters are options plus the two npm config layers, supplying them
  * from pnpm's config. This splits the pnpm config across the same two layers withNpmWorkspaceConfig uses, so
@@ -414,6 +404,14 @@ const withPnpmConfig =
     return fn(...leading, options, registries, workspaceNpmrc)
   }
 
+export { defaultPrefix, getPeerDependencies } from './npm.ts'
+export const distTag = withNpmWorkspaceConfig(npm.distTag)
+export const greatest = withNpmWorkspaceConfig(npm.greatest)
+export const latest = withNpmWorkspaceConfig(npm.latest)
+export const minor = withNpmWorkspaceConfig(npm.minor)
+export const newest = withNpmWorkspaceConfig(npm.newest)
+export const patch = withNpmWorkspaceConfig(npm.patch)
+export const semver = withNpmWorkspaceConfig(npm.semver)
 export const getDistTags = withPnpmConfig(npm.getDistTags)
 export const getEngines = withPnpmConfig(npm.getEngines)
 export const packageAuthorChanged = withPnpmConfig(npm.packageAuthorChanged)
