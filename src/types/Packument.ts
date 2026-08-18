@@ -4,7 +4,8 @@ import { type Version } from './Version.ts'
 /** A packument result object from npm-registry-fetch. */
 export interface Packument {
   name: string
-  deprecated?: boolean
+  // The deprecation message. Only set on entries of `versions`
+  deprecated?: string
   'dist-tags': Index<Version>
   engines: {
     node: string

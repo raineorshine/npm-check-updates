@@ -141,6 +141,34 @@ const fetchPartialPackument = async (
   }
 }
 
+/**
+ * Fetches the manifest published to a dist-tag in packument shape.
+ * Returns null if the tag does not exist or the registry does not serve manifests.
+ */
+const fetchTagManifest = async (
+  name: string,
+  tag: string,
+  opts: npmRegistryFetch.FetchOptions,
+): Promise<Partial<Packument> | null> => {
+  let manifest: Partial<Packument>
+  try {
+    // a manifest is a few KB, so read it whole instead of aborting the stream partway
+    manifest = await fetchPartialPackument(name, [], null, { ...opts, fullMetadata: true }, tag)
+  } catch (err: any) {
+    // a missing tag and an unsupported endpoint are both 4xx
+    if (err.statusCode >= 400 && err.statusCode < 500) return null
+    throw err
+  }
+
+  if (!manifest?.version) return null
+
+  return {
+    name,
+    'dist-tags': { [tag]: manifest.version },
+    versions: { [manifest.version]: manifest as Packument['versions'][string] },
+  }
+}
+
 interface GreatestWithFallbackResult {
   targetVersion: string | null
   fallbackVersion: string | null
@@ -762,14 +790,26 @@ async function fetchUpgradedPackument(
   let result: Partial<Packument> | undefined
   try {
     const tag = options.distTag || 'latest'
+
+    // when a single tag is requested, its manifest exposes deprecated without the whole versions map
+    if (options.distTag && !options.deprecated && !fullMetadata && fields.length === 1 && fields[0] === 'dist-tags') {
+      const manifest = await fetchTagManifest(packageName, tag, npmConfigMerged)
+      if (manifest) return manifest
+
+      // the manifest is missing both when the tag does not exist and when the registry does not
+      // serve manifests, so resolve the tag before paying for the versions map
+      const distTags = await fetchPartialPackument(packageName, ['dist-tags'], tag, npmConfigMerged)
+      if (!distTags['dist-tags']?.[tag]) return distTags
+    }
+
     result = await fetchPartialPackument(
       packageName,
       Array.from(
         new Set([
           'dist-tags',
           ...fields,
-          ...(!options.deprecated ? (['deprecated', 'versions'] as const) : []),
-          ...(options.enginesNode ? (['engines', 'versions'] as const) : []),
+          // deprecated and engines are only set on entries of versions, not on the packument itself
+          ...(!options.deprecated || options.enginesNode ? (['versions'] as const) : []),
         ]),
       ),
       fullMetadata ? null : tag,
@@ -964,8 +1004,16 @@ export const getDistTags = async (
   options: Options = {},
   npmConfigLocal?: NpmConfig,
 ): Promise<Index<Version>> => {
-  // currentVersion is only used to short circuit unfetchable specs, which does not apply here
-  const packument = await npmApi.fetchUpgradedPackumentMemo(packageName, ['dist-tags'], '', options, 0, npmConfigLocal)
+  // currentVersion is only used to short circuit unfetchable specs, which does not apply here.
+  // distTag is cleared because every tag is needed here, not just the one being upgraded to.
+  const packument = await npmApi.fetchUpgradedPackumentMemo(
+    packageName,
+    ['dist-tags'],
+    '',
+    { ...options, distTag: undefined },
+    0,
+    npmConfigLocal,
+  )
   return packument?.['dist-tags'] || {}
 }
 

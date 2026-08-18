@@ -79,8 +79,7 @@
         },
         "deprecated": {
           "type": "boolean",
-          "description": "Include deprecated packages. Use `--no-deprecated` to exclude deprecated packages (20–25% slower).",
-          "default": true
+          "description": "Include deprecated packages. (default: false)"
         },
         "doctor": {
           "type": "boolean",
