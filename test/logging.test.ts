@@ -129,6 +129,34 @@ describe('toDependencyTable', () => {
       await removeDir(tempDir)
     }
   })
+
+  it('falls back to the declared spec when the installed version is padded or bogus', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
+    const depDir = path.join(tempDir, 'node_modules', 'ncu-test-installed')
+    try {
+      await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { 'ncu-test-installed': '^1.2.3' } }), 'utf-8')
+      await fs.mkdir(depDir, { recursive: true })
+      // semver.valid tolerates the trailing CR, so the version has to be rejected on padding too
+      await fs.writeFile(
+        path.join(depDir, 'package.json'),
+        JSON.stringify({ name: 'ncu-test-installed', version: '9.9.9' + CR }),
+        'utf-8',
+      )
+
+      const table = await toDependencyTable({
+        from: { 'ncu-test-installed': '1.2.3' },
+        to: { 'ncu-test-installed': '2.0.0' },
+        format: ['installedVersion'],
+        pkgFile,
+      })
+
+      expect(table).toContain('1.2.3')
+      expect(table).not.toContain(CR)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
 })
 
 describe('printIgnoredUpdatesDueToPeerDeps', () => {

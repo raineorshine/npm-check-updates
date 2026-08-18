@@ -222,7 +222,12 @@ export async function toDependencyTable({
             format?.includes('installedVersion') || format?.includes('homepage') || format?.includes('repo')
               ? await getPackageJson(dep, { pkgFile })
               : null
-          const from = (format?.includes('installedVersion') ? packageJson?.version : fromDeps[dep]) || ''
+          // node_modules can hold a bogus version, so fall back to the declared spec.
+          // semver.valid tolerates padding like a trailing CR, so that is checked separately.
+          const installedVersion = format?.includes('installedVersion') ? packageJson?.version : undefined
+          const installedIsClean =
+            !!installedVersion && installedVersion.trim() === installedVersion && !!semver.valid(installedVersion)
+          const from = (installedIsClean ? installedVersion : fromDeps[dep]) || ''
           const depType =
             dep in (pkg?.devDependencies ?? {})
               ? 'dev'
