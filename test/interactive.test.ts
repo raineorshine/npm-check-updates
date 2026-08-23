@@ -226,4 +226,54 @@ describe('--interactive', () => {
       await removeDir(tempDir)
     }
   })
+  // Pre-selection cannot be observed end-to-end, since INJECT_PROMPTS replaces the prompt entirely.
+  // See test/interactiveSelect.test.ts for the pre-selected state and test/isPreSelected.test.ts for the logic itself.
+  describe('--interactiveSelect', () => {
+    it('rejects an invalid value', async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }), 'utf-8')
+      try {
+        await expect(
+          spawn('node', [bin, '--interactive', '--interactiveSelect', 'bogus'], {}, { cwd: tempDir }),
+        ).rejects.toThrow(
+          'Invalid option value: --interactiveSelect bogus. Valid values are: auto, none, patch, minor, all.',
+        )
+      } finally {
+        await removeDir(tempDir)
+      }
+    })
+
+    it('accepts a valid value', async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(
+        pkgFile,
+        JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0', 'ncu-test-tag': '1.0.0' } }),
+        'utf-8',
+      )
+      try {
+        await spawn(
+          'node',
+          [bin, '--interactive', '--interactiveSelect', 'none'],
+          {},
+          {
+            cwd: tempDir,
+            env: {
+              ...process.env,
+              INJECT_PROMPTS: JSON.stringify([['ncu-test-v2'], true]),
+            },
+          },
+        )
+
+        const upgradedPkg = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+        expect(upgradedPkg.dependencies).toStrictEqual({
+          'ncu-test-v2': '2.0.0',
+          'ncu-test-tag': '1.0.0',
+        })
+      } finally {
+        await removeDir(tempDir)
+      }
+    })
+  })
 })

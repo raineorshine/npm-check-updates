@@ -17,6 +17,7 @@ import { getIgnoredUpgradesDueToEnginesNode } from './getIgnoredUpgradesDueToEng
 import getIgnoredUpgradesDueToPeerDeps from './getIgnoredUpgradesDueToPeerDeps.ts'
 import getPackageManager from './getPackageManager.ts'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry.ts'
+import { isPreSelectedGroup, isPreSelectedUpgrade, resolveInteractiveSelect } from './isPreSelected.ts'
 import keyValueBy from './keyValueBy.ts'
 import {
   print,
@@ -112,6 +113,8 @@ const chooseUpgrades = async (
   if (Object.keys(newDependencies).length > 0) {
     print(options, '')
 
+    const interactiveSelect = resolveInteractiveSelect(options)
+
     if (options.format?.includes('group')) {
       const groups = getDependencyGroups(newDependencies, oldDependencies, options)
 
@@ -123,7 +126,7 @@ const chooseUpgrades = async (
             .map(dep => ({
               title: formattedLines[dep],
               value: dep,
-              selected: ['patch', 'minor'].includes(groupName),
+              selected: isPreSelectedGroup(groupName, interactiveSelect),
             })),
         ]
       })
@@ -150,7 +153,7 @@ const chooseUpgrades = async (
         .map(dep => ({
           title: formattedLines[dep],
           value: dep,
-          selected: true,
+          selected: isPreSelectedUpgrade(oldDependencies[dep], newDependencies[dep], interactiveSelect),
         }))
 
       const response = await prompts({

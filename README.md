@@ -100,6 +100,30 @@ Combine with `--format group` for a truly _luxe_ experience:
 - <kbd>a</kbd> Toggle all
 - <kbd>Enter</kbd> Upgrade
 
+### Pre-selected upgrades
+
+`ncu -i` pre-selects patch and minor upgrades, since `--format group` is enabled by default. Only when group formatting is disabled with `--format no-group` are all upgrades pre-selected, including major. Use `--interactiveSelect` to control this explicitly:
+
+```sh
+# start with nothing selected
+ncu -i --interactiveSelect none
+
+# pre-select patch upgrades only
+ncu -i --interactiveSelect patch
+
+# pre-select patch and minor upgrades
+ncu -i --interactiveSelect minor
+
+# pre-select everything, including major
+ncu -i --interactiveSelect all
+
+# the default: patch and minor with --format group, everything otherwise
+# specify it explicitly to override a value set in your config file
+ncu -i --interactiveSelect auto
+```
+
+Major version zero upgrades (e.g. `0.1.0` → `0.2.0`) are only pre-selected by `all`, since anything may change before `1.0.0`. Custom groups returned by [--groupFunction](#groupfunction) are likewise only pre-selected by `all`.
+
 ## Filter packages
 
 Filter packages using the `--filter` option or adding additional cli arguments:
@@ -287,6 +311,10 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   <tr>
     <td>-i, --interactive</td>
     <td>Enable interactive prompts for each dependency; implies <code>-u</code> unless one of the json options are set.</td>
+  </tr>
+  <tr>
+    <td><a href="#interactiveselect">--interactiveSelect &lt;value&gt;</a></td>
+    <td>Control which upgrades are pre-selected in interactive mode: auto, none, patch, minor, all. Only applies with <code>--interactive</code>. (default: <code>"auto"</code>)</td>
   </tr>
   <tr>
     <td>-j, --jsonAll</td>
@@ -739,6 +767,30 @@ Control the auto-install behavior.
   <tr><td>never</td><td>Does not install and does not prompt.</td></tr>
   <tr><td>prompt</td><td>Shows a message after upgrading that recommends an install, but does not install. In interactive mode, prompts for install. (default)</td></tr>
 </table>
+
+## interactiveSelect
+
+Usage:
+
+```sh
+ncu --interactiveSelect [value]
+```
+
+Default: auto
+
+Control which upgrades are pre-selected in interactive mode. Only applies with `--interactive`.
+
+<table>
+  <tr><td>auto</td><td>Pre-selects patch and minor upgrades with <code>--format group</code>, which is enabled by default, and all upgrades otherwise. This is what <code>ncu -i</code> does. (default)</td></tr>
+  <tr><td>none</td><td>Nothing is pre-selected.</td></tr>
+  <tr><td>patch</td><td>Patch upgrades are pre-selected.</td></tr>
+  <tr><td>minor</td><td>Patch and minor upgrades are pre-selected.</td></tr>
+  <tr><td>all</td><td>All upgrades are pre-selected, including major.</td></tr>
+</table>
+
+Specify `auto` explicitly to restore the default when another value is set in your [config file](#config-file).
+
+Major version zero upgrades (e.g. 0.1.0 → 0.2.0) are only pre-selected by `all`, since anything may change before 1.0.0. Custom groups returned by [--groupFunction](#groupfunction) are likewise only pre-selected by `all`.
 
 ## packageManager
 

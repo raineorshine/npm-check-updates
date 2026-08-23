@@ -226,6 +226,34 @@ const extendedHelpInstall: ExtendedHelp = ({ markdown }) => {
 `
 }
 
+/** Extended help for the --interactiveSelect option. */
+const extendedHelpInteractiveSelect: ExtendedHelp = ({ markdown }) => {
+  const header = 'Control which upgrades are pre-selected in interactive mode. Only applies with `--interactive`.'
+  const tableString = table({
+    colAligns: ['right', 'left'],
+    markdown,
+    rows: [
+      [
+        'auto',
+        `Pre-selects patch and minor upgrades with \`--format group\`, which is enabled by default, and all upgrades otherwise. This is what \`ncu -i\` does. (default)`,
+      ],
+      ['none', `Nothing is pre-selected.`],
+      ['patch', `Patch upgrades are pre-selected.`],
+      ['minor', `Patch and minor upgrades are pre-selected.`],
+      ['all', `All upgrades are pre-selected, including major.`],
+    ],
+  })
+
+  return `${header}
+
+${padLeft(tableString, markdown ? 0 : 4)}
+
+Specify \`auto\` explicitly to restore the default when another value is set in your ${readmeLink('config file', 'config-file', { markdown })}.
+
+Major version zero upgrades (e.g. 0.1.0 → 0.2.0) are only pre-selected by \`all\`, since anything may change before 1.0.0. Custom groups returned by ${readmeLink('--groupFunction', 'groupfunction', { markdown })} are likewise only pre-selected by \`all\`.
+`
+}
+
 /** Extended help for the --filter option. */
 const extendedHelpFilterFunction: ExtendedHelp = ({ markdown }) => {
   return `Include only package names matching the given string, wildcard, glob, comma-or-space-delimited list, /regex/, or predicate function. Only included packages will be checked with \`--peer\`.
@@ -839,6 +867,16 @@ const cliOptions: CLIOption[] = [
     short: 'i',
     description: 'Enable interactive prompts for each dependency; implies `-u` unless one of the json options are set.',
     type: 'boolean',
+  },
+  {
+    long: 'interactiveSelect',
+    arg: 'value',
+    description:
+      'Control which upgrades are pre-selected in interactive mode: auto, none, patch, minor, all. Only applies with `--interactive`.',
+    help: extendedHelpInteractiveSelect,
+    default: 'auto',
+    choices: ['auto', 'none', 'patch', 'minor', 'all'],
+    type: `'auto' | 'none' | 'patch' | 'minor' | 'all'`,
   },
   {
     // program.json is set to true in programInit if any options that begin with 'json' are true
