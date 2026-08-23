@@ -188,6 +188,12 @@
           "type": "boolean",
           "description": "Enable interactive prompts for each dependency; implies `-u` unless one of the json options are set."
         },
+        "interactiveSelect": {
+          "type": "string",
+          "enum": ["auto", "none", "patch", "minor", "all"],
+          "description": "Control which upgrades are pre-selected in interactive mode: auto, none, patch, minor, all. Only applies with `--interactive`. Run \"ncu --help --interactiveSelect\" for details.",
+          "default": "auto"
+        },
         "jsonAll": {
           "type": "boolean",
           "description": "Output new package file instead of human-readable message."
