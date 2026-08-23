@@ -5,6 +5,7 @@ import memoize from 'fast-memoize'
 import { parse as parseYaml } from 'yaml'
 import exists from '../lib/exists.ts'
 import findLockfile from '../lib/findLockfile.ts'
+import interpolate from '../lib/interpolate.ts'
 import { keyValueBy } from '../lib/keyValueBy.ts'
 import { print } from '../lib/logging.ts'
 import parseCooldown from '../lib/parseCooldown.ts'
@@ -48,14 +49,6 @@ export interface YarnMinimalAgeGate {
   /** List of package names excluded from the age gate check. */
   npmPreapprovedPackages: string[]
 }
-
-/** Safely interpolates a string as a template string. Supports `${VAR}`, `${VAR-fallback}` and `${VAR:-fallback}`. */
-const interpolate = (s: string, data: Index<string | undefined>): string =>
-  s.replace(/\$\{(\w+)(?:(:)?-([^}]*))?\}/g, (_match, key, colon, fallback = '') => {
-    const value = data[key]
-    // ${VAR:-fallback} uses the fallback when unset or empty; ${VAR-fallback} only when unset
-    return colon ? value || fallback : (value ?? fallback)
-  })
 
 /** Reads an auth token from a yarn config, interpolates it, and returns it as an npm config key-value pair. */
 export const npmAuthTokenKeyValue = (npmConfig: Index<string | boolean>) => (dep: string, scopedConfig: NpmScope) => {

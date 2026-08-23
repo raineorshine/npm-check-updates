@@ -5,6 +5,7 @@ import memoize from 'fast-memoize'
 import { findUp } from 'find-up'
 import ini from 'ini'
 import { parse as parseYaml } from 'yaml'
+import interpolate from '../lib/interpolate.ts'
 import keyValueBy from '../lib/keyValueBy.ts'
 import { print } from '../lib/logging.ts'
 import spawnCommand from '../lib/spawnCommand.ts'
@@ -30,32 +31,8 @@ type PnpmList = {
   }>
 }[]
 
-/** Reads the npmrc config file from the pnpm-workspace.yaml directory. */
-const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<NpmConfig> => {
-  const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
-  if (!pnpmWorkspacePath) return {}
-
-  const pnpmWorkspaceDir = path.dirname(pnpmWorkspacePath)
-  const pnpmWorkspaceConfigPath = path.join(pnpmWorkspaceDir, '.npmrc')
-
-  let pnpmWorkspaceConfig
-  try {
-    pnpmWorkspaceConfig = await fs.readFile(pnpmWorkspaceConfigPath, 'utf-8')
-  } catch (e) {
-    return {}
-  }
-
-  print(options, `\nUsing pnpm workspace config at ${pnpmWorkspaceConfigPath}:`, 'verbose')
-
-  const config = npm.normalizeNpmConfig(ini.parse(pnpmWorkspaceConfig), pnpmWorkspaceDir)
-
-  print(options, config, 'verbose')
-
-  return config
-})
-
 /** Shape of the pnpm-workspace.yaml minimumReleaseAge settings. */
-export interface PnpmWorkspaceMinimumReleaseAge {
+interface PnpmWorkspaceMinimumReleaseAge {
   /** Minimum release age in minutes (pnpm's native unit). */
   minimumReleaseAge: number
   /** List of package name glob patterns excluded from the minimum release age constraint. */
@@ -66,6 +43,14 @@ export interface PnpmWorkspaceMinimumReleaseAge {
 interface MinimumReleaseAgeLayer {
   minimumReleaseAge?: number
   minimumReleaseAgeExclude: string[]
+}
+
+/** The registries resolved from pnpm's `registries` and `registry` settings. */
+interface PnpmWorkspaceRegistries {
+  /** Registry used for packages that do not match a scoped entry. */
+  default?: string
+  /** Registries keyed by package scope, e.g. `{ '@myorg': 'https://registry.example.com/' }`. */
+  scoped: Index<string>
 }
 
 /** Coerces an arbitrary config value into a non-negative minimumReleaseAge number (in minutes), or undefined if invalid. */
@@ -116,26 +101,34 @@ const getPnpmGlobalConfigDir = (): string => {
   return path.join(os.homedir(), '.config', 'pnpm')
 }
 
-/** Reads and parses a config file, returning its minimumReleaseAge settings, or null if it does not exist or cannot be parsed. */
+/**
+ * Reads and parses a pnpm config file, or null if it does not exist or cannot be parsed.
+ * Memoized since the same file backs several settings, so it is read and parsed once per run, like parseNpmrc.
+ */
+const readPnpmConfig = memoize(
+  async (filePath: string, format: 'yaml' | 'ini'): Promise<Record<string, unknown> | null> => {
+    let content: string
+    try {
+      content = await fs.readFile(filePath, 'utf-8')
+    } catch {
+      return null
+    }
+
+    try {
+      return (format === 'yaml' ? parseYaml(content) : ini.parse(content)) ?? {}
+    } catch {
+      return null
+    }
+  },
+)
+
+/** Reads and parses a config file, returning its minimumReleaseAge settings, or null if unavailable. */
 const readMinimumReleaseAgeLayer = async (
   filePath: string,
   format: 'yaml' | 'ini',
 ): Promise<MinimumReleaseAgeLayer | null> => {
-  let content: string
-  try {
-    content = await fs.readFile(filePath, 'utf-8')
-  } catch {
-    return null
-  }
-
-  let parsed: Record<string, unknown>
-  try {
-    parsed = (format === 'yaml' ? parseYaml(content) : ini.parse(content)) ?? {}
-  } catch {
-    return null
-  }
-
-  return parseMinimumReleaseAgeLayer(parsed)
+  const parsed = await readPnpmConfig(filePath, format)
+  return parsed ? parseMinimumReleaseAgeLayer(parsed) : null
 }
 
 /** Returns true if a path exists. */
@@ -172,15 +165,17 @@ const getPnpmMajorVersion = async (): Promise<number | null> => {
  * minimumReleaseAgeExclude patterns are merged across all considered layers. Returns null if no
  * layer defines a minimumReleaseAge.
  *
- * @param pnpmMajorVersion Optional override, used by tests to avoid spawning pnpm.
+ * @param options.pnpmMajorVersion Optional override, used by tests to avoid spawning pnpm.
  * undefined resolves the major version from the installed pnpm. null reads both globals.
  * A number selects config.yaml for >= 11 and rc for <= 10.
+ * @param options.cwd Directory to search upwards from for pnpm-workspace.yaml. Defaults to process.cwd().
  */
 const getPnpmWorkspaceMinimumReleaseAge = async (
-  pnpmMajorVersion?: number | null,
+  options: { pnpmMajorVersion?: number | null; cwd?: string } = {},
 ): Promise<PnpmWorkspaceMinimumReleaseAge | null> => {
+  const { pnpmMajorVersion, cwd } = options
   const globalConfigDir = getPnpmGlobalConfigDir()
-  const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml')
+  const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml', { cwd })
   const globalConfigYamlPath = path.join(globalConfigDir, 'config.yaml')
   const globalRcPath = path.join(globalConfigDir, 'rc')
 
@@ -212,6 +207,64 @@ const getPnpmWorkspaceMinimumReleaseAge = async (
   return { minimumReleaseAge, minimumReleaseAgeExclude }
 }
 
+/** Matches an environment variable placeholder that interpolate did not resolve, e.g. `${MY_REGISTRY}`. */
+const envPlaceholder = /\$\{[^}]*\}/
+
+/**
+ * Extracts the string-valued registries from an already-parsed config object, keyed by `default` or by scope.
+ *
+ * pnpm accepts both the `registries` map and the plain `registry` setting, which the docs describe as equivalent to
+ * `registries.default`. The more specific `registries.default` wins when a single layer defines both.
+ *
+ * @param expandEnv Whether to expand `${VAR}` placeholders in the registry URLs. pnpm only expands them in
+ * trusted locations, i.e. its global config. Since pnpm 11.5.3 a registry URL containing a placeholder in
+ * pnpm-workspace.yaml is ignored instead, since that file is committed and could otherwise be used to leak
+ * environment secrets to an attacker-controlled registry (GHSA-3qhv-2rgh-x77r).
+ */
+const parseRegistries = (parsed: Record<string, unknown> | null, expandEnv: boolean): Index<string> => {
+  const registries = parsed?.registries
+  const scopes: Index<unknown> =
+    typeof registries === 'object' && registries !== null && !Array.isArray(registries)
+      ? (registries as Index<unknown>)
+      : {}
+
+  return keyValueBy({ default: parsed?.registry, ...scopes }, (scope, registry) => {
+    if (typeof registry !== 'string') return null
+
+    const value = expandEnv ? interpolate(registry, process.env) : registry
+    // an empty value, or one left over from an unexpanded or unset placeholder, would produce a bogus URL,
+    // so drop the registry rather than request it
+    return value.trim() === '' || envPlaceholder.test(value) ? null : { [scope]: value }
+  })
+}
+
+/**
+ * Resolves registries settings from pnpm's config layers, given an already-resolved pnpm-workspace.yaml path.
+ *
+ * pnpm-workspace.yaml takes precedence over pnpm's global config per key, including `default`.
+ * registries requires pnpm >= 11, so the pnpm <= 10 rc file is not consulted.
+ */
+const resolvePnpmRegistries = async (pnpmWorkspacePath?: string): Promise<PnpmWorkspaceRegistries> => {
+  const [workspaceConfig, globalConfig] = await Promise.all([
+    pnpmWorkspacePath ? readPnpmConfig(pnpmWorkspacePath, 'yaml') : null,
+    readPnpmConfig(path.join(getPnpmGlobalConfigDir(), 'config.yaml'), 'yaml'),
+  ])
+
+  const { default: defaultRegistry, ...scoped } = {
+    ...parseRegistries(globalConfig, true),
+    ...parseRegistries(workspaceConfig, false),
+  }
+
+  return { default: defaultRegistry, scoped }
+}
+
+/** Reads registries settings from pnpm's config, searching upwards from cwd for pnpm-workspace.yaml.
+ *
+ * @param options.cwd Directory to search upwards from for pnpm-workspace.yaml. Defaults to process.cwd().
+ */
+const getPnpmWorkspaceRegistries = async (options: { cwd?: string } = {}): Promise<PnpmWorkspaceRegistries> =>
+  resolvePnpmRegistries(await findUp('pnpm-workspace.yaml', { cwd: options.cwd }))
+
 /** Parses the output of `pnpm ls -g --json` into a { name: version } index. */
 const parseList = (stdout: string, command: string, stderr?: string): Index<string | undefined> => {
   const result = npm.parseJson<PnpmList>(stdout, { command, stderr })
@@ -240,19 +293,73 @@ export const list = async (options: Options = {}): Promise<Index<string | undefi
   return parseList(stdout, command, stderr)
 }
 
-/** Wraps a GetVersion function and passes the npmrc located next to the pnpm-workspace.yaml if it exists. */
+/**
+ * Reads and parses the npmrc that sits next to pnpm-workspace.yaml, or null if it does not exist.
+ * Memoized on the directory, like readPnpmConfig, so a workspace with many packages reads and parses it once.
+ */
+const readWorkspaceNpmrc = memoize(async (pnpmWorkspaceDir: string): Promise<NpmConfig | null> => {
+  const pnpmWorkspaceConfigPath = path.join(pnpmWorkspaceDir, '.npmrc')
+  const contents = await fs.readFile(pnpmWorkspaceConfigPath, 'utf-8').catch(() => null)
+  return contents == null ? null : npm.normalizeNpmConfig(ini.parse(contents), pnpmWorkspaceDir)
+})
+
+/** Reads the npmrc that sits next to pnpm-workspace.yaml, or an empty config if it does not exist. */
+const npmConfigFromWorkspaceNpmrc = async (options: Options, pnpmWorkspaceDir: string): Promise<NpmConfig> => {
+  const config = await readWorkspaceNpmrc(pnpmWorkspaceDir)
+  if (config == null) return {}
+
+  print(options, `\nUsing pnpm workspace config at ${path.join(pnpmWorkspaceDir, '.npmrc')}:`, 'verbose')
+
+  return config
+}
+
+/** pnpm's config split by the npm config layer each part belongs to, since they rank differently. */
+interface PnpmNpmConfig {
+  /**
+   * pnpm's own registries/registry settings, merged as npmConfigLocal so they outrank the ambient npm config.
+   * Otherwise the `registry=` that `npm config set registry` leaves in the user .npmrc would silently win over
+   * pnpm-workspace.yaml, which is the very thing these settings are read to fix.
+   */
+  registries: NpmConfig
+  /**
+   * The npmrc next to pnpm-workspace.yaml, merged as npmConfigWorkspaceProject so the local npm config still
+   * overrides it, as decided in #1285.
+   */
+  workspaceNpmrc: NpmConfig
+}
+
+// Read the npmrc next to pnpm-workspace.yaml, plus pnpm's own registries setting, and convert them to npm config variables.
+// Defined as a memoized function to read the config files only once, and only if pnpm is being used.
+const npmConfigFromPnpmWorkspace = memoize(async (options: Options): Promise<PnpmNpmConfig> => {
+  const pnpmWorkspacePath = await findUp('pnpm-workspace.yaml', { cwd: options.cwd })
+  const pnpmWorkspaceDir = pnpmWorkspacePath ? path.dirname(pnpmWorkspacePath) : undefined
+
+  const [workspaceNpmrc, { default: defaultRegistry, scoped }] = await Promise.all([
+    pnpmWorkspaceDir ? npmConfigFromWorkspaceNpmrc(options, pnpmWorkspaceDir) : {},
+    resolvePnpmRegistries(pnpmWorkspacePath),
+  ])
+
+  const registries: NpmConfig = {
+    ...keyValueBy(scoped, (scope, registry) => ({ [`${scope}:registry`]: registry })),
+    ...(defaultRegistry ? { registry: defaultRegistry } : null),
+  }
+
+  // a pnpm project that configures no registries resolves to an empty config, which is not worth printing
+  if (Object.keys(registries).length > 0) {
+    print(options, '\npnpm registries in npm format:', 'verbose')
+    print(options, registries, 'verbose')
+  }
+
+  return { registries, workspaceNpmrc }
+})
+
+/** Wraps a GetVersion function and passes pnpm's registries plus the npmrc located next to the pnpm-workspace.yaml if it exists. */
 const withNpmWorkspaceConfig =
   (getVersion: GetVersion): GetVersion =>
-  async (packageName, currentVersion, options = {}) =>
-    getVersion(packageName, currentVersion, options, {}, await npmConfigFromPnpmWorkspace(options))
-
-export const distTag = withNpmWorkspaceConfig(npm.distTag)
-export const greatest = withNpmWorkspaceConfig(npm.greatest)
-export const latest = withNpmWorkspaceConfig(npm.latest)
-export const minor = withNpmWorkspaceConfig(npm.minor)
-export const newest = withNpmWorkspaceConfig(npm.newest)
-export const patch = withNpmWorkspaceConfig(npm.patch)
-export const semver = withNpmWorkspaceConfig(npm.semver)
+  async (packageName, currentVersion, options = {}) => {
+    const { registries, workspaceNpmrc } = await npmConfigFromPnpmWorkspace(options)
+    return getVersion(packageName, currentVersion, options, registries, workspaceNpmrc)
+  }
 
 /** Builds the pnpm argv from the given args and npm options. */
 const buildArgs = (args: string | string[], npmOptions: NpmOptions): string[] => [
@@ -278,12 +385,42 @@ async function spawnPnpm(
   return spawnCommand('pnpm', buildArgs(args, npmOptions), spawnPleaseOptions, spawnOptions)
 }
 
-export { defaultPrefix, getDistTags, getPeerDependencies, getEngines, packageAuthorChanged } from './npm.ts'
+/**
+ * Wraps an npm function whose last three parameters are options plus the two npm config layers, supplying them
+ * from pnpm's config. This splits the pnpm config across the same two layers withNpmWorkspaceConfig uses, so
+ * that every code path resolves the same registry. Otherwise a project resolves versions and engines from two
+ * different ones.
+ */
+const withPnpmConfig =
+  <Args extends unknown[], Result>(
+    fn: (...args: [...Args, Options, NpmConfig, NpmConfig]) => Promise<Result>,
+  ): ((...args: [...Args, Options?]) => Promise<Result>) =>
+  async (...args) => {
+    // fn.length is the count of its params up to (excluding) the first with a default value, i.e. leading args
+    // before `options: Options = {}`.
+    const leading = args.slice(0, fn.length) as Args
+    const options = (args[fn.length] ?? {}) as Options
+    const { registries, workspaceNpmrc } = await npmConfigFromPnpmWorkspace(options)
+    return fn(...leading, options, registries, workspaceNpmrc)
+  }
+
+export { defaultPrefix, getPeerDependencies } from './npm.ts'
+export const distTag = withNpmWorkspaceConfig(npm.distTag)
+export const greatest = withNpmWorkspaceConfig(npm.greatest)
+export const latest = withNpmWorkspaceConfig(npm.latest)
+export const minor = withNpmWorkspaceConfig(npm.minor)
+export const newest = withNpmWorkspaceConfig(npm.newest)
+export const patch = withNpmWorkspaceConfig(npm.patch)
+export const semver = withNpmWorkspaceConfig(npm.semver)
+export const getDistTags = withPnpmConfig(npm.getDistTags)
+export const getEngines = withPnpmConfig(npm.getEngines)
+export const packageAuthorChanged = withPnpmConfig(npm.packageAuthorChanged)
 
 export default spawnPnpm
 
 export const pnpmApi = {
   buildArgs,
   getPnpmWorkspaceMinimumReleaseAge,
+  getPnpmWorkspaceRegistries,
   parseList,
 }

@@ -1645,7 +1645,7 @@ describe('cooldown', () => {
         'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: 11 })
 
       expect(result).toStrictEqual({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['react'] })
     })
@@ -1657,13 +1657,13 @@ describe('cooldown', () => {
         'minimumReleaseAge=10080\nminimumReleaseAgeExclude=["react"]\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(10)
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: 10 })
 
       expect(result).toStrictEqual({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['react'] })
     })
 
     it('returns null when no config layer defines minimumReleaseAge', async () => {
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: 11 })
       expect(result).toBeNull()
     })
 
@@ -1677,7 +1677,7 @@ describe('cooldown', () => {
         'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: 11 })
 
       // workspace minimumReleaseAge wins; excludes from both layers are merged
       expect(result).toStrictEqual({ minimumReleaseAge: 1440, minimumReleaseAgeExclude: ['@myorg/*', 'react'] })
@@ -1693,7 +1693,7 @@ describe('cooldown', () => {
         'minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - react\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: 11 })
 
       expect(result).toStrictEqual({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['@myorg/*', 'react'] })
     })
@@ -1708,7 +1708,7 @@ describe('cooldown', () => {
         'minimumReleaseAge=60\nminimumReleaseAgeExclude=["left-pad"]\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(11)
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: 11 })
 
       expect(result).toStrictEqual({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['react'] })
     })
@@ -1723,7 +1723,7 @@ describe('cooldown', () => {
         'minimumReleaseAge=60\nminimumReleaseAgeExclude=["left-pad"]\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(10)
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: 10 })
 
       expect(result).toStrictEqual({ minimumReleaseAge: 60, minimumReleaseAgeExclude: ['left-pad'] })
     })
@@ -1738,7 +1738,7 @@ describe('cooldown', () => {
         'minimumReleaseAge=60\nminimumReleaseAgeExclude=["react","left-pad"]\n',
       )
 
-      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge(null)
+      const result = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ pnpmMajorVersion: null })
 
       expect(result).toStrictEqual({ minimumReleaseAge: 10080, minimumReleaseAgeExclude: ['react', 'left-pad'] })
     })

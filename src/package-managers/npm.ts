@@ -694,11 +694,12 @@ export async function packageAuthorChanged(
   upgradedVersion: VersionSpec,
   options: Options = {},
   npmConfigLocal?: NpmConfig,
+  npmConfigWorkspaceProject?: NpmConfig,
 ): Promise<boolean> {
   const npmConfig = npmApi.findNpmConfig()
   // merge the project/cwd .npmrc so a scoped private registry is respected, like the main fetch path
   const npmConfigMerged = mergeNpmConfigs(
-    { npmConfigUser: { ...npmConfig, fullMetadata: true }, npmConfigLocal },
+    { npmConfigUser: { ...npmConfig, fullMetadata: true }, npmConfigLocal, npmConfigWorkspaceProject },
     options,
   )
   const result = await fetchPartialPackument(packageName, ['versions'], null, npmConfigMerged)
@@ -777,7 +778,15 @@ async function fetchUpgradedPackument(
     )
   } catch (err: any) {
     if (options.retry && ++retried <= options.retry) {
-      return fetchUpgradedPackument(packageName, fieldsExtended, currentVersion, options, retried, npmConfigLocal)
+      return fetchUpgradedPackument(
+        packageName,
+        fieldsExtended,
+        currentVersion,
+        options,
+        retried,
+        npmConfigLocal,
+        npmConfigWorkspaceProject,
+      )
     }
 
     throw err
@@ -963,9 +972,18 @@ export const getDistTags = async (
   packageName: string,
   options: Options = {},
   npmConfigLocal?: NpmConfig,
+  npmConfigWorkspaceProject?: NpmConfig,
 ): Promise<Index<Version>> => {
   // currentVersion is only used to short circuit unfetchable specs, which does not apply here
-  const packument = await npmApi.fetchUpgradedPackumentMemo(packageName, ['dist-tags'], '', options, 0, npmConfigLocal)
+  const packument = await npmApi.fetchUpgradedPackumentMemo(
+    packageName,
+    ['dist-tags'],
+    '',
+    options,
+    0,
+    npmConfigLocal,
+    npmConfigWorkspaceProject,
+  )
   return packument?.['dist-tags'] || {}
 }
 
@@ -981,10 +999,14 @@ export const getEngines = async (
   version: Version,
   options: Options = {},
   npmConfigLocal?: NpmConfig,
+  npmConfigWorkspaceProject?: NpmConfig,
 ): Promise<Index<VersionSpec | undefined>> => {
   const npmConfig = npmApi.findNpmConfig()
   // merge the project/cwd .npmrc so a scoped private registry is respected, like the main fetch path
-  const npmConfigMerged = mergeNpmConfigs({ npmConfigUser: { ...npmConfig }, npmConfigLocal }, options)
+  const npmConfigMerged = mergeNpmConfigs(
+    { npmConfigUser: { ...npmConfig }, npmConfigLocal, npmConfigWorkspaceProject },
+    options,
+  )
   const result = await fetchPartialPackument(packageName, [`engines`], null, npmConfigMerged, version)
   return result.engines || {}
 }
