@@ -103,7 +103,6 @@
     "fast-glob": "^3.3.3",
     "fast-memoize": "^2.5.2",
     "find-up": "^8.0.0",
-    "fp-and-or": "^1.0.2",
     "globals": "^17.11.0",
     "hosted-git-info": "^10.1.1",
     "ini": "^7.0.0",
