@@ -38,6 +38,24 @@ describe('enginesNode', () => {
     expect(upgraded).toStrictEqual({})
   })
 
+  // the dist-tag manifest is skipped when deprecated versions are allowed, so engines has to come from the versions map
+  it('do not update packages with incompatible engines.node when deprecated versions are allowed', async () => {
+    const upgraded = await ncu({
+      enginesNode: true,
+      deprecated: true,
+      packageData: {
+        dependencies: {
+          del: '3.0.0',
+        },
+        engines: {
+          node: '>=1',
+        },
+      },
+    })
+
+    expect(upgraded).toStrictEqual({})
+  })
+
   it('update packages that do not have engines.node', async () => {
     const upgraded = (await ncu({
       enginesNode: true,
