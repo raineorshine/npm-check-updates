@@ -2,6 +2,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
+import MarkdownIt from 'markdown-it'
 import prettier from 'prettier'
 import spawnCommand from '../src/lib/spawnCommand.ts'
 
@@ -32,6 +33,9 @@ const MAX_FIX_PASSES = 10
 
 /** Matches a rule name in markdownlint-cli2's output: `<path>/CHANGELOG.md:7:1 error MD040/fenced-code-language ...`. */
 const RULE_RE = /^.*CHANGELOG\.md:\d+(?::\d+)?(?: \w+)? (MD\d+)\//gm
+
+/** html is enabled so that markdown inside an HTML block or comment is not parsed as content. */
+const markdownIt = new MarkdownIt({ html: true })
 
 /** Narrows a release to one that is published and has a non-null published_at value. */
 const isPublished = (release: Release): release is PublishedRelease => !release.draft && release.published_at !== null
@@ -68,65 +72,44 @@ const fetchReleases = async (): Promise<Release[]> => {
   return releases
 }
 
-/** Matches an atx heading. Indented code blocks are excluded for free, as they are indented by at least four spaces. */
-const HEADING_RE = /^(#{1,6})(?=\s)/
-
-/** Matches the start or end of a fenced code block. */
-const FENCE_RE = /^ {0,3}(`{3,}|~{3,})/
-
-/**
- * Splits a release body into lines, marking which lines are headings. Lines inside a fenced code block are never
- * headings, otherwise a shell snippet like `# install dependencies` would be rewritten as one.
- */
-const parseLines = (body: string): { text: string; level: number }[] => {
-  let fence: string | null = null
-
-  return body.split('\n').map(text => {
-    const fenceMatch = text.match(FENCE_RE)
-
-    if (fence) {
-      // a fence is closed by a run of the same character that is at least as long, with nothing after it
-      if (
-        fenceMatch?.[1].startsWith(fence[0]) &&
-        fenceMatch[1].length >= fence.length &&
-        !text.slice(fenceMatch[0].length).trim()
-      ) {
-        fence = null
-      }
-      return { text, level: 0 }
-    }
-
-    if (fenceMatch) {
-      fence = fenceMatch[1]
-      return { text, level: 0 }
-    }
-
-    return { text, level: text.match(HEADING_RE)?.[1].length ?? 0 }
-  })
-}
-
 /**
  * Shifts markdown headings down so that release bodies nest under their version heading. The shallowest heading in the
  * body becomes an h3, and each heading is capped at one level deeper than the one before it, otherwise the result trips
  * markdownlint's heading-increment rule, which has no automatic fix.
+ *
+ * Headings are located with markdown-it rather than a regex, so a `# comment` inside a code fence or an HTML block is
+ * left alone, and a setext heading is shifted like any other.
  */
 const shiftHeadings = (body: string): string => {
-  const lines = parseLines(body.replace(/\r\n/g, '\n'))
-  const levels = lines.filter(line => line.level > 0).map(line => line.level)
-  if (levels.length === 0) return lines.map(line => line.text).join('\n')
+  const normalized = body.replace(/\r\n/g, '\n')
+  const headings = markdownIt.parse(normalized, {}).filter(token => token.type === 'heading_open')
+  if (headings.length === 0) return normalized
 
-  const shift = 3 - Math.min(...levels)
+  const lines = normalized.split('\n')
+  const shift = 3 - Math.min(...headings.map(heading => Number(heading.tag.slice(1))))
   // the version heading is an h2, so the first body heading may be at most an h3
   let previous = 2
+  const dropped = new Set<number>()
 
-  return lines
-    .map(line => {
-      if (line.level === 0) return line.text
-      const level = Math.min(Math.max(line.level + shift, 3), previous + 1, 6)
-      previous = level
-      return line.text.replace(HEADING_RE, '#'.repeat(level))
-    })
-    .join('\n')
+  for (const heading of headings) {
+    const [start, end] = heading.map!
+    const level = Math.min(Math.max(Number(heading.tag.slice(1)) + shift, 3), previous + 1, 6)
+    previous = level
+
+    if (heading.markup.startsWith('#')) {
+      // the indent is captured so that a heading nested in a list item stays in it
+      lines[start] = lines[start].replace(/^( {0,3})#{1,6}/, `$1${'#'.repeat(level)}`)
+    } else {
+      // setext has only two levels, so rewrite it as atx and drop the underline
+      lines[start] = `${'#'.repeat(level)} ${lines
+        .slice(start, end - 1)
+        .join(' ')
+        .trim()}`
+      for (let line = start + 1; line < end; line++) dropped.add(line)
+    }
+  }
+
+  return lines.filter((_, index) => !dropped.has(index)).join('\n')
 }
 
 /** Renders a single release as a markdown section. */

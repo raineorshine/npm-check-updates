@@ -222,7 +222,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--cacheFile &lt;path&gt;</td>
-    <td>Filepath for the cache file. Only works with <code>--cache</code>. (default: <code>"~/.ncu-cache.json"</code>)</td>
+    <td>Filepath for the cache file. Only works with <code>--cache</code>. (default: <code>&quot;~/.ncu-cache.json&quot;</code>)</td>
   </tr>
   <tr>
     <td>--color</td>
@@ -242,7 +242,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#cooldown">-c, --cooldown &lt;period&gt;</a></td>
-    <td>Sets a minimum age for package versions to be considered for upgrade. Accepts a number (days) or a string with a unit: "7d" (days), "12h" (hours), "30m" (minutes). Reduces the risk of installing newly published, potentially compromised packages.</td>
+    <td>Sets a minimum age for package versions to be considered for upgrade. Accepts a number (days) or a string with a unit: &quot;7d&quot; (days), &quot;12h&quot; (hours), &quot;30m&quot; (minutes). Reduces the risk of installing newly published, potentially compromised packages.</td>
   </tr>
   <tr>
     <td>--cwd &lt;path&gt;</td>
@@ -254,7 +254,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>--dep &lt;value&gt;</td>
-    <td>Check one or more sections of dependencies only: dev, optional, peer, prod, packageManager, or devEngines (comma-delimited). (default: <code>["prod","dev","optional","packageManager"]</code>)</td>
+    <td>Check one or more sections of dependencies only: dev, optional, peer, prod, packageManager, or devEngines (comma-delimited). (default: <code>[&quot;prod&quot;,&quot;dev&quot;,&quot;optional&quot;,&quot;packageManager&quot;]</code>)</td>
   </tr>
   <tr>
     <td>--deprecated</td>
@@ -294,7 +294,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#format">--format &lt;value&gt;</a></td>
-    <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. <code>group</code> is the only value included by default; use <code>--format no-group</code> to disable it. (default: <code>["group"]</code>)</td>
+    <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. <code>group</code> is the only value included by default; use <code>--format no-group</code> to disable it. (default: <code>[&quot;group&quot;]</code>)</td>
   </tr>
   <tr>
     <td>-g, --global</td>
@@ -306,7 +306,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#install">--install &lt;value&gt;</a></td>
-    <td>Control the auto-install behavior: always, never, prompt. (default: <code>"prompt"</code>)</td>
+    <td>Control the auto-install behavior: always, never, prompt. (default: <code>&quot;prompt&quot;</code>)</td>
   </tr>
   <tr>
     <td>-i, --interactive</td>
@@ -314,7 +314,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#interactiveselect">--interactiveSelect &lt;value&gt;</a></td>
-    <td>Control which upgrades are pre-selected in interactive mode: auto, none, patch, minor, all. Only applies with <code>--interactive</code>. (default: <code>"auto"</code>)</td>
+    <td>Control which upgrades are pre-selected in interactive mode: auto, none, patch, minor, all. Only applies with <code>--interactive</code>. (default: <code>&quot;auto&quot;</code>)</td>
   </tr>
   <tr>
     <td>-j, --jsonAll</td>
@@ -330,7 +330,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td>-l, --loglevel &lt;n&gt;</td>
-    <td>Amount to log: silent, error, minimal, warn, info, verbose, silly. (default: <code>"warn"</code>)</td>
+    <td>Amount to log: silent, error, minimal, warn, info, verbose, silly. (default: <code>&quot;warn&quot;</code>)</td>
   </tr>
   <tr>
     <td>--mergeConfig</td>
