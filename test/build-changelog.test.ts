@@ -98,6 +98,22 @@ describe('build-changelog', () => {
     )
   })
 
+  it('nests setext headings and leaves markdown inside HTML comments alone', async () => {
+    await chdirTemp()
+
+    // an unshifted setext heading stays an h1, which trips MD003 and MD025, neither of which markdownlint can fix, so
+    // both would end up disabled for the whole changelog
+    const body = ['What’s Changed', '==============', '', '* a fix', '', '<!--', '# not a heading', '-->'].join('\n')
+
+    stubReleases([{ tag_name: 'v1.0.0', body, draft: false, published_at: '2024-01-01T00:00:00.000Z' }])
+
+    await buildChangelog()
+
+    expect(await fs.readFile('CHANGELOG.md', 'utf8')).toBe(
+      `${PREFIX}## [1.0.0] - 2024-01-01\n\n### What’s Changed\n\n- a fix\n\n<!--\n# not a heading\n-->\n`,
+    )
+  })
+
   it('leaves comments inside fenced code blocks alone', async () => {
     await chdirTemp()
 
