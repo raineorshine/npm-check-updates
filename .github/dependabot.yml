@@ -27,6 +27,11 @@ updates:
     open-pull-requests-limit: 10
     versioning-strategy: 'increase'
     groups:
+      # markdownlint-cli2 pins markdownlint, so bumping one without the other duplicates it in the lockfile
+      markdownlint:
+        patterns:
+          - 'markdownlint'
+          - 'markdownlint-cli2'
       production-dependencies:
         dependency-type: 'production'
         update-types:
