@@ -1,10 +1,9 @@
 import fs from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { parse as parseJsonc } from 'jsonc-parser'
-import { applyFixes } from 'markdownlint'
-import { lint, readConfig } from 'markdownlint/promise'
 import prettier from 'prettier'
+import spawnCommand from '../src/lib/spawnCommand.ts'
 
 /** A GitHub release as returned by the GitHub REST API. */
 interface Release {
@@ -30,6 +29,9 @@ const DISABLE_COMMENT_RE = /^<!-- markdownlint-disable [^>]*-->\n\n/m
 
 /** Upper bound on markdownlint fix passes. Two or three are enough in practice; the limit only guards against a fix that oscillates. */
 const MAX_FIX_PASSES = 10
+
+/** Matches a rule name in markdownlint-cli2's output: `<path>/CHANGELOG.md:7:1 error MD040/fenced-code-language ...`. */
+const RULE_RE = /^.*CHANGELOG\.md:\d+(?::\d+)?(?: \w+)? (MD\d+)\//gm
 
 /** Narrows a release to one that is published and has a non-null published_at value. */
 const isPublished = (release: Release): release is PublishedRelease => !release.draft && release.published_at !== null
@@ -152,6 +154,40 @@ const disableRules = (content: string, rules: string[]): string =>
   content.replace(HEADER_PREFIX, `${HEADER_PREFIX}<!-- markdownlint-disable ${rules.join(' ')} -->\n\n`)
 
 /**
+ * Fixes the content with markdownlint-cli2, returning the result along with the rules it could not fix.
+ *
+ * The content goes through a temp file rather than stdin because --fix re-lints after fixing, so one run reports
+ * exactly the violations that have no automatic fix. The config is passed explicitly so that the location of the temp
+ * file does not decide which rules apply, and the path is prefixed with `:` to pass it literally rather than as a glob.
+ */
+const fixMarkdown = async (content: string): Promise<{ fixed: string; unfixable: string[] }> => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-changelog-'))
+  const file = path.join(dir, 'CHANGELOG.md')
+
+  try {
+    await fs.writeFile(file, content)
+
+    // violations exit non-zero, which is an expected result here rather than a failure
+    const { stderr } = await spawnCommand(
+      'markdownlint-cli2',
+      ['--config', path.join(ROOT, '.markdownlint.json'), '--fix', `:${file}`],
+      { rejectOnError: false },
+    )
+
+    const rules = [...stderr.matchAll(RULE_RE)].map(match => match[1])
+
+    // markdownlint reported something this cannot read, so bail rather than write a changelog that fails CI
+    if (rules.length === 0 && stderr.trim()) {
+      throw new Error(`Could not parse markdownlint-cli2 output:\n${stderr}`)
+    }
+
+    return { fixed: await fs.readFile(file, 'utf8'), unfixable: [...new Set(rules)].sort() }
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true })
+  }
+}
+
+/**
  * Formats the changelog the same way CI verifies it: prettier, then markdownlint --fix. Release bodies are authored by
  * hand on the GitHub releases page, so they routinely violate the repo's markdown rules. Anything that has no automatic
  * fix (a code fence without a language, for example) is disabled inline instead, so that a hand-written release body can
@@ -161,26 +197,21 @@ export async function formatChangelog(content: string): Promise<string> {
   // plugins are omitted since they are resolved relative to the cwd and only affect the typescript parser
   const { plugins: _plugins, ...prettierConfig } = (await prettier.resolveConfig(path.join(ROOT, 'CHANGELOG.md'))) ?? {}
   const prettierOptions: prettier.Options = { ...prettierConfig, parser: 'markdown' }
-  const config = await readConfig(path.join(ROOT, '.markdownlint.json'), [
-    text => parseJsonc(text) as Record<string, unknown>,
-  ])
 
   // drop the previous disable comment so that the rules are recalculated from the current content
   let formatted = content.replace(DISABLE_COMMENT_RE, '')
 
-  // a fix can reveal further errors, so fix until only unfixable errors are left
+  // each tool can undo the other's work, and a fix can reveal further errors, so run both until a pass changes nothing
   for (let pass = 0; pass < MAX_FIX_PASSES; pass++) {
-    formatted = await prettier.format(formatted, prettierOptions)
-    const errors = (await lint({ strings: { changelog: formatted }, config })).changelog
+    const { fixed, unfixable } = await fixMarkdown(await prettier.format(formatted, prettierOptions))
 
-    if (!errors.some(error => error.fixInfo)) {
-      const unfixable = [...new Set(errors.map(error => error.ruleNames[0]))].sort()
-      if (unfixable.length === 0) return formatted
+    if (fixed === formatted) {
+      if (unfixable.length === 0) return fixed
       console.log(`[build-changelog] Disabling rules with no automatic fix: ${unfixable.join(', ')}`)
-      return disableRules(formatted, unfixable)
+      return disableRules(fixed, unfixable)
     }
 
-    formatted = applyFixes(formatted, errors)
+    formatted = fixed
   }
 
   throw new Error(`markdownlint fixes did not converge after ${MAX_FIX_PASSES} passes`)
