@@ -116,11 +116,12 @@ const chooseUpgrades = async (
 
     const interactiveSelect = resolveInteractiveSelect(options)
 
-    if (options.format?.includes('group')) {
-      const groups = getDependencyGroups(newDependencies, oldDependencies, options)
+    const groups = options.format?.includes('group')
+      ? getDependencyGroups(newDependencies, oldDependencies, options)
+      : null
 
-      const choices = groups.flatMap(({ heading, groupName, packages }) => {
-        return [
+    const choices = groups
+      ? groups.flatMap(({ heading, groupName, packages }) => [
           { title: '\n' + heading, heading: true },
           ...Object.keys(packages)
             .sort()
@@ -129,51 +130,32 @@ const chooseUpgrades = async (
               value: dep,
               selected: isPreSelectedGroup(groupName, interactiveSelect),
             })),
-        ]
-      })
+        ])
+      : Object.keys(newDependencies)
+          .sort()
+          .map(dep => ({
+            title: formattedLines[dep],
+            value: dep,
+            selected: isPreSelectedUpgrade(oldDependencies[dep], newDependencies[dep], interactiveSelect),
+          }))
 
-      const response = await prompts({
-        choices: [...choices, { title: ' ', heading: true }],
-        hint: showHint && INTERACTIVE_HINT,
-        instructions: false,
-        message: 'Choose which packages to update',
-        name: 'value',
-        optionsPerPage: getOptionsPerPage(showHint, groups),
-        type: 'multiselect',
-        onState: (state: any) => {
-          if (state.aborted) {
-            process.nextTick(() => process.exit(1))
-          }
-        },
-      })
+    const response = await prompts({
+      choices: [...choices, { title: ' ', heading: true }],
+      // the grouped list already ends with a blank heading row, so only the flat list needs the extra newline
+      hint: showHint && INTERACTIVE_HINT + (groups ? '' : '\n'),
+      instructions: false,
+      message: 'Choose which packages to update',
+      name: 'value',
+      optionsPerPage: getOptionsPerPage(showHint, groups ?? undefined),
+      type: 'multiselect',
+      onState: (state: any) => {
+        if (state.aborted) {
+          process.nextTick(() => process.exit(1))
+        }
+      },
+    })
 
-      chosenDeps = response.value
-    } else {
-      const choices = Object.keys(newDependencies)
-        .sort()
-        .map(dep => ({
-          title: formattedLines[dep],
-          value: dep,
-          selected: isPreSelectedUpgrade(oldDependencies[dep], newDependencies[dep], interactiveSelect),
-        }))
-
-      const response = await prompts({
-        choices: [...choices, { title: ' ', heading: true }],
-        hint: showHint && INTERACTIVE_HINT + '\n',
-        instructions: false,
-        message: 'Choose which packages to update',
-        name: 'value',
-        optionsPerPage: getOptionsPerPage(showHint),
-        type: 'multiselect',
-        onState: (state: any) => {
-          if (state.aborted) {
-            process.nextTick(() => process.exit(1))
-          }
-        },
-      })
-
-      chosenDeps = response.value
-    }
+    chosenDeps = response.value
   }
 
   return keyValueBy(chosenDeps, dep => ({ [dep]: newDependencies[dep] }))
