@@ -5,11 +5,15 @@ import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import { describe, expect, it, vi } from 'vitest'
 import { chalkInit } from '../src/lib/chalk.ts'
 import {
+  errorText,
+  print,
   printIgnoredUpdatesDueToEnginesNode,
   printIgnoredUpdatesDueToPeerDeps,
   printUpgrades,
+  sanitizeForDisplay,
   toDependencyTable,
 } from '../src/lib/logging.ts'
+import programError from '../src/lib/programError.ts'
 import removeDir from './helpers/removeDir.ts'
 
 const ESC = String.fromCharCode(0x1b)
@@ -32,6 +36,17 @@ const captureRaw = async (fn: () => unknown): Promise<string> => {
 
 /** Captures everything printed to the console during fn. */
 const captureOutput = async (fn: () => unknown): Promise<string> => stripAnsi(await captureRaw(fn))
+
+/** Captures everything printed to stderr during fn, leaving ANSI intact. */
+const captureRawStderr = async (fn: () => unknown): Promise<string> => {
+  const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  try {
+    await fn()
+    return errSpy.mock.calls.flat().join('\n')
+  } finally {
+    errSpy.mockRestore()
+  }
+}
 
 describe('toDependencyTable', () => {
   chalkInit(false)
@@ -114,6 +129,34 @@ describe('toDependencyTable', () => {
       await removeDir(tempDir)
     }
   })
+
+  it('falls back to the declared spec when the installed version is padded or bogus', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const pkgFile = path.join(tempDir, 'package.json')
+    const depDir = path.join(tempDir, 'node_modules', 'ncu-test-installed')
+    try {
+      await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { 'ncu-test-installed': '^1.2.3' } }), 'utf-8')
+      await fs.mkdir(depDir, { recursive: true })
+      // semver.valid tolerates the trailing CR, so the version has to be rejected on padding too
+      await fs.writeFile(
+        path.join(depDir, 'package.json'),
+        JSON.stringify({ name: 'ncu-test-installed', version: '9.9.9' + CR }),
+        'utf-8',
+      )
+
+      const table = await toDependencyTable({
+        from: { 'ncu-test-installed': '1.2.3' },
+        to: { 'ncu-test-installed': '2.0.0' },
+        format: ['installedVersion'],
+        pkgFile,
+      })
+
+      expect(table).toContain('1.2.3')
+      expect(table).not.toContain(CR)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
 })
 
 describe('printIgnoredUpdatesDueToPeerDeps', () => {
@@ -191,5 +234,87 @@ describe('printUpgrades', () => {
     )
     expect(output).toContain('E404 Not Found')
     expect(output).not.toContain('pwned')
+  })
+})
+
+describe('sanitizeForDisplay', () => {
+  it('removes an OSC sequence and its payload', () => {
+    expect(sanitizeForDisplay('E404' + OSC_TITLE)).toBe('E404')
+  })
+
+  it('removes a bare CR, which stripVTControlCharacters leaves behind', () => {
+    expect(sanitizeForDisplay('safe' + CR + 'overwritten')).toBe('safeoverwritten')
+  })
+
+  it('leaves ordinary text alone', () => {
+    expect(sanitizeForDisplay('https://github.com/raineorshine/npm-check-updates')).toBe(
+      'https://github.com/raineorshine/npm-check-updates',
+    )
+  })
+})
+
+describe('errorText', () => {
+  it('extracts the stack from an Error and strips terminal escape sequences', () => {
+    const text = errorText(new Error('E404 Not Found' + OSC_TITLE))
+    expect(text).toContain('E404 Not Found')
+    expect(text).not.toContain('pwned')
+  })
+
+  it('stringifies a non-Error value and strips terminal escape sequences', () => {
+    expect(errorText('boom' + OSC_TITLE)).toBe('boom')
+  })
+})
+
+// caught errors are printed via print() itself rather than a dedicated function, so they follow the same
+// loglevel/json gating as everything else
+describe('print with a caught error', () => {
+  chalkInit(false)
+
+  it('prints a sanitized error at the error console method', async () => {
+    const output = await captureRawStderr(() => print({}, errorText(new Error('boom' + OSC_TITLE)), null, 'error'))
+    expect(output).toContain('boom')
+    expect(output).not.toContain('pwned')
+  })
+
+  it('is suppressed under --json, since only the exit code should signal failure', async () => {
+    const output = await captureRawStderr(() => print({ json: true }, errorText(new Error('boom')), null, 'error'))
+    expect(output).toBe('')
+  })
+
+  it('is suppressed under --loglevel silent', async () => {
+    const output = await captureRawStderr(() =>
+      print({ loglevel: 'silent' }, errorText(new Error('boom')), null, 'error'),
+    )
+    expect(output).toBe('')
+  })
+})
+
+describe('print with a verbose error context', () => {
+  it('strips terminal escape sequences from the caught error', async () => {
+    const output = await captureRaw(() =>
+      print(
+        { loglevel: 'verbose' },
+        `\nFailed to get the peer dependencies of a@1.0.0:\n${errorText('boom' + OSC_TITLE)}`,
+        'verbose',
+      ),
+    )
+    expect(output).toContain('Failed to get the peer dependencies of a@1.0.0')
+    expect(output).toContain('boom')
+    expect(output).not.toContain('pwned')
+  })
+})
+
+describe('programError', () => {
+  chalkInit(false)
+
+  it('strips terminal escape sequences from the thrown message', () => {
+    expect(() => programError({}, 'Error executing "pnpm ls". boom' + OSC_TITLE)).toThrow(
+      'Error executing "pnpm ls". boom',
+    )
+    expect(() => programError({}, 'boom' + OSC_TITLE)).not.toThrow('pwned')
+  })
+
+  it('accepts an Error, which some callers pass despite the signature', () => {
+    expect(() => programError({}, new Error('ENOENT: no such file') as unknown as string)).toThrow('ENOENT')
   })
 })
