@@ -5,7 +5,7 @@ import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import prettier from 'prettier'
 import { createGenerator } from 'ts-json-schema-generator'
 import cliOptions, { renderExtendedHelp } from '../src/cli-options.ts'
-import { chalkInit, getChalk } from '../src/lib/chalk.ts'
+import { getStyle, styleInit } from '../src/lib/style.ts'
 import type CLIOption from '../src/types/CLIOption.ts'
 
 const INJECT_HEADER =
@@ -41,8 +41,8 @@ ${optionRows}
 ${readme.slice(optionsEnd)}`
 
   // Inject advanced options into README
-  // Even though chalkInit has a colorless option, we need stripAnsi to remove the ANSI characters frim the output of cli-table
-  chalkInit()
+  // Even though styleInit has a colorless option, we need stripAnsi to remove the ANSI characters from the output of cli-table
+  styleInit()
   const advancedOptionsStart =
     readme.indexOf('<!-- BEGIN Advanced Options -->') + '<!-- BEGIN Advanced Options -->'.length
   const advancedOptionsEnd = readme.indexOf('<!-- END Advanced Options -->', advancedOptionsStart)
@@ -120,10 +120,10 @@ const generateRunOptionsJsonSchema = (): string => {
 
 /** Generate and save README.md, RunOptions.ts, RunOptions.json. */
 export async function buildOptions(): Promise<void> {
-  const chalk = getChalk(true)
-  const logPrefix = chalk.cyan('[build-options]')
+  const style = getStyle(true)
+  const logPrefix = style.cyan('[build-options]')
 
-  console.log(logPrefix, chalk.green('Generating RunOptions type definition and JSON schema...'))
+  console.log(logPrefix, style.green('Generating RunOptions type definition and JSON schema...'))
 
   // Generate TypeScript
   await fs.writeFile('src/types/RunOptions.ts', generateRunOptions(cliOptions))
@@ -139,19 +139,19 @@ export async function buildOptions(): Promise<void> {
 
   /** Inject the options into the README and write it. */
   const writeReadme = async () => {
-    console.log(logPrefix, chalk.green('Updating README.md...'))
+    console.log(logPrefix, style.green('Updating README.md...'))
     return fs.writeFile('README.md', await injectReadme())
   }
   /** Write the JSON schema to a file. */
   const writeSchema = async () => {
-    console.log(logPrefix, chalk.green('Writing RunOptions.json...'))
+    console.log(logPrefix, style.green('Writing RunOptions.json...'))
     return fs.writeFile('src/types/RunOptions.json', formattedSchema)
   }
 
   // Write the JSON schema and README in parallel for speed
   await Promise.all([writeReadme(), writeSchema()])
 
-  console.log(logPrefix, chalk.green('Done!\n'))
+  console.log(logPrefix, style.green('Done!\n'))
 }
 
 const isDirectRun = import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href

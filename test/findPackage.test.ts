@@ -3,12 +3,12 @@ import os from 'node:os'
 import path from 'node:path'
 import { Readable } from 'node:stream'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { chalkInit } from '../src/lib/chalk.ts'
 import findPackage from '../src/lib/findPackage.ts'
+import { styleInit } from '../src/lib/style.ts'
 import removeDir from './helpers/removeDir.ts'
 
 describe('findPackage', () => {
-  chalkInit(null)
+  styleInit(null)
 
   it('returns packageData directly when provided, with no package file', async () => {
     const result = await findPackage({ packageData: '{"name":"x"}', loglevel: 'silent' })

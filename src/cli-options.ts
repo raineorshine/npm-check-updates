@@ -1,9 +1,9 @@
 import path from 'node:path'
 import { defaultCacheFile } from './lib/cache.ts'
-import chalk from './lib/chalk.ts'
 import keyValueBy from './lib/keyValueBy.ts'
 import parseCooldown from './lib/parseCooldown.ts'
 import { sortBy } from './lib/sortBy.ts'
+import style from './lib/style.ts'
 import table from './lib/table.ts'
 import uncode from './lib/uncode.ts'
 import type CLIOption from './types/CLIOption.ts'
@@ -87,7 +87,7 @@ const extendedHelpDoctor: ExtendedHelp = ({
   markdown,
 }) => `Iteratively installs upgrades and runs your project's tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
 
-${chalk.yellow('Requires `-u` to execute')} (modifies your package file, lock file, and node_modules)
+${style.yellow('Requires `-u` to execute')} (modifies your package file, lock file, and node_modules)
 
 To be more precise:
 
@@ -104,8 +104,8 @@ Additional options:
 ${table({
   markdown,
   rows: [
-    [chalk.cyan('--doctorInstall'), 'specify a custom install script (default: `npm install` or `yarn`)'],
-    [chalk.cyan('--doctorTest'), 'specify a custom test script (default: `npm test`)'],
+    [style.cyan('--doctorInstall'), 'specify a custom install script (default: `npm install` or `yarn`)'],
+    [style.cyan('--doctorTest'), 'specify a custom test script (default: `npm test`)'],
   ],
 })}
 
@@ -151,7 +151,7 @@ const extendedHelpFilterResults: ExtendedHelp = ({ markdown }) => {
 > ⚠️ The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', { markdown })}.
 
 ${codeBlock(
-  `${chalk.gray(`/** Exclude major version updates. Note this could also be achieved with --target semver.
+  `${style.gray(`/** Exclude major version updates. Note this could also be achieved with --target semver.
   @param {string} packageName               The name of the dependency.
   @param {string} current                   Current version declaration (may be a range).
   @param {SemVer[]} currentVersionSemver    Current version declaration in semantic versioning format (may be a range).
@@ -159,17 +159,17 @@ ${codeBlock(
   @param {SemVer} upgradedVersionSemver     Upgraded version in semantic versioning format.
   @returns {boolean}                        Return true if the upgrade should be kept; otherwise, it will be ignored.
 */`)}
-${chalk.green('filterResults')}: (packageName, { current, currentVersionSemver, upgraded, upgradedVersionSemver }) ${chalk.cyan(
+${style.green('filterResults')}: (packageName, { current, currentVersionSemver, upgraded, upgradedVersionSemver }) ${style.cyan(
     '=>',
   )} {
-  ${chalk.cyan('const')} currentMajor ${chalk.red('=')} parseInt(currentVersionSemver[${chalk.cyan('0')}]?.major, ${chalk.cyan(
+  ${style.cyan('const')} currentMajor ${style.red('=')} parseInt(currentVersionSemver[${style.cyan('0')}]?.major, ${style.cyan(
     '10',
   )})
-  ${chalk.cyan('const')} upgradedMajor ${chalk.red('=')} parseInt(upgradedVersionSemver?.major, ${chalk.cyan('10')})
-  ${chalk.red('if')} (currentMajor ${chalk.red('&&')} upgradedMajor) {
-    ${chalk.red('return')} currentMajor ${chalk.red('>=')} upgradedMajor
+  ${style.cyan('const')} upgradedMajor ${style.red('=')} parseInt(upgradedVersionSemver?.major, ${style.cyan('10')})
+  ${style.red('if')} (currentMajor ${style.red('&&')} upgradedMajor) {
+    ${style.red('return')} currentMajor ${style.red('>=')} upgradedMajor
   }
-  ${chalk.red('return')} ${chalk.cyan('true')}
+  ${style.red('return')} ${style.cyan('true')}
 }`,
   { markdown },
 )}
@@ -265,17 +265,17 @@ You can also specify a custom function in your .ncurc.js file, or when importing
 > ⚠️ The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', { markdown })}.
 
 ${codeBlock(
-  `${chalk.gray(`/**
+  `${style.gray(`/**
   @param name     The name of the dependency.
   @param semver   A parsed Semver array of the current version.
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be included, false if it should be excluded.
 */`)}
-${chalk.green('filter')}: (name, semver) ${chalk.cyan('=>')} {
-  ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)})) {
-    ${chalk.red('return')} ${chalk.cyan('false')}
+${style.green('filter')}: (name, semver) ${style.cyan('=>')} {
+  ${style.red('if')} (name.startsWith(${style.yellow(`'@myorg/'`)})) {
+    ${style.red('return')} ${style.cyan('false')}
   }
-  ${chalk.red('return')} ${chalk.cyan('true')}
+  ${style.red('return')} ${style.cyan('true')}
 }`,
   { markdown },
 )}
@@ -304,17 +304,17 @@ You can also specify a custom function in your .ncurc.js file, or when importing
 > ⚠️ The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', { markdown })}.
 
 ${codeBlock(
-  `${chalk.gray(`/**
+  `${style.gray(`/**
   @param name     The name of the dependency.
   @param semver   A parsed Semver array of the current version.
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        True if the package should be excluded, false if it should be included.
 */`)}
-${chalk.green('reject')}: (name, semver) ${chalk.cyan('=>')} {
-  ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)})) {
-    ${chalk.red('return')} ${chalk.cyan('true')}
+${style.green('reject')}: (name, semver) ${style.cyan('=>')} {
+  ${style.red('if')} (name.startsWith(${style.yellow(`'@myorg/'`)})) {
+    ${style.red('return')} ${style.cyan('true')}
   }
-  ${chalk.red('return')} ${chalk.cyan('false')}
+  ${style.red('return')} ${style.cyan('false')}
 }`,
   { markdown },
 )}
@@ -340,7 +340,7 @@ const extendedHelpGroupFunction: ExtendedHelp = ({ markdown }) => {
 Only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', { markdown })}.
 
 ${codeBlock(
-  `${chalk.gray(`/**
+  `${style.gray(`/**
   @param name             The name of the dependency.
   @param defaultGroup     The predefined group name which will be used by default.
   @param currentSpec      The current version range in your package.json.
@@ -348,16 +348,16 @@ ${codeBlock(
   @param upgradedVersion  The upgraded version number returned by the registry.
   @returns                A predefined group name ('major' | 'minor' | 'patch' | 'majorVersionZero' | 'none') or a custom string to create your own group.
 */`)}
-${chalk.green('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion) ${chalk.cyan('=>')} {
-  ${chalk.red('if')} (name ${chalk.red('===')} ${chalk.yellow(`'typescript'`)} ${chalk.red(
+${style.green('groupFunction')}: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion) ${style.cyan('=>')} {
+  ${style.red('if')} (name ${style.red('===')} ${style.yellow(`'typescript'`)} ${style.red(
     '&&',
-  )} defaultGroup ${chalk.red('===')} ${chalk.yellow(`'minor'`)}) {
-    ${chalk.red('return')} ${chalk.yellow(`'major'`)}
+  )} defaultGroup ${style.red('===')} ${style.yellow(`'minor'`)}) {
+    ${style.red('return')} ${style.yellow(`'major'`)}
   }
-  ${chalk.red('if')} (name.startsWith(${chalk.yellow(`'@myorg/'`)})) {
-    ${chalk.red('return')} ${chalk.yellow(`'My Org'`)}
+  ${style.red('if')} (name.startsWith(${style.yellow(`'@myorg/'`)})) {
+    ${style.red('return')} ${style.yellow(`'My Org'`)}
   }
-  ${chalk.red('return')} defaultGroup
+  ${style.red('return')} defaultGroup
 }`,
   { markdown },
 )}
@@ -404,17 +404,17 @@ You can also specify a custom function in your .ncurc.js file, or when importing
 > ⚠️ The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', { markdown })}.
 
 ${codeBlock(
-  `${chalk.gray(`/** Upgrade major version zero to the next minor version, and everything else to latest.
+  `${style.gray(`/** Upgrade major version zero to the next minor version, and everything else to latest.
   @param name     The name of the dependency.
   @param semver   A parsed Semver object of the upgraded version.
     (See: https://git.coolaj86.com/coolaj86/semver-utils.js#semverutils-parse-semverstring)
   @returns        One of the valid target values (specified in the table above).
 */`)}
-${chalk.green('target')}: (name, semver) ${chalk.cyan('=>')} {
-  ${chalk.red('if')} (parseInt(semver[0]?.major) ${chalk.red('===')} ${chalk.yellow("'0'")}) ${chalk.red(
+${style.green('target')}: (name, semver) ${style.cyan('=>')} {
+  ${style.red('if')} (parseInt(semver[0]?.major) ${style.red('===')} ${style.yellow("'0'")}) ${style.red(
     'return',
-  )} ${chalk.yellow("'minor'")}
-  ${chalk.red('return')} ${chalk.yellow("'latest'")}
+  )} ${style.yellow("'minor'")}
+  ${style.red('return')} ${style.yellow("'latest'")}
 }`,
   { markdown },
 )}
@@ -449,7 +449,7 @@ const extendedHelpRegistryType: ExtendedHelp = ({ markdown }) => {
       ['npm', `Default npm registry`],
       [
         'json',
-        `Checks versions from a file or url to a simple JSON registry. Must include the ${chalk.cyan('`--registry`')} option.`,
+        `Checks versions from a file or url to a simple JSON registry. Must include the ${style.cyan('`--registry`')} option.`,
       ],
     ],
   })
@@ -461,13 +461,13 @@ ${padLeft(tableString, markdown ? 0 : 4)}
 Example:
 
 ${codeBlock(
-  `${chalk.gray('# local file')}
+  `${style.gray('# local file')}
 ncu --registryType json --registry ./registry.json
 
-${chalk.gray('# url')}
+${style.gray('# url')}
 ncu --registryType json --registry https://api.mydomain/registry.json
 
-${chalk.gray('# you can omit --registryType when the registry ends in .json')}
+${style.gray('# you can omit --registryType when the registry ends in .json')}
 ncu --registry ./registry.json
 ncu --registry https://api.mydomain/registry.json`,
   { markdown, lang: 'sh' },
@@ -489,11 +489,11 @@ ${codeBlock(
 const extendedHelpPeer: ExtendedHelp = ({ markdown }) => {
   return `Check peer dependencies of installed packages and filter updates to compatible versions.
 
-${chalk.bold('Example')}:
+${style.bold('Example')}:
 
 The following example demonstrates how \`--peer\` works, and how it uses peer dependencies from upgraded modules.
 
-The package ${chalk.bold('ncu-test-peer-update')} has two versions published:
+The package ${style.bold('ncu-test-peer-update')} has two versions published:
 
 - 1.0.0 has peer dependency \`"ncu-test-return-version": "1.0.x"\`
 - 1.1.0 has peer dependency \`"ncu-test-return-version": "1.1.x"\`
@@ -514,23 +514,23 @@ ${codeBlock(
   { markdown, lang: 'json' },
 )}
 
-${chalk.bold('With `--peer`')}:
+${style.bold('With `--peer`')}:
 
 ncu upgrades packages to the highest version that still adheres to the peer dependency constraints:
 
 ${codeBlock(
-  `ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
-ncu-test-return-version  1.0.0  →  1.${chalk.cyan('1.0')}`,
+  `ncu-test-peer-update     1.0.0  →  1.${style.cyan('1.0')}
+ncu-test-return-version  1.0.0  →  1.${style.cyan('1.0')}`,
   { markdown, lang: 'text' },
 )}
 
-${chalk.bold('Without `--peer`')}:
+${style.bold('Without `--peer`')}:
 
 As a comparison: without using the \`--peer\` option, ncu will suggest the latest versions, ignoring peer dependencies:
 
 ${codeBlock(
-  `ncu-test-peer-update     1.0.0  →  1.${chalk.cyan('1.0')}
-ncu-test-return-version  1.0.0  →  ${chalk.red('2.0.0')}`,
+  `ncu-test-peer-update     1.0.0  →  1.${style.cyan('1.0')}
+ncu-test-return-version  1.0.0  →  ${style.red('2.0.0')}`,
   { markdown, lang: 'text' },
 )}
 `
@@ -552,7 +552,7 @@ ${codeBlock(
 
 With the default \`--target latest\`, if the latest dist-tag version is within the cooldown window, ncu falls back to the greatest version that passes the cooldown threshold. To instead skip the package entirely (strict behaviour), use \`--target "@latest"\`.
 
-${chalk.bold('Example')}:
+${style.bold('Example')}:
 
 Let's examine how cooldown works with a package that has these versions available:
 
@@ -569,7 +569,7 @@ ${codeBlock(
   { markdown, lang: 'text' },
 )}
 
-${chalk.bold('With default target (latest)')}:
+${style.bold('With default target (latest)')}:
 
 ${codeBlock(`ncu --cooldown 5`, { markdown, lang: 'sh' })}
 
@@ -578,7 +578,7 @@ Falls back to 1.2.0 because:
 - Latest version (1.3.0) is only 4 days old (within 5-day cooldown)
 - 1.2.0 is the greatest version that is at least 5 days old
 
-${chalk.bold('With `@latest` strict target')}:
+${style.bold('With `@latest` strict target')}:
 
 ${codeBlock(`ncu --cooldown 5 --target @latest`, { markdown, lang: 'sh' })}
 
@@ -588,7 +588,7 @@ No update will be suggested because:
 - Cooldown requires versions to be at least 5 days old
 - \`@latest\` is strict: no fallback to older versions
 
-${chalk.bold('With `@beta`/`@tag` target')}:
+${style.bold('With `@beta`/`@tag` target')}:
 
 ${codeBlock(`ncu --cooldown 3 --target @beta`, { markdown, lang: 'sh' })}
 
@@ -598,7 +598,7 @@ No update will be suggested because:
 - Cooldown requires versions to be at least 3 days old
 - Use \`--cooldown 2\` or lower to allow this update
 
-${chalk.bold('With other targets')}:
+${style.bold('With other targets')}:
 
 ${codeBlock(`ncu --cooldown 5 --target greatest|newest|minor|patch|semver`, { markdown, lang: 'sh' })}
 
@@ -617,11 +617,11 @@ You can also provide a custom function in your .ncurc.js file or when importing 
 > ⚠️ The predicate function is only available in .ncurc.js or when importing npm-check-updates as a module, not on the command line. To convert a JSON config to a JS config, follow the instructions at ${readmeLink('Config Functions', 'config-functions', { markdown })}.
 
 ${codeBlock(
-  `${chalk.gray(`/** Set cooldown to 3 days but skip it for \`@my-company\` packages.
+  `${style.gray(`/** Set cooldown to 3 days but skip it for \`@my-company\` packages.
   @param packageName     The name of the dependency.
   @returns               Cooldown days restriction for given package.
 */`)}
-${chalk.green('cooldown')}: packageName ${chalk.cyan('=>')} (packageName.startsWith(${chalk.yellow("'@my-company'")}) ? ${chalk.cyan('0')} : ${chalk.cyan('3')})`,
+${style.green('cooldown')}: packageName ${style.cyan('=>')} (packageName.startsWith(${style.yellow("'@my-company'")}) ? ${style.cyan('0')} : ${style.cyan('3')})`,
   { markdown },
 )}
 

@@ -11,7 +11,6 @@ import { type PackageFile } from '../types/PackageFile.ts'
 import { type Version } from '../types/Version.ts'
 import { type CooldownInfo } from '../types/VersionResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
-import chalk from './chalk.ts'
 import getCooldownInfo from './getCooldownInfo.ts'
 import getCurrentDependencies from './getCurrentDependencies.ts'
 import { getIgnoredUpgradesDueToEnginesNode } from './getIgnoredUpgradesDueToEnginesNode.ts'
@@ -32,6 +31,7 @@ import {
 import { pick } from './pick.ts'
 import programError from './programError.ts'
 import resolveDepSections from './resolveDepSections.ts'
+import style from './style.ts'
 import upgradePackageData from './upgradePackageData.ts'
 import upgradePackageDefinitions from './upgradePackageDefinitions.ts'
 import parseJson from './utils/parseJson.ts'
@@ -318,7 +318,7 @@ export default async function runLocal(
           .map(arg => (arg.includes(' ') ? `"${arg}"` : arg))
           .join(' ')
         const ncuOptions = argv ? ' ' + argv : argv
-        const upgradeHint = `\nRun ${chalk.cyan(`${ncuCmd}${ncuOptions} -u`)} to upgrade ${
+        const upgradeHint = `\nRun ${style.cyan(`${ncuCmd}${ncuOptions} -u`)} to upgrade ${
           options.packageFile || 'package.json'
         }`
         print(options, upgradeHint)

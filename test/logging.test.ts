@@ -3,7 +3,6 @@ import os from 'node:os'
 import path from 'node:path'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import { describe, expect, it, vi } from 'vitest'
-import { chalkInit } from '../src/lib/chalk.ts'
 import {
   errorText,
   print,
@@ -14,6 +13,7 @@ import {
   toDependencyTable,
 } from '../src/lib/logging.ts'
 import programError from '../src/lib/programError.ts'
+import { styleInit } from '../src/lib/style.ts'
 import removeDir from './helpers/removeDir.ts'
 
 const ESC = String.fromCharCode(0x1b)
@@ -49,7 +49,7 @@ const captureRawStderr = async (fn: () => unknown): Promise<string> => {
 }
 
 describe('toDependencyTable', () => {
-  chalkInit(false)
+  styleInit(false)
 
   it('renders a from → to row for each dependency', async () => {
     const table = await toDependencyTable({ from: { a: '1.0.0' }, to: { a: '2.0.0' } })
@@ -160,7 +160,7 @@ describe('toDependencyTable', () => {
 })
 
 describe('printIgnoredUpdatesDueToPeerDeps', () => {
-  chalkInit(false)
+  styleInit(false)
 
   it('prints the peer dependency requirements that blocked each upgrade', async () => {
     const output = await captureOutput(() =>
@@ -199,7 +199,7 @@ describe('printIgnoredUpdatesDueToPeerDeps', () => {
 })
 
 describe('printIgnoredUpdatesDueToEnginesNode', () => {
-  chalkInit(false)
+  styleInit(false)
 
   it('prints the required node version that blocked each upgrade', async () => {
     const output = await captureOutput(() =>
@@ -223,7 +223,7 @@ describe('printIgnoredUpdatesDueToEnginesNode', () => {
 })
 
 describe('printUpgrades', () => {
-  chalkInit(false)
+  styleInit(false)
 
   it('strips terminal escape sequences from registry errors', async () => {
     const output = await captureRaw(() =>
@@ -268,7 +268,7 @@ describe('errorText', () => {
 // caught errors are printed via print() itself rather than a dedicated function, so they follow the same
 // loglevel/json gating as everything else
 describe('print with a caught error', () => {
-  chalkInit(false)
+  styleInit(false)
 
   it('prints a sanitized error at the error console method', async () => {
     const output = await captureRawStderr(() => print({}, errorText(new Error('boom' + OSC_TITLE)), null, 'error'))
@@ -305,7 +305,7 @@ describe('print with a verbose error context', () => {
 })
 
 describe('programError', () => {
-  chalkInit(false)
+  styleInit(false)
 
   it('strips terminal escape sequences from the thrown message', () => {
     expect(() => programError({}, 'Error executing "pnpm ls". boom' + OSC_TITLE)).toThrow(

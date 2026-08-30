@@ -6,7 +6,7 @@ import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { cliOptionsMap } from '../src/cli-options.ts'
-import { chalkInit } from '../src/lib/chalk.ts'
+import { styleInit } from '../src/lib/style.ts'
 import { copyFixture, createNcuRegExp, ncu, testFail, testPass } from './helpers/doctorHelpers.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
@@ -30,7 +30,7 @@ describe('doctor', { timeout: 3 * 60 * 1000 }, () => {
 
   describe('npm', () => {
     it('print instructions when -u is not specified', async () => {
-      chalkInit()
+      styleInit()
       const cwd = path.join(doctorTests, 'nopackagefile')
       const output = await ncu(['--doctor'], {}, { cwd })
       expect(stripAnsi(output)).toBe(

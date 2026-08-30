@@ -13,8 +13,8 @@ import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
 import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
-import chalk, { chalkInit } from './chalk.ts'
 import loadPackageInfoFromFile from './loadPackageInfoFromFile.ts'
+import style, { styleInit } from './style.ts'
 import upgradePackageData from './upgradePackageData.ts'
 
 type Run = (options?: Options) => Promise<PackageFile | Index<VersionSpec> | void>
@@ -30,7 +30,7 @@ const npm = (
   { spawnOptions, spawnPleaseOptions }: { spawnOptions?: SpawnOptions; spawnPleaseOptions?: SpawnPleaseOptions } = {},
 ): Promise<SpawnResult> => {
   if (print) {
-    console.log(chalk.blue([options.packageManager, ...args].join(' ')))
+    console.log(style.blue([options.packageManager, ...args].join(' ')))
   }
 
   const spawnOptionsMerged = {
@@ -95,7 +95,7 @@ const loadPackageFileForDoctor = async (options: Options): Promise<PackageInfo> 
 /** Iteratively installs upgrades and runs tests to identify breaking upgrades. */
 // we have to pass run directly since it would be a circular require if doctor included this file
 const doctor = async (run: Run, options: Options): Promise<void> => {
-  chalkInit(options.color)
+  styleInit(options.color)
 
   // color has to be carried through, otherwise the package manager is always spawned with FORCE_COLOR
   const pmOptions: Options = { packageManager: options.packageManager, color: options.color }
@@ -122,7 +122,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
   const runInstall = async (): Promise<void> => {
     if (options.doctorInstall) {
       const [installCommand, ...testArgs] = options.doctorInstall.split(' ')
-      console.log(chalk.blue(options.doctorInstall))
+      console.log(style.blue(options.doctorInstall))
       await spawn(installCommand, testArgs)
     } else {
       await npm(['install'], pmOptions, true)
@@ -133,7 +133,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
   const runTests = async (): Promise<void> => {
     const spawnPleaseOptions = {
       stderr: (data: string): void => {
-        console.error(chalk.red(data.toString()))
+        console.error(style.red(data.toString()))
       },
       // Test runners typically write to stdout, so we need to print stdout.
       // Otherwise test failures will be silenced.
@@ -150,7 +150,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         groups = [...groups, match[2] || match[1] || match[0]]
       }
       const [testCommand, ...testArgs] = groups
-      console.log(chalk.blue(options.doctorTest))
+      console.log(style.blue(options.doctorTest))
       await spawn(testCommand, testArgs, spawnPleaseOptions)
     } else {
       await npm(['run', 'test'], pmOptions, true, { spawnPleaseOptions })
@@ -192,7 +192,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
   // upgrade all dependencies
   // save upgrades for later in case we need to iterate
   console.log(
-    chalk.blue(
+    style.blue(
       'ncu ' +
         process.argv
           .slice(2)
@@ -211,7 +211,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
   })) as Index<VersionSpec>
 
   if (Object.keys(upgrades || {}).length === 0) {
-    console.log('All dependencies are up-to-date ' + chalk.green.bold(':)'))
+    console.log('All dependencies are up-to-date ' + style.green.bold(':)'))
     return
   }
 
@@ -228,7 +228,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
     // run tests after all upgrades
     await runTests()
 
-    console.log(`${chalk.green('✓')} Tests pass`)
+    console.log(`${style.green('✓')} Tests pass`)
 
     await printUpgrades(options, {
       current: allDependencies,
@@ -236,9 +236,9 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
       total: Object.keys(upgrades || {}).length,
     })
 
-    console.log(`\n${options.interactive ? 'Chosen' : 'All'} dependencies upgraded and installed ${chalk.green(':)')}`)
+    console.log(`\n${options.interactive ? 'Chosen' : 'All'} dependencies upgraded and installed ${style.green(':)')}`)
   } catch {
-    console.error(chalk.red(installAllSuccess ? 'Tests failed' : 'Install failed'))
+    console.error(style.red(installAllSuccess ? 'Tests failed' : 'Install failed'))
     console.log(`Identifying broken dependencies`)
 
     // restore package file, lockFile and re-install
@@ -261,7 +261,7 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
       } catch (e) {
         const installCommand = (options.packageManager || 'npm') + ' install'
         throw new Error(
-          `Error: Doctor mode was about to test individual upgrades, but ${chalk.cyan(
+          `Error: Doctor mode was about to test individual upgrades, but ${style.cyan(
             installCommand,
           )} failed after rolling back to your existing package and lock files. This is unexpected since the initial install before any upgrades succeeded. Either npm failed to revert a partial install, or failed anomalously on the second run. Please check your internet connection and retry. If doctor mode fails consistently, report a bug with your complete list of dependency versions at https://github.com/raineorshine/npm-check-updates/issues.`,
           { cause: e },
@@ -289,14 +289,14 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
           try {
             await npm(['run', 'prepare'], pmOptions, true)
           } catch (e) {
-            console.error(chalk.red('Prepare script failed'))
+            console.error(style.red('Prepare script failed'))
             throw e
           }
         }
 
         // run tests after individual upgrade
         await runTests()
-        console.log(`  ${chalk.green('✓')} ${name} ${allDependencies[name]} → ${version}`)
+        console.log(`  ${style.green('✓')} ${name} ${allDependencies[name]} → ${version}`)
 
         // save upgraded package data so that passing versions can still be saved even when there is a failure
         lastPkgFile = await upgradePackageData(
@@ -310,8 +310,8 @@ const doctor = async (run: Run, options: Options): Promise<void> => {
         lockFile = await fs.readFile(lockFileName, 'utf-8')
       } catch (e) {
         // print failing package
-        console.error(`  ${chalk.red('✗')} ${name} ${allDependencies[name]} → ${version}\n`)
-        print(options, chalk.red(errorText(e)), null, 'error')
+        console.error(`  ${style.red('✗')} ${name} ${allDependencies[name]} → ${version}\n`)
+        print(options, style.red(errorText(e)), null, 'error')
 
         // restore last good lock file
         await fs.writeFile(lockFileName, lockFile)

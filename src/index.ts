@@ -3,7 +3,6 @@ import prompts from 'prompts-ncu'
 import pkg from '../package.json' with { type: 'json' }
 import { cliOptionsMap } from './cli-options.ts'
 import { cacheClear } from './lib/cache.ts'
-import chalk, { chalkInit } from './lib/chalk.ts'
 import defineConfig from './lib/defineConfig.ts'
 import determinePackageManager from './lib/determinePackageManager.ts'
 import doctor from './lib/doctor.ts'
@@ -17,6 +16,7 @@ import programError from './lib/programError.ts'
 import runGlobal from './lib/runGlobal.ts'
 import runLocal from './lib/runLocal.ts'
 import spawnCommand from './lib/spawnCommand.ts'
+import style, { styleInit } from './lib/style.ts'
 import { type Index } from './types/IndexType.ts'
 import { type Options } from './types/Options.ts'
 import { type PackageFile } from './types/PackageFile.ts'
@@ -137,7 +137,7 @@ const install = async (
 
   // by default, show an install hint after upgrading
   // this will be disabled in interactive mode if the user chooses to have npm-check-updates execute the install command
-  const installHint = `Run ${chalk.cyan(packageManager + ' install')}${
+  const installHint = `Run ${style.cyan(packageManager + ' install')}${
     pkgs.length > 1 && !options.workspace && !options.workspaces ? ' in each project directory' : ''
   } to install new versions`
 
@@ -188,7 +188,7 @@ const install = async (
               stdout += data
             },
             stderr: (data: string) => {
-              console.error(chalk.red(data.toString()))
+              console.error(style.red(data.toString()))
             },
           },
           {
@@ -388,9 +388,9 @@ async function run(
   const options = await initOptions(runOptions, { cli })
   lastRunOptions = options
 
-  // chalk may already have been initialized in cli.ts, but when imported as a module
-  // chalkInit is idempotent
-  chalkInit(options.color)
+  // style may already have been initialized in cli.ts, but when imported as a module
+  // styleInit is idempotent
+  styleInit(options.color)
 
   noVolta(options)
 

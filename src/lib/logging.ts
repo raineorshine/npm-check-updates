@@ -13,13 +13,13 @@ import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type CooldownInfo, type VersionResult } from '../types/VersionResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
-import chalk from './chalk.ts'
 import filterObject from './filterObject.ts'
 import formatTimeAgo from './formatTimeAgo.ts'
 import getPackageJson from './getPackageJson.ts'
 import getRepoUrl from './getRepoUrl.ts'
 import isFetchable from './isFetchable.ts'
 import { COOLDOWN_PATTERN } from './parseCooldown.ts'
+import style from './style.ts'
 import {
   colorizeDiff,
   getDependencyGroups,
@@ -73,7 +73,7 @@ export function print(
   }
 }
 
-/** Strips escape sequences and control characters from package- and registry-supplied text. Wrap the untrusted substring, not a finished message, since chalk styling uses escape sequences too. */
+/** Strips escape sequences and control characters from package- and registry-supplied text. Wrap the untrusted substring, not a finished message, since styleText styling uses escape sequences too. */
 export function sanitizeForDisplay(str: string): string {
   // stripVTControlCharacters leaves bare control characters like CR, which can overwrite a rendered line
   // eslint-disable-next-line no-control-regex
@@ -276,7 +276,7 @@ export async function toDependencyTable({
 
           return [
             dep,
-            ...(format?.includes('dep') ? [depType ? chalk.gray(depType) : ''] : []),
+            ...(format?.includes('dep') ? [depType ? style.gray(depType) : ''] : []),
             shortenBuildMetadata(from),
             '→',
             toColorized,
@@ -344,7 +344,7 @@ async function printSkippedByCooldownTable({
   })
 
   const cooldown = options.raw?.cooldown ?? options.cooldown
-  const heading = chalk.yellow(chalk.bold(`Skipped due to ${prettifyCooldown(cooldown)}`))
+  const heading = style.yellow(style.bold(`Skipped due to ${prettifyCooldown(cooldown)}`))
 
   print(options, '\n' + heading)
   print(options, table)
@@ -427,7 +427,7 @@ export async function printUpgradesTable(
 function printErrors(options: Options, errors?: Index<string>) {
   if (!errors) return
   if (Object.keys(errors).length > 0) {
-    const rows = Object.entries(errors).map(([dep, error]) => [dep, chalk.yellow(sanitizeForDisplay(error))])
+    const rows = Object.entries(errors).map(([dep, error]) => [dep, style.yellow(sanitizeForDisplay(error))])
     print(options, '\n' + renderDependencyTable(rows))
   }
 }
@@ -483,13 +483,13 @@ export async function printUpgrades(
   if (!options.deep && !options.format?.includes('group')) {
     if (printed && numUpgraded) {
       // print 'Updates' heading after "Skipped due to cooldown" list
-      print(options, '\n' + chalk.blue(chalk.bold('Updates')))
+      print(options, '\n' + style.blue(style.bold('Updates')))
     } else {
       print(options, '')
     }
   }
 
-  const smiley = chalk.green.bold(':)')
+  const smiley = style.green.bold(':)')
   const numErrors = Object.keys(errors || {}).length
   const target = typeof options.target === 'string' ? options.target : 'target'
   if (numUpgraded === 0 && total === 0 && numErrors === 0) {
@@ -507,7 +507,7 @@ export async function printUpgrades(
         options,
         `No package versions were returned. This may be a problem with your installed ${
           options.packageManager
-        }, the npm registry, or your Internet connection. Make sure ${chalk.cyan(
+        }, the npm registry, or your Internet connection. Make sure ${style.cyan(
           'npx pacote packument ncu-test-v2',
         )} is working before reporting an issue.`,
       )
