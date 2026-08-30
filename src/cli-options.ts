@@ -1,13 +1,13 @@
 import path from 'node:path'
 import { defaultCacheFile } from './lib/cache.ts'
 import chalk from './lib/chalk.ts'
+import keyValueBy from './lib/keyValueBy.ts'
 import parseCooldown from './lib/parseCooldown.ts'
 import { sortBy } from './lib/sortBy.ts'
 import table from './lib/table.ts'
 import uncode from './lib/uncode.ts'
 import type CLIOption from './types/CLIOption.ts'
 import type ExtendedHelp from './types/ExtendedHelp.ts'
-import { type Index } from './types/IndexType.ts'
 
 /** Valid strings for the --target option. Indicates the desired version to upgrade to. */
 const supportedVersionTargets = ['latest', 'newest', 'greatest', 'minor', 'patch', 'semver']
@@ -1090,14 +1090,10 @@ const cliOptions: CLIOption[] = [
 ]
 
 // put cliOptions into an object for O(1) lookups
-export const cliOptionsMap = cliOptions.reduce(
-  (accum, option) => ({
-    ...accum,
-    ...(option.short ? { [option.short]: option } : null),
-    ...(option.long ? { [option.long]: option } : null),
-  }),
-  {} as Index<CLIOption>,
-)
+export const cliOptionsMap = keyValueBy<CLIOption, CLIOption>(cliOptions, option => ({
+  ...(option.short ? { [option.short]: option } : null),
+  ...(option.long ? { [option.long]: option } : null),
+}))
 
 const cliOptionsSorted = sortBy(cliOptions, v => v.long)
 
