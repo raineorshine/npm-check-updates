@@ -5,6 +5,7 @@ import packageManagers from '../package-managers/index.ts'
 import { npmApi } from '../package-managers/npm.ts'
 import { pnpmApi } from '../package-managers/pnpm.ts'
 import { yarnApi } from '../package-managers/yarn.ts'
+import { type CooldownFunction } from '../types/CooldownFunction.ts'
 import { type FilterPattern } from '../types/FilterPattern.ts'
 import { type Options } from '../types/Options.ts'
 import { type RunOptions } from '../types/RunOptions.ts'
@@ -47,6 +48,33 @@ function isValidUrl(url: string): boolean {
 
 /** Pretty print for days, `3.4722222222222223 days` -> `3.5 days`. */
 const formatDays = (d: number, r = Math.round(d * 10) / 10) => `${r} day${r !== 1 ? 's' : ''}`
+
+// package managers express their native cooldown config in minutes
+const MINUTES_PER_DAY = 24 * 60
+
+/** Builds the cooldown value and log message for a package manager's native cooldown config. */
+const nativeCooldown = (
+  days: number,
+  exclude: string[],
+  {
+    source,
+    excludeLabel,
+    createMatcher = pattern => picomatch(pattern),
+  }: {
+    source: string
+    excludeLabel: string
+    createMatcher?: (pattern: string) => (packageName: string) => boolean
+  },
+): [CooldownFunction | number, string] => {
+  if (exclude.length === 0) return [days, `Using ${source}: ${formatDays(days)}`]
+
+  const matchers = exclude.map(createMatcher)
+  // returning null skips the cooldown check for excluded packages
+  return [
+    (packageName: string) => (matchers.some(match => match(packageName)) ? null : days),
+    `Using ${source}: ${formatDays(days)} (${exclude.length} ${excludeLabel}${exclude.length !== 1 ? 's' : ''})`,
+  ]
+}
 
 /** Initializes, validates, sets defaults, and consolidates program options. */
 async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = {}): Promise<Options> {
@@ -235,20 +263,12 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       const pnpmWorkspaceConfig = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ cwd: options.cwd })
       if (pnpmWorkspaceConfig != null) {
         const { minimumReleaseAge, minimumReleaseAgeExclude } = pnpmWorkspaceConfig
-        // pnpm's minimumReleaseAge is in minutes; convert to days
-        const MINUTES_PER_DAY = 24 * 60
-        const days = minimumReleaseAge / MINUTES_PER_DAY
-        if (minimumReleaseAgeExclude.length > 0) {
-          const matchers = minimumReleaseAgeExclude.map(pattern => picomatch(pattern))
-          options.cooldown = (packageName: string) => (matchers.some(m => m(packageName)) ? null : days)
-          print(
-            { ...options, json },
-            `Using minimumReleaseAge from pnpm-workspace.yaml: ${formatDays(days)} (${minimumReleaseAgeExclude.length} excluded pattern${minimumReleaseAgeExclude.length !== 1 ? 's' : ''})`,
-          )
-        } else {
-          options.cooldown = days
-          print({ ...options, json }, `Using minimumReleaseAge from pnpm-workspace.yaml: ${formatDays(days)}`)
-        }
+        const [cooldown, message] = nativeCooldown(minimumReleaseAge / MINUTES_PER_DAY, minimumReleaseAgeExclude, {
+          source: 'minimumReleaseAge from pnpm-workspace.yaml',
+          excludeLabel: 'excluded pattern',
+        })
+        options.cooldown = cooldown
+        print({ ...options, json }, message)
       }
     } else if (packageManager === 'yarn') {
       // Automatically apply yarn's npmMinimalAgeGate from .yarnrc.yml as cooldown if cooldown is not explicitly set.
@@ -256,21 +276,12 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       const yarnAgeGateConfig = await yarnApi.getYarnMinimalAgeGate(options)
       if (yarnAgeGateConfig != null) {
         const { npmMinimalAgeGate, npmPreapprovedPackages } = yarnAgeGateConfig
-        // yarn's npmMinimalAgeGate is in minutes; convert to days
-        const MINUTES_PER_DAY = 24 * 60
-        const days = npmMinimalAgeGate / MINUTES_PER_DAY
-        if (npmPreapprovedPackages.length > 0) {
-          const matchers = npmPreapprovedPackages.map(pattern => picomatch(pattern))
-          // Returning null skips the cooldown check for pre-approved packages
-          options.cooldown = (packageName: string) => (matchers.some(m => m(packageName)) ? null : days)
-          print(
-            { ...options, json },
-            `Using npmMinimalAgeGate from .yarnrc.yml: ${days} day${days !== 1 ? 's' : ''} (${npmPreapprovedPackages.length} pre-approved package${npmPreapprovedPackages.length !== 1 ? 's' : ''})`,
-          )
-        } else {
-          options.cooldown = days
-          print({ ...options, json }, `Using npmMinimalAgeGate from .yarnrc.yml: ${formatDays(days)}`)
-        }
+        const [cooldown, message] = nativeCooldown(npmMinimalAgeGate / MINUTES_PER_DAY, npmPreapprovedPackages, {
+          source: 'npmMinimalAgeGate from .yarnrc.yml',
+          excludeLabel: 'pre-approved package',
+        })
+        options.cooldown = cooldown
+        print({ ...options, json }, message)
       }
     } else {
       // Automatically apply npm's min-release-age config as cooldown if cooldown is not explicitly set.
@@ -301,22 +312,16 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
                 .filter(pattern => pattern),
             ),
           ]
-          if (minReleaseAgeExclude.length > 0) {
-            const matchers = minReleaseAgeExclude.map(pattern => ({
-              pattern,
-              match: picomatch(pattern, { nonegate: true, noext: true }),
-            }))
-            // returning null skips the cooldown check for excluded packages
-            options.cooldown = (packageName: string) =>
-              matchers.some(({ pattern, match }) => packageName === pattern || match(packageName)) ? null : days
-            print(
-              { ...options, json },
-              `Using min-release-age from .npmrc: ${formatDays(days)} (${minReleaseAgeExclude.length} excluded pattern${minReleaseAgeExclude.length !== 1 ? 's' : ''})`,
-            )
-          } else {
-            options.cooldown = days
-            print({ ...options, json }, `Using min-release-age from .npmrc: ${formatDays(days)}`)
-          }
+          const [cooldown, message] = nativeCooldown(days, minReleaseAgeExclude, {
+            source: 'min-release-age from .npmrc',
+            excludeLabel: 'excluded pattern',
+            createMatcher: pattern => {
+              const match = picomatch(pattern, { nonegate: true, noext: true })
+              return packageName => packageName === pattern || match(packageName)
+            },
+          })
+          options.cooldown = cooldown
+          print({ ...options, json }, message)
         }
       }
     }
