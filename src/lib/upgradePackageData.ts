@@ -13,7 +13,7 @@ import { pickBy } from './pick.ts'
 import resolveDepSections from './resolveDepSections.ts'
 import upgradeDependencies from './upgradeDependencies.ts'
 import { upgradeJsonCatalogDependencies } from './upgradeJsonCatalogDependencies.ts'
-import { updateYamlCatalogDependencies } from './upgradeYamlCatalogDependencies.ts'
+import { updateYamlCatalogDependenciesAll } from './upgradeYamlCatalogDependencies.ts'
 import applyJsonValueEdits, { type JsonValueEdit } from './utils/applyJsonValueEdits.ts'
 import collectVersionEdits from './utils/collectVersionEdits.ts'
 import parseJson from './utils/parseJson.ts'
@@ -144,20 +144,12 @@ async function upgradePackageData(
         }
       }
 
-      let updatedContent = yamlContent
-      for (const upgrade of reconstructedUpdates) {
-        const updatedYaml = updateYamlCatalogDependencies({
-          fileContent: updatedContent,
-          upgrade,
-          options,
-          filePath: pkgFile,
-        })
-        if (updatedYaml) {
-          updatedContent = updatedYaml
-        }
-      }
-
-      return updatedContent
+      return updateYamlCatalogDependenciesAll({
+        fileContent: yamlContent,
+        upgrades: reconstructedUpdates,
+        options,
+        filePath: pkgFile,
+      })
     }
 
     // Handle package.json catalog files (check if content contains catalog/catalogs at root level or in workspaces)
