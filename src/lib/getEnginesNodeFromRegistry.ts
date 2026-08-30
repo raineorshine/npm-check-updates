@@ -1,9 +1,9 @@
-import ProgressBar from 'progress'
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import getPackageManager from './getPackageManager.ts'
+import { createProgressBar } from './logging.ts'
 
 /**
  * Get the engines.node versions from the npm repository based on the version target.
@@ -16,12 +16,7 @@ async function getEnginesNodeFromRegistry(packageMap: Index<Version>, options: O
   const packageManager = getPackageManager(options, options.packageManager)
   if (!packageManager.getEngines) return {}
 
-  const numItems = Object.keys(packageMap).length
-  let bar: ProgressBar | undefined
-  if (!options.json && options.loglevel !== 'silent' && options.loglevel !== 'verbose' && numItems > 0) {
-    bar = new ProgressBar('[:bar] :current/:total :percent', { total: numItems, width: 20 })
-    bar.render()
-  }
+  const bar = createProgressBar(options, Object.keys(packageMap).length)
 
   const result: Index<VersionSpec | undefined> = {}
   for (const [pkg, version] of Object.entries(packageMap)) {
