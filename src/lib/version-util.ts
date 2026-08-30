@@ -172,6 +172,21 @@ export const shortenBuildMetadata = (version: string): string => {
 }
 
 /**
+ * Returns the index of the first version part that differs, along with the parts of `to`. The index
+ * is the number of parts when they are all equal.
+ *
+ * Strips any leading range operator (^, ~, <, <=, >, >=) from `from` and `to` independently, since
+ * an upgrade commonly changes the operator, e.g. "<1.2.3" -> "^1.2.9". Comparing the raw strings
+ * would leave the operator glued to the first numeric part and throw off the positional diff.
+ */
+function diffParts(from: string, to: string): { index: number; parts: string[] } {
+  const partsFrom = stripRange(from).split('.')
+  const parts = stripRange(to).split('.')
+  const index = parts.findIndex((part, i) => part !== partsFrom[i])
+  return { index: index >= 0 ? index : parts.length, parts }
+}
+
+/**
  * Determines the part of a version string that has changed when comparing two versions. Assumes that the two version strings are in the same format. Returns null if no parts have changed.
  *
  * @param from
@@ -180,24 +195,9 @@ export const shortenBuildMetadata = (version: string): string => {
 export function partChanged(from: string, to: string): UpgradeGroup {
   if (from === to) return 'none'
 
-  // Strip any leading range operator (^, ~, <, <=, >, >=) from from and to independently,
-  // since an upgrade commonly changes the operator, e.g. "<1.2.3" -> "^1.2.9". Comparing the
-  // raw strings would leave the operator glued to the first numeric part and throw off the
-  // positional diff below.
-  to = stripRange(to)
-  from = stripRange(from)
+  const { index, parts } = diffParts(from, to)
 
-  // split into parts
-  const partsTo = to.split('.')
-  const partsFrom = from.split('.')
-
-  let i = partsTo.findIndex((partto, i) => partto !== partsFrom[i])
-  i = i >= 0 ? i : partsTo.length
-
-  // major = red (or any change before 1.0.0)
-  // minor = cyan
-  // patch = green
-  return partsTo[0] === '0' ? 'majorVersionZero' : i === 0 ? 'major' : i === 1 ? 'minor' : 'patch'
+  return parts[0] === '0' ? 'majorVersionZero' : index === 0 ? 'major' : index === 1 ? 'minor' : 'patch'
 }
 
 /**
@@ -270,20 +270,12 @@ export function colorizeDiff(from: string, to: string) {
   // split into parts for the displayed portion of `to`
   const partsToColor = to.split('.')
 
-  // Determine the position of the diff using fully range-stripped copies of `from` and `to`.
-  // `from` is never part of the output, and an upgrade commonly changes the leading range
-  // operator entirely, e.g. "<1.2.3" -> "^1.2.9", which would otherwise leave the operator
-  // glued to the first numeric part and throw off the positional diff below.
-  const partsFromCompare = stripRange(from).split('.')
-  const partsToCompare = stripRange(to).split('.')
-
-  let i = partsToCompare.findIndex((part, i) => part !== partsFromCompare[i])
-  i = i >= 0 ? i : partsToCompare.length
+  const { index: i, parts } = diffParts(from, to)
 
   // major = red (or any change before 1.0.0)
   // minor = cyan
   // patch = green
-  const color = i === 0 || partsToCompare[0] === '0' ? 'red' : i === 1 ? 'cyan' : 'green'
+  const color = i === 0 || parts[0] === '0' ? 'red' : i === 1 ? 'cyan' : 'green'
 
   // if we are colorizing only part of the word, add a dot in the middle
   const middot = i > 0 && i < partsToColor.length ? '.' : ''
