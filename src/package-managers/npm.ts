@@ -638,7 +638,9 @@ npmApi.mockFetchUpgradedPackument =
   }
 
 /** Merges the workspace, global, user, local, project, and cwd npm configs (in that order). */
-// Note that this is memoized on configs and options, but not on package name. This avoids duplicate messages when log level is verbose. parseNpmrc is memoized on config path, so it is not expensive to call multiple times.
+// Note that this is memoized on configs and options, but not on package name. This avoids
+// duplicate messages when log level is verbose. parseNpmrc is memoized on config path, so
+// it is not expensive to call multiple times.
 const mergeNpmConfigs = memoize(
   (
     {
@@ -658,36 +660,19 @@ const mergeNpmConfigs = memoize(
     const npmConfigCWDPath = options.cwd ? path.join(options.cwd, '.npmrc') : undefined
     const npmConfigCWD = npmConfigCWDPath ? parseNpmrc(npmConfigCWDPath) : null
 
-    if (npmConfigWorkspaceProject && Object.keys(npmConfigWorkspaceProject).length > 0) {
-      print(options, `\nnpm config (workspace project):`, 'verbose')
-      const { cache: _, ...npmConfigWorkspaceProjectWithoutCache } = npmConfigWorkspaceProject
-      printSorted(options, npmConfigWorkspaceProjectWithoutCache, 'verbose')
+    /** Prints a config layer, omitting cache since it is added to every config. */
+    const printNpmConfig = (label: string, config: Record<string, unknown> | null | undefined) => {
+      if (!config || Object.keys(config).length === 0) return
+      print(options, `\n${label}:`, 'verbose')
+      const { cache: _, ...configWithoutCache } = config
+      printSorted(options, configWithoutCache, 'verbose')
     }
 
-    if (npmConfigUser && Object.keys(npmConfigUser).length > 0) {
-      print(options, `\nnpm config (user):`, 'verbose')
-      const { cache: _, ...npmConfigUserWithoutCache } = npmConfigUser
-      printSorted(options, npmConfigUserWithoutCache, 'verbose')
-    }
-
-    if (npmConfigLocal && Object.keys(npmConfigLocal).length > 0) {
-      print(options, `\nnpm config (local override):`, 'verbose')
-      const { cache: _, ...npmConfigLocalWithoutCache } = npmConfigLocal
-      printSorted(options, npmConfigLocalWithoutCache, 'verbose')
-    }
-
-    if (npmConfigProject && Object.keys(npmConfigProject).length > 0) {
-      print(options, `\nnpm config (project: ${npmConfigProjectPath}):`, 'verbose')
-      const { cache: _, ...npmConfigProjectWithoutCache } = npmConfigProject
-      printSorted(options, npmConfigProjectWithoutCache, 'verbose')
-    }
-
-    if (npmConfigCWD && Object.keys(npmConfigCWD).length > 0) {
-      print(options, `\nnpm config (cwd: ${npmConfigCWDPath}):`, 'verbose')
-      // omit cache since it is added to every config
-      const { cache: _, ...npmConfigCWDWithoutCache } = npmConfigCWD
-      printSorted(options, npmConfigCWDWithoutCache, 'verbose')
-    }
+    printNpmConfig('npm config (workspace project)', npmConfigWorkspaceProject)
+    printNpmConfig('npm config (user)', npmConfigUser)
+    printNpmConfig('npm config (local override)', npmConfigLocal)
+    printNpmConfig(`npm config (project: ${npmConfigProjectPath})`, npmConfigProject)
+    printNpmConfig(`npm config (cwd: ${npmConfigCWDPath})`, npmConfigCWD)
 
     const npmConfigMerged = {
       ...npmConfigWorkspaceProject,
@@ -701,11 +686,7 @@ const mergeNpmConfigs = memoize(
 
     const isMerged = npmConfigWorkspaceProject || npmConfigLocal || npmConfigProject || npmConfigCWD
     if (isMerged) {
-      print(options, `\nmerged npm config:`, 'verbose')
-      // omit cache since it is added to every config
-      // @ts-expect-error -- though not typed, but the "cache" property does exist on the object and needs to be omitted
-      const { cache: _, ...npmConfigMergedWithoutCache } = npmConfigMerged
-      printSorted(options, npmConfigMergedWithoutCache, 'verbose')
+      printNpmConfig('merged npm config', npmConfigMerged)
     }
 
     return npmConfigMerged
