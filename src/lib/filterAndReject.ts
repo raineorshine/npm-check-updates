@@ -1,4 +1,3 @@
-import { and } from 'fp-and-or'
 import picomatch from 'picomatch'
 import { parseRange } from 'semver-utils'
 import { type FilterPattern } from '../types/FilterPattern.ts'
@@ -65,7 +64,7 @@ function composeFilter(
       )
     }
     predicate = (dependencyName: string, versionSpec?: string) =>
-      filterPattern(dependencyName, parseRange(versionSpec ?? dependencyName))
+      !!filterPattern(dependencyName, parseRange(versionSpec ?? dependencyName))
   } else {
     throw new TypeError('Invalid filter. Must be a RegExp, array, or comma-or-space-delimited list.')
   }
@@ -88,23 +87,18 @@ function filterAndReject(
   rejectVersion: Maybe<FilterPattern>,
 ) {
   // compose the predicates up front, otherwise they are rebuilt for every dependency name
+  const filterDep = filter ? composeFilter(filter) : null
   const rejectDep = reject ? composeFilter(reject) : null
+  const filterVer = filterVersion ? composeFilter(filterVersion, { allowFunction: false }) : null
   const rejectVer = rejectVersion ? composeFilter(rejectVersion, { allowFunction: false }) : null
-  const filterDep = and(
-    filter ? composeFilter(filter) : true,
-    rejectDep ? (name: string, versionSpec?: string) => !rejectDep(name, versionSpec) : true,
-  )
-  const filterVer = and(
-    filterVersion ? composeFilter(filterVersion, { allowFunction: false }) : true,
-    rejectVer ? (name: string, versionSpec?: string) => !rejectVer(name, versionSpec) : true,
-  )
 
-  return and(
+  return (dependencyName: VersionSpec, version: string): boolean =>
     // filter dep
-    filterDep,
+    (!filterDep || filterDep(dependencyName, version)) &&
+    (!rejectDep || !rejectDep(dependencyName, version)) &&
     // filter version
-    (dependencyName: VersionSpec, version: string) => filterVer(version),
-  )
+    (!filterVer || filterVer(version)) &&
+    (!rejectVer || !rejectVer(version))
 }
 
 export default filterAndReject
