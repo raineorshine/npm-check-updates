@@ -389,6 +389,45 @@ describe('--dep', () => {
       }
     })
 
+    it('ignore a packageManager field without a version', async () => {
+      const stub = stubVersions({
+        'ncu-test-tag': '1.0.0',
+      })
+      const packageData = JSON.stringify(
+        {
+          packageManager: 'pnpm',
+          dependencies: {
+            'ncu-test-tag': '0.1.0',
+          },
+        },
+        null,
+        2,
+      )
+
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, packageData)
+
+      try {
+        await ncu({
+          packageFile: pkgFile,
+          jsonUpgraded: false,
+          upgrade: true,
+        })
+        const pkgNew = JSON.parse(await fs.readFile(pkgFile, 'utf-8'))
+
+        expect(pkgNew).toStrictEqual({
+          packageManager: 'pnpm',
+          dependencies: {
+            'ncu-test-tag': '1.0.0',
+          },
+        })
+      } finally {
+        await removeDir(tempDir)
+        stub.restore()
+      }
+    })
+
     it('upgrade packageManager field if specified in --dep', async () => {
       const stub = stubVersions({
         'ncu-test-tag': '1.0.0',
