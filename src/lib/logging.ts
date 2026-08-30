@@ -408,30 +408,8 @@ export async function printUpgradesTable(
 function printErrors(options: Options, errors?: Index<string>) {
   if (!errors) return
   if (Object.keys(errors).length > 0) {
-    const errorTable = new Table({
-      colAligns: ['left', 'right', 'right', 'right', 'left', 'left'],
-      chars: {
-        top: '',
-        'top-mid': '',
-        'top-left': '',
-        'top-right': '',
-        bottom: '',
-        'bottom-mid': '',
-        'bottom-left': '',
-        'bottom-right': '',
-        left: '',
-        'left-mid': '',
-        mid: '',
-        'mid-mid': '',
-        right: '',
-        'right-mid': '',
-        middle: '',
-      },
-    })
-
-    errorTable.push(...Object.entries(errors).map(([dep, error]) => [dep, chalk.yellow(sanitizeForDisplay(error))]))
-
-    print(options, '\n' + errorTable.toString())
+    const rows = Object.entries(errors).map(([dep, error]) => [dep, chalk.yellow(sanitizeForDisplay(error))])
+    print(options, '\n' + renderDependencyTable(rows))
   }
 }
 
