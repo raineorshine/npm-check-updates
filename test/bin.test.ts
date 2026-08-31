@@ -314,6 +314,19 @@ describe('bin', () => {
     }
   })
 
+  // the update check runs in a detached process, so a crash on exit is otherwise invisible
+  it('background update check exits cleanly and caches the result', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    try {
+      await spawn('node', [bin], {}, { env: { ...process.env, XDG_CONFIG_HOME: tempDir, NCU_UPDATE_CHECK: '1' } })
+      const configFile = path.join(tempDir, 'configstore', 'update-notifier-npm-check-updates.json')
+      const config = JSON.parse(await fs.readFile(configFile, 'utf-8'))
+      expect(config.lastUpdateCheck).toBeGreaterThan(0)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
   describe('embedded versions', () => {
     it('strip url from GitHub url in "to" output', async () => {
       const dependencies = {
