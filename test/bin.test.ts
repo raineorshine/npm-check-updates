@@ -7,6 +7,7 @@ import spawn from 'spawn-please'
 import { describe, expect, it } from 'vitest'
 import { type Index } from '../src/types/IndexType.ts'
 import { type Version } from '../src/types/Version.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -135,7 +136,7 @@ describe('bin', () => {
 
   it('read --packageFile', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
@@ -150,7 +151,7 @@ describe('bin', () => {
 
   it('write to --packageFile', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
@@ -167,7 +168,7 @@ describe('bin', () => {
 
   it('write to --packageFile if errorLevel=2 and upgrades', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
 
@@ -187,7 +188,7 @@ describe('bin', () => {
 
   it('write to --packageFile with jsonUpgraded flag', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
@@ -204,7 +205,7 @@ describe('bin', () => {
 
   it('ignore stdin if --packageFile is specified', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify({ dependencies: { express: '1' } }), 'utf-8')
     try {
@@ -238,7 +239,7 @@ describe('bin', () => {
         'ncu-test-tag': '^1.0.0',
       },
     }
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
     try {
@@ -296,7 +297,7 @@ describe('bin', () => {
   // https://github.com/raineorshine/npm-check-updates/issues/1594
   it('upgrade duplicate dependencies with different versions', async () => {
     const stub = stubVersions('99.9.9', { spawn: true })
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(
       pkgFile,

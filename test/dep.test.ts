@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -69,7 +69,7 @@ describe('--dep', () => {
         },
       })
 
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
@@ -116,7 +116,7 @@ describe('--dep', () => {
         },
       })
 
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
@@ -163,7 +163,7 @@ describe('--dep', () => {
         },
       })
 
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
@@ -210,7 +210,7 @@ describe('--dep', () => {
         },
       })
 
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
@@ -243,7 +243,7 @@ describe('--dep', () => {
         },
       })
 
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
@@ -283,7 +283,7 @@ describe('--dep', () => {
         2,
       )
 
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
@@ -324,7 +324,7 @@ describe('--dep', () => {
         2,
       )
 
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
@@ -365,7 +365,7 @@ describe('--dep', () => {
         2,
       )
 
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
@@ -405,7 +405,7 @@ describe('--dep', () => {
         2,
       )
 
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
@@ -448,7 +448,7 @@ describe('--dep', () => {
         2,
       )
 
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
@@ -493,7 +493,7 @@ describe('--dep', () => {
         2,
       )
 
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
@@ -523,7 +523,7 @@ describe('--dep', () => {
   describe('devEngines field', () => {
     /** Runs ncu -u with --dep devEngines on a package file and returns the parsed result. */
     const upgrade = async (pkg: unknown, options?: Parameters<typeof ncu>[0]) => {
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, JSON.stringify(pkg, null, 2))
       try {

@@ -3,6 +3,7 @@ import fsp from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import makeTempDir from '../../helpers/makeTempDir.ts'
 import removeDir from '../../helpers/removeDir.ts'
 
 /** Re-imports the module so findNpmConfig's memoization cache starts fresh in each test. */
@@ -36,8 +37,8 @@ describe('findNpmConfig', () => {
 
   it('merges global and user .npmrc plus npm_config_* env vars with correct precedence', async () => {
     clearNpmEnv()
-    const prefixDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'ncu-prefix-'))
-    const userDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'ncu-user-'))
+    const prefixDir = await makeTempDir('ncu-prefix-')
+    const userDir = await makeTempDir('ncu-user-')
     const userConfigFile = path.join(userDir, '.npmrc')
 
     // the global npmrc lives at <prefix>/etc/npmrc
@@ -91,7 +92,7 @@ describe('findNpmConfig', () => {
 
   it('falls back to the home directory .npmrc when npm_config_userconfig is unset', async () => {
     clearNpmEnv()
-    const homeDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'ncu-home-'))
+    const homeDir = await makeTempDir('ncu-home-')
     await fsp.writeFile(path.join(homeDir, '.npmrc'), '@home:registry=https://home.example.com/\n')
 
     const savedHome = process.env.HOME
@@ -129,7 +130,7 @@ describe('findNpmConfig', () => {
   it('propagates a non-ENOENT error when reading the user .npmrc', async () => {
     clearNpmEnv()
     // a directory cannot be read as a file, so readFileSync throws EISDIR
-    const dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'ncu-baduser-'))
+    const dir = await makeTempDir('ncu-baduser-')
     process.env.npm_config_userconfig = dir
 
     try {
@@ -167,7 +168,7 @@ describe('findNpmConfig', () => {
   it('honors DESTDIR when locating the global npmrc on non-Windows', async () => {
     clearNpmEnv()
     Object.defineProperty(process, 'platform', { value: 'linux', configurable: true })
-    const destdir = await fsp.mkdtemp(path.join(os.tmpdir(), 'ncu-destdir-'))
+    const destdir = await makeTempDir('ncu-destdir-')
     process.env.DESTDIR = destdir
     const readFileSpy = vi.spyOn(fs, 'readFileSync')
 
@@ -185,7 +186,7 @@ describe('findNpmConfig', () => {
 
   it('honors the PREFIX environment variable when locating the global npmrc', async () => {
     clearNpmEnv()
-    const prefixDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'ncu-prefixenv-'))
+    const prefixDir = await makeTempDir('ncu-prefixenv-')
     process.env.PREFIX = prefixDir
     const readFileSpy = vi.spyOn(fs, 'readFileSync')
 

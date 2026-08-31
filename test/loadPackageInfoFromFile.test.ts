@@ -1,15 +1,15 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import loadPackageInfoFromFile from '../src/lib/loadPackageInfoFromFile.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 
 describe('loadPackageInfoFromFile', () => {
   let tempDir: string
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-lpi-'))
+    tempDir = await makeTempDir('ncu-test-lpi-')
   })
 
   afterEach(async () => {
