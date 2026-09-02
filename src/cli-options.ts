@@ -43,45 +43,6 @@ const parseNumberOption =
     throw new Error(`${optionName} must be a number`)
   }
 
-/** Renders the extended help for an option with usage information. */
-export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?: boolean } = {}) => {
-  let output = ''
-  const usageLines: string[] = []
-
-  if (option.cli !== false) {
-    // add -u to doctor option
-    usageLines.push(
-      `ncu --${option.long}${option.arg ? ` [${option.arg}]` : ''}${option.long === 'doctor' ? ' -u' : ''}`,
-    )
-  }
-
-  if (option.type === 'boolean') {
-    usageLines.push(`ncu --no-${option.long}`)
-  }
-
-  if (option.short) {
-    // add -u to doctor option
-    usageLines.push(`ncu -${option.short}${option.arg ? ` [${option.arg}]` : ''}${option.long === 'doctor' ? 'u' : ''}`)
-  }
-
-  if (usageLines.length > 0) {
-    output = `Usage:\n\n${codeBlock(usageLines.join('\n'), { markdown, lang: 'sh' })}\n`
-  }
-
-  if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
-    output += `\nDefault: ${option.default}\n`
-  }
-
-  if (option.help) {
-    const helpText = typeof option.help === 'function' ? option.help({ markdown }) : option.help
-    output += `\n${(markdown ? helpText : uncode(helpText)).trim()}\n\n`
-  } else if (option.description) {
-    output += `\n${markdown ? option.description : uncode(option.description)}\n`
-  }
-
-  return output.trim()
-}
-
 /** Extended help for the --doctor option. */
 const extendedHelpDoctor: ExtendedHelp = ({
   markdown,
@@ -680,6 +641,7 @@ const cliOptions: CLIOption[] = [
     long: 'cacheExpiration',
     arg: 'min',
     description: 'Cache expiration in minutes. Only works with `--cache`.',
+    requires: ['cache'],
     parse: parseNumberOption('cacheExpiration'),
     default: 10,
     type: 'number',
@@ -753,6 +715,7 @@ const cliOptions: CLIOption[] = [
     short: 'd',
     description:
       'Iteratively installs upgrades and runs tests to identify breaking upgrades. Requires `-u` to execute.',
+    requires: ['upgrade'],
     type: 'boolean',
     help: extendedHelpDoctor,
   },
@@ -761,12 +724,14 @@ const cliOptions: CLIOption[] = [
     arg: 'command',
     description:
       'Specifies the install script to use in doctor mode. (default: `npm install` or the equivalent for your package manager)',
+    requires: ['doctor'],
     type: 'string',
   },
   {
     long: 'doctorTest',
     arg: 'command',
     description: 'Specifies the test script to use in doctor mode. (default: `npm test`)',
+    requires: ['doctor'],
     type: 'string',
   },
   {
@@ -873,6 +838,7 @@ const cliOptions: CLIOption[] = [
     arg: 'value',
     description:
       'Control which upgrades are pre-selected in interactive mode: auto, none, patch, minor, all. Only applies with `--interactive`.',
+    requires: ['interactive'],
     help: extendedHelpInteractiveSelect,
     default: 'auto',
     choices: ['auto', 'none', 'patch', 'minor', 'all'],
@@ -977,6 +943,7 @@ const cliOptions: CLIOption[] = [
     arg: 'type',
     description:
       'Specify whether --registry refers to a full npm registry or a simple JSON file or url: npm, json. (default: npm)',
+    requires: ['registry'],
     help: extendedHelpRegistryType,
     type: `'npm' | 'json'`,
   },
@@ -1096,6 +1063,65 @@ export const cliOptionsMap = keyValueBy<CLIOption, CLIOption>(cliOptions, option
   ...(option.short ? { [option.short]: option } : null),
   ...(option.long ? { [option.long]: option } : null),
 }))
+
+/** Renders an option as it is typed on the command line, preferring the short flag. */
+const renderFlag = (option: CLIOption) =>
+  `${option.short ? `-${option.short}` : `--${option.long}`}${option.arg ? ` [${option.arg}]` : ''}`
+
+/** Returns the flags of all the options that are required for the given option to work, including transitive requirements, ordered from least to most specific. */
+const renderRequiredFlags = (option: CLIOption, visited: Set<string> = new Set([option.long])): string[] =>
+  (option.requires || []).flatMap(long => {
+    // ignore circular and duplicate requirements
+    if (visited.has(long)) return []
+    visited.add(long)
+
+    const required = cliOptionsMap[long]
+    if (!required) {
+      throw new Error(`Unknown option "${long}" in the requires property of --${option.long}`)
+    }
+
+    return [...renderRequiredFlags(required, visited), renderFlag(required)]
+  })
+
+/** Renders the extended help for an option with usage information. */
+export const renderExtendedHelp = (option: CLIOption, { markdown }: { markdown?: boolean } = {}) => {
+  let output = ''
+  const usageLines: string[] = []
+
+  // options that are required for this option to work, e.g. `-i` is prepended to `--interactiveSelect`
+  const requiredFlags = renderRequiredFlags(option)
+  const prefix = requiredFlags.map(flag => `${flag} `).join('')
+
+  if (option.cli !== false) {
+    usageLines.push(`ncu ${prefix}--${option.long}${option.arg ? ` [${option.arg}]` : ''}`)
+  }
+
+  if (option.type === 'boolean') {
+    // do not prepend required options when negating the option, since the requirements do not apply
+    usageLines.push(`ncu --no-${option.long}`)
+  }
+
+  if (option.short) {
+    usageLines.push(`ncu ${prefix}-${option.short}${option.arg ? ` [${option.arg}]` : ''}`)
+  }
+
+  if (usageLines.length > 0) {
+    output = `Usage:\n\n${codeBlock(usageLines.join('\n'), { markdown, lang: 'sh' })}\n`
+  }
+
+  if (option.default !== undefined && !(Array.isArray(option.default) && option.default.length === 0)) {
+    output += `\nDefault: ${option.default}\n`
+  }
+
+  if (option.help) {
+    const helpText = typeof option.help === 'function' ? option.help({ markdown }) : option.help
+    output += `\n${(markdown ? helpText : uncode(helpText)).trim()}\n\n`
+  } else if (option.description) {
+    output += `\n${markdown ? option.description : uncode(option.description)}\n`
+  }
+
+  return output.trim()
+}
 
 const cliOptionsSorted = sortBy(cliOptions, v => v.long)
 
