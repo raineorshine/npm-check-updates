@@ -54,7 +54,10 @@ export interface YarnMinimalAgeGate {
 export const npmAuthTokenKeyValue = (npmConfig: Index<string | boolean>) => (dep: string, scopedConfig: NpmScope) => {
   if (scopedConfig.npmAuthToken) {
     // get registry server from this config or a previous config (assumes setNpmRegistry has already been called on all npm scopes)
-    const registryServer = scopedConfig.npmRegistryServer || (npmConfig[`@${dep}:registry`] as string | undefined)
+    // interpolate like the registry value, or an unexpanded ${VAR} yields an auth key that never matches
+    const registryServer = scopedConfig.npmRegistryServer
+      ? interpolate(scopedConfig.npmRegistryServer, process.env)
+      : (npmConfig[`@${dep}:registry`] as string | undefined)
     // interpolate environment variable fallback
     // https://yarnpkg.com/configuration/yarnrc
     if (registryServer) {
