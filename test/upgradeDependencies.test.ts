@@ -60,4 +60,32 @@ describe('upgradeDependencies', () => {
     expect(upgradeDependencies({ mongodb: null }, { mongodb: '1.4.30' })).toStrictEqual({})
     expect(upgradeDependencies({ mongodb: '' }, { mongodb: '1.4.30' })).toStrictEqual({})
   })
+
+  it('upgrade jsr specs and keep the embedded name', () => {
+    expect(
+      upgradeDependencies({ '@scope/name': 'jsr:@scope/name@^1.0.0' }, { '@scope/name': 'jsr:@scope/name@1.2.0' }),
+    ).toStrictEqual({ '@scope/name': 'jsr:@scope/name@^1.2.0' })
+  })
+
+  it('keep the bare jsr form bare', () => {
+    expect(upgradeDependencies({ '@scope/name': 'jsr:^1.0.0' }, { '@scope/name': 'jsr:1.2.0' })).toStrictEqual({
+      '@scope/name': 'jsr:^1.2.0',
+    })
+  })
+
+  it('remove the range from a jsr spec with removeRange', () => {
+    expect(
+      upgradeDependencies(
+        { '@scope/name': 'jsr:@scope/name@^1.0.0' },
+        { '@scope/name': 'jsr:@scope/name@1.2.0' },
+        { removeRange: true },
+      ),
+    ).toStrictEqual({ '@scope/name': 'jsr:@scope/name@1.2.0' })
+  })
+
+  it('exclude a jsr spec that is already up to date', () => {
+    expect(
+      upgradeDependencies({ '@scope/name': 'jsr:@scope/name@^1.2.0' }, { '@scope/name': 'jsr:@scope/name@1.2.0' }),
+    ).toStrictEqual({})
+  })
 })

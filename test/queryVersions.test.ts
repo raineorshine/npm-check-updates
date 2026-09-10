@@ -168,6 +168,42 @@ describe('queryVersions', () => {
     })
   })
 
+  describe('jsr specs', () => {
+    it('jsr specs should upgrade the embedded version and keep the name', async () => {
+      const stub = stubVersions({ '@jsr/scope__name': '2.0.0' })
+      const result = await queryVersions({ '@scope/name': 'jsr:@scope/name@1.0.0' }, { loglevel: 'silent' })
+      expect(result['@scope/name'].version).toBe('jsr:@scope/name@2.0.0')
+      stub.restore()
+    })
+
+    it('the bare jsr form resolves the name from the dependency key and stays bare', async () => {
+      const stub = stubVersions({ '@jsr/scope__name': '2.0.0' })
+      const result = await queryVersions({ '@scope/name': 'jsr:1.0.0' }, { loglevel: 'silent' })
+      expect(result['@scope/name'].version).toBe('jsr:2.0.0')
+      stub.restore()
+    })
+
+    it('a bare jsr version on an unscoped key reports an error', async () => {
+      const result = await queryVersions({ notscoped: 'jsr:1.0.0' }, { loglevel: 'silent' })
+      expect(result.notscoped.error).toBe(
+        'Invalid JSR package name "notscoped" for "jsr:1.0.0". Expected "@scope/name".',
+      )
+    })
+
+    it('a not found @jsr package hints at the registry config', async () => {
+      const stub = stubVersions(() => {
+        throw new Error('404 Not Found - GET https://registry.npmjs.org/@jsr%2Fscope__name')
+      })
+
+      const result = await queryVersions({ '@scope/name': 'npm:@jsr/scope__name@1.0.0' }, { loglevel: 'silent' })
+      expect(result['@scope/name'].error).toContain(
+        '@jsr/scope__name is a JSR package: add "@jsr:registry=https://npm.jsr.io" to .npmrc, or declare it as "jsr:@scope/name@1.0.0".',
+      )
+
+      stub.restore()
+    })
+  })
+
   describe('github urls', () => {
     it('github urls should upgrade the embedded version tag', async () => {
       const upgrades = await queryVersions(

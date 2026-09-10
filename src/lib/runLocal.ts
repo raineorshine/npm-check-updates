@@ -34,7 +34,7 @@ import style from './style.ts'
 import upgradePackageData, { parseUpgradedPackageData } from './upgradePackageData.ts'
 import upgradePackageDefinitions from './upgradePackageDefinitions.ts'
 import parseJson from './utils/parseJson.ts'
-import { getDependencyGroups, isWildcard } from './version-util.ts'
+import { getDependencyGroups, isJsrSpec, isWildcard } from './version-util.ts'
 
 const INTERACTIVE_HINT = `
   ↑/↓: Select a package
@@ -64,7 +64,8 @@ function getOptionsPerPage(showHint: boolean, groups?: DependencyGroup[]): numbe
  */
 async function getOwnerPerDependency(fromVersion: Index<Version>, toVersion: Index<Version>, options: Options) {
   const packageManager = getPackageManager(options, options.packageManager)
-  const deps = Object.keys(toVersion)
+  // jsr's registry publishes no npm user metadata, so ownership cannot be compared
+  const deps = Object.keys(toVersion).filter(dep => !isJsrSpec(toVersion[dep]))
   const changed = await pMap(
     deps,
     dep => {
