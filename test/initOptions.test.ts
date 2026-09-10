@@ -2,6 +2,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import { describe, expect, it, vi } from 'vitest'
+import { defaultCacheFile } from '../src/lib/cache.ts'
 import initOptions from '../src/lib/initOptions.ts'
 import { type RunOptions } from '../src/types/RunOptions.ts'
 
@@ -107,5 +108,45 @@ describe('initOptions', () => {
   it('infers registryType json from a .json registry', async () => {
     const options = await initOptions({ registry: 'registry.json' })
     expect(options.registryType).toBe('json')
+  })
+
+  describe('option coercion', () => {
+    it("coerces raw values using each option's parse function", async () => {
+      const options = await initOptions({
+        concurrency: '4',
+        dep: 'prod,dev',
+        format: 'no-group,time',
+        cooldown: '12h',
+      } as unknown as RunOptions)
+      expect(options.concurrency).toBe(4)
+      expect(options.dep).toStrictEqual(['prod', 'dev'])
+      expect(options.format).toStrictEqual(['time'])
+      expect(options.cooldown).toBe(0.5)
+    })
+
+    it('surfaces a parse failure as a program error rather than a raw throw', async () => {
+      await expect(initOptions({ concurrency: 'abc' } as unknown as RunOptions)).rejects.toThrow(
+        'concurrency must be a number',
+      )
+      await expect(initOptions({ cacheFile: 5 } as unknown as RunOptions)).rejects.toThrow('cacheFile must be a string')
+    })
+
+    it('skips accumulate options so their parse is not called with a single argument', async () => {
+      // reject is accumulate: parse takes (value, accum), not just value
+      const options = await initOptions({ reject: ['foo'] })
+      expect(options.reject).toStrictEqual(['foo'])
+    })
+
+    it('leaves an accumulate option at its default without calling parse', async () => {
+      // workspace's parse has no fallback for a missing accum
+      const options = await initOptions({})
+      expect(options.workspace).toStrictEqual([])
+    })
+
+    it('leaves cacheFile at its default without running it through parse', async () => {
+      // parse would resolve the default ~/.ncu-cache.json against cwd if it ran
+      const options = await initOptions({})
+      expect(options.cacheFile).toBe(defaultCacheFile)
+    })
   })
 })

@@ -15,6 +15,7 @@ import determinePackageManager from './determinePackageManager.ts'
 import exists from './exists.ts'
 import keyValueBy from './keyValueBy.ts'
 import parseCooldown from './parseCooldown.ts'
+import parseOptions from './parseOptions.ts'
 import programError from './programError.ts'
 import { getStyle } from './style.ts'
 
@@ -117,20 +118,7 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
 
   // The cli path already went through commander, which applies parse. Values coming from the ncurc or
   // the module API have not, so coerce them here from the same option definitions.
-  const rawCooldown = options.cooldown
-  for (const option of cliOptions) {
-    const { parse, accumulate } = option
-    if (!parse || accumulate) continue
-    const key = option.long as keyof Options
-    const value = options[key]
-    // defaults are already in their coerced form, and commander does not parse them either
-    if (value === undefined || value === option.default) continue
-    try {
-      options[key] = parse(value) as never
-    } catch (err: any) {
-      programError(options, err.message || err)
-    }
-  }
+  parseOptions(options)
 
   // consolidate loglevel
   const loglevel =
@@ -246,15 +234,6 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   const packageManager = await determinePackageManager(options)
 
   if (options.cooldown != null) {
-    // the option's parse already normalized "7d"/"12h"/"30m" to a fractional number of days, and
-    // yields NaN for a string it could not read
-    if (typeof rawCooldown === 'string' && typeof options.cooldown === 'number' && isNaN(options.cooldown)) {
-      programError(
-        options,
-        `Invalid cooldown value: "${rawCooldown}". Use a number (days) or a string like "7d", "12h", or "30m".`,
-      )
-    }
-
     const isValidNumber = typeof options.cooldown === 'number' && !isNaN(options.cooldown) && options.cooldown >= 0
     const isValidFunction = typeof options.cooldown === 'function'
 
