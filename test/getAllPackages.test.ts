@@ -1,11 +1,11 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import getAllPackages from '../src/lib/getAllPackages.ts'
 import { type Options } from '../src/types/Options.ts'
 import { type PackageInfo } from '../src/types/PackageInfo.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -220,7 +220,7 @@ describe('getAllPackages', () => {
     })
 
     it('reads the nested workspaces.catalog and workspaces.catalogs format from pnpm-workspace.yaml', async () => {
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-catalog-nested-'))
+      const tempDir = await makeTempDir('ncu-test-catalog-nested-')
       try {
         await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({ workspaces: ['pkg/*'] }), 'utf-8')
         await fs.writeFile(

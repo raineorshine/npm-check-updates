@@ -1,5 +1,4 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
@@ -7,6 +6,7 @@ import spawn from 'spawn-please'
 import { expect, it } from 'vitest'
 import { escapeRegExp } from '../../src/lib/escapeRegExp.ts'
 import { type PackageManagerName } from '../../src/types/PackageManagerName.ts'
+import makeTempDir from '../helpers/makeTempDir.ts'
 import removeDir from './removeDir.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -19,7 +19,7 @@ const doctorTests = path.join(__dirname, '../test-data/doctor')
  * Returns the temp dir path; the caller is responsible for removing it.
  */
 export const copyFixture = async (name: string): Promise<string> => {
-  const dest = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+  const dest = await makeTempDir()
   await fs.cp(path.join(doctorTests, name), dest, { recursive: true })
   return dest
 }

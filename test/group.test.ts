@@ -1,11 +1,11 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
 import { describe, expect, it } from 'vitest'
 import { type GroupFunction } from '../src/types/GroupFunction.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -30,7 +30,7 @@ async function groupTestScaffold(
     { spawn: true },
   )
 
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+  const tempDir = await makeTempDir()
   const pkgFile = path.join(tempDir, 'package.json')
   await fs.writeFile(
     pkgFile,

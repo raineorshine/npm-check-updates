@@ -1,8 +1,7 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
-import path from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { buildChangelog, formatChangelog } from '../scripts/build-changelog.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 
 const ORIGINAL_CWD = process.cwd()
@@ -16,7 +15,7 @@ let tempDir: string | undefined
 
 /** Switches to an empty working directory that the generated CHANGELOG.md is written to. */
 const chdirTemp = async (): Promise<void> => {
-  tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-build-changelog-'))
+  tempDir = await makeTempDir('ncu-build-changelog-')
   process.chdir(tempDir)
 }
 

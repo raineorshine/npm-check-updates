@@ -1,11 +1,11 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import ncu from '../src/index.ts'
 import cacher, { CACHE_DELIMITER, cacheClear, resolvedDefaultCacheFile } from '../src/lib/cache.ts'
 import { CURRENT_CACHE_SCHEMA, type CacheData } from '../src/types/Cacher.ts'
 import createMockVersion from './helpers/createMockVersion.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -205,7 +205,7 @@ describe('cache', () => {
     let cacheFile: string
 
     beforeEach(async () => {
-      tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-cacher-'))
+      tempDir = await makeTempDir('ncu-test-cacher-')
       cacheFile = path.join(tempDir, '.ncu-cache.json')
     })
 

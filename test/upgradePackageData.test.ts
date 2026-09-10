@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import upgradePackageData from '../src/lib/upgradePackageData.ts'
 import { type Options } from '../src/types/Options.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 
 describe('upgradePackageData', () => {
@@ -11,7 +11,7 @@ describe('upgradePackageData', () => {
     let tempDir: string
 
     beforeEach(async () => {
-      tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-upd-'))
+      tempDir = await makeTempDir('ncu-test-upd-')
     })
 
     afterEach(async () => {

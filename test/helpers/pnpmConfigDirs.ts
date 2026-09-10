@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach } from 'vitest'
+import makeTempDir from './makeTempDir.ts'
 import removeDir from './removeDir.ts'
 
 interface PnpmConfigDirs {
@@ -41,8 +41,8 @@ const usePnpmConfigDirs = (): PnpmConfigDirs => {
   beforeEach(async () => {
     originalCwd = process.cwd()
     originalXdgConfigHome = process.env.XDG_CONFIG_HOME
-    dirs.projectDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-pnpm-project-'))
-    dirs.xdgDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-pnpm-xdg-'))
+    dirs.projectDir = await makeTempDir('ncu-test-pnpm-project-')
+    dirs.xdgDir = await makeTempDir('ncu-test-pnpm-xdg-')
     process.env.XDG_CONFIG_HOME = dirs.xdgDir
     process.chdir(dirs.projectDir)
   })

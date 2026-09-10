@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { Readable } from 'node:stream'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import findPackage from '../src/lib/findPackage.ts'
 import { styleInit } from '../src/lib/style.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 
 describe('findPackage', () => {
@@ -19,7 +19,7 @@ describe('findPackage', () => {
     let tempDir: string
 
     beforeEach(async () => {
-      tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-fp-'))
+      tempDir = await makeTempDir('ncu-test-fp-')
     })
 
     afterEach(async () => {

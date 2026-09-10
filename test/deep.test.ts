@@ -1,5 +1,4 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
@@ -7,6 +6,7 @@ import spawn from 'spawn-please'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
 import mergeOptions from '../src/lib/mergeOptions.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -25,7 +25,7 @@ const bin = path.join(__dirname, '../build/cli.js')
  * |    - package.json
  */
 const setupDeepTest = async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+  const tempDir = await makeTempDir()
   const pkgData = JSON.stringify({
     dependencies: {
       express: '1',
@@ -46,7 +46,7 @@ const setupDeepTest = async () => {
 
 /** Creates a temp directory with nested package files to test deep-mode status output formatting. */
 const setupDeepStatusTest = async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+  const tempDir = await makeTempDir()
 
   await fs.writeFile(
     path.join(tempDir, 'package.json'),
@@ -140,7 +140,7 @@ describe('--deep', () => {
   })
 
   it('--deep --errorLevel 2 should exit with code 0 when there are no upgrades', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgData = JSON.stringify({
       dependencies: {
         'ncu-test-v2': '99.9.9',
@@ -275,7 +275,7 @@ describe('--deep with nested ncurc files', () => {
 describe('--deep cli option precedence', () => {
   /** Creates a temp directory with a root .ncurc and a single package.json. */
   const setup = async (rcContents: string) => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     await fs.writeFile(
       path.join(tempDir, 'package.json'),
       JSON.stringify({ dependencies: { 'ncu-test-v2': '^1.0.0' } }),

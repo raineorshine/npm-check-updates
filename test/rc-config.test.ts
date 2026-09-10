@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -18,7 +18,7 @@ describe('rc-config', () => {
   afterAll(() => stub.restore())
 
   it('print rcConfigPath when there is a non-empty rc config file', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, JSON.stringify({ filter: 'ncu-test-v2' }), 'utf-8')
     try {
@@ -32,7 +32,7 @@ describe('rc-config', () => {
   })
 
   it('do not print rcConfigPath when there is no rc config file', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     try {
       const { stdout } = await spawn('node', [bin, '--stdin', '--cwd', tempDir], {
         stdin: JSON.stringify({ dependencies: { 'ncu-test-v2': '1.0.0' } }),
@@ -44,7 +44,7 @@ describe('rc-config', () => {
   })
 
   it('do not print rcConfigPath when there is an empty rc config file', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, '{}', 'utf-8')
     try {
@@ -58,7 +58,7 @@ describe('rc-config', () => {
   })
 
   it('error on missing --configFileName', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFileName = '.ncurc_missing.json'
     try {
       const result = spawn('node', [bin, '--stdin', '--configFilePath', tempDir, '--configFileName', configFileName], {
@@ -71,7 +71,7 @@ describe('rc-config', () => {
   })
 
   it('read --configFilePath', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, filter: 'ncu-test-v2' }), 'utf-8')
     try {
@@ -87,7 +87,7 @@ describe('rc-config', () => {
   })
 
   it('read --configFileName', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const tempConfigFileName = '.rctemp.json'
     const tempConfigFile = path.join(tempDir, tempConfigFileName)
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, filter: 'ncu-test-v2' }), 'utf-8')
@@ -106,7 +106,7 @@ describe('rc-config', () => {
   })
 
   it('override config with arguments', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, filter: 'ncu-test-v2' }), 'utf-8')
     try {
@@ -124,7 +124,7 @@ describe('rc-config', () => {
   })
 
   it('override true in config with false in the cli', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true }), 'utf-8')
     try {
@@ -139,7 +139,7 @@ describe('rc-config', () => {
   })
 
   it('handle boolean arguments', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const tempConfigFile = path.join(tempDir, '.ncurc.json')
     // if boolean arguments are not handled as a special case, ncu will incorrectly pass "--deep false" to commander, which will interpret it as two args, i.e. --deep and --filter false
     await fs.writeFile(tempConfigFile, JSON.stringify({ jsonUpgraded: true, deep: false }), 'utf-8')
@@ -155,7 +155,7 @@ describe('rc-config', () => {
   })
 
   it('auto detect .ncurc and read it as .ncurc.json', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc')
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(configFile, JSON.stringify({ filter: 'ncu-test-v2' }), 'utf-8')
@@ -179,7 +179,7 @@ describe('rc-config', () => {
   })
 
   it('auto detect .ncurc and read it as .ncurc.yaml', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc')
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(configFile, 'filter: ncu-test-v2', 'utf-8')
@@ -203,7 +203,7 @@ describe('rc-config', () => {
   })
 
   it('auto detect .ncurc and throw on invalid ESM default export', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc')
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(configFile, 'export default { filter: "ncu-test-v2" }', 'utf-8')
@@ -224,7 +224,7 @@ describe('rc-config', () => {
   })
 
   it('auto detect .ncurc and throw on invalid CommonJS module.exports', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc')
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(configFile, "module.exports = {\n  format: 'group',\n}", 'utf-8')
@@ -245,7 +245,7 @@ describe('rc-config', () => {
   })
 
   it('auto detect .ncurc.json', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc.json')
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(configFile, JSON.stringify({ filter: 'ncu-test-v2' }), 'utf-8')
@@ -269,7 +269,7 @@ describe('rc-config', () => {
   })
 
   it('auto detect .ncurc.yaml', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc.yaml')
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(configFile, 'filter: ncu-test-v2', 'utf-8')
@@ -290,7 +290,7 @@ describe('rc-config', () => {
   })
 
   it('auto detect .ncurc.yml', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc.yml')
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(configFile, 'filter: ncu-test-v2', 'utf-8')
@@ -311,7 +311,7 @@ describe('rc-config', () => {
   })
 
   it('auto detect .ncurc.cjs', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc.cjs')
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(configFile, 'module.exports = { "filter": "ncu-test-v2" }', 'utf-8')
@@ -335,7 +335,7 @@ describe('rc-config', () => {
   })
 
   it('auto detect .ncurc.mjs', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc.mjs')
     const pkgFile = path.join(tempDir, 'package.json')
     // ESM syntax
@@ -360,7 +360,7 @@ describe('rc-config', () => {
   })
 
   it('inherits parent .ncurc from nested cwd outside --deep', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const nestedDir = path.join(tempDir, 'packages', 'sub')
     const parentConfigFile = path.join(tempDir, '.ncurc.json')
     const nestedPkgFile = path.join(nestedDir, 'package.json')
@@ -383,7 +383,7 @@ describe('rc-config', () => {
   })
 
   it('auto detect .ncurc.js with type: module', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc.js')
     const pkgFile = path.join(tempDir, 'package.json')
     // ESM syntax
@@ -405,7 +405,7 @@ describe('rc-config', () => {
   })
 
   it('auto detect .ncurc.js with type: commonjs', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc.js')
     const pkgFile = path.join(tempDir, 'package.json')
     // CommonJS syntax
@@ -427,7 +427,7 @@ describe('rc-config', () => {
   })
 
   it('error on CommonJS syntax in ESM project', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc.js')
     const pkgFile = path.join(tempDir, 'package.json')
     // CommonJS syntax in ESM project
@@ -443,7 +443,7 @@ describe('rc-config', () => {
   })
 
   it('error on ESM syntax in CommonJS project', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc.js')
     const pkgFile = path.join(tempDir, 'package.json')
     // ESM syntax in CommonJS project (no type: module)
@@ -459,7 +459,7 @@ describe('rc-config', () => {
   })
 
   it('should not crash if because of $schema property', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const configFile = path.join(tempDir, '.ncurc.json')
     const pkgFile = path.join(tempDir, 'package.json')
     await fs.writeFile(configFile, JSON.stringify({ $schema: 'schema url' }), 'utf-8')
@@ -475,7 +475,7 @@ describe('rc-config', () => {
 
   describe('config functions', () => {
     it('filter function', async () => {
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const configFile = path.join(tempDir, '.ncurc.js')
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(
@@ -502,7 +502,7 @@ describe('rc-config', () => {
     })
 
     it('error on filterVersion function', async () => {
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const configFile = path.join(tempDir, '.ncurc.js')
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(
@@ -527,7 +527,7 @@ describe('rc-config', () => {
     })
 
     it('filterResults function', async () => {
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const configFile = path.join(tempDir, '.ncurc.js')
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(
@@ -554,7 +554,7 @@ describe('rc-config', () => {
     })
 
     it('reject function', async () => {
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const configFile = path.join(tempDir, '.ncurc.js')
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(
@@ -581,7 +581,7 @@ describe('rc-config', () => {
     })
 
     it('error on rejectVersion function', async () => {
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const configFile = path.join(tempDir, '.ncurc.js')
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(

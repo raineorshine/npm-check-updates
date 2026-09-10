@@ -1,10 +1,10 @@
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
 import * as yarn from '../../../src/package-managers/yarn.ts'
+import makeTempDir from '../../helpers/makeTempDir.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -324,7 +324,7 @@ describe('yarn', () => {
   describe('getYarnMinimalAgeGate', () => {
     /** Creates a temp directory with a yarn.lock and a .yarnrc.yml for testing. */
     async function createTempYarnrc(yarnrcContent: string): Promise<{ tempDir: string; cleanup: () => Promise<void> }> {
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-test-yarn-agegate-'))
+      const tempDir = await makeTempDir('ncu-test-yarn-agegate-')
       await fs.writeFile(path.join(tempDir, 'yarn.lock'), '')
       await fs.writeFile(path.join(tempDir, '.yarnrc.yml'), yarnrcContent)
       return {

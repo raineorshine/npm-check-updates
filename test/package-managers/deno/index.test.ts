@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import spawn from 'spawn-please'
 import { describe, expect, it } from 'vitest'
 import parseJson from '../../../src/lib/utils/parseJson.ts'
+import makeTempDir from '../../helpers/makeTempDir.ts'
 import removeDir from '../../helpers/removeDir.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -13,7 +13,7 @@ const bin = path.join(__dirname, '../../../build/cli.js')
 
 describe('deno', () => {
   it('handle import map', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'deno.json')
     const pkg = {
       imports: {
@@ -38,7 +38,7 @@ describe('deno', () => {
   })
 
   it('auto detect deno.json', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'deno.json')
     const pkg = {
       imports: {
@@ -58,7 +58,7 @@ describe('deno', () => {
   })
 
   it('rewrite deno.json', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'deno.json')
     const pkg = {
       imports: {
@@ -81,7 +81,7 @@ describe('deno', () => {
   })
 
   it('auto detect deno.jsonc', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'deno.jsonc')
     const pkgString = `{
   "imports": {
@@ -102,7 +102,7 @@ describe('deno', () => {
   })
 
   it('rewrite deno.jsonc', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'deno.jsonc')
     const pkg = {
       imports: {
@@ -126,7 +126,7 @@ describe('deno', () => {
 
   // Deno 2.0 can manage dependencies in package.json
   it('fall back to package.json when no deno.json is found', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     const pkg = {
       dependencies: { 'ncu-test-v2': '1.0.0' },
@@ -146,7 +146,7 @@ describe('deno', () => {
   })
 
   it('rewrite package.json fallback', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     const pkgFile = path.join(tempDir, 'package.json')
     const pkg = {
       dependencies: { 'ncu-test-v2': '1.0.0' },
@@ -164,7 +164,7 @@ describe('deno', () => {
   })
 
   it('prefer deno.json over package.json when both exist', async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+    const tempDir = await makeTempDir()
     await fs.writeFile(
       path.join(tempDir, 'deno.json'),
       JSON.stringify({ imports: { 'ncu-test-v2': 'npm:ncu-test-v2@1.0.0' } }),

@@ -1,11 +1,11 @@
 import fs from 'node:fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import spawn from 'spawn-please'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import ncu from '../src/index.ts'
+import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -32,7 +32,7 @@ const setup = async (
     pnpm?: boolean
   } = {},
 ) => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+  const tempDir = await makeTempDir()
 
   const pkgDataRoot = JSON.stringify({
     dependencies: {
@@ -80,7 +80,7 @@ const setupSymlinkedPackages = async (
   // applies a custom package name to /packages/bar
   customName?: string,
 ) => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+  const tempDir = await makeTempDir()
 
   const pkgDataRoot = JSON.stringify({ workspaces })
 
@@ -511,7 +511,7 @@ describe('workspaces', () => {
       })
 
       it('update pnpm catalog dependencies from pnpm-workspace.yaml (named catalogs)', async () => {
-        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        const tempDir = await makeTempDir()
         try {
           const pkgDataRoot = JSON.stringify({
             dependencies: {
@@ -574,7 +574,7 @@ catalogs:
       })
 
       it('update pnpm catalog dependencies from pnpm-workspace.yaml (singular catalog)', async () => {
-        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        const tempDir = await makeTempDir()
         try {
           const pkgDataRoot = JSON.stringify({
             dependencies: {
@@ -635,7 +635,7 @@ catalog:
       })
 
       it('do not throw on valid package protocols when target is not "latest"', async () => {
-        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        const tempDir = await makeTempDir()
         try {
           await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({}), 'utf-8')
           await fs.writeFile(
@@ -684,7 +684,7 @@ catalog:
       })
 
       it('update pnpm catalog dependencies from pnpm-workspace.yaml', async () => {
-        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        const tempDir = await makeTempDir()
         try {
           const pkgDataRoot = JSON.stringify({
             dependencies: {
@@ -741,7 +741,7 @@ catalogs:
       })
 
       it('update pnpm catalog dependencies nested under workspaces key in pnpm-workspace.yaml', async () => {
-        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        const tempDir = await makeTempDir()
         try {
           const pkgDataRoot = JSON.stringify({
             workspaces: ['packages/**'],
@@ -793,7 +793,7 @@ catalogs:
       })
 
       it('update pnpm catalog with --workspace flag (specific workspace)', async () => {
-        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        const tempDir = await makeTempDir()
         try {
           const pkgDataRoot = JSON.stringify({
             workspaces: ['packages/*'],
@@ -868,7 +868,7 @@ catalog:
 
     describe('yarn', () => {
       it('update yarn catalog dependencies from yarnrc.yml (named catalogs)', async () => {
-        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        const tempDir = await makeTempDir()
         try {
           const pkgDataRoot = JSON.stringify({
             workspaces: ['packages/**'],
@@ -929,7 +929,7 @@ catalogs:
       })
 
       it('update yarn catalog dependencies from .yarnrc.yml (singular catalog)', async () => {
-        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        const tempDir = await makeTempDir()
         try {
           const pkgDataRoot = JSON.stringify({
             workspaces: ['packages/**'],
@@ -987,7 +987,7 @@ catalog:
         }
       })
       it('update yarn catalog dependencies from .yarnrc.yml', async () => {
-        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        const tempDir = await makeTempDir()
         try {
           const pkgDataRoot = JSON.stringify({
             workspaces: ['packages/**'],
@@ -1050,7 +1050,7 @@ catalogs:
 
     describe('bun', () => {
       it('update bun catalog dependencies from package.json (top-level)', async () => {
-        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        const tempDir = await makeTempDir()
         try {
           const pkgDataRoot = JSON.stringify({
             workspaces: ['packages/**'],
@@ -1104,7 +1104,7 @@ catalogs:
       })
 
       it('update bun catalog dependencies from package.json (workspaces object)', async () => {
-        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+        const tempDir = await makeTempDir()
         try {
           const pkgDataRoot = JSON.stringify({
             workspaces: {
