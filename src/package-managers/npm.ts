@@ -11,6 +11,7 @@ import nodeSemver from 'semver'
 import { parseRange } from 'semver-utils'
 import untildify from 'untildify'
 import pkg from '../../package.json' with { type: 'json' }
+import interpolate from '../lib/interpolate.ts'
 import { keyValueBy } from '../lib/keyValueBy.ts'
 import { print, printSorted, sanitizeForDisplay } from '../lib/logging.ts'
 import spawnCommand from '../lib/spawnCommand.ts'
@@ -444,7 +445,10 @@ export const normalizeNpmConfig = (
 
   // needed until pacote supports full npm config compatibility
   // See: https://github.com/zkat/pacote/issues/156
-  const config: NpmConfig = keyValueBy(npmConfig, (key: string, value: NpmConfig[keyof NpmConfig]) => {
+  const config: NpmConfig = keyValueBy(npmConfig, (rawKey: string, value: NpmConfig[keyof NpmConfig]) => {
+    // npm expands env ${VARS} in keys too, so an auth key like //host/${PROJECT_ID}/:_authToken matches its registry
+    const key = interpolate(rawKey, process.env)
+
     // replace env ${VARS} in strings with the process.env value
     const normalizedValue =
       typeof value !== 'string'
@@ -454,7 +458,7 @@ export const normalizeNpmConfig = (
           ? stringToBoolean(value)
           : keyTypes[key.replace(/-/g, '').toLowerCase()] === 'number'
             ? stringToNumber(value)
-            : value.replace(/\${([^}]+)}/g, (_, envVar) => process.env[envVar] as string)
+            : interpolate(value, process.env)
 
     // normalize the key for pacote
     const { [key]: pacoteKey }: Index<NpmConfig[keyof NpmConfig]> = npmConfigToPacoteMap

@@ -223,6 +223,20 @@ describe('yarn', () => {
           '//npm.fontawesome.com/:_authToken': 'FIRST-SECOND',
         })
       })
+
+      // https://github.com/raineorshine/npm-check-updates/issues/1608
+      it('interpolates the registry server in the auth key', () => {
+        process.env[ENV_VAR] = '12345'
+        const authToken = yarn.npmAuthTokenKeyValue({})('types', {
+          npmAlwaysAuth: true,
+          npmAuthToken: 'MY-AUTH-TOKEN',
+          npmRegistryServer: `https://gitlab.example.com/api/v4/projects/\${${ENV_VAR}}/packages/npm/`,
+        })
+
+        expect(authToken).toStrictEqual({
+          '//gitlab.example.com/api/v4/projects/12345/packages/npm/:_authToken': 'MY-AUTH-TOKEN',
+        })
+      })
     })
   })
 
