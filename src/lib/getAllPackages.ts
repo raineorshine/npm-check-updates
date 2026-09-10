@@ -8,21 +8,20 @@ import { type Options } from '../types/Options.ts'
 import { type PackageFile } from '../types/PackageFile.ts'
 import { type PackageInfo } from '../types/PackageInfo.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
+import { catalogFileFor } from './catalogFile.ts'
 import findPackage from './findPackage.ts'
 import loadPackageInfoFromFile from './loadPackageInfoFromFile.ts'
 import programError from './programError.ts'
 
-type PnpmWorkspaces =
-  | string[]
-  | {
-      packages?: string[]
-      workspaces?:
-        string[] | { packages?: string[]; catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
-      catalog?: Index<VersionSpec>
-      catalogs?: Index<Index<VersionSpec>>
-    }
+type CatalogSections = { catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
 
-type YarnConfig = { catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
+/** The shape of a package manager's catalog file (pnpm-workspace.yaml, .yarnrc.yml). */
+type CatalogConfigFile = CatalogSections & {
+  packages?: string[]
+  workspaces?: string[] | (CatalogSections & { packages?: string[] })
+}
+
+type PnpmWorkspaces = string[] | CatalogConfigFile
 
 const globOptions: GlobOptions = {
   ignore: ['**/node_modules/**', '**/.pnpm-store/**'],
@@ -39,61 +38,44 @@ const readYamlSibling = async <T>(pkgPath: string, filename: string): Promise<T 
   return parseYaml(contents)
 }
 
-/** Gets catalog dependencies from both pnpm-workspace.yaml and package.json files. */
+/** Merges a config's singular `catalog` and plural `catalogs` sections into the accumulated dependencies. */
+const assignCatalogs = (accum: Index<VersionSpec>, config: CatalogSections) => {
+  if (config.catalog) {
+    Object.assign(accum, config.catalog)
+  }
+  if (config.catalogs) {
+    Object.assign(accum, ...Object.values(config.catalogs))
+  }
+}
+
+/** Gets catalog dependencies from the package manager's catalog file and from the package file. */
 const readCatalogDependencies = async (options: Options, pkgPath: string): Promise<Index<VersionSpec> | null> => {
   const catalogDependencies: Index<VersionSpec> = {}
 
-  // Read from pnpm-workspace.yaml if the package manager is pnpm
-  if (options.packageManager === 'pnpm') {
-    const pnpmWorkspaces = await readYamlSibling<PnpmWorkspaces>(pkgPath, 'pnpm-workspace.yaml')
-    if (pnpmWorkspaces && !Array.isArray(pnpmWorkspaces)) {
-      // Handle both singular 'catalog' and plural 'catalogs' (top-level format)
-      if (pnpmWorkspaces.catalog) {
-        Object.assign(catalogDependencies, pnpmWorkspaces.catalog)
-      }
-      if (pnpmWorkspaces.catalogs) {
-        Object.assign(catalogDependencies, ...Object.values(pnpmWorkspaces.catalogs))
-      }
+  // Read from the package manager's own catalog file (pnpm-workspace.yaml, .yarnrc.yml)
+  const catalogFile = catalogFileFor(options.packageManager)
+  if (catalogFile) {
+    const config = await readYamlSibling<CatalogConfigFile>(pkgPath, catalogFile)
+    if (config && !Array.isArray(config)) {
+      assignCatalogs(catalogDependencies, config)
       // Handle nested workspaces.catalog and workspaces.catalogs format
-      if (pnpmWorkspaces.workspaces && !Array.isArray(pnpmWorkspaces.workspaces)) {
-        if (pnpmWorkspaces.workspaces.catalog) {
-          Object.assign(catalogDependencies, pnpmWorkspaces.workspaces.catalog)
-        }
-        if (pnpmWorkspaces.workspaces.catalogs) {
-          Object.assign(catalogDependencies, ...Object.values(pnpmWorkspaces.workspaces.catalogs))
-        }
-      }
-    }
-  }
-
-  if (options.packageManager === 'yarn') {
-    const yarnConfig = await readYamlSibling<YarnConfig>(pkgPath, '.yarnrc.yml')
-    if (yarnConfig) {
-      if (yarnConfig.catalog) {
-        Object.assign(catalogDependencies, yarnConfig.catalog)
-      }
-      if (yarnConfig.catalogs) {
-        Object.assign(catalogDependencies, ...Object.values(yarnConfig.catalogs))
+      if (config.workspaces && !Array.isArray(config.workspaces)) {
+        assignCatalogs(catalogDependencies, config.workspaces)
       }
     }
   }
 
   // Read from package.json (for Bun and modern pnpm)
-  const packageData: PackageFile & {
-    catalog?: Index<VersionSpec>
-    catalogs?: Index<Index<VersionSpec>>
-    workspaces?: string[] | { packages: string[]; catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
-  } = JSON.parse(await fs.readFile(pkgPath, 'utf-8'))
+  const packageData: PackageFile &
+    CatalogSections & { workspaces?: string[] | (CatalogSections & { packages?: string[] }) } = JSON.parse(
+    await fs.readFile(pkgPath, 'utf-8'),
+  )
 
-  Object.assign(catalogDependencies, packageData.catalog, ...Object.values(packageData.catalogs ?? {}))
+  assignCatalogs(catalogDependencies, packageData)
 
   // Workspaces catalogs (Bun format)
   if (packageData.workspaces && !Array.isArray(packageData.workspaces)) {
-    Object.assign(
-      catalogDependencies,
-      packageData.workspaces.catalog,
-      ...Object.values(packageData.workspaces.catalogs ?? {}),
-    )
+    assignCatalogs(catalogDependencies, packageData.workspaces)
   }
 
   return Object.keys(catalogDependencies).length > 0 ? catalogDependencies : null
@@ -206,14 +188,9 @@ async function getCatalogPackageInfo(options: Options, pkgPath: string): Promise
     dependencies: catalogDependencies,
   }
 
-  // Determine the correct file path for catalogs. For pnpm, use pnpm-workspace.yaml.
-  // For Bun catalogs, the catalogs live in the package.json itself.
-  const catalogFilePath =
-    options.packageManager === 'pnpm'
-      ? path.join(path.dirname(pkgPath), 'pnpm-workspace.yaml')
-      : options.packageManager === 'yarn'
-        ? path.join(path.dirname(pkgPath), '.yarnrc.yml')
-        : pkgPath
+  // pnpm and yarn declare catalogs in their own config file; for bun they live in the package file
+  const catalogFile = catalogFileFor(options.packageManager)
+  const catalogFilePath = catalogFile ? path.join(path.dirname(pkgPath), catalogFile) : pkgPath
 
   // Create synthetic file content that matches the synthetic PackageFile
   const syntheticFileContent = JSON.stringify(catalogPackageFile, null, 2)

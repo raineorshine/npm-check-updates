@@ -8,6 +8,7 @@ import { type Options } from '../types/Options.ts'
 import { type PackageFile } from '../types/PackageFile.ts'
 import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
+import { isCatalogFile } from './catalogFile.ts'
 import getDevEnginesPackageManagers from './getDevEnginesPackageManagers.ts'
 import { pickBy } from './pick.ts'
 import resolveDepSections from './resolveDepSections.ts'
@@ -96,11 +97,10 @@ async function upgradePackageData(
 ) {
   // Check if this is a catalog file (pnpm-workspace.yaml or package.json with catalogs)
   if (pkgFile) {
-    const fileName = path.basename(pkgFile)
     const fileExtension = path.extname(pkgFile)
 
     // Handle yaml catalog files
-    if (fileName === 'pnpm-workspace.yaml' || fileName === '.yarnrc.yml') {
+    if (isCatalogFile(pkgFile)) {
       const yamlContent = await fs.readFile(pkgFile, 'utf-8')
       const catalogData: CatalogsConfig = parseCatalogsConfig(parseDocument(yamlContent).toJSON())
 
