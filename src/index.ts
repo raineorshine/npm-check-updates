@@ -13,6 +13,7 @@ import getNcuRc from './lib/getNcuRc.ts'
 import initOptions from './lib/initOptions.ts'
 import { errorText, print, printJson } from './lib/logging.ts'
 import mergeOptions from './lib/mergeOptions.ts'
+import parseOptions from './lib/parseOptions.ts'
 import programError from './lib/programError.ts'
 import runGlobal from './lib/runGlobal.ts'
 import runLocal from './lib/runLocal.ts'
@@ -281,6 +282,9 @@ async function runUpgrades(
 
         ;(pkgOptions as any)[key] = options[key as keyof Options]
       }
+
+      // the reloaded per-package config did not go through commander, so coerce it here, same as initOptions
+      parseOptions(pkgOptions)
 
       pkgOptions.packageFile = packageInfo.filepath
       pkgOptions.workspacePackages = workspacePackages
