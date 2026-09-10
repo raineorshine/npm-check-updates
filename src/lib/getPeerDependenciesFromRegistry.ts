@@ -6,7 +6,7 @@ import getPackageManager from './getPackageManager.ts'
 import isPackageManagerProtocol from './isPackageManagerProtocol.ts'
 import { createProgressBar, errorText, print } from './logging.ts'
 import resolveDistTagsInPeerDependencies from './resolveDistTagsInPeerDependencies.ts'
-import { isGitHubUrl, isWildcard } from './version-util.ts'
+import { isGitHubUrl, isJsrSpec, isWildcard } from './version-util.ts'
 
 type CircularData =
   | {
@@ -79,7 +79,13 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
     const cached = options.cacher?.getPeers(pkg, version)
     if (cached) {
       dependencies = cached
-    } else if (!version || isPackageManagerProtocol(version) || isGitHubUrl(version) || isWildcard(version)) {
+    } else if (
+      !version ||
+      isPackageManagerProtocol(version) ||
+      isGitHubUrl(version) ||
+      isJsrSpec(version) ||
+      isWildcard(version)
+    ) {
       // the registry has nothing to look up for these, so do not report them as unfetchable
       dependencies = {}
     } else {

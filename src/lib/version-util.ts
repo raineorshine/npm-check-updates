@@ -33,6 +33,24 @@ const WILDCARD_PURE_REGEX = new RegExp(`^(${WILDCARDS_PURE.map(escapeRegExp).joi
 /** Matches an npm alias version declaration. */
 const NPM_ALIAS_REGEX = /^npm:(.*)@(.*)/
 
+/** The protocol used by yarn, pnpm, and deno import maps to reference a JSR package. */
+const JSR_PROTOCOL = 'jsr:'
+
+/** The npm scope that JSR publishes to on its npm-compatible registry. */
+export const JSR_NPM_SCOPE = '@jsr'
+
+/** JSR's npm-compatible registry. */
+export const JSR_REGISTRY = 'https://npm.jsr.io'
+
+/** Matches the `@scope/name` prefix of a jsr: spec and the range that follows it. */
+const JSR_SPEC_REGEX = /^(@[^/@\s]+\/[^@\s]+)(?:@(.*))?$/
+
+/** Matches a JSR package name, e.g. `@scope/name`. */
+const JSR_PACKAGE_NAME_REGEX = /^@([^/@\s]+)\/([^@\s]+)$/
+
+/** Matches a name published to JSR's npm-compatible registry, e.g. `@jsr/scope__name`. */
+const JSR_NPM_NAME_REGEX = /^@jsr\/([^_@\s]+)__(.+)$/
+
 interface UpgradeOptions {
   wildcard?: string
   removeRange?: boolean
@@ -435,6 +453,66 @@ export const upgradeNpmAlias = (declaration: string, upgraded: string) => {
   const npmAlias = parseNpmAlias(declaration)
   if (!npmAlias) return null
   return createNpmAlias(npmAlias[0], upgraded)
+}
+
+/**
+ * Returns true if a version declaration uses the jsr: protocol.
+ */
+export const isJsrSpec = (declaration: string) => !!declaration && !!declaration.startsWith?.(JSR_PROTOCOL)
+
+/**
+ * Parses a jsr: spec into a [name, version] 2-tuple. The name is null in the bare form written by pnpm, where
+ * the package name comes from the dependency key instead. A spec with no version is normalized to a wildcard.
+ *
+ * @returns  [name, version] or null if the input is not a jsr: spec
+ * @example  'jsr:@scope/name@^1.0.1' -> ['@scope/name', '^1.0.1']
+ * @example  'jsr:^4.0.0'             -> [null, '^4.0.0']
+ * @example  'jsr:@scope/name'        -> ['@scope/name', '*']
+ */
+export const parseJsrSpec = (spec: string): [string | null, string] | null => {
+  if (!isJsrSpec(spec)) return null
+  const rest = spec.slice(JSR_PROTOCOL.length)
+  const match = rest.match(JSR_SPEC_REGEX)
+  return match ? [match[1], match[2] || '*'] : [null, rest || '*']
+}
+
+/**
+ * Constructs a jsr: spec. Omitting the name produces the bare form.
+ *
+ * @example  createJsrSpec('@scope/name', '1.0.1') -> 'jsr:@scope/name@1.0.1'
+ * @example  createJsrSpec(null, '1.0.1')          -> 'jsr:1.0.1'
+ */
+export const createJsrSpec = (name: string | null, version: string) =>
+  `${JSR_PROTOCOL}${name ? `${name}@` : ''}${version}`
+
+/**
+ * Replaces the version embedded in a jsr: spec, preserving whether the name is embedded.
+ */
+export const upgradeJsrSpec = (declaration: string, upgraded: string) => {
+  const jsrSpec = parseJsrSpec(declaration)
+  if (!jsrSpec) return null
+  return createJsrSpec(jsrSpec[0], upgraded)
+}
+
+/**
+ * Converts a JSR package name to the name it is published under on JSR's npm-compatible registry. Returns null
+ * if the name is not scoped, since every JSR package name is @scope/name.
+ *
+ * @example  toJsrNpmName('@scope/name') -> '@jsr/scope__name'
+ */
+export const toJsrNpmName = (name: string) => {
+  const match = name.match(JSR_PACKAGE_NAME_REGEX)
+  return match ? `${JSR_NPM_SCOPE}/${match[1]}__${match[2]}` : null
+}
+
+/**
+ * Converts a name published to JSR's npm-compatible registry back to its JSR package name.
+ *
+ * @example  fromJsrNpmName('@jsr/scope__name') -> '@scope/name'
+ */
+export const fromJsrNpmName = (name: string) => {
+  const match = name.match(JSR_NPM_NAME_REGEX)
+  return match ? `@${match[1]}/${match[2]}` : null
 }
 
 /**
