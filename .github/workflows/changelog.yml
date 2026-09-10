@@ -46,7 +46,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: node scripts/build-changelog.ts
+        run: npm run build:changelog
 
       - name: Show CHANGELOG.md diff
         run: |
