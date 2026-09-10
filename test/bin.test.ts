@@ -128,6 +128,15 @@ describe('bin', () => {
     await expect(spawn('node', [bin, '--cwd', os.tmpdir()])).rejects.toThrow('No package.json')
   })
 
+  it('throw error if --cooldown has an unrecognized unit', async () => {
+    // "7x" must be rejected rather than silently read as 7 days
+    await expect(
+      spawn('node', [bin, '--cooldown', '7x', '--stdin'], {
+        stdin: JSON.stringify({ dependencies: { express: '1.0.0' } }),
+      }),
+    ).rejects.toThrow('Cooldown must be a non-negative number')
+  })
+
   it('throw error if --cwd does not exist', async () => {
     await expect(spawn('node', [bin, '--cwd', 'fnuoathufoawhtufonwauto'])).rejects.toThrow(
       'No such directory: fnuoathufoawhtufonwauto',

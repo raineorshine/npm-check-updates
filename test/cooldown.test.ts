@@ -61,6 +61,25 @@ describe('cooldown', () => {
         'Invalid cooldown value: "invalid". Use a number (days) or a string like "7d", "12h", or "30m".',
       )
     })
+
+    // a string that starts with digits must not be truncated to them, e.g. "7x" read as 7 days
+    it('throws error for a cooldown string with an unrecognized unit', async () => {
+      await expect(
+        ncu({
+          packageData: { dependencies: {} },
+          cooldown: '7x',
+        }),
+      ).rejects.toThrow('Invalid cooldown value: "7x". Use a number (days) or a string like "7d", "12h", or "30m".')
+
+      await expect(
+        ncu({
+          packageData: { dependencies: {} },
+          cooldown: '2 weeks',
+        }),
+      ).rejects.toThrow(
+        'Invalid cooldown value: "2 weeks". Use a number (days) or a string like "7d", "12h", or "30m".',
+      )
+    })
   })
 
   describe('cooldown string formats', () => {
