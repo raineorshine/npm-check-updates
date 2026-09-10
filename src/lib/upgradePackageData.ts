@@ -74,6 +74,14 @@ function replaceDependencySections(
 }
 
 /**
+ * Parses the text returned by upgradePackageData back into an object, using the same format it wrote.
+ * Catalog files are written as yaml; everything else stays json.
+ */
+export function parseUpgradedPackageData(pkgFile: Maybe<string>, data: string): PackageFile {
+  return pkgFile && isCatalogFile(pkgFile) ? parseDocument(data).toJSON() : parseJson<PackageFile>(data)
+}
+
+/**
  * Upgrade the dependency declarations in the package data.
  *
  * @param pkgData The package.json data, as utf8 text

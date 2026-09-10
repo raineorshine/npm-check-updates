@@ -2,7 +2,6 @@ import fs from 'node:fs/promises'
 import pMap from 'p-map'
 import prompts from 'prompts-ncu'
 import semver from 'semver'
-import { parseDocument } from 'yaml'
 import { type DependencyGroup } from '../types/DependencyGroup.ts'
 import { type Index } from '../types/IndexType.ts'
 import { type Maybe } from '../types/Maybe.ts'
@@ -32,7 +31,7 @@ import { pick } from './pick.ts'
 import programError from './programError.ts'
 import resolveDepSections from './resolveDepSections.ts'
 import style from './style.ts'
-import upgradePackageData from './upgradePackageData.ts'
+import upgradePackageData, { parseUpgradedPackageData } from './upgradePackageData.ts'
 import upgradePackageDefinitions from './upgradePackageDefinitions.ts'
 import parseJson from './utils/parseJson.ts'
 import { getDependencyGroups, isWildcard } from './version-util.ts'
@@ -299,9 +298,7 @@ export default async function runLocal(
   )
 
   const output: PackageFile | Index<VersionSpec> = options.jsonAll
-    ? pkgFile?.endsWith('.yaml') || pkgFile?.endsWith('.yml')
-      ? parseDocument(newPkgData).toJSON()
-      : parseJson<PackageFile>(newPkgData)
+    ? parseUpgradedPackageData(pkgFile, newPkgData)
     : options.jsonDeps && pkgFile?.endsWith('.json')
       ? pick(parseJson<PackageFile>(newPkgData), resolveDepSections(options.dep))
       : chosenUpgraded
