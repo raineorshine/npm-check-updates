@@ -404,7 +404,7 @@ describe('--dep', () => {
         2,
       )
 
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'npm-check-updates-'))
+      const tempDir = await makeTempDir()
       const pkgFile = path.join(tempDir, 'package.json')
       await fs.writeFile(pkgFile, packageData)
 
