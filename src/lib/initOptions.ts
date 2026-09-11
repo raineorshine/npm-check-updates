@@ -12,6 +12,7 @@ import determinePackageManager from './determinePackageManager.ts'
 import exists from './exists.ts'
 import keyValueBy from './keyValueBy.ts'
 import parseCooldown from './parseCooldown.ts'
+import parseOptions from './parseOptions.ts'
 import programError from './programError.ts'
 import { getStyle } from './style.ts'
 
@@ -108,6 +109,10 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
     cli,
     ...(cli ? null : { raw, cliKeys: moduleCliKeys }),
   }
+
+  // The cli path already went through commander, which applies parse. Values coming from the ncurc or
+  // the module API have not, so coerce them here from the same option definitions.
+  parseOptions(options)
 
   // consolidate loglevel
   const loglevel =
@@ -223,19 +228,6 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
   const packageManager = await determinePackageManager(options)
 
   if (options.cooldown != null) {
-    // Normalize string formats ("7d", "12h", "30m") to a fractional number of days.
-    if (typeof options.cooldown === 'string') {
-      const days = parseCooldown(options.cooldown)
-      if (days === null) {
-        programError(
-          options,
-          `Invalid cooldown value: "${options.cooldown}". Use a number (days) or a string like "7d", "12h", or "30m".`,
-        )
-      } else {
-        options.cooldown = days
-      }
-    }
-
     const isValidNumber = typeof options.cooldown === 'number' && !isNaN(options.cooldown) && options.cooldown >= 0
     const isValidFunction = typeof options.cooldown === 'function'
 
