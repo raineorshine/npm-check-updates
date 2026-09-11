@@ -565,9 +565,9 @@ Skipped due to 7-day cooldown
 Usage:
 
 ```sh
-ncu --doctor -u
+ncu -u --doctor
 ncu --no-doctor
-ncu -du
+ncu -u -d
 ```
 
 Iteratively installs upgrades and runs your project's tests to identify breaking upgrades. Reverts broken upgrades and updates package.json with working upgrades.
@@ -773,7 +773,7 @@ Control the auto-install behavior.
 Usage:
 
 ```sh
-ncu --interactiveSelect [value]
+ncu -i --interactiveSelect [value]
 ```
 
 Default: auto
@@ -867,7 +867,7 @@ ncu-test-return-version  1.0.0  →  2.0.0
 Usage:
 
 ```sh
-ncu --registryType [type]
+ncu -r [uri] --registryType [type]
 ```
 
 Specify whether `--registry` refers to a full npm registry or a simple JSON file.
