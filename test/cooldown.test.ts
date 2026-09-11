@@ -1,14 +1,15 @@
 import fs from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import { stripVTControlCharacters } from 'node:util'
 import { type MockInstance, afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ncu from '../src/index.ts'
 import { npmApi } from '../src/package-managers/npm.ts'
 import { pnpmApi } from '../src/package-managers/pnpm.ts'
-import { yarnApi } from '../src/package-managers/yarn.ts'
 import { type PackageFile } from '../src/types/PackageFile.ts'
 import createMockVersion from './helpers/createMockVersion.ts'
 import makeTempDir from './helpers/makeTempDir.ts'
+import usePnpmConfigDirs from './helpers/pnpmConfigDirs.ts'
 import { silenceProgressBar } from './helpers/silenceProgressBar.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
@@ -1434,6 +1435,9 @@ describe('cooldown', () => {
   })
 
   describe('pnpm workspace minimumReleaseAge', () => {
+    // isolates cwd and XDG_CONFIG_HOME, so the machine's own pnpm config cannot leak into the assertions
+    const { writeWorkspace } = usePnpmConfigDirs()
+
     it('applies minimumReleaseAge from pnpm-workspace.yaml as cooldown when cooldown is not set', async () => {
       // Given: pnpm-workspace.yaml has minimumReleaseAge=1440 (1440 minutes = 1 day),
       // test-package@1.0.0 installed, latest version 1.1.0 released 12 hours ago (within cooldown)
@@ -1457,11 +1461,7 @@ describe('cooldown', () => {
       // Prevent user's .npmrc min-release-age from taking precedence over pnpm/yarn config in tests
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({})
 
-      // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with minimumReleaseAge: 1440 minutes
-      const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue({
-        minimumReleaseAge: 1440,
-        minimumReleaseAgeExclude: [],
-      })
+      await writeWorkspace('minimumReleaseAge: 1440\n')
 
       // When: ncu is run without explicit cooldown option
       const result = await ncu({ packageData, packageManager: 'pnpm' })
@@ -1471,7 +1471,6 @@ describe('cooldown', () => {
 
       stub.restore()
       findNpmConfigStub.mockRestore()
-      pnpmWorkspaceStub.mockRestore()
     })
 
     it('excludes packages matching minimumReleaseAgeExclude patterns from cooldown', async () => {
@@ -1498,11 +1497,7 @@ describe('cooldown', () => {
 
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({})
 
-      // Stub getPnpmWorkspaceMinimumReleaseAge to return a config with 7 days cooldown and @myorg/* excluded
-      const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue({
-        minimumReleaseAge: 10080, // 7 days in minutes
-        minimumReleaseAgeExclude: ['@myorg/*'],
-      })
+      await writeWorkspace('minimumReleaseAge: 10080\nminimumReleaseAgeExclude:\n  - "@myorg/*"\n')
 
       // When: ncu is run without explicit cooldown option
       const result = await ncu({ packageData, packageManager: 'pnpm' })
@@ -1513,7 +1508,6 @@ describe('cooldown', () => {
 
       stub.restore()
       findNpmConfigStub.mockRestore()
-      pnpmWorkspaceStub.mockRestore()
     })
 
     it('does not apply pnpm minimumReleaseAge when cooldown is explicitly set', async () => {
@@ -1535,11 +1529,7 @@ describe('cooldown', () => {
         }),
       )
 
-      // Stub getPnpmWorkspaceMinimumReleaseAge to return a 7-day config
-      const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue({
-        minimumReleaseAge: 10080,
-        minimumReleaseAgeExclude: [],
-      })
+      await writeWorkspace('minimumReleaseAge: 10080\n')
 
       // When: ncu is run with explicit cooldown=0 (overrides pnpm minimumReleaseAge)
       const result = await ncu({ packageData, cooldown: 0 })
@@ -1548,7 +1538,6 @@ describe('cooldown', () => {
       expect(result).toHaveProperty('test-package', '1.1.0')
 
       stub.restore()
-      pnpmWorkspaceStub.mockRestore()
     })
 
     it('prefers pnpm minimumReleaseAge over npm min-release-age', async () => {
@@ -1573,11 +1562,8 @@ describe('cooldown', () => {
 
       // Stub npm config with min-release-age=2 (should NOT be consulted for pnpm projects)
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '2' })
-      // Stub pnpm workspace with 7-day cooldown
-      const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue({
-        minimumReleaseAge: 10080,
-        minimumReleaseAgeExclude: [],
-      })
+
+      await writeWorkspace('minimumReleaseAge: 10080\n')
 
       // When: ncu is run without explicit cooldown option for a pnpm project
       const result = await ncu({ packageData, packageManager: 'pnpm' })
@@ -1588,7 +1574,6 @@ describe('cooldown', () => {
 
       stub.restore()
       findNpmConfigStub.mockRestore()
-      pnpmWorkspaceStub.mockRestore()
     })
 
     it('ignores npm min-release-age for pnpm projects when pnpm defines no minimumReleaseAge', async () => {
@@ -1613,8 +1598,8 @@ describe('cooldown', () => {
 
       // Stub npm config with min-release-age=7 (should NOT be consulted for pnpm projects)
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '7' })
-      // Stub pnpm workspace returning null (no pnpm config)
-      const pnpmWorkspaceStub = vi.spyOn(pnpmApi, 'getPnpmWorkspaceMinimumReleaseAge').mockResolvedValue(null)
+
+      // No pnpm-workspace.yaml is written, so pnpm defines no minimumReleaseAge
 
       // When: ncu is run without explicit cooldown option for a pnpm project
       const result = await ncu({ packageData, packageManager: 'pnpm' })
@@ -1625,7 +1610,6 @@ describe('cooldown', () => {
 
       stub.restore()
       findNpmConfigStub.mockRestore()
-      pnpmWorkspaceStub.mockRestore()
     })
   })
 
@@ -1800,6 +1784,14 @@ describe('cooldown', () => {
   })
 
   describe('yarn npmMinimalAgeGate', () => {
+    /** Creates a temp directory with a yarn.lock and a .yarnrc.yml for testing. */
+    const createTempYarnrc = async (yarnrcContent: string): Promise<string> => {
+      const tempDir = await makeTempDir('ncu-test-yarn-agegate-')
+      await fs.writeFile(path.join(tempDir, 'yarn.lock'), '')
+      await fs.writeFile(path.join(tempDir, '.yarnrc.yml'), yarnrcContent)
+      return tempDir
+    }
+
     it('applies npmMinimalAgeGate from .yarnrc.yml as cooldown when cooldown is not set', async () => {
       // Given: .yarnrc.yml has npmMinimalAgeGate=1440 (1440 minutes = 1 day),
       // test-package@1.0.0 installed, latest version 1.1.0 released 12 hours ago (within cooldown)
@@ -1821,22 +1813,17 @@ describe('cooldown', () => {
       )
 
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({})
-
-      // Stub getYarnMinimalAgeGate to return a config with npmMinimalAgeGate: 1440 minutes (1 day)
-      const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
-        npmMinimalAgeGate: 1440,
-        npmPreapprovedPackages: [],
-      })
+      const tempDir = await createTempYarnrc('npmMinimalAgeGate: 1440\n')
 
       // When: ncu is run without explicit cooldown option
-      const result = await ncu({ packageData, packageManager: 'yarn' })
+      const result = await ncu({ packageData, packageManager: 'yarn', cwd: tempDir })
 
       // Then: package upgrade is skipped because latest version (1.1.0) is within the 1-day cooldown
       expect(result).not.toHaveProperty('test-package')
 
       stub.restore()
       findNpmConfigStub.mockRestore()
-      yarnAgeGateStub.mockRestore()
+      await fs.rm(tempDir, { recursive: true, force: true })
     })
 
     it('upgrades packages older than npmMinimalAgeGate', async () => {
@@ -1860,21 +1847,17 @@ describe('cooldown', () => {
       )
 
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({})
-
-      const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
-        npmMinimalAgeGate: 1440,
-        npmPreapprovedPackages: [],
-      })
+      const tempDir = await createTempYarnrc('npmMinimalAgeGate: 1440\n')
 
       // When: ncu is run without explicit cooldown option
-      const result = await ncu({ packageData, packageManager: 'yarn' })
+      const result = await ncu({ packageData, packageManager: 'yarn', cwd: tempDir })
 
       // Then: package is upgraded because 2 days > 1 day cooldown
       expect(result).toHaveProperty('test-package', '1.1.0')
 
       stub.restore()
       findNpmConfigStub.mockRestore()
-      yarnAgeGateStub.mockRestore()
+      await fs.rm(tempDir, { recursive: true, force: true })
     })
 
     it('excludes packages listed in npmPreapprovedPackages from cooldown', async () => {
@@ -1900,15 +1883,10 @@ describe('cooldown', () => {
       })
 
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({})
-
-      // Stub getYarnMinimalAgeGate to return a 7-day cooldown with @myorg/pkg pre-approved
-      const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
-        npmMinimalAgeGate: 10080,
-        npmPreapprovedPackages: ['@myorg/pkg'],
-      })
+      const tempDir = await createTempYarnrc('npmMinimalAgeGate: 10080\nnpmPreapprovedPackages:\n  - "@myorg/pkg"\n')
 
       // When: ncu is run without explicit cooldown option
-      const result = await ncu({ packageData, packageManager: 'yarn' })
+      const result = await ncu({ packageData, packageManager: 'yarn', cwd: tempDir })
 
       // Then: test-package is skipped (within 7-day cooldown), @myorg/pkg is upgraded (pre-approved)
       expect(result).not.toHaveProperty('test-package')
@@ -1916,7 +1894,7 @@ describe('cooldown', () => {
 
       stub.restore()
       findNpmConfigStub.mockRestore()
-      yarnAgeGateStub.mockRestore()
+      await fs.rm(tempDir, { recursive: true, force: true })
     })
 
     it('does not apply npmMinimalAgeGate when cooldown is explicitly set', async () => {
@@ -1938,20 +1916,16 @@ describe('cooldown', () => {
         }),
       )
 
-      const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
-        npmMinimalAgeGate: 10080,
-        npmPreapprovedPackages: [],
-      })
+      const tempDir = await createTempYarnrc('npmMinimalAgeGate: 10080\n')
 
       // When: ncu is run with explicit cooldown=0 (overrides npmMinimalAgeGate)
-      const result = await ncu({ packageData, cooldown: 0 })
+      const result = await ncu({ packageData, cooldown: 0, cwd: tempDir })
 
       // Then: package is upgraded since explicit cooldown=0 overrides npmMinimalAgeGate
       expect(result).toHaveProperty('test-package', '1.1.0')
-      expect(yarnAgeGateStub).not.toHaveBeenCalled()
 
       stub.restore()
-      yarnAgeGateStub.mockRestore()
+      await fs.rm(tempDir, { recursive: true, force: true })
     })
 
     it('prefers yarn npmMinimalAgeGate over npm min-release-age', async () => {
@@ -1976,22 +1950,18 @@ describe('cooldown', () => {
 
       // Stub npm config with min-release-age=2 (should NOT be consulted for yarn projects)
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '2' })
-      const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue({
-        npmMinimalAgeGate: 10080,
-        npmPreapprovedPackages: [],
-      })
+      const tempDir = await createTempYarnrc('npmMinimalAgeGate: 10080\n')
 
       // When: ncu is run without explicit cooldown option for a yarn project
-      const result = await ncu({ packageData, packageManager: 'yarn' })
+      const result = await ncu({ packageData, packageManager: 'yarn', cwd: tempDir })
 
       // Then: package is skipped because yarn's 7-day cooldown takes precedence (3 days < 7 days)
       // .npmrc min-release-age is ignored for yarn projects
       expect(result).not.toHaveProperty('test-package')
-      expect(yarnAgeGateStub).toHaveBeenCalled()
 
       stub.restore()
       findNpmConfigStub.mockRestore()
-      yarnAgeGateStub.mockRestore()
+      await fs.rm(tempDir, { recursive: true, force: true })
     })
 
     it('ignores npm min-release-age for yarn projects when yarn defines no npmMinimalAgeGate', async () => {
@@ -2016,11 +1986,13 @@ describe('cooldown', () => {
 
       // Stub npm config with min-release-age=7 (should NOT be consulted for yarn projects)
       const findNpmConfigStub = vi.spyOn(npmApi, 'findNpmConfig').mockReturnValue({ minReleaseAge: '7' })
-      // Stub yarn returning null (no yarn config)
-      const yarnAgeGateStub = vi.spyOn(yarnApi, 'getYarnMinimalAgeGate').mockResolvedValue(null)
+      // A local .yarnrc.yml with no npmMinimalAgeGate, and an isolated home directory so the
+      // machine's own ~/.yarnrc.yml cannot leak into the assertion
+      const tempDir = await createTempYarnrc('')
+      const homedirStub = vi.spyOn(os, 'homedir').mockReturnValue(tempDir)
 
       // When: ncu is run without explicit cooldown option for a yarn project
-      const result = await ncu({ packageData, packageManager: 'yarn' })
+      const result = await ncu({ packageData, packageManager: 'yarn', cwd: tempDir })
 
       // Then: package is upgraded because .npmrc min-release-age is ignored for yarn projects
       // and yarn has no npmMinimalAgeGate config, so no auto-cooldown is applied
@@ -2028,7 +2000,8 @@ describe('cooldown', () => {
 
       stub.restore()
       findNpmConfigStub.mockRestore()
-      yarnAgeGateStub.mockRestore()
+      homedirStub.mockRestore()
+      await fs.rm(tempDir, { recursive: true, force: true })
     })
   })
 
