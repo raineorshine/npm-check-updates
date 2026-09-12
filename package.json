@@ -70,12 +70,12 @@
     }
   },
   "devDependencies": {
-    "@eslint/compat": "^2.1.0",
+    "@eslint/compat": "^2.1.1",
     "@eslint/js": "^10.0.1",
     "@microsoft/api-extractor": "^7.59.0",
     "@streamparser/json": "^0.0.26",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
-    "@types/bun": "^1.4.0",
+    "@types/bun": "^1.4.1",
     "@types/hosted-git-info": "^3.0.5",
     "@types/ini": "^4.1.1",
     "@types/node": "^26.4.1",
