@@ -1,7 +1,10 @@
+import { once } from 'node:events'
 import fs from 'node:fs/promises'
+import http from 'node:http'
+import { type AddressInfo } from 'node:net'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import * as npm from '../../../src/package-managers/npm.ts'
 import makeTempDir from '../../helpers/makeTempDir.ts'
 import removeDir from '../../helpers/removeDir.ts'
@@ -225,5 +228,68 @@ describe('npm', () => {
       delete process.env.NCU_TEST_ENV_A
       delete process.env.NCU_TEST_ENV_B
     }
+  })
+
+  // https://github.com/raineorshine/npm-check-updates/issues/1608
+  describe('env var interpolation in config keys', () => {
+    afterEach(() => {
+      delete process.env.NCU_TEST_PROJECT_ID
+      delete process.env.NCU_TEST_TOKEN
+    })
+
+    it('interpolates env var references in a config key', () => {
+      process.env.NCU_TEST_PROJECT_ID = '12345'
+      process.env.NCU_TEST_TOKEN = 'MY-AUTH-TOKEN'
+
+      const result = npm.normalizeNpmConfig({
+        '@types:registry': `https://gitlab.example.com/api/v4/projects/\${NCU_TEST_PROJECT_ID}/packages/npm/`,
+        [`//gitlab.example.com/api/v4/projects/\${NCU_TEST_PROJECT_ID}/packages/npm/:_authToken`]: `\${NCU_TEST_TOKEN}`,
+      })
+
+      // the auth key is looked up by registry url with the protocol stripped, so both must interpolate the same way
+      expect(result['@types:registry']).toBe('https://gitlab.example.com/api/v4/projects/12345/packages/npm/')
+      expect(result['//gitlab.example.com/api/v4/projects/12345/packages/npm/:_authToken']).toBe('MY-AUTH-TOKEN')
+    })
+
+    it('uses the fallback in a config key when the variable is unset', () => {
+      const result = npm.normalizeNpmConfig({
+        [`//registry.example.com/\${NCU_TEST_PROJECT_ID:-default}/:_authToken`]: 'token',
+      })
+
+      expect(result['//registry.example.com/default/:_authToken']).toBe('token')
+    })
+
+    it('sends the auth token when the registry url contains an env var', async () => {
+      const authorizations: (string | undefined)[] = []
+      const server = http.createServer((req, res) => {
+        authorizations.push(req.headers.authorization)
+        res.writeHead(200, { 'content-type': 'application/json' })
+        res.end(JSON.stringify({ name: '@enginestest/foo', version: '1.0.0', engines: { node: '>=18' } }))
+      })
+      server.listen(0, '127.0.0.1')
+      await once(server, 'listening')
+      const { port } = server.address() as AddressInfo
+
+      process.env.NCU_TEST_PROJECT_ID = '12345'
+      process.env.NCU_TEST_TOKEN = 'MY-AUTH-TOKEN'
+
+      const tempDir = await makeTempDir()
+      await fs.writeFile(
+        path.join(tempDir, '.npmrc'),
+        `@enginestest:registry=http://127.0.0.1:${port}/projects/\${NCU_TEST_PROJECT_ID}/packages/npm/\n` +
+          `//127.0.0.1:${port}/projects/\${NCU_TEST_PROJECT_ID}/packages/npm/:_authToken=\${NCU_TEST_TOKEN}\n`,
+      )
+
+      try {
+        await expect(npm.getEngines('@enginestest/foo', '1.0.0', { cwd: tempDir })).resolves.toStrictEqual({
+          node: '>=18',
+        })
+        expect(authorizations).toStrictEqual(['Bearer MY-AUTH-TOKEN'])
+      } finally {
+        server.close()
+        await once(server, 'close')
+        await removeDir(tempDir)
+      }
+    })
   })
 })

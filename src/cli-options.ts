@@ -1083,7 +1083,12 @@ const cliOptions: CLIOption[] = [
         return value
       } else if (typeof value === 'string') {
         const days = parseCooldown(value)
-        return days !== null ? days : parseInt(value, 10)
+        if (days !== null) return days
+        // Fall back to a bare number of days. Anything else yields NaN so that the caller rejects it,
+        // rather than parseInt silently reading "7x" as 7 days or "2 weeks" as 2 days.
+        const trimmed = value.trim()
+        const bareNumber = trimmed === '' ? NaN : Number(trimmed)
+        return Number.isFinite(bareNumber) ? bareNumber : NaN
       } else {
         throw new Error('cooldown must be a number, string, or function')
       }

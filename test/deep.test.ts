@@ -270,6 +270,29 @@ describe('--deep with nested ncurc files', () => {
     expect(deepJsonOut['pkg/sub3/sub32/package.json']).toHaveProperty('fp-and-or')
     expect(deepJsonOut['pkg/sub3/sub32/package.json']).toHaveProperty('ncu-test-v2')
   })
+
+  // A nested ncurc is reloaded after the options have already been initialized, so its values still
+  // need to be coerced. An unparsed string format is not just inert: "no-group".includes('group') is
+  // true, so it turns the negation into the very option it is supposed to disable.
+  // See: https://github.com/raineorshine/npm-check-updates/pull/2066
+  it('parses a string format in the ncurc of a nested package', async () => {
+    const tempDir = await makeTempDir()
+    const pkgData = JSON.stringify({ dependencies: { express: '1' } })
+    await fs.writeFile(path.join(tempDir, 'package.json'), pkgData, 'utf-8')
+    await fs.mkdir(path.join(tempDir, 'packages/sub1'), { recursive: true })
+    await fs.writeFile(path.join(tempDir, 'packages/sub1/package.json'), pkgData, 'utf-8')
+    await fs.writeFile(path.join(tempDir, 'packages/sub1/.ncurc.json'), JSON.stringify({ format: 'no-group' }), 'utf-8')
+
+    try {
+      const { stdout } = await spawn('node', [bin, '--deep'], {}, { cwd: tempDir })
+      const output = stripAnsi(stdout)
+
+      // the root package is grouped, the nested package that disabled grouping is not
+      expect(output.match(/Potentially breaking API changes/g)).toHaveLength(1)
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
 })
 
 describe('--deep cli option precedence', () => {

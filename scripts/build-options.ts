@@ -2,15 +2,18 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { stripVTControlCharacters as stripAnsi } from 'node:util'
+import MarkdownIt from 'markdown-it'
 import prettier from 'prettier'
 import { createGenerator } from 'ts-json-schema-generator'
 import cliOptions, { renderExtendedHelp } from '../src/cli-options.ts'
 import { getStyle, styleInit } from '../src/lib/style.ts'
-import { codeHtml } from '../src/lib/table.ts'
 import type CLIOption from '../src/types/CLIOption.ts'
 
 const INJECT_HEADER =
   '<!-- Do not edit this section by hand. It is auto-generated in build-options.ts. Run "npm run build" or "npm run build:options" to build. -->'
+
+/** The option table is raw HTML, so markdown in a description is rendered and anything else is escaped. */
+const markdownIt = new MarkdownIt()
 
 /** Replaces the "Options" and "Advanced Options" sections of the README with direct output from "ncu --help". */
 const injectReadme = async () => {
@@ -21,7 +24,7 @@ const injectReadme = async () => {
     <td>${option.help ? `<a href="#${option.long.toLowerCase()}">` : ''}${option.short ? `-${option.short}, ` : ''}${
       option.cli !== false ? '--' : ''
     }${option.long}${option.arg ? ` &lt;${option.arg}&gt;` : ''}${option.help ? '</a>' : ''}</td>
-    <td>${codeHtml(option.description)}${option.default ? ` (default: <code>${JSON.stringify(option.default)}</code>)` : ''}</td>
+    <td>${markdownIt.renderInline(option.description)}${option.default ? ` (default: <code>${markdownIt.utils.escapeHtml(JSON.stringify(option.default))}</code>)` : ''}</td>
   </tr>`
     })
     .join('\n')

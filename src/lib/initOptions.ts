@@ -2,9 +2,6 @@ import picomatch from 'picomatch'
 import cliOptions from '../cli-options.ts'
 import { print } from '../lib/logging.ts'
 import packageManagers from '../package-managers/index.ts'
-import { npmApi } from '../package-managers/npm.ts'
-import { pnpmApi } from '../package-managers/pnpm.ts'
-import { yarnApi } from '../package-managers/yarn.ts'
 import { type CooldownFunction } from '../types/CooldownFunction.ts'
 import { type FilterPattern } from '../types/FilterPattern.ts'
 import { type Options } from '../types/Options.ts'
@@ -48,9 +45,6 @@ function isValidUrl(url: string): boolean {
 
 /** Pretty print for days, `3.4722222222222223 days` -> `3.5 days`. */
 const formatDays = (d: number, r = Math.round(d * 10) / 10) => `${r} day${r !== 1 ? 's' : ''}`
-
-// package managers express their native cooldown config in minutes
-const MINUTES_PER_DAY = 24 * 60
 
 /** Builds the cooldown value and log message for a package manager's native cooldown config. */
 const nativeCooldown = (
@@ -252,74 +246,14 @@ async function initOptions(runOptions: RunOptions, { cli }: { cli?: boolean } = 
       )
     }
   } else {
-    if (packageManager === 'pnpm') {
-      // Automatically apply pnpm's minimumReleaseAge from pnpm-workspace.yaml as cooldown if cooldown is not explicitly set.
-      // pnpm does not read .npmrc min-release-age; only consult pnpm's own native config.
-      // undefined pnpmMajorVersion resolves the installed pnpm; cwd is honored so --cwd finds the right workspace
-      const pnpmWorkspaceConfig = await pnpmApi.getPnpmWorkspaceMinimumReleaseAge({ cwd: options.cwd })
-      if (pnpmWorkspaceConfig != null) {
-        const { minimumReleaseAge, minimumReleaseAgeExclude } = pnpmWorkspaceConfig
-        const [cooldown, message] = nativeCooldown(minimumReleaseAge / MINUTES_PER_DAY, minimumReleaseAgeExclude, {
-          source: 'minimumReleaseAge from pnpm-workspace.yaml',
-          excludeLabel: 'excluded pattern',
-        })
-        options.cooldown = cooldown
-        print({ ...options, json }, message)
-      }
-    } else if (packageManager === 'yarn') {
-      // Automatically apply yarn's npmMinimalAgeGate from .yarnrc.yml as cooldown if cooldown is not explicitly set.
-      // yarn does not read .npmrc min-release-age; only consult yarn's own native config.
-      const yarnAgeGateConfig = await yarnApi.getYarnMinimalAgeGate(options)
-      if (yarnAgeGateConfig != null) {
-        const { npmMinimalAgeGate, npmPreapprovedPackages } = yarnAgeGateConfig
-        const [cooldown, message] = nativeCooldown(npmMinimalAgeGate / MINUTES_PER_DAY, npmPreapprovedPackages, {
-          source: 'npmMinimalAgeGate from .yarnrc.yml',
-          excludeLabel: 'pre-approved package',
-        })
-        options.cooldown = cooldown
-        print({ ...options, json }, message)
-      }
-    } else {
-      // Automatically apply npm's min-release-age config as cooldown if cooldown is not explicitly set.
-      // This applies to npm and any unknown/unset package manager.
-      const npmConfigCooldown = npmApi.findNpmConfig()
-      const minReleaseAge = npmConfigCooldown?.minReleaseAge
-      if (minReleaseAge != null) {
-        const days =
-          typeof minReleaseAge === 'string'
-            ? (parseCooldown(minReleaseAge) ?? parseInt(minReleaseAge, 10))
-            : typeof minReleaseAge === 'number'
-              ? minReleaseAge
-              : null
-        if (days != null && !isNaN(days)) {
-          // npm's min-release-age-exclude is a list of package names or glob patterns that are exempt from min-release-age.
-          // a single .npmrc entry parses as a string; repeated entries (min-release-age-exclude[]=) parse as an array.
-          const minReleaseAgeExcludeRaw = npmConfigCooldown?.minReleaseAgeExclude
-          const minReleaseAgeExclude = [
-            ...new Set(
-              (Array.isArray(minReleaseAgeExcludeRaw)
-                ? minReleaseAgeExcludeRaw
-                : typeof minReleaseAgeExcludeRaw === 'string'
-                  ? [minReleaseAgeExcludeRaw]
-                  : []
-              )
-                .flatMap(pattern => pattern.split(','))
-                .map(pattern => pattern.trim())
-                .filter(pattern => pattern),
-            ),
-          ]
-          const [cooldown, message] = nativeCooldown(days, minReleaseAgeExclude, {
-            source: 'min-release-age from .npmrc',
-            excludeLabel: 'excluded pattern',
-            createMatcher: pattern => {
-              const match = picomatch(pattern, { nonegate: true, noext: true })
-              return packageName => packageName === pattern || match(packageName)
-            },
-          })
-          options.cooldown = cooldown
-          print({ ...options, json }, message)
-        }
-      }
+    // Apply the package manager's own cooldown setting when --cooldown is not explicitly set.
+    // Managers without a native setting fall back to npm's .npmrc min-release-age.
+    const getCooldown = packageManagers[packageManager]?.getCooldown ?? packageManagers.npm.getCooldown!
+    const native = await getCooldown(options)
+    if (native) {
+      const [cooldown, message] = nativeCooldown(native.days, native.exclude, native)
+      options.cooldown = cooldown
+      print({ ...options, json }, message)
     }
   }
 

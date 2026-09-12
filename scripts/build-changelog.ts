@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { parse as parseJsonc } from 'jsonc-parser'
-import { applyFixes } from 'markdownlint'
-import { lint, readConfig } from 'markdownlint/promise'
+import MarkdownIt from 'markdown-it'
 import prettier from 'prettier'
+import spawnCommand from '../src/lib/spawnCommand.ts'
 
 /** A GitHub release as returned by the GitHub REST API. */
 interface Release {
@@ -30,6 +30,12 @@ const DISABLE_COMMENT_RE = /^<!-- markdownlint-disable [^>]*-->\n\n/m
 
 /** Upper bound on markdownlint fix passes. Two or three are enough in practice; the limit only guards against a fix that oscillates. */
 const MAX_FIX_PASSES = 10
+
+/** Matches a rule name in markdownlint-cli2's output: `<path>/CHANGELOG.md:7:1 error MD040/fenced-code-language ...`. */
+const RULE_RE = /^.*CHANGELOG\.md:\d+(?::\d+)?(?: \w+)? (MD\d+)\//gm
+
+/** html is enabled so that markdown inside an HTML block or comment is not parsed as content. */
+const markdownIt = new MarkdownIt({ html: true })
 
 /** Narrows a release to one that is published and has a non-null published_at value. */
 const isPublished = (release: Release): release is PublishedRelease => !release.draft && release.published_at !== null
@@ -66,65 +72,44 @@ const fetchReleases = async (): Promise<Release[]> => {
   return releases
 }
 
-/** Matches an atx heading. Indented code blocks are excluded for free, as they are indented by at least four spaces. */
-const HEADING_RE = /^(#{1,6})(?=\s)/
-
-/** Matches the start or end of a fenced code block. */
-const FENCE_RE = /^ {0,3}(`{3,}|~{3,})/
-
-/**
- * Splits a release body into lines, marking which lines are headings. Lines inside a fenced code block are never
- * headings, otherwise a shell snippet like `# install dependencies` would be rewritten as one.
- */
-const parseLines = (body: string): { text: string; level: number }[] => {
-  let fence: string | null = null
-
-  return body.split('\n').map(text => {
-    const fenceMatch = text.match(FENCE_RE)
-
-    if (fence) {
-      // a fence is closed by a run of the same character that is at least as long, with nothing after it
-      if (
-        fenceMatch?.[1].startsWith(fence[0]) &&
-        fenceMatch[1].length >= fence.length &&
-        !text.slice(fenceMatch[0].length).trim()
-      ) {
-        fence = null
-      }
-      return { text, level: 0 }
-    }
-
-    if (fenceMatch) {
-      fence = fenceMatch[1]
-      return { text, level: 0 }
-    }
-
-    return { text, level: text.match(HEADING_RE)?.[1].length ?? 0 }
-  })
-}
-
 /**
  * Shifts markdown headings down so that release bodies nest under their version heading. The shallowest heading in the
  * body becomes an h3, and each heading is capped at one level deeper than the one before it, otherwise the result trips
  * markdownlint's heading-increment rule, which has no automatic fix.
+ *
+ * Headings are located with markdown-it rather than a regex, so a `# comment` inside a code fence or an HTML block is
+ * left alone, and a setext heading is shifted like any other.
  */
 const shiftHeadings = (body: string): string => {
-  const lines = parseLines(body.replace(/\r\n/g, '\n'))
-  const levels = lines.filter(line => line.level > 0).map(line => line.level)
-  if (levels.length === 0) return lines.map(line => line.text).join('\n')
+  const normalized = body.replace(/\r\n/g, '\n')
+  const headings = markdownIt.parse(normalized, {}).filter(token => token.type === 'heading_open')
+  if (headings.length === 0) return normalized
 
-  const shift = 3 - Math.min(...levels)
+  const lines = normalized.split('\n')
+  const shift = 3 - Math.min(...headings.map(heading => Number(heading.tag.slice(1))))
   // the version heading is an h2, so the first body heading may be at most an h3
   let previous = 2
+  const dropped = new Set<number>()
 
-  return lines
-    .map(line => {
-      if (line.level === 0) return line.text
-      const level = Math.min(Math.max(line.level + shift, 3), previous + 1, 6)
-      previous = level
-      return line.text.replace(HEADING_RE, '#'.repeat(level))
-    })
-    .join('\n')
+  for (const heading of headings) {
+    const [start, end] = heading.map!
+    const level = Math.min(Math.max(Number(heading.tag.slice(1)) + shift, 3), previous + 1, 6)
+    previous = level
+
+    if (heading.markup.startsWith('#')) {
+      // the indent is captured so that a heading nested in a list item stays in it
+      lines[start] = lines[start].replace(/^( {0,3})#{1,6}/, `$1${'#'.repeat(level)}`)
+    } else {
+      // setext has only two levels, so rewrite it as atx and drop the underline
+      lines[start] = `${'#'.repeat(level)} ${lines
+        .slice(start, end - 1)
+        .join(' ')
+        .trim()}`
+      for (let line = start + 1; line < end; line++) dropped.add(line)
+    }
+  }
+
+  return lines.filter((_, index) => !dropped.has(index)).join('\n')
 }
 
 /** Renders a single release as a markdown section. */
@@ -152,6 +137,45 @@ const disableRules = (content: string, rules: string[]): string =>
   content.replace(HEADER_PREFIX, `${HEADER_PREFIX}<!-- markdownlint-disable ${rules.join(' ')} -->\n\n`)
 
 /**
+ * Fixes the content with markdownlint-cli2, returning the result along with the rules it could not fix.
+ *
+ * The content goes through a temp file rather than stdin because --fix re-lints after fixing, so one run reports
+ * exactly the violations that have no automatic fix. The config is passed explicitly so that the location of the temp
+ * file does not decide which rules apply, and the path is prefixed with `:` to pass it literally rather than as a glob.
+ */
+const fixMarkdown = async (content: string): Promise<{ fixed: string; unfixable: string[] }> => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ncu-changelog-'))
+  const file = path.join(dir, 'CHANGELOG.md')
+
+  try {
+    await fs.writeFile(file, content)
+
+    // a non-zero exit is inspected rather than thrown, since 1 only means violations remain
+    const { code, stderr } = await spawnCommand(
+      'markdownlint-cli2',
+      ['--config', path.join(ROOT, '.markdownlint.json'), '--fix', `:${file}`],
+      { rejectOnError: false },
+    )
+
+    // 0 is clean and 1 is the expected result here, so anything else is the run itself failing
+    if (code !== 0 && code !== 1) {
+      throw new Error(`markdownlint-cli2 exited with ${code}\n${stderr}`)
+    }
+
+    const rules = [...stderr.matchAll(RULE_RE)].map(match => match[1])
+
+    // exit 1 promises violations on stderr, so reading none of them means the output format changed
+    if (code === 1 && rules.length === 0) {
+      throw new Error(`Could not parse markdownlint-cli2 output:\n${stderr}`)
+    }
+
+    return { fixed: await fs.readFile(file, 'utf8'), unfixable: [...new Set(rules)].sort() }
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true })
+  }
+}
+
+/**
  * Formats the changelog the same way CI verifies it: prettier, then markdownlint --fix. Release bodies are authored by
  * hand on the GitHub releases page, so they routinely violate the repo's markdown rules. Anything that has no automatic
  * fix (a code fence without a language, for example) is disabled inline instead, so that a hand-written release body can
@@ -161,26 +185,21 @@ export async function formatChangelog(content: string): Promise<string> {
   // plugins are omitted since they are resolved relative to the cwd and only affect the typescript parser
   const { plugins: _plugins, ...prettierConfig } = (await prettier.resolveConfig(path.join(ROOT, 'CHANGELOG.md'))) ?? {}
   const prettierOptions: prettier.Options = { ...prettierConfig, parser: 'markdown' }
-  const config = await readConfig(path.join(ROOT, '.markdownlint.json'), [
-    text => parseJsonc(text) as Record<string, unknown>,
-  ])
 
   // drop the previous disable comment so that the rules are recalculated from the current content
   let formatted = content.replace(DISABLE_COMMENT_RE, '')
 
-  // a fix can reveal further errors, so fix until only unfixable errors are left
+  // each tool can undo the other's work, and a fix can reveal further errors, so run both until a pass changes nothing
   for (let pass = 0; pass < MAX_FIX_PASSES; pass++) {
-    formatted = await prettier.format(formatted, prettierOptions)
-    const errors = (await lint({ strings: { changelog: formatted }, config })).changelog
+    const { fixed, unfixable } = await fixMarkdown(await prettier.format(formatted, prettierOptions))
 
-    if (!errors.some(error => error.fixInfo)) {
-      const unfixable = [...new Set(errors.map(error => error.ruleNames[0]))].sort()
-      if (unfixable.length === 0) return formatted
+    if (fixed === formatted) {
+      if (unfixable.length === 0) return fixed
       console.log(`[build-changelog] Disabling rules with no automatic fix: ${unfixable.join(', ')}`)
-      return disableRules(formatted, unfixable)
+      return disableRules(fixed, unfixable)
     }
 
-    formatted = applyFixes(formatted, errors)
+    formatted = fixed
   }
 
   throw new Error(`markdownlint fixes did not converge after ${MAX_FIX_PASSES} passes`)

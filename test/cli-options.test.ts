@@ -31,6 +31,19 @@ describe('cli-options', () => {
       expect(cliOptionsMap.cooldown.parse!(3)).toBe(3)
     })
 
+    it('parses a bare --cooldown number as days', () => {
+      expect(cliOptionsMap.cooldown.parse!('5')).toBe(5)
+      expect(cliOptionsMap.cooldown.parse!(' 1.5 ')).toBe(1.5)
+    })
+
+    it('returns NaN for a --cooldown string it cannot read', () => {
+      // an unrecognized unit must not be truncated to its leading digits
+      expect(cliOptionsMap.cooldown.parse!('7x')).toBeNaN()
+      expect(cliOptionsMap.cooldown.parse!('2 weeks')).toBeNaN()
+      expect(cliOptionsMap.cooldown.parse!('invalid')).toBeNaN()
+      expect(cliOptionsMap.cooldown.parse!('')).toBeNaN()
+    })
+
     it('resolves --cacheFile to an absolute path and rejects non-strings', () => {
       expect(path.isAbsolute(cliOptionsMap.cacheFile.parse!('foo.json') as string)).toBe(true)
       expect(() => cliOptionsMap.cacheFile.parse!(5)).toThrow('cacheFile must be a string')

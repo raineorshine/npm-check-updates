@@ -12,6 +12,7 @@ import parseCooldown from '../lib/parseCooldown.ts'
 import spawnCommand from '../lib/spawnCommand.ts'
 import { type GetVersion } from '../types/GetVersion.ts'
 import { type Index } from '../types/IndexType.ts'
+import { type NativeCooldown } from '../types/NativeCooldown.ts'
 import { type NpmConfig } from '../types/NpmConfig.ts'
 import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
@@ -54,7 +55,10 @@ export interface YarnMinimalAgeGate {
 export const npmAuthTokenKeyValue = (npmConfig: Index<string | boolean>) => (dep: string, scopedConfig: NpmScope) => {
   if (scopedConfig.npmAuthToken) {
     // get registry server from this config or a previous config (assumes setNpmRegistry has already been called on all npm scopes)
-    const registryServer = scopedConfig.npmRegistryServer || (npmConfig[`@${dep}:registry`] as string | undefined)
+    // interpolate like the registry value, or an unexpanded ${VAR} yields an auth key that never matches
+    const registryServer = scopedConfig.npmRegistryServer
+      ? interpolate(scopedConfig.npmRegistryServer, process.env)
+      : (npmConfig[`@${dep}:registry`] as string | undefined)
     // interpolate environment variable fallback
     // https://yarnpkg.com/configuration/yarnrc
     if (registryServer) {
@@ -449,10 +453,30 @@ export const packageAuthorChanged = async (
 ): Promise<boolean> =>
   npm.packageAuthorChanged(packageName, currentVersion, upgradedVersion, options, await npmConfigFromYarn(options))
 
+export const usesAddCommand = true
+
+export { spawnYarn as spawn }
+
 export default spawnYarn
 
 export const yarnApi = {
   getYarnMinimalAgeGate,
   parseJsonLines,
   extractFirstJsonLine,
+}
+
+/**
+ * Reads yarn's npmMinimalAgeGate as a cooldown.
+ * yarn does not read .npmrc min-release-age; only its own native config is consulted.
+ */
+export const getCooldown = async (options: Options): Promise<NativeCooldown | null> => {
+  const config = await getYarnMinimalAgeGate(options)
+  if (config == null) return null
+  return {
+    // yarn's npmMinimalAgeGate is in minutes
+    days: config.npmMinimalAgeGate / (24 * 60),
+    exclude: config.npmPreapprovedPackages,
+    source: 'npmMinimalAgeGate from .yarnrc.yml',
+    excludeLabel: 'pre-approved package',
+  }
 }
