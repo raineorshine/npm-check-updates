@@ -23,6 +23,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           BRANCH: refs/pull/${{ github.event.pull_request.number }}/merge
-        run: |
-          gh cache list --ref "${BRANCH}" --limit 100 --json key --jq '.[].key' \
-            | xargs -r -n1 -t gh cache delete
+        run: gh cache delete --all --ref "${BRANCH}" --succeed-on-no-caches
