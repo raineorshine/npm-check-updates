@@ -149,3 +149,31 @@ describe('peer dependencies of unlisted peers', () => {
     expect(await upgrade({ dependencies: { host: '1.0.0', plugin: '1.0.0' } })).toStrictEqual({})
   })
 })
+
+describe('peer specs of rejected upgrades', () => {
+  beforeEach(() => {
+    silenceProgressBar()
+    optionalPeers = {}
+  })
+
+  it('drops an upgrade chosen under the peers of an upgrade that is then rejected', async () => {
+    // plugin@2 pulls host up to 2, but needs blocker@9, which is not published, so plugin@1 and its host ^1 stay
+    peers = {
+      host: { '1.0.0': {}, '2.0.0': {} },
+      blocker: { '1.0.0': {} },
+      plugin: { '1.0.0': { host: '^1.0.0' }, '2.0.0': { host: '^2.0.0', blocker: '^9.0.0' } },
+    }
+    expect(await upgrade({ dependencies: { host: '1.0.0', plugin: '1.0.0', blocker: '1.0.0' } })).toStrictEqual({})
+  })
+
+  it('drops an upgrade chosen under the peers of an unlisted peer of an upgrade that is then rejected', async () => {
+    // plugin@1 brings in helper@1, which needs host ^1, so host stays once plugin@2 is rejected
+    peers = {
+      host: { '1.0.0': {}, '2.0.0': {} },
+      blocker: { '1.0.0': {} },
+      plugin: { '1.0.0': { helper: '^1.0.0' }, '2.0.0': { helper: '^2.0.0', blocker: '^9.0.0' } },
+      helper: { '1.0.0': { host: '^1.0.0' }, '2.0.0': { host: '^2.0.0' } },
+    }
+    expect(await upgrade({ dependencies: { host: '1.0.0', plugin: '1.0.0', blocker: '1.0.0' } })).toStrictEqual({})
+  })
+})

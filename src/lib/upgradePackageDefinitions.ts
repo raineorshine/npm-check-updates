@@ -8,7 +8,7 @@ import { type VersionSpec } from '../types/VersionSpec.ts'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry.ts'
 import keyValueBy from './keyValueBy.ts'
 import listedDependencies from './listedDependencies.ts'
-import { mergePeerDependencies, peersOf, rootOf } from './peerPaths.ts'
+import { mergePeerDependencies, rootOf } from './peerPaths.ts'
 import { pickBy } from './pick.ts'
 import queryVersions from './queryVersions.ts'
 import upgradeDependencies from './upgradeDependencies.ts'
@@ -19,44 +19,55 @@ type CheckIfInPeerViolationResult = {
   upgradedPeerDependencies: Index<Index<VersionSpec>>
 }
 
+/** Returns true if a peer spec allows the given version spec, or if either one cannot be compared. */
+const satisfiesPeer = (spec: VersionSpec | undefined, peerSpec: VersionSpec) =>
+  spec === undefined ||
+  !semver.validRange(peerSpec) ||
+  // Non-semver specs like catalog: references cannot be compared; treat as compatible
+  !semver.validRange(spec) ||
+  semver.intersects(spec, peerSpec)
+
 /**
- * Check if the peer dependencies constraints of each upgraded package, are in violation,
- * thus rendering the upgrade to be invalid
+ * Checks every peer spec in force against the upgraded versions, and rejects the upgrades that violate one. An upgrade
+ * whose own peers are violated is rejected. So is an upgrade that violates the peers of a package that stays at its
+ * current version, since rejecting an upgrade puts the peers of its current version back in force.
  *
- * @returns Whether there was any violation, and the upgrades that are not in violation
+ * @param basePeerDependencies The peers of the current versions, which replace the peers of rejected upgrades.
+ * @returns Whether there was any violation, the upgrades that are not in violation, and the peers that remain in force
  */
 const checkIfInPeerViolation = (
   currentDependencies: Index<VersionSpec>,
+  basePeerDependencies: Index<Index<VersionSpec>> | undefined,
   filteredUpgradedDependencies: Index<VersionSpec>,
   upgradedPeerDependencies: Index<Index<VersionSpec>>,
 ): CheckIfInPeerViolationResult => {
-  const upgradedDependencies = { ...currentDependencies, ...filteredUpgradedDependencies }
-  const filteredUpgradedDependenciesAfterPeers = pickBy(filteredUpgradedDependencies, (spec, dep) => {
-    // includes the peers of any unlisted peers the upgraded version brings in
-    const peerDeps = peersOf(upgradedPeerDependencies, dep as string).flatMap(([, peers]) => Object.entries(peers))
-    return peerDeps.every(
-      ([peer, peerSpec]) =>
-        upgradedDependencies[peer] === undefined ||
-        !semver.validRange(peerSpec) ||
-        // Non-semver specs like catalog: references cannot be compared; treat as compatible
-        !semver.validRange(upgradedDependencies[peer]) ||
-        semver.intersects(upgradedDependencies[peer], peerSpec),
-    )
-  })
-  const violated =
-    Object.keys(filteredUpgradedDependencies).length > Object.keys(filteredUpgradedDependenciesAfterPeers).length
-  let filteredUpgradedPeerDependencies = upgradedPeerDependencies
-  if (violated) {
+  let upgrades = filteredUpgradedDependencies
+  let peerDependencies = upgradedPeerDependencies
+  // rejecting one upgrade can put a peer spec back in force that another upgrade violates, so repeat until none do
+  for (;;) {
+    const versions = { ...currentDependencies, ...upgrades }
+    const rejected = new Set<string>()
+    for (const [key, peers] of Object.entries(peerDependencies)) {
+      // includes the peers of any unlisted peers a package brings in
+      const dep = rootOf(key)
+      for (const [peer, peerSpec] of Object.entries(peers)) {
+        if (satisfiesPeer(versions[peer], peerSpec)) continue
+        if (upgrades[dep]) rejected.add(dep)
+        else if (upgrades[peer]) rejected.add(peer)
+      }
+    }
+    if (rejected.size === 0) break
+    upgrades = pickBy(upgrades, (spec, dep) => !rejected.has(dep as string))
     // drop the peers of rejected upgrades, including those of the unlisted peers they would have brought in
-    filteredUpgradedPeerDependencies = pickBy(upgradedPeerDependencies, (spec, key) => {
-      const dep = rootOf(key as string)
-      return filteredUpgradedDependenciesAfterPeers[dep] || !filteredUpgradedDependencies[dep]
-    })
+    peerDependencies = mergePeerDependencies(
+      basePeerDependencies,
+      pickBy(peerDependencies, (spec, key) => !rejected.has(rootOf(key as string))),
+    )
   }
   return {
-    violated,
-    filteredUpgradedDependencies: filteredUpgradedDependenciesAfterPeers,
-    upgradedPeerDependencies: filteredUpgradedPeerDependencies,
+    violated: upgrades !== filteredUpgradedDependencies,
+    filteredUpgradedDependencies: upgrades,
+    upgradedPeerDependencies: peerDependencies,
   }
 }
 
@@ -137,6 +148,7 @@ export async function upgradePackageDefinitions(
   ) {
     checkPeerViolationResult = checkIfInPeerViolation(
       currentDependencies,
+      options.peerDependencies,
       filteredUpgradedDependencies,
       options.peerDependencies!,
     )
@@ -161,17 +173,8 @@ export async function upgradePackageDefinitions(
       checkPeerViolationResult.upgradedPeerDependencies,
     )
     if (isDeepStrictEqual(options.peerDependencies, peerDependenciesAfterUpgrade)) {
-      // Peers stopped changing; keep the upgrades that do not violate them.
-      // Dropping one upgrade can invalidate another that was kept, so filter until the set settles.
-      let nonViolating = checkPeerViolationResult
-      while (nonViolating.violated) {
-        nonViolating = checkIfInPeerViolation(
-          currentDependencies,
-          nonViolating.filteredUpgradedDependencies,
-          nonViolating.upgradedPeerDependencies,
-        )
-      }
-      return [nonViolating.filteredUpgradedDependencies, latestVersionResults, options.peerDependencies]
+      // Peers stopped changing; keep the upgrades that do not violate them
+      return [checkPeerViolationResult.filteredUpgradedDependencies, latestVersionResults, options.peerDependencies]
     }
     const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
       { ...currentDependencies, ...checkPeerViolationResult.filteredUpgradedDependencies },
@@ -182,7 +185,7 @@ export async function upgradePackageDefinitions(
       mergeVersionResults(latestVersionResults, newLatestVersions),
       newPeerDependencies,
     ]
-    checkPeerViolationResult = checkIfInPeerViolation(currentDependencies, result[0], result[2]!)
+    checkPeerViolationResult = checkIfInPeerViolation(currentDependencies, options.peerDependencies, result[0], result[2]!)
   } while (checkPeerViolationResult.violated)
 
   return result
