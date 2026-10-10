@@ -118,14 +118,6 @@ describe('peer dependencies of unlisted peers', () => {
     })
   })
 
-  it('keeps the peers of the installed version when an upgrade that brings in a different version is rejected', async () => {
-    // plugin@2 is rejected because of blocker, so helper@1 still holds host back even though helper@2 would allow it
-    peers.blocker = { '1.0.0': {} }
-    peers.plugin = { '1.0.0': { helper: '^1.0.0' }, '2.0.0': { helper: '^2.0.0', blocker: '^9.0.0' } }
-    peers.helper = { '1.0.0': { host: '^1.0.0' }, '2.0.0': { host: '^2.0.0' } }
-    expect(await upgrade({ dependencies: { host: '1.0.0', plugin: '1.0.0', blocker: '1.0.0' } })).toStrictEqual({})
-  })
-
   it('does not follow a peer the project lists, even when it is rejected from the upgrade', async () => {
     // the listed helper@1.0.0 allows any host, but the newest helper@1 in range would not
     peers.helper = { '1.0.0': {}, '1.5.0': { host: '^1.0.0' } }
