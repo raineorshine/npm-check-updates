@@ -8,8 +8,6 @@ product_contract_source: ce-brainstorm
 execution: code
 ---
 
-# Ignore Version Rules - Plan
-
 ## Goal Capsule
 
 - **Objective:** A project can keep specific versions of a dependency out of ncu's suggestions with a few lines of plain config, still get the best version that isn't ignored, and see which versions were held back and why (issue #1536).
@@ -44,7 +42,7 @@ Projects get stuck behind their ecosystem. One example is a react-admin app that
 
 ### Requirements
 
-**Rule definition**
+#### Rule definition
 
 - R1. `ignore` can be set in any supported `.ncurc` format (JSON, YAML, JS) and in the programmatic options, and is documented as unavailable on the command line, like `filterResults`.
 - R2. `ignore` is an object whose keys are package names or globs, matched with the same name and glob rules as `--filter`, so `@mui/*` covers every package in the scope.
@@ -52,7 +50,7 @@ Projects get stuck behind their ecosystem. One example is a react-admin app that
 - R4. A version is ignored for a package when it satisfies the range of any rule whose key matches that package. Every distinct reason from the matching rules is shown.
 - R5. An invalid range or a malformed rule value stops the run with an error that names the offending key, the same way an invalid filter does today.
 
-**Version selection**
+#### Version selection
 
 - R6. With `--target latest`, an ignored latest version falls back to the greatest acceptable version above the current one, following the same rules as the cooldown fallback. Deprecated versions and prereleases stay excluded as they are today.
 - R7. With `--target @latest` or any `@tag` target, an ignored tagged version results in no upgrade for that package, matching cooldown's strict behavior.
@@ -60,14 +58,14 @@ Projects get stuck behind their ecosystem. One example is a react-admin app that
 - R9. A package's current version is never treated as an upgrade candidate or reported because it falls inside an ignored range. Versions outside the range are still offered.
 - R10. Dependencies resolved from git URLs or a static registry never upgrade to an ignored version. When the version those sources pick is ignored, there is no upgrade for that package.
 
-**Reporting**
+#### Reporting
 
 - R11. `--format skipped` shows, for each package and each cause (cooldown or ignore), the highest version that cause held back above the version chosen. This matches cooldown's existing single record. Each row carries its cause and, for ignore rules, the rule's reason when one is set.
 - R12. Without `--format skipped` (or its alias), output for runs that use ignore rules looks the same as output without them, apart from the version chosen.
 - R13. `--format cooldown` keeps working as an alias for `skipped`, and existing cooldown output, including its time information, still appears under it.
 - R14. When cooldown and an ignore rule both hold back versions of the same package, each held-back version is listed with its own cause.
 
-**Consistency across modes**
+#### Consistency across modes
 
 - R15. Ignore rules apply wherever ncu chooses versions: plain checks, `-u`, `--interactive`, `--doctor`, workspaces, `--global`, the `--peer` re-check, and the programmatic API.
 - R16. The `ignore` option and its rule types are exported in the public option types, so tools built on ncu can pass rules programmatically.
@@ -236,6 +234,7 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 **Dependencies:** none.
 
 **Files:**
+
 - `src/cli-options.ts`: new option with `cli: false`, no `parse`, and an extended help block.
 - `src/types/IgnoreRules.ts` (new).
 - `scripts/build-options.ts`: add the new type to the hard-coded import header.
@@ -248,6 +247,7 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 - `test/rc-config.test.ts`.
 
 **Approach:**
+
 1. Define the rule types: a map from key to a range string or `{ versions, reason? }`. Name them distinctly from the existing `IgnoredUpgradeDueTo*` types.
 2. Register the option and run `npm run build:options` to regenerate RunOptions, the schema and the README sections.
 3. The helper normalizes each value to `{ range, reason? }`. It rejects a non-object `ignore`, a value that is neither a string nor an object, a missing or invalid `versions` (`semver.validRange` returns null), and a non-string `reason`. Each rejection goes through `programError` and names the key.
@@ -256,6 +256,7 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 **Patterns to follow:** `filterResults` and `groupFunction` option definitions. Cooldown validation messages in `src/lib/initOptions.ts`. Picomatch matchers in `nativeCooldown()`.
 
 **Test scenarios:**
+
 - `{ "react": "^18" }` and `{ "react": { versions: "^18", reason: "x" } }` both normalize, and the lookup for `react` returns range `^18`.
 - Covers AE9: `{ "react": "not a range" }` rejects with a message naming `react`.
 - `ignore: "react@18"` (a string, as a CLI flag would produce) rejects with a config-only message.
@@ -275,6 +276,7 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 **Dependencies:** U1.
 
 **Files:**
+
 - `src/package-managers/npm.ts`: `findTargetAndFallback`, `toVersionResult`, `distTag`, `latest`, `greatest`.
 - `src/package-managers/filters.ts`: an ignore-match helper next to `satisfiesCooldownPeriod`.
 - `src/types/VersionResult.ts`.
@@ -282,6 +284,7 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 - `test/ignore.test.ts`.
 
 **Approach:**
+
 1. Add an ignore-match helper that tests a version against the dependency's resolved ranges with `includePrerelease`. Nothing is ignored when the dependency has no ranges.
 2. In the reducer:
    - Test ignore before cooldown, per KTD1.
@@ -300,6 +303,7 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 **Patterns to follow:** `describe` blocks per target in `test/cooldown.test.ts`. Stub with `test/helpers/stubVersions.ts` and `createMockVersion`.
 
 **Test scenarios:**
+
 - Covers AE1: current 7.2.0, published 7.3.0, 8.0.0 and 9.1.0, latest 9.1.0, rule `^8 || ^9`. `--target latest` gives 7.3.0.
 - Covers AE2: same setup with `--target @latest` gives no upgrade.
 - `--target @next`, where `next` points to an ignored version, gives no upgrade.
@@ -327,6 +331,7 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 **Dependencies:** U1, U2.
 
 **Files:**
+
 - `src/lib/queryVersions.ts`.
 - `src/types/Options.ts`: internal per-dependency rule field.
 - `test/ignore.test.ts`.
@@ -335,6 +340,7 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 - `test/test-data/` (static registry fixture if a new one is needed).
 
 **Approach:**
+
 1. At the top of `queryVersions`, call the U1 helper. That validates rules once per run, including for workspace `.ncurc` options.
 2. For each dependency, match rules against the dependency key and the real package name (for npm aliases). Pass the matched ranges and reasons through per-call options.
 3. Skip cache read and write for matched dependencies, mirroring the cooldown branches.
@@ -344,6 +350,7 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 **Patterns to follow:** cooldown cache bypass and its tests in `test/cache.test.ts`. Static registry usage in `test/registryType.test.ts`.
 
 **Test scenarios:**
+
 - An alias `"mui": "npm:@mui/material@7.2.0"` is held back by a rule keyed `mui` and also by one keyed `@mui/material`.
 - Two overlapping rules (`@mui/*` reason A, `@mui/material` reason B) on the same version produce one record whose reason contains both A and B.
 - With `--cache` and a cached `latest` of 9.1.0, a rule `^9` still gives 7.3.0, and 7.3.0 is not written to the cache.
@@ -364,6 +371,7 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 **Dependencies:** U2, U3.
 
 **Files:**
+
 - `src/cli-options.ts`: format `choices`, description and extended help row.
 - `src/lib/getCooldownInfo.ts`: extend it, or add a sibling extractor, to collect ignore records.
 - `src/lib/logging.ts`: `toDependencyTable`, `printSkippedByCooldownTable`, `printUpgrades`.
@@ -375,6 +383,7 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 - `test/cli-options.test.ts`.
 
 **Approach:**
+
 1. Add `skipped` to the format choices. Add the KTD7 membership helper and route every existing `includes('cooldown')` format check through it.
 2. Collect ignore records next to the existing `skippedByCooldown`, and pass them wherever that map goes: `runLocal` (including `chooseUpgrades` for interactive labels), `runGlobal` and `printUpgrades`.
 3. In `toDependencyTable`, keep the cooldown column condition as it is today. Show the `[ignored] x` marker only when the helper is true. Gate the main-table `[missing time]` placeholder on an active cooldown, per KTD8.
@@ -384,6 +393,7 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 **Patterns to follow:** `test/cooldown.test.ts` print tests (around the "print: Skipped due to cooldown" block), using the `getNormalizedLogs` helper.
 
 **Test scenarios:**
+
 - Covers AE3: `--format skipped` prints `7.2.0 → 7.3.0` with `[ignored] 9.1.0`, then a "Skipped" table listing 9.1.0 with "Waiting for react-admin support". No `[missing time]` appears anywhere in the output.
 - A workspace `.ncurc` with `format: ["cooldown"]` shows ignore rows for that workspace.
 - Covers AE4: the same run with no `--format` prints no ignore marker, table or reason.
@@ -408,10 +418,12 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 **Dependencies:** U1, U4.
 
 **Files:**
+
 - `src/cli-options.ts`: `ignore` extended help, and the format and cooldown help text that mentions `--format cooldown`.
 - `README.md`: regenerated only, via `npm run build:options`.
 
 **Approach:**
+
 1. The `ignore` help shows both value forms, a scope glob, the `latest` vs `@latest` behavior, and that it is config/module only.
 2. It includes one sentence warning that, like cooldown, the fallback can pick a stable version above the latest tag.
 3. The format help lists `skipped`, and says `cooldown` is an alias.
@@ -426,7 +438,7 @@ U1 first, then U2 and U3 (U3 needs U2's record shape), then U4, then U5. U2 and 
 ## Verification Contract
 
 | Gate | Command | Proves |
-|---|---|---|
+| --- | --- | --- |
 | Types | `npm run lint:types` | New types, generated RunOptions and exports compile |
 | Feature tests | `npx vitest run test/ignore.test.ts` | U1–U4 scenarios |
 | Regression | `npm run test:unit` | Cooldown, cache, format, logging, peer, workspaces and target behavior unchanged |
