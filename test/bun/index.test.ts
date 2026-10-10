@@ -60,6 +60,14 @@ describe('bun', () => {
     })
   })
 
+  it('getOptionalPeerDependencies', async () => {
+    const options = { cwd: __dirname }
+    await expect(bun.getOptionalPeerDependencies('@typescript-eslint/parser', '8.0.0', options)).resolves.toStrictEqual(
+      ['typescript'],
+    )
+    await expect(bun.getOptionalPeerDependencies('ncu-test-peer', '1.0.0', options)).resolves.toStrictEqual([])
+  })
+
   it('getEngines', async () => {
     await expect(bun.getEngines('del', '2.0.0', { cwd: __dirname })).resolves.toStrictEqual({ node: '>=0.10.0' })
     await expect(bun.getEngines('ncu-test-return-version', '1.0.0', { cwd: __dirname })).resolves.toStrictEqual({})

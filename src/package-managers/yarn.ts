@@ -2,6 +2,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import memoize from 'fast-memoize'
+import nodeSemver from 'semver'
 import { parse as parseYaml } from 'yaml'
 import exists from '../lib/exists.ts'
 import findLockfile from '../lib/findLockfile.ts'
@@ -359,6 +360,30 @@ const getYarnVersion = memoize(async (spawnOptions: SpawnOptions): Promise<strin
 })
 
 /**
+ * Resolves a range to the highest matching published version, since yarn v1 info only reads exact versions and tags.
+ *
+ * @param packageName
+ * @param version
+ * @param spawnOptions
+ * @returns Promised exact version
+ */
+const resolveYarnV1Version = async (
+  packageName: string,
+  version: Version,
+  spawnOptions: SpawnOptions,
+): Promise<Version> => {
+  // a dist-tag is left for yarn to resolve, as before
+  if (nodeSemver.valid(version) || !nodeSemver.validRange(version)) return version
+  const args = ['--json', 'info', packageName, 'versions']
+  const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, spawnOptions)
+  if (!stdout) throw new Error(`No response from "yarn ${args.join(' ')}"`)
+  const { data } = npm.parseJson<{ data?: unknown }>(extractFirstJsonLine(stdout), { command: args.join(' ') })
+  const resolved = Array.isArray(data) ? nodeSemver.maxSatisfying(data as string[], version) : null
+  if (!resolved) throw new Error(`No version of ${packageName} matches ${version}`)
+  return resolved
+}
+
+/**
  * Fetches the list of peer dependencies for a specific package version.
  *
  * @param packageName
@@ -376,7 +401,8 @@ export const getPeerDependencies = async (
   const yarnSpawnOptions: SpawnOptions = { cwd: options.cwd, ...spawnOptions }
   const yarnVersion = await getYarnVersion(yarnSpawnOptions)
   if (yarnVersion.startsWith('1')) {
-    const args = ['--json', 'info', `${packageName}@${version}`, 'peerDependencies']
+    const resolved = await resolveYarnV1Version(packageName, version, yarnSpawnOptions)
+    const args = ['--json', 'info', `${packageName}@${resolved}`, 'peerDependencies']
     const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, yarnSpawnOptions)
     // yarn exits 0 and prints nothing when the package or version cannot be resolved, while a
     // package with no peer dependencies still prints an inspect line
@@ -414,6 +440,47 @@ export const getPeerDependencies = async (
       return first.peerDependencies || {}
     }
   }
+}
+
+/**
+ * Fetches the names of the peer dependencies that a specific package version marks as optional.
+ *
+ * @param packageName
+ * @param version
+ * @param [options]
+ * @param [spawnOptions]
+ * @returns Promised list of package names
+ */
+export const getOptionalPeerDependencies = async (
+  packageName: string,
+  version: Version,
+  options: Options = {},
+  spawnOptions?: SpawnOptions,
+): Promise<string[]> => {
+  const yarnSpawnOptions: SpawnOptions = { cwd: options.cwd, ...spawnOptions }
+  const yarnVersion = await getYarnVersion(yarnSpawnOptions)
+  const args = yarnVersion.startsWith('1')
+    ? [
+        '--json',
+        'info',
+        `${packageName}@${await resolveYarnV1Version(packageName, version, yarnSpawnOptions)}`,
+        'peerDependenciesMeta',
+      ]
+    : ['--json', 'npm', 'info', `${packageName}@${version}`, '--fields', 'peerDependenciesMeta']
+  const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, yarnSpawnOptions)
+  // like getPeerDependencies, an empty or error response is a failed lookup, which the caller logs with --verbose
+  if (!stdout) throw new Error(`No response from "yarn ${args.join(' ')}"`)
+  const parsed = npm.parseJson<{
+    type?: string
+    data?: string | Index<{ optional?: boolean }>
+    peerDependenciesMeta?: Index<{ optional?: boolean }>
+  }>(extractFirstJsonLine(stdout), { command: args.join(' ') })
+  if (parsed.type === 'error') {
+    throw new Error(`yarn ${args.join(' ')}: ${typeof parsed.data === 'string' ? parsed.data : 'lookup failed'}`)
+  }
+  const meta = (yarnVersion.startsWith('1') ? parsed.data : parsed.peerDependenciesMeta) as
+    Index<{ optional?: boolean }> | undefined
+  return Object.keys(meta || {}).filter(name => meta![name]?.optional)
 }
 
 /**
