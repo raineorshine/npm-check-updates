@@ -23,7 +23,7 @@ export async function getIgnoredUpgradesDueToPeerDeps(
     ...options,
     peer: false,
     peerDependencies: undefined,
-    loglevel: 'silent',
+    loglevel: options.peer ? options.loglevel : 'silent', // do not force 'silent' since in 'peer' mode there might be a lot of packages to check thus user should see work in progress (not hang for a longer time)
   })
   const upgradedPeerDependenciesLatest = await getPeerDependenciesFromRegistry(
     Object.fromEntries(
@@ -39,7 +39,10 @@ export async function getIgnoredUpgradesDueToPeerDeps(
         ]
       }),
     ),
-    options,
+    {
+      ...options,
+      peer: false, // to skip recursive search of dependencies (already done in previous step)
+    },
   )
 
   const ignored: Index<IgnoredUpgradeDueToPeerDeps> = {}
