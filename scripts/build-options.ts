@@ -90,6 +90,7 @@ import { type CooldownFunction } from './CooldownFunction.ts'
 import { type FilterFunction } from './FilterFunction.ts'
 import { type FilterResultsFunction } from './FilterResultsFunction.ts'
 import { type GroupFunction } from './GroupFunction.ts'
+import { type IgnoreRules } from './IgnoreRules.ts'
 import { type PackageFile } from './PackageFile.ts'
 import { type TargetFunction } from './TargetFunction.ts'
 

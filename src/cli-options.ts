@@ -179,6 +179,31 @@ For the SemVer type definition, see: https://git.coolaj86.com/coolaj86/semver-ut
 `
 }
 
+/** Extended help for the ignore option. */
+const extendedHelpIgnore: ExtendedHelp = ({ markdown }) => {
+  return `Never suggest specific versions of a package. Keys are package names or globs, matched the same way as \`--filter\`. Values are a semver range, or an object with the range and a reason.
+
+${codeBlock(
+  `{
+  "ignore": {
+    "@mui/*": {
+      "versions": "^8 || ^9",
+      "reason": "Waiting for react-admin support"
+    },
+    "eslint-config-prettier": "9.1.1"
+  }
+}`,
+  { markdown, lang: 'json' },
+)}
+
+With the default \`--target latest\`, if the latest version is ignored, ncu falls back to the greatest version that is not ignored. To instead skip the package entirely, use \`--target "@latest"\`. Other targets never choose an ignored version. Like \`--cooldown\`, the fallback can choose a stable version that was never published to the latest tag, including one above it.
+
+Use \`--format skipped\` to show the versions that were held back and the reason for each.
+
+> ⚠️ The ignore option is only available in a config file or when importing npm-check-updates as a module, not on the command line.
+`
+}
+
 /** Extended help for the --format option. */
 const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
   const header =
@@ -852,6 +877,15 @@ const cliOptions: CLIOption[] = [
     description: `Customize how packages are divided into groups when using \`--format group\`.`,
     type: 'GroupFunction',
     help: extendedHelpGroupFunction,
+  },
+  {
+    long: 'ignore',
+    arg: 'rules',
+    cli: false,
+    description:
+      'Never suggest the given versions of a package. Maps package names or globs to a semver range, or to { versions, reason }.',
+    type: 'IgnoreRules',
+    help: extendedHelpIgnore,
   },
   {
     long: 'install',

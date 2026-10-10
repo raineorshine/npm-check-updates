@@ -305,6 +305,10 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
     <td>Customize how packages are divided into groups when using <code>--format group</code>.</td>
   </tr>
   <tr>
+    <td><a href="#ignore">ignore &lt;rules&gt;</a></td>
+    <td>Never suggest the given versions of a package. Maps package names or globs to a semver range, or to { versions, reason }.</td>
+  </tr>
+  <tr>
     <td><a href="#install">--install &lt;value&gt;</a></td>
     <td>Control the auto-install behavior: always, never, prompt. (default: <code>&quot;prompt&quot;</code>)</td>
   </tr>
@@ -749,6 +753,28 @@ groupFunction: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion) 
   return defaultGroup
 }
 ```
+
+## ignore
+
+Never suggest specific versions of a package. Keys are package names or globs, matched the same way as `--filter`. Values are a semver range, or an object with the range and a reason.
+
+```json
+{
+  "ignore": {
+    "@mui/*": {
+      "versions": "^8 || ^9",
+      "reason": "Waiting for react-admin support"
+    },
+    "eslint-config-prettier": "9.1.1"
+  }
+}
+```
+
+With the default `--target latest`, if the latest version is ignored, ncu falls back to the greatest version that is not ignored. To instead skip the package entirely, use `--target "@latest"`. Other targets never choose an ignored version. Like `--cooldown`, the fallback can choose a stable version that was never published to the latest tag, including one above it.
+
+Use `--format skipped` to show the versions that were held back and the reason for each.
+
+> ⚠️ The ignore option is only available in a config file or when importing npm-check-updates as a module, not on the command line.
 
 ## install
 

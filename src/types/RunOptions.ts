@@ -3,6 +3,7 @@ import { type CooldownFunction } from './CooldownFunction.ts'
 import { type FilterFunction } from './FilterFunction.ts'
 import { type FilterResultsFunction } from './FilterResultsFunction.ts'
 import { type GroupFunction } from './GroupFunction.ts'
+import { type IgnoreRules } from './IgnoreRules.ts'
 import { type PackageFile } from './PackageFile.ts'
 import { type TargetFunction } from './TargetFunction.ts'
 
@@ -100,6 +101,9 @@ export interface RunOptions {
 
   /** Customize how packages are divided into groups when using `--format group`. Run "ncu --help --groupFunction" for details. */
   groupFunction?: GroupFunction
+
+  /** Never suggest the given versions of a package. Maps package names or globs to a semver range, or to { versions, reason }. Run "ncu --help --ignore" for details. */
+  ignore?: IgnoreRules
 
   /** Control the auto-install behavior: always, never, prompt. Run "ncu --help --install" for details.
    *

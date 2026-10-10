@@ -12,7 +12,7 @@ import { type VersionSpec } from '../types/VersionSpec.ts'
  * @param [filterPattern]
  * @returns
  */
-function composeFilter(
+export function composeFilter(
   filterPattern: FilterPattern,
   { allowFunction = true }: { allowFunction?: boolean } = {},
 ): (name: string, versionSpec?: string) => boolean {
