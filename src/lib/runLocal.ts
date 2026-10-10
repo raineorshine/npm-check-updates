@@ -18,6 +18,7 @@ import getPackageManager from './getPackageManager.ts'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry.ts'
 import { isPreSelectedGroup, isPreSelectedUpgrade, resolveInteractiveSelect } from './isPreSelected.ts'
 import keyValueBy from './keyValueBy.ts'
+import listedDependencies from './listedDependencies.ts'
 import {
   print,
   printIgnoredUpdatesDueToEnginesNode,
@@ -196,6 +197,12 @@ export default async function runLocal(
   }
 
   if (options.peer) {
+    options.listedPackages = Object.keys({
+      ...pkg.dependencies,
+      ...pkg.devDependencies,
+      ...pkg.optionalDependencies,
+      ...pkg.peerDependencies,
+    })
     options.peerDependencies = await getPeerDependenciesFromRegistry(
       Object.fromEntries(
         Object.entries(current).map(([packageName, versionSpec]) => {
@@ -211,6 +218,7 @@ export default async function runLocal(
         }),
       ),
       options,
+      listedDependencies(current, options),
     )
   }
 

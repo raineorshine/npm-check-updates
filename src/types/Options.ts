@@ -17,6 +17,8 @@ export type Options = RunOptions & {
   nodeEngineVersion?: VersionSpec
   packageData?: string
   peerDependencies?: Index<any>
+  // Every package listed in the package file, including those excluded from the upgrade
+  listedPackages?: string[]
   // Packages whose peer dependencies could not be fetched
   peerDependenciesFailed?: Set<string>
   rcConfigPath?: string
