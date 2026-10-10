@@ -363,25 +363,28 @@ const getYarnVersion = memoize(async (spawnOptions: SpawnOptions): Promise<strin
  *
  * @param packageName
  * @param version
- * @param spawnOptions
+ * @param [options]
+ * @param [spawnOptions]
  * @returns Promised {packageName: version} collection
  */
 export const getPeerDependencies = async (
   packageName: string,
   version: Version,
-  spawnOptions: SpawnOptions,
+  options: Options = {},
+  spawnOptions?: SpawnOptions,
 ): Promise<Index<Version>> => {
-  const yarnVersion = await getYarnVersion(spawnOptions)
+  const yarnSpawnOptions: SpawnOptions = { cwd: options.cwd, ...spawnOptions }
+  const yarnVersion = await getYarnVersion(yarnSpawnOptions)
   if (yarnVersion.startsWith('1')) {
     const args = ['--json', 'info', `${packageName}@${version}`, 'peerDependencies']
-    const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, spawnOptions)
+    const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, yarnSpawnOptions)
     // yarn exits 0 and prints nothing when the package or version cannot be resolved, while a
     // package with no peer dependencies still prints an inspect line
     if (!stdout) throw new Error(`No response from "yarn ${args.join(' ')}"`)
     return npm.parseJson<{ data?: Index<Version> }>(stdout, { command: args.join(' ') }).data || {}
   } else {
     const args = ['--json', 'npm', 'info', `${packageName}@${version}`, '--fields', 'peerDependencies']
-    const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, spawnOptions)
+    const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, yarnSpawnOptions)
     if (!stdout) {
       return {}
     }
@@ -419,19 +422,22 @@ export const getPeerDependencies = async (
  *
  * @param packageName
  * @param version
- * @param spawnOptions
+ * @param [options]
+ * @param [spawnOptions]
  * @returns Promised list of package names
  */
 export const getOptionalPeerDependencies = async (
   packageName: string,
   version: Version,
-  spawnOptions: SpawnOptions,
+  options: Options = {},
+  spawnOptions?: SpawnOptions,
 ): Promise<string[]> => {
-  const yarnVersion = await getYarnVersion(spawnOptions)
+  const yarnSpawnOptions: SpawnOptions = { cwd: options.cwd, ...spawnOptions }
+  const yarnVersion = await getYarnVersion(yarnSpawnOptions)
   const args = yarnVersion.startsWith('1')
     ? ['--json', 'info', `${packageName}@${version}`, 'peerDependenciesMeta']
     : ['--json', 'npm', 'info', `${packageName}@${version}`, '--fields', 'peerDependenciesMeta']
-  const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, spawnOptions)
+  const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, yarnSpawnOptions)
   if (!stdout) return []
   let meta: Index<{ optional?: boolean }> | undefined
   try {

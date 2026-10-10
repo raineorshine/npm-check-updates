@@ -95,7 +95,7 @@ async function getPeerDependenciesFromRegistry(
       dependencies = {}
     } else {
       try {
-        dependencies = await packageManager.getPeerDependencies!(pkg, version, { cwd: options.cwd })
+        dependencies = await packageManager.getPeerDependencies!(pkg, version, options)
         options.cacher?.setPeers(pkg, version, dependencies)
       } catch (err) {
         // one unreachable package should not abort the run
@@ -122,7 +122,7 @@ async function getPeerDependenciesFromRegistry(
     const getOptionalPeers = async ({ pkg, version, dependencies: peers }: (typeof results)[number]) => {
       if (!packageManager.getOptionalPeerDependencies || Object.keys(peers).every(peer => fetched.has(peer))) return []
       try {
-        return await packageManager.getOptionalPeerDependencies(pkg, version, { cwd: options.cwd })
+        return await packageManager.getOptionalPeerDependencies(pkg, version, options)
       } catch (err) {
         // following an optional peer only makes the check stricter, so a failed lookup is not worth a warning
         print(

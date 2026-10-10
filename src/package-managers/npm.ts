@@ -26,7 +26,6 @@ import { type NpmConfig } from '../types/NpmConfig.ts'
 import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
 import { type Packument } from '../types/Packument.ts'
-import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
 import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type Version } from '../types/Version.ts'
@@ -990,47 +989,72 @@ export const greatest: GetVersion = async (
 }
 
 /**
+ * Fetches a peer dependency field of a specific package version from the registry.
+ *
+ * @param packageName
+ * @param version   An exact version or a range, in which case the highest matching version is used.
+ * @param field
+ * @param options
+ * @param npmConfigLocal
+ * @returns Promised field value, or undefined if the version does not have it
+ */
+const fetchPeerField = async <F extends 'peerDependencies' | 'peerDependenciesMeta'>(
+  packageName: string,
+  version: Version,
+  field: F,
+  options: Options,
+  npmConfigLocal?: NpmConfig,
+): Promise<Partial<Packument>[F]> => {
+  const npmConfig = npmApi.findNpmConfig()
+  // merge the project/cwd .npmrc so a scoped private registry is respected, like the main fetch path
+  const npmConfigMerged = mergeNpmConfigs({ npmConfigUser: { ...npmConfig }, npmConfigLocal }, options)
+
+  // an exact version can be read straight from the version manifest
+  if (nodeSemver.valid(version)) {
+    const manifest = await fetchPartialPackument(packageName, [field], null, npmConfigMerged, version)
+    return manifest[field]
+  }
+
+  // a range needs the version list to resolve the highest match, matching `npm view pkg@range`
+  const packument = await fetchPartialPackument(packageName, ['versions'], null, npmConfigMerged)
+  const resolved = nodeSemver.maxSatisfying(Object.keys(packument.versions ?? {}), version)
+  return resolved ? packument.versions?.[resolved]?.[field] : undefined
+}
+
+/**
  * Fetches the list of peer dependencies for a specific package version.
  *
  * @param packageName
- * @param version
- * @param spawnOptions
+ * @param version   An exact version or a range, in which case the highest matching version is used.
+ * @param options
+ * @param npmConfigLocal
  * @returns Promised {packageName: version} collection
  */
 export const getPeerDependencies = async (
   packageName: string,
   version: Version,
-  spawnOptions: SpawnOptions,
-): Promise<Index<Version>> => {
-  const args = ['view', `${packageName}@${version}`, 'peerDependencies']
-  // reject on error so a failed lookup is not mistaken for a package with no peer dependencies
-  const { stdout, stderr, command } = await spawnNpm(args, {}, { rejectOnError: true }, spawnOptions)
-  if (!stdout) return {}
-  const peerDependencies = parseJson<Index<Version> | Index<Version>[]>(stdout, { command, stderr })
-  // npm 12 always wraps the field in an array, npm 11 only for multi-version specs. Last is highest.
-  return Array.isArray(peerDependencies) ? (peerDependencies.at(-1) ?? {}) : peerDependencies
-}
+  options: Options = {},
+  npmConfigLocal?: NpmConfig,
+): Promise<Index<Version>> =>
+  (await fetchPeerField(packageName, version, 'peerDependencies', options, npmConfigLocal)) || {}
 
 /**
  * Fetches the names of the peer dependencies that a specific package version marks as optional.
  *
  * @param packageName
- * @param version
- * @param spawnOptions
+ * @param version   An exact version or a range, in which case the highest matching version is used.
+ * @param options
+ * @param npmConfigLocal
  * @returns Promised list of package names
  */
 export const getOptionalPeerDependencies = async (
   packageName: string,
   version: Version,
-  spawnOptions: SpawnOptions,
+  options: Options = {},
+  npmConfigLocal?: NpmConfig,
 ): Promise<string[]> => {
-  const args = ['view', `${packageName}@${version}`, 'peerDependenciesMeta']
-  const { stdout, stderr, command } = await spawnNpm(args, {}, { rejectOnError: true }, spawnOptions)
-  if (!stdout) return []
-  const meta = parseJson<Index<{ optional?: boolean }> | Index<{ optional?: boolean }>[]>(stdout, { command, stderr })
-  // wrapped in an array like peerDependencies. Last is highest.
-  const latest = Array.isArray(meta) ? (meta.at(-1) ?? {}) : meta
-  return Object.keys(latest).filter(name => latest[name]?.optional)
+  const meta = (await fetchPeerField(packageName, version, 'peerDependenciesMeta', options, npmConfigLocal)) || {}
+  return Object.keys(meta).filter(name => meta[name]?.optional)
 }
 
 /**
