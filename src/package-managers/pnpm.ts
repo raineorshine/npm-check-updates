@@ -383,7 +383,7 @@ const withPnpmConfig =
     return fn(...leading, options, registries, workspaceNpmrc)
   }
 
-export { defaultPrefix, getPeerDependencies } from './npm.ts'
+export { defaultPrefix, getOptionalPeerDependencies, getPeerDependencies } from './npm.ts'
 export const distTag = withNpmWorkspaceConfig(npm.distTag)
 export const greatest = withNpmWorkspaceConfig(npm.greatest)
 export const latest = withNpmWorkspaceConfig(npm.latest)

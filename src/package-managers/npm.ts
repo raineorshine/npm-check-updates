@@ -1012,6 +1012,28 @@ export const getPeerDependencies = async (
 }
 
 /**
+ * Fetches the names of the peer dependencies that a specific package version marks as optional.
+ *
+ * @param packageName
+ * @param version
+ * @param spawnOptions
+ * @returns Promised list of package names
+ */
+export const getOptionalPeerDependencies = async (
+  packageName: string,
+  version: Version,
+  spawnOptions: SpawnOptions,
+): Promise<string[]> => {
+  const args = ['view', `${packageName}@${version}`, 'peerDependenciesMeta']
+  const { stdout, stderr, command } = await spawnNpm(args, {}, { rejectOnError: true }, spawnOptions)
+  if (!stdout) return []
+  const meta = parseJson<Index<{ optional?: boolean }> | Index<{ optional?: boolean }>[]>(stdout, { command, stderr })
+  // wrapped in an array like peerDependencies. Last is highest.
+  const latest = Array.isArray(meta) ? (meta.at(-1) ?? {}) : meta
+  return Object.keys(latest).filter(name => latest[name]?.optional)
+}
+
+/**
  * Fetches all dist-tags published for a package.
  *
  * @param packageName

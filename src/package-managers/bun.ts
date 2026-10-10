@@ -166,6 +166,29 @@ export const getPeerDependencies = async (
 }
 
 /**
+ * Fetches the names of the peer dependencies that a specific package version marks as optional.
+ *
+ * @param packageName
+ * @param version
+ * @param spawnOptions
+ * @returns Promised list of package names
+ */
+export const getOptionalPeerDependencies = async (
+  packageName: string,
+  version: Version,
+  spawnOptions: SpawnOptions,
+): Promise<string[]> => {
+  const manifest = await bunInfo<{ peerDependenciesMeta?: Index<{ optional?: boolean }> }>(
+    `${packageName}@${version}`,
+    undefined,
+    { cwd: spawnOptions.cwd },
+  )
+  if (!manifest) throw new Error(`Could not read the manifest of ${packageName}@${version} from bun`)
+  const meta = manifest.peerDependenciesMeta || {}
+  return Object.keys(meta).filter(name => meta[name]?.optional)
+}
+
+/**
  * Fetches the engines list from the registry for a specific package version.
  *
  * @param packageName

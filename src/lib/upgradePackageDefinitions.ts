@@ -120,7 +120,11 @@ export async function upgradePackageDefinitions(
     return result
   }
 
-  const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredLatestDependencies, options)
+  const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(
+    filteredLatestDependencies,
+    options,
+    currentDependencies,
+  )
 
   let checkPeerViolationResult: CheckIfInPeerViolationResult
 

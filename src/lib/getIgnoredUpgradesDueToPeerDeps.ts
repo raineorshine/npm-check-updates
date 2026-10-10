@@ -40,6 +40,7 @@ export async function getIgnoredUpgradesDueToPeerDeps(
       }),
     ),
     options,
+    current,
   )
 
   const ignored: Index<IgnoredUpgradeDueToPeerDeps> = {}

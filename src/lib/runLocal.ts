@@ -211,6 +211,7 @@ export default async function runLocal(
         }),
       ),
       options,
+      current,
     )
   }
 
