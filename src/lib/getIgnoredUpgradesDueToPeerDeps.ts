@@ -5,6 +5,8 @@ import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry.ts'
+import listedDependencies from './listedDependencies.ts'
+import { peersOf } from './peerPaths.ts'
 import upgradePackageDefinitions from './upgradePackageDefinitions.ts'
 import { isWildcard } from './version-util.ts'
 
@@ -40,7 +42,7 @@ export async function getIgnoredUpgradesDueToPeerDeps(
       }),
     ),
     options,
-    current,
+    listedDependencies(current, options),
   )
 
   const ignored: Index<IgnoredUpgradeDueToPeerDeps> = {}
@@ -61,8 +63,9 @@ export async function getIgnoredUpgradesDueToPeerDeps(
     }
 
     if (Object.keys(reason).length === 0) {
-      const peersOfPkg = upgradedPeerDependenciesLatest?.[pkgName] || {}
-      for (const [peer, peerSpec] of Object.entries(peersOfPkg)) {
+      // includes the peers of any unlisted peers the upgraded version brings in
+      const peersOfPkg = peersOf(upgradedPeerDependenciesLatest, pkgName).flatMap(([, peers]) => Object.entries(peers))
+      for (const [peer, peerSpec] of peersOfPkg) {
         if (
           upgradedPackagesWithPeerRestriction[peer] &&
           // Non-semver specs like catalog: references cannot be compared; treat as compatible

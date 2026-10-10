@@ -418,7 +418,6 @@ export const getPeerDependencies = async (
 
 /**
  * Fetches the names of the peer dependencies that a specific package version marks as optional.
- * A lookup that cannot be parsed reports none, so every peer is treated as required.
  *
  * @param packageName
  * @param version
@@ -438,17 +437,18 @@ export const getOptionalPeerDependencies = async (
     ? ['--json', 'info', `${packageName}@${version}`, 'peerDependenciesMeta']
     : ['--json', 'npm', 'info', `${packageName}@${version}`, '--fields', 'peerDependenciesMeta']
   const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, yarnSpawnOptions)
-  if (!stdout) return []
-  let meta: Index<{ optional?: boolean }> | undefined
-  try {
-    const parsed = npm.parseJson<{
-      data?: Index<{ optional?: boolean }>
-      peerDependenciesMeta?: Index<{ optional?: boolean }>
-    }>(extractFirstJsonLine(stdout), { command: args.join(' ') })
-    meta = yarnVersion.startsWith('1') ? parsed.data : parsed.peerDependenciesMeta
-  } catch {
-    return []
+  // like getPeerDependencies, an empty or error response is a failed lookup, which the caller logs with --verbose
+  if (!stdout) throw new Error(`No response from "yarn ${args.join(' ')}"`)
+  const parsed = npm.parseJson<{
+    type?: string
+    data?: string | Index<{ optional?: boolean }>
+    peerDependenciesMeta?: Index<{ optional?: boolean }>
+  }>(extractFirstJsonLine(stdout), { command: args.join(' ') })
+  if (parsed.type === 'error') {
+    throw new Error(`yarn ${args.join(' ')}: ${typeof parsed.data === 'string' ? parsed.data : 'lookup failed'}`)
   }
+  const meta = (yarnVersion.startsWith('1') ? parsed.data : parsed.peerDependenciesMeta) as
+    Index<{ optional?: boolean }> | undefined
   return Object.keys(meta || {}).filter(name => meta![name]?.optional)
 }
 

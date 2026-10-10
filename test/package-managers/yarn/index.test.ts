@@ -98,6 +98,24 @@ describe('yarn', () => {
     await expect(yarn.getPeerDependencies('fffffffffffff', '1.0.0', options, spawnOptions)).rejects.toThrow()
   })
 
+  for (const [label, dir] of [
+    ['v1', 'default'],
+    ['v4', 'v4'],
+  ]) {
+    itWithSystemYarn(`getOptionalPeerDependencies ${label}`, async () => {
+      const options = { cwd: path.join(__dirname, dir) }
+      const spawnOptions = { env: cleanEnv }
+      await expect(
+        yarn.getOptionalPeerDependencies('@typescript-eslint/parser', '8.0.0', options, spawnOptions),
+      ).resolves.toStrictEqual(['typescript'])
+      await expect(
+        yarn.getOptionalPeerDependencies('ncu-test-peer', '1.0.0', options, spawnOptions),
+      ).resolves.toStrictEqual([])
+      // an unresolvable package must be reported as a failed lookup, not as having no optional peers
+      await expect(yarn.getOptionalPeerDependencies('fffffffffffff', '1.0.0', options, spawnOptions)).rejects.toThrow()
+    })
+  }
+
   describe('npmAuthTokenKeyValue', () => {
     it('npmRegistryServer with trailing slash', () => {
       const authToken = yarn.npmAuthTokenKeyValue({})('fortawesome', {
