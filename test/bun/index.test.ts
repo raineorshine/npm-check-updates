@@ -53,9 +53,9 @@ describe('bun', () => {
   })
 
   it('getPeerDependencies', async () => {
-    const spawnOptions = { cwd: __dirname }
-    await expect(bun.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions)).resolves.toStrictEqual({})
-    await expect(bun.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions)).resolves.toStrictEqual({
+    const options = { cwd: __dirname }
+    await expect(bun.getPeerDependencies('ncu-test-return-version', '1.0.0', options)).resolves.toStrictEqual({})
+    await expect(bun.getPeerDependencies('ncu-test-peer', '1.0.0', options)).resolves.toStrictEqual({
       'ncu-test-return-version': '1.x',
     })
   })
