@@ -360,7 +360,7 @@ const getYarnVersion = memoize(async (spawnOptions: SpawnOptions): Promise<strin
 })
 
 /**
- * Resolves a range to the highest matching published version, since yarn v1 info only reads exact versions.
+ * Resolves a range to the highest matching published version, since yarn v1 info only reads exact versions and tags.
  *
  * @param packageName
  * @param version
@@ -372,7 +372,8 @@ const resolveYarnV1Version = async (
   version: Version,
   spawnOptions: SpawnOptions,
 ): Promise<Version> => {
-  if (nodeSemver.valid(version)) return version
+  // a dist-tag is left for yarn to resolve, as before
+  if (nodeSemver.valid(version) || !nodeSemver.validRange(version)) return version
   const args = ['--json', 'info', packageName, 'versions']
   const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, spawnOptions)
   if (!stdout) throw new Error(`No response from "yarn ${args.join(' ')}"`)
