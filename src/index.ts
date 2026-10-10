@@ -13,6 +13,7 @@ import getNcuRc from './lib/getNcuRc.ts'
 import initOptions from './lib/initOptions.ts'
 import { errorText, print, printJson } from './lib/logging.ts'
 import mergeOptions from './lib/mergeOptions.ts'
+import parseOptions from './lib/parseOptions.ts'
 import programError from './lib/programError.ts'
 import runGlobal from './lib/runGlobal.ts'
 import runLocal from './lib/runLocal.ts'
@@ -256,7 +257,8 @@ async function runUpgrades(
       const isSubsequentPackage = i > 0
       // copy object to prevent share .ncurc options between different packageFile, to prevent unpredictable behavior
       const rcResult = await getNcuRc({ packageFile: packageInfo.filepath, options })
-      let rcConfig = rcResult.config
+      // parse before merging, otherwise --mergeConfig replaces a root array with a nested raw string
+      let rcConfig = parseOptions(rcResult.config, options)
       if (options.mergeConfig && Object.keys(rcConfig).length) {
         // Merge config options.
         rcConfig = mergeOptions(options, rcConfig)

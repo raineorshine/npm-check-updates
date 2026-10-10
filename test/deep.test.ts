@@ -293,6 +293,48 @@ describe('--deep with nested ncurc files', () => {
       await removeDir(tempDir)
     }
   })
+
+  // mergeConfig only merges arrays, so a nested format has to be parsed before the merge
+  it('merges a nested format into the root format with --mergeConfig', async () => {
+    const tempDir = await makeTempDir()
+    const pkgData = JSON.stringify({ dependencies: { express: '1' } })
+    await fs.writeFile(path.join(tempDir, 'package.json'), pkgData, 'utf-8')
+    await fs.writeFile(path.join(tempDir, '.ncurc.json'), JSON.stringify({ format: 'time' }), 'utf-8')
+    await fs.mkdir(path.join(tempDir, 'packages/sub1'), { recursive: true })
+    await fs.writeFile(path.join(tempDir, 'packages/sub1/package.json'), pkgData, 'utf-8')
+    await fs.writeFile(path.join(tempDir, 'packages/sub1/.ncurc.json'), JSON.stringify({ format: 'diff' }), 'utf-8')
+
+    try {
+      const { stdout } = await spawn('node', [bin, '--deep', '--mergeConfig'], {}, { cwd: tempDir })
+      const nested = stripAnsi(stdout).split(path.join('packages', 'sub1', 'package.json'))[1]
+
+      // time from the root and diff from the nested ncurc
+      expect(nested).toContain('just now')
+      expect(nested).toContain('https://npmdiff.dev/express/1/99')
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
+
+  // the nested config alone has no cli flag, so without the root options the error would be thrown
+  // and surface as an unhandled rejection
+  it('reports an invalid value in the ncurc of a nested package as a program error', async () => {
+    const tempDir = await makeTempDir()
+    const pkgData = JSON.stringify({ dependencies: { express: '1' } })
+    await fs.writeFile(path.join(tempDir, 'package.json'), pkgData, 'utf-8')
+    await fs.mkdir(path.join(tempDir, 'packages/sub1'), { recursive: true })
+    await fs.writeFile(path.join(tempDir, 'packages/sub1/package.json'), pkgData, 'utf-8')
+    await fs.writeFile(path.join(tempDir, 'packages/sub1/.ncurc.json'), JSON.stringify({ concurrency: 'abc' }), 'utf-8')
+
+    try {
+      const err = await spawn('node', [bin, '--deep'], {}, { cwd: tempDir }).catch((e: Error) => e)
+      expect(err).toBeInstanceOf(Error)
+      expect((err as Error).message).toContain('concurrency must be a number')
+      expect((err as Error).message).not.toContain('Unhandled Rejection')
+    } finally {
+      await removeDir(tempDir)
+    }
+  })
 })
 
 describe('--deep cli option precedence', () => {
