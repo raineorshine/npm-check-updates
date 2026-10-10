@@ -161,7 +161,11 @@ export async function upgradePackageDefinitions(
     }
     const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
       { ...currentDependencies, ...checkPeerViolationResult.filteredUpgradedDependencies },
-      { ...options, peerDependencies: peerDependenciesAfterUpgrade, loglevel: 'silent' },
+      {
+        ...options,
+        peerDependencies: peerDependenciesAfterUpgrade,
+        loglevel: options.peer ? options.loglevel : 'silent', // do not force 'silent' since in 'peer' mode there might be a lot of packages to check thus user should see work in progress (not hang for a longer time)
+      },
     )
     result = [
       { ...checkPeerViolationResult.filteredUpgradedDependencies, ...newUpgradedDependencies },

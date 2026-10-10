@@ -1,4 +1,5 @@
 import pMap from 'p-map'
+import type ProgressBar from 'progress'
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
@@ -62,16 +63,29 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
 
   const bar = createProgressBar(options, Object.keys(packageMap).length)
 
-  const packageEntries = Object.entries(packageMap)
+  const packageEntries: [string, string, string[], ProgressBar?][] = Object.entries(packageMap).map(([key, val]) => [
+    key,
+    val,
+    [],
+    bar,
+  ])
+
   const failed: string[] = []
 
   /**
    * Fetches peer dependencies for a package.
    * @param pkg - The package name
    * @param version - The package version
+   * @param checked - The list of already checked dependencies in recursion tree
+   * @param bar - The progress bar for the given recursion tree level
    * @returns Promise that resolves to package name and its peer dependencies
    */
-  const getPeerDepsForPackage = async ([pkg, version]: [string, Version]): Promise<{
+  const getPeerDepsForPackage = async ([pkg, version, checked, bar]: [
+    string,
+    Version,
+    string[],
+    ProgressBar?,
+  ]): Promise<{
     pkg: string
     dependencies: Index<string>
   }> => {
@@ -95,6 +109,34 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
     }
     if (bar) {
       bar.tick()
+    }
+    if (options.peer && !checked.includes(pkg)) {
+      // filter out dependencies which have been already processed
+      dependencies = Object.fromEntries(
+        Object.entries(dependencies).filter(([key]) => {
+          return !checked.includes(key)
+        }),
+      )
+      checked.push(pkg)
+      const toCheck = Object.entries(dependencies)
+      let depsOfDeps: {
+        pkg: string
+        dependencies: Index<string>
+      }[]
+      if (toCheck.length > 0) {
+        const newBar = createProgressBar(options, toCheck.length)
+        depsOfDeps = await Promise.all(
+          toCheck.map(([packageName, versionSpec]) =>
+            getPeerDepsForPackage([packageName, versionSpec, checked, newBar]),
+          ),
+        )
+      } else {
+        depsOfDeps = []
+      }
+      dependencies = {
+        ...dependencies,
+        ...depsOfDeps.reduce((acc, obj) => ({ ...acc, ...obj.dependencies }), {}),
+      }
     }
     return { pkg, dependencies }
   }
