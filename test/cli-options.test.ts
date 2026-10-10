@@ -48,5 +48,45 @@ describe('cli-options', () => {
       expect(path.isAbsolute(cliOptionsMap.cacheFile.parse!('foo.json') as string)).toBe(true)
       expect(() => cliOptionsMap.cacheFile.parse!(5)).toThrow('cacheFile must be a string')
     })
+
+    it('marks accumulate exactly on options whose parse takes an accumulator', () => {
+      // accumulate parses are only ever called by commander, so a value already parsed once by
+      // initOptions must never reach one with a single argument
+      for (const option of cliOptions) {
+        if (!option.parse) continue
+        expect(!!option.accumulate).toBe(option.parse.length > 1)
+      }
+    })
+
+    describe('idempotency', () => {
+      // one already-parsed-once input per non-accumulate option with a parse, since the cli path
+      // parses once via commander and initOptions parses again
+      const cases: [string, unknown][] = [
+        ['cacheExpiration', '10'],
+        ['cacheFile', 'foo.json'],
+        ['concurrency', '8'],
+        ['cooldown', '12h'],
+        ['dep', 'prod,dev'],
+        ['errorLevel', '2'],
+        ['format', 'no-group,time'],
+        ['pre', 1],
+        ['retry', '5'],
+        ['timeout', '5000'],
+      ]
+
+      it('covers every non-accumulate option that has a parse', () => {
+        const expected = cliOptions
+          .filter(option => option.parse && !option.accumulate)
+          .map(option => option.long)
+          .sort()
+        expect(cases.map(([long]) => long).sort()).toStrictEqual(expected)
+      })
+
+      it.each(cases)('parse(parse(x)) equals parse(x) for %s', (long, raw) => {
+        const parse = cliOptionsMap[long].parse!
+        const once = parse(raw)
+        expect(parse(once)).toStrictEqual(once)
+      })
+    })
   })
 })

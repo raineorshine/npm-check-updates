@@ -156,8 +156,17 @@ export async function upgradePackageDefinitions(
       ...checkPeerViolationResult.upgradedPeerDependencies,
     }
     if (isDeepStrictEqual(options.peerDependencies, peerDependenciesAfterUpgrade)) {
-      // We can't find anything to do, will not upgrade anything
-      return [{}, latestVersionResults, options.peerDependencies]
+      // Peers stopped changing; keep the upgrades that do not violate them.
+      // Dropping one upgrade can invalidate another that was kept, so filter until the set settles.
+      let nonViolating = checkPeerViolationResult
+      while (nonViolating.violated) {
+        nonViolating = checkIfInPeerViolation(
+          currentDependencies,
+          nonViolating.filteredUpgradedDependencies,
+          nonViolating.upgradedPeerDependencies,
+        )
+      }
+      return [nonViolating.filteredUpgradedDependencies, latestVersionResults, options.peerDependencies]
     }
     const [newUpgradedDependencies, newLatestVersions, newPeerDependencies] = await upgradePackageDefinitions(
       { ...currentDependencies, ...checkPeerViolationResult.filteredUpgradedDependencies },

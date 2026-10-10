@@ -15,6 +15,11 @@ env:
 permissions:
   contents: read
 
+concurrency:
+  # PRs: a new push cancels the in-progress run. main: every push gets its own group, so no run is cancelled or dropped from the queue.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   run:
     name: Bun on ${{ matrix.os }}
@@ -25,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Clone repository

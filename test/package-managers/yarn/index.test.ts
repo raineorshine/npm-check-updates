@@ -73,25 +73,29 @@ describe('yarn', () => {
   })
 
   itWithSystemYarn('getPeerDependencies v1', async () => {
-    const testDir = path.join(__dirname, 'default')
-    const spawnOptions = { cwd: testDir, env: cleanEnv }
-    await expect(yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions)).resolves.toStrictEqual({})
-    await expect(yarn.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions)).resolves.toStrictEqual({
+    const options = { cwd: path.join(__dirname, 'default') }
+    const spawnOptions = { env: cleanEnv }
+    await expect(
+      yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', options, spawnOptions),
+    ).resolves.toStrictEqual({})
+    await expect(yarn.getPeerDependencies('ncu-test-peer', '1.0.0', options, spawnOptions)).resolves.toStrictEqual({
       'ncu-test-return-version': '1.x',
     })
     // an unresolvable package must be reported as a failed lookup, not as having no peer dependencies
-    await expect(yarn.getPeerDependencies('fffffffffffff', '1.0.0', spawnOptions)).rejects.toThrow()
+    await expect(yarn.getPeerDependencies('fffffffffffff', '1.0.0', options, spawnOptions)).rejects.toThrow()
   })
 
   itWithSystemYarn('getPeerDependencies v4', async () => {
-    const testDir = path.join(__dirname, 'v4')
-    const spawnOptions = { cwd: testDir, env: cleanEnv }
-    await expect(yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', spawnOptions)).resolves.toStrictEqual({})
-    await expect(yarn.getPeerDependencies('ncu-test-peer', '1.0.0', spawnOptions)).resolves.toStrictEqual({
+    const options = { cwd: path.join(__dirname, 'v4') }
+    const spawnOptions = { env: cleanEnv }
+    await expect(
+      yarn.getPeerDependencies('ncu-test-return-version', '1.0.0', options, spawnOptions),
+    ).resolves.toStrictEqual({})
+    await expect(yarn.getPeerDependencies('ncu-test-peer', '1.0.0', options, spawnOptions)).resolves.toStrictEqual({
       'ncu-test-return-version': '1.x',
     })
     // an unresolvable package must be reported as a failed lookup, not as having no peer dependencies
-    await expect(yarn.getPeerDependencies('fffffffffffff', '1.0.0', spawnOptions)).rejects.toThrow()
+    await expect(yarn.getPeerDependencies('fffffffffffff', '1.0.0', options, spawnOptions)).rejects.toThrow()
   })
 
   describe('npmAuthTokenKeyValue', () => {

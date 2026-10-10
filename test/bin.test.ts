@@ -128,6 +128,15 @@ describe('bin', () => {
     await expect(spawn('node', [bin, '--cwd', os.tmpdir()])).rejects.toThrow('No package.json')
   })
 
+  it('--pre 1 does not throw (commander already parses it to a boolean before the second pass)', async () => {
+    const stub = stubVersions('99.9.9', { spawn: true })
+    const { stdout } = await spawn('node', [bin, '--pre', '1', '--stdin'], {
+      stdin: JSON.stringify({ dependencies: { express: '1.0.0' } }),
+    })
+    expect(stdout).toContain('express')
+    stub.restore()
+  })
+
   it('throw error if --cooldown has an unrecognized unit', async () => {
     // "7x" must be rejected rather than silently read as 7 days
     await expect(

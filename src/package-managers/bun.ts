@@ -7,7 +7,6 @@ import spawnCommand from '../lib/spawnCommand.ts'
 import { type Index } from '../types/IndexType.ts'
 import { type NpmOptions } from '../types/NpmOptions.ts'
 import { type Options } from '../types/Options.ts'
-import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
 import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type Version } from '../types/Version.ts'
@@ -155,10 +154,10 @@ export const packageAuthorChanged = async (
 export const getPeerDependencies = async (
   packageName: string,
   version: Version,
-  spawnOptions: SpawnOptions,
+  options: Options = {},
 ): Promise<Index<Version>> => {
   const manifest = await bunInfo<{ peerDependencies?: Index<Version> }>(`${packageName}@${version}`, undefined, {
-    cwd: spawnOptions.cwd,
+    cwd: options.cwd,
   })
   // bunInfo resolves to null when the lookup fails, which is not the same as having no peer dependencies
   if (!manifest) throw new Error(`Could not read the manifest of ${packageName}@${version} from bun`)
