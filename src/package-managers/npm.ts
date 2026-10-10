@@ -30,9 +30,9 @@ import { type SpawnOptions } from '../types/SpawnOptions.ts'
 import { type SpawnPleaseOptions } from '../types/SpawnPleaseOptions.ts'
 import { type SpawnResult } from '../types/SpawnResult.ts'
 import { type Version } from '../types/Version.ts'
-import { type CooldownInfo, type VersionResult } from '../types/VersionResult.ts'
+import { type CooldownInfo, type IgnoreInfo, type VersionResult } from '../types/VersionResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
-import { filterPredicate, satisfiesCooldownPeriod } from './filters.ts'
+import { filterPredicate, ignoreReason, isIgnoredVersion, satisfiesCooldownPeriod } from './filters.ts'
 
 /**
  * Dynamically imports npm-registry-fetch, lazily so importing the ncu API does not eagerly pull in
@@ -181,6 +181,8 @@ interface GreatestWithFallbackResult {
   targetVersion: string | null
   fallbackVersion: string | null
   targetBlockedByCooldown: boolean
+  /** The highest version an ignore rule held back above the version chosen. */
+  ignoredVersion: string | null
 }
 
 /**
@@ -215,6 +217,7 @@ const findTargetAndFallback = ({
       targetVersion: null,
       fallbackVersion: null,
       targetBlockedByCooldown: false,
+      ignoredVersion: null,
     }
   }
   const currentInCooldown = !satisfiesCooldownPeriod(packageName, cur, time?.[cur], options.cooldown)
@@ -232,6 +235,14 @@ const findTargetAndFallback = ({
       if (!isValidVersion(entry)) return acc
 
       if (!filter?.(version)) return acc
+
+      // an ignored version is never a target or fallback; only the highest one is kept for reporting
+      if (isIgnoredVersion(version, options.ignoreRules)) {
+        if (!acc.ignoredVersion || compare(version, acc.ignoredVersion) > 0) {
+          acc.ignoredVersion = version
+        }
+        return acc
+      }
 
       const versionTime = time?.[version]
       const isSatisfiesCooldown = options.cooldown
@@ -254,10 +265,12 @@ const findTargetAndFallback = ({
       targetVersion: cur,
       fallbackVersion: cur,
       targetBlockedByCooldown: currentInCooldown,
+      ignoredVersion: null,
     } as {
       targetVersion: string
       fallbackVersion: string
       targetBlockedByCooldown: boolean
+      ignoredVersion: string | null
     },
   )
 
@@ -277,10 +290,44 @@ const findTargetAndFallback = ({
     result.targetBlockedByCooldown = false
   }
 
+  // only report an ignored version that would have been chosen over the version that was
+  const chosenVersion = result.targetBlockedByCooldown ? (fallbackVersion ?? cur) : targetVersion
+  const ignoredVersion =
+    result.ignoredVersion &&
+    compare(result.ignoredVersion, chosenVersion) > 0 &&
+    nodeSemver.gt(result.ignoredVersion, cur)
+      ? result.ignoredVersion
+      : null
+
   return {
     ...result,
     targetVersion,
     fallbackVersion,
+    ignoredVersion,
+  }
+}
+
+/** Builds the record of a version that an ignore rule held back. */
+const toIgnoreInfo = ({
+  packageName,
+  currentVersion,
+  options,
+  time,
+  version,
+}: {
+  packageName: string
+  currentVersion: string
+  options: Options
+  time?: Packument['time']
+  version: string
+}): IgnoreInfo => {
+  const reason = ignoreReason(version, options.ignoreRules)
+  return {
+    name: packageName,
+    currentVersion,
+    version,
+    ...(time?.[version] ? { time: time[version] } : null),
+    ...(reason ? { reason } : null),
   }
 }
 
@@ -288,8 +335,27 @@ const findTargetAndFallback = ({
  * Formats the raw version resolution data into a standardized VersionResult object.
  * This function wraps the target version with its publish time and, if the target is
  * currently in a cooldown period, adds the fallback version and cooldown metadata.
+ * If an ignore rule held back a higher version, it adds the ignore metadata.
  */
 const toVersionResult = ({
+  ignoredVersion,
+  ...args
+}: {
+  packageName: string
+  currentVersion: string
+  options: Options
+  time?: Packument['time']
+  targetVersion: string | null
+  fallbackVersion: string | null
+  targetBlockedByCooldown: boolean
+  ignoredVersion: string | null
+}): VersionResult => {
+  const result = toCooldownVersionResult(args)
+  return ignoredVersion ? { ...result, ignoreInfo: toIgnoreInfo({ ...args, version: ignoredVersion }) } : result
+}
+
+/** Wraps the target version with its publish time, or the cooldown fallback and metadata if the target is in cooldown. */
+const toCooldownVersionResult = ({
   packageName,
   currentVersion,
   options,
@@ -980,9 +1046,13 @@ export const greatest: GetVersion = async (
 
   if (caller) {
     const version = versionResult.targetBlockedByCooldown ? versionResult.fallbackVersion : versionResult.targetVersion
+    const { cooldownInfo, ignoreInfo } = toVersionResult({ ...packageInfo, ...versionResult })
     return {
       version,
       ...(version && packument?.time?.[version] ? { time: packument.time[version] } : null),
+      // latest merges these with its own records. The distTag fall-through has never reported cooldown here.
+      ...(caller === 'latest' && cooldownInfo ? { cooldownInfo } : null),
+      ...(ignoreInfo ? { ignoreInfo } : null),
     }
   }
 
@@ -1153,6 +1223,22 @@ export const distTag: GetVersion = async (
     tagPackument.version === current ||
     satisfiesCooldownPeriod(packageName, tagPackument.version, publishTime, options.cooldown)
 
+  // an ignored tag version is never upgraded to, and never falls through to greatest, so @latest and @tag stay strict.
+  // latest falls back to greatest itself when it sees the ignore record.
+  if (tagPackument.version !== current && isIgnoredVersion(tagPackument.version, options.ignoreRules)) {
+    if (!nodeSemver.gt(tagPackument.version, current)) return {}
+    print(options, `Skipping ${packageName}@${version} due to an ignore rule.`, 'verbose')
+    return {
+      ignoreInfo: toIgnoreInfo({
+        packageName,
+        currentVersion,
+        options,
+        time: packument?.time,
+        version: tagPackument.version,
+      }),
+    }
+  }
+
   // latest should not be deprecated
   // if latest exists and latest is not a prerelease version, return it
   // if latest exists and latest is a prerelease version and --pre is specified, return it
@@ -1219,10 +1305,13 @@ export const latest: GetVersion = async (
     npmConfigProject,
   )
 
-  if (latestResult.cooldownInfo) {
+  if (latestResult.cooldownInfo || latestResult.ignoreInfo) {
     const fallback = await greatest(packageName, currentVersion, options, npmConfig, npmConfigProject, 'latest')
     if (fallback.version) {
-      latestResult.cooldownInfo.fallbackVersion = fallback.version
+      if (latestResult.cooldownInfo) {
+        latestResult.cooldownInfo.fallbackVersion = fallback.version
+      }
+      // the latest tag's own record wins over the one greatest found for the same cause
       return {
         ...fallback,
         ...latestResult,
@@ -1268,6 +1357,7 @@ export const newest: GetVersion = async (
         targetVersion: currentVersion,
         fallbackVersion: null,
         targetBlockedByCooldown: false,
+        ignoredVersion: null,
       }
     : findTargetAndFallback({
         ...packageInfo,

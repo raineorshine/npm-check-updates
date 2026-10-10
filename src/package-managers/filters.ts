@@ -6,6 +6,7 @@ import { type Index } from '../types/IndexType.ts'
 import { type Maybe } from '../types/Maybe.ts'
 import { type Options } from '../types/Options.ts'
 import { type Packument } from '../types/Packument.ts'
+import { type ResolvedIgnoreRule } from '../types/ResolvedIgnoreRule.ts'
 import { type Version } from '../types/Version.ts'
 
 /**
@@ -76,6 +77,20 @@ export const satisfiesCooldownPeriod = (
   const cooldownDays = typeof rawCooldown === 'string' ? (parseCooldown(rawCooldown) ?? 0) : rawCooldown
 
   return Date.now() - versionReleaseDate.getTime() >= cooldownDays * DAY_AS_MS
+}
+
+/** Returns the ignore rules whose range contains the version. Prereleases count as inside the range. */
+const matchingIgnoreRules = (version: string, rules: Maybe<ResolvedIgnoreRule[]>): ResolvedIgnoreRule[] =>
+  rules?.filter(rule => semver.satisfies(version, rule.range, { includePrerelease: true })) ?? []
+
+/** Returns true if an ignore rule holds back the version. */
+export const isIgnoredVersion = (version: Maybe<string>, rules: Maybe<ResolvedIgnoreRule[]>): boolean =>
+  !!version && matchingIgnoreRules(version, rules).length > 0
+
+/** Returns the distinct reasons of the ignore rules that hold back the version, joined with "; ". */
+export const ignoreReason = (version: string, rules: Maybe<ResolvedIgnoreRule[]>): string | undefined => {
+  const reasons = [...new Set(matchingIgnoreRules(version, rules).flatMap(rule => rule.reason || []))]
+  return reasons.length > 0 ? reasons.join('; ') : undefined
 }
 
 /**
