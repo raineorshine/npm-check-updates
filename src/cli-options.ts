@@ -221,7 +221,11 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
       ['repo', `Infers and displays links to the package's source code repository. Requires packages to be installed.`],
       ['diff', `Display link to compare the changes between package versions.`],
       ['time', 'Shows the publish time of each upgrade.'],
-      ['cooldown', 'Shows a list of packages that were skipped due to the --cooldown threshold.'],
+      [
+        'skipped',
+        'Shows a list of versions that were held back by the --cooldown threshold or by --ignore rules, with the reason for each.',
+      ],
+      ['cooldown', 'Alias for skipped.'],
     ],
   })
 
@@ -672,12 +676,12 @@ ${table({
 
 ### Cooldown Formatting
 
-When using \`--format cooldown\` alongside the \`--cooldown\` option, \`ncu\` will show a list of packages that were skipped due to the \`--cooldown\` threshold.
+When using \`--format skipped\` alongside the \`--cooldown\` option, \`ncu\` will show a list of packages that were skipped due to the \`--cooldown\` threshold. \`--format cooldown\` is an alias for \`--format skipped\`.
 
 Example:
 
 ${codeBlock(
-  `$ ncu --format cooldown --cooldown 7
+  `$ ncu --format skipped --cooldown 7
 Skipped due to 7-day cooldown
  @typescript-eslint/parser  ^8.50.0  →  ^8.59.1      5 days ago
  eslint                     ^10.0.1  →  ^10.3.0      1 day ago`,
@@ -839,7 +843,7 @@ const cliOptions: CLIOption[] = [
     long: 'format',
     arg: 'value',
     description:
-      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. `group` is the only value included by default; use `--format no-group` to disable it.',
+      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, skipped. `group` is the only value included by default; use `--format no-group` to disable it.',
     parse: value => {
       if (typeof value !== 'string') return value
       const values = value.split(/,|\s/).filter(Boolean)
@@ -860,6 +864,7 @@ const cliOptions: CLIOption[] = [
       'time',
       'lines',
       'installedVersion',
+      'skipped',
       'cooldown',
     ],
     help: extendedHelpFormat,

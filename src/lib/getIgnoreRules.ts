@@ -46,6 +46,7 @@ function getIgnoreRules(options: Options): IgnoreRuleMatcher | null {
     }
   })
 
+  /** Returns the rules whose key matches any of the names. */
   const matcher: IgnoreRuleMatcher = names =>
     rules.filter(({ isMatch }) => names.some(name => isMatch(name))).map(({ rule }) => rule)
 

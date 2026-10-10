@@ -11,7 +11,7 @@ import { type IgnoredUpgradeDueToEnginesNode } from '../types/IgnoredUpgradeDueT
 import { type IgnoredUpgradeDueToPeerDeps } from '../types/IgnoredUpgradeDueToPeerDeps.ts'
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
-import { type CooldownInfo, type VersionResult } from '../types/VersionResult.ts'
+import { type CooldownInfo, type IgnoreInfo, type VersionResult } from '../types/VersionResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import filterObject from './filterObject.ts'
 import formatTimeAgo from './formatTimeAgo.ts'
@@ -163,6 +163,22 @@ function getVersion(dep: string): string {
   return isGitHubUrl(dep) ? getGitHubUrlTag(dep)! : isNpmAlias(dep) ? parseNpmAlias(dep)![1] : dep
 }
 
+/** Returns true if the format asks for held-back versions. `cooldown` is an alias for `skipped`. */
+export function includesSkippedFormat(format: readonly string[] | undefined): boolean {
+  return !!format && (format.includes('skipped') || format.includes('cooldown'))
+}
+
+/** Renders the inline label for a held-back version, e.g. `[cooldown] 2.0.0`. */
+function heldBackLabel(label: string, to: string, version: string): string {
+  const wildcard = leadingWildcard(to)
+  const coerced = semver.coerce(version)
+  // Truncate long versions for single-line terminal display.
+  // e.g., 1.2.3-alpha.20260503T1728 -> 1.2.3-+
+  const shortened = coerced && !version.endsWith(coerced.version) ? `${coerced.version}-+` : version
+  const colorized = colorizeDiff(to, wildcard + getVersion(shortened))
+  return `[${label}] ${colorized.replace(wildcard, '')}`
+}
+
 /** Prettifies a cooldown value, e.g. `1-day` `20-hour`. */
 function prettifyCooldown(input: string | number | undefined | CooldownFunction): string {
   if (input === undefined || typeof input === 'function') {
@@ -194,6 +210,8 @@ export async function toDependencyTable({
   from: fromDeps,
   to: toDeps,
   skippedByCooldown,
+  skippedByIgnore,
+  cooldown,
   format,
   ownersChangedDeps,
   pkgFile,
@@ -202,6 +220,9 @@ export async function toDependencyTable({
   from: Index<VersionSpec>
   to: Index<VersionSpec>
   skippedByCooldown?: Index<CooldownInfo>
+  skippedByIgnore?: Index<IgnoreInfo>
+  // whether a cooldown is active. Rows without a publish time are marked only then, since times are fetched only for cooldown.
+  cooldown?: boolean
   format?: readonly string[]
   ownersChangedDeps?: Index<boolean>
   /** See: logging/getPackageRepo pkgFile param. */
@@ -209,7 +230,9 @@ export async function toDependencyTable({
   time?: Index<string>
 }) {
   const pkg = format?.includes('dep') && pkgFile ? JSON.parse(await fs.readFile(pkgFile, 'utf-8')) : null
-  const showCooldownCol = Object.keys(skippedByCooldown || {}).length > 0
+  // the cooldown label shows by default; the ignore label only with --format skipped
+  const showIgnoredLabel = includesSkippedFormat(format) && Object.keys(skippedByIgnore || {}).length > 0
+  const showCooldownCol = Object.keys(skippedByCooldown || {}).length > 0 || showIgnoredLabel
   const table = renderDependencyTable(
     await Promise.all(
       Object.keys(toDeps)
@@ -252,7 +275,7 @@ export async function toDependencyTable({
             ? `${process.env.NCU_DIFF || 'https://npmdiff.dev'}/${encodeURIComponent(dep)}/${from.replace(/^\W+/, '')}/${to.replace(/^\W+/, '')}`
             : ''
 
-          const showCoolDown = format?.includes('cooldown')
+          const showCoolDown = includesSkippedFormat(format) && (cooldown ?? true)
           const showTime = format?.includes('time')
           // show '[missing time]' in publishTime column or cooldown column
           const missingTime = (showTime || showCoolDown) && !time?.[dep] ? '[missing time]' : ''
@@ -260,18 +283,15 @@ export async function toDependencyTable({
           const publishTime = timestamp ? formatTimeAgo(timestamp) : showTime || !showCooldownCol ? missingTime : ''
 
           const cooldownVersion = skippedByCooldown?.[dep]?.version
-          let cooldown = ''
-          if (cooldownVersion) {
-            const wildcard = leadingWildcard(to)
-            const coerced = semver.coerce(cooldownVersion)
-            // Truncate long versions for single-line terminal display.
-            // e.g., 1.2.3-alpha.20260503T1728 -> 1.2.3-+
-            const shortended =
-              coerced && !cooldownVersion.endsWith(coerced.version) ? `${coerced.version}-+` : cooldownVersion
-            const skippedColorized = colorizeDiff(to, wildcard + getVersion(shortended))
-            cooldown = `[cooldown] ${skippedColorized.replace(wildcard, '')}`
-          } else if (showCoolDown && !showTime) {
-            cooldown = missingTime
+          const ignoredVersion = showIgnoredLabel ? skippedByIgnore?.[dep]?.version : undefined
+          let heldBack = [
+            cooldownVersion ? heldBackLabel('cooldown', to, cooldownVersion) : '',
+            ignoredVersion ? heldBackLabel('ignored', to, ignoredVersion) : '',
+          ]
+            .filter(Boolean)
+            .join(' ')
+          if (!heldBack && showCoolDown && !showTime) {
+            heldBack = missingTime
           }
 
           return [
@@ -280,7 +300,7 @@ export async function toDependencyTable({
             shortenBuildMetadata(from),
             '→',
             toColorized,
-            ...(showCooldownCol ? [cooldown] : []),
+            ...(showCooldownCol ? [heldBack] : []),
             ownerChanged,
             ...[homepageUrl, repoUrl, diffUrl, publishTime].filter(x => x),
           ]
@@ -295,22 +315,80 @@ export async function toDependencyTable({
  *
  * @param args
  * @param args.skippedByCooldown
+ * @param args.skippedByIgnore
+ * @param args.upgraded
  * @param args.pkgFile
  * @param args.options
  */
-async function printSkippedByCooldownTable({
+async function printSkippedTable({
   skippedByCooldown,
+  skippedByIgnore,
+  upgraded,
   pkgFile,
   options,
 }: {
   skippedByCooldown?: Index<CooldownInfo>
+  skippedByIgnore?: Index<IgnoreInfo>
+  upgraded?: Index<VersionSpec>
   pkgFile: any
   options: Options
 }) {
   const format = options.format
-  if (!skippedByCooldown || !format?.includes('cooldown') || format?.includes('lines')) {
+  if (!format || !includesSkippedFormat(format) || format.includes('lines')) {
     return
   }
+
+  const cooldown = options.raw?.cooldown ?? options.cooldown
+
+  // with ignore rows, one table lists every cause; otherwise the cooldown table is unchanged
+  if (Object.keys(skippedByIgnore || {}).length > 0) {
+    const rows: { name: string; row: string[] }[] = []
+
+    for (const { name, version, currentVersion, fallbackVersion, time: versionTime } of Object.values(
+      skippedByCooldown || {},
+    )) {
+      if (!isFetchable(currentVersion) || !version) continue
+      const wildcard = leadingWildcard(currentVersion)
+      const from = wildcard + stripRange(fallbackVersion ?? currentVersion)
+      rows.push({
+        name,
+        row: [
+          name,
+          from,
+          '→',
+          colorizeDiff(from, wildcard + stripRange(version)),
+          prettifyCooldown(cooldown),
+          versionTime ? formatTimeAgo(versionTime) : '',
+        ],
+      })
+    }
+
+    for (const [dep, { currentVersion, version, reason }] of Object.entries(skippedByIgnore || {})) {
+      if (!isFetchable(currentVersion)) continue
+      const wildcard = leadingWildcard(currentVersion)
+      const from = wildcard + stripRange(getVersion(upgraded?.[dep] ?? currentVersion))
+      rows.push({
+        name: dep,
+        row: [
+          dep,
+          from,
+          '→',
+          colorizeDiff(from, wildcard + version),
+          `ignored${reason ? `: ${sanitizeForDisplay(reason)}` : ''}`,
+          '',
+        ],
+      })
+    }
+
+    if (!rows.length) return false
+
+    rows.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+    print(options, '\n' + style.yellow(style.bold('Skipped')))
+    print(options, renderDependencyTable(rows.map(({ row }) => row)))
+    return true
+  }
+
+  if (!skippedByCooldown) return
 
   const currentAfterFallback: Index<string> = {}
   const skippedUpgrades: Index<string> = {}
@@ -343,7 +421,6 @@ async function printSkippedByCooldownTable({
     time,
   })
 
-  const cooldown = options.raw?.cooldown ?? options.cooldown
   const heading = style.yellow(style.bold(`Skipped due to ${prettifyCooldown(cooldown)}`))
 
   print(options, '\n' + heading)
@@ -358,6 +435,7 @@ async function printSkippedByCooldownTable({
  * @param args.current
  * @param args.upgraded
  * @param args.skippedByCooldown
+ * @param args.skippedByIgnore
  * @param args.ownersChangedDeps
  * @param options
  */
@@ -366,6 +444,7 @@ export async function printUpgradesTable(
     current,
     upgraded,
     skippedByCooldown,
+    skippedByIgnore,
     ownersChangedDeps,
     pkgFile,
     time,
@@ -373,6 +452,7 @@ export async function printUpgradesTable(
     current: Index<VersionSpec>
     upgraded: Index<VersionSpec>
     skippedByCooldown?: Index<CooldownInfo>
+    skippedByIgnore?: Index<IgnoreInfo>
     ownersChangedDeps?: Index<boolean>
     pkgFile?: string
     time?: Index<string>
@@ -391,6 +471,8 @@ export async function printUpgradesTable(
           from: current,
           to: packages,
           skippedByCooldown,
+          skippedByIgnore,
+          cooldown: !!options.cooldown,
           format: options.format,
           ownersChangedDeps,
           pkgFile,
@@ -413,6 +495,8 @@ export async function printUpgradesTable(
           from: current,
           to: upgraded,
           skippedByCooldown,
+          skippedByIgnore,
+          cooldown: !!options.cooldown,
           format: options.format,
           ownersChangedDeps,
           pkgFile,
@@ -437,6 +521,7 @@ function printErrors(options: Options, errors?: Index<string>) {
  * @param args.latest -
  * @param args.upgraded -
  * @param args.skippedByCooldown -
+ * @param args.skippedByIgnore -
  * @param args.total -
  * @param args.ownersChangedDeps -
  */
@@ -447,6 +532,7 @@ export async function printUpgrades(
     latest,
     upgraded,
     skippedByCooldown,
+    skippedByIgnore,
     total,
     numCooldown,
     ownersChangedDeps,
@@ -462,6 +548,8 @@ export async function printUpgrades(
     upgraded: Index<VersionSpec>
     // skipped by cooldown info
     skippedByCooldown?: Index<CooldownInfo>
+    // versions held back by ignore rules
+    skippedByIgnore?: Index<IgnoreInfo>
     // The total number of all possible upgrades. This is used to differentiate "no dependencies" from "no upgrades"
     total: number
     // The number of packages skipped due to cooldown.
@@ -478,7 +566,7 @@ export async function printUpgrades(
 ) {
   const numUpgraded = Object.keys(upgraded).length
 
-  const printed = await printSkippedByCooldownTable({ skippedByCooldown, pkgFile, options })
+  const printed = await printSkippedTable({ skippedByCooldown, skippedByIgnore, upgraded, pkgFile, options })
 
   if (!options.deep && !options.format?.includes('group')) {
     if (printed && numUpgraded) {
@@ -529,6 +617,7 @@ export async function printUpgrades(
         current,
         upgraded,
         skippedByCooldown,
+        skippedByIgnore,
         ownersChangedDeps,
         pkgFile,
         time,

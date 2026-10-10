@@ -1,21 +1,25 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { stripVTControlCharacters } from 'node:util'
 import spawn from 'spawn-please'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { type MockInstance, afterEach, describe, expect, it, vi } from 'vitest'
 import ncu, { type IgnoreRules } from '../src/index.ts'
 import getIgnoreRules from '../src/lib/getIgnoreRules.ts'
 import getIgnoredUpgradesDueToPeerDeps from '../src/lib/getIgnoredUpgradesDueToPeerDeps.ts'
+import { toDependencyTable } from '../src/lib/logging.ts'
 import { type Packument } from '../src/types/Packument.ts'
 import createMockVersion from './helpers/createMockVersion.ts'
 import makeTempDir from './helpers/makeTempDir.ts'
 import removeDir from './helpers/removeDir.ts'
+import { silenceProgressBar } from './helpers/silenceProgressBar.ts'
 import stubVersions from './helpers/stubVersions.ts'
 
 const bin = path.join(path.dirname(fileURLToPath(import.meta.url)), '../src/bin/cli.ts')
 
 const DAY = 24 * 60 * 60 * 1000
 const NOW = Date.now()
+/** Returns an ISO date n days before now. */
 const daysAgo = (n: number) => new Date(NOW - n * DAY).toISOString()
 
 /** @mui/icons-material with 7.3.0, 8.0.0 and 9.1.0 published and 9.1.0 tagged latest. */
@@ -31,6 +35,28 @@ const muiPackument = (extraVersions: Record<string, string> = {}, distTags: Reco
     },
     distTags: { latest: '9.1.0', ...distTags },
   })
+
+/** Console output with ANSI codes removed and whitespace collapsed, one entry per line. */
+const getNormalizedLogs = (logSpy: MockInstance<(...args: any[]) => void>): string[] =>
+  logSpy.mock.calls
+    .flat()
+    .filter((arg): arg is string => typeof arg === 'string')
+    .join('\n')
+    .split('\n')
+    .map(line => stripVTControlCharacters(line).replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+
+/** Runs ncu with printing enabled and returns the normalized console output. */
+const runAndLog = async (options: Parameters<typeof ncu>[0]) => {
+  const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+  silenceProgressBar()
+  try {
+    await ncu({ jsonUpgraded: false, loglevel: 'warn', ...options })
+    return getNormalizedLogs(logSpy)
+  } finally {
+    logSpy.mockRestore()
+  }
+}
 
 const muiIgnore: IgnoreRules = { '@mui/*': { versions: '^8 || ^9', reason: 'Waiting for react-admin support' } }
 
@@ -316,11 +342,7 @@ describe('ignore', () => {
         })
         expect(JSON.parse(stdout)).toEqual({ '@mui/icons-material': '7.3.0' })
 
-        await fs.writeFile(
-          path.join(tempDir, '.ncurc.yml'),
-          'ignore:\n  "@mui/*": "^8 || ^9"\n',
-          'utf-8',
-        )
+        await fs.writeFile(path.join(tempDir, '.ncurc.yml'), 'ignore:\n  "@mui/*": "^8 || ^9"\n', 'utf-8')
         const { stdout: stdoutYaml } = await spawn(
           'node',
           [bin, '--stdin', '--jsonUpgraded', '--configFilePath', tempDir, '--configFileName', '.ncurc.yml'],
@@ -332,7 +354,7 @@ describe('ignore', () => {
         await removeDir(tempDir)
       }
     })
-  
+
     it('writes the fallback version with --upgrade', async () => {
       const tempDir = await makeTempDir()
       const packageFile = path.join(tempDir, 'package.json')
@@ -356,7 +378,10 @@ describe('ignore', () => {
         await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({ workspaces: ['packages/*'] }))
         for (const name of ['a', 'b']) {
           await fs.mkdir(path.join(tempDir, 'packages', name), { recursive: true })
-          await fs.writeFile(path.join(tempDir, 'packages', name, 'package.json'), JSON.stringify({ name, dependencies }))
+          await fs.writeFile(
+            path.join(tempDir, 'packages', name, 'package.json'),
+            JSON.stringify({ name, dependencies }),
+          )
         }
         const rcFile = path.join(tempDir, 'packages', 'a', '.ncurc.json')
         await fs.writeFile(rcFile, JSON.stringify({ ignore: muiIgnore }))
@@ -399,5 +424,116 @@ describe('ignore', () => {
       stub.restore()
     })
   })
-})
 
+  describe('reporting', () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    const packageData = { dependencies: { '@mui/icons-material': '7.2.0' } }
+
+    it('shows held-back versions and reasons with --format skipped', async () => {
+      // Covers AE3.
+      const stub = stubVersions(muiPackument())
+      const logs = await runAndLog({ packageData, ignore: muiIgnore, format: ['skipped'] })
+      expect(logs).toContain('Skipped')
+      expect(logs).toContain('@mui/icons-material 7.3.0 → 9.1.0 ignored: Waiting for react-admin support')
+      expect(logs).toContain('@mui/icons-material 7.2.0 → 7.3.0 [ignored] 9.1.0')
+      expect(logs.join('\n')).not.toContain('[missing time]')
+      stub.restore()
+    })
+
+    it('shows nothing about ignore rules without --format skipped', async () => {
+      // Covers AE4.
+      const stub = stubVersions(muiPackument())
+      const logs = (await runAndLog({ packageData, ignore: muiIgnore, format: [] })).join('\n')
+      expect(logs).toContain('7.2.0 → 7.3.0')
+      expect(logs).not.toContain('[ignored]')
+      expect(logs).not.toContain('Skipped')
+      expect(logs).not.toContain('Waiting for react-admin support')
+      stub.restore()
+    })
+
+    it('treats --format cooldown as an alias for --format skipped', async () => {
+      const stub = stubVersions(muiPackument())
+      const skipped = await runAndLog({ packageData, ignore: muiIgnore, format: ['skipped'] })
+      const cooldown = await runAndLog({ packageData, ignore: muiIgnore, format: ['cooldown'] })
+      expect(cooldown).toEqual(skipped)
+      stub.restore()
+    })
+
+    it('lists one row per cause when ignore and cooldown hold back the same package', async () => {
+      // Covers AE7.
+      const stub = stubVersions(
+        createMockVersion({
+          name: '@mui/icons-material',
+          versions: { '9.1.0': daysAgo(30), '7.3.0': daysAgo(2), '7.2.5': daysAgo(20), '7.2.0': daysAgo(60) },
+          distTags: { latest: '9.1.0' },
+        }),
+      )
+      const logs = await runAndLog({ packageData, ignore: muiIgnore, cooldown: 7, format: ['skipped'] })
+      expect(logs).toContain('@mui/icons-material 7.2.0 → 7.2.5 [cooldown] 7.3.0 [ignored] 9.1.0')
+      expect(logs).toContain('@mui/icons-material 7.2.5 → 7.3.0 7-day cooldown 2 days ago')
+      expect(logs).toContain('@mui/icons-material 7.2.5 → 9.1.0 ignored: Waiting for react-admin support')
+      stub.restore()
+    })
+
+    it('does not blame the registry when every dependency is held back', async () => {
+      const stub = stubVersions(muiPackument())
+      const logs = (await runAndLog({ packageData, ignore: muiIgnore, target: '@latest', format: [] })).join('\n')
+      expect(logs).not.toContain('No package versions were returned')
+      stub.restore()
+    })
+
+    it('shows "ignored" alone for a rule without a reason', async () => {
+      const stub = stubVersions(muiPackument())
+      const logs = await runAndLog({ packageData, ignore: { '@mui/*': '^8 || ^9' }, format: ['skipped'] })
+      expect(logs).toContain('@mui/icons-material 7.3.0 → 9.1.0 ignored')
+      stub.restore()
+    })
+
+    it('accepts skipped as a --format value', async () => {
+      await expect(ncu({ packageData: { dependencies: {} }, format: ['skippd'] })).rejects.toThrow(/skipped/)
+    })
+
+    it('shows the inline ignore marker in tables, such as interactive choices, only with --format skipped', async () => {
+      const args = {
+        from: { x: '1.0.0' },
+        to: { x: '1.1.0' },
+        skippedByIgnore: { x: { name: 'x', currentVersion: '1.0.0', version: '2.0.0' } },
+      }
+      expect(await toDependencyTable({ ...args, format: ['skipped'] })).toContain('[ignored]')
+      expect(await toDependencyTable({ ...args, format: [] })).not.toContain('[ignored]')
+    })
+
+    it('does not record versions outside the target, or prereleases without --pre', async () => {
+      const stub = stubVersions(muiPackument({ '9.2.0-beta.1': daysAgo(1) }))
+      const minor = (await runAndLog({ packageData, ignore: muiIgnore, target: 'minor', format: ['skipped'] })).join(
+        '\n',
+      )
+      expect(minor).not.toContain('[ignored]')
+      const latest = (await runAndLog({ packageData, ignore: muiIgnore, format: ['skipped'] })).join('\n')
+      expect(latest).not.toContain('beta')
+      stub.restore()
+    })
+
+    it('shows ignore rows when a workspace .ncurc sets format cooldown', async () => {
+      const tempDir = await makeTempDir()
+      const stub = stubVersions(muiPackument())
+      try {
+        await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({ workspaces: ['packages/*'] }))
+        await fs.mkdir(path.join(tempDir, 'packages', 'a'), { recursive: true })
+        await fs.writeFile(path.join(tempDir, 'packages', 'a', 'package.json'), JSON.stringify(packageData))
+        await fs.writeFile(
+          path.join(tempDir, 'packages', 'a', '.ncurc.json'),
+          JSON.stringify({ ignore: muiIgnore, format: ['cooldown'] }),
+        )
+        const logs = await runAndLog({ cwd: tempDir, workspaces: true })
+        expect(logs).toContain('@mui/icons-material 7.3.0 → 9.1.0 ignored: Waiting for react-admin support')
+      } finally {
+        stub.restore()
+        await removeDir(tempDir)
+      }
+    })
+  })
+})

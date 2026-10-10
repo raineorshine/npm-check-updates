@@ -331,29 +331,6 @@ const toIgnoreInfo = ({
   }
 }
 
-/**
- * Formats the raw version resolution data into a standardized VersionResult object.
- * This function wraps the target version with its publish time and, if the target is
- * currently in a cooldown period, adds the fallback version and cooldown metadata.
- * If an ignore rule held back a higher version, it adds the ignore metadata.
- */
-const toVersionResult = ({
-  ignoredVersion,
-  ...args
-}: {
-  packageName: string
-  currentVersion: string
-  options: Options
-  time?: Packument['time']
-  targetVersion: string | null
-  fallbackVersion: string | null
-  targetBlockedByCooldown: boolean
-  ignoredVersion: string | null
-}): VersionResult => {
-  const result = toCooldownVersionResult(args)
-  return ignoredVersion ? { ...result, ignoreInfo: toIgnoreInfo({ ...args, version: ignoredVersion }) } : result
-}
-
 /** Wraps the target version with its publish time, or the cooldown fallback and metadata if the target is in cooldown. */
 const toCooldownVersionResult = ({
   packageName,
@@ -403,6 +380,29 @@ const toCooldownVersionResult = ({
   }
 
   return targetMatch
+}
+
+/**
+ * Formats the raw version resolution data into a standardized VersionResult object.
+ * This function wraps the target version with its publish time and, if the target is
+ * currently in a cooldown period, adds the fallback version and cooldown metadata.
+ * If an ignore rule held back a higher version, it adds the ignore metadata.
+ */
+const toVersionResult = ({
+  ignoredVersion,
+  ...args
+}: {
+  packageName: string
+  currentVersion: string
+  options: Options
+  time?: Packument['time']
+  targetVersion: string | null
+  fallbackVersion: string | null
+  targetBlockedByCooldown: boolean
+  ignoredVersion: string | null
+}): VersionResult => {
+  const result = toCooldownVersionResult(args)
+  return ignoredVersion ? { ...result, ignoreInfo: toIgnoreInfo({ ...args, version: ignoredVersion }) } : result
 }
 
 /** Normalizes the keys of an npm config for pacote. */
