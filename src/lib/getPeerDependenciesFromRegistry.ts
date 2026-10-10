@@ -110,8 +110,8 @@ async function getPeerDependenciesFromRegistry(
           options.cacher?.setPeers(pkg, version, dependencies)
         }
       } catch (err) {
-        // one unreachable package should not abort the run
-        failed.push(pkg)
+        // one unreachable package should not abort the run. An unlisted peer is not upgraded, so it is only logged.
+        if (!transitive) failed.push(pkg)
         print(options, `\nFailed to get the peer dependencies of ${pkg}@${version}:\n${errorText(err)}`, 'verbose')
         dependencies = {}
       }
@@ -173,54 +173,79 @@ async function getPeerDependenciesFromRegistry(
       return optionalLookups.get(key)!
     }
 
-    /** The package at the end of a path, along with the version it was looked up at and its peers. */
-    type Node = { path: string; pkg: string; version: Version; peers: Index<VersionSpec> }
-
-    /** Returns the unlisted, required peers of the given nodes that have not been seen yet under the same root. */
-    const nextPeers = async (nodes: Node[], seen: Set<string>) => {
-      const next: { path: string; pkg: string; spec: VersionSpec }[] = []
-      const optional = await Promise.all(
-        nodes.map(node =>
-          Object.keys(node.peers).some(peer => !listedNames.has(peer) && !seen.has(peer))
-            ? getOptionalPeers(node.pkg, node.version)
-            : Promise.resolve<string[]>([]),
-        ),
-      )
-      // a peer is installed if anything requires it, so one that is optional here may still be required by a sibling
-      const required = new Map<string, { path: string; spec: VersionSpec }>()
-      nodes.forEach((node, i) => {
-        for (const [peer, spec] of Object.entries(node.peers)) {
-          if (listedNames.has(peer) || seen.has(peer) || required.has(peer) || optional[i].includes(peer)) continue
-          if (!semver.validRange(spec)) continue
-          required.set(peer, { path: `${node.path}${PEER_PATH_SEPARATOR}${peer}`, spec })
-        }
-      })
-      for (const [peer, { path, spec }] of required) {
-        seen.add(peer)
-        next.push({ path, pkg: peer, spec })
-      }
-      return next
+    /** A package reached from a listed root, along with the version it was looked up at and its peers. */
+    type Node = {
+      root: string
+      path: string
+      chain: string[]
+      pkg: string
+      version: Version
+      peers: Index<VersionSpec>
     }
 
-    await pMap(
-      results,
-      async ({ pkg, version }) => {
-        // each package walks its own chain, so a peer that two packages require at different ranges is checked at both
-        const seen = new Set<string>([pkg])
-        let frontier: Node[] = [{ path: pkg, pkg, version, peers: peerDepsMap[pkg] }]
-        while (frontier.length > 0) {
-          const next = await nextPeers(frontier, seen)
-          frontier = await Promise.all(
-            next.map(async ({ path, pkg, spec }) => {
-              const { dependencies } = await lookup(pkg, spec)
-              peerDepsMap[path] = dependencies
-              return { path, pkg, version: spec, peers: dependencies }
-            }),
-          )
+    /** Returns whether a peer of the node is one to follow: unlisted, not already on its chain, and a range that resolves. */
+    const isFollowable = (node: Node, peer: string, spec: VersionSpec) =>
+      !listedNames.has(peer) && !node.chain.includes(peer) && !!semver.validRange(spec)
+
+    // each root walks its own chain, so a peer required at several ranges is checked at each of them
+    const seen = new Map<string, Set<string>>()
+    let frontier: Node[] = results.map(({ pkg, version }) => ({
+      root: pkg,
+      path: pkg,
+      chain: [pkg],
+      pkg,
+      version,
+      peers: peerDepsMap[pkg],
+    }))
+    while (frontier.length > 0) {
+      const optional = await pMap(
+        frontier,
+        node =>
+          Object.entries(node.peers).some(([peer, spec]) => isFollowable(node, peer, spec))
+            ? getOptionalPeers(node.pkg, node.version)
+            : [],
+        { concurrency: options.concurrency },
+      )
+
+      // a peer is installed if anything requires it, so one that is optional for one package may still be required by a sibling
+      const required = new Set<string>()
+      frontier.forEach((node, i) => {
+        for (const [peer, spec] of Object.entries(node.peers)) {
+          if (isFollowable(node, peer, spec) && !optional[i].includes(peer))
+            required.add(`${node.root}${PEER_PATH_SEPARATOR}${peer}`)
         }
-      },
-      { concurrency: options.concurrency },
-    )
+      })
+
+      const next: { root: string; path: string; chain: string[]; pkg: string; spec: VersionSpec }[] = []
+      for (const node of frontier) {
+        const seenByRoot = seen.get(node.root) ?? seen.set(node.root, new Set()).get(node.root)!
+        for (const [peer, spec] of Object.entries(node.peers)) {
+          const key = `${peer}@${spec}`
+          if (!isFollowable(node, peer, spec) || !required.has(`${node.root}${PEER_PATH_SEPARATOR}${peer}`)) continue
+          if (seenByRoot.has(key)) continue
+          seenByRoot.add(key)
+          next.push({
+            root: node.root,
+            path: `${node.path}${PEER_PATH_SEPARATOR}${peer}`,
+            chain: [...node.chain, peer],
+            pkg: peer,
+            spec,
+          })
+        }
+      }
+
+      frontier = await pMap(
+        next,
+        async ({ root, path, chain, pkg, spec }) => {
+          const { dependencies } = await lookup(pkg, spec)
+          // a peer back on the root or an earlier package on the chain changes along with it, so it is not a constraint
+          const peers = Object.fromEntries(Object.entries(dependencies).filter(([peer]) => !chain.includes(peer)))
+          peerDepsMap[path] = peers
+          return { root, path, chain, pkg, version: spec, peers }
+        },
+        { concurrency: options.concurrency },
+      )
+    }
   }
 
   // peer deps are fetched several times per run, so only report each package once

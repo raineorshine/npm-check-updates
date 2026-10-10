@@ -133,4 +133,27 @@ describe('peer dependencies of unlisted peers', () => {
       await upgrade({ dependencies: { host: '1.0.0', plugin: '1.0.0', helper: '1.0.0' } }, { reject: ['helper'] }),
     ).toStrictEqual({ host: '2.0.0' })
   })
+
+  it('does not let an unlisted peer that peers back on its root hold back the root', async () => {
+    peers.plugin = { '1.0.0': { helper: '^1.0.0' }, '2.0.0': { helper: '^2.0.0' } }
+    peers.helper = { '1.0.0': { plugin: '^1.0.0' }, '2.0.0': { plugin: '^2.0.0' } }
+    expect(await upgrade({ dependencies: { plugin: '1.0.0' } })).toStrictEqual({ plugin: '2.0.0' })
+  })
+
+  it("checks a package's own peer range even when an unlisted peer it brings in allows more", async () => {
+    // plugin@2 needs host@2, which is not published, while helper allows any host
+    peers.host = { '1.0.0': {} }
+    peers.plugin = { '1.0.0': { helper: '^1.0.0' }, '2.0.0': { host: '^2.0.0', helper: '^1.0.0' } }
+    peers.helper = { '1.0.0': { host: '*' } }
+    expect(await upgrade({ dependencies: { host: '1.0.0', plugin: '1.0.0' } })).toStrictEqual({})
+  })
+
+  it('checks an unlisted peer at each range it is required at within one chain', async () => {
+    // a and b are both unlisted peers of plugin, and only helper@2, which b requires, holds host back
+    peers.plugin = { '1.0.0': { a: '^1.0.0', b: '^1.0.0' } }
+    peers.a = { '1.0.0': { helper: '^1.0.0' } }
+    peers.b = { '1.0.0': { helper: '^2.0.0' } }
+    peers.helper = { '1.0.0': {}, '2.0.0': { host: '^1.0.0' } }
+    expect(await upgrade({ dependencies: { host: '1.0.0', plugin: '1.0.0' } })).toStrictEqual({})
+  })
 })

@@ -33,8 +33,8 @@ const checkIfInPeerViolation = (
   const upgradedDependencies = { ...currentDependencies, ...filteredUpgradedDependencies }
   const filteredUpgradedDependenciesAfterPeers = pickBy(filteredUpgradedDependencies, (spec, dep) => {
     // includes the peers of any unlisted peers the upgraded version brings in
-    const peerDeps = Object.assign({}, ...peersOf(upgradedPeerDependencies, dep as string).map(([, peers]) => peers))
-    return Object.entries<VersionSpec>(peerDeps).every(
+    const peerDeps = peersOf(upgradedPeerDependencies, dep as string).flatMap(([, peers]) => Object.entries(peers))
+    return peerDeps.every(
       ([peer, peerSpec]) =>
         upgradedDependencies[peer] === undefined ||
         !semver.validRange(peerSpec) ||
