@@ -84,7 +84,7 @@ async function getPeerDependenciesFromRegistry(packageMap: Index<Version>, optio
       dependencies = {}
     } else {
       try {
-        dependencies = await packageManager.getPeerDependencies!(pkg, version, { cwd: options.cwd })
+        dependencies = await packageManager.getPeerDependencies!(pkg, version, options)
         options.cacher?.setPeers(pkg, version, dependencies)
       } catch (err) {
         // one unreachable package should not abort the run
