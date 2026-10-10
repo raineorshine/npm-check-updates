@@ -417,6 +417,42 @@ export const getPeerDependencies = async (
 }
 
 /**
+ * Fetches the names of the peer dependencies that a specific package version marks as optional.
+ * A lookup that cannot be parsed reports none, so every peer is treated as required.
+ *
+ * @param packageName
+ * @param version
+ * @param [options]
+ * @param [spawnOptions]
+ * @returns Promised list of package names
+ */
+export const getOptionalPeerDependencies = async (
+  packageName: string,
+  version: Version,
+  options: Options = {},
+  spawnOptions?: SpawnOptions,
+): Promise<string[]> => {
+  const yarnSpawnOptions: SpawnOptions = { cwd: options.cwd, ...spawnOptions }
+  const yarnVersion = await getYarnVersion(yarnSpawnOptions)
+  const args = yarnVersion.startsWith('1')
+    ? ['--json', 'info', `${packageName}@${version}`, 'peerDependenciesMeta']
+    : ['--json', 'npm', 'info', `${packageName}@${version}`, '--fields', 'peerDependenciesMeta']
+  const { stdout } = await spawnCommand('yarn', args, { rejectOnError: false }, yarnSpawnOptions)
+  if (!stdout) return []
+  let meta: Index<{ optional?: boolean }> | undefined
+  try {
+    const parsed = npm.parseJson<{
+      data?: Index<{ optional?: boolean }>
+      peerDependenciesMeta?: Index<{ optional?: boolean }>
+    }>(extractFirstJsonLine(stdout), { command: args.join(' ') })
+    meta = yarnVersion.startsWith('1') ? parsed.data : parsed.peerDependenciesMeta
+  } catch {
+    return []
+  }
+  return Object.keys(meta || {}).filter(name => meta![name]?.optional)
+}
+
+/**
  * Fetches all dist-tags published for a package.
  *
  * @param packageName

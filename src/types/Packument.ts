@@ -14,6 +14,7 @@ export interface Packument {
   // TODO: store only the time of the latest version?
   time?: Index<string>
   peerDependencies?: Index<Version>
+  peerDependenciesMeta?: Index<{ optional?: boolean }>
   version: Version
   versions: Index<
     Omit<Packument, 'versions'> & {
