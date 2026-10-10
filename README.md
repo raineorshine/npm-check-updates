@@ -294,7 +294,7 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   </tr>
   <tr>
     <td><a href="#format">--format &lt;value&gt;</a></td>
-    <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. <code>group</code> is the only value included by default; use <code>--format no-group</code> to disable it. (default: <code>[&quot;group&quot;]</code>)</td>
+    <td>Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, skipped. <code>group</code> is the only value included by default; use <code>--format no-group</code> to disable it. (default: <code>[&quot;group&quot;]</code>)</td>
   </tr>
   <tr>
     <td>-g, --global</td>
@@ -303,6 +303,10 @@ Options that take no arguments can be negated by prefixing them with `--no-`, e.
   <tr>
     <td><a href="#groupfunction">groupFunction &lt;fn&gt;</a></td>
     <td>Customize how packages are divided into groups when using <code>--format group</code>.</td>
+  </tr>
+  <tr>
+    <td><a href="#ignore">ignore &lt;rules&gt;</a></td>
+    <td>Never suggest the given versions of a package. Maps package names or globs to a semver range, or to { versions, reason }.</td>
   </tr>
   <tr>
     <td><a href="#install">--install &lt;value&gt;</a></td>
@@ -549,12 +553,12 @@ If `--cooldown` is not set explicitly, `ncu` automatically reads the cooldown co
 
 ### Cooldown Formatting
 
-When using `--format cooldown` alongside the `--cooldown` option, `ncu` will show a list of packages that were skipped due to the `--cooldown` threshold.
+When using `--format skipped` alongside the `--cooldown` option, `ncu` will show a list of packages that were skipped due to the `--cooldown` threshold. `--format cooldown` is an alias for `--format skipped`.
 
 Example:
 
 ```console
-$ ncu --format cooldown --cooldown 7
+$ ncu --format skipped --cooldown 7
 Skipped due to 7-day cooldown
  @typescript-eslint/parser  ^8.50.0  →  ^8.59.1      5 days ago
  eslint                     ^10.0.1  →  ^10.3.0      1 day ago
@@ -719,7 +723,8 @@ Modify the output formatting or show additional information. Specify one or more
   <tr><td>repo</td><td>Infers and displays links to the package's source code repository. Requires packages to be installed.</td></tr>
   <tr><td>diff</td><td>Display link to compare the changes between package versions.</td></tr>
   <tr><td>time</td><td>Shows the publish time of each upgrade.</td></tr>
-  <tr><td>cooldown</td><td>Shows a list of packages that were skipped due to the --cooldown threshold.</td></tr>
+  <tr><td>skipped</td><td>Shows a list of versions that were held back by the --cooldown threshold or by --ignore rules, with the reason for each.</td></tr>
+  <tr><td>cooldown</td><td>Alias for skipped.</td></tr>
 </table>
 
 `group` is the only value included by default. Prefix it with "no-" to remove it instead of replacing the entire list, e.g. `--format no-group` to disable the default grouping.
@@ -749,6 +754,28 @@ groupFunction: (name, defaultGroup, currentSpec, upgradedSpec, upgradedVersion) 
   return defaultGroup
 }
 ```
+
+## ignore
+
+Never suggest specific versions of a package. Keys are package names or globs, matched the same way as `--filter`. Values are a semver range, or an object with the range and a reason.
+
+```json
+{
+  "ignore": {
+    "@mui/*": {
+      "versions": "^8 || ^9",
+      "reason": "Waiting for react-admin support"
+    },
+    "eslint-config-prettier": "9.1.1"
+  }
+}
+```
+
+With the default `--target latest`, if the latest version is ignored, ncu falls back to the greatest version that is not ignored. To instead skip the package entirely, use `--target "@latest"`. Other targets never choose an ignored version. Like `--cooldown`, the fallback can choose a stable version that was never published to the latest tag, including one above it.
+
+Use `--format skipped` to show the versions that were held back and the reason for each.
+
+> ⚠️ The ignore option is only available in a config file or when importing npm-check-updates as a module, not on the command line.
 
 ## install
 

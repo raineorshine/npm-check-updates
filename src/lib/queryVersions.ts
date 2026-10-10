@@ -1,19 +1,57 @@
 import pMap from 'p-map'
+import semver from 'semver'
 import { parseRange } from 'semver-utils'
+import { ignoreReason, isIgnoredVersion } from '../package-managers/filters.ts'
 import packageManagers from '../package-managers/index.ts'
 import { type GetVersion } from '../types/GetVersion.ts'
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
+import { type ResolvedIgnoreRule } from '../types/ResolvedIgnoreRule.ts'
 import { supportedVersionTargets } from '../types/Target.ts'
 import { type VersionResult } from '../types/VersionResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
+import getIgnoreRules from './getIgnoreRules.ts'
 import getPackageManager from './getPackageManager.ts'
 import isPackageManagerProtocol from './isPackageManagerProtocol.ts'
 import keyValueBy from './keyValueBy.ts'
 import { createProgressBar } from './logging.ts'
 import programError from './programError.ts'
 import { getStyle } from './style.ts'
-import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-util.ts'
+import { createNpmAlias, getGitHubUrlTag, isGitHubUrl, isPre, parseNpmAlias } from './version-util.ts'
+
+/** Returns the version a spec declares: the tag of a git url without a leading v, or the spec itself. */
+const declaredVersion = (spec: string | null | undefined, isGitHubDependency: boolean) =>
+  isGitHubDependency ? getGitHubUrlTag(spec ?? null)?.replace(/^v/, '') : spec
+
+/** Replaces a version result whose picked version is ignored and above the current version with an ignore record. */
+function holdBackIgnoredPick({
+  name,
+  version,
+  versionResult,
+  ignoreRules,
+  isGitHubDependency,
+}: {
+  name: string
+  version: VersionSpec
+  versionResult: VersionResult
+  ignoreRules: ResolvedIgnoreRule[]
+  isGitHubDependency: boolean
+}): VersionResult {
+  const pickedVersion = declaredVersion(versionResult.version, isGitHubDependency)
+  const currentVersion = declaredVersion(version, isGitHubDependency)
+  const currentMin =
+    currentVersion && semver.validRange(currentVersion) ? semver.minVersion(currentVersion)?.version : null
+  if (
+    !pickedVersion ||
+    !semver.valid(pickedVersion) ||
+    (currentMin && !semver.gt(pickedVersion, currentMin)) ||
+    !isIgnoredVersion(pickedVersion, ignoreRules)
+  ) {
+    return versionResult
+  }
+  const reason = ignoreReason(pickedVersion, ignoreRules)
+  return { ignoreInfo: { name, currentVersion: version, version: pickedVersion, ...(reason ? { reason } : null) } }
+}
 
 /**
  * Get the latest or greatest versions from the npm repository based on the version target.
@@ -26,6 +64,8 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   const style = getStyle(options.color)
   const packageList = Object.keys(packageMap)
   const globalPackageManager = getPackageManager(options, options.packageManager)
+  // validated here rather than in initOptions so that workspace .ncurc files are covered too
+  const ignoreMatcher = getIgnoreRules(options)
 
   const bar = createProgressBar(options, packageList.length)
 
@@ -46,6 +86,9 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       return { version: null }
     }
 
+    // match rules against both the dependency key and the real package name of an npm alias
+    const ignoreRules = ignoreMatcher?.([...new Set([dep, name])]) ?? []
+
     const targetOption = options.target || 'latest'
     const targetString = typeof targetOption === 'string' ? targetOption : targetOption(name, parseRange(version))
     const [target, distTag] = targetString.startsWith('@')
@@ -54,7 +97,8 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
 
     // Skip the cache if cooldown is active since current cache does not store
     // timestamp constraints; otherwise, validate based on version and time presence.
-    if (!options.cooldown) {
+    // Likewise skip it for a dependency with ignore rules, since a cached version may be ignored.
+    if (!options.cooldown && ignoreRules.length === 0) {
       const cached = options.cacher?.get(name, target)
       const isValidCache = cached?.version && (cached?.time || !options.format?.includes('time'))
       if (isValidCache) {
@@ -96,6 +140,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
         // allow downgrading when explicit tag is used
         pre: options.pre != null ? options.pre : targetString.startsWith('@') || isPre(version),
         retry,
+        ...(ignoreRules.length > 0 ? { ignoreRules } : null),
       })
     } catch (err: any) {
       const errorMessage = err ? (err.message || err).toString() : ''
@@ -128,6 +173,11 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       }
     }
 
+    // git tags and static registries pick a version without the ignore rules, so an ignored pick means no upgrade
+    if (ignoreRules.length > 0 && (isGitHubDependency || packageManager === packageManagers.staticRegistry)) {
+      versionResult = holdBackIgnoredPick({ name, version, versionResult, ignoreRules, isGitHubDependency })
+    }
+
     versionResult.version =
       !isGitHubDependency && npmAlias && versionResult?.version
         ? createNpmAlias(name, versionResult.version)
@@ -135,8 +185,8 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
 
     bar?.tick()
 
-    // don't cache the cooldown fallback under the plain key (see the skipped read above)
-    if (versionResult.version && !options.cooldown) {
+    // don't cache the cooldown or ignore fallback under the plain key (see the skipped read above)
+    if (versionResult.version && !options.cooldown && ignoreRules.length === 0) {
       options.cacher?.set(name, target, versionResult.version, versionResult.time)
     }
 
@@ -150,7 +200,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
   options.cacher?.log()
 
   const versionResultObject = keyValueBy(versionResultList, (versionResult, i) =>
-    versionResult.version || versionResult.error || versionResult.cooldownInfo
+    versionResult.version || versionResult.error || versionResult.cooldownInfo || versionResult.ignoreInfo
       ? {
           [packageList[i]]: versionResult,
         }

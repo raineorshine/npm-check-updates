@@ -448,5 +448,6 @@ ncu.defineConfig = defineConfig
 export default ncu
 export { ncu as run }
 export { default as defineConfig } from './lib/defineConfig.ts'
+export type { IgnoreRule, IgnoreRules } from './types/IgnoreRules.ts'
 export type { RcOptions } from './types/RcOptions.ts'
 export type { RunOptions } from './types/RunOptions.ts'

@@ -3,6 +3,7 @@ import { type CooldownFunction } from './CooldownFunction.ts'
 import { type FilterFunction } from './FilterFunction.ts'
 import { type FilterResultsFunction } from './FilterResultsFunction.ts'
 import { type GroupFunction } from './GroupFunction.ts'
+import { type IgnoreRules } from './IgnoreRules.ts'
 import { type PackageFile } from './PackageFile.ts'
 import { type TargetFunction } from './TargetFunction.ts'
 
@@ -89,7 +90,7 @@ export interface RunOptions {
   /** Filter on package version using comma-or-space-delimited list or /regex/. Run "ncu --help --filterVersion" for details. */
   filterVersion?: string | RegExp | readonly (string | RegExp)[]
 
-  /** Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. `group` is the only value included by default; use `--format no-group` to disable it. Run "ncu --help --format" for details.
+  /** Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, skipped. `group` is the only value included by default; use `--format no-group` to disable it. Run "ncu --help --format" for details.
    *
    * @default ["group"]
    */
@@ -100,6 +101,9 @@ export interface RunOptions {
 
   /** Customize how packages are divided into groups when using `--format group`. Run "ncu --help --groupFunction" for details. */
   groupFunction?: GroupFunction
+
+  /** Never suggest the given versions of a package. Maps package names or globs to a semver range, or to { versions, reason }. Run "ncu --help --ignore" for details. */
+  ignore?: IgnoreRules
 
   /** Control the auto-install behavior: always, never, prompt. Run "ncu --help --install" for details.
    *

@@ -179,6 +179,31 @@ For the SemVer type definition, see: https://git.coolaj86.com/coolaj86/semver-ut
 `
 }
 
+/** Extended help for the ignore option. */
+const extendedHelpIgnore: ExtendedHelp = ({ markdown }) => {
+  return `Never suggest specific versions of a package. Keys are package names or globs, matched the same way as \`--filter\`. Values are a semver range, or an object with the range and a reason.
+
+${codeBlock(
+  `{
+  "ignore": {
+    "@mui/*": {
+      "versions": "^8 || ^9",
+      "reason": "Waiting for react-admin support"
+    },
+    "eslint-config-prettier": "9.1.1"
+  }
+}`,
+  { markdown, lang: 'json' },
+)}
+
+With the default \`--target latest\`, if the latest version is ignored, ncu falls back to the greatest version that is not ignored. To instead skip the package entirely, use \`--target "@latest"\`. Other targets never choose an ignored version. Like \`--cooldown\`, the fallback can choose a stable version that was never published to the latest tag, including one above it.
+
+Use \`--format skipped\` to show the versions that were held back and the reason for each.
+
+> ⚠️ The ignore option is only available in a config file or when importing npm-check-updates as a module, not on the command line.
+`
+}
+
 /** Extended help for the --format option. */
 const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
   const header =
@@ -196,7 +221,11 @@ const extendedHelpFormat: ExtendedHelp = ({ markdown }) => {
       ['repo', `Infers and displays links to the package's source code repository. Requires packages to be installed.`],
       ['diff', `Display link to compare the changes between package versions.`],
       ['time', 'Shows the publish time of each upgrade.'],
-      ['cooldown', 'Shows a list of packages that were skipped due to the --cooldown threshold.'],
+      [
+        'skipped',
+        'Shows a list of versions that were held back by the --cooldown threshold or by --ignore rules, with the reason for each.',
+      ],
+      ['cooldown', 'Alias for skipped.'],
     ],
   })
 
@@ -647,12 +676,12 @@ ${table({
 
 ### Cooldown Formatting
 
-When using \`--format cooldown\` alongside the \`--cooldown\` option, \`ncu\` will show a list of packages that were skipped due to the \`--cooldown\` threshold.
+When using \`--format skipped\` alongside the \`--cooldown\` option, \`ncu\` will show a list of packages that were skipped due to the \`--cooldown\` threshold. \`--format cooldown\` is an alias for \`--format skipped\`.
 
 Example:
 
 ${codeBlock(
-  `$ ncu --format cooldown --cooldown 7
+  `$ ncu --format skipped --cooldown 7
 Skipped due to 7-day cooldown
  @typescript-eslint/parser  ^8.50.0  →  ^8.59.1      5 days ago
  eslint                     ^10.0.1  →  ^10.3.0      1 day ago`,
@@ -816,7 +845,7 @@ const cliOptions: CLIOption[] = [
     long: 'format',
     arg: 'value',
     description:
-      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. `group` is the only value included by default; use `--format no-group` to disable it.',
+      'Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, skipped. `group` is the only value included by default; use `--format no-group` to disable it.',
     parse: value => {
       if (typeof value !== 'string') return value
       const values = value.split(/,|\s/).filter(Boolean)
@@ -837,6 +866,7 @@ const cliOptions: CLIOption[] = [
       'time',
       'lines',
       'installedVersion',
+      'skipped',
       'cooldown',
     ],
     help: extendedHelpFormat,
@@ -854,6 +884,15 @@ const cliOptions: CLIOption[] = [
     description: `Customize how packages are divided into groups when using \`--format group\`.`,
     type: 'GroupFunction',
     help: extendedHelpGroupFunction,
+  },
+  {
+    long: 'ignore',
+    arg: 'rules',
+    cli: false,
+    description:
+      'Never suggest the given versions of a package. Maps package names or globs to a semver range, or to { versions, reason }.',
+    type: 'IgnoreRules',
+    help: extendedHelpIgnore,
   },
   {
     long: 'install',
