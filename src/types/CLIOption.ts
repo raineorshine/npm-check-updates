@@ -22,6 +22,8 @@ export interface CLIOption<T = any> {
    */
   parse?: (s: unknown, p?: T) => T
   long: string
+  /** The long names of other options that are required for this option to work. Automatically prepended to the usage examples in the extended help and README, including transitive requirements. */
+  requires?: string[]
   short?: string
   type: string
   /** The type used in the generated RunOptions, when it differs from the internal CLI type. */
