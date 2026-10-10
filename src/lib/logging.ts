@@ -164,7 +164,7 @@ function getVersion(dep: string): string {
 }
 
 /** Returns true if the format asks for held-back versions. `cooldown` is an alias for `skipped`. */
-export function includesSkippedFormat(format: readonly string[] | undefined): boolean {
+function includesSkippedFormat(format: readonly string[] | undefined): boolean {
   return !!format && (format.includes('skipped') || format.includes('cooldown'))
 }
 
@@ -211,7 +211,7 @@ export async function toDependencyTable({
   to: toDeps,
   skippedByCooldown,
   skippedByIgnore,
-  cooldown,
+  cooldownActive,
   format,
   ownersChangedDeps,
   pkgFile,
@@ -222,7 +222,7 @@ export async function toDependencyTable({
   skippedByCooldown?: Index<CooldownInfo>
   skippedByIgnore?: Index<IgnoreInfo>
   // whether a cooldown is active. Rows without a publish time are marked only then, since times are fetched only for cooldown.
-  cooldown?: boolean
+  cooldownActive?: boolean
   format?: readonly string[]
   ownersChangedDeps?: Index<boolean>
   /** See: logging/getPackageRepo pkgFile param. */
@@ -275,10 +275,10 @@ export async function toDependencyTable({
             ? `${process.env.NCU_DIFF || 'https://npmdiff.dev'}/${encodeURIComponent(dep)}/${from.replace(/^\W+/, '')}/${to.replace(/^\W+/, '')}`
             : ''
 
-          const showCoolDown = includesSkippedFormat(format) && (cooldown ?? true)
+          const showSkipped = includesSkippedFormat(format) && (cooldownActive ?? true)
           const showTime = format?.includes('time')
           // show '[missing time]' in publishTime column or cooldown column
-          const missingTime = (showTime || showCoolDown) && !time?.[dep] ? '[missing time]' : ''
+          const missingTime = (showTime || showSkipped) && !time?.[dep] ? '[missing time]' : ''
           const timestamp = showTime && time?.[dep] ? time[dep] : null
           const publishTime = timestamp ? formatTimeAgo(timestamp) : showTime || !showCooldownCol ? missingTime : ''
 
@@ -290,7 +290,7 @@ export async function toDependencyTable({
           ]
             .filter(Boolean)
             .join(' ')
-          if (!heldBack && showCoolDown && !showTime) {
+          if (!heldBack && showSkipped && !showTime) {
             heldBack = missingTime
           }
 
@@ -472,7 +472,7 @@ export async function printUpgradesTable(
           to: packages,
           skippedByCooldown,
           skippedByIgnore,
-          cooldown: !!options.cooldown,
+          cooldownActive: !!options.cooldown,
           format: options.format,
           ownersChangedDeps,
           pkgFile,
@@ -496,7 +496,7 @@ export async function printUpgradesTable(
           to: upgraded,
           skippedByCooldown,
           skippedByIgnore,
-          cooldown: !!options.cooldown,
+          cooldownActive: !!options.cooldown,
           format: options.format,
           ownersChangedDeps,
           pkgFile,

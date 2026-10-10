@@ -98,7 +98,7 @@ const chooseUpgrades = async (
     to: newDependencies,
     skippedByCooldown,
     skippedByIgnore,
-    cooldown: !!options.cooldown,
+    cooldownActive: !!options.cooldown,
     format: options.format,
     pkgFile: pkgFile || undefined,
     time,

@@ -6,6 +6,7 @@ import packageManagers from '../package-managers/index.ts'
 import { type GetVersion } from '../types/GetVersion.ts'
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
+import { type ResolvedIgnoreRule } from '../types/ResolvedIgnoreRule.ts'
 import { supportedVersionTargets } from '../types/Target.ts'
 import { type VersionResult } from '../types/VersionResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
@@ -17,6 +18,40 @@ import { createProgressBar } from './logging.ts'
 import programError from './programError.ts'
 import { getStyle } from './style.ts'
 import { createNpmAlias, getGitHubUrlTag, isGitHubUrl, isPre, parseNpmAlias } from './version-util.ts'
+
+/** Returns the version a spec declares: the tag of a git url without a leading v, or the spec itself. */
+const declaredVersion = (spec: string | null | undefined, isGitHubDependency: boolean) =>
+  isGitHubDependency ? getGitHubUrlTag(spec ?? null)?.replace(/^v/, '') : spec
+
+/** Replaces a version result whose picked version is ignored and above the current version with an ignore record. */
+function holdBackIgnoredPick({
+  name,
+  version,
+  versionResult,
+  ignoreRules,
+  isGitHubDependency,
+}: {
+  name: string
+  version: VersionSpec
+  versionResult: VersionResult
+  ignoreRules: ResolvedIgnoreRule[]
+  isGitHubDependency: boolean
+}): VersionResult {
+  const pickedVersion = declaredVersion(versionResult.version, isGitHubDependency)
+  const currentVersion = declaredVersion(version, isGitHubDependency)
+  const currentMin =
+    currentVersion && semver.validRange(currentVersion) ? semver.minVersion(currentVersion)?.version : null
+  if (
+    !pickedVersion ||
+    !semver.valid(pickedVersion) ||
+    (currentMin && !semver.gt(pickedVersion, currentMin)) ||
+    !isIgnoredVersion(pickedVersion, ignoreRules)
+  ) {
+    return versionResult
+  }
+  const reason = ignoreReason(pickedVersion, ignoreRules)
+  return { ignoreInfo: { name, currentVersion: version, version: pickedVersion, ...(reason ? { reason } : null) } }
+}
 
 /**
  * Get the latest or greatest versions from the npm repository based on the version target.
@@ -140,23 +175,7 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
 
     // git tags and static registries pick a version without the ignore rules, so an ignored pick means no upgrade
     if (ignoreRules.length > 0 && (isGitHubDependency || packageManager === packageManagers.staticRegistry)) {
-      const pickedVersion = isGitHubDependency
-        ? getGitHubUrlTag(versionResult.version ?? null)?.replace(/^v/, '')
-        : versionResult.version
-      const currentVersion = isGitHubDependency ? getGitHubUrlTag(version)?.replace(/^v/, '') : version
-      const currentMin =
-        currentVersion && semver.validRange(currentVersion) ? semver.minVersion(currentVersion)?.version : null
-      if (
-        pickedVersion &&
-        semver.valid(pickedVersion) &&
-        (!currentMin || semver.gt(pickedVersion, currentMin)) &&
-        isIgnoredVersion(pickedVersion, ignoreRules)
-      ) {
-        const reason = ignoreReason(pickedVersion, ignoreRules)
-        versionResult = {
-          ignoreInfo: { name, currentVersion: version, version: pickedVersion, ...(reason ? { reason } : null) },
-        }
-      }
+      versionResult = holdBackIgnoredPick({ name, version, versionResult, ignoreRules, isGitHubDependency })
     }
 
     versionResult.version =
