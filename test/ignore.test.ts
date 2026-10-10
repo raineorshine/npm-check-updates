@@ -535,5 +535,30 @@ describe('ignore', () => {
         await removeDir(tempDir)
       }
     })
+
+    it('adds no cooldown label when the latest tag falls through to greatest and a rule holds back a version', async () => {
+      // the latest tag is a prerelease, so greatest picks the version; cooldown does not report on that path
+      const stub = stubVersions(
+        createMockVersion({
+          name: 'test-package',
+          versions: {
+            '3.0.0-beta.1': daysAgo(20),
+            '2.2.0': daysAgo(30),
+            '2.1.0': daysAgo(2),
+            '2.0.0': daysAgo(40),
+            '1.0.0': daysAgo(60),
+          },
+          distTags: { latest: '3.0.0-beta.1' },
+        }),
+      )
+      const options = { packageData: { dependencies: { 'test-package': '1.0.0' } }, cooldown: 7, format: [] }
+      const withoutRule = (await runAndLog(options)).join('\n')
+      expect(withoutRule).not.toContain('[cooldown]')
+      const withRule = (await runAndLog({ ...options, ignore: { 'test-package': '2.2.0' } })).join('\n')
+      expect(withRule).toContain('1.0.0 → 2.0.0')
+      expect(withRule).not.toContain('[cooldown]')
+      stub.restore()
+    })
   })
 })
+

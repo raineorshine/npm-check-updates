@@ -1050,7 +1050,7 @@ export const greatest: GetVersion = async (
     return {
       version,
       ...(version && packument?.time?.[version] ? { time: packument.time[version] } : null),
-      // latest merges these with its own records. The distTag fall-through has never reported cooldown here.
+      // only latest merges the cooldown record with its own; the distTag fall-through reports ignore records only
       ...(caller === 'latest' && cooldownInfo ? { cooldownInfo } : null),
       ...(ignoreInfo ? { ignoreInfo } : null),
     }
@@ -1305,7 +1305,8 @@ export const latest: GetVersion = async (
     npmConfigProject,
   )
 
-  if (latestResult.cooldownInfo || latestResult.ignoreInfo) {
+  // a held-back tag returns no version; a distTag fall-through already ran greatest and is returned as is
+  if (!latestResult.version && (latestResult.cooldownInfo || latestResult.ignoreInfo)) {
     const fallback = await greatest(packageName, currentVersion, options, npmConfig, npmConfigProject, 'latest')
     if (fallback.version) {
       if (latestResult.cooldownInfo) {
