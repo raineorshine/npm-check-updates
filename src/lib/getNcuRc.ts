@@ -122,10 +122,9 @@ async function getNcuRc({
 
   const filePath = rawResult?.filepath
 
-  // convert the config to valid options by removing $schema and parsing format
+  // convert the config to valid options by removing $schema. Values are coerced in initOptions.
   const { $schema: _, ...rawConfig } = rawResult?.config || {}
-  const config: Options = rawConfig || {}
-  if (typeof config.format === 'string') config.format = cliOptionsMap.format.parse!(config.format)
+  const config: Options = rawConfig
 
   // validate arguments here to provide a better error message
   const unknownOptions = Object.keys(config).filter(arg => !cliOptionsMap[arg])
