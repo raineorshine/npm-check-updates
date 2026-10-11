@@ -1,4 +1,5 @@
 import pMap from 'p-map'
+import nodeSemver from 'semver'
 import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type Version } from '../types/Version.ts'
@@ -22,7 +23,10 @@ async function getEnginesNodeFromRegistry(packageMap: Index<Version>, options: O
   const entries = await pMap(
     Object.entries(packageMap),
     async ([pkg, version]): Promise<[string, VersionSpec | undefined]> => {
-      const enginesNode = (await packageManager.getEngines!(pkg, version, options)).node
+      // an npm alias or jsr: spec is not a plain version, so there is no version manifest to read
+      const enginesNode = nodeSemver.valid(version)
+        ? (await packageManager.getEngines!(pkg, version, options)).node
+        : undefined
       bar?.tick()
       return [pkg, enginesNode]
     },

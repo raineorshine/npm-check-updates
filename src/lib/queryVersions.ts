@@ -13,7 +13,19 @@ import keyValueBy from './keyValueBy.ts'
 import { createProgressBar } from './logging.ts'
 import programError from './programError.ts'
 import { getStyle } from './style.ts'
-import { createNpmAlias, isGitHubUrl, isPre, parseNpmAlias } from './version-util.ts'
+import {
+  JSR_NPM_SCOPE,
+  JSR_REGISTRY,
+  createJsrSpec,
+  createNpmAlias,
+  fromJsrNpmName,
+  isGitHubUrl,
+  isPre,
+  parseJsrSpec,
+  parseNpmAlias,
+  toJsrNpmName,
+  upgradeJsrSpec,
+} from './version-util.ts'
 
 /**
  * Get the latest or greatest versions from the npm repository based on the version target.
@@ -37,8 +49,23 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
    * @returns
    */
   async function getPackageVersionProtected(dep: VersionSpec): Promise<VersionResult> {
-    const npmAlias = parseNpmAlias(packageMap[dep])
-    const [name, version] = npmAlias || [dep, packageMap[dep]]
+    const spec = packageMap[dep]
+    const jsrSpec = parseJsrSpec(spec)
+    const npmAlias = jsrSpec ? null : parseNpmAlias(spec)
+
+    // a static registry replaces all registry lookups, so resolve jsr: specs from it by package name
+    const isJsrDependency = !!jsrSpec && options.registryType !== 'json'
+
+    // jsr packages are published to jsr's npm-compatible registry under a mangled name
+    const jsrName = jsrSpec ? (isJsrDependency ? toJsrNpmName(jsrSpec[0] ?? dep) : (jsrSpec[0] ?? dep)) : null
+
+    // every JSR package name is @scope/name, so a bare jsr: version on an unscoped key cannot be resolved
+    if (jsrSpec && !jsrName) {
+      bar?.tick()
+      return { error: `Invalid JSR package name "${dep}" for "${spec}". Expected "@scope/name".` }
+    }
+
+    const [name, version] = jsrSpec ? [jsrName!, jsrSpec[1]] : npmAlias || [dep, spec]
 
     // Skip valid specs that are not registry versions, such as different package manager protocols.
     if (isPackageManagerProtocol(version)) {
@@ -65,11 +92,19 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
     }
 
     let versionResult: VersionResult
-    const isGitHubDependency = isGitHubUrl(packageMap[dep])
+    const isGitHubDependency = isGitHubUrl(spec)
 
-    // use gitTags package manager for git urls (for this dependency only)
-    const packageManager = isGitHubDependency ? packageManagers.gitTags : globalPackageManager
-    const packageManagerName = isGitHubDependency ? 'github urls' : options.packageManager || 'npm'
+    // use a dedicated package manager for git urls and jsr: specs (for this dependency only)
+    const packageManager = isGitHubDependency
+      ? packageManagers.gitTags
+      : isJsrDependency
+        ? packageManagers.jsr
+        : globalPackageManager
+    const packageManagerName = isGitHubDependency
+      ? 'github urls'
+      : isJsrDependency
+        ? 'jsr'
+        : options.packageManager || 'npm'
 
     const getPackageVersion = packageManager[target as keyof typeof packageManager] as GetVersion
 
@@ -104,8 +139,14 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
           error: `${errorMessage}. All ${retry} retry attempts failed.`,
         }
       } else if (errorMessage.match(/E400|E404|ENOTFOUND|404 Not Found|400 Bad Request/i)) {
+        // JSR publishes to its own npm-compatible registry, so a 404 elsewhere means the @jsr scope is unconfigured
+        const jsrName = !isJsrDependency && !errorMessage.includes(JSR_REGISTRY) ? fromJsrNpmName(name) : null
         versionResult = {
-          error: `${errorMessage.replace(/ - Not found$/i, '')}. All ${retry} retry attempts failed. Either your internet connection is down, the registry is inaccessible, the authentication credentials are invalid, or the package does not exist.`,
+          error:
+            `${errorMessage.replace(/ - Not found$/i, '')}. All ${retry} retry attempts failed. Either your internet connection is down, the registry is inaccessible, the authentication credentials are invalid, or the package does not exist.` +
+            (jsrName
+              ? ` ${name} is a JSR package: add "${JSR_NPM_SCOPE}:registry=${JSR_REGISTRY}" to .npmrc, or declare it as "${createJsrSpec(jsrName, version)}".`
+              : ''),
         }
       } else if (err?.code === 'ERR_INVALID_URL') {
         versionResult = {
@@ -128,10 +169,14 @@ async function queryVersions(packageMap: Index<VersionSpec>, options: Options = 
       }
     }
 
-    versionResult.version =
-      !isGitHubDependency && npmAlias && versionResult?.version
-        ? createNpmAlias(name, versionResult.version)
-        : (versionResult?.version ?? null)
+    // rewrap the fetched version in the shape it was declared in, so both jsr: forms round-trip
+    versionResult.version = !versionResult?.version
+      ? null
+      : jsrSpec
+        ? upgradeJsrSpec(spec, versionResult.version)
+        : !isGitHubDependency && npmAlias
+          ? createNpmAlias(name, versionResult.version)
+          : versionResult.version
 
     bar?.tick()
 

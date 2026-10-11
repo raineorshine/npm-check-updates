@@ -25,7 +25,9 @@ import {
   getDependencyGroups,
   getGitHubUrlTag,
   isGitHubUrl,
+  isJsrSpec,
   isNpmAlias,
+  parseJsrSpec,
   parseNpmAlias,
   shortenBuildMetadata,
   stripRange,
@@ -157,10 +159,16 @@ function renderDependencyTable(rows: string[][]) {
 /**
  * Extract just the version number from a package.json dep.
  *
- * @param dep Raw dependency, could be version / npm: string / Git url
+ * @param dep Raw dependency, could be version / npm: string / jsr: string / Git url
  */
 function getVersion(dep: string): string {
-  return isGitHubUrl(dep) ? getGitHubUrlTag(dep)! : isNpmAlias(dep) ? parseNpmAlias(dep)![1] : dep
+  return isGitHubUrl(dep)
+    ? getGitHubUrlTag(dep)!
+    : isNpmAlias(dep)
+      ? parseNpmAlias(dep)![1]
+      : isJsrSpec(dep)
+        ? parseJsrSpec(dep)![1]
+        : dep
 }
 
 /** Prettifies a cooldown value, e.g. `1-day` `20-hour`. */
