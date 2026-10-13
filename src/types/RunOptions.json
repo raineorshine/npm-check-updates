@@ -601,13 +601,31 @@
                 "$ref": "#/definitions/VersionSpec"
               },
               {
-                "$ref": "#/definitions/alias-698261804-167-249-698261804-0-1448"
+                "$ref": "#/definitions/alias-698261804-167-249-698261804-0-1526"
               }
             ]
           }
         },
         "peerDependencies": {
           "$ref": "#/definitions/Index%3CVersionSpec%3E"
+        },
+        "pnpm": {
+          "type": "object",
+          "properties": {
+            "updateConfig": {
+              "type": "object",
+              "properties": {
+                "ignoreDependencies": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
         },
         "repository": {
           "anyOf": [
@@ -749,7 +767,7 @@
       "additionalProperties": false,
       "description": "A single devEngines constraint."
     },
-    "alias-698261804-167-249-698261804-0-1448": {
+    "alias-698261804-167-249-698261804-0-1526": {
       "type": "object",
       "additionalProperties": {
         "anyOf": [
@@ -757,7 +775,7 @@
             "$ref": "#/definitions/VersionSpec"
           },
           {
-            "$ref": "#/definitions/alias-698261804-167-249-698261804-0-1448"
+            "$ref": "#/definitions/alias-698261804-167-249-698261804-0-1526"
           }
         ]
       }
