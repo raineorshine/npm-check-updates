@@ -305,6 +305,47 @@ describe('filter', () => {
 })
 
 describe('reject', () => {
+  describe('pnpm.updateConfig.ignoreDependencies', () => {
+    const packageData = {
+      dependencies: {
+        '@fingerprintjs/fingerprintjs': '3.4.2',
+        'ncu-test-v2': '1.0.0',
+      },
+      pnpm: { updateConfig: { ignoreDependencies: ['@fingerprintjs/fingerprintjs'] } },
+    }
+
+    it('preserve ignored versions when returning the upgraded package file', async () => {
+      const stub = stubVersions('99.9.9')
+      try {
+        expect(await ncu({ packageData, jsonAll: true })).toStrictEqual({
+          ...packageData,
+          dependencies: {
+            '@fingerprintjs/fingerprintjs': '3.4.2',
+            'ncu-test-v2': '99.9.9',
+          },
+        })
+      } finally {
+        stub.restore()
+      }
+    })
+
+    it.each([['@fingerprintjs/fingerprintjs'], ['*', '!ncu-test-v2']])(
+      'omit dependencies ignored by %j from CLI upgrade suggestions',
+      async (...ignoreDependencies) => {
+        const stub = stubVersions('99.9.9', { spawn: true })
+        try {
+          const { stdout } = await spawn('node', [bin, '--jsonUpgraded', '--stdin'], {
+            stdin: JSON.stringify({ ...packageData, pnpm: { updateConfig: { ignoreDependencies } } }),
+          })
+
+          expect(JSON.parse(stdout)).toStrictEqual({ 'ncu-test-v2': '99.9.9' })
+        } finally {
+          stub.restore()
+        }
+      },
+    )
+  })
+
   describe('cli', () => {
     let stub: { restore: () => void }
     beforeAll(() => (stub = stubVersions('99.9.9', { spawn: true })))

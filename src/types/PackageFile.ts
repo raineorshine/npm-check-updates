@@ -37,6 +37,11 @@ export interface PackageFile {
   optionalDependencies?: Index<VersionSpec>
   overrides?: NestedVersionSpecs
   peerDependencies?: Index<VersionSpec>
+  pnpm?: {
+    updateConfig?: {
+      ignoreDependencies?: string[]
+    }
+  }
   repository?: string | PackageFileRepository
   scripts?: Index<string>
   workspaces?: string[] | { packages: string[] }
