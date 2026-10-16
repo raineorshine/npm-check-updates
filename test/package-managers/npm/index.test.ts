@@ -4,7 +4,8 @@ import http from 'node:http'
 import { type AddressInfo } from 'node:net'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { afterEach, describe, expect, it } from 'vitest'
+import npmRegistryFetch from 'npm-registry-fetch'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as npm from '../../../src/package-managers/npm.ts'
 import makeTempDir from '../../helpers/makeTempDir.ts'
 import removeDir from '../../helpers/removeDir.ts'
@@ -162,6 +163,50 @@ describe('npm', () => {
         await expect(npm.distTag('x', '1.0.0', { distTag: 'latest', deprecated: true })).resolves.toStrictEqual({})
       } finally {
         restore()
+      }
+    })
+  })
+
+  // https://github.com/raineorshine/npm-check-updates/issues/1504
+  describe('devEngines.runtime node', () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const options = { dep: ['devEngines'] }
+
+    /** Stubs the nodejs.org release index. */
+    const stubNodeReleases = () =>
+      vi.spyOn(npmRegistryFetch, 'json').mockResolvedValue(
+        // index.json is an array, which the json return type does not allow
+        [
+          { version: 'v26.1.0', date: today, lts: false },
+          { version: 'v24.22.0', date: '2026-01-02', lts: 'Krypton' },
+          { version: 'v24.15.0', date: '2026-01-01', lts: 'Krypton' },
+          { version: 'v22.23.1', date: '2026-01-01', lts: 'Jod' },
+        ] as unknown as Record<string, unknown>,
+      )
+
+    it('fetches versions from nodejs.org', async () => {
+      const stub = stubNodeReleases()
+      try {
+        await expect(npm.latest('node', '^24.15.0', options)).resolves.toMatchObject({ version: '26.1.0' })
+        await expect(npm.minor('node', '^24.15.0', options)).resolves.toMatchObject({ version: '24.22.0' })
+        await expect(npm.distTag('node', '^22.0.0', { ...options, distTag: 'lts' })).resolves.toMatchObject({
+          version: '24.22.0',
+        })
+        expect(stub).toHaveBeenCalledWith('https://nodejs.org/dist/index.json', expect.anything())
+      } finally {
+        stub.mockRestore()
+      }
+    })
+
+    it('honors cooldown using the release date', async () => {
+      const stub = stubNodeReleases()
+      try {
+        await expect(npm.latest('node', '^24.15.0', { ...options, cooldown: 7 })).resolves.toMatchObject({
+          version: '24.22.0',
+          cooldownInfo: { version: '26.1.0' },
+        })
+      } finally {
+        stub.mockRestore()
       }
     })
   })
