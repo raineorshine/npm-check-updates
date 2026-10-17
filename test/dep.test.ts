@@ -644,8 +644,8 @@ describe('--dep', () => {
       }
     })
 
-    it('leave devEngines.runtime alone', async () => {
-      const stub = stubVersions({ node: '99.9.9', pnpm: '11.9.9' })
+    it('upgrade devEngines.runtime with --dep devEngines, preserving the range', async () => {
+      const stub = stubVersions({ node: '24.22.0', pnpm: '11.9.9' })
 
       try {
         expect(
@@ -658,7 +658,84 @@ describe('--dep', () => {
         ).toStrictEqual({
           devEngines: {
             packageManager: { name: 'pnpm', version: '^11.9.9' },
-            runtime: { name: 'node', version: '^24.15.0', onFail: 'error' },
+            runtime: { name: 'node', version: '^24.22.0', onFail: 'error' },
+          },
+        })
+      } finally {
+        stub.restore()
+      }
+    })
+
+    it('upgrade node, bun, and deno when devEngines.runtime is an array, and leave other runtimes alone', async () => {
+      const stub = stubVersions({ node: '24.22.0', bun: '1.4.3', deno: '2.9.6', workerd: '2.0.0' })
+
+      try {
+        expect(
+          await upgrade({
+            devEngines: {
+              runtime: [
+                { name: 'node', version: '24.15.0' },
+                { name: 'bun', version: '^1.3.0' },
+                { name: 'deno', version: '~2.5.0' },
+                { name: 'workerd', version: '1.0.0' },
+              ],
+            },
+          }),
+        ).toStrictEqual({
+          devEngines: {
+            runtime: [
+              { name: 'node', version: '24.22.0' },
+              { name: 'bun', version: '^1.4.3' },
+              { name: 'deno', version: '~2.9.6' },
+              { name: 'workerd', version: '1.0.0' },
+            ],
+          },
+        })
+      } finally {
+        stub.restore()
+      }
+    })
+
+    it('upgrade bun as the package manager when the runtime is already up-to-date', async () => {
+      const stub = stubVersions({ bun: '1.4.3' })
+
+      try {
+        expect(
+          await upgrade({
+            devEngines: {
+              runtime: { name: 'bun', version: '^1.4.3' },
+              packageManager: { name: 'bun', version: '1.1.0' },
+            },
+          }),
+        ).toStrictEqual({
+          devEngines: {
+            runtime: { name: 'bun', version: '^1.4.3' },
+            packageManager: { name: 'bun', version: '1.4.3' },
+          },
+        })
+      } finally {
+        stub.restore()
+      }
+    })
+
+    it('reject a runtime by name', async () => {
+      const stub = stubVersions({ node: '24.22.0', pnpm: '11.9.9' })
+
+      try {
+        expect(
+          await upgrade(
+            {
+              devEngines: {
+                packageManager: { name: 'pnpm', version: '^11.3.0' },
+                runtime: { name: 'node', version: '^24.15.0' },
+              },
+            },
+            { reject: ['node'] },
+          ),
+        ).toStrictEqual({
+          devEngines: {
+            packageManager: { name: 'pnpm', version: '^11.9.9' },
+            runtime: { name: 'node', version: '^24.15.0' },
           },
         })
       } finally {
