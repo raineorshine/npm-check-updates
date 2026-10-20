@@ -3,6 +3,7 @@ import { type Index } from '../types/IndexType.ts'
 import { type Options } from '../types/Options.ts'
 import { type PackageFile } from '../types/PackageFile.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
+import createPnpmMatcher from './createPnpmMatcher.ts'
 import filterAndReject from './filterAndReject.ts'
 import filterObject from './filterObject.ts'
 import getDevEnginesPackageManagers from './getDevEnginesPackageManagers.ts'
@@ -59,14 +60,16 @@ function getCurrentDependencies(pkgData: PackageFile = {}, options: Options = {}
   const workspacePackageMap = keyValueBy(options.workspacePackages || [])
   let filteredDependencies: Index<VersionSpec> = {}
   try {
+    const filter = filterAndReject(
+      options.filter || null,
+      options.reject || null,
+      options.filterVersion || null,
+      options.rejectVersion || null,
+    )
+    const isPnpmIgnored = createPnpmMatcher(pkgData.pnpm?.updateConfig?.ignoreDependencies)
     filteredDependencies = filterObject(
-      filterObject(allDependencies, name => !workspacePackageMap[name]),
-      filterAndReject(
-        options.filter || null,
-        options.reject || null,
-        options.filterVersion || null,
-        options.rejectVersion || null,
-      ),
+      allDependencies,
+      (name, spec) => !workspacePackageMap[name] && !isPnpmIgnored(name) && filter(name, spec),
     )
   } catch (err: any) {
     programError(options, 'Invalid filter: ' + (err.message || err))

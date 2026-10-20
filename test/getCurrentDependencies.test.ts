@@ -286,6 +286,69 @@ describe('getCurrentDependencies', () => {
     })
   })
 
+  describe('pnpm.updateConfig.ignoreDependencies', () => {
+    it('exclude ignored dependencies from every selected section', () => {
+      deps.pnpm = { updateConfig: { ignoreDependencies: ['bluebird', 'lodash', 'chalk', 'ncu-test-v2'] } }
+
+      expect(getCurrentDependencies(deps, { dep: 'prod,dev,optional,peer' })).toStrictEqual({
+        mocha: '1.2',
+        moment: '^1.0.0',
+      })
+    })
+
+    it('support scoped glob patterns without excluding other scopes', () => {
+      const deps = {
+        dependencies: {
+          '@babel/core': '1.0.0',
+          '@babel/runtime': '1.0.0',
+          '@other/core': '1.0.0',
+        },
+        pnpm: { updateConfig: { ignoreDependencies: ['@babel/*'] } },
+      }
+
+      expect(getCurrentDependencies(deps)).toStrictEqual({ '@other/core': '1.0.0' })
+    })
+
+    it('preserve filter and reject predicates alongside ignored dependencies', () => {
+      deps.pnpm = { updateConfig: { ignoreDependencies: ['mocha'] } }
+      const options = {
+        filter: 'mocha moment lodash',
+        reject: (name: string) => name === 'lodash',
+      }
+
+      expect(getCurrentDependencies(deps, options)).toStrictEqual({ moment: '^1.0.0' })
+      expect(options.reject('lodash')).toBe(true)
+      expect(options.reject('mocha')).toBe(false)
+    })
+
+    it.each([
+      { patterns: [], kept: ['react', 'vue', '@babel/core', '@babel/runtime', '@other/core'] },
+      { patterns: ['*', '!react'], kept: ['react'] },
+      { patterns: ['!react', '!vue'], kept: ['react', 'vue'] },
+      { patterns: ['react', '!react'], kept: ['react', 'vue', '@babel/core', '@babel/runtime', '@other/core'] },
+      { patterns: ['*', '!react', 'react'], kept: [] },
+      { patterns: ['@babel/*', '!@babel/core'], kept: ['react', 'vue', '@babel/core', '@other/core'] },
+      { patterns: ['*core'], kept: ['react', 'vue', '@babel/runtime'] },
+      {
+        patterns: ['react?', '{react,vue}', 'react,vue', '/react/'],
+        kept: ['react', 'vue', '@babel/core', '@babel/runtime', '@other/core'],
+      },
+    ])('match pnpm ignore patterns $patterns', ({ patterns, kept }) => {
+      const deps = {
+        dependencies: {
+          react: '1.0.0',
+          vue: '1.0.0',
+          '@babel/core': '1.0.0',
+          '@babel/runtime': '1.0.0',
+          '@other/core': '1.0.0',
+        },
+        pnpm: { updateConfig: { ignoreDependencies: patterns } },
+      }
+
+      expect(Object.keys(getCurrentDependencies(deps))).toStrictEqual(kept)
+    })
+  })
+
   describe('rejectVersion', () => {
     it('reject dependency versions by pinned version', () => {
       expect(getCurrentDependencies(deps, { rejectVersion: '1.2' })).toStrictEqual({
