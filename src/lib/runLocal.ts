@@ -8,7 +8,7 @@ import { type Maybe } from '../types/Maybe.ts'
 import { type Options } from '../types/Options.ts'
 import { type PackageFile } from '../types/PackageFile.ts'
 import { type Version } from '../types/Version.ts'
-import { type CooldownInfo } from '../types/VersionResult.ts'
+import { type CooldownInfo, type IgnoreInfo } from '../types/VersionResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import getCooldownInfo from './getCooldownInfo.ts'
 import getCurrentDependencies from './getCurrentDependencies.ts'
@@ -82,6 +82,7 @@ const chooseUpgrades = async (
   oldDependencies: Index<string>,
   newDependencies: Index<string>,
   skippedByCooldown: Index<CooldownInfo>,
+  skippedByIgnore: Index<IgnoreInfo>,
   time: Index<string>,
   pkgFile: Maybe<string>,
   options: Options,
@@ -96,6 +97,8 @@ const chooseUpgrades = async (
     from: oldDependencies,
     to: newDependencies,
     skippedByCooldown,
+    skippedByIgnore,
+    cooldownActive: !!options.cooldown,
     format: options.format,
     pkgFile: pkgFile || undefined,
     time,
@@ -217,7 +220,7 @@ export default async function runLocal(
   const [upgraded, latestResults, upgradedPeerDependencies] = await upgradePackageDefinitions(current, options)
   const latest = keyValueBy(latestResults, (key, result) => (result.version ? { [key]: result.version } : null))
   const errors = keyValueBy(latestResults, (key, result) => (result.error ? { [key]: result.error } : null))
-  const { time, skippedByCooldown, numCooldown } = getCooldownInfo(latestResults)
+  const { time, skippedByCooldown, skippedByIgnore, numCooldown } = getCooldownInfo(latestResults)
 
   if (options.peer) {
     print(options, '\nupgradedPeerDependencies:', 'verbose')
@@ -246,7 +249,7 @@ export default async function runLocal(
     : undefined
 
   const chosenUpgraded = options.interactive
-    ? await chooseUpgrades(current, filteredUpgraded, skippedByCooldown, time, pkgFile, options)
+    ? await chooseUpgrades(current, filteredUpgraded, skippedByCooldown, skippedByIgnore, time, pkgFile, options)
     : filteredUpgraded
 
   if (!options.json || options.deep) {
@@ -259,6 +262,7 @@ export default async function runLocal(
         current,
         upgraded: chosenUpgraded,
         skippedByCooldown,
+        skippedByIgnore,
         total: Object.keys(upgraded).length,
         latest: latestResults,
         numCooldown,

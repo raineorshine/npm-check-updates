@@ -1,5 +1,6 @@
 import { type Cacher } from './Cacher.ts'
 import { type Index } from './IndexType.ts'
+import { type ResolvedIgnoreRule } from './ResolvedIgnoreRule.ts'
 import { type RunOptions } from './RunOptions.ts'
 import { type VersionSpec } from './VersionSpec.ts'
 
@@ -13,6 +14,8 @@ export type Options = RunOptions & {
   cacher?: Cacher
   cli?: boolean
   distTag?: string
+  // The ignore rules that matched the dependency being looked up. Set per dependency by queryVersions.
+  ignoreRules?: ResolvedIgnoreRule[]
   json?: boolean
   nodeEngineVersion?: VersionSpec
   packageData?: string

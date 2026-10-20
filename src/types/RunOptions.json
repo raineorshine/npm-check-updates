@@ -167,7 +167,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, cooldown. `group` is the only value included by default; use `--format no-group` to disable it. Run \"ncu --help --format\" for details.",
+          "description": "Modify the output formatting or show additional information. Specify one or more comma-delimited values: dep, group, ownerChanged, repo, time, lines, installedVersion, skipped. `group` is the only value included by default; use `--format no-group` to disable it. Run \"ncu --help --format\" for details.",
           "default": ["group"]
         },
         "global": {
@@ -177,6 +177,10 @@
         "groupFunction": {
           "$ref": "#/definitions/GroupFunction",
           "description": "Customize how packages are divided into groups when using `--format group`. Run \"ncu --help --groupFunction\" for details."
+        },
+        "ignore": {
+          "$ref": "#/definitions/IgnoreRules",
+          "description": "Never suggest the given versions of a package. Maps package names or globs to a semver range, or to { versions, reason }. Run \"ncu --help --ignore\" for details."
         },
         "install": {
           "type": "string",
@@ -562,6 +566,34 @@
       "type": "string",
       "enum": ["major", "minor", "patch", "majorVersionZero", "none"],
       "description": "The semver level by which a package is being upgraded, used to group packages with `--format group`."
+    },
+    "IgnoreRules": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/IgnoreRule"
+      },
+      "description": "Maps package names or globs to versions that ncu should never suggest."
+    },
+    "IgnoreRule": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "versions": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": ["versions"],
+          "additionalProperties": false
+        }
+      ],
+      "description": "A rule for one `ignore` entry: a semver range of versions to hold back, or the range with an optional human-readable reason."
     },
     "PackageFile": {
       "type": "object",
