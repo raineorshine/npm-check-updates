@@ -7,6 +7,8 @@ import { type VersionResult } from '../types/VersionResult.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import getPeerDependenciesFromRegistry from './getPeerDependenciesFromRegistry.ts'
 import keyValueBy from './keyValueBy.ts'
+import listedDependencies from './listedDependencies.ts'
+import { mergePeerDependencies, peersOf, rootOf } from './peerPaths.ts'
 import { pickBy } from './pick.ts'
 import queryVersions from './queryVersions.ts'
 import upgradeDependencies from './upgradeDependencies.ts'
@@ -30,11 +32,9 @@ const checkIfInPeerViolation = (
 ): CheckIfInPeerViolationResult => {
   const upgradedDependencies = { ...currentDependencies, ...filteredUpgradedDependencies }
   const filteredUpgradedDependenciesAfterPeers = pickBy(filteredUpgradedDependencies, (spec, dep) => {
-    const peerDeps = upgradedPeerDependencies[dep]
-    if (!peerDeps) {
-      return true
-    }
-    return Object.entries(peerDeps).every(
+    // includes the peers of any unlisted peers the upgraded version brings in
+    const peerDeps = peersOf(upgradedPeerDependencies, dep as string).flatMap(([, peers]) => Object.entries(peers))
+    return peerDeps.every(
       ([peer, peerSpec]) =>
         upgradedDependencies[peer] === undefined ||
         !semver.validRange(peerSpec) ||
@@ -47,10 +47,11 @@ const checkIfInPeerViolation = (
     Object.keys(filteredUpgradedDependencies).length > Object.keys(filteredUpgradedDependenciesAfterPeers).length
   let filteredUpgradedPeerDependencies = upgradedPeerDependencies
   if (violated) {
-    filteredUpgradedPeerDependencies = pickBy(
-      upgradedPeerDependencies,
-      (spec, dep) => filteredUpgradedDependenciesAfterPeers[dep] || !filteredUpgradedDependencies[dep],
-    )
+    // drop the peers of rejected upgrades, including those of the unlisted peers they would have brought in
+    filteredUpgradedPeerDependencies = pickBy(upgradedPeerDependencies, (spec, key) => {
+      const dep = rootOf(key as string)
+      return filteredUpgradedDependenciesAfterPeers[dep] || !filteredUpgradedDependencies[dep]
+    })
   }
   return {
     violated,
@@ -120,15 +121,19 @@ export async function upgradePackageDefinitions(
     return result
   }
 
-  const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(filteredLatestDependencies, options)
+  const upgradedPeerDependencies = await getPeerDependenciesFromRegistry(
+    filteredLatestDependencies,
+    options,
+    listedDependencies(currentDependencies, options),
+  )
 
   let checkPeerViolationResult: CheckIfInPeerViolationResult
 
   if (
-    isDeepStrictEqual(options.peerDependencies, {
-      ...options.peerDependencies,
-      ...upgradedPeerDependencies,
-    })
+    isDeepStrictEqual(
+      options.peerDependencies,
+      mergePeerDependencies(options.peerDependencies, upgradedPeerDependencies),
+    )
   ) {
     checkPeerViolationResult = checkIfInPeerViolation(
       currentDependencies,
@@ -151,10 +156,10 @@ export async function upgradePackageDefinitions(
     if (runCount++ > 6) {
       throw new Error(`Stuck in a while loop. Please report an issue`)
     }
-    const peerDependenciesAfterUpgrade = {
-      ...options.peerDependencies,
-      ...checkPeerViolationResult.upgradedPeerDependencies,
-    }
+    const peerDependenciesAfterUpgrade = mergePeerDependencies(
+      options.peerDependencies,
+      checkPeerViolationResult.upgradedPeerDependencies,
+    )
     if (isDeepStrictEqual(options.peerDependencies, peerDependenciesAfterUpgrade)) {
       // Peers stopped changing; keep the upgrades that do not violate them.
       // Dropping one upgrade can invalidate another that was kept, so filter until the set settles.
