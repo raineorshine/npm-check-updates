@@ -381,6 +381,42 @@ describe('target', () => {
           },
         })
       })
+
+      it('ignore || with ^ ranges', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '^1.0.0 || ^2.0.0',
+            },
+          },
+          target: 'semver',
+        })
+
+        expect(data).toStrictEqual({
+          dependencies: {
+            'ncu-test-semver': '^1.0.0 || ^2.0.0',
+          },
+        })
+      })
+
+      it('ignore || with ~ ranges', async () => {
+        const data = await ncu({
+          jsonAll: true,
+          packageData: {
+            dependencies: {
+              'ncu-test-semver': '~1.0.0 || ~1.1.0',
+            },
+          },
+          target: 'semver',
+        })
+
+        expect(data).toStrictEqual({
+          dependencies: {
+            'ncu-test-semver': '~1.0.0 || ~1.1.0',
+          },
+        })
+      })
     })
 
     describe('bounded ^ and ~ ranges', () => {

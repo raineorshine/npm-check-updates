@@ -51,10 +51,13 @@ const isExplicitRange = (spec: VersionSpec) => {
   return range.some(parsed => EXPLICIT_RANGE_OPS.has(parsed.operator || ''))
 }
 
-/** Returns true if the spec has a caret or tilde bound (e.g. `^9.5.0 <10`, `~5.0.4`). */
-const hasCaretOrTilde = (spec: VersionSpec) => {
+/** Returns true if the spec is a single caret or tilde range, optionally with an explicit bound (e.g. `^9.5.0 <10`, `~5.0.4`), and not a set of || alternatives (e.g. `^1 || ^2`). */
+const isBoundedCaretOrTilde = (spec: VersionSpec) => {
   const range = parseRange(spec)
-  return range.some(parsed => parsed.operator === '^' || parsed.operator === '~')
+  return (
+    !range.some(parsed => parsed.operator === '||') &&
+    range.some(parsed => parsed.operator === '^' || parsed.operator === '~')
+  )
 }
 
 /** Returns true if the version is valid semver with no padding (semver.valid tolerates whitespace like CR). */
@@ -1353,10 +1356,10 @@ export const semver: GetVersion = async (
   npmConfig?: NpmConfig,
   npmConfigProject?: NpmConfig,
 ): Promise<VersionResult> => {
-  // ignore explicit version ranges (e.g. `>1`, `1 || 2`, `1.0.0 - 1.3.0`) since there is no clear
+  // ignore explicit version ranges (e.g. `>1`, `1 || 2`, `^1 || ^2`, `1.0.0 - 1.3.0`) since there is no clear
   // upgrade target, but still upgrade caret/tilde ranges that carry an explicit upper bound
   // (e.g. `^9.5.0 <10`), staying within the declared range
-  if (isExplicitRange(currentVersion) && !hasCaretOrTilde(currentVersion)) return { version: null }
+  if (isExplicitRange(currentVersion) && !isBoundedCaretOrTilde(currentVersion)) return { version: null }
 
   const { packageInfo } = await fetchVersions(packageName, currentVersion, options, npmConfig, npmConfigProject)
 
