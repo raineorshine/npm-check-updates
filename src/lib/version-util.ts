@@ -519,9 +519,13 @@ export function upgradeDependencyDeclaration(
     return `${upgradedLower} ${upperBound.semver}`
   }
 
+  // a prerelease needs a full version ("^19.0.0-rc.1", not "^19-rc.1"), so fill in the parts a partial declaration omits
+  const fillMissingParts = !!latestSemver.release && !VERSION_BASE_PARTS.some(part => isWildPart(declaredSemver[part]))
+
   /**
    * Chooses version parts between the declared version and the latest.
-   * Base parts (major, minor, patch) are only included if they are in the original declaration.
+   * Base parts (major, minor, patch) are only included if they are in the original declaration, or if the latest
+   * version is a prerelease (see fillMissingParts).
    * Added parts (release, build) are always included. They are only present if we are checking `--greatest` versions
    * anyway.
    */
@@ -529,7 +533,7 @@ export function upgradeDependencyDeclaration(
     return (
       (isWildPart(declaredSemver[part])
         ? declaredSemver[part]
-        : VERSION_BASE_PARTS.includes(part) && declaredSemver[part]
+        : VERSION_BASE_PARTS.includes(part) && (declaredSemver[part] || fillMissingParts)
           ? latestSemver[part]
           : VERSION_ADDED_PARTS.includes(part)
             ? latestSemver[part]
