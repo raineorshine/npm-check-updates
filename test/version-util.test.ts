@@ -55,6 +55,12 @@ describe('version-util', () => {
       expect(versionUtil.upgradeDependencyDeclaration('^0.15.7', '0.16.0-beta.3')).toBe('^0.16.0-beta.3')
     })
 
+    it('use the full version when upgrading a partial version to a prerelease', () => {
+      expect(versionUtil.upgradeDependencyDeclaration('^18', '19.0.0-rc.1')).toBe('^19.0.0-rc.1')
+      expect(versionUtil.upgradeDependencyDeclaration('~1.2', '2.0.0-beta.1')).toBe('~2.0.0-beta.1')
+      expect(versionUtil.upgradeDependencyDeclaration('>=5', '6.0.0-beta')).toBe('>=6.0.0-beta')
+    })
+
     it('preserve an explicit upper bound when the new version stays within it', () => {
       expect(versionUtil.upgradeDependencyDeclaration('^9.5.0 <10', '9.7.0')).toBe('^9.7.0 <10')
       expect(versionUtil.upgradeDependencyDeclaration('~5.0.4 <5.1', '5.0.9')).toBe('~5.0.9 <5.1')
