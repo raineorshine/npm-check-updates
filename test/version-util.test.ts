@@ -67,6 +67,11 @@ describe('version-util', () => {
       expect(versionUtil.upgradeDependencyDeclaration('~5.0.4 <5.1', '6.0.0')).toBe('^6.0')
     })
 
+    it('do not combine bounds from different || alternatives', () => {
+      expect(versionUtil.upgradeDependencyDeclaration('>=16.8.0 <19 || ^19.0.0', '19.2.0')).toBe('^19')
+      expect(versionUtil.upgradeDependencyDeclaration('>=1.0.0 <2.0.0 || ^3.0.0', '3.5.0')).toBe('^3.5.0')
+    })
+
     it('replace multiple ranges with ^', () => {
       expect(versionUtil.upgradeDependencyDeclaration('>1.0 >2.0 < 3.0', '3.1.0')).toBe('^3.1')
     })

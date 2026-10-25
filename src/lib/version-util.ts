@@ -511,10 +511,17 @@ export function upgradeDependencyDeclaration(
 
   // Preserve an explicit upper bound (e.g. the "<10" in "^9.5.0 <10") when the upgraded version
   // still falls within it, so an upgrade never exceeds a declared ceiling. Only the caret/tilde
-  // lower bound is bumped; the upper bound is kept verbatim.
+  // lower bound is bumped; the upper bound is kept verbatim. Skip `||` ranges, where the two bounds
+  // can come from different alternatives (e.g. ">=16.8.0 <19 || ^19.0.0").
   const upperBound = parsedRange.find(range => range.operator === '<' || range.operator === '<=')
   const lowerBound = parsedRange.find(range => range.operator === '^' || range.operator === '~')
-  if (upperBound && lowerBound && semver.valid(latestVersion) && semver.satisfies(latestVersion, declaration)) {
+  if (
+    upperBound &&
+    lowerBound &&
+    !declaration.includes('||') &&
+    semver.valid(latestVersion) &&
+    semver.satisfies(latestVersion, declaration)
+  ) {
     const upgradedLower = upgradeDependencyDeclaration(lowerBound.semver!, latestVersion, options)
     return `${upgradedLower} ${upperBound.semver}`
   }
