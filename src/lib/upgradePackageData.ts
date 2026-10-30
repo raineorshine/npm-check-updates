@@ -9,7 +9,7 @@ import { type PackageFile } from '../types/PackageFile.ts'
 import { type Version } from '../types/Version.ts'
 import { type VersionSpec } from '../types/VersionSpec.ts'
 import { isCatalogFile } from './catalogFile.ts'
-import getDevEnginesPackageManagers from './getDevEnginesPackageManagers.ts'
+import getDevEngines from './getDevEngines.ts'
 import { pickBy } from './pick.ts'
 import resolveDepSections from './resolveDepSections.ts'
 import upgradeDependencies from './upgradeDependencies.ts'
@@ -203,7 +203,7 @@ async function upgradePackageData(
   }
 
   if (depSections.includes('devEngines')) {
-    for (const { entry, path } of getDevEnginesPackageManagers(pkg)) {
+    for (const { entry, path } of getDevEngines(pkg)) {
       const version = upgradeDeclaration(entry.name, entry.version!)
       if (version) {
         edits.push({ path: [...path, 'version'], value: version })

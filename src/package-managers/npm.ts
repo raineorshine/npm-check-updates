@@ -16,6 +16,7 @@ import interpolate from '../lib/interpolate.ts'
 import { keyValueBy } from '../lib/keyValueBy.ts'
 import { print, printSorted, sanitizeForDisplay } from '../lib/logging.ts'
 import parseCooldown from '../lib/parseCooldown.ts'
+import resolveDepSections from '../lib/resolveDepSections.ts'
 import spawnCommand from '../lib/spawnCommand.ts'
 import * as versionUtil from '../lib/version-util.ts'
 import { type GetVersion } from '../types/GetVersion.ts'
@@ -145,6 +146,33 @@ const fetchPartialPackument = async (
 
     // possible that corgis are not supported by this registry
     return fetchPartialPackument(name, fields, tag, { ...opts, fullMetadata: true }, version)
+  }
+}
+
+/**
+ * Fetches the Node.js releases from nodejs.org in packument shape, since the Node.js project does not publish to npm.
+ * Tags the highest release as latest and the highest LTS release as lts.
+ */
+const fetchNodePackument = async (opts: npmRegistryFetch.FetchOptions): Promise<Partial<Packument>> => {
+  const npmRegistryFetch = await loadRegistryFetch()
+  const releases = (await npmRegistryFetch.json('https://nodejs.org/dist/index.json', opts)) as unknown as {
+    version: string
+    date: string
+    lts: string | false
+  }[]
+  const versions = releases.map(release => release.version.replace(/^v/, ''))
+  const ltsVersions = versions.filter((_, i) => releases[i].lts)
+
+  return {
+    name: 'node',
+    'dist-tags': {
+      latest: nodeSemver.maxSatisfying(versions, '*')!,
+      ...(ltsVersions.length > 0 ? { lts: nodeSemver.maxSatisfying(ltsVersions, '*')! } : null),
+    },
+    versions: keyValueBy(versions, version => ({
+      [version]: { name: 'node', version } as Packument['versions'][string],
+    })),
+    time: keyValueBy(versions, (version, i) => ({ [version]: releases[i].date })),
   }
 }
 
@@ -782,6 +810,11 @@ async function fetchUpgradedPackument(
 
   let result: Partial<Packument> | undefined
   try {
+    // with --dep devEngines, node is the runtime declared in devEngines.runtime, not the node package on npm
+    if (packageName === 'node' && resolveDepSections(options.dep).includes('devEngines')) {
+      return await fetchNodePackument(npmConfigMerged)
+    }
+
     const tag = options.distTag || 'latest'
 
     // when a single tag is requested, its manifest exposes deprecated without the whole versions map
