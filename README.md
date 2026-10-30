@@ -192,6 +192,12 @@ Advanced filters: [filter](#filter), [filterResults](#filterresults), [filterVer
     - `0.1.0` → `0.1.2`
   - With `--target @next`, update to the version published on the `next` tag:
     - `0.1.0` -> `0.1.1-next.1`
+- [JSR](https://jsr.io) packages declared with the `jsr:` protocol are updated from `https://npm.jsr.io`, and the declared form is preserved:
+  - `jsr:@scope/name@^1.0.0` → `jsr:@scope/name@^1.2.0`
+  - `jsr:^1.0.0` → `jsr:^1.2.0`
+  - Set `@jsr:registry` in `.npmrc` to use a mirror. `bunfig.toml` is not read.
+  - `--peer`, `--enginesNode`, and `--format ownerChanged` are skipped for these, since JSR's registry serves no peer, engines, or publisher metadata.
+- JSR packages declared as an npm alias (`npm:@jsr/scope__name@1.0.0`, which `jsr add` writes) need `@jsr:registry=https://npm.jsr.io` in `.npmrc`, the same as your package manager does.
 
 ## Options
 

@@ -632,6 +632,90 @@ describe('version-util', () => {
     })
   })
 
+  describe('jsr specs', () => {
+    describe('isJsrSpec', () => {
+      it('return true if a jsr spec', () => {
+        expect(versionUtil.isJsrSpec('jsr:@scope/name@^1.0.0')).toBe(true)
+        expect(versionUtil.isJsrSpec('jsr:^1.0.0')).toBe(true)
+        expect(versionUtil.isJsrSpec('jsr:@scope/name')).toBe(true)
+      })
+
+      it('return false if not a jsr spec', () => {
+        expect(versionUtil.isJsrSpec('1.0.0')).toBe(false)
+        expect(versionUtil.isJsrSpec('npm:@jsr/scope__name@1.0.0')).toBe(false)
+      })
+    })
+
+    describe('parseJsrSpec', () => {
+      it('parse a jsr spec into [name, version]', () => {
+        expect(versionUtil.parseJsrSpec('jsr:@scope/name@^1.0.0')).toStrictEqual(['@scope/name', '^1.0.0'])
+        expect(versionUtil.parseJsrSpec('jsr:@scope/name@>=1 <2')).toStrictEqual(['@scope/name', '>=1 <2'])
+        expect(versionUtil.parseJsrSpec('jsr:@scope/name@1.0.0-beta.1')).toStrictEqual(['@scope/name', '1.0.0-beta.1'])
+      })
+
+      it('parse the bare form written by pnpm, where the name comes from the dependency key', () => {
+        expect(versionUtil.parseJsrSpec('jsr:^4.0.0')).toStrictEqual([null, '^4.0.0'])
+      })
+
+      it('normalize a missing version to a wildcard', () => {
+        expect(versionUtil.parseJsrSpec('jsr:@scope/name')).toStrictEqual(['@scope/name', '*'])
+        expect(versionUtil.parseJsrSpec('jsr:')).toStrictEqual([null, '*'])
+      })
+
+      it('return null if given a non-jsr spec', () => {
+        expect(versionUtil.parseJsrSpec('1.0.0')).toBeNull()
+        expect(versionUtil.parseJsrSpec('npm:@jsr/scope__name@1.0.0')).toBeNull()
+      })
+    })
+
+    describe('createJsrSpec', () => {
+      it('create a jsr spec from a name and version', () => {
+        expect(versionUtil.createJsrSpec('@scope/name', '1.0.0')).toBe('jsr:@scope/name@1.0.0')
+      })
+
+      it('create the bare form when the name is omitted', () => {
+        expect(versionUtil.createJsrSpec(null, '1.0.0')).toBe('jsr:1.0.0')
+      })
+    })
+
+    describe('upgradeJsrSpec', () => {
+      it('replace the embedded version and keep the name', () => {
+        expect(versionUtil.upgradeJsrSpec('jsr:@scope/name@^1.0.0', '2.0.0')).toBe('jsr:@scope/name@2.0.0')
+      })
+
+      it('keep the bare form bare', () => {
+        expect(versionUtil.upgradeJsrSpec('jsr:^1.0.0', '2.0.0')).toBe('jsr:2.0.0')
+      })
+
+      it('return null if given a non-jsr spec', () => {
+        expect(versionUtil.upgradeJsrSpec('^1.0.0', '2.0.0')).toBeNull()
+      })
+    })
+
+    describe('toJsrNpmName', () => {
+      it('mangle a JSR name into the name published to the npm-compatible registry', () => {
+        expect(versionUtil.toJsrNpmName('@scope/name')).toBe('@jsr/scope__name')
+        expect(versionUtil.toJsrNpmName('@ryoppippi/unplugin-typia')).toBe('@jsr/ryoppippi__unplugin-typia')
+      })
+
+      it('return null if the name is not scoped', () => {
+        expect(versionUtil.toJsrNpmName('name')).toBeNull()
+      })
+    })
+
+    describe('fromJsrNpmName', () => {
+      it('unmangle a name published to the npm-compatible registry', () => {
+        expect(versionUtil.fromJsrNpmName('@jsr/scope__name')).toBe('@scope/name')
+        expect(versionUtil.fromJsrNpmName('@jsr/ryoppippi__unplugin-typia')).toBe('@ryoppippi/unplugin-typia')
+      })
+
+      it('return null if the name is not published to the @jsr scope', () => {
+        expect(versionUtil.fromJsrNpmName('@scope/name')).toBeNull()
+        expect(versionUtil.fromJsrNpmName('chalk')).toBeNull()
+      })
+    })
+  })
+
   describe('github urls', () => {
     describe('isGitHubUrl', () => {
       it('return true if a declaration is a GitHub url with a semver tag and false otherwise', () => {

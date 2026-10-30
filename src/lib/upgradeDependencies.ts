@@ -63,6 +63,14 @@ function upgradeDependencies(
           latestParsed = versionUtil.parseNpmAlias(latest)![1]
         }
 
+        // parse jsr: spec
+        if (versionUtil.isJsrSpec(current)) {
+          currentParsed = versionUtil.parseJsrSpec(current)![1]
+        }
+        if (versionUtil.isJsrSpec(latest)) {
+          latestParsed = versionUtil.parseJsrSpec(latest)![1]
+        }
+
         // "branch" is also used for tags (refers to everything after the hash character)
         if (versionUtil.isGitHubUrl(current)) {
           const currentTag = versionUtil.getGitHubUrlTag(current)!
@@ -96,9 +104,11 @@ function upgradeDependencies(
 
           acc[packageName] = versionUtil.isNpmAlias(current)
             ? versionUtil.upgradeNpmAlias(current, upgraded)
-            : versionUtil.isGitHubUrl(current)
-              ? versionUtil.upgradeGitHubUrl(current, upgraded)
-              : upgraded
+            : versionUtil.isJsrSpec(current)
+              ? versionUtil.upgradeJsrSpec(current, upgraded)
+              : versionUtil.isGitHubUrl(current)
+                ? versionUtil.upgradeGitHubUrl(current, upgraded)
+                : upgraded
           return acc
         },
         {},
