@@ -1,4 +1,5 @@
 import { type ParseError, parse, printParseErrorCode, stripComments } from 'jsonc-parser'
+import stripBom from './stripBom.ts'
 
 const stdoutColumns = process.stdout.columns || 80
 
@@ -56,7 +57,7 @@ function showSnippet(lines: string[], errorLine: number, columnNumber: number): 
  * @returns the parsed json object.
  */
 export default function parseJson<T = unknown>(jsonString: string): T {
-  jsonString = stripComments(jsonString)
+  jsonString = stripComments(stripBom(jsonString))
   try {
     return JSON.parse(jsonString)
   } catch {

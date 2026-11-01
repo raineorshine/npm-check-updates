@@ -3,6 +3,7 @@ import { type Options } from '../types/Options.ts'
 import { type PackageFile } from '../types/PackageFile.ts'
 import { type PackageInfo } from '../types/PackageInfo.ts'
 import programError from './programError.ts'
+import stripBom from './utils/stripBom.ts'
 
 /** Load and parse a package file. */
 const loadPackageInfoFromFile = async (options: Options, filepath: string): Promise<PackageInfo> => {
@@ -11,7 +12,7 @@ const loadPackageInfoFromFile = async (options: Options, filepath: string): Prom
   // assert package.json
   try {
     pkgFile = await fs.readFile(filepath, 'utf-8')
-    pkg = JSON.parse(pkgFile)
+    pkg = JSON.parse(stripBom(pkgFile))
   } catch (e) {
     programError(options, `Missing or invalid ${filepath}`)
   }

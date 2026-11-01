@@ -28,6 +28,16 @@ describe('loadPackageInfoFromFile', () => {
     expect(info.name).toBeUndefined()
   })
 
+  it('loads a package file that starts with a UTF-8 BOM', async () => {
+    const filepath = path.join(tempDir, 'package.json')
+    await fs.writeFile(filepath, '﻿{"name":"z","version":"1.0.0"}')
+
+    const info = await loadPackageInfoFromFile({}, filepath)
+
+    expect(info.pkg).toStrictEqual({ name: 'z', version: '1.0.0' })
+    expect(info.pkgFile).toBe('﻿{"name":"z","version":"1.0.0"}')
+  })
+
   it('errors on a missing or invalid file', async () => {
     await expect(loadPackageInfoFromFile({}, path.join(tempDir, 'missing.json'))).rejects.toThrow('Missing or invalid')
   })

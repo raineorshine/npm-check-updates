@@ -20,6 +20,7 @@ import getRepoUrl from './getRepoUrl.ts'
 import isFetchable from './isFetchable.ts'
 import { COOLDOWN_PATTERN } from './parseCooldown.ts'
 import style from './style.ts'
+import stripBom from './utils/stripBom.ts'
 import {
   colorizeDiff,
   getDependencyGroups,
@@ -208,7 +209,7 @@ export async function toDependencyTable({
   pkgFile?: string
   time?: Index<string>
 }) {
-  const pkg = format?.includes('dep') && pkgFile ? JSON.parse(await fs.readFile(pkgFile, 'utf-8')) : null
+  const pkg = format?.includes('dep') && pkgFile ? JSON.parse(stripBom(await fs.readFile(pkgFile, 'utf-8'))) : null
   const showCooldownCol = Object.keys(skippedByCooldown || {}).length > 0
   const table = renderDependencyTable(
     await Promise.all(

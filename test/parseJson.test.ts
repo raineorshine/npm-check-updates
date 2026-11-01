@@ -11,6 +11,10 @@ describe('parseJson', () => {
     })
   })
 
+  it('ignores a leading UTF-8 BOM', () => {
+    expect(parseJson('﻿{"name": "John"}')).toStrictEqual({ name: 'John' })
+  })
+
   it('handles valid jsonc strings', () => {
     const string1 = `
   {

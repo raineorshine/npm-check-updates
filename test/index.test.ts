@@ -76,6 +76,28 @@ describe('run', () => {
     }
   })
 
+  it('upgrade a --packageFile that starts with a UTF-8 BOM', async () => {
+    const stub = stubVersions('99.9.9')
+    const tempDir = await makeTempDir()
+    const pkgFile = path.join(tempDir, 'package.json')
+    await fs.writeFile(pkgFile, '﻿{ "dependencies": { "express": "1" } }', 'utf-8')
+
+    try {
+      const result = await ncu({
+        packageFile: pkgFile,
+        jsonUpgraded: true,
+        upgrade: true,
+      })
+      expect(result).toStrictEqual({ express: '99' })
+
+      const upgraded = await fs.readFile(pkgFile, 'utf-8')
+      expect(upgraded).toBe('﻿{ "dependencies": { "express": "99" } }')
+    } finally {
+      await removeDir(tempDir)
+      stub.restore()
+    }
+  })
+
   it('exclude -alpha, -beta, -rc', async () => {
     const data = await ncu({
       jsonAll: true,

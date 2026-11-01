@@ -12,6 +12,7 @@ import { catalogFileFor } from './catalogFile.ts'
 import findPackage from './findPackage.ts'
 import loadPackageInfoFromFile from './loadPackageInfoFromFile.ts'
 import programError from './programError.ts'
+import stripBom from './utils/stripBom.ts'
 
 type CatalogSections = { catalog?: Index<VersionSpec>; catalogs?: Index<Index<VersionSpec>> }
 
@@ -68,7 +69,7 @@ const readCatalogDependencies = async (options: Options, pkgPath: string): Promi
   // Read from package.json (for Bun and modern pnpm)
   const packageData: PackageFile &
     CatalogSections & { workspaces?: string[] | (CatalogSections & { packages?: string[] }) } = JSON.parse(
-    await fs.readFile(pkgPath, 'utf-8'),
+    stripBom(await fs.readFile(pkgPath, 'utf-8')),
   )
 
   assignCatalogs(catalogDependencies, packageData)
@@ -96,7 +97,7 @@ async function getWorkspacePackageInfos(
 ): Promise<[PackageInfo[], string[]]> {
   // use silent; otherwise, there will be a duplicate "Checking" message
   const { pkgData, pkgPath } = await findPackage({ ...options, packageFile: rootPackageFile, loglevel: 'silent' })
-  const rootPkg: PackageFile = typeof pkgData === 'string' ? JSON.parse(pkgData) : pkgData
+  const rootPkg: PackageFile = typeof pkgData === 'string' ? JSON.parse(stripBom(pkgData)) : pkgData
 
   const workspacesObject =
     rootPkg.workspaces || (await readYamlSibling<PnpmWorkspaces>(pkgPath || '', 'pnpm-workspace.yaml'))
