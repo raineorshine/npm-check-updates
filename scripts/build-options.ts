@@ -115,6 +115,21 @@ const generateRunOptionsJsonSchema = (): string => {
   }
 
   const schema = createGenerator(config).createSchema(config.type)
+
+  // Allow "$schema" in .ncurc files. It is not a RunOptions property, so it is added here rather than generated. getNcuRc strips it before parsing options.
+  const runOptionsSchema = schema.definitions?.RunOptions
+  if (typeof runOptionsSchema !== 'object' || !runOptionsSchema.properties) {
+    throw new Error('RunOptions definition not found in generated JSON schema')
+  }
+  runOptionsSchema.properties = {
+    $schema: {
+      type: 'string',
+      format: 'uri-reference',
+      description: 'URL or path of the JSON schema used to validate this config file.',
+    },
+    ...runOptionsSchema.properties,
+  }
+
   return JSON.stringify(schema, null, 2)
 }
 
