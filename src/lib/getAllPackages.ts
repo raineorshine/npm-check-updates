@@ -241,6 +241,18 @@ async function getAllPackages(options: Options): Promise<[PackageInfo[], string[
   }
 
   if (!useWorkspaces) {
+    if (options.deep) {
+      const rootPkgCandidate = options.cwd ? path.join(cwd, 'package.json') : 'package.json'
+      const { pkgPath: catalogPkgPath } = await findPackage({
+        ...options,
+        packageFile: rootPkgCandidate,
+        loglevel: 'silent',
+      })
+      const catalogPackageInfo = catalogPkgPath ? await getCatalogPackageInfo(options, catalogPkgPath) : null
+      if (catalogPackageInfo) {
+        packageInfos = [...packageInfos, catalogPackageInfo]
+      }
+    }
     return [packageInfos, []]
   }
 

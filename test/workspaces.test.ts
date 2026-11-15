@@ -1164,6 +1164,55 @@ catalogs:
           await removeDir(tempDir)
         }
       })
+
+      it('update root catalog dependencies with --deep', async () => {
+        const tempDir = await makeTempDir()
+        try {
+          const pkgDataRoot = JSON.stringify({
+            name: 'root',
+            private: true,
+            workspaces: ['packages/*'],
+            catalog: {
+              'ncu-test-v2': '1.0.0',
+            },
+          })
+
+          await fs.writeFile(path.join(tempDir, 'package.json'), pkgDataRoot, 'utf-8')
+
+          await fs.mkdir(path.join(tempDir, 'packages/a'), { recursive: true })
+          await fs.writeFile(
+            path.join(tempDir, 'packages/a/package.json'),
+            JSON.stringify({
+              name: 'a',
+              version: '1.0.0',
+              dependencies: {
+                'ncu-test-v2': 'catalog:',
+                'ncu-test-return-version': '1.0.0',
+              },
+            }),
+            'utf-8',
+          )
+
+          const { stdout, stderr } = await spawn(
+            'node',
+            [bin, '--deep', '--jsonUpgraded'],
+            { rejectOnError: false },
+            { cwd: tempDir },
+          )
+
+          expect(stderr).toBe('')
+          expect(stdout).not.toBe('')
+
+          const output = JSON.parse(stdout)
+
+          expect(output).toStrictEqual({
+            'package.json': { 'ncu-test-v2': '2.0.0' },
+            'packages/a/package.json': { 'ncu-test-return-version': '2.0.0' },
+          })
+        } finally {
+          await removeDir(tempDir)
+        }
+      })
     })
   })
 

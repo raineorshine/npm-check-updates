@@ -321,7 +321,9 @@ async function runUpgrades(
             // convert Windows path to *nix path for consistency
             .replace(/\\/g, '/')
         : indexKey
-      packages[key] = await runLocal(pkgOptions, pkgData, pkgFile, packageInfo.catalog)
+      const result = await runLocal(pkgOptions, pkgData, pkgFile, packageInfo.catalog)
+      packages[key] =
+        packages[key] && pkgOptions.jsonUpgraded ? { ...packages[key], ...result } : result
     }
     analysis = packages
     if (options.json) {
