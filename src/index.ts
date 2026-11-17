@@ -322,8 +322,7 @@ async function runUpgrades(
             .replace(/\\/g, '/')
         : indexKey
       const result = await runLocal(pkgOptions, pkgData, pkgFile, packageInfo.catalog)
-      packages[key] =
-        packages[key] && pkgOptions.jsonUpgraded ? { ...packages[key], ...result } : result
+      packages[key] = packages[key] && pkgOptions.jsonUpgraded ? { ...packages[key], ...result } : result
     }
     analysis = packages
     if (options.json) {
