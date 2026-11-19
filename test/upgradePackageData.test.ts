@@ -56,6 +56,62 @@ workspaces:
 `)
     })
 
+    it('does not move a differing yaml catalog entry across the target level', async () => {
+      const yaml = `catalogs:
+  react17:
+    react: ^17.0.2
+  react18:
+    react: ^18.2.0
+`
+      const pkgFile = path.join(tempDir, 'pnpm-workspace.yaml')
+      await fs.writeFile(pkgFile, yaml)
+
+      // react18 is the collapsed current version, so the minor target fetched 18.3.1 for it
+      const result = await upgradePackageData(
+        '',
+        { react: '^18.2.0' },
+        { react: '^18.3.1' },
+        { target: 'minor' },
+        pkgFile,
+        { react: '18.3.1' },
+      )
+
+      expect(result).toBe(`catalogs:
+  react17:
+    react: ^17.0.2
+  react18:
+    react: ^18.3.1
+`)
+    })
+
+    it('does not downgrade a differing yaml catalog entry', async () => {
+      const yaml = `catalogs:
+  react18:
+    react: ^18.2.0
+  react17:
+    react: ^17.0.2
+`
+      const pkgFile = path.join(tempDir, 'pnpm-workspace.yaml')
+      await fs.writeFile(pkgFile, yaml)
+
+      // react17 is the collapsed current version, so the minor target fetched 17.0.3 for it
+      const result = await upgradePackageData(
+        '',
+        { react: '^17.0.2' },
+        { react: '^17.0.3' },
+        { target: 'minor' },
+        pkgFile,
+        { react: '17.0.3' },
+      )
+
+      expect(result).toBe(`catalogs:
+  react18:
+    react: ^18.2.0
+  react17:
+    react: ^17.0.3
+`)
+    })
+
     it('upgrades catalog dependencies in a package.json, only where the current version matches', async () => {
       const json = JSON.stringify(
         { name: 'x', catalog: { react: '18.0.0' }, catalogs: { legacy: { react: '17.0.0' } } },
