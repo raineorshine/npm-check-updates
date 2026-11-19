@@ -1,5 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import semver from 'semver'
+import { parseRange } from 'semver-utils'
 import { parseDocument } from 'yaml'
 import { type CatalogsConfig, parseCatalogsConfig } from '../types/CatalogConfig.ts'
 import { type Index } from '../types/IndexType.ts'
@@ -18,6 +20,7 @@ import { updateYamlCatalogDependenciesAll } from './upgradeYamlCatalogDependenci
 import applyJsonValueEdits, { type JsonValueEdit } from './utils/applyJsonValueEdits.ts'
 import collectVersionEdits from './utils/collectVersionEdits.ts'
 import parseJson from './utils/parseJson.ts'
+import { filterByLevel } from './version-util.ts'
 
 /**
  * Replaces upgraded dependency versions within the given sections of raw package.json text.
@@ -71,6 +74,35 @@ function replaceDependencySections(
   }
 
   return applyJsonValueEdits(pkgData, edits)
+}
+
+/**
+ * Returns the spec to write for one catalog entry, or null to leave it alone.
+ *
+ * current/upgraded hold one spec per package, but several catalogs can declare the same package at different
+ * versions (e.g. react17 and react18). The upgraded spec was fetched for the collapsed current spec, so with
+ * a --target of minor, patch or semver it can cross the entry's own major (or minor) version, or even
+ * downgrade it. An entry that differs from the collapsed spec is therefore only upgraded when the fetched
+ * version is a valid upgrade at the requested level for that entry.
+ */
+function upgradeCatalogEntry(
+  dep: string,
+  spec: VersionSpec,
+  upgradedSpec: VersionSpec,
+  current: Index<VersionSpec>,
+  latest: Index<Version> | undefined,
+  options: Options,
+): VersionSpec | null {
+  const latestVersion = latest?.[dep]
+  // without a fetched version there is nothing to check the entry against
+  if (spec === current[dep] || !latestVersion) return upgradedSpec
+
+  const target = typeof options.target === 'function' ? options.target(dep, parseRange(spec)) : options.target
+  const isLevelTarget = target === 'minor' || target === 'patch'
+  if (isLevelTarget && !filterByLevel(spec, target)(latestVersion)) return null
+  if (target === 'semver' && !(semver.validRange(spec) && semver.satisfies(latestVersion, spec))) return null
+
+  return upgradeDependencies({ [dep]: spec }, { [dep]: latestVersion }, options)[dep] ?? null
 }
 
 /**
@@ -135,9 +167,10 @@ async function upgradePackageData(
       for (const [pathPrefix, catalog] of catalogSources) {
         if (!catalog) continue
         for (const [dep, version] of Object.entries(upgraded)) {
-          if (catalog[dep]) {
-            reconstructedUpdates.push({ path: [...pathPrefix, dep], newValue: version })
-          }
+          const spec = catalog[dep]
+          if (!spec) continue
+          const newValue = upgradeCatalogEntry(dep, spec, version, current, latest, options)
+          if (newValue) reconstructedUpdates.push({ path: [...pathPrefix, dep], newValue })
         }
       }
 
