@@ -62,6 +62,35 @@ describe('install', () => {
       }
     })
 
+    it('report install failure without crashing with --install always', async () => {
+      const pkgData = {
+        scripts: {
+          preinstall: 'exit 1',
+        },
+        dependencies: {
+          'ncu-test-v2': '1.0.0',
+        },
+      }
+
+      const stub = stubVersions('2.0.0', { spawn: true })
+      const tempDir = await makeTempDir()
+      const pkgFile = path.join(tempDir, 'package.json')
+      await fs.writeFile(pkgFile, JSON.stringify(pkgData), 'utf-8')
+
+      try {
+        // ncu exits non-zero via programError after reporting the install failure
+        const err = (await spawn('node', [bin, '-u', '--packageFile', pkgFile, '--install', 'always']).catch(
+          e => e,
+        )) as { stderr: string }
+        // Regression test for #2144: the install-failure reporter itself must not crash
+        // with "TypeError: Right-hand side of 'instanceof' is not an object".
+        expect(stripAnsi(err.stderr)).toMatch(/Install failed\. This is not a bug in npm-check-updates/)
+      } finally {
+        await removeDir(tempDir)
+        stub.restore()
+      }
+    })
+
     it('do not print install hint with --install never', async () => {
       const pkgData = {
         dependencies: {
