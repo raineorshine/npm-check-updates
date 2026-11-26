@@ -1,6 +1,5 @@
 import path from 'node:path'
 import prompts from 'prompts-ncu'
-import { SpawnError } from 'spawn-please'
 import pkg from '../package.json' with { type: 'json' }
 import { cliOptionsMap } from './cli-options.ts'
 import { cacheClear } from './lib/cache.ts'
@@ -216,7 +215,12 @@ const install = async (
         // sometimes packages print errors to stdout instead of stderr
         // if there is nothing on stderr, print stdout
         const message = err instanceof Error ? err.message : String(err)
-        const output = err instanceof SpawnError && !err.stderr.trim() && stdout ? stdout : message
+        // Duck-type rather than instanceof so that error reporting can never throw, even if
+        // the SpawnError binding is not available at runtime (e.g. a mis-bundled build). An
+        // error reporter that throws replaces the underlying error with an unhandled
+        // rejection. See #2144.
+        const stderr = (err as { stderr?: unknown } | null | undefined)?.stderr
+        const output = typeof stderr === 'string' && !stderr.trim() && stdout ? stdout : message
         print(options, errorText(output), null, 'error')
 
         // use a program error to exit with a non-zero code rather than throwing a new Error and allowing it to bubble up to the "this is a bug and should be reported message".
