@@ -602,16 +602,21 @@ describe('version-util', () => {
     describe('parseNpmAlias', () => {
       it('parse an npm alias into [name, version]', () => {
         expect(versionUtil.parseNpmAlias('npm:chalk@1.0.0')).toStrictEqual(['chalk', '1.0.0'])
+        expect(versionUtil.parseNpmAlias('npm:@scope/pkg@1.0.0')).toStrictEqual(['@scope/pkg', '1.0.0'])
+        expect(versionUtil.parseNpmAlias('npm:@scope/pkg@latest')).toStrictEqual(['@scope/pkg', 'latest'])
       })
 
       it('return null if given a non-alias', () => {
         expect(versionUtil.parseNpmAlias('1.0.0')).toBeNull()
+        expect(versionUtil.parseNpmAlias('npm:chalk')).toBeNull()
+        expect(versionUtil.parseNpmAlias('npm:@scope/pkg')).toBeNull()
       })
     })
 
     describe('isNpmAlias', () => {
       it('return true if an npm alias', () => {
         expect(versionUtil.isNpmAlias('npm:chalk@1.0.0')).toBe(true)
+        expect(versionUtil.isNpmAlias('npm:@scope/pkg@1.0.0')).toBe(true)
         expect(versionUtil.isNpmAlias('npm:chalk@^1.0.0')).toBe(true)
         expect(versionUtil.isNpmAlias('npm:postman-request@2.88.1-postman.33')).toBe(true)
       })
@@ -619,12 +624,15 @@ describe('version-util', () => {
       it('return false if not an npm alias', () => {
         expect(versionUtil.isNpmAlias('1.0.0')).toBe(false)
         expect(versionUtil.isNpmAlias('npm:chalk')).toBe(false)
+        expect(versionUtil.isNpmAlias('npm:@scope/pkg')).toBe(false)
       })
     })
 
     describe('upgradeNpmAlias', () => {
       it('replace embedded version', () => {
         expect(versionUtil.upgradeNpmAlias('npm:chalk@^1.0.0', '2.0.0')).toBe('npm:chalk@2.0.0')
+        expect(versionUtil.upgradeNpmAlias('npm:@scope/pkg@^1.0.0', '2.0.0')).toBe('npm:@scope/pkg@2.0.0')
+        expect(versionUtil.upgradeNpmAlias('npm:@scope/pkg', '2.0.0')).toBeNull()
         expect(versionUtil.upgradeNpmAlias('npm:postman-request@2.88.1-postman.32', '2.88.1-postman.33')).toBe(
           'npm:postman-request@2.88.1-postman.33',
         )

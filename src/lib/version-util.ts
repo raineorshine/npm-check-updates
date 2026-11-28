@@ -31,7 +31,7 @@ const WILDCARDS_PURE = ['^', '~', '^*', '*', 'x', 'x.x', 'x.x.x']
 const WILDCARD_PURE_REGEX = new RegExp(`^(${WILDCARDS_PURE.map(escapeRegExp).join('|')})$`)
 
 /** Matches an npm alias version declaration. */
-const NPM_ALIAS_REGEX = /^npm:(.*)@(.*)/
+const NPM_ALIAS_REGEX = /^npm:(.+)@(.*)/
 
 interface UpgradeOptions {
   wildcard?: string
